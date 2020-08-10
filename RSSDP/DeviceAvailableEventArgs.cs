@@ -8,12 +8,6 @@ namespace Rssdp
     /// </summary>
     public sealed class DeviceAvailableEventArgs : EventArgs
     {
-        public IPAddress LocalIpAddress { get; set; }
-
-        private readonly DiscoveredSsdpDevice _DiscoveredDevice;
-
-        private readonly bool _IsNewlyDiscovered;
-
         /// <summary>
         /// Full constructor.
         /// </summary>
@@ -22,29 +16,20 @@ namespace Rssdp
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
         public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
         {
-            if (discoveredDevice == null)
-            {
-                throw new ArgumentNullException(nameof(discoveredDevice));
-            }
-
-            _DiscoveredDevice = discoveredDevice;
-            _IsNewlyDiscovered = isNewlyDiscovered;
+            DiscoveredDevice = discoveredDevice ?? throw new ArgumentNullException(nameof(discoveredDevice));
+            IsNewlyDiscovered = isNewlyDiscovered;
         }
+
+        public IPAddress LocalIpAddress { get; set; }
 
         /// <summary>
         /// Returns true if the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
         /// </summary>
-        public bool IsNewlyDiscovered
-        {
-            get { return _IsNewlyDiscovered; }
-        }
+        public bool IsNewlyDiscovered { get; }
 
         /// <summary>
         /// A reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
         /// </summary>
-        public DiscoveredSsdpDevice DiscoveredDevice
-        {
-            get { return _DiscoveredDevice; }
-        }
+        public DiscoveredSsdpDevice DiscoveredDevice { get; }
     }
 }

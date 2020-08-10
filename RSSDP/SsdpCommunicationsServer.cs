@@ -53,7 +53,7 @@ namespace Rssdp.Infrastructure
         private readonly HttpResponseParser _responseParser;
         private readonly ILogger _logger;
         private readonly INetworkManager _networkManager;
-        private readonly IServerConfigurationManager _config;
+        private readonly IServerConfigurationManager _configurationManager;
         private readonly Dictionary<Socket, SocketState> _sockets;
         private readonly int _multicastTtl;
         private bool _externalPortForwardEnabled;
@@ -67,31 +67,32 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         public SsdpCommunicationsServer(
             INetworkManager networkManager,
-            IServerConfigurationManager config,
+            IServerConfigurationManager configurationManager,
             ILogger logger)
         {
-            _multicastTtl = SsdpConstants.SsdpDefaultMulticastTimeToLive;
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
-            _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            _socketSynchroniser = new object();
-
             _requestParser = new HttpRequestParser();
             _responseParser = new HttpResponseParser();
 
-            _config.ConfigurationUpdated += ConfigurationUpdated;
-            _networkManager.NetworkChanged += NetworkChanged;
+            _multicastTtl = SsdpConstants.SsdpDefaultMulticastTimeToLive;
 
-            _externalPortForwardEnabled = _config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess;
+            _externalPortForwardEnabled = _configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess;
 
+            _socketSynchroniser = new object();
             _sockets = new Dictionary<Socket, SocketState>();
 
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             CreateSockets();
+
+            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
+            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+            _networkManager.NetworkChanged += NetworkChanged;
         }
 
         /// <summary>
-        /// Gets or sets a the counter value indicating how many times this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
+        /// Gets or sets a the counter value indicating how many times this instance is shared
+        /// amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
+        /// Only when this value is zero, will this instance be disposed.
         /// </summary>
         public int IsShared { get; set; } = 1;
 
@@ -106,14 +107,14 @@ namespace Rssdp.Infrastructure
         public event EventHandler<ResponseReceivedEventArgs>? ResponseReceived;
         
         /// <summary>
-        /// Triggered on a configuration change event.
+        /// Triggered on a system configuration change.
         /// </summary>
         /// <param name="sender">Configuration object.</param>
         /// <param name="args">Event arguments.</param>
         public void ConfigurationUpdated(object sender, EventArgs args)
         {
             // Check to see if uPNP has changed status.
-            bool newValue = (_config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess);
+            bool newValue = (_configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess);
 
             if (newValue != _externalPortForwardEnabled)
             {
@@ -124,13 +125,12 @@ namespace Rssdp.Infrastructure
         }
 
         /// <summary>
-        /// Triggered on a network change event.
+        /// Triggered on a network change.
         /// </summary>
         /// <param name="sender">NetworkManager object.</param>
         /// <param name="args">Event arguments.</param>
         public void NetworkChanged(object sender, EventArgs args)
         {
-            // Create any that are missing.
             CreateSockets();
         }
 
@@ -139,8 +139,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <param name="messageData">The message to send.</param>
         /// <param name="destination">The destination address.</param>
-        /// <param name="localIp">The local IP address to use.</param>
-        /// <returns>Task.</returns>
+        /// <param name="localIp">The local endpoint address to use.</param>
         public async Task SendMessageAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp)
         {
             ThrowIfDisposed();
@@ -238,7 +237,6 @@ namespace Rssdp.Infrastructure
         /// <param name="destination"></param>
         /// <param name="sendCount">Number of times to send it. SSDP spec recommends sending messages not more than 3 times
         /// to account for possible packet loss over UDP.</param>
-        /// <returns>Task.</returns>
         private async Task SendFromSocketAsync(Socket socket, byte[] messageData, IPEndPoint destination, int sendCount)
         {
             try
@@ -294,12 +292,12 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Stops listening for requests, disposes this instance and all internal resources.
         /// </summary>
-        /// <param name="disposing"></param>
+        /// <param name="disposing">True if objects are to be disposed.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _config.ConfigurationUpdated -= ConfigurationUpdated;
+                _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
                 _networkManager.NetworkChanged -= ConfigurationUpdated;
                 lock (_socketSynchroniser)
                 {
@@ -307,7 +305,7 @@ namespace Rssdp.Infrastructure
                     {
                         foreach (var (socket, state) in _sockets)
                         {
-                            _logger.LogInformation("{0} disposing sendSocket from {1}", GetType().Name, socket.LocalEndPoint);
+                            _logger.LogInformation("{0} disposing socket {1}", GetType().Name, socket.LocalEndPoint);
                             socket.Dispose();
                         }
                     }
@@ -321,8 +319,8 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <param name="messageData">Message to transmit.</param>
         /// <param name="destination">Destination endpoint.</param>
-        /// <param name="localIp">Source endpoint.</param>
-        /// <returns>.</returns>
+        /// <param name="localIp">Source endpoint to use.</param>
+        /// <param name="sendCount">Number of times to transmit.</param>
         private async Task SendMessageViaAllSocketsAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp, int sendCount)
         {
             Dictionary<Socket, SocketState>.KeyCollection sockets;
@@ -334,24 +332,23 @@ namespace Rssdp.Infrastructure
 
             if (sockets.Count > 0)
             {
-                // Exclude any interfaces/IP's the user has defined.
-                var tasks = sockets.Where(s => (localIp.Equals(IPAddress.Any) || localIp.Equals(IPAddress.IPv6Any) || localIp.Equals(s.LocalEndPoint)))
+                var tasks = sockets
+                    .Where(s => (localIp.Equals(IPAddress.Any) || localIp.Equals(IPAddress.IPv6Any) || localIp.Equals(s.LocalEndPoint)))
                     .Where(s => (((IPEndPoint)destination).Address.AddressFamily == s.LocalEndPoint.AddressFamily))
                     .Select(s => SendFromSocketAsync(s, messageData, destination, sendCount));
-
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
         }
 
         /// <summary>
-        /// Creates UDP port if if it doesn't already exist.
+        /// Creates UDP port if the endpoint doesn't already have one defined.
         /// </summary>
-        /// <param name="listen">Create a listerner.</param>
-        /// <param name="ip">IP Address to listen to.</param>
-        /// <param name="port">Port to listen to. (If port != 0 a multicast is created).</param>
+        /// <param name="listen">True if the socket is to be a listener.</param>
+        /// <param name="ip">Interface IP upon which to listen.</param>
+        /// <param name="port">Port upon which to listen. If the port number isn't zero, the socket is initialised for multicasts.</param>
         private void CreateUniqueSocket(bool listen, IPAddress ip, int port = 0)
         {
-            var sockets = _sockets.Where(s => ((IPEndPoint)s.Key.LocalEndPoint).Address.Equals(ip));
+            var sockets = _sockets.Keys.Where(k => ((IPEndPoint)k.LocalEndPoint).Address.Equals(ip));
             if (!sockets.Any())
             {
                 try
@@ -377,40 +374,32 @@ namespace Rssdp.Infrastructure
             }
             else
             {
-                // Stop listening to some sockets and "activation" sendonly them to sendonly.
-                bool dictionaryChanged = false;
-                do
+                // For all matching ports, ensure that they are in the correct state. (Sendonly/listener).
+                foreach (var socket in sockets)
                 {
-                    dictionaryChanged = false;
-
-                    // Update the listening capability status.
-                    foreach (KeyValuePair<Socket, SocketState> kvp in sockets)
+                    SocketState state = _sockets[socket];
+                    if (state == SocketState.Listening && !listen)
                     {
-                        if (kvp.Value == SocketState.Listening && !listen)
-                        {
-                            _logger.LogDebug("Closing listening socket on {0}", ((IPEndPoint)kvp.Key.LocalEndPoint).Address);
+                        // As we are using ReceiveFromAsync, the only way to break out of the method is to close the socket.
+                        _logger.LogDebug("Closing listening socket on {0}", ((IPEndPoint)socket.LocalEndPoint).Address);
+                        _sockets.Remove(socket);
+                        socket.Dispose();
 
-                            _sockets.Remove(kvp.Key);
-                            kvp.Key.Close(); // Only way to break out of ReceiveFromAsync method.
-
-                            dictionaryChanged = true;
-                            break;
-                        }
-                        else if (kvp.Value == SocketState.SendOnly && listen)
-                        {
-                            _sockets[kvp.Key] = SocketState.Listener;
-                            dictionaryChanged = true;
-                            break;
-                        }
+                        // As we have to closed this port - we'll need another one creating.
+                        CreateUniqueSocket(listen, ip, port);
                     }
-                } while (dictionaryChanged);
+                    else if (state == SocketState.SendOnly && listen)
+                    {
+                        // Tag the socket so that a listener task will be launched.
+                        _sockets[socket] = SocketState.Listener;
+                    }
+                }
             }
         }
 
         /// <summary>
-        /// Creates and removes invalid sockets for all internal interfaces.
+        /// Creates and removes invalid sockets.
         /// </summary>
-        /// <returns>List of ISockets.</returns
         private void CreateSockets()
         {
             var ba = _networkManager.GetInternalBindAddresses();
@@ -419,12 +408,9 @@ namespace Rssdp.Infrastructure
             {
                 if (_networkManager.EnableMultiSocketBinding && _sockets.Count > 0)
                 {
-                    // Rather than destroying all sockets and re-creating them,
-                    // only destroy invalid ones and create new ones.
-
+                    // Rather than destroying all sockets and re-creating them, only destroy invalid ones.
                     var sockets = _sockets.Keys;
-
-                    foreach(var (socket, state) in _sockets)
+                    foreach (var (socket, state) in _sockets)
                     {
                         // If not an IPAny/v6Any and socket doesn't exist any more, then dispose of it.
                         IPEndPoint addr = ((IPEndPoint)socket.LocalEndPoint);
@@ -438,25 +424,23 @@ namespace Rssdp.Infrastructure
                     }
                 }
 
-                // Only create the any ports once.
+                // Only create the IPAny/v6Any and multicast ports once.
                 if (_sockets.Count == 0)
                 {
+                    CreateUniqueSocket(true, IPAddress.Any, 1900); // Multicast.
                     CreateUniqueSocket(true, IPAddress.Any);
                     if (_networkManager.IsIP6Enabled)
                     {
                         CreateUniqueSocket(true, IPAddress.IPv6Any);
                     }
-
-                    // Create multicast listener.
-                    CreateUniqueSocket(true, IPAddress.Any, 1900);
                 }
 
                 if (_networkManager.EnableMultiSocketBinding)
                 {
                     foreach (IPObject ip in ba)
                     {
-                        // An interface with a -ve tag has a gateway address, so will be listened to by Mono.NAT.
-                        // Mono.NAT will send us this traffic, so make this a send only socket.
+                        // An interface with a negative tag has a gateway address and so will be listened to by Mono.NAT, if port forwarding is enabled.
+                        // In this instance, Mono.NAT will send us this traffic, so we don't need to listen to these sockets.
                         CreateUniqueSocket(!(_externalPortForwardEnabled && ip.Tag < 0), ip.Address);
                     }
                 }
@@ -465,6 +449,9 @@ namespace Rssdp.Infrastructure
             _ = StartListening();
         }
 
+        /// <summary>
+        /// Creates the sockets listening tasks.
+        /// </summary>
         private async Task StartListening()
         {
             try
@@ -472,14 +459,15 @@ namespace Rssdp.Infrastructure
                 Dictionary<Socket, SocketState> sockets;
                 lock (_socketSynchroniser)
                 {
-                    // Get all the listener sockets.
+                    // Get all the listener sockets in a separate dictionary.
+                    // This must be done, otherwise an IEnumerable exception is generated.
                     sockets = new Dictionary<Socket, SocketState>(_sockets.Where(i => i.Value == SocketState.Listener)); 
                 }
 
                 var tasks = sockets.Select(i => ListenToSocketAsync(i.Key)).ToList();
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Do not catch general exception types: Catches unknown task exceptions and logs them.
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
@@ -488,26 +476,25 @@ namespace Rssdp.Infrastructure
         }
 
         /// <summary>
-        /// Listening Loop
+        /// Async Listening Method.
         /// </summary>
         /// <param name="socket">Socket to listen to.</param>
-        /// <returns>Task</returns>
         private async Task ListenToSocketAsync(Socket socket)
         {
             var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 
-            bool cancelled = false;
             IPEndPoint listeningOn = (IPEndPoint)socket.LocalEndPoint;
             _logger.LogDebug("Listening on {0}/{1}", listeningOn.Address, listeningOn.Port);
 
             try
             {
+                // Update our status to show that we are now actively listening.
                 lock (_socketSynchroniser)
                 {
                     _sockets[socket] = SocketState.Listening;
                 }
 
-                while (!IsDisposed && !cancelled)
+                while (!IsDisposed)
                 {
                     try
                     {
@@ -528,25 +515,11 @@ namespace Rssdp.Infrastructure
                                 ((IPEndPoint)socket.LocalEndPoint).Address
                                 ).ConfigureAwait(false);
                         }
-
-                        // See if this listener still exists in the listening list.
-                        cancelled = true;
-                        lock (_socketSynchroniser)
-                        {
-                            if (_sockets.TryGetValue(socket, out SocketState state))
-                            {
-                                cancelled = state != SocketState.Listening;
-                            }
-                        }
-
-                        _logger.LogInformation("Listening shutting down. {0}", ((IPEndPoint)socket.LocalEndPoint).Address);
+                        
                     }
-                    catch (ObjectDisposedException)
+                    catch (Exception e) when (e is ObjectDisposedException || e is TaskCanceledException)
                     {
-                        break;
-                    }
-                    catch (TaskCanceledException)
-                    {
+                        _logger.LogInformation("Listening shutting down. {0}", listeningOn);
                         break;
                     }
                 }
@@ -577,9 +550,9 @@ namespace Rssdp.Infrastructure
             }
 
             var epAddr = ((IPEndPoint)endPoint).Address;
-            if (!_networkManager.IsInLocalNetwork(((IPEndPoint)endPoint).Address))
+            if (!_networkManager.IsInLocalNetwork(epAddr))
             {
-                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", ((IPEndPoint)endPoint).Address);
+                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", epAddr);
                 return Task.CompletedTask;
             }
 
@@ -594,9 +567,8 @@ namespace Rssdp.Infrastructure
 
             // _logger.LogDebug("Processing inbound SSDP from {0}.", endPoint.Address);
 
-            // Responses start with the HTTP version, prefixed with HTTP/ while
-            // requests start with a method which can vary and might be one we haven't
-            // seen/don't know. We'll check if this message is a request or a response
+            // Responses start with the HTTP version, prefixed with HTTP/ while requests start with a method which can
+            // vary and might be one we haven't seen/don't know. We'll check if this message is a request or a response
             // by checking for the HTTP/ prefix on the start of the message.
             if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
             {
@@ -629,8 +601,8 @@ namespace Rssdp.Infrastructure
 
                 if (requestMessage != null)
                 {
-                    // SSDP specification says only * is currently used but other uri's might
-                    // be implemented in the future and should be ignored unless understood.
+                    // SSDP specification says only * is currently used but other uri's might be implemented in the future
+                    // and should be ignored unless understood.
                     // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
                     if (requestMessage.RequestUri.ToString() != "*")
                     {
@@ -643,6 +615,9 @@ namespace Rssdp.Infrastructure
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Represents the states of the Sockets.
+        /// </summary>
         private enum SocketState
         {
             SendOnly,

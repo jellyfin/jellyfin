@@ -10,7 +10,7 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public sealed class HttpResponseParser : HttpParserBase<HttpResponseMessage>
     {
-        private readonly string[] ContentHeaderNames = new string[]
+        private readonly string[] _contentHeaderNames = new string[]
         {
             "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
         };
@@ -49,7 +49,7 @@ namespace Rssdp.Infrastructure
         /// <returns>A boolean, true if th specified header relates to HTTP content, otherwise false.</returns>
         protected override bool IsContentHeader(string headerName)
         {
-            return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
+            return _contentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -77,8 +77,7 @@ namespace Rssdp.Infrastructure
 
             message.Version = ParseHttpVersion(parts[0].Trim());
 
-            int statusCode = -1;
-            if (!Int32.TryParse(parts[1].Trim(), out statusCode))
+            if (!Int32.TryParse(parts[1].Trim(), out var statusCode))
             {
                 throw new ArgumentException("data status line is invalid. Status code is not a valid integer.", nameof(data));
             }
