@@ -166,3 +166,5 @@ To instruct the server not to host the web content, there is a `nowebclient` con
 switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
+
+**NOTE:** The setup wizard can not be run if the web client is hosted separately.
