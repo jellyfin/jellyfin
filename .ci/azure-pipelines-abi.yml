@@ -62,7 +62,6 @@ jobs:
 
       - task: DownloadPipelineArtifact@2
         displayName: 'Download Reference Assembly Build Artifact'
-        enabled: false
         inputs:
           source: "specific"
           artifact: "$(NugetPackageName)"
@@ -74,7 +73,6 @@ jobs:
 
       - task: CopyFiles@2
         displayName: 'Copy Reference Assembly Build Artifact'
-        enabled: false
         inputs:
           sourceFolder: $(System.ArtifactsDirectory)/current-artifacts
           contents: '**/*.dll'
@@ -85,7 +83,6 @@ jobs:
 
       - task: DotNetCoreCLI@2
         displayName: 'Execute ABI Compatibility Check Tool'
-        enabled: false
         inputs:
           command: custom
           custom: compat
