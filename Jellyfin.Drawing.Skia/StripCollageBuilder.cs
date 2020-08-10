@@ -115,15 +115,13 @@ namespace Jellyfin.Drawing.Skia
 
                 // resize to the same aspect as the original
                 int iWidth = Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
-                using var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType);
-                currentBitmap.ScalePixels(resizeBitmap, SKFilterQuality.High);
+                using var resizedImage = SkiaEncoder.ResizeImage(currentBitmap, new SKImageInfo(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace));
 
                 // crop image
                 int ix = Math.Abs((iWidth - iSlice) / 2);
-                using var image = SKImage.FromBitmap(resizeBitmap);
-                using var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight));
+                using var subset = resizedImage.Subset(SKRectI.Create(ix, 0, iSlice, iHeight));
                 // draw image onto canvas
-                canvas.DrawImage(subset ?? image, iSlice * i, 0);
+                canvas.DrawImage(subset ?? resizedImage, iSlice * i, 0);
             }
 
             return bitmap;
@@ -177,9 +175,9 @@ namespace Jellyfin.Drawing.Skia
                         continue;
                     }
 
-                    using var resizedBitmap = new SKBitmap(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType);
-                    // scale image
-                    currentBitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
+                    // Scale image. The FromBitmap creates a copy
+                    var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
+                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(currentBitmap, imageInfo));
 
                     // draw this image into the strip at the next position
                     var xPos = x * cellWidth;

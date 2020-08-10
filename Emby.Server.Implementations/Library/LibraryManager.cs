@@ -50,7 +50,6 @@ using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
-using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
 
 namespace Emby.Server.Implementations.Library
@@ -300,7 +299,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _memoryCache.CreateEntry(item.Id).SetValue(item);
+            _memoryCache.Set(item.Id, item);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -1592,7 +1591,6 @@ namespace Emby.Server.Implementations.Library
         public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
             var tasks = IntroProviders
-                .OrderBy(i => i.GetType().Name.Contains("Default", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                 .Take(1)
                 .Select(i => GetIntros(i, item, user));
 

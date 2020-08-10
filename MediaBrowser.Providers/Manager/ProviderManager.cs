@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -22,6 +24,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
@@ -167,6 +170,15 @@ namespace MediaBrowser.Providers.Manager
                 {
                     response.ContentType = "image/png";
                 }
+            }
+
+            // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
+            if (response.ContentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new HttpException("Invalid image received.")
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                };
             }
 
             await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken).ConfigureAwait(false);
@@ -966,7 +978,7 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshStart(BaseItem item)
         {
-            _logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
             _activeRefreshes[item.Id] = 0;
             RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
@@ -974,7 +986,7 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshComplete(BaseItem item)
         {
-            _logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
 
             _activeRefreshes.Remove(item.Id, out _);
 
