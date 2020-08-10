@@ -440,7 +440,8 @@ namespace Rssdp.Infrastructure
                     {
                         // An interface with a negative tag has a gateway address and so will be listened to by Mono.NAT, if port forwarding is enabled.
                         // In this instance, Mono.NAT will send us this traffic, so we don't need to listen to these sockets.
-                        CreateUniqueSocket(!(_externalPortForwardEnabled && ip.Tag < 0), ip.Address);
+                        // Mono isn't IPv6 compliant yet, so we will listen on IPv6 interfaces
+                        CreateUniqueSocket(!(_externalPortForwardEnabled && ip.Tag < 0 && ip.Address.AddressFamily == AddressFamily.InterNetwork), ip.Address);
                     }
                 }
             }
