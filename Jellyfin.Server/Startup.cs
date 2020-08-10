@@ -2,8 +2,10 @@ using System.Net.Http;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
+using MediaBrowser.Common;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,14 +20,17 @@ namespace Jellyfin.Server
     public class Startup
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IApplicationHost _applicationHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        public Startup(IServerConfigurationManager serverConfigurationManager)
+        /// <param name="applicationHost">The application host.</param>
+        public Startup(IServerConfigurationManager serverConfigurationManager, IApplicationHost applicationHost)
         {
             _serverConfigurationManager = serverConfigurationManager;
+            _applicationHost = applicationHost;
         }
 
         /// <summary>
@@ -36,7 +41,7 @@ namespace Jellyfin.Server
         {
             services.AddResponseCompression();
             services.AddHttpContextAccessor();
-            services.AddJellyfinApi(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'));
+            services.AddJellyfinApi(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'), _applicationHost);
 
             services.AddJellyfinApiSwagger();
 

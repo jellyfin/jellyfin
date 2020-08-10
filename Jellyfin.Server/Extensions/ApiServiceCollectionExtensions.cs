@@ -18,7 +18,10 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
 using Jellyfin.Server.Models;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -135,10 +138,11 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="baseUrl">The base url for the API.</param>
+        /// <param name="applicationHost">The application host.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl, IApplicationHost applicationHost)
         {
-            return serviceCollection
+            IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors(options =>
                 {
                     options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
@@ -177,6 +181,16 @@ namespace Jellyfin.Server.Extensions
                     options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
                 })
                 .AddControllersAsServices();
+
+            if (applicationHost.Plugins != null)
+            {
+                foreach (IPlugin plugin in applicationHost.Plugins)
+                {
+                    mvcBuilder.AddApplicationPart(plugin.GetType().Assembly);
+                }
+            }
+
+            return mvcBuilder;
         }
 
         /// <summary>
