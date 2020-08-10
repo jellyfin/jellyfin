@@ -2125,30 +2125,27 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Add software deinterlace filter before scaling filter
-            if (state.DeInterlace("h264", true)
+            if ((state.DeInterlace("h264", true)
                 || state.DeInterlace("avc", true)
                 || state.DeInterlace("h265", true)
                 || state.DeInterlace("hevc", true))
+                && (!isVaapiH264Encoder && !isQsvH264Encoder && !isNvdecH264Decoder))
             {
-                string deintParam;
-                var inputFramerate = videoStream?.RealFrameRate;
-
-                // If it is already 60fps then it will create an output framerate that is much too high for roku and others to handle
-                if (string.Equals(options.DeinterlaceMethod, "yadif_bob", StringComparison.OrdinalIgnoreCase) && (inputFramerate ?? 60) <= 30)
+                if (string.Equals(options.DeinterlaceMethod, "bwdif", StringComparison.OrdinalIgnoreCase))
                 {
-                    deintParam = "yadif=1:-1:0";
+                    filters.Add(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "bwdif={0}:-1:0",
+                            doubleRateDeinterlace ? "1" : "0"));
                 }
                 else
                 {
-                    deintParam = "yadif=0:-1:0";
-                }
-
-                if (!string.IsNullOrEmpty(deintParam))
-                {
-                    if (!isVaapiH264Encoder && !isQsvH264Encoder && !isNvdecH264Decoder)
-                    {
-                        filters.Add(deintParam);
-                    }
+                    filters.Add(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "yadif={0}:-1:0",
+                            doubleRateDeinterlace ? "1" : "0"));
                 }
             }
 
