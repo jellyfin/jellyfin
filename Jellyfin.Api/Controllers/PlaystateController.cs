@@ -1,6 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
@@ -74,21 +74,15 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<UserItemDataDto> MarkPlayedItem(
             [FromRoute] Guid userId,
             [FromRoute] Guid itemId,
-            [FromQuery] string? datePlayed)
+            [FromQuery] DateTime? datePlayed)
         {
-            DateTime? parsedDatePlayed = null;
-            if (!string.IsNullOrEmpty(datePlayed))
-            {
-                parsedDatePlayed = DateTime.ParseExact(datePlayed, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-            }
-
             var user = _userManager.GetUserById(userId);
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
-            var dto = UpdatePlayedStatus(user, itemId, true, parsedDatePlayed);
+            var dto = UpdatePlayedStatus(user, itemId, true, datePlayed);
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
                 var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-                UpdatePlayedStatus(additionalUser, itemId, true, parsedDatePlayed);
+                UpdatePlayedStatus(additionalUser, itemId, true, datePlayed);
             }
 
             return dto;
