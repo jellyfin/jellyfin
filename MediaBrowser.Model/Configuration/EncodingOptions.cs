@@ -35,6 +35,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string EncoderPreset { get; set; }
 
+        public bool DeinterlaceDoubleRate { get; set; }
+
         public string DeinterlaceMethod { get; set; }
 
         public bool EnableDecodingColorDepth10Hevc { get; set; }
@@ -57,6 +59,7 @@ namespace MediaBrowser.Model.Configuration
             VaapiDevice = "/dev/dri/renderD128";
             H264Crf = 23;
             H265Crf = 28;
+            DeinterlaceDoubleRate = false;
             DeinterlaceMethod = "yadif";
             EnableDecodingColorDepth10Hevc = true;
             EnableDecodingColorDepth10Vp9 = true;

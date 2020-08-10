@@ -2071,6 +2071,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
+            // If double rate deinterlacing is enabled and the input framerate is 30fps or below, otherwise the output framerate will be too high for many devices
+            var doubleRateDeinterlace = (options.DeinterlaceDoubleRate && (videoStream?.RealFrameRate ?? 60) <= 30);
+
             // When the input may or may not be hardware VAAPI decodable
             if (isVaapiH264Encoder)
             {
