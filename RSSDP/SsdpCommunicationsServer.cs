@@ -70,7 +70,11 @@ namespace Rssdp.Infrastructure
             IServerConfigurationManager configurationManager,
             ILogger logger)
         {
+            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            _socketSynchroniser = new object();
+            _sockets = new Dictionary<Socket, SocketState>();
             _requestParser = new HttpRequestParser();
             _responseParser = new HttpResponseParser();
 
@@ -78,13 +82,8 @@ namespace Rssdp.Infrastructure
 
             _externalPortForwardEnabled = _configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess;
 
-            _socketSynchroniser = new object();
-            _sockets = new Dictionary<Socket, SocketState>();
-
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             CreateSockets();
-
-            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
+            
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
             _networkManager.NetworkChanged += NetworkChanged;
         }
