@@ -50,16 +50,13 @@ namespace Emby.Server.Implementations.SocketSharp
             get
             {
                 string forwardedProto = GetHeader(CustomHeaderNames.XForwardedProto);
-
-                if (string.IsNullOrEmpty(forwardedProto))
-                {
-                    return Request.GetDisplayUrl().TrimEnd('/');
-                }
-                else
+                if (!string.IsNullOrEmpty(forwardedProto))
                 {
                     Request.Scheme = forwardedProto;
-                    return Request.GetDisplayUrl().TrimEnd('/');
                 }
+
+                return Request.GetDisplayUrl().TrimEnd('/');
+
             }
         }
 
