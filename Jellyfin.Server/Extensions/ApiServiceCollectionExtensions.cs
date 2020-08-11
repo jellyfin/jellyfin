@@ -20,8 +20,6 @@ using Jellyfin.Server.Formatters;
 using Jellyfin.Server.Models;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
-using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -179,18 +177,14 @@ namespace Jellyfin.Server.Extensions
 
                     // From JsonDefaults.PascalCase
                     options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
-                })
-                .AddControllersAsServices();
+                });
 
-            if (applicationHost.Plugins != null)
+            foreach (Assembly pluginAssembly in applicationHost.GetApiPluginAssemblies())
             {
-                foreach (IPlugin plugin in applicationHost.Plugins)
-                {
-                    mvcBuilder.AddApplicationPart(plugin.GetType().Assembly);
-                }
+                mvcBuilder.AddApplicationPart(pluginAssembly);
             }
 
-            return mvcBuilder;
+            return mvcBuilder.AddControllersAsServices();
         }
 
         /// <summary>

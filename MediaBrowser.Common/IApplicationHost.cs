@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +76,12 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <value>The plugins.</value>
         IReadOnlyList<IPlugin> Plugins { get; }
+
+        /// <summary>
+        /// Gets all plugin assemblies which implement a custom rest api.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{Assembly}"/> containing the plugin assemblies.</returns>
+        IEnumerable<Assembly> GetApiPluginAssemblies();
 
         /// <summary>
         /// Notifies the pending restart.

@@ -53,7 +53,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
@@ -98,6 +97,7 @@ using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
@@ -1383,6 +1383,29 @@ namespace Emby.Server.Implementations
             var list = _plugins.ToList();
             list.Remove(plugin);
             _plugins = list.ToArray();
+        }
+
+        public IEnumerable<Assembly> GetApiPluginAssemblies()
+        {
+            var assemblies = new List<Assembly>();
+            try
+            {
+                var types = _allConcreteTypes
+                    .Where(i => typeof(ControllerBase).IsAssignableFrom(i))
+                    // .Select(i => ActivatorUtilities.CreateInstance(ServiceProvider, i))
+                    .ToArray();
+
+                foreach (var variable in types)
+                {
+                    assemblies.Add(variable.Assembly);
+                }
+            }
+            catch (Exception ex)
+            {
+                // ignore
+            }
+
+            return assemblies;
         }
 
         public virtual void LaunchUrl(string url)
