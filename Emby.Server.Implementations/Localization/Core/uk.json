@@ -32,5 +32,13 @@
     "Artists": "Виконавці",
     "Application": "Додаток",
     "AppDeviceValues": "Додаток: {0}, Пристрій: {1}",
-    "Albums": "Альбоми"
+    "Albums": "Альбоми",
+    "NotificationOptionServerRestartRequired": "Потрібен перезапуск сервера",
+    "NotificationOptionPluginUpdateInstalled": "Обновлення плагіну встановлено",
+    "NotificationOptionPluginUninstalled": "Плагін видалено",
+    "NotificationOptionPluginInstalled": "Плагін встановлено",
+    "NotificationOptionPluginError": "Помилка плагіну",
+    "NotificationOptionNewLibraryContent": "Новий контент додано",
+    "HomeVideos": "Домашне відео",
+    "FailedLoginAttemptWithUserName": "Невдала спроба входу з {0}"
 }
