@@ -45,7 +45,23 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string RawUrl => Request.GetEncodedPathAndQuery();
 
-        public string AbsoluteUri => Request.GetDisplayUrl().TrimEnd('/');
+        public string AbsoluteUri
+        {
+            get
+            {
+                string forwardedProto = GetHeader(CustomHeaderNames.XForwardedProto);
+
+                if (string.IsNullOrEmpty(forwardedProto))
+                {
+                    return Request.GetDisplayUrl().TrimEnd('/');
+                }
+                else
+                {
+                    Request.Scheme = forwardedProto;
+                    return Request.GetDisplayUrl().TrimEnd('/');
+                }
+            }
+        }
 
         public string RemoteIp
         {
