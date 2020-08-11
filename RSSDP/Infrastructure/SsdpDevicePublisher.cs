@@ -7,78 +7,64 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.System;
 using Microsoft.Extensions.Logging;
+using Rssdp.Devices;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using Rssdp.Extensions;
+using Rssdp.Events;
 
 namespace Rssdp.Infrastructure
 {
     /// <summary>
     /// Provides the platform independent logic for publishing SSDP devices (notifications and search responses).
     /// </summary>
-    public class SsdpDevicePublisher : DisposableManagedObjectBase, ISsdpDevicePublisher
+    public class SsdpDevicePublisher : ISsdpInfrastructure, ISsdpDevicePublisher
     {
+        private const string SsdpUserAgent = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
+        public const string PnpRootDevice = "pnp:rootdevice";
+        public const string UpnpRootDevice = "upnp:rootdevice";
+
         private readonly ILogger _logger;
         private readonly string _server;
         private readonly string _systemId;
-        // private readonly bool _sendOnlyMatchedHost;
         private readonly IList<SsdpRootDevice> _devices;
         private readonly IReadOnlyList<SsdpRootDevice> _readOnlyDevices;
         private readonly INetworkManager _networkManager;
         private readonly Random _random;
-        private ISsdpCommunicationsServer _commsServer;
-        private Timer _rebroadcastAliveNotificationsTimer;
-        private IDictionary<string, SearchRequest> _recentSearchRequests;
-        
+        private readonly SocketServer _socketServer;
+        private readonly IDictionary<string, SearchRequest> _recentSearchRequests;
+        private Timer? _rebroadcastAliveNotificationsTimer;
+
         public SsdpDevicePublisher(
-            ISsdpCommunicationsServer communicationsServer,
-            string osName,
-            string osVersion,
-            string systemId,
-            ILogger logger,
-            INetworkManager networkManager)
-            // bool sendOnlyMatchedHost)
+            SocketServer socketServer,
+            IServerApplicationHost applicationHost,
+            ILoggerFactory loggerFactory,
+            INetworkManager networkManager,
+            int aliveMessageInterval)
         {
-            if (communicationsServer == null)
-            {
-                throw new ArgumentNullException(nameof(communicationsServer));
-            }
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
+            _logger = loggerFactory.CreateLogger<SsdpDevicePublisher>();
+            _systemId = applicationHost?.SystemId ?? throw new ArgumentNullException(nameof(applicationHost));
 
-            if (osName == null)
-            {
-                throw new ArgumentNullException(nameof(osName));
-            }
+            _server = MediaBrowser.Common.System.OperatingSystem.Name +"/" +
+                Environment.OSVersion.VersionString +" UPnP/1.0 RSSDP/1.0";
 
-            if (osName.Length == 0)
-            {
-                throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
-            }
-
-            if (osVersion == null)
-            {
-                throw new ArgumentNullException(nameof(osVersion));
-            }
-
-            if (osVersion.Length == 0)
-            {
-                throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
-            }
-            
-            SupportPnpRootDevice = true;
             _devices = new List<SsdpRootDevice>();
             _readOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_devices);
             _recentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _random = new Random();
-            _logger = logger;
-            // _sendOnlyMatchedHost = sendOnlyMatchedHost;
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
 
-            _commsServer = communicationsServer ?? throw new ArgumentNullException(nameof(communicationsServer));
-            _commsServer.RequestReceived += CommsServer_RequestReceived;
-            _commsServer.IsShared++;
+            SupportPnpRootDevice = true;
 
-            _server = $"{osName}/{osVersion} UPnP/1.0 RSSDP/1.0";
-            _systemId = systemId;
+            _socketServer.RequestReceived += RequestReceived;
+            _socketServer.UsageCount++;
+            AliveMessageInterval = aliveMessageInterval;
         }
 
+        public int AliveMessageInterval { get; set; }
         public void StartBroadcastingAliveMessages(TimeSpan interval)
         {
             if (_rebroadcastAliveNotificationsTimer != null)
@@ -98,10 +84,10 @@ namespace Rssdp.Infrastructure
         }
 
         /// <summary>
-        /// Adds a device (and it's children) to the list of devices being published by this server, making them discoverable to SSDP clients.
+        /// Adds a device (and it's children) to the list of devices being published by this server,
+        /// making them discoverable to SSDP clients.
         /// </summary>
         /// <param name="device">The <see cref="SsdpDevice"/> instance to add.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capture task to local variable supresses compiler warning, but task is not really needed.")]
         public async Task AddDevice(SsdpRootDevice device)
         {
             if (device == null)
@@ -126,6 +112,8 @@ namespace Rssdp.Infrastructure
                 _logger.LogInformation("Device Added {0}", Expand(device));
 
                 await SendAliveNotifications(device, true).ConfigureAwait(false);
+
+                StartBroadcastingAliveMessages(TimeSpan.FromSeconds(AliveMessageInterval));
             }
         }
 
@@ -185,33 +173,14 @@ namespace Rssdp.Infrastructure
             {
                 DisposeRebroadcastTimer();
 
-                var commsServer = _commsServer;
-                if (commsServer != null)
-                {
-                    commsServer.RequestReceived -= this.CommsServer_RequestReceived;
-                }
+                _socketServer.RequestReceived -= RequestReceived;
 
                 var tasks = Devices.ToList().Select(RemoveDevice).ToArray();
                 Task.WaitAll(tasks);
-
-                _commsServer = null;
-                if (commsServer != null)
-                {
-                    if (commsServer.IsShared-- <= 0)
-                    {
-                        commsServer.Dispose();
-                    }
-                }
-
-                _recentSearchRequests = null;
             }
         }
 
-        private async Task ProcessSearchRequest(
-            string mx,
-            string searchTarget,
-            IPEndPoint remoteEndPoint,
-            IPAddress receivedOnlocalIpAddress)
+        private async Task ProcessSearchRequest(string mx, string searchTarget, IPEndPoint remoteEndPoint, IPAddress localIpAddress)
         {
             if (String.IsNullOrEmpty(searchTarget))
             {
@@ -230,13 +199,10 @@ namespace Rssdp.Infrastructure
             // Wait on random interval up to MX, as per SSDP spec.
             // Also, as per UPnP 1.1/SSDP spec ignore missing/bank MX header. If over 120, assume random value between 0 and 120.
             // Using 16 as minimum as that's often the minimum system clock frequency anyway.
-            if (String.IsNullOrEmpty(mx))
+            if (string.IsNullOrEmpty(mx))
             {
                 // Windows Explorer is poorly behaved and doesn't supply an MX header value.
-                // if (this.SupportPnpRootDevice)
                 mx = "1";
-                // else
-                // return;
             }
 
             if (!Int32.TryParse(mx, out int maxWaitInterval) || maxWaitInterval <= 0)
@@ -253,24 +219,21 @@ namespace Rssdp.Infrastructure
 
             _ = Task.Delay(_random.Next(16, (maxWaitInterval * 1000)));
 
-            await ProcessSearchRequestAsync(searchTarget, remoteEndPoint, receivedOnlocalIpAddress).ConfigureAwait(false);
+            await ProcessSearchRequestAsync(searchTarget, remoteEndPoint, localIpAddress).ConfigureAwait(false);
         }
 
-        private async Task ProcessSearchRequestAsync(
-            string searchTarget,
-            IPEndPoint remoteEndPoint,
-            IPAddress receivedOnlocalIpAddress)
+        private async Task ProcessSearchRequestAsync(string searchTarget, IPEndPoint remoteEndPoint,IPAddress localIpAddress)
         {
             // Copying devices to local array here to avoid threading issues/enumerator exceptions.
-            IEnumerable<SsdpDevice> devices = null;
+            IEnumerable<SsdpDevice>? devices = null;
             lock (_devices)
             {
-                if (string.Equals(SsdpConstants.SsdpDiscoverAllSTHeader, searchTarget, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals("ssdp:all", searchTarget, StringComparison.OrdinalIgnoreCase))
                 {
                     devices = GetAllDevicesAsFlatEnumerable().ToArray();
                 }
-                else if (string.Equals(SsdpConstants.UpnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) ||
-                    (this.SupportPnpRootDevice && string.Equals(SsdpConstants.PnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase)))
+                else if (string.Equals(UpnpRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) ||
+                    (this.SupportPnpRootDevice && string.Equals(PnpRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase)))
                 {
                     devices = _devices.ToArray();
                 }
@@ -295,15 +258,14 @@ namespace Rssdp.Infrastructure
                 foreach (var device in deviceList)
                 {
                     var rt = device.ToRootDevice();
-                    
-                    // Response only two machines in the same subnet, or the are private address in the local machine.
-                    // (eg when something else is running on this machine with 127.0.0.1 and interface address).
+
+                    // Response is sent only when the device in the same subnet, or the are private address on the local device.
                     if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address) ||
                         _networkManager.OnSameMachine(rt.Address, remoteEndPoint.Address)
                         // || !_sendOnlyMatchedHost
                         )
                     {
-                        await SendDeviceSearchResponsesAsync(device, remoteEndPoint, receivedOnlocalIpAddress).ConfigureAwait(false);
+                        await SendDeviceSearchResponsesAsync(device, remoteEndPoint, localIpAddress).ConfigureAwait(false);
                     }
                 }
             }
@@ -318,34 +280,20 @@ namespace Rssdp.Infrastructure
             return _devices.Union(_devices.SelectManyRecursive<SsdpDevice>((d) => d.Devices));
         }
 
-        private async Task SendDeviceSearchResponsesAsync(
-            SsdpDevice device,
-            IPEndPoint endPoint,
-            IPAddress localIP)
+        private async Task SendDeviceSearchResponsesAsync(SsdpDevice device, IPEndPoint endPoint, IPAddress localIP)
         {
             bool isRootDevice = (device as SsdpRootDevice) != null;
             if (isRootDevice)
             {
-                await SendSearchResponseAsync(
-                    SsdpConstants.UpnpDeviceTypeRootDevice,
-                    device,
-                    GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice),
-                    endPoint,
-                    localIP).ConfigureAwait(false);
+                await SendSearchResponseAsync(UpnpRootDevice, device, GetUsn(device.Udn, UpnpRootDevice), endPoint, localIP).ConfigureAwait(false);
 
                 if (this.SupportPnpRootDevice)
                 {
-                    await SendSearchResponseAsync(
-                        SsdpConstants.PnpDeviceTypeRootDevice,
-                        device,
-                        GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice),
-                        endPoint,
-                        localIP).ConfigureAwait(false); ;
+                    await SendSearchResponseAsync(PnpRootDevice, device, GetUsn(device.Udn, PnpRootDevice), endPoint, localIP).ConfigureAwait(false); ;
                 }
             }
 
             await SendSearchResponseAsync(device.Udn, device, device.Udn, endPoint, localIP).ConfigureAwait(false);
-
             await SendSearchResponseAsync(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, localIP).ConfigureAwait(false);
         }
 
@@ -371,7 +319,7 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage("HTTP/1.1 200 OK", values);
 
-            await _commsServer.SendMessageAsync(System.Text.Encoding.UTF8.GetBytes(message), endPoint, localIP).ConfigureAwait(false);
+            await _socketServer.SendMessageAsync(System.Text.Encoding.UTF8.GetBytes(message), endPoint, localIP).ConfigureAwait(false);
             _logger.LogInformation("Sent search response to {0} : {1}", endPoint, device);
         }
 
@@ -379,7 +327,7 @@ namespace Rssdp.Infrastructure
         {
             var isDuplicateRequest = false;
 
-            var newRequest = new SearchRequest() { EndPoint = endPoint, SearchTarget = searchTarget, Received = DateTime.UtcNow };
+            var newRequest = new SearchRequest(endPoint, searchTarget, DateTime.UtcNow);
             lock (_recentSearchRequests)
             {
                 if (_recentSearchRequests.ContainsKey(newRequest.Key))
@@ -461,15 +409,15 @@ namespace Rssdp.Infrastructure
         {
             if (isRoot)
             {
-                await SendAliveNotificationAsync(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice)).ConfigureAwait(false);
+                await SendAliveNotification(device, UpnpRootDevice, GetUsn(device.Udn, UpnpRootDevice)).ConfigureAwait(false);
                 if (this.SupportPnpRootDevice)
                 {
-                    await SendAliveNotificationAsync(device, SsdpConstants.PnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice)).ConfigureAwait(false);
+                    await SendAliveNotification(device, PnpRootDevice, GetUsn(device.Udn, PnpRootDevice)).ConfigureAwait(false);
                 }
             }
 
-            await SendAliveNotificationAsync(device, device.Udn, device.Udn).ConfigureAwait(false);
-            await SendAliveNotificationAsync(device, device.FullDeviceType, GetUsn(device.Udn, device.FullDeviceType)).ConfigureAwait(false);
+            await SendAliveNotification(device, device.Udn, device.Udn).ConfigureAwait(false);
+            await SendAliveNotification(device, device.FullDeviceType, GetUsn(device.Udn, device.FullDeviceType)).ConfigureAwait(false);
 
             foreach (var childDevice in device.Devices)
             {
@@ -477,10 +425,11 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private async Task SendAliveNotificationAsync(SsdpDevice device, string notificationType, string uniqueServiceName)
+        private Task SendAliveNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
+            const string Header = "NOTIFY * HTTP / 1.1";
+
             var rootDevice = device.ToRootDevice();
-            
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 // If needed later for non-server devices, these headers will need to be dynamic
@@ -494,11 +443,19 @@ namespace Rssdp.Infrastructure
                 ["USN"] = uniqueServiceName
             };
 
-            var message = BuildMessage("NOTIFY * HTTP / 1.1", values);
+            var message = BuildMessage(Header, values);
 
-            // await _commsServer.SendMulticastMessageAsync(message, _sendOnlyMatchedHost ? rootDevice.Address : null).ConfigureAwait(false);
-            await _commsServer.SendMulticastMessageAsync(message, rootDevice.Address).ConfigureAwait(false);
-            // _logger.LogInformation("Transmitted alive notification : {0} - {1}", device.FriendlyName, device);
+            Task task1 = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
+            Task task2 = Task.CompletedTask;
+
+            if (_networkManager.IsIP6Enabled)
+            {
+                values["HOST"] = "[ff01::2]:1900";
+                message = BuildMessage(Header, values);
+                task2 = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
+            }
+
+            return Task.WhenAll(task1, task2);
         }
 
         private Task SendByeByeNotifications(SsdpDevice device, bool isRoot)
@@ -506,7 +463,7 @@ namespace Rssdp.Infrastructure
             var tasks = new List<Task>();
             if (isRoot)
             {
-                tasks.Add(SendByeByeNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice)));
+                tasks.Add(SendByeByeNotification(device, UpnpRootDevice, GetUsn(device.Udn, UpnpRootDevice)));
                 if (this.SupportPnpRootDevice)
                 {
                     tasks.Add(SendByeByeNotification(device, "pnp:rootdevice", GetUsn(device.Udn, "pnp:rootdevice")));
@@ -530,25 +487,35 @@ namespace Rssdp.Infrastructure
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "byebye", Justification = "Correct value for this type of notification in SSDP.")]
         private Task SendByeByeNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
+            const string Header = "NOTIFY* HTTP/ 1.1";
+
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 // If needed later for non-server devices, these headers will need to be dynamic
-                ["HOST"] = device.ToRootDevice().Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ?
-                    $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}" :
-                    $"{SsdpConstants.MulticastLocalAdminAddressV6}:{SsdpConstants.MulticastPort}",
+                ["HOST"] = "239.255.255.250:1900",
                 ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
                 ["SERVER"] = _server,
-                ["NTS"] = SsdpConstants.SsdpByeByeNotification,
+                ["NTS"] = "ssdp:byebye",
                 ["NT"] = notificationType,
                 ["USN"] = uniqueServiceName
             };
 
-            var message = BuildMessage("NOTIFY * HTTP/1.1", values);
+            var message = BuildMessage(Header, values);
 
             var sendCount = IsDisposed ? 1 : 3;
+            Task task1 = _socketServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
+            Task task2 = Task.CompletedTask;
+
+            if (_networkManager.IsIP6Enabled)
+            {
+                values["HOST"] = "[ff01::2]:1900";
+                message = BuildMessage(Header, values);
+                task2 = _socketServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
+            }
+
             _logger.LogInformation("Sent byebye notification : {0}", device);
-            // return _commsServer.SendMulticastMessageAsync(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null);
-            return _commsServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
+
+            return Task.WhenAll(task1, task2);
         }
 
         private void DisposeRebroadcastTimer()
@@ -561,20 +528,9 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private string GetFirstHeaderValue(System.Net.Http.Headers.HttpRequestHeaders httpRequestHeaders, string headerName)
-        {
-            string retVal = null;
-            if (httpRequestHeaders.TryGetValues(headerName, out IEnumerable<String> values) && values != null)
-            {
-                retVal = values.FirstOrDefault();
-            }
-
-            return retVal;
-        }
-       
         /// <summary>
         /// Expands the device's name.
-        /// </summary>        
+        /// </summary>
         /// <param name="device">The device to expand.</param>
         private string Expand(SsdpDevice device)
         {
@@ -588,31 +544,42 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)
+        private void RequestReceived(object sender, RequestReceivedEventArgs e)
         {
             if (this.IsDisposed)
             {
                 return;
             }
 
-            if (string.Equals(e.Message.Method.Method, SsdpConstants.MSearchMethod, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(e.Message.Method.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
                 // Only process requests that don't originate from ourselves.
 
-                string agent = GetFirstHeaderValue(e.Message.Headers, "USER-AGENT");
-                if (string.Equals(agent, SsdpConstants.SsdpUserAgent + "\\" + _systemId, StringComparison.OrdinalIgnoreCase)
+                string agent = GetFirstHeaderValue("USER-AGENT", e.Message.Headers);
+                if (string.Equals(agent, SsdpUserAgent + "\\" + _systemId, StringComparison.OrdinalIgnoreCase)
                     && _networkManager.IsValidInterfaceAddress(e.LocalIpAddress))
                 {
                     _logger.LogDebug("Ignoring our own broadcast.");
                     return;
                 }
 
-                _ = ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress);
+                _ = ProcessSearchRequest(
+                        GetFirstHeaderValue("MX", e.Message.Headers),
+                        GetFirstHeaderValue("ST", e.Message.Headers),
+                        e.ReceivedFrom,
+                        e.LocalIpAddress);
             }
         }
 
         private class SearchRequest
         {
+            public SearchRequest(EndPoint endPoint, string searchTarget, DateTime received)
+            {
+                EndPoint = endPoint;
+                SearchTarget = searchTarget;
+                Received = received;
+            }
+
             /// <summary>
             /// Gets or sets the EndPoint.
             /// </summary>

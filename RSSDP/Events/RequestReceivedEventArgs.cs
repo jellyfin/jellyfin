@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 
-namespace Rssdp.Infrastructure
+namespace Rssdp.Events
 {
     /// <summary>
     /// Provides arguments for the <see cref="ISsdpCommunicationsServer.RequestReceived"/> event.
@@ -24,7 +24,7 @@ namespace Rssdp.Infrastructure
         /// The <see cref="HttpRequestMessage"/> that was received.
         /// </summary>
         public HttpRequestMessage Message { get; }
-        
+
         /// <summary>
         /// The <see cref="UdpEndPoint"/> the request came from.
         /// </summary>

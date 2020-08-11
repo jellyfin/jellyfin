@@ -1,16 +1,13 @@
 using System;
+using Rssdp.Devices;
 
-namespace Rssdp
+namespace Rssdp.Events
 {
     /// <summary>
     /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceUnavailable"/> event.
     /// </summary>
     public sealed class DeviceUnavailableEventArgs : EventArgs
     {
-        private readonly DiscoveredSsdpDevice _DiscoveredDevice;
-
-        private readonly bool _Expired;
-
         /// <summary>
         /// Full constructor.
         /// </summary>
@@ -19,29 +16,18 @@ namespace Rssdp
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
         public DeviceUnavailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool expired)
         {
-            if (discoveredDevice == null)
-            {
-                throw new ArgumentNullException(nameof(discoveredDevice));
-            }
-
-            _DiscoveredDevice = discoveredDevice;
-            _Expired = expired;
+            DiscoveredDevice = discoveredDevice ?? throw new ArgumentNullException(nameof(discoveredDevice));
+            Expired = expired;
         }
 
         /// <summary>
         /// Returns true if the device is considered unavailable because it's cached information expired before a new alive notification or search result was received. Returns false if the device is unavailable because it sent an explicit notification of it's unavailability.
         /// </summary>
-        public bool Expired
-        {
-            get { return _Expired; }
-        }
+        public bool Expired { get; }
 
         /// <summary>
         /// A reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovery details of the removed device.
         /// </summary>
-        public DiscoveredSsdpDevice DiscoveredDevice
-        {
-            get { return _DiscoveredDevice; }
-        }
+        public DiscoveredSsdpDevice DiscoveredDevice { get; }
     }
 }

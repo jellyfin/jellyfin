@@ -512,6 +512,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(_networkManager);
 
+            serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
+
             serviceCollection.AddSingleton<IIsoManager, IsoManager>();
 
             serviceCollection.AddSingleton<ITaskManager, TaskManager>();
@@ -521,8 +523,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
             serviceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
-
-            serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
 
             serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 

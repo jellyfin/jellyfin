@@ -1,17 +1,20 @@
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Net.Http;
 
-namespace Rssdp.Infrastructure
+namespace Rssdp.Parsers
 {
     /// <summary>
     /// Parses a string into a <see cref="HttpRequestMessage"/> or throws an exception.
     /// </summary>
     public sealed class HttpRequestParser : HttpParserBase<HttpRequestMessage>
     {
-        private readonly string[] ContentHeaderNames = new string[]
+        private static string[] ContentHeaderNames = new string[]
         {
-            "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
+            "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length",
+            "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
         };
 
         /// <summary>

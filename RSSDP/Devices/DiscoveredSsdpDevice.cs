@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http.Headers;
 
-namespace Rssdp
+namespace Rssdp.Devices
 {
     /// <summary>
     /// Represents a discovered device, containing basic information about the device and the location of it's full device description document. Also provides convenience methods for retrieving the device description document.
@@ -10,8 +10,16 @@ namespace Rssdp
     /// <seealso cref="Infrastructure.ISsdpDeviceLocator"/>
     public sealed class DiscoveredSsdpDevice
     {
-        private DateTimeOffset _AsAt;
-
+        public DiscoveredSsdpDevice(DateTimeOffset asAt, TimeSpan cacheLifetime, Uri? descriptionLocation, string notificationType, string usn, HttpHeaders responseHeaders)
+        {
+            AsAt = asAt;
+            CacheLifetime = cacheLifetime;
+            DescriptionLocation = descriptionLocation;
+            NotificationType = notificationType;
+            Usn = usn;
+            ResponseHeaders = responseHeaders;
+        }
+         
         /// <summary>
         /// Sets or returns the type of notification, being either a uuid, device type, service type or upnp:rootdevice.
         /// </summary>
@@ -25,7 +33,7 @@ namespace Rssdp
         /// <summary>
         /// Sets or returns a URL pointing to the device description document for this device.
         /// </summary>
-        public Uri DescriptionLocation { get; set; }
+        public Uri? DescriptionLocation { get; set; }
 
         /// <summary>
         /// Sets or returns the length of time this information is valid for (from the <see cref="AsAt"/> time).
@@ -35,18 +43,7 @@ namespace Rssdp
         /// <summary>
         /// Sets or returns the date and time this information was received.
         /// </summary>
-        public DateTimeOffset AsAt
-        {
-            get { return _AsAt; }
-
-            set
-            {
-                if (_AsAt != value)
-                {
-                    _AsAt = value;
-                }
-            }
-        }
+        public DateTimeOffset AsAt { get; set; }
 
         /// <summary>
         /// Returns the headers from the SSDP device response message.

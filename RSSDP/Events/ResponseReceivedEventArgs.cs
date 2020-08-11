@@ -1,10 +1,8 @@
-#nullable enable
-
 using System;
 using System.Net;
 using System.Net.Http;
 
-namespace Rssdp.Infrastructure
+namespace Rssdp.Events
 {
     /// <summary>
     /// Provides arguments for the <see cref="ISsdpCommunicationsServer.ResponseReceived"/> event.
@@ -27,7 +25,7 @@ namespace Rssdp.Infrastructure
         /// The <see cref="HttpResponseMessage"/> that was received.
         /// </summary>
         public HttpResponseMessage Message { get; }
-            
+
         /// <summary>
         /// The <see cref="UdpEndPoint"/> the response came from.
         /// </summary>

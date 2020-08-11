@@ -20,13 +20,9 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using Rssdp;
+using Rssdp.Devices;
 using Rssdp.Infrastructure;
-
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
@@ -55,7 +51,7 @@ namespace Emby.Dlna.Main
 
         private PlayToManager _manager;
         private SsdpDevicePublisher _publisher;
-        private ISsdpCommunicationsServer _communicationsServer;
+        private SocketServer _socketServer;
         private bool _isDisposed;
 
         public DlnaEntryPoint(
@@ -103,7 +99,7 @@ namespace Emby.Dlna.Main
 
         public bool DLNAEnabled => _config.GetDlnaConfiguration().EnableServer;
 
-        public ISsdpCommunicationsServer CommunicationsServer => _communicationsServer;
+        public SocketServer SocketServer => _socketServer;
 
         internal IContentDirectory ContentDirectory { get; private set; }
 
@@ -127,6 +123,7 @@ namespace Emby.Dlna.Main
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
                 ReloadComponents();
+                _publisher.AliveMessageInterval = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
             }
         }
 
@@ -176,12 +173,62 @@ namespace Emby.Dlna.Main
                         _config);
                 }
 
-                StartSsdpHandler();
-                StartDevicePublisher(options);
+                // Start device SSDP
+                try
+                {
+                    if (_socketServer == null)
+                    {
+                        _socketServer = new SocketServer(_networkManager, _config, _loggerFactory);
+                        try
+                        {
+                            ((DeviceDiscovery)_deviceDiscovery).Start(_socketServer);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error starting device discovery");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error starting ssdp handlers");
+                }
+
+                // This is true on startup and at network change.
+                if (_publisher == null)
+                {
+                    _publisher = new SsdpDevicePublisher(_socketServer, _appHost, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds)
+                    {
+                        SupportPnpRootDevice = false
+                    };
+                }
+
+                RegisterServerEndpoints();
             }
-            else
+            else // Disable the server
             {
-                StopSsdpHandler();
+                try
+                {
+                    try
+                    {
+                        ((DeviceDiscovery)_deviceDiscovery).Stop();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error starting device discovery");
+                    }
+
+                    if (_socketServer != null)
+                    {
+                        _socketServer.Dispose();
+                        _socketServer = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error stopping ssdp handlers");
+                }
+
                 DisposeDevicePublisher();
                 MediaReceiverRegistrar = null;
                 ContentDirectory = null;
@@ -198,55 +245,6 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private void StartSsdpHandler()
-        {
-            try
-            {
-                if (_communicationsServer == null)
-                {
-                    _communicationsServer = new SsdpCommunicationsServer(_networkManager, _config, _loggerFactory.CreateLogger<SsdpCommunicationsServer>());
-
-                    try
-                    {
-                        ((DeviceDiscovery)_deviceDiscovery).Start(_communicationsServer);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error starting device discovery");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting ssdp handlers");
-            }
-        }
-
-        private void StopSsdpHandler()
-        {
-            try
-            {
-                try
-                {
-                    ((DeviceDiscovery)_deviceDiscovery).Stop();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error starting device discovery");
-                }
-
-                if (_communicationsServer != null)
-                {
-                    _communicationsServer.Dispose();
-                    _communicationsServer = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error stopping ssdp handlers");
-            }
-        }
-
         private void DisposeDeviceDiscovery()
         {
             try
@@ -257,60 +255,6 @@ namespace Emby.Dlna.Main
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error stopping device discovery");
-            }
-        }
-
-        public void StartDevicePublisher(Configuration.DlnaOptions options)
-        {
-            if (options == null)
-            {
-                throw new NullReferenceException(nameof(options));
-            }
-
-            // See comment at https://github.com/jellyfin/jellyfin/pull/3257 - this stops jellyfin from being a DNLA compliant server.
-            // if (!options.BlastAliveMessages)
-            // {
-            //    return;
-            // }
-
-            // This is true on startup and at network change.
-            if (_publisher != null)
-            {
-                // See if there are any more endpoints we need to add due to network change event.
-                try
-                {
-                    RegisterServerEndpoints();
-                    // Restart the timer.
-                    _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error registering endpoint");
-                }
-
-                return;
-            }
-
-            try
-            {
-                _publisher = new SsdpDevicePublisher(
-                    _communicationsServer,
-                    OperatingSystem.Name,
-                    Environment.OSVersion.VersionString,
-                    _appHost.SystemId,
-                    _loggerFactory.CreateLogger<SsdpDevicePublisher>(),
-                    _networkManager)
-                    // _config.GetDlnaConfiguration().SendOnlyMatchedHost)
-                {
-                    SupportPnpRootDevice = false
-                };
-
-                RegisterServerEndpoints();
-                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error registering endpoint");
             }
         }
 
@@ -475,13 +419,8 @@ namespace Emby.Dlna.Main
                 DisposeDevicePublisher();
                 DisposePlayToManager();
                 DisposeDeviceDiscovery();
-                if (_communicationsServer != null && _communicationsServer.IsShared-- <= 0)
-                {
-                    _logger.LogInformation("Disposing SsdpCommunicationsServer");
-                    _communicationsServer.Dispose();
-                    _communicationsServer = null;
-                }
-
+                _socketServer?.Dispose();
+                _socketServer = null;
                 ContentDirectory = null;
                 ConnectionManager = null;
                 MediaReceiverRegistrar = null;

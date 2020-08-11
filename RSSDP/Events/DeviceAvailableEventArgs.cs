@@ -1,7 +1,8 @@
 using System;
 using System.Net;
+using Rssdp.Devices;
 
-namespace Rssdp
+namespace Rssdp.Events
 {
     /// <summary>
     /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
@@ -13,11 +14,13 @@ namespace Rssdp
         /// </summary>
         /// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
         /// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
+        /// <param name="ipAddress">Local IP Address.</param>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
-        public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
+        public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered, IPAddress ipAddress)
         {
             DiscoveredDevice = discoveredDevice ?? throw new ArgumentNullException(nameof(discoveredDevice));
             IsNewlyDiscovered = isNewlyDiscovered;
+            LocalIpAddress = ipAddress;
         }
 
         public IPAddress LocalIpAddress { get; set; }

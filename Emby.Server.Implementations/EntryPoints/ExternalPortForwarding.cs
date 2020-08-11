@@ -248,10 +248,10 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
 
-            var cm = DlnaEntryPoint.Current?.CommunicationsServer;
-            if (cm != null)
+            var ss = DlnaEntryPoint.Current?.SocketServer;
+            if (ss != null)
             {
-                await cm.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
+                await ss.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
             }
         }
 

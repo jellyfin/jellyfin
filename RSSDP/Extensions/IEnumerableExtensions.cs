@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Rssdp.Infrastructure
+namespace Rssdp.Extensions
 {
     internal static class IEnumerableExtensions
     {

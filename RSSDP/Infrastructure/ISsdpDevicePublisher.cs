@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Rssdp.Devices;
 
 namespace Rssdp.Infrastructure
 {

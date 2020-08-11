@@ -1,14 +1,13 @@
 using System;
+using Rssdp.Devices;
 
-namespace Rssdp
+namespace Rssdp.Events
 {
     /// <summary>
     /// Event arguments for the <see cref="SsdpDevice.DeviceAdded"/> and <see cref="SsdpDevice.DeviceRemoved"/> events.
     /// </summary>
     public sealed class DeviceEventArgs : EventArgs
     {
-        private readonly SsdpDevice _device;
-
         /// <summary>
         /// Constructs a new instance for the specified <see cref="SsdpDevice"/>.
         /// </summary>
@@ -16,15 +15,12 @@ namespace Rssdp
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
         public DeviceEventArgs(SsdpDevice device)
         {
-            _device = device ?? throw new ArgumentNullException(nameof(device));
+            Device = device ?? throw new ArgumentNullException(nameof(device));
         }
 
         /// <summary>
         /// Returns the <see cref="SsdpDevice"/> instance the event being raised for.
         /// </summary>
-        public SsdpDevice Device
-        {
-            get { return _device; }
-        }
+        public SsdpDevice Device { get; }
     }
 }

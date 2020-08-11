@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 
-namespace Rssdp.Infrastructure
+namespace Rssdp.Parsers
 {
     /// <summary>
     /// Parses a string into a <see cref="HttpResponseMessage"/> or throws an exception.

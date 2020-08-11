@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Rssdp.Events;
 using Rssdp.Infrastructure;
 
-namespace Rssdp
+namespace Rssdp.Devices
 {
     /// <summary>
     /// Base class representing the common details of a (root or embedded) device, either to be published or that has been located.
@@ -16,11 +17,21 @@ namespace Rssdp
     public abstract class SsdpDevice
     {
         private string _Udn;
-        private string _DeviceType;
-        private string _DeviceTypeNamespace;
-        private int _DeviceVersion;
 
         private IList<SsdpDevice> _Devices;
+
+        /// <summary>
+        /// Derived type constructor, allows constructing a device with no parent. Should only be used from derived types that are or inherit from <see cref="SsdpRootDevice"/>.
+        /// </summary>
+        protected SsdpDevice()
+        {
+            DeviceTypeNamespace = "schemas-upnp-org";
+            DeviceType = "Basic";
+            DeviceVersion = 1;
+
+            _Devices = new List<SsdpDevice>();
+            this.Devices = new ReadOnlyCollection<SsdpDevice>(_Devices);
+        }
 
         /// <summary>
         /// Raised when a new child device is added.
@@ -36,18 +47,6 @@ namespace Rssdp
         /// <seealso cref="DeviceRemoved"/>
         public event EventHandler<DeviceEventArgs> DeviceRemoved;
 
-        /// <summary>
-        /// Derived type constructor, allows constructing a device with no parent. Should only be used from derived types that are or inherit from <see cref="SsdpRootDevice"/>.
-        /// </summary>
-        protected SsdpDevice()
-        {
-            _DeviceTypeNamespace = SsdpConstants.UpnpDeviceTypeNamespace;
-            _DeviceType = SsdpConstants.UpnpDeviceTypeBasicDevice;
-            _DeviceVersion = 1;
-
-            _Devices = new List<SsdpDevice>();
-            this.Devices = new ReadOnlyCollection<SsdpDevice>(_Devices);
-        }
 
         public SsdpRootDevice ToRootDevice()
         {
@@ -69,18 +68,7 @@ namespace Rssdp
         /// <seealso cref="DeviceTypeNamespace"/>
         /// <seealso cref="DeviceVersion"/>
         /// <seealso cref="FullDeviceType"/>
-        public string DeviceType
-        {
-            get
-            {
-                return _DeviceType;
-            }
-
-            set
-            {
-                _DeviceType = value;
-            }
-        }
+        public string DeviceType { get; set; }
 
         public string DeviceClass { get; set; }
 
@@ -91,18 +79,7 @@ namespace Rssdp
         /// <seealso cref="DeviceType"/>
         /// <seealso cref="DeviceVersion"/>
         /// <seealso cref="FullDeviceType"/>
-        public string DeviceTypeNamespace
-        {
-            get
-            {
-                return _DeviceTypeNamespace;
-            }
-
-            set
-            {
-                _DeviceTypeNamespace = value;
-            }
-        }
+        public string DeviceTypeNamespace { get; set; }
 
         /// <summary>
         /// Sets or returns the version of the device type. Optional, defaults to 1.
@@ -111,18 +88,7 @@ namespace Rssdp
         /// <seealso cref="DeviceType"/>
         /// <seealso cref="DeviceTypeNamespace"/>
         /// <seealso cref="FullDeviceType"/>
-        public int DeviceVersion
-        {
-            get
-            {
-                return _DeviceVersion;
-            }
-
-            set
-            {
-                _DeviceVersion = value;
-            }
-        }
+        public int DeviceVersion { get; set; }
 
         /// <summary>
         /// Returns the full device type string.
@@ -246,11 +212,7 @@ namespace Rssdp
         /// </summary>
         /// <seealso cref="AddDevice"/>
         /// <seealso cref="RemoveDevice"/>
-        public IList<SsdpDevice> Devices
-        {
-            get;
-            private set;
-        }
+        public IList<SsdpDevice> Devices { get; private set; }
 
         /// <summary>
         /// Adds a child device to the <see cref="Devices"/> collection.

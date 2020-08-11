@@ -1,6 +1,3 @@
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-#nullable enable
-
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -15,6 +12,8 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
+using Rssdp.Events;
+using Rssdp.Parsers;
 
 namespace Rssdp.Infrastructure
 {
@@ -23,17 +22,19 @@ namespace Rssdp.Infrastructure
     ///
     /// Is designed to work in conjunction with ExternalPortForwarding.
     /// </summary>
-    public sealed class SsdpCommunicationsServer : DisposableManagedObjectBase, ISsdpCommunicationsServer
+    public class SocketServer : IDisposable
     {
-        /* We could technically use one socket listening on port 1900 for everything. This should get both multicast (notifications) 
-         * and unicast (search response) messages, however this often doesn't work under Windows because the MS SSDP service is running. 
+        const int UdpResendCount = 3;
+
+        /* We could technically use one socket listening on port 1900 for everything. This should get both multicast (notifications)
+         * and unicast (search response) messages, however this often doesn't work under Windows because the MS SSDP service is running.
          * If that service is running then it will steal the unicast messages and we will never see search responses.
-         * Since stopping the service would be a bad idea (might not be allowed security wise and might break other apps running on 
+         * Since stopping the service would be a bad idea (might not be allowed security wise and might break other apps running on
          * the system) the only other work around is to use two sockets.
          *
          * We use one socket to listen for/receive notifications and search requests.
          * We use a second socket, bound to a different local port, to send search requests and if depending upon the state of uPNP listen for responses.
-         * The responses are sent to the local port this socket is bound to, which isn't port 1900 so the MS service doesn't steal them. 
+         * The responses are sent to the local port this socket is bound to, which isn't port 1900 so the MS service doesn't steal them.
          * While the caller can specify a local port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
          */
 
@@ -44,10 +45,9 @@ namespace Rssdp.Infrastructure
         private readonly IPAddress _multicastLocalAdminAddress = IPAddress.Parse("239.255.255.250");
 
         /// <summary>
-        /// Multicast IP6 Address used for SSDP multicast messages. 
+        /// Multicast IP6 Address used for SSDP multicast messages.
         /// </summary>
-        private readonly IPAddress _multicastLocalAdminAddressV6 = IPAddress.Parse("ff01::1");
-
+        private readonly IPAddress _multicastLocalAdminAddressV6 = IPAddress.Parse("ff01::2");
         private readonly object _socketSynchroniser;
         private readonly HttpRequestParser _requestParser;
         private readonly HttpResponseParser _responseParser;
@@ -57,6 +57,7 @@ namespace Rssdp.Infrastructure
         private readonly Dictionary<Socket, SocketState> _sockets;
         private readonly int _multicastTtl;
         private bool _externalPortForwardEnabled;
+        private bool _disposed;
 
         // <summary>
         /// Initializes a new instance of the <see cref="SsdpCommunicationsServer"/> class.
@@ -65,35 +66,29 @@ namespace Rssdp.Infrastructure
         /// <param name="config">The system configuration.</param>
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(
+        public SocketServer(
             INetworkManager networkManager,
             IServerConfigurationManager configurationManager,
-            ILogger logger)
+            ILoggerFactory loggerFactory)
         {
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = loggerFactory?.CreateLogger<SocketServer>() ?? throw new ArgumentNullException(nameof(loggerFactory));
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _socketSynchroniser = new object();
             _sockets = new Dictionary<Socket, SocketState>();
             _requestParser = new HttpRequestParser();
             _responseParser = new HttpResponseParser();
 
-            _multicastTtl = SsdpConstants.SsdpDefaultMulticastTimeToLive;
-
+            _multicastTtl = 4;
             _externalPortForwardEnabled = _configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess;
 
             CreateSockets();
-            
+
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
             _networkManager.NetworkChanged += NetworkChanged;
         }
 
-        /// <summary>
-        /// Gets or sets a the counter value indicating how many times this instance is shared
-        /// amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
-        /// Only when this value is zero, will this instance be disposed.
-        /// </summary>
-        public int IsShared { get; set; } = 1;
+        public int UsageCount { get; set; } = 1;
 
         /// <summary>
         /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
@@ -104,7 +99,20 @@ namespace Rssdp.Infrastructure
         /// Raised when an HTTPU response message is received by a socket (unicast or multicast).
         /// </summary>
         public event EventHandler<ResponseReceivedEventArgs>? ResponseReceived;
-        
+
+#pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCpunt implementation causes warning.
+        public void Dispose()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
+        {
+            if (UsageCount-- > 0)
+            {
+                return;
+            }
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         /// <summary>
         /// Triggered on a system configuration change.
         /// </summary>
@@ -141,7 +149,10 @@ namespace Rssdp.Infrastructure
         /// <param name="localIp">The local endpoint address to use.</param>
         public async Task SendMessageAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp)
         {
-            ThrowIfDisposed();
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
 
             if (messageData == null)
             {
@@ -224,7 +235,7 @@ namespace Rssdp.Infrastructure
                 sendSockets = new Dictionary<Socket, SocketState>(sockets);
             }
 
-            var tasks = sendSockets.Select(i => SendFromSocketAsync(i.Key, messageData, destination, SsdpConstants.UdpResendCount));
+            var tasks = sendSockets.Select(i => SendFromSocketAsync(i.Key, messageData, destination, UdpResendCount));
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
@@ -238,6 +249,11 @@ namespace Rssdp.Infrastructure
         /// to account for possible packet loss over UDP.</param>
         private async Task SendFromSocketAsync(Socket socket, byte[] messageData, IPEndPoint destination, int sendCount)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
+
             try
             {
                 while (sendCount-- > 0)
@@ -260,7 +276,17 @@ namespace Rssdp.Infrastructure
 
         public async Task SendMulticastMessageAsync(string message, IPAddress from)
         {
-            await SendMulticastMessageAsync(message, SsdpConstants.UdpResendCount, from).ConfigureAwait(false);
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (from == null)
+            {
+                throw new ArgumentNullException(nameof(from));
+            }
+
+            await SendMulticastMessageAsync(message, UdpResendCount, from).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -268,13 +294,10 @@ namespace Rssdp.Infrastructure
         /// </summary>x
         public async Task SendMulticastMessageAsync(string message, int sendCount, IPAddress from)
         {
-            ThrowIfDisposed();
-
-            if (message == null)
+            if (_disposed)
             {
-                throw new ArgumentNullException(nameof(message));
+                throw new ObjectDisposedException(this.GetType().FullName);
             }
-
             if (from == null)
             {
                 throw new ArgumentNullException(nameof(from));
@@ -292,10 +315,11 @@ namespace Rssdp.Infrastructure
         /// Stops listening for requests, disposes this instance and all internal resources.
         /// </summary>
         /// <param name="disposing">True if objects are to be disposed.</param>
-        protected override void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
+                _disposed = true;
                 _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
                 _networkManager.NetworkChanged -= ConfigurationUpdated;
                 lock (_socketSynchroniser)
@@ -304,7 +328,7 @@ namespace Rssdp.Infrastructure
                     {
                         foreach (var (socket, state) in _sockets)
                         {
-                            _logger.LogInformation("{0} disposing socket {1}", GetType().Name, socket.LocalEndPoint);
+                            _logger.LogInformation("{0} disposing socket {1}", this.GetType().Name, socket.LocalEndPoint);
                             socket.Dispose();
                         }
                     }
@@ -322,8 +346,12 @@ namespace Rssdp.Infrastructure
         /// <param name="sendCount">Number of times to transmit.</param>
         private async Task SendMessageViaAllSocketsAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp, int sendCount)
         {
-            Dictionary<Socket, SocketState>.KeyCollection sockets;
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
 
+            Dictionary<Socket, SocketState>.KeyCollection sockets;
             lock (_socketSynchroniser)
             {
                 sockets = _sockets.Keys;
@@ -373,8 +401,11 @@ namespace Rssdp.Infrastructure
             }
             else
             {
+                // Have to work on a copy to avoid "Collection was modified; enumeration operation may not execute." exception.
+                var matches = new List<Socket>(sockets);
+
                 // For all matching ports, ensure that they are in the correct state. (Sendonly/listener).
-                foreach (var socket in sockets)
+                foreach (var socket in matches)
                 {
                     SocketState state = _sockets[socket];
                     if (state == SocketState.Listening && !listen)
@@ -454,6 +485,11 @@ namespace Rssdp.Infrastructure
         /// </summary>
         private async Task StartListening()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
+
             try
             {
                 Dictionary<Socket, SocketState> sockets;
@@ -461,7 +497,7 @@ namespace Rssdp.Infrastructure
                 {
                     // Get all the listener sockets in a separate dictionary.
                     // This must be done, otherwise an IEnumerable exception is generated.
-                    sockets = new Dictionary<Socket, SocketState>(_sockets.Where(i => i.Value == SocketState.Listener)); 
+                    sockets = new Dictionary<Socket, SocketState>(_sockets.Where(i => i.Value == SocketState.Listener));
                 }
 
                 var tasks = sockets.Select(i => ListenToSocketAsync(i.Key)).ToList();
@@ -481,6 +517,11 @@ namespace Rssdp.Infrastructure
         /// <param name="socket">Socket to listen to.</param>
         private async Task ListenToSocketAsync(Socket socket)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
+
             var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 
             IPEndPoint listeningOn = (IPEndPoint)socket.LocalEndPoint;
@@ -494,7 +535,7 @@ namespace Rssdp.Infrastructure
                     _sockets[socket] = SocketState.Listening;
                 }
 
-                while (!IsDisposed)
+                while (!_disposed)
                 {
                     try
                     {
@@ -515,7 +556,8 @@ namespace Rssdp.Infrastructure
                                 ((IPEndPoint)socket.LocalEndPoint).Address
                                 ).ConfigureAwait(false);
                         }
-                        
+
+                        await Task.Delay(10).ConfigureAwait(false);
                     }
                     catch (Exception e) when (e is ObjectDisposedException || e is TaskCanceledException)
                     {
@@ -584,7 +626,7 @@ namespace Rssdp.Infrastructure
 
                 if (responseMessage != null)
                 {
-                    this.ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, endPoint, localIp));
+                    ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, endPoint, localIp));
                 }
             }
             else
@@ -609,7 +651,7 @@ namespace Rssdp.Infrastructure
                         return Task.CompletedTask;
                     }
 
-                    this.RequestReceived?.Invoke(this, new RequestReceivedEventArgs(requestMessage, endPoint, localIp));
+                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(requestMessage, endPoint, localIp));
                 }
             }
             return Task.CompletedTask;
@@ -623,6 +665,6 @@ namespace Rssdp.Infrastructure
             SendOnly,
             Listener,
             Listening
-        }        
+        }
     }
 }

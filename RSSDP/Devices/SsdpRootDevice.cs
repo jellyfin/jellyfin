@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace Rssdp
+namespace Rssdp.Devices
 {
     /// <summary>
     /// Represents a 'root' device, a device that has no parent. Used for publishing devices and for the root device in a tree of discovered devices.
@@ -29,10 +29,7 @@ namespace Rssdp
         /// <para>Also used to specify how often to rebroadcast alive notifications.</para>
         /// <para>The UPnP/SSDP specifications indicate this should not be less than 1800 seconds (half an hour), but this is not enforced by this library.</para>
         /// </remarks>
-        public TimeSpan CacheLifetime
-        {
-            get; set;
-        }
+        public TimeSpan CacheLifetime { get; set; }
 
         /// <summary>
         /// Gets or sets the URL used to retrieve the description document for this device/tree. Required.
@@ -73,7 +70,7 @@ namespace Rssdp
         /// </summary>
         public override string ToString()
         {
-            return $"{DeviceType} - {Uuid} - {Location}";                
+            return $"{DeviceType} - {Uuid} - {Location}";
         }
 
         /// <summary>

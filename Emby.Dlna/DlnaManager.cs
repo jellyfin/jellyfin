@@ -523,6 +523,8 @@ namespace Emby.Dlna
 
             var serverId = _appHost.SystemId;
 
+            serverAddress = _appHost.GetSmartApiUrl(serverAddress);
+
             return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
         }
 

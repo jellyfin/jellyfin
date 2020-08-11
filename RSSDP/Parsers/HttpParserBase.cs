@@ -1,14 +1,15 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 
-namespace Rssdp.Infrastructure
+namespace Rssdp.Parsers
 {
     /// <summary>
     /// A base class for the <see cref="HttpResponseParser"/> and <see cref="HttpRequestParser"/> classes. Not intended for direct use.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public abstract class HttpParserBase<T> where T : new()
     {
         private readonly string[] _lineTerminators = new string[] { "\r\n", "\n" };

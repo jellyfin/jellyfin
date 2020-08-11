@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace Rssdp.Infrastructure
 {
     /// <summary>
-    /// Correclty implements the <see cref="IDisposable"/> interface and pattern for an object containing only managed resources, and adds a few common niceities not on the interface such as an <see cref="IsDisposed"/> property.
+    /// Correctly implements the <see cref="IDisposable"/> interface and pattern for an object containing only managed resources, and adds a few common niceities not on the interface such as an <see cref="IsDisposed"/> property.
     /// </summary>
-    public abstract class DisposableManagedObjectBase : IDisposable
+    public abstract class ISsdpInfrastructure : IDisposable
     {
         /// <summary>
         /// Override this method and dispose any objects you own the lifetime of if disposing is true;
@@ -33,25 +36,22 @@ namespace Rssdp.Infrastructure
         /// Sets or returns a boolean indicating whether or not this instance has been disposed.
         /// </summary>
         /// <seealso cref="Dispose()"/>
-        public bool IsDisposed
-        {
-            get;
-            private set;
-        }
+        public bool IsDisposed { get; private set; }
 
         public static string BuildMessage(string header, Dictionary<string, string> values)
         {
             var builder = new StringBuilder();
 
-            const string argFormat = "{0}: {1}\r\n";
+            const string ArgFormat = "{0}: {1}\r\n";
 
-            builder.AppendFormat("{0}\r\n", header);
-
-            foreach (var pair in values)
+            builder.AppendFormat(CultureInfo.CurrentCulture, "{0}\r\n", header);
+            if (values != null)
             {
-                builder.AppendFormat(argFormat, pair.Key, pair.Value);
+                foreach (var pair in values)
+                {
+                    builder.AppendFormat(CultureInfo.CurrentCulture, ArgFormat, pair.Key, pair.Value);
+                }
             }
-
             builder.Append("\r\n");
 
             return builder.ToString();
@@ -68,8 +68,47 @@ namespace Rssdp.Infrastructure
         public void Dispose()
         {
             IsDisposed = true;
-
             Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected static Uri? GetFirstHeaderUriValue(string headerName, HttpHeaders headers)
+        {
+            if (headers == null)
+            {
+                return null;
+            }
+
+            string value = string.Empty;
+            if (headers.TryGetValues(headerName, out IEnumerable<string> values) && values != null)
+            {
+                value = values.FirstOrDefault();
+            }
+
+            if (Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri retVal))
+            {
+                return retVal;
+            }
+
+            return null;
+
+        }
+
+
+        protected static string GetFirstHeaderValue(string headerName, HttpHeaders headers)
+        {
+            if (headers == null)
+            {
+                return string.Empty;
+            }
+
+            string retVal = string.Empty;
+            if (headers.TryGetValues(headerName, out IEnumerable<String> values) && values != null)
+            {
+                retVal = values.FirstOrDefault();
+            }
+
+            return retVal;
         }
     }
 }

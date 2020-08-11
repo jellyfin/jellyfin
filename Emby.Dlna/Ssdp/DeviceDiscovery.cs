@@ -10,6 +10,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 using Rssdp;
+using Rssdp.Events;
 using Rssdp.Infrastructure;
 
 namespace Emby.Dlna.Ssdp
@@ -25,7 +26,7 @@ namespace Emby.Dlna.Ssdp
         private int _listenerCount;
         private bool _disposed;
         private SsdpDeviceLocator _deviceLocator;
-        private ISsdpCommunicationsServer _commsServer;
+        private SocketServer _socketServer;
 
         public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, IServerApplicationHost apphost)
         {
@@ -34,8 +35,6 @@ namespace Emby.Dlna.Ssdp
             _networkManager = networkManager;
             _appHost = apphost;
         }
-
-        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
 
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
@@ -64,13 +63,15 @@ namespace Emby.Dlna.Ssdp
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
+        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
+
         /// <summary>
         /// Starts a device scan.
         /// </summary>
-        /// <param name="communicationsServer">Communications server to use.</param>
-        public void Start(ISsdpCommunicationsServer communicationsServer)
+        /// <param name="socketServer">Communications server to use.</param>
+        public void Start(SocketServer socketServer)
         {
-            _commsServer = communicationsServer;
+            _socketServer = socketServer;
 
             StartInternal();
         }
@@ -86,7 +87,21 @@ namespace Emby.Dlna.Ssdp
                 _deviceLocator = null;
             }
 
-            _commsServer = null;
+            _socketServer = null;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                if (_deviceLocator != null)
+                {
+                    _deviceLocator.Dispose();
+                    _deviceLocator = null;
+                }
+            }
         }
 
         private void StartInternal()
@@ -95,7 +110,7 @@ namespace Emby.Dlna.Ssdp
             {
                 if (_listenerCount > 0 && _deviceLocator == null)
                 {
-                    _deviceLocator = new SsdpDeviceLocator(_commsServer, _logger, _networkManager, _appHost.SystemId);
+                    _deviceLocator = new SsdpDeviceLocator(_socketServer, _logger, _networkManager, _appHost.SystemId);
 
                     // (Optional) Set the filter so we only see notifications for devices we care about
                     // (can be any search target value i.e device type, uuid value etc - any value that appears in the
@@ -150,20 +165,6 @@ namespace Emby.Dlna.Ssdp
                 });
 
             DeviceLeft?.Invoke(this, args);
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
-                if (_deviceLocator != null)
-                {
-                    _deviceLocator.Dispose();
-                    _deviceLocator = null;
-                }
-            }
         }
     }
 }

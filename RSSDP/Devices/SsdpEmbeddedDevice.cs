@@ -1,4 +1,4 @@
-namespace Rssdp
+namespace Rssdp.Devices
 {
     /// <summary>
     /// Represents a device that is a descendant of a <see cref="SsdpRootDevice"/> instance.
@@ -6,13 +6,6 @@ namespace Rssdp
     public class SsdpEmbeddedDevice : SsdpDevice
     {
         private SsdpRootDevice _RootDevice;
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public SsdpEmbeddedDevice()
-        {
-        }
 
         /// <summary>
         /// Returns the <see cref="SsdpRootDevice"/> that is this device's first ancestor. If this device is itself an <see cref="SsdpRootDevice"/>, then returns a reference to itself.
