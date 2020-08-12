@@ -246,7 +246,7 @@ namespace Emby.Dlna.Rssdp
 
             if (searchTarget.StartsWith("ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:", StringComparison.OrdinalIgnoreCase))
             {
-                Mono.Nat.
+                // Mono.Nat.
             }
 
             // Wait on random interval up to MX, as per SSDP spec.
