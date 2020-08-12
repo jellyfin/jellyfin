@@ -456,6 +456,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isQsvEncoder = outputVideoCodec.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
             if (!IsCopyCodec(outputVideoCodec))
             {
@@ -510,6 +511,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                             arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
                         }
                     }
+                }
+
+                if (state.IsVideoRequest
+                    && string.Equals(encodingOptions.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+                {
+                    arg.Append("-hwaccel videotoolbox ");
                 }
             }
 
@@ -1323,6 +1330,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             return null;
         }
 
+        public int? GetAudioBitrateParam(int? audioBitRate, MediaStream audioStream)
+        {
+            if (audioBitRate.HasValue)
+            {
+                // Don't encode any higher than this
+                return Math.Min(384000, audioBitRate.Value);
+            }
+
+            return null;
+        }
+
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions, bool isHls)
         {
             var channels = state.OutputAudioChannels;
@@ -1599,42 +1617,48 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
 
-                var index = outputSizeParam.IndexOf("hwdownload", StringComparison.OrdinalIgnoreCase);
+                // hwupload=extra_hw_frames=64,vpp_qsv (for overlay_qsv on linux)
+                var index = outputSizeParam.IndexOf("hwupload=extra_hw_frames", StringComparison.OrdinalIgnoreCase);
                 if (index != -1)
                 {
                     outputSizeParam = outputSizeParam.Slice(index);
                 }
                 else
                 {
-                    index = outputSizeParam.IndexOf("hwupload=extra_hw_frames", StringComparison.OrdinalIgnoreCase);
+                    // vpp_qsv
+                    index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
                     if (index != -1)
                     {
                         outputSizeParam = outputSizeParam.Slice(index);
                     }
                     else
                     {
-                        index = outputSizeParam.IndexOf("format", StringComparison.OrdinalIgnoreCase);
+                        // hwdownload,format=p010le (hardware decode + software encode for vaapi)
+                        index = outputSizeParam.IndexOf("hwdownload", StringComparison.OrdinalIgnoreCase);
                         if (index != -1)
                         {
                             outputSizeParam = outputSizeParam.Slice(index);
                         }
                         else
                         {
-                            index = outputSizeParam.IndexOf("yadif", StringComparison.OrdinalIgnoreCase);
+                            // format=nv12|vaapi,hwupload,scale_vaapi
+                            index = outputSizeParam.IndexOf("format", StringComparison.OrdinalIgnoreCase);
                             if (index != -1)
                             {
                                 outputSizeParam = outputSizeParam.Slice(index);
                             }
                             else
                             {
-                                index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
+                                // yadif,scale=expr
+                                index = outputSizeParam.IndexOf("yadif", StringComparison.OrdinalIgnoreCase);
                                 if (index != -1)
                                 {
                                     outputSizeParam = outputSizeParam.Slice(index);
                                 }
                                 else
                                 {
-                                    index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
+                                    // scale=expr
+                                    index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
                                     if (index != -1)
                                     {
                                         outputSizeParam = outputSizeParam.Slice(index);

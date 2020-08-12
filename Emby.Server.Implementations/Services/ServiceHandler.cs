@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.Services
             return null;
         }
 
-        public async Task ProcessRequestAsync(HttpListenerHost httpHost, IRequest httpReq, HttpResponse httpRes, ILogger logger, CancellationToken cancellationToken)
+        public async Task ProcessRequestAsync(HttpListenerHost httpHost, IRequest httpReq, HttpResponse httpRes, CancellationToken cancellationToken)
         {
             httpReq.Items["__route"] = _restPath;
 
@@ -80,10 +80,10 @@ namespace Emby.Server.Implementations.Services
                 httpReq.ResponseContentType = _responseContentType;
             }
 
-            var request = await CreateRequest(httpHost, httpReq, _restPath, logger).ConfigureAwait(false);
+            var request = await CreateRequest(httpHost, httpReq, _restPath).ConfigureAwait(false);
 
             httpHost.ApplyRequestFilters(httpReq, httpRes, request);
-            
+
             httpRes.HttpContext.SetServiceStackRequest(httpReq);
             var response = await httpHost.ServiceController.Execute(httpHost, request, httpReq).ConfigureAwait(false);
 
@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.Services
             await ResponseHelper.WriteToResponse(httpRes, httpReq, response, cancellationToken).ConfigureAwait(false);
         }
 
-        public static async Task<object> CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, ILogger logger)
+        public static async Task<object> CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath)
         {
             var requestType = restPath.RequestType;
 

@@ -52,7 +52,13 @@ namespace MediaBrowser.Model.Configuration
         public string PreviousVersionStr
         {
             get => PreviousVersion?.ToString();
-            set => PreviousVersion = Version.Parse(value);
+            set
+            {
+                if (Version.TryParse(value, out var version))
+                {
+                    PreviousVersion = version;
+                }
+            }
         }
     }
 }

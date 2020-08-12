@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         }
     }
 
-    public class HdHomerunManager : IDisposable
+    public sealed class HdHomerunManager : IDisposable
     {
         public const int HdHomeRunPort = 65001;
 
@@ -105,6 +105,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     StopStreaming(socket).GetAwaiter().GetResult();
                 }
             }
+
+            GC.SuppressFinalize(this);
         }
 
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
@@ -162,7 +164,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     }
 
                     _activeTuner = i;
-                    var lockKeyString = string.Format("{0:d}", lockKeyValue);
+                    var lockKeyString = string.Format(CultureInfo.InvariantCulture, "{0:d}", lockKeyValue);
                     var lockkeyMsg = CreateSetMessage(i, "lockkey", lockKeyString, null);
                     await stream.WriteAsync(lockkeyMsg, 0, lockkeyMsg.Length, cancellationToken).ConfigureAwait(false);
                     int receivedBytes = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
@@ -173,8 +175,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         continue;
                     }
 
-                    var commandList = commands.GetCommands();
-                    foreach (var command in commandList)
+                    foreach (var command in commands.GetCommands())
                     {
                         var channelMsg = CreateSetMessage(i, command.Item1, command.Item2, lockKeyValue);
                         await stream.WriteAsync(channelMsg, 0, channelMsg.Length, cancellationToken).ConfigureAwait(false);
@@ -188,7 +189,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         }
                     }
 
-                    var targetValue = string.Format("rtp://{0}:{1}", localIp, localPort);
+                    var targetValue = string.Format(CultureInfo.InvariantCulture, "rtp://{0}:{1}", localIp, localPort);
                     var targetMsg = CreateSetMessage(i, "target", targetValue, lockKeyValue);
 
                     await stream.WriteAsync(targetMsg, 0, targetMsg.Length, cancellationToken).ConfigureAwait(false);

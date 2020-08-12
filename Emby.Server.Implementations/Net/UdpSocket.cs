@@ -15,12 +15,10 @@ namespace Emby.Server.Implementations.Net
     public sealed class UdpSocket : ISocket, IDisposable
     {
         private Socket _socket;
-        private int _localPort;
+        private readonly int _localPort;
         private bool _disposed = false;
 
         public Socket Socket => _socket;
-
-        public IPAddress LocalIPAddress { get; }
 
         private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
         {
@@ -51,18 +49,33 @@ namespace Emby.Server.Implementations.Net
             InitReceiveSocketAsyncEventArgs();
         }
 
+        public UdpSocket(Socket socket, IPEndPoint endPoint)
+        {
+            if (socket == null)
+            {
+                throw new ArgumentNullException(nameof(socket));
+            }
+
+            _socket = socket;
+            _socket.Connect(endPoint);
+
+            InitReceiveSocketAsyncEventArgs();
+        }
+
+        public IPAddress LocalIPAddress { get; }
+
         private void InitReceiveSocketAsyncEventArgs()
         {
             var receiveBuffer = new byte[8192];
             _receiveSocketAsyncEventArgs.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
-            _receiveSocketAsyncEventArgs.Completed += _receiveSocketAsyncEventArgs_Completed;
+            _receiveSocketAsyncEventArgs.Completed += OnReceiveSocketAsyncEventArgsCompleted;
 
             var sendBuffer = new byte[8192];
             _sendSocketAsyncEventArgs.SetBuffer(sendBuffer, 0, sendBuffer.Length);
-            _sendSocketAsyncEventArgs.Completed += _sendSocketAsyncEventArgs_Completed;
+            _sendSocketAsyncEventArgs.Completed += OnSendSocketAsyncEventArgsCompleted;
         }
 
-        private void _receiveSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
+        private void OnReceiveSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs = _currentReceiveTaskCompletionSource;
             if (tcs != null)
@@ -86,7 +99,7 @@ namespace Emby.Server.Implementations.Net
             }
         }
 
-        private void _sendSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
+        private void OnSendSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs = _currentSendTaskCompletionSource;
             if (tcs != null)
@@ -102,19 +115,6 @@ namespace Emby.Server.Implementations.Net
                     tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
                 }
             }
-        }
-
-        public UdpSocket(Socket socket, IPEndPoint endPoint)
-        {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-
-            _socket = socket;
-            _socket.Connect(endPoint);
-
-            InitReceiveSocketAsyncEventArgs();
         }
 
         public IAsyncResult BeginReceive(byte[] buffer, int offset, int count, AsyncCallback callback)
@@ -247,6 +247,7 @@ namespace Emby.Server.Implementations.Net
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed)
@@ -255,6 +256,8 @@ namespace Emby.Server.Implementations.Net
             }
 
             _socket?.Dispose();
+            _receiveSocketAsyncEventArgs.Dispose();
+            _sendSocketAsyncEventArgs.Dispose();
             _currentReceiveTaskCompletionSource?.TrySetCanceled();
             _currentSendTaskCompletionSource?.TrySetCanceled();
 

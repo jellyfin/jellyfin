@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.Networking
                 (octet[0] == 127) || // RFC1122
                 (octet[0] == 169 && octet[1] == 254)) // RFC3927
             {
-                return false;
+                return true;
             }
 
             if (checkSubnets && IsInPrivateAddressSpaceAndLocalSubnet(endpoint))

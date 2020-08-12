@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +14,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
     {
         private const string DefaultEncoderPath = "ffmpeg";
 
-        private static readonly string[] requiredDecoders = new[]
+        private static readonly string[] _requiredDecoders = new[]
         {
             "h264",
             "hevc",
@@ -55,7 +57,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "vc1_opencl"
         };
 
-        private static readonly string[] requiredEncoders = new[]
+        private static readonly string[] _requiredEncoders = new[]
         {
             "libx264",
             "libx265",
@@ -108,6 +110,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             _logger = logger;
             _encoderPath = encoderPath;
+        }
+
+        private enum Codec
+        {
+            Encoder,
+            Decoder
         }
 
         public static Version MinVersion { get; } = new Version(4, 0);
@@ -193,8 +201,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// If that fails then we use one of the main libraries to determine if it's new/older than the latest
         /// we have stored.
         /// </summary>
-        /// <param name="output"></param>
-        /// <returns></returns>
+        /// <param name="output">The output from "ffmpeg -version".</param>
+        /// <returns>The FFmpeg version.</returns>
         internal static Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
@@ -216,10 +224,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <summary>
         /// Grabs the library names and major.minor version numbers from the 'ffmpeg -version' output
-        /// and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc."
+        /// and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc.".
         /// </summary>
-        /// <param name="output"></param>
-        /// <returns></returns>
+        /// <param name="output">The 'ffmpeg -version' output.</param>
+        /// <returns>The library names and major.minor version numbers.</returns>
         private static string GetLibrariesVersionString(string output)
         {
             var rc = new StringBuilder(144);
@@ -239,12 +247,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return rc.Length == 0 ? null : rc.ToString();
         }
 
-        private enum Codec
-        {
-            Encoder,
-            Decoder
-        }
-
         private IEnumerable<string> GetHwaccelTypes()
         {
             string output = null;
@@ -262,7 +264,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var found = output.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
+            var found = output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
             _logger.LogInformation("Available hwaccel types: {Types}", found);
 
             return found;
@@ -286,7 +288,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var required = codec == Codec.Encoder ? requiredEncoders : requiredDecoders;
+            var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
 
             var found = Regex
                 .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
