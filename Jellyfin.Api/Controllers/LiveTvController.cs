@@ -592,11 +592,11 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = RequestHelpers.GetGuids(genreIds)
             };
 
-            if (!librarySeriesId.Equals(Guid.Empty))
+            if (librarySeriesId != null && !librarySeriesId.Equals(Guid.Empty))
             {
                 query.IsSeries = true;
 
-                if (_libraryManager.GetItemById(librarySeriesId ?? Guid.Empty) is Series series)
+                if (_libraryManager.GetItemById(librarySeriesId.Value) is Series series)
                 {
                     query.Name = series.Name;
                 }
