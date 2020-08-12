@@ -25,9 +25,16 @@ namespace Jellyfin.Api.TypeConverters
         {
             if (value is string dateString)
             {
-                if (DateTime.TryParseExact(dateString, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dateTime))
+                // Mark Played Item.
+                if (DateTime.TryParseExact(dateString, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dateTime1))
                 {
-                    return dateTime;
+                    return dateTime1;
+                }
+
+                // Get Activity Logs.
+                if (DateTime.TryParse(dateString, null, DateTimeStyles.RoundtripKind, out var dateTime2))
+                {
+                    return dateTime2;
                 }
             }
 
