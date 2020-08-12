@@ -1004,7 +1004,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="validateLogin">Validate login.</param>
         /// <response code="200">Created listings provider returned.</response>
         /// <returns>A <see cref="OkResult"/> containing the created listings provider.</returns>
-        [HttpGet("ListingProviders")]
+        [HttpPost("ListingProviders")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA5350:RemoveSha1", MessageId = "AddListingProvider", Justification = "Imported from ServiceStack")]
