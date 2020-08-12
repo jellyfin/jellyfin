@@ -53,7 +53,7 @@
     "TaskRefreshPeopleDescription": "Оновлення метаданих для акторів та режисерів у вашій медіатеці.",
     "TaskRefreshPeople": "Оновити людей",
     "TaskCleanLogsDescription": "Видаляє файли журналу, яким більше {0} днів.",
-    "TaskCleanLogs": "Видалити журнали",
+    "TaskCleanLogs": "Очистити журнали",
     "TaskRefreshLibraryDescription": "Сканує медіатеку на нові файли та оновлює метадані.",
     "TaskRefreshLibrary": "Сканувати медіатеку",
     "TaskRefreshChapterImagesDescription": "Створює ескізи для відео, які мають розділи.",
