@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -8,14 +9,15 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Rssdp.Devices;
+using Emby.Dlna.Rssdp.EventArgs;
+using Emby.Dlna.Rssdp.Parsers;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
-using Rssdp.Events;
-using Rssdp.Parsers;
 
-namespace Rssdp.Infrastructure
+namespace Emby.Dlna.Rssdp
 {
     /// <summary>
     /// Provides the platform independent logic for publishing device existence and responding to search requests.
@@ -24,7 +26,7 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SocketServer : IDisposable
     {
-        const int UdpResendCount = 3;
+        private const int UdpResendCount = 3;
 
         /* We could technically use one socket listening on port 1900 for everything. This should get both multicast (notifications)
          * and unicast (search response) messages, however this often doesn't work under Windows because the MS SSDP service is running.
@@ -33,11 +35,11 @@ namespace Rssdp.Infrastructure
          * the system) the only other work around is to use two sockets.
          *
          * We use one socket to listen for/receive notifications and search requests.
-         * We use a second socket, bound to a different local port, to send search requests and if depending upon the state of uPNP listen for responses.
-         * The responses are sent to the local port this socket is bound to, which isn't port 1900 so the MS service doesn't steal them.
-         * While the caller can specify a local port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
+         * We use a second socket, bound to a different local port, to send search requests and if depending upon the state of uPNP
+         * listen for responses. The responses are sent to the local port this socket is bound to, which isn't port 1900 so the MS
+         * service doesn't steal them. While the caller can specify a local port to use, we will default to 0 which allows the
+         * underlying system to auto-assign a free port.
          */
-
 
         /// <summary>
         /// Multicast IP Address used for SSDP multicast messages.
@@ -59,12 +61,12 @@ namespace Rssdp.Infrastructure
         private bool _externalPortForwardEnabled;
         private bool _disposed;
 
-        // <summary>
-        /// Initializes a new instance of the <see cref="SsdpCommunicationsServer"/> class.
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SocketServer"/> class.
         /// </summary>
         /// <param name="networkManager">The networkManager<see cref="INetworkManager"/>.</param>
-        /// <param name="config">The system configuration.</param>
-        /// <param name="logger">The logger<see cref="ILogger"/>.</param>
+        /// <param name="configurationManager">The system configuration.</param>
+        /// <param name="loggerFactory">The logger<see cref="ILogger"/>.</param>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         public SocketServer(
             INetworkManager networkManager,
@@ -88,8 +90,6 @@ namespace Rssdp.Infrastructure
             _networkManager.NetworkChanged += NetworkChanged;
         }
 
-        public int UsageCount { get; set; } = 1;
-
         /// <summary>
         /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
         /// </summary>
@@ -100,9 +100,20 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public event EventHandler<ResponseReceivedEventArgs>? ResponseReceived;
 
+        /// <summary>
+        /// Represents the states of the Sockets.
+        /// </summary>
+        private enum SocketState
+        {
+            SendOnly,
+            Listener,
+            Listening
+        }
+
+        public int UsageCount { get; set; } = 1;
+
 #pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCpunt implementation causes warning.
         public void Dispose()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
         {
             if (UsageCount-- > 0)
             {
@@ -118,10 +129,10 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <param name="sender">Configuration object.</param>
         /// <param name="args">Event arguments.</param>
-        public void ConfigurationUpdated(object sender, EventArgs args)
+        public void ConfigurationUpdated(object sender, System.EventArgs args)
         {
             // Check to see if uPNP has changed status.
-            bool newValue = (_configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess);
+            bool newValue = _configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess;
 
             if (newValue != _externalPortForwardEnabled)
             {
@@ -136,17 +147,18 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <param name="sender">NetworkManager object.</param>
         /// <param name="args">Event arguments.</param>
-        public void NetworkChanged(object sender, EventArgs args)
+        public void NetworkChanged(object sender, System.EventArgs args)
         {
             CreateSockets();
         }
 
         /// <summary>
-        /// Sends a message to a particular address (unicast or multicast) via all available sockets.
+        /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        /// <param name="messageData">The message to send.</param>
-        /// <param name="destination">The destination address.</param>
-        /// <param name="localIp">The local endpoint address to use.</param>
+        /// <param name="messageData">The mesage to send.</param>
+        /// <param name="destination">The destination endpoint.</param>
+        /// <param name="localIp">The interface ip to use.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task SendMessageAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp)
         {
             if (_disposed)
@@ -189,7 +201,6 @@ namespace Rssdp.Infrastructure
 
             lock (_socketSynchroniser)
             {
-
                 sockets = _sockets.Where(i => i.Key.LocalEndPoint.AddressFamily == localIp.AddressFamily);
 
                 if (sockets.Any())
@@ -240,13 +251,180 @@ namespace Rssdp.Infrastructure
         }
 
         /// <summary>
+        /// Sends a message to a particular address (unicast or multicast) via all available sockets.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        /// <param name="from">The destination address.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public async Task SendMulticastMessageAsync(string message, IPAddress from)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (from == null)
+            {
+                throw new ArgumentNullException(nameof(from));
+            }
+
+            await SendMulticastMessageAsync(message, UdpResendCount, from).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a message to the SSDP multicast address and port.
+        /// </summary>
+        /// <param name="message">The mesage to send.</param>
+        /// <param name="sendCount">The number of times to send it.</param>
+        /// <param name="from">The interface ip to use.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public async Task SendMulticastMessageAsync(string message, int sendCount, IPAddress from)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
+
+            if (from == null)
+            {
+                throw new ArgumentNullException(nameof(from));
+            }
+
+            byte[] messageData = Encoding.UTF8.GetBytes(message);
+
+            IPEndPoint ep = new IPEndPoint(from.AddressFamily == AddressFamily.InterNetwork ? _multicastLocalAdminAddress : _multicastLocalAdminAddressV6, 1900);
+
+            // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
+            await SendMessageViaAllSocketsAsync(messageData, ep, from, sendCount).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Processes an SSDP message.
+        /// </summary>
+        /// <param name="data">The data to process.</param>
+        /// <param name="endPoint">The remote endpoint.</param>
+        /// <param name="localIp">The interface ip upon which it was receieved.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public Task ProcessMessage(string data, IPEndPoint endPoint, IPAddress localIp)
+        {
+            if (endPoint == null)
+            {
+                throw new ArgumentNullException(nameof(endPoint));
+            }
+
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            if (localIp == null)
+            {
+                throw new ArgumentNullException(nameof(localIp));
+            }
+
+            var epAddr = ((IPEndPoint)endPoint).Address;
+            if (!_networkManager.IsInLocalNetwork(epAddr))
+            {
+                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", epAddr);
+                return Task.CompletedTask;
+            }
+
+            if (!localIp.Equals(IPAddress.Any) && !localIp.Equals(IPAddress.IPv6Any))
+            {
+                if (!_networkManager.IsInLocalNetwork(localIp))
+                {
+                    _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", localIp);
+                    return Task.CompletedTask;
+                }
+            }
+
+            // _logger.LogDebug("Processing inbound SSDP from {0}.", endPoint.Address);
+
+            // Responses start with the HTTP version, prefixed with HTTP/ while requests start with a method which can
+            // vary and might be one we haven't seen/don't know. We'll check if this message is a request or a response
+            // by checking for the HTTP/ prefix on the start of the message.
+            if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
+            {
+                HttpResponseMessage? responseMessage = null;
+                try
+                {
+                    responseMessage = _responseParser.Parse(data);
+                }
+                catch (ArgumentException)
+                {
+                    // Ignore invalid packets.
+                }
+
+                if (responseMessage != null)
+                {
+                    ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, endPoint, localIp));
+                }
+            }
+            else
+            {
+                HttpRequestMessage? requestMessage = null;
+                try
+                {
+                    requestMessage = _requestParser.Parse(data);
+                }
+                catch (ArgumentException)
+                {
+                    // Ignore invalid packets.
+                }
+
+                if (requestMessage != null)
+                {
+                    // SSDP specification says only * is currently used but other uri's might be implemented in the future
+                    // and should be ignored unless understood.
+                    // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
+                    if (requestMessage.RequestUri.ToString() != "*")
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(requestMessage, endPoint, localIp));
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Stops listening for requests, disposes this instance and all internal resources.
+        /// </summary>
+        /// <param name="disposing">True if objects are to be disposed.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _disposed = true;
+                _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
+                _networkManager.NetworkChanged -= ConfigurationUpdated;
+                lock (_socketSynchroniser)
+                {
+                    if (_sockets.Count > 0)
+                    {
+                        foreach (var (socket, state) in _sockets)
+                        {
+                            _logger.LogInformation("{0} disposing socket {1}", this.GetType().Name, socket.LocalEndPoint);
+                            socket.Dispose();
+                        }
+                    }
+
+                    _sockets.Clear();
+                }
+            }
+        }
+
+        /// <summary>
         /// Transmits the message to the socket.
         /// </summary>
         /// <param name="socket">Socket to use.</param>
         /// <param name="messageData">Message to transmit.</param>
-        /// <param name="destination"></param>
+        /// <param name="destination">Destination endpoint.</param>
         /// <param name="sendCount">Number of times to send it. SSDP spec recommends sending messages not more than 3 times
         /// to account for possible packet loss over UDP.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task SendFromSocketAsync(Socket socket, byte[] messageData, IPEndPoint destination, int sendCount)
         {
             if (_disposed)
@@ -274,69 +452,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        public async Task SendMulticastMessageAsync(string message, IPAddress from)
-        {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            if (from == null)
-            {
-                throw new ArgumentNullException(nameof(from));
-            }
-
-            await SendMulticastMessageAsync(message, UdpResendCount, from).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Sends a message to the SSDP multicast address and port.
-        /// </summary>x
-        public async Task SendMulticastMessageAsync(string message, int sendCount, IPAddress from)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(this.GetType().FullName);
-            }
-            if (from == null)
-            {
-                throw new ArgumentNullException(nameof(from));
-            }
-
-            byte[] messageData = Encoding.UTF8.GetBytes(message);
-
-            IPEndPoint ep = new IPEndPoint(from.AddressFamily == AddressFamily.InterNetwork ? _multicastLocalAdminAddress : _multicastLocalAdminAddressV6, 1900);
-
-            // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
-            await SendMessageViaAllSocketsAsync(messageData, ep, from, sendCount).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Stops listening for requests, disposes this instance and all internal resources.
-        /// </summary>
-        /// <param name="disposing">True if objects are to be disposed.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _disposed = true;
-                _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
-                _networkManager.NetworkChanged -= ConfigurationUpdated;
-                lock (_socketSynchroniser)
-                {
-                    if (_sockets.Count > 0)
-                    {
-                        foreach (var (socket, state) in _sockets)
-                        {
-                            _logger.LogInformation("{0} disposing socket {1}", this.GetType().Name, socket.LocalEndPoint);
-                            socket.Dispose();
-                        }
-                    }
-                    _sockets.Clear();
-                }
-            }
-        }
-
         /// <summary>
         /// Sends the same message out to all sockets in @sockets.
         /// </summary>
@@ -344,6 +459,7 @@ namespace Rssdp.Infrastructure
         /// <param name="destination">Destination endpoint.</param>
         /// <param name="localIp">Source endpoint to use.</param>
         /// <param name="sendCount">Number of times to transmit.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task SendMessageViaAllSocketsAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp, int sendCount)
         {
             if (_disposed)
@@ -443,7 +559,7 @@ namespace Rssdp.Infrastructure
                     foreach (var (socket, state) in _sockets)
                     {
                         // If not an IPAny/v6Any and socket doesn't exist any more, then dispose of it.
-                        IPEndPoint addr = ((IPEndPoint)socket.LocalEndPoint);
+                        IPEndPoint addr = (IPEndPoint)socket.LocalEndPoint;
                         if (!addr.Address.Equals(IPAddress.Any) &&
                             !addr.Address.Equals(IPAddress.IPv6Any) &&
                             !ba.Exists(addr.Address))
@@ -483,6 +599,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Creates the sockets listening tasks.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task StartListening()
         {
             if (_disposed)
@@ -515,6 +632,7 @@ namespace Rssdp.Infrastructure
         /// Async Listening Method.
         /// </summary>
         /// <param name="socket">Socket to listen to.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task ListenToSocketAsync(Socket socket)
         {
             if (_disposed)
@@ -553,8 +671,7 @@ namespace Rssdp.Infrastructure
                             await ProcessMessage(
                                 System.Text.UTF8Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),
                                 endpoint,
-                                ((IPEndPoint)socket.LocalEndPoint).Address
-                                ).ConfigureAwait(false);
+                                ((IPEndPoint)socket.LocalEndPoint).Address).ConfigureAwait(false);
                         }
 
                         await Task.Delay(10).ConfigureAwait(false);
@@ -570,101 +687,6 @@ namespace Rssdp.Infrastructure
             {
                 ArrayPool<byte>.Shared.Return(receiveBuffer);
             }
-        }
-
-
-        /// <inheritdoc/>
-        public Task ProcessMessage(string data, IPEndPoint endPoint, IPAddress localIp)
-        {
-            if (endPoint == null)
-            {
-                throw new ArgumentNullException(nameof(endPoint));
-            }
-
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
-            if (localIp == null)
-            {
-                throw new ArgumentNullException(nameof(localIp));
-            }
-
-            var epAddr = ((IPEndPoint)endPoint).Address;
-            if (!_networkManager.IsInLocalNetwork(epAddr))
-            {
-                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", epAddr);
-                return Task.CompletedTask;
-            }
-
-            if (!localIp.Equals(IPAddress.Any) && !localIp.Equals(IPAddress.IPv6Any))
-            {
-                if (!_networkManager.IsInLocalNetwork(localIp))
-                {
-                    _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", localIp);
-                    return Task.CompletedTask;
-                }
-            }
-
-            // _logger.LogDebug("Processing inbound SSDP from {0}.", endPoint.Address);
-
-            // Responses start with the HTTP version, prefixed with HTTP/ while requests start with a method which can
-            // vary and might be one we haven't seen/don't know. We'll check if this message is a request or a response
-            // by checking for the HTTP/ prefix on the start of the message.
-            if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
-            {
-                HttpResponseMessage? responseMessage = null;
-                try
-                {
-                    responseMessage = _responseParser.Parse(data);
-                }
-                catch (ArgumentException)
-                {
-                    // Ignore invalid packets.
-                }
-
-                if (responseMessage != null)
-                {
-                    ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, endPoint, localIp));
-                }
-            }
-            else
-            {
-                HttpRequestMessage? requestMessage = null;
-                try
-                {
-                    requestMessage = _requestParser.Parse(data);
-                }
-                catch (ArgumentException)
-                {
-                    // Ignore invalid packets.
-                }
-
-                if (requestMessage != null)
-                {
-                    // SSDP specification says only * is currently used but other uri's might be implemented in the future
-                    // and should be ignored unless understood.
-                    // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
-                    if (requestMessage.RequestUri.ToString() != "*")
-                    {
-                        return Task.CompletedTask;
-                    }
-
-                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(requestMessage, endPoint, localIp));
-                }
-            }
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Represents the states of the Sockets.
-        /// </summary>
-        private enum SocketState
-        {
-            SendOnly,
-            Listener,
-            Listening
         }
     }
 }

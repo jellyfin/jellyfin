@@ -1,16 +1,16 @@
 using System;
 using System.Net;
-using Rssdp.Devices;
+using Emby.Dlna.Rssdp.Devices;
 
-namespace Rssdp.Events
+namespace Emby.Dlna.Rssdp.EventArgs
 {
     /// <summary>
     /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
     /// </summary>
-    public sealed class DeviceAvailableEventArgs : EventArgs
+    public sealed class DeviceAvailableEventArgs : System.EventArgs
     {
         /// <summary>
-        /// Full constructor.
+        /// Initializes a new instance of the <see cref="DeviceAvailableEventArgs"/> class.
         /// </summary>
         /// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
         /// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
@@ -26,12 +26,12 @@ namespace Rssdp.Events
         public IPAddress LocalIpAddress { get; set; }
 
         /// <summary>
-        /// Returns true if the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
+        /// Gets a value indicating whether the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
         /// </summary>
         public bool IsNewlyDiscovered { get; }
 
         /// <summary>
-        /// A reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
+        /// Gets a reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
         /// </summary>
         public DiscoveredSsdpDevice DiscoveredDevice { get; }
     }

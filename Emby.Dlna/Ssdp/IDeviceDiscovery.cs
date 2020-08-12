@@ -1,15 +1,21 @@
-#pragma warning disable CS1591
-
+#nullable enable
 using System;
-using System.Net;
+using Emby.Dlna.Rssdp;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 
-namespace MediaBrowser.Model.Dlna
+namespace Emby.Dlna.Ssdp
 {
     public interface IDeviceDiscovery
     {
         event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered;
 
         event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
+
+        void Dispose();
+
+        void Start(SocketServer socketServer);
+
+        void Stop();
     }
 }

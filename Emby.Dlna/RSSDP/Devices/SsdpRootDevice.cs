@@ -1,7 +1,8 @@
+#nullable enable
 using System;
 using System.Net;
 
-namespace Rssdp.Devices
+namespace Emby.Dlna.Rssdp.Devices
 {
     /// <summary>
     /// Represents a 'root' device, a device that has no parent. Used for publishing devices and for the root device in a tree of discovered devices.
@@ -12,17 +13,31 @@ namespace Rssdp.Devices
     /// </remarks>
     public class SsdpRootDevice : SsdpDevice, IEquatable<SsdpRootDevice>
     {
-        private Uri _UrlBase;
+        private Uri? _urlBase;
 
         /// <summary>
-        /// Default constructor.
+        /// Initializes a new instance of the <see cref="SsdpRootDevice"/> class.
         /// </summary>
-        public SsdpRootDevice() : base()
+        /// <param name="cacheLifetime">Cache lifetime.</param>
+        /// <param name="location">Location.</param>
+        /// <param name="address">IP Address.</param>
+        /// <param name="subnetMask">Subnet mask.</param>
+        /// <param name="friendlyName">Friendly name.</param>
+        /// <param name="manufacturer">Manufacturer.</param>
+        /// <param name="modelName">Model name.</param>
+        /// <param name="udn">UDN.</param>
+        public SsdpRootDevice(TimeSpan cacheLifetime, Uri location, IPAddress address, IPAddress subnetMask, string friendlyName, string manufacturer, string modelName, string udn)
+            : base(friendlyName, manufacturer, modelName, udn)
         {
+            CacheLifetime = cacheLifetime;
+            Location = location;
+            Address = address;
+            SubnetMask = subnetMask;
         }
 
         /// <summary>
-        /// Specifies how long clients can cache this device's details for. Optional but defaults to <see cref="TimeSpan.Zero"/> which means no-caching. Recommended value is half an hour.
+        /// Gets or sets specifies how long clients can cache this device's details for. Optional but defaults to <see cref="TimeSpan.Zero"/> which means no-caching.
+        /// Recommended value is half an hour.
         /// </summary>
         /// <remarks>
         /// <para>Specifiy <see cref="TimeSpan.Zero"/> to indicate no caching allowed.</para>
@@ -47,7 +62,7 @@ namespace Rssdp.Devices
         public IPAddress SubnetMask { get; set; }
 
         /// <summary>
-        /// The base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
+        /// Gets or sets the base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
         /// </summary>
         /// <remarks>
         /// <para>Defines the base URL. Used to construct fully-qualified URLs. All relative URLs that appear elsewhere in the description are combined with this base URL. If URLBase is empty or not given, the base URL is the URL from which the device description was retrieved (which is the preferred implementation; use of URLBase is no longer recommended). Specified by UPnP vendor. Single URL.</para>
@@ -56,33 +71,43 @@ namespace Rssdp.Devices
         {
             get
             {
-                return _UrlBase ?? this.Location;
+                return _urlBase ?? this.Location;
             }
 
             set
             {
-                _UrlBase = value;
+                _urlBase = value;
             }
         }
 
         /// <summary>
         /// Returns this object as a string.
         /// </summary>
+        /// <returns>String representation of this object.</returns>
         public override string ToString()
         {
             return $"{DeviceType} - {Uuid} - {Location}";
         }
 
         /// <summary>
-        /// Used by List{SsdpRoot}.Contains
+        /// Used by List{SsdpRoot}.Contains.
         /// </summary>
-        /// <param name="other">Item to compare</param>
-        /// <returns></returns>
+        /// <param name="other">Item to compare.</param>
+        /// <returns>True if other matches this object.</returns>
         public bool Equals(SsdpRootDevice other)
         {
-            return string.Equals(ToString(), other?.ToString(), StringComparison.OrdinalIgnoreCase)
-                && Address.Equals(other?.Address)
-                && SubnetMask.Equals(other?.SubnetMask);
+            if (other == null)
+            {
+                return false;
+            }
+
+            return string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase) && Address.Equals(other.Address);
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is SsdpRootDevice && Equals(obj);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => base.GetHashCode();
     }
 }

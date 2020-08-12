@@ -1,9 +1,10 @@
+#nullable enable
 using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 
-namespace Rssdp.Parsers
+namespace Emby.Dlna.Rssdp.Parsers
 {
     /// <summary>
     /// Parses a string into a <see cref="HttpResponseMessage"/> or throws an exception.
@@ -22,7 +23,7 @@ namespace Rssdp.Parsers
         /// <returns>A <see cref="HttpResponseMessage"/> instance containing the parsed data.</returns>
         public override HttpResponseMessage Parse(string data)
         {
-            HttpResponseMessage retVal = null;
+            HttpResponseMessage? retVal = null;
             try
             {
                 retVal = new HttpResponseMessage();
@@ -59,16 +60,6 @@ namespace Rssdp.Parsers
         /// <param name="message">Either a <see cref="HttpResponseMessage"/> or <see cref="HttpRequestMessage"/> to assign the parsed values to.</param>
         protected override void ParseStatusLine(string data, HttpResponseMessage message)
         {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
             var parts = data.Split(' ');
             if (parts.Length < 2)
             {
@@ -77,7 +68,7 @@ namespace Rssdp.Parsers
 
             message.Version = ParseHttpVersion(parts[0].Trim());
 
-            if (!Int32.TryParse(parts[1].Trim(), out var statusCode))
+            if (!int.TryParse(parts[1].Trim(), out var statusCode))
             {
                 throw new ArgumentException("data status line is invalid. Status code is not a valid integer.", nameof(data));
             }

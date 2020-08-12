@@ -1,17 +1,16 @@
 #nullable enable
-
 using System;
 using System.Linq;
 using System.Net.Http;
 
-namespace Rssdp.Parsers
+namespace Emby.Dlna.Rssdp.Parsers
 {
     /// <summary>
     /// Parses a string into a <see cref="HttpRequestMessage"/> or throws an exception.
     /// </summary>
     public sealed class HttpRequestParser : HttpParserBase<HttpRequestMessage>
     {
-        private static string[] ContentHeaderNames = new string[]
+        private static readonly string[] _contentHeaderNames = new string[]
         {
             "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length",
             "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
@@ -24,7 +23,7 @@ namespace Rssdp.Parsers
         /// <returns>A <see cref="HttpRequestMessage"/> instance containing the parsed data.</returns>
         public override HttpRequestMessage Parse(string data)
         {
-            HttpRequestMessage retVal = null;
+            HttpRequestMessage? retVal = null;
 
             try
             {
@@ -67,8 +66,7 @@ namespace Rssdp.Parsers
             }
 
             message.Method = new HttpMethod(parts[0].Trim());
-            Uri requestUri;
-            if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out requestUri))
+            if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out var requestUri))
             {
                 message.RequestUri = requestUri;
             }
@@ -87,9 +85,10 @@ namespace Rssdp.Parsers
         /// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
         /// </summary>
         /// <param name="headerName">A string containing the name of the header to return the type of.</param>
+        /// <returns>Result of the operation.</returns>
         protected override bool IsContentHeader(string headerName)
         {
-            return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
+            return _contentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

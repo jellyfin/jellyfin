@@ -1,5 +1,4 @@
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,18 +8,19 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Rsddp;
+using Emby.Dlna.Rssdp.Devices;
+using Emby.Dlna.Rssdp.EventArgs;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
-using Rssdp.Events;
-using Rssdp.Devices;
 
-namespace Rssdp.Infrastructure
+namespace Emby.Dlna.Rssdp
 {
     /// <summary>
     /// Uses DeviceDiscovery to allow you to search the network for a particular device, device types, or UPnP service types.
     /// Listenings for broadcast notifications of device availability and raises events to indicate changes in status.
     /// </summary>
-    public class SsdpDeviceLocator : ISsdpInfrastructure, ISsdpDeviceLocator
+    public class SsdpDeviceLocator : SsdpInfrastructure, ISsdpDeviceLocator
     {
         private const string SsdpUserAgent = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
 
@@ -34,9 +34,6 @@ namespace Rssdp.Infrastructure
         private readonly string _systemId;
         private Timer? _broadcastTimer;
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
         public SsdpDeviceLocator(SocketServer socketServer, ILogger logger, INetworkManager networkManager, string systemId)
         {
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
@@ -47,7 +44,7 @@ namespace Rssdp.Infrastructure
             _systemId = systemId;
             _timerLock = new object();
             _devices = new List<DiscoveredSsdpDevice>();
-            
+
             _socketServer.ResponseReceived += ProcessSearchResponseMessage;
         }
 
@@ -91,16 +88,15 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StopListeningForNotifications"/>
         public event EventHandler<DeviceUnavailableEventArgs>? DeviceUnavailable;
 
-
         /// <summary>
-        /// Sets or returns a string containing the filter for notifications. Notifications not matching the filter will not raise the
+        /// Gets or sets a string containing the filter for notifications. Notifications not matching the filter will not raise the
         /// <see cref="ISsdpDeviceLocator.DeviceAvailable"/> or <see cref="ISsdpDeviceLocator.DeviceUnavailable"/> events.
         /// </summary>
         /// <remarks>
         /// <para>Device alive/byebye notifications whose NT header does not match this filter value will still be captured and cached internally,
         /// but will not raise events about device availability. Usually used with either a device type of uuid NT header value.</para>
         /// <para>If the value is null or empty string then, all notifications are reported.</para>
-        /// <para>Example filters follow;</para>
+        /// <para>Example filters follow.</para>
         /// <example>upnp:rootdevice</example>
         /// <example>urn:schemas-upnp-org:device:WANDevice:1</example>
         /// <example>uuid:9F15356CC-95FA-572E-0E99-85B456BD3012</example>
@@ -126,33 +122,17 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private async void OnBroadcastTimerCallback(object state)
-        {
-            StartListeningForNotifications();
-            RemoveExpiredDevicesFromCache();
-
-            try
-            {
-                await SearchAsync(_defaultSearchWaitTime).ConfigureAwait(false);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                _logger.LogError(ex, "SearchAsync failed.");
-            }
-        }
-
         /// <summary>
         /// Performs a search for all devices using the default search timeout.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public Task SearchAsync()
         {
             return SearchAsync(_defaultSearchWaitTime);
         }
 
         public Task SearchAsync(TimeSpan searchWaitTime)
-        { 
+        {
             if (searchWaitTime.TotalSeconds < 0)
             {
                 throw new ArgumentException("searchWaitTime must be a positive time.");
@@ -214,11 +194,68 @@ namespace Rssdp.Infrastructure
                     _broadcastTimer?.Dispose();
                     _broadcastTimer = null;
                 }
+
                 if (_socketServer != null)
                 {
                     _socketServer.ResponseReceived -= ProcessSearchResponseMessage;
                     _socketServer.RequestReceived -= ProcessNotificationMessage;
                 }
+            }
+        }
+
+        private static TimeSpan CacheAgeFromHeader(CacheControlHeaderValue headerValue)
+        {
+            if (headerValue == null)
+            {
+                return TimeSpan.Zero;
+            }
+
+            return (TimeSpan)(headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero);
+        }
+
+        private static DiscoveredSsdpDevice? FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
+        {
+            foreach (var d in devices)
+            {
+                if (string.Equals(d.NotificationType, notificationType, StringComparison.Ordinal) &&
+                    string.Equals(d.Usn, usn, StringComparison.Ordinal))
+                {
+                    return d;
+                }
+            }
+
+            return null;
+        }
+
+        private static List<DiscoveredSsdpDevice> FindExistingDeviceNotifications(IList<DiscoveredSsdpDevice> devices, string usn)
+        {
+            var list = new List<DiscoveredSsdpDevice>();
+
+            foreach (var d in devices)
+            {
+                if (string.Equals(d.Usn, usn, StringComparison.Ordinal))
+                {
+                    list.Add(d);
+                }
+            }
+
+            return list;
+        }
+
+        private async void OnBroadcastTimerCallback(object state)
+        {
+            StartListeningForNotifications();
+            RemoveExpiredDevicesFromCache();
+
+            try
+            {
+                await SearchAsync(_defaultSearchWaitTime).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogError(ex, "SearchAsync failed.");
             }
         }
 
@@ -305,7 +342,7 @@ namespace Rssdp.Infrastructure
                     GetFirstHeaderValue("ST", message.Headers),
                     GetFirstHeaderValue("USN", message.Headers),
                     message.Headers);
-                    
+
                 if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                 {
                     _logger.LogDebug("Found DLNA Device : {0} {1}", device.DescriptionLocation, localIpAddress);
@@ -367,7 +404,8 @@ namespace Rssdp.Infrastructure
                         TimeSpan.Zero,
                         null,
                         GetFirstHeaderValue("NT", message.Headers),
-                        usn, message.Headers);
+                        usn,
+                        message.Headers);
 
                     _logger.LogDebug("Byebye: {0}", deadDevice);
 
@@ -377,16 +415,6 @@ namespace Rssdp.Infrastructure
                     }
                 }
             }
-        }
-
-        private static TimeSpan CacheAgeFromHeader(CacheControlHeaderValue headerValue)
-        {
-            if (headerValue == null)
-            {
-                return TimeSpan.Zero;
-            }
-
-            return (TimeSpan)(headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero);
         }
 
         private void RemoveExpiredDevicesFromCache()
@@ -469,35 +497,6 @@ namespace Rssdp.Infrastructure
             {
                 return searchWaitTime.Subtract(_oneSecond);
             }
-        }
-
-        private static DiscoveredSsdpDevice? FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
-        {
-            foreach (var d in devices)
-            {
-                if (string.Equals(d.NotificationType, notificationType, StringComparison.Ordinal) &&
-                    string.Equals(d.Usn, usn, StringComparison.Ordinal))
-                {
-                    return d;
-                }
-            }
-
-            return null;
-        }
-
-        private static List<DiscoveredSsdpDevice> FindExistingDeviceNotifications(IList<DiscoveredSsdpDevice> devices, string usn)
-        {
-            var list = new List<DiscoveredSsdpDevice>();
-
-            foreach (var d in devices)
-            {
-                if (string.Equals(d.Usn, usn, StringComparison.Ordinal))
-                {
-                    list.Add(d);
-                }
-            }
-
-            return list;
         }
     }
 }

@@ -1,5 +1,4 @@
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -238,10 +237,10 @@ namespace Emby.Server.Implementations.Networking
 
             if (_configurationManager.Configuration.TrustAllIP6Interfaces && addr2.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                return addr1.Equals(IP4Loopback) || addr1.Equals(IP6Loopback);
+                return IPObject.IsLoopback(addr1);
             }
 
-            return (addr1.Equals(IP4Loopback) || addr1.Equals(IP6Loopback)) && IsInLocalNetwork(addr2);
+            return IPObject.IsLoopback(addr1) && IsInLocalNetwork(addr2);
         }
 
         /// <inheritdoc/>
@@ -375,11 +374,11 @@ namespace Emby.Server.Implementations.Networking
             {
                 // Simulate a broadcast on IP6.
                 retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(_multicastLocalAdminAddressV6));
-                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
+                // retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
             }
 
             retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(_multicastLocalAdminAddress, address));
-            retVal.MulticastLoopback = true;
+            // retVal.MulticastLoopback = true;
 
             try
             {
@@ -421,7 +420,7 @@ namespace Emby.Server.Implementations.Networking
                 }
 
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(_multicastLocalAdminAddress, IPAddress.Any));
-                retVal.MulticastLoopback = true;
+                // retVal.MulticastLoopback = true;
                 retVal.Bind(new IPEndPoint(address, port));
             }
             catch

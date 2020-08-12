@@ -1,10 +1,11 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Rssdp.Devices;
-using Rssdp.Events;
+using Emby.Dlna.Rssdp.Devices;
+using Emby.Dlna.Rssdp.EventArgs;
 
-namespace Rssdp.Infrastructure
+namespace Emby.Dlna.Rsddp
 {
     /// <summary>
     /// Interface for components that discover the existence of SSDP devices.
@@ -33,14 +34,14 @@ namespace Rssdp.Infrastructure
         event EventHandler<DeviceUnavailableEventArgs>? DeviceUnavailable;
 
         /// <summary>
-        /// Sets or returns a string containing the filter for notifications. Notifications not matching the filter will
+        /// Gets or sets a string containing the filter for notifications. Notifications not matching the filter will
         /// not raise the <see cref="DeviceAvailable"/> or <see cref="DeviceUnavailable"/> events.
         /// </summary>
         /// <remarks>
         /// <para>Device alive/byebye notifications whose NT header does not match this filter value will still be captured
         /// and cached internally, but will not raise events about device availability. Usually used with either a device
         /// type of uuid NT header value.</para>
-        /// <para>Example filters follow;</para>
+        /// <para>Example filters follow.</para>
         /// <example>upnp:rootdevice</example>
         /// <example>urn:schemas-upnp-org:device:WANDevice:1</example>
         /// <example>"uuid:9F15356CC-95FA-572E-0E99-85B456BD3012"</example>
@@ -50,7 +51,7 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="StopListeningForNotifications"/>
         string? NotificationFilter { get; set; }
-        
+
         /// <summary>
         /// Aynchronously performs a search for all devices using the default search timeout, and returns an awaitable task
         /// that can be used to retrieve the results.

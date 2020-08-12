@@ -1,17 +1,15 @@
-#pragma warning disable CS1591
-
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Emby.Dlna.Rssdp;
+using Emby.Dlna.Rssdp.EventArgs;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
-using Rssdp;
-using Rssdp.Events;
-using Rssdp.Infrastructure;
 
 namespace Emby.Dlna.Ssdp
 {
@@ -25,8 +23,8 @@ namespace Emby.Dlna.Ssdp
 
         private int _listenerCount;
         private bool _disposed;
-        private SsdpDeviceLocator _deviceLocator;
-        private SocketServer _socketServer;
+        private SsdpDeviceLocator? _deviceLocator;
+        private SocketServer? _socketServer;
 
         public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, IServerApplicationHost apphost)
         {
@@ -37,7 +35,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscovered
         {
             add
             {
@@ -61,9 +59,9 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
 
-        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
+        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscoveredInternal;
 
         /// <summary>
         /// Starts a device scan.
@@ -72,7 +70,6 @@ namespace Emby.Dlna.Ssdp
         public void Start(SocketServer socketServer)
         {
             _socketServer = socketServer;
-
             StartInternal();
         }
 
@@ -96,11 +93,7 @@ namespace Emby.Dlna.Ssdp
             if (!_disposed)
             {
                 _disposed = true;
-                if (_deviceLocator != null)
-                {
-                    _deviceLocator.Dispose();
-                    _deviceLocator = null;
-                }
+                Stop();
             }
         }
 
@@ -108,7 +101,7 @@ namespace Emby.Dlna.Ssdp
         {
             lock (_syncLock)
             {
-                if (_listenerCount > 0 && _deviceLocator == null)
+                if (_listenerCount > 0 && _deviceLocator == null && _socketServer != null)
                 {
                     _deviceLocator = new SsdpDeviceLocator(_socketServer, _logger, _networkManager, _appHost.SystemId);
 

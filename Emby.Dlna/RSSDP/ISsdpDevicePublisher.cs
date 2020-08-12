@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using Rssdp.Devices;
+using Emby.Dlna.Rssdp.Devices;
 
-namespace Rssdp.Infrastructure
+namespace Emby.Dlna.Rssdp
 {
     /// <summary>
     /// Interface for components that publish the existence of SSDP devices.
@@ -13,6 +13,12 @@ namespace Rssdp.Infrastructure
     /// <seealso cref="ISsdpDeviceLocator"/>
     public interface ISsdpDevicePublisher
     {
+        /// <summary>
+        /// Gets returns a read only list of devices being published by this instance.
+        /// </summary>
+        /// <seealso cref="SsdpDevice"/>
+        System.Collections.Generic.IEnumerable<SsdpRootDevice> Devices { get; }
+
         /// <summary>
         /// Adds a device (and it's children) to the list of devices being published by this server, making them discoverable to SSDP clients.
         /// </summary>
@@ -26,11 +32,5 @@ namespace Rssdp.Infrastructure
         /// <param name="device">The <see cref="SsdpRootDevice"/> instance to add.</param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         Task RemoveDevice(SsdpRootDevice device);
-
-        /// <summary>
-        /// Returns a read only list of devices being published by this instance.
-        /// </summary>
-        /// <seealso cref="SsdpDevice"/>
-        System.Collections.Generic.IEnumerable<SsdpRootDevice> Devices { get; }
     }
 }

@@ -1,9 +1,10 @@
 #pragma warning disable CS1591
-
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
+using Emby.Dlna.Rssdp;
+using Emby.Dlna.Rssdp.Devices;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -18,11 +19,8 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
-using Rssdp.Devices;
-using Rssdp.Infrastructure;
 
 namespace Emby.Dlna.Main
 {
@@ -97,7 +95,11 @@ namespace Emby.Dlna.Main
             Current = this;
         }
 
+        public static DlnaEntryPoint Current { get; internal set; }
+
         public bool DLNAEnabled => _config.GetDlnaConfiguration().EnableServer;
+
+        public bool EnablePlayTo => _config.GetDlnaConfiguration().EnablePlayTo;
 
         public SocketServer SocketServer => _socketServer;
 
@@ -107,8 +109,6 @@ namespace Emby.Dlna.Main
 
         internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
-        public static DlnaEntryPoint Current { get; internal set; }
-
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
@@ -116,6 +116,54 @@ namespace Emby.Dlna.Main
             ReloadComponents();
 
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void DisposeDevicePublisher()
+        {
+            if (_publisher != null)
+            {
+                _logger.LogInformation("Disposing SsdpDevicePublisher");
+                _publisher.Dispose();
+                _publisher = null;
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                DisposeDevicePublisher();
+                DisposePlayToManager();
+                try
+                {
+                    _logger.LogInformation("Disposing DeviceDiscovery");
+                    _deviceDiscovery.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error stopping device discovery");
+                }
+
+                _socketServer?.Dispose();
+                _socketServer = null;
+                ContentDirectory = null;
+                ConnectionManager = null;
+                MediaReceiverRegistrar = null;
+                Current = null;
+            }
+
+            _isDisposed = true;
         }
 
         private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
@@ -138,7 +186,7 @@ namespace Emby.Dlna.Main
 
             if (options.EnableServer)
             {
-                if (ContentDirectory != null)
+                if (ContentDirectory == null)
                 {
                     ContentDirectory = new ContentDirectory.ContentDirectory(
                         _dlnaManager,
@@ -156,7 +204,7 @@ namespace Emby.Dlna.Main
                         _tvSeriesManager);
                 }
 
-                if (ConnectionManager != null)
+                if (ConnectionManager == null)
                 {
                     ConnectionManager = new ConnectionManager.ConnectionManager(
                         _dlnaManager,
@@ -165,7 +213,7 @@ namespace Emby.Dlna.Main
                         _httpClient);
                 }
 
-                if (MediaReceiverRegistrar != null)
+                if (MediaReceiverRegistrar == null)
                 {
                     MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
                         _loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
@@ -179,14 +227,7 @@ namespace Emby.Dlna.Main
                     if (_socketServer == null)
                     {
                         _socketServer = new SocketServer(_networkManager, _config, _loggerFactory);
-                        try
-                        {
-                            ((DeviceDiscovery)_deviceDiscovery).Start(_socketServer);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error starting device discovery");
-                        }
+                        _deviceDiscovery.Start(_socketServer);
                     }
                 }
                 catch (Exception ex)
@@ -205,30 +246,16 @@ namespace Emby.Dlna.Main
 
                 RegisterServerEndpoints();
             }
-            else // Disable the server
+            else 
             {
-                try
-                {
-                    try
-                    {
-                        ((DeviceDiscovery)_deviceDiscovery).Stop();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error starting device discovery");
-                    }
+                // Disable the server
+                _deviceDiscovery.Stop();
 
-                    if (_socketServer != null)
-                    {
-                        _socketServer.Dispose();
-                        _socketServer = null;
-                    }
-                }
-                catch (Exception ex)
+                if (_socketServer != null)
                 {
-                    _logger.LogError(ex, "Error stopping ssdp handlers");
+                    _socketServer.Dispose();
+                    _socketServer = null;
                 }
-
                 DisposeDevicePublisher();
                 MediaReceiverRegistrar = null;
                 ContentDirectory = null;
@@ -242,19 +269,6 @@ namespace Emby.Dlna.Main
             else
             {
                 DisposePlayToManager();
-            }
-        }
-
-        private void DisposeDeviceDiscovery()
-        {
-            try
-            {
-                _logger.LogInformation("Disposing DeviceDiscovery");
-                ((DeviceDiscovery)_deviceDiscovery).Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error stopping device discovery");
             }
         }
 
@@ -280,18 +294,15 @@ namespace Emby.Dlna.Main
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
 
-                var device = new SsdpRootDevice
-                {
-                    CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
-                    Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = addr.Address,
-                    SubnetMask = addr.Mask,
-                    FriendlyName = "Jellyfin",
-                    Manufacturer = "Jellyfin",
-                    ModelName = "Jellyfin Server",
-                    Uuid = udn
-                    // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
-                };
+                SsdpRootDevice device = new SsdpRootDevice(
+                    TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
+                    uri, // Must point to the URL that serves your devices UPnP description document.
+                    addr.Address,
+                    addr.Mask,
+                    "Jellyfin",
+                    "Jellyfin",
+                    "Jellyfin Server",
+                    udn); // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
 
                 SetProperies(device, fullService);
 
@@ -306,15 +317,7 @@ namespace Emby.Dlna.Main
 
                 foreach (var subDevice in embeddedDevices)
                 {
-                    var embeddedDevice = new SsdpEmbeddedDevice
-                    {
-                        FriendlyName = device.FriendlyName,
-                        Manufacturer = device.Manufacturer,
-                        ModelName = device.ModelName,
-                        Uuid = udn
-                        // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
-                    };
-
+                    var embeddedDevice = new SsdpEmbeddedDevice(device, udn);  // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
                     SetProperies(embeddedDevice, subDevice);
                     device.AddDevice(embeddedDevice);
                 }
@@ -398,45 +401,6 @@ namespace Emby.Dlna.Main
 
                     _manager = null;
                 }
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                DisposeDevicePublisher();
-                DisposePlayToManager();
-                DisposeDeviceDiscovery();
-                _socketServer?.Dispose();
-                _socketServer = null;
-                ContentDirectory = null;
-                ConnectionManager = null;
-                MediaReceiverRegistrar = null;
-                Current = null;
-            }
-
-            _isDisposed = true;
-        }
-
-        public void DisposeDevicePublisher()
-        {
-            if (_publisher != null)
-            {
-                _logger.LogInformation("Disposing SsdpDevicePublisher");
-                _publisher.Dispose();
-                _publisher = null;
             }
         }
     }

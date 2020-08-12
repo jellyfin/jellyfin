@@ -1,43 +1,31 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace Rssdp.Infrastructure
+namespace Emby.Dlna.Rssdp
 {
     /// <summary>
     /// Correctly implements the <see cref="IDisposable"/> interface and pattern for an object containing only managed resources, and adds a few common niceities not on the interface such as an <see cref="IsDisposed"/> property.
     /// </summary>
-    public abstract class ISsdpInfrastructure : IDisposable
+    public abstract class SsdpInfrastructure : IDisposable
     {
         /// <summary>
-        /// Override this method and dispose any objects you own the lifetime of if disposing is true;
-        /// </summary>
-        /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
-        protected abstract void Dispose(bool disposing);
-
-        /// <summary>
-        /// Throws and <see cref="ObjectDisposedException"/> if the <see cref="IsDisposed"/> property is true.
-        /// </summary>
-        /// <seealso cref="IsDisposed"/>
-        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="IsDisposed"/> property is true.</exception>
-        /// <seealso cref="Dispose()"/>
-        protected virtual void ThrowIfDisposed()
-        {
-            if (this.IsDisposed)
-            {
-                throw new ObjectDisposedException(this.GetType().FullName);
-            }
-        }
-
-        /// <summary>
-        /// Sets or returns a boolean indicating whether or not this instance has been disposed.
+        /// Gets a value indicating whether sets or returns a boolean indicating whether or not this instance has been disposed.
         /// </summary>
         /// <seealso cref="Dispose()"/>
         public bool IsDisposed { get; private set; }
 
+        /// <summary>
+        /// Builds an SSDP message.
+        /// </summary>
+        /// <param name="header">SSDP Header string.</param>
+        /// <param name="values">SSDP paramaters.</param>
+        /// <returns>Formatted string.</returns>
         public static string BuildMessage(string header, Dictionary<string, string> values)
         {
             var builder = new StringBuilder();
@@ -52,6 +40,7 @@ namespace Rssdp.Infrastructure
                     builder.AppendFormat(CultureInfo.CurrentCulture, ArgFormat, pair.Key, pair.Value);
                 }
             }
+
             builder.Append("\r\n");
 
             return builder.ToString();
@@ -64,7 +53,7 @@ namespace Rssdp.Infrastructure
         /// <para>Sets the <see cref="IsDisposed"/> property to true. Does not explicitly throw an exception if called multiple times, but makes no promises about behaviour of derived classes.</para>
         /// </remarks>
         /// <seealso cref="IsDisposed"/>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly", Justification = "We do exactly as asked, but CA doesn't seem to like us also setting the IsDisposed property. Too bad, it's a good idea and shouldn't cause an exception or anything likely to interfer with the dispose process.")]
+        [SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly", Justification = "We do exactly as asked, but CA doesn't seem to like us also setting the IsDisposed property. Too bad, it's a good idea and shouldn't cause an exception or anything likely to interfer with the dispose process.")]
         public void Dispose()
         {
             IsDisposed = true;
@@ -72,6 +61,12 @@ namespace Rssdp.Infrastructure
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Returns a Header from the collection.
+        /// </summary>
+        /// <param name="headerName">Name to look for.</param>
+        /// <param name="headers">Collection to search.</param>
+        /// <returns>Value of the property.</returns>
         protected static Uri? GetFirstHeaderUriValue(string headerName, HttpHeaders headers)
         {
             if (headers == null)
@@ -91,10 +86,14 @@ namespace Rssdp.Infrastructure
             }
 
             return null;
-
         }
 
-
+        /// <summary>
+        /// Returns a Header from the collection.
+        /// </summary>
+        /// <param name="headerName">Name to look for.</param>
+        /// <param name="headers">Collection to search.</param>
+        /// <returns>Value of the property.</returns>
         protected static string GetFirstHeaderValue(string headerName, HttpHeaders headers)
         {
             if (headers == null)
@@ -103,12 +102,32 @@ namespace Rssdp.Infrastructure
             }
 
             string retVal = string.Empty;
-            if (headers.TryGetValues(headerName, out IEnumerable<String> values) && values != null)
+            if (headers.TryGetValues(headerName, out IEnumerable<string> values) && values != null)
             {
                 retVal = values.FirstOrDefault();
             }
 
             return retVal;
+        }
+
+        /// <summary>
+        /// Override this method and dispose any objects you own the lifetime of if disposing is true.
+        /// </summary>
+        /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
+        protected abstract void Dispose(bool disposing);
+
+        /// <summary>
+        /// Throws and <see cref="ObjectDisposedException"/> if the <see cref="IsDisposed"/> property is true.
+        /// </summary>
+        /// <seealso cref="IsDisposed"/>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="IsDisposed"/> property is true.</exception>
+        /// <seealso cref="Dispose()"/>
+        protected virtual void ThrowIfDisposed()
+        {
+            if (this.IsDisposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
         }
     }
 }

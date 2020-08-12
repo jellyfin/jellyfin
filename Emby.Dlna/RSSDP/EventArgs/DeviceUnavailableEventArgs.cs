@@ -1,18 +1,19 @@
 using System;
-using Rssdp.Devices;
+using Emby.Dlna.Rssdp.Devices;
 
-namespace Rssdp.Events
+namespace Emby.Dlna.Rssdp.EventArgs
 {
     /// <summary>
     /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceUnavailable"/> event.
     /// </summary>
-    public sealed class DeviceUnavailableEventArgs : EventArgs
+    public sealed class DeviceUnavailableEventArgs : System.EventArgs
     {
         /// <summary>
-        /// Full constructor.
+        /// Initializes a new instance of the <see cref="DeviceUnavailableEventArgs"/> class.
         /// </summary>
         /// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the device that has become unavailable.</param>
-        /// <param name="expired">A boolean value indicating whether this device is unavailable because it expired, or because it explicitly sent a byebye notification.. See <see cref="Expired"/> for more detail.</param>
+        /// <param name="expired">A boolean value indicating whether this device is unavailable because it expired, or because it explicitly
+        /// sent a byebye notification.. See <see cref="Expired"/> for more detail.</param>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
         public DeviceUnavailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool expired)
         {
@@ -21,12 +22,13 @@ namespace Rssdp.Events
         }
 
         /// <summary>
-        /// Returns true if the device is considered unavailable because it's cached information expired before a new alive notification or search result was received. Returns false if the device is unavailable because it sent an explicit notification of it's unavailability.
+        /// Gets a value indicating whether the device is considered unavailable because it's cached information expired before a new alive
+        /// notification or search result was received. Returns false if the device is unavailable because it sent an explicit notification of it's unavailability.
         /// </summary>
         public bool Expired { get; }
 
         /// <summary>
-        /// A reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovery details of the removed device.
+        /// Gets a reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovery details of the removed device.
         /// </summary>
         public DiscoveredSsdpDevice DiscoveredDevice { get; }
     }

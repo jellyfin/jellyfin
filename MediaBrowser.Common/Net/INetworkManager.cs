@@ -1,5 +1,4 @@
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -217,7 +216,7 @@ namespace MediaBrowser.Common.Net
         NetCollection GetFilteredLANSubnets(NetCollection? filter = null);
 
         /// <summary>
-        /// Returns true if the IP address in address2 is within the network address1/subnetMask.
+        /// Returns true if the IP address in address2 is within the network subnetIP/subnetMask.
         /// </summary>
         /// <param name="subnetIP">Subnet IP.</param>
         /// <param name="subnetMask">Subnet Mask.</param>
