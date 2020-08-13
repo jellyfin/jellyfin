@@ -95,5 +95,7 @@
     "AuthenticationSucceededWithUserName": "{0} வெற்றிகரமாக அங்கீகரிக்கப்பட்டது",
     "Artists": "கலைஞர்",
     "Application": "செயலி",
-    "Albums": "ஆல்பங்கள்"
+    "Albums": "ஆல்பங்கள்",
+    "NewVersionIsAvailable": "ஜெல்லிஃபின் சேவையகத்தின் புதிய பதிப்பு பதிவிறக்கத்திற்கு கிடைக்கிறது.",
+    "MessageNamedServerConfigurationUpdatedWithValue": "சேவையக உள்ளமைவு பிரிவு {0 புதுப்பிக்கப்பட்டது"
 }
