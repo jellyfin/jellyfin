@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
-    public class MediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar
+    public class DlnaMediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
 
-        public MediaReceiverRegistrar(
-            ILogger<MediaReceiverRegistrar> logger,
+        public DlnaMediaReceiverRegistrar(
+            ILogger<DlnaMediaReceiverRegistrar> logger,
             IHttpClient httpClient,
             IServerConfigurationManager config)
             : base(logger, httpClient)

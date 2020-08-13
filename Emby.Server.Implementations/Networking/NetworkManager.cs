@@ -22,9 +22,10 @@ namespace Emby.Server.Implementations.Networking
     /// </summary>
     public class NetworkManager : INetworkManager
     {
-        private const int DefaultMulticastTimeToLive = 4;
-        private static readonly IPAddress _multicastLocalAdminAddress = IPAddress.Parse("239.255.255.250");
-        private static readonly IPAddress _multicastLocalAdminAddressV6 = IPAddress.Parse("ff01::1"); // Site-local
+        /// <summary>
+        /// Default ttl.
+        /// </summary>
+        public const int DefaultMulticastTimeToLive = 4;
 
         /// <summary>
         /// Contains the description of the interface along with its index.
@@ -139,12 +140,6 @@ namespace Emby.Server.Implementations.Networking
 #pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 
         /// <inheritdoc/>
-        public IPNetAddress IP4Loopback { get; } = IPNetAddress.Parse("127.0.0.1/32");
-
-        /// <inheritdoc/>
-        public IPNetAddress IP6Loopback { get; } = IPNetAddress.Parse("::1");
-
-        /// <inheritdoc/>
         public NetCollection RemoteAddressFilter { get; private set; }
 
         /// <inheritdoc/>
@@ -167,7 +162,7 @@ namespace Emby.Server.Implementations.Networking
         public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
 
         private bool TrustAllIP6Interfaces => _configurationManager.Configuration.TrustAllIP6Interfaces;
-
+        
         /// <summary>
         /// Parses a string and returns a range value if possible.
         /// </summary>
@@ -340,10 +335,11 @@ namespace Emby.Server.Implementations.Networking
                 throw new ArgumentException("Port out of range", nameof(port));
             }
 
-            Socket retVal = PrepareSocket(IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any);
+            IPAddress addr = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+            Socket retVal = PrepareSocket(addr);
             try
             {
-                retVal.Bind(new IPEndPoint(IPAddress.Any, port));
+                retVal.Bind(new IPEndPoint(addr, port));
             }
             catch
             {
@@ -355,7 +351,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public Socket CreateSsdpUdpSocket(IPAddress address, int port)
+        public Socket CreateUdpMulticastSocket(IPAddress address, int port)
         {
             if (address == null)
             {
@@ -369,16 +365,24 @@ namespace Emby.Server.Implementations.Networking
 
             Socket retVal = PrepareSocket(address);
             retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
-
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                // Simulate a broadcast on IP6.
-                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(_multicastLocalAdminAddressV6));
-                // retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
+                if (address.IsIPv6LinkLocal)
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(IPNetAddress.MulticastIPv6LL));
+                }
+                else
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(IPNetAddress.MulticastIPv6));
+                }
+            }
+            else
+            {
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPNetAddress.MulticastIPv4, address));
             }
 
-            retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(_multicastLocalAdminAddress, address));
             // retVal.MulticastLoopback = true;
+            // retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
 
             try
             {
@@ -406,30 +410,31 @@ namespace Emby.Server.Implementations.Networking
                 throw new ArgumentException("multicastTimeToLive cannot be zero or less.", nameof(multicastTimeToLive));
             }
 
-            IPAddress address = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
-            Socket retVal = PrepareSocket(address);
-            retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+            return CreateUdpMulticastSocket(IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, port);
+        }
 
-            try
+        /// <inheritdoc/>
+        public IPEndPoint GetMulticastEndPoint(IPAddress localIPAddress, int port)
+        {
+            if (localIPAddress == null)
             {
-                // Without this an access denied occurs on some systems.
-                if (IsIP6Enabled)
-                {
-                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
-                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(_multicastLocalAdminAddressV6));
-                }
-
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(_multicastLocalAdminAddress, IPAddress.Any));
-                // retVal.MulticastLoopback = true;
-                retVal.Bind(new IPEndPoint(address, port));
-            }
-            catch
-            {
-                retVal?.Dispose();
-                throw;
+                throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            return retVal;
+            return new IPEndPoint(
+                localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.MulticastIPv4 : localIPAddress.IsIPv6LinkLocal ?
+                        IPNetAddress.MulticastIPv6LL : IPNetAddress.MulticastIPv6, port);
+        }
+
+        /// <inheritdoc/>
+        public IPEndPoint GetMulticastEndPoint(int port)
+        {
+            IPAddress addr = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+            return new IPEndPoint(
+                addr.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.MulticastIPv4 : addr.IsIPv6LinkLocal ?
+                        IPNetAddress.MulticastIPv6LL : IPNetAddress.MulticastIPv6, port);
         }
 
         /// <inheritdoc/>
@@ -906,12 +911,33 @@ namespace Emby.Server.Implementations.Networking
                 retVal.DualMode = true;
             }
 
+            if (Type.GetType("Mono.Runtime") == null)
+            {
+                uint ioc_IN = 0x80000000;
+                uint ioc_VENDOR = 0x18000000;
+                uint sio_UDP_CONNRESET = ioc_IN | ioc_VENDOR | 12;
+                retVal.IOControl((int)sio_UDP_CONNRESET, new byte[] { Convert.ToByte(false) }, null);
+            }
+
             try
             {
-                retVal.ExclusiveAddressUse = false;
-                retVal.EnableBroadcast = true;
-                // Seeing occasional exceptions thrown on qnap : System.Net.Sockets.SocketException (0x80004005): Protocol not available
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            }
+            catch (SocketException)
+            {
+            }
+
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ExclusiveAddressUse, false);
+            }
+            catch (SocketException)
+            {
+            }
+
+            try
+            {
+                retVal.EnableBroadcast = true;
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
             }
             catch (SocketException)
@@ -1128,10 +1154,10 @@ namespace Emby.Server.Implementations.Networking
                     // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IsIP6Enabled)
                     {
-                        _lanSubnets.Add(IP6Loopback);
+                        _lanSubnets.Add(IPNetAddress.IP6Loopback);
                     }
 
-                    _lanSubnets.Add(IP4Loopback);
+                    _lanSubnets.Add(IPNetAddress.IP4Loopback);
 
                     // Filtered LAN subnets are subnets of the LAN Addresses.
                     _filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
@@ -1141,10 +1167,10 @@ namespace Emby.Server.Implementations.Networking
                     // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IsIP6Enabled)
                     {
-                        _lanSubnets.Add(IP6Loopback);
+                        _lanSubnets.Add(IPNetAddress.IP6Loopback);
                     }
 
-                    _lanSubnets.Add(IP4Loopback);
+                    _lanSubnets.Add(IPNetAddress.IP4Loopback);
 
                     // Filtered LAN subnets are subnets of the LAN Addresses.
                     _filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
@@ -1271,10 +1297,10 @@ namespace Emby.Server.Implementations.Networking
                         {
                             _logger.LogError("No interfaces information available. Resolving DNS name.");
                             // Last ditch attempt - use loopback address.
-                            _interfaceAddresses.Add(IP4Loopback);
+                            _interfaceAddresses.Add(IPNetAddress.IP4Loopback);
                             if (IsIP6Enabled)
                             {
-                                _interfaceAddresses.Add(IP6Loopback);
+                                _interfaceAddresses.Add(IPNetAddress.IP6Loopback);
                             }
                         }
                     }

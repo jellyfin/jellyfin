@@ -1,6 +1,5 @@
 #nullable disable
 #pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
@@ -21,6 +20,11 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
         public bool EnableUPnP { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
+        /// </summary>
+        public bool UPnPCreateHttpPortMap { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
@@ -294,6 +298,7 @@ namespace MediaBrowser.Model.Configuration
             LocalNetworkAddresses = Array.Empty<string>();
             PublishedServerUriBySubnet = Array.Empty<string>();
             EnableUPnP = false;
+            UPnPCreateHttpPortMap = false;
             PublicPort = DefaultHttpPort;
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;

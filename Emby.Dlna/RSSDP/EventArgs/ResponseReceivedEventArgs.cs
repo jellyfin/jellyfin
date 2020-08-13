@@ -19,13 +19,13 @@ namespace Emby.Dlna.Rssdp.EventArgs
         {
             Message = message;
             ReceivedFrom = receivedFrom;
-            LocalIpAddress = localIPAddress;
+            LocalIPAddress = localIPAddress;
         }
 
         /// <summary>
         /// Gets the interface ip upon which the message was received.
         /// </summary>
-        public IPAddress LocalIpAddress { get; }
+        public IPAddress LocalIPAddress { get; }
 
         /// <summary>
         /// Gets the <see cref="HttpResponseMessage"/> that was received.

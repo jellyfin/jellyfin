@@ -296,36 +296,33 @@ namespace Emby.Dlna.Rssdp
 
         private Task BroadcastDiscoverMessage(TimeSpan mxValue)
         {
-            const string Header = "M-SEARCH * HTTP/1.1";
+            string[] multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
+            Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
+            int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
-            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            for (int a = 0; a <= count; a++)
             {
-                ["HOST"] = "239.255.255.250:1900",
-                ["USER-AGENT"] = SsdpUserAgent + "\\" + _systemId,
-                ["MAN"] = $"\"ssdp:discover\"",
-                ["ST"] = "ssdp:all",
-                ["MX"] = mxValue.Seconds.ToString(CultureInfo.CurrentCulture)
-            };
+                var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["HOST"] = multicastAddresses[a] + ":1900",
+                    ["USER-AGENT"] = SsdpUserAgent + "\\" + _systemId,
+                    ["MAN"] = $"\"ssdp:discover\"",
+                    ["ST"] = "ssdp:all",
+                    ["MX"] = mxValue.Seconds.ToString(CultureInfo.CurrentCulture)
+                };
 
-            var message = BuildMessage(Header, values);
+                var message = BuildMessage("M-SEARCH * HTTP/1.1", values);
 
-            Task task1 = _socketServer.SendMulticastMessageAsync(message, IPAddress.Any);
-            Task task2 = Task.CompletedTask;
-
-            if (_networkManager.IsIP6Enabled)
-            {
-                values["HOST"] = "[ff01::2]:1900";
-                message = BuildMessage(Header, values);
-                task2 = _socketServer.SendMulticastMessageAsync(message, IPAddress.IPv6Any);
+                tasks[a] = _socketServer.SendMulticastMessageAsync(message, a == 0 ? IPAddress.Any : IPAddress.IPv6Any);
             }
 
-            return Task.WhenAll(task1, task2);
+            return Task.WhenAll(tasks);
         }
 
         private void ProcessSearchResponseMessage(object sender, ResponseReceivedEventArgs e)
         {
             HttpResponseMessage message = e.Message;
-            IPAddress localIpAddress = e.LocalIpAddress;
+            IPAddress localIpAddress = e.LocalIPAddress;
 
             if (!message.IsSuccessStatusCode)
             {
@@ -353,7 +350,12 @@ namespace Emby.Dlna.Rssdp
         private void ProcessNotificationMessage(object sender, RequestReceivedEventArgs e)
         {
             HttpRequestMessage message = e.Message;
-            IPAddress localIpAddress = e.LocalIpAddress;
+            IPAddress localIpAddress = e.LocalIPAddress;
+
+            var nt = GetFirstHeaderValue("NT", message.Headers);
+            _logger.LogDebug("Sniffer: {0} from {1} type {2}", message.Method.Method, e.ReceivedFrom.Address, nt);
+            // TODO: Link in External Here!
+
             if (string.Equals(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase))
             {
                 return;
@@ -424,7 +426,9 @@ namespace Emby.Dlna.Rssdp
                 return;
             }
 
+#pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
             DiscoveredSsdpDevice[]? expiredDevices = null;
+#pragma warning restore SA1011 // Closing square brackets should be spaced correctly
             lock (_devices)
             {
                 expiredDevices = (from device in _devices where device.IsExpired() select device).ToArray();

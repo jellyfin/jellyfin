@@ -180,7 +180,7 @@ namespace Emby.Dlna.Main
         /// </summary>
         private void ReloadComponents()
         {
-            _logger.LogDebug("Reloading DLNA components.");
+            _logger.LogDebug("(Re)loading DLNA components.");
 
             var options = _config.GetDlnaConfiguration();
 
@@ -188,14 +188,14 @@ namespace Emby.Dlna.Main
             {
                 if (ContentDirectory == null)
                 {
-                    ContentDirectory = new ContentDirectory.ContentDirectory(
+                    ContentDirectory = new ContentDirectory.DlnaContentDirectory(
                         _dlnaManager,
                         _userDataManager,
                         _imageProcessor,
                         _libraryManager,
                         _config,
                         _userManager,
-                        _loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
+                        _loggerFactory.CreateLogger<ContentDirectory.DlnaContentDirectory>(),
                         _httpClient,
                         _localizationManager,
                         _mediaSourceManager,
@@ -206,17 +206,17 @@ namespace Emby.Dlna.Main
 
                 if (ConnectionManager == null)
                 {
-                    ConnectionManager = new ConnectionManager.ConnectionManager(
+                    ConnectionManager = new ConnectionManager.DlnaConnectionManager(
                         _dlnaManager,
                         _config,
-                        _loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
+                        _loggerFactory.CreateLogger<ConnectionManager.DlnaConnectionManager>(),
                         _httpClient);
                 }
 
                 if (MediaReceiverRegistrar == null)
                 {
-                    MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
-                        _loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
+                    MediaReceiverRegistrar = new MediaReceiverRegistrar.DlnaMediaReceiverRegistrar(
+                        _loggerFactory.CreateLogger<MediaReceiverRegistrar.DlnaMediaReceiverRegistrar>(),
                         _httpClient,
                         _config);
                 }
@@ -242,11 +242,11 @@ namespace Emby.Dlna.Main
                     {
                         SupportPnpRootDevice = false
                     };
-                }
 
-                RegisterServerEndpoints();
+                    RegisterServerEndpoints();
+                }
             }
-            else 
+            else
             {
                 // Disable the server
                 _deviceDiscovery.Stop();
@@ -256,6 +256,7 @@ namespace Emby.Dlna.Main
                     _socketServer.Dispose();
                     _socketServer = null;
                 }
+
                 DisposeDevicePublisher();
                 MediaReceiverRegistrar = null;
                 ContentDirectory = null;

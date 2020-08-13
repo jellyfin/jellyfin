@@ -17,6 +17,31 @@ namespace MediaBrowser.Common.Networking
         public static readonly IPNetAddress None = new IPNetAddress(IPAddress.None);
 
         /// <summary>
+        /// IPv4 multicast address.
+        /// </summary>
+        public static readonly IPAddress MulticastIPv4 = IPAddress.Parse("239.255.255.250");
+
+        /// <summary>
+        /// IPv6 local link multicast address.
+        /// </summary>
+        public static readonly IPAddress MulticastIPv6LL = IPAddress.Parse("ff02::C");
+
+        /// <summary>
+        /// IPv6 multicast address.
+        /// </summary>
+        public static readonly IPAddress MulticastIPv6 = IPAddress.Parse("ff05::C");
+
+        /// <summary>
+        /// IP4Loopback address host.
+        /// </summary>
+        public static readonly IPNetAddress IP4Loopback = IPNetAddress.Parse("127.0.0.1/32");
+
+        /// <summary>
+        /// IP6Loopback address host.
+        /// </summary>
+        public static readonly IPNetAddress IP6Loopback = IPNetAddress.Parse("::1");
+
+        /// <summary>
         /// Object's IP address.
         /// </summary>
         private IPAddress _address;

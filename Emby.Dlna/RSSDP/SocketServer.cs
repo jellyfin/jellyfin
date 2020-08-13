@@ -7,11 +7,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.Rssdp.Devices;
 using Emby.Dlna.Rssdp.EventArgs;
 using Emby.Dlna.Rssdp.Parsers;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller.Configuration;
@@ -41,15 +40,6 @@ namespace Emby.Dlna.Rssdp
          * underlying system to auto-assign a free port.
          */
 
-        /// <summary>
-        /// Multicast IP Address used for SSDP multicast messages.
-        /// </summary>
-        private readonly IPAddress _multicastLocalAdminAddress = IPAddress.Parse("239.255.255.250");
-
-        /// <summary>
-        /// Multicast IP6 Address used for SSDP multicast messages.
-        /// </summary>
-        private readonly IPAddress _multicastLocalAdminAddressV6 = IPAddress.Parse("ff01::2");
         private readonly object _socketSynchroniser;
         private readonly HttpRequestParser _requestParser;
         private readonly HttpResponseParser _responseParser;
@@ -156,10 +146,10 @@ namespace Emby.Dlna.Rssdp
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
         /// <param name="messageData">The mesage to send.</param>
-        /// <param name="destination">The destination endpoint.</param>
-        /// <param name="localIp">The interface ip to use.</param>
+        /// <param name="localIPAddress">The interface ip to use.</param>
+        /// <param name="receivedFrom">The destination endpoint.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task SendMessageAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp)
+        public async Task SendMessageAsync(byte[] messageData, IPAddress localIPAddress, IPEndPoint receivedFrom)
         {
             if (_disposed)
             {
@@ -171,27 +161,27 @@ namespace Emby.Dlna.Rssdp
                 throw new ArgumentNullException(nameof(messageData));
             }
 
-            if (destination == null)
+            if (receivedFrom == null)
             {
-                throw new ArgumentNullException(nameof(destination));
+                throw new ArgumentNullException(nameof(receivedFrom));
             }
 
-            if (localIp == null)
+            if (localIPAddress == null)
             {
-                throw new ArgumentNullException(nameof(localIp));
+                throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            if (!_networkManager.IsInLocalNetwork(destination.Address))
+            if (!_networkManager.IsInLocalNetwork(receivedFrom.Address))
             {
-                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", destination.Address);
+                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", receivedFrom.Address);
                 return;
             }
 
-            if (!localIp.Equals(IPAddress.Any) && !localIp.Equals(IPAddress.IPv6Any))
+            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
             {
-                if (!_networkManager.IsInLocalNetwork(localIp))
+                if (!_networkManager.IsInLocalNetwork(localIPAddress))
                 {
-                    _logger.LogDebug("SSDP filtered due to attempt to send from a non LAN interface {0}.", localIp);
+                    _logger.LogDebug("SSDP filtered due to attempt to send from a non LAN interface {0}.", localIPAddress);
                     return;
                 }
             }
@@ -201,44 +191,36 @@ namespace Emby.Dlna.Rssdp
 
             lock (_socketSynchroniser)
             {
-                sockets = _sockets.Where(i => i.Key.LocalEndPoint.AddressFamily == localIp.AddressFamily);
+                sockets = _sockets.Where(i => i.Key.LocalEndPoint.AddressFamily == localIPAddress.AddressFamily);
 
                 if (sockets.Any())
                 {
                     // Send from the Any socket and the socket with the matching address
-                    if (localIp.AddressFamily == AddressFamily.InterNetwork)
+                    if (localIPAddress.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        sockets = sockets.Where(
-                            i => ((IPEndPoint)i.Key.LocalEndPoint).Address.Equals(IPAddress.Any)
-                            || localIp.Equals(((IPEndPoint)i.Key.LocalEndPoint).Address));
+                        sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.Any) || localIPAddress.Equals(i.Key.LocalAddress()));
 
                         // If sending to the loopback address, filter the socket list as well
-                        if (((IPEndPoint)destination).Address.Equals(IPAddress.Loopback))
+                        if (receivedFrom.Address.Equals(IPAddress.Loopback))
                         {
-                            sockets = sockets.Where(
-                                i => ((IPEndPoint)i.Key.LocalEndPoint).Address.Equals(IPAddress.Any) ||
-                                ((IPEndPoint)i.Key.LocalEndPoint).Address.Equals(IPAddress.Loopback));
+                            sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.Any) || i.Key.LocalAddressEquals(IPAddress.Loopback));
                         }
                     }
-                    else if (localIp.AddressFamily == AddressFamily.InterNetworkV6)
+                    else if (localIPAddress.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        sockets = sockets.Where(
-                            i => ((IPEndPoint)i.Key.LocalEndPoint).Address.Equals(IPAddress.IPv6Any) ||
-                            ((IPEndPoint)i.Key.LocalEndPoint).Address.Equals(i.Key.LocalEndPoint));
+                        sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.IPv6Any) || localIPAddress.Equals(i.Key.LocalAddress()));
 
                         // If sending to the loopback address, filter the socket list as well
-                        if (((IPEndPoint)destination).Equals(IPAddress.IPv6Loopback))
+                        if (receivedFrom.Equals(IPAddress.IPv6Loopback))
                         {
-                            sockets = sockets.Where(
-                                i => ((IPEndPoint)i.Key.LocalEndPoint).Address.Equals(IPAddress.IPv6Any) ||
-                                ((IPEndPoint)i.Key.LocalEndPoint).Address.Equals(IPAddress.IPv6Loopback));
+                            sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.IPv6Any) || i.Key.LocalAddressEquals(IPAddress.IPv6Loopback));
                         }
                     }
                 }
 
                 if (!sockets.Any())
                 {
-                    _logger.LogError("Unable to locate or create socket for {0}:{1}", localIp, destination);
+                    _logger.LogError("Unable to locate or create socket for {0}:{1}", localIPAddress, receivedFrom);
                     return;
                 }
 
@@ -246,7 +228,7 @@ namespace Emby.Dlna.Rssdp
                 sendSockets = new Dictionary<Socket, SocketState>(sockets);
             }
 
-            var tasks = sendSockets.Select(i => SendFromSocketAsync(i.Key, messageData, destination, UdpResendCount));
+            var tasks = sendSockets.Select(i => SendFromSocketAsync(i.Key, messageData, receivedFrom, UdpResendCount));
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
@@ -254,21 +236,21 @@ namespace Emby.Dlna.Rssdp
         /// Sends a message to a particular address (unicast or multicast) via all available sockets.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        /// <param name="from">The destination address.</param>
+        /// <param name="localIPAddress">The destination address.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task SendMulticastMessageAsync(string message, IPAddress from)
+        public async Task SendMulticastMessageAsync(string message, IPAddress localIPAddress)
         {
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            if (from == null)
+            if (localIPAddress == null)
             {
-                throw new ArgumentNullException(nameof(from));
+                throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            await SendMulticastMessageAsync(message, UdpResendCount, from).ConfigureAwait(false);
+            await SendMulticastMessageAsync(message, UdpResendCount, localIPAddress).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -276,40 +258,52 @@ namespace Emby.Dlna.Rssdp
         /// </summary>
         /// <param name="message">The mesage to send.</param>
         /// <param name="sendCount">The number of times to send it.</param>
-        /// <param name="from">The interface ip to use.</param>
+        /// <param name="localIPAddress">The interface ip to use.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task SendMulticastMessageAsync(string message, int sendCount, IPAddress from)
+        public async Task SendMulticastMessageAsync(string message, int sendCount, IPAddress localIPAddress)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
 
-            if (from == null)
+            if (localIPAddress == null)
             {
-                throw new ArgumentNullException(nameof(from));
+                throw new ArgumentNullException(nameof(localIPAddress));
             }
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
 
-            IPEndPoint ep = new IPEndPoint(from.AddressFamily == AddressFamily.InterNetwork ? _multicastLocalAdminAddress : _multicastLocalAdminAddressV6, 1900);
+            IPEndPoint endPoint = _networkManager.GetMulticastEndPoint(localIPAddress, 1900);
 
-            // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
-            await SendMessageViaAllSocketsAsync(messageData, ep, from, sendCount).ConfigureAwait(false);
+            Dictionary<Socket, SocketState>.KeyCollection sockets;
+            lock (_socketSynchroniser)
+            {
+                sockets = _sockets.Keys;
+            }
+
+            if (sockets.Count > 0)
+            {
+                var tasks = sockets
+                    .Where(s => (localIPAddress.Equals(IPAddress.Any) || localIPAddress.Equals(IPAddress.IPv6Any) || localIPAddress.Equals(s.LocalEndPoint)))
+                    .Where(s => endPoint.AddressFamily == s.LocalEndPoint.AddressFamily)
+                    .Select(s => SendFromSocketAsync(s, messageData, endPoint, sendCount));
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
-        /// Processes an SSDP message.
+        /// Processes a SSDP message.
         /// </summary>
         /// <param name="data">The data to process.</param>
-        /// <param name="endPoint">The remote endpoint.</param>
-        /// <param name="localIp">The interface ip upon which it was receieved.</param>
+        /// <param name="receivedFrom">The remote endpoint.</param>
+        /// <param name="localIPAddress">The interface ip upon which it was receieved.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task ProcessMessage(string data, IPEndPoint endPoint, IPAddress localIp)
+        public Task ProcessMessage(string data, IPEndPoint receivedFrom, IPAddress localIPAddress)
         {
-            if (endPoint == null)
+            if (receivedFrom == null)
             {
-                throw new ArgumentNullException(nameof(endPoint));
+                throw new ArgumentNullException(nameof(receivedFrom));
             }
 
             if (data == null)
@@ -317,23 +311,22 @@ namespace Emby.Dlna.Rssdp
                 throw new ArgumentNullException(nameof(data));
             }
 
-            if (localIp == null)
+            if (localIPAddress == null)
             {
-                throw new ArgumentNullException(nameof(localIp));
+                throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            var epAddr = ((IPEndPoint)endPoint).Address;
-            if (!_networkManager.IsInLocalNetwork(epAddr))
+            if (!_networkManager.IsInLocalNetwork(receivedFrom.Address))
             {
-                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", epAddr);
+                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", receivedFrom.Address);
                 return Task.CompletedTask;
             }
 
-            if (!localIp.Equals(IPAddress.Any) && !localIp.Equals(IPAddress.IPv6Any))
+            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
             {
-                if (!_networkManager.IsInLocalNetwork(localIp))
+                if (!_networkManager.IsInLocalNetwork(localIPAddress))
                 {
-                    _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", localIp);
+                    _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", localIPAddress);
                     return Task.CompletedTask;
                 }
             }
@@ -357,7 +350,7 @@ namespace Emby.Dlna.Rssdp
 
                 if (responseMessage != null)
                 {
-                    ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, endPoint, localIp));
+                    ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, receivedFrom, localIPAddress));
                 }
             }
             else
@@ -382,7 +375,7 @@ namespace Emby.Dlna.Rssdp
                         return Task.CompletedTask;
                     }
 
-                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(requestMessage, endPoint, localIp));
+                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(requestMessage, receivedFrom, localIPAddress));
                 }
             }
 
@@ -390,7 +383,7 @@ namespace Emby.Dlna.Rssdp
         }
 
         /// <summary>
-        /// Stops listening for requests, disposes this instance and all internal resources.
+        /// Stops listening for requests, disposes this instance and all internal relocalIPAddresss.
         /// </summary>
         /// <param name="disposing">True if objects are to be disposed.</param>
         protected virtual void Dispose(bool disposing)
@@ -453,45 +446,14 @@ namespace Emby.Dlna.Rssdp
         }
 
         /// <summary>
-        /// Sends the same message out to all sockets in @sockets.
-        /// </summary>
-        /// <param name="messageData">Message to transmit.</param>
-        /// <param name="destination">Destination endpoint.</param>
-        /// <param name="localIp">Source endpoint to use.</param>
-        /// <param name="sendCount">Number of times to transmit.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private async Task SendMessageViaAllSocketsAsync(byte[] messageData, IPEndPoint destination, IPAddress localIp, int sendCount)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(this.GetType().FullName);
-            }
-
-            Dictionary<Socket, SocketState>.KeyCollection sockets;
-            lock (_socketSynchroniser)
-            {
-                sockets = _sockets.Keys;
-            }
-
-            if (sockets.Count > 0)
-            {
-                var tasks = sockets
-                    .Where(s => (localIp.Equals(IPAddress.Any) || localIp.Equals(IPAddress.IPv6Any) || localIp.Equals(s.LocalEndPoint)))
-                    .Where(s => (((IPEndPoint)destination).Address.AddressFamily == s.LocalEndPoint.AddressFamily))
-                    .Select(s => SendFromSocketAsync(s, messageData, destination, sendCount));
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
         /// Creates UDP port if the endpoint doesn't already have one defined.
         /// </summary>
         /// <param name="listen">True if the socket is to be a listener.</param>
-        /// <param name="ip">Interface IP upon which to listen.</param>
+        /// <param name="localIPAddress">Interface IP upon which to listen.</param>
         /// <param name="port">Port upon which to listen. If the port number isn't zero, the socket is initialised for multicasts.</param>
-        private void CreateUniqueSocket(bool listen, IPAddress ip, int port = 0)
+        private void CreateUniqueSocket(bool listen, IPAddress localIPAddress, int port = 0)
         {
-            var sockets = _sockets.Keys.Where(k => ((IPEndPoint)k.LocalEndPoint).Address.Equals(ip));
+            var sockets = _sockets.Keys.Where(k => k.LocalAddressEquals(localIPAddress));
             if (!sockets.Any())
             {
                 try
@@ -499,12 +461,12 @@ namespace Emby.Dlna.Rssdp
                     Socket socket;
                     if (port == 0)
                     {
-                        _logger.LogDebug("Creating socket for {0}.", ip);
-                        socket = _networkManager.CreateSsdpUdpSocket(ip, port);
+                        _logger.LogDebug("Creating socket for {0}.", localIPAddress);
+                        socket = _networkManager.CreateUdpMulticastSocket(localIPAddress, port);
                     }
                     else
                     {
-                        _logger.LogDebug("Creating multicast socket for {0} on {1}.", ip, port);
+                        _logger.LogDebug("Creating multicast socket for {0} on {1}.", localIPAddress, port);
                         socket = _networkManager.CreateUdpMulticastSocket(_multicastTtl, port);
                     }
 
@@ -512,7 +474,7 @@ namespace Emby.Dlna.Rssdp
                 }
                 catch (SocketException ex)
                 {
-                    _logger.LogError(ex, "Error creating socket {0} port {1}", ip, port);
+                    _logger.LogError(ex, "Error creating socket {0} port {1}", localIPAddress, port);
                 }
             }
             else
@@ -527,12 +489,12 @@ namespace Emby.Dlna.Rssdp
                     if (state == SocketState.Listening && !listen)
                     {
                         // As we are using ReceiveFromAsync, the only way to break out of the method is to close the socket.
-                        _logger.LogDebug("Closing listening socket on {0}", ((IPEndPoint)socket.LocalEndPoint).Address);
+                        _logger.LogDebug("Closing listening socket on {0}", socket.LocalAddress());
                         _sockets.Remove(socket);
                         socket.Dispose();
 
                         // As we have to closed this port - we'll need another one creating.
-                        CreateUniqueSocket(listen, ip, port);
+                        CreateUniqueSocket(listen, localIPAddress, port);
                     }
                     else if (state == SocketState.SendOnly && listen)
                     {
@@ -559,10 +521,8 @@ namespace Emby.Dlna.Rssdp
                     foreach (var (socket, state) in _sockets)
                     {
                         // If not an IPAny/v6Any and socket doesn't exist any more, then dispose of it.
-                        IPEndPoint addr = (IPEndPoint)socket.LocalEndPoint;
-                        if (!addr.Address.Equals(IPAddress.Any) &&
-                            !addr.Address.Equals(IPAddress.IPv6Any) &&
-                            !ba.Exists(addr.Address))
+                        IPAddress addr = socket.LocalAddress();
+                        if (!addr.Equals(IPAddress.Any) && !addr.Equals(IPAddress.IPv6Any) && !ba.Exists(addr))
                         {
                             _sockets.Remove(socket);
                             socket.Dispose();
@@ -653,25 +613,23 @@ namespace Emby.Dlna.Rssdp
                     _sockets[socket] = SocketState.Listening;
                 }
 
+                var endPoint = socket.LocalEndPoint; // _networkManager.GetMulticastEndPoint(1900);  /// var endPoint = _networkManager.GetMulticastEndPoint(1900);  ///
                 while (!_disposed)
                 {
                     try
                     {
-                        var result = await socket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0)).ConfigureAwait(false);
+                        var result = await socket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, endPoint).ConfigureAwait(false);
 
                         if (result.ReceivedBytes > 0)
                         {
-                            var endpoint = (IPEndPoint)result.RemoteEndPoint;
-                            if (!_networkManager.IsInLocalNetwork(endpoint.Address))
+                            var farEnd = (IPEndPoint)result.RemoteEndPoint;
+                            if (!_networkManager.IsInLocalNetwork(farEnd.Address))
                             {
-                                _logger.LogDebug("SSDP filtered from non-LAN address {0}.", endpoint.Address);
+                                _logger.LogDebug("SSDP filtered from non-LAN address {0}.", farEnd.Address);
                                 return;
                             }
 
-                            await ProcessMessage(
-                                System.Text.UTF8Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),
-                                endpoint,
-                                ((IPEndPoint)socket.LocalEndPoint).Address).ConfigureAwait(false);
+                            await ProcessMessage(Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes), farEnd, socket.LocalAddress()).ConfigureAwait(false);
                         }
 
                         await Task.Delay(10).ConfigureAwait(false);

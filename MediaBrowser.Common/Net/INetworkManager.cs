@@ -31,16 +31,6 @@ namespace MediaBrowser.Common.Net
         bool EnableMultiSocketBinding { get; }
 
         /// <summary>
-        /// Gets the IP4Loopback address host.
-        /// </summary>
-        IPNetAddress IP4Loopback { get; }
-
-        /// <summary>
-        /// Gets the IP6Loopback address host.
-        /// </summary>
-        IPNetAddress IP6Loopback { get; }
-
-        /// <summary>
         /// Gets returns the remote address filter.
         /// </summary>
         NetCollection RemoteAddressFilter { get; }
@@ -229,7 +219,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="port">UDP port to bind.</param>
         /// <returns>A Socket.</returns>
-        public Socket CreateUdpBroadcastSocket(int port);
+        Socket CreateUdpBroadcastSocket(int port);
 
         /// <summary>
         /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
@@ -237,7 +227,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="address">IP Address to bind.</param>
         /// <param name="port">UDP port to bind.</param>
         /// <returns>A Socket.</returns>
-        public Socket CreateSsdpUdpSocket(IPAddress address, int port);
+        Socket CreateUdpMulticastSocket(IPAddress address, int port);
 
         /// <summary>
         /// Creates a new UDP acceptSocket that is a member of the specified multicast IP address, and binds it to the specified local port.
@@ -245,6 +235,21 @@ namespace MediaBrowser.Common.Net
         /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
         /// <param name="port">UDP port to bind.</param>
         /// <returns>Socket interface object.</returns>
-        public Socket CreateUdpMulticastSocket(int multicastTimeToLive, int port);
+        Socket CreateUdpMulticastSocket(int multicastTimeToLive, int port);
+
+        /// <summary>
+        /// Returns the correct multicast address based upon the value of the address provided.
+        /// </summary>
+        /// <param name="localIPAddress">IP address to use for comparison.</param>
+        /// <param name="port">Port to use.</param>
+        /// <returns>IPEndpoint set to the port provided.</returns>
+        IPEndPoint GetMulticastEndPoint(IPAddress localIPAddress, int port);
+
+        /// <summary>
+        /// Returns the correct multicast address based upon the IsIPEnabled.
+        /// </summary>
+        /// <param name="port">Port to use.</param>
+        /// <returns>IPEndpoint set to the port provided.</returns>
+        IPEndPoint GetMulticastEndPoint(int port);
     }
 }

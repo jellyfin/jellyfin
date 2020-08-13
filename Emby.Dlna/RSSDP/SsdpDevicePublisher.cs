@@ -164,7 +164,7 @@ namespace Emby.Dlna.Rssdp
                 {
                     _logger.LogInformation("Device Added {0}", Expand(device));
 
-                    await SendAliveNotifications(device, true).ConfigureAwait(false);
+                    await SendAliveNotifications(device, true, true).ConfigureAwait(false);
 
                     StartBroadcastingAliveMessages(TimeSpan.FromSeconds(AliveMessageInterval));
                 }
@@ -228,17 +228,17 @@ namespace Emby.Dlna.Rssdp
             return $"{udn}::{fullDeviceType}";
         }
 
-        private async Task ProcessSearchRequest(string mx, string searchTarget, IPEndPoint remoteEndPoint, IPAddress localIpAddress)
+        private async Task ProcessSearchRequest(string mx, string searchTarget, IPAddress source, IPEndPoint destination)
         {
             if (string.IsNullOrEmpty(searchTarget))
             {
-                _logger.LogWarning("Invalid search request received From {0}, Target is null/empty.", remoteEndPoint);
+                _logger.LogWarning("Invalid search request received From {0}, Target is null/empty.", destination);
                 return;
             }
 
-            _logger.LogDebug("Search Request Received From {0}, Target = {1}", remoteEndPoint.ToString(), searchTarget);
+            _logger.LogDebug("Search Request Received From {0}, Target = {1}", destination.ToString(), searchTarget);
 
-            if (IsDuplicateSearchRequest(searchTarget, remoteEndPoint))
+            if (IsDuplicateSearchRequest(searchTarget, destination))
             {
                 // WriteTrace("Search Request is Duplicate, ignoring.");
                 return;
@@ -272,10 +272,10 @@ namespace Emby.Dlna.Rssdp
 
             _ = Task.Delay(_random.Next(16, maxWaitInterval * 1000));
 
-            await ProcessSearchRequestAsync(searchTarget, remoteEndPoint, localIpAddress).ConfigureAwait(false);
+            await ProcessSearchRequestAsync(searchTarget, source, destination).ConfigureAwait(false);
         }
 
-        private async Task ProcessSearchRequestAsync(string searchTarget, IPEndPoint remoteEndPoint, IPAddress localIpAddress)
+        private async Task ProcessSearchRequestAsync(string searchTarget, IPAddress source, IPEndPoint destination )
         {
             // Copying devices to local array here to avoid threading issues/enumerator exceptions.
             IEnumerable<SsdpDevice>? devices = null;
@@ -313,10 +313,10 @@ namespace Emby.Dlna.Rssdp
                     var rt = device.ToRootDevice();
 
                     // Response is sent only when the device in the same subnet, or the are private address on the local device.
-                    if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address) ||
-                        _networkManager.OnSameMachine(rt.Address, remoteEndPoint.Address))
+                    if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, destination.Address) ||
+                        _networkManager.OnSameMachine(rt.Address, destination.Address))
                     {
-                        await SendDeviceSearchResponsesAsync(device, remoteEndPoint, localIpAddress).ConfigureAwait(false);
+                        await SendDeviceSearchResponsesAsync(device, source, destination).ConfigureAwait(false);
                     }
                 }
             }
@@ -326,21 +326,21 @@ namespace Emby.Dlna.Rssdp
             }
         }
 
-        private async Task SendDeviceSearchResponsesAsync(SsdpDevice device, IPEndPoint endPoint, IPAddress localIP)
+        private async Task SendDeviceSearchResponsesAsync(SsdpDevice device, IPAddress source, IPEndPoint destination)
         {
             bool isRootDevice = (device as SsdpRootDevice) != null;
             if (isRootDevice)
             {
-                await SendSearchResponseAsync(UpnpRootDevice, device, GetUsn(device.Udn, UpnpRootDevice), endPoint, localIP).ConfigureAwait(false);
+                await SendSearchResponseAsync(UpnpRootDevice, device, GetUsn(device.Udn, UpnpRootDevice), destination, source).ConfigureAwait(false);
 
                 if (this.SupportPnpRootDevice)
                 {
-                    await SendSearchResponseAsync(PnpRootDevice, device, GetUsn(device.Udn, PnpRootDevice), endPoint, localIP).ConfigureAwait(false);
+                    await SendSearchResponseAsync(PnpRootDevice, device, GetUsn(device.Udn, PnpRootDevice), destination, source).ConfigureAwait(false);
                 }
             }
 
-            await SendSearchResponseAsync(device.Udn, device, device.Udn, endPoint, localIP).ConfigureAwait(false);
-            await SendSearchResponseAsync(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, localIP).ConfigureAwait(false);
+            await SendSearchResponseAsync(device.Udn, device, device.Udn, destination, source).ConfigureAwait(false);
+            await SendSearchResponseAsync(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), destination, source).ConfigureAwait(false);
         }
 
         private async Task SendSearchResponseAsync(string searchTarget, SsdpDevice device, string uniqueServiceName, IPEndPoint endPoint, IPAddress localIP)
@@ -360,7 +360,7 @@ namespace Emby.Dlna.Rssdp
 
             var message = BuildMessage("HTTP/1.1 200 OK", values);
 
-            await _socketServer.SendMessageAsync(System.Text.Encoding.UTF8.GetBytes(message), endPoint, localIP).ConfigureAwait(false);
+            await _socketServer.SendMessageAsync(System.Text.Encoding.UTF8.GetBytes(message), localIP, endPoint).ConfigureAwait(false);
             _logger.LogInformation("Sent search response to {0} : {1}", endPoint, device);
         }
 
@@ -427,6 +427,7 @@ namespace Emby.Dlna.Rssdp
                     devices = _devices.ToArray();
                 }
 
+                bool first = true;
                 foreach (var device in devices)
                 {
                     if (IsDisposed)
@@ -434,7 +435,8 @@ namespace Emby.Dlna.Rssdp
                         return;
                     }
 
-                    await SendAliveNotifications(device, true).ConfigureAwait(false);
+                    await SendAliveNotifications(device, true, first).ConfigureAwait(false);
+                    first = false;
                 }
 
                 _logger.LogInformation("Completed transmitting alive notifications for all Devices");
@@ -446,7 +448,7 @@ namespace Emby.Dlna.Rssdp
             }
         }
 
-        private async Task SendAliveNotifications(SsdpDevice device, bool isRoot)
+        private async Task SendAliveNotifications(SsdpDevice device, bool isRoot, bool udn)
         {
             if (isRoot)
             {
@@ -457,46 +459,48 @@ namespace Emby.Dlna.Rssdp
                 }
             }
 
-            await SendAliveNotification(device, device.Udn, device.Udn).ConfigureAwait(false);
+            if (udn)
+            {
+                await SendAliveNotification(device, device.Udn, device.Udn).ConfigureAwait(false);
+            }
+
             await SendAliveNotification(device, device.FullDeviceType, GetUsn(device.Udn, device.FullDeviceType)).ConfigureAwait(false);
 
             foreach (var childDevice in device.Devices)
             {
-                await SendAliveNotifications(childDevice, false).ConfigureAwait(false);
+                await SendAliveNotifications(childDevice, false, false).ConfigureAwait(false);
             }
         }
 
         private Task SendAliveNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
-            const string Header = "NOTIFY * HTTP / 1.1";
-
             var rootDevice = device.ToRootDevice();
-            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+
+            string[] multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
+            Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
+            int count = _networkManager.IsIP6Enabled ? 2 : 0;
+
+            for (int a = 0; a <= count; a++)
             {
-                // If needed later for non-server devices, these headers will need to be dynamic
-                ["HOST"] = "239.255.255.250:1900",
-                ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.CurrentCulture),
-                ["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds,
-                ["LOCATION"] = rootDevice.Location.ToString(),
-                ["SERVER"] = _server,
-                ["NTS"] = "ssdp:alive",
-                ["NT"] = notificationType,
-                ["USN"] = uniqueServiceName
-            };
+                var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    // If needed later for non-server devices, these headers will need to be dynamic
+                    ["HOST"] = multicastAddresses[a],
+                    ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.CurrentCulture),
+                    ["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds,
+                    ["LOCATION"] = rootDevice.Location.ToString(),
+                    ["SERVER"] = _server,
+                    ["NTS"] = "ssdp:alive",
+                    ["NT"] = notificationType,
+                    ["USN"] = uniqueServiceName
+                };
 
-            var message = BuildMessage(Header, values);
-
-            Task task1 = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
-            Task task2 = Task.CompletedTask;
-
-            if (_networkManager.IsIP6Enabled)
-            {
-                values["HOST"] = "[ff01::2]:1900";
-                message = BuildMessage(Header, values);
-                task2 = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
+                var message = BuildMessage("NOTIFY * HTTP / 1.1", values);
+                _logger.LogDebug("Sending alive notification on {0} {1}", multicastAddresses[a], uniqueServiceName);
+                tasks[a] = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
             }
 
-            return Task.WhenAll(task1, task2);
+            return Task.WhenAll(tasks);
         }
 
         private Task SendByeByeNotifications(SsdpDevice device, bool isRoot)
@@ -528,35 +532,31 @@ namespace Emby.Dlna.Rssdp
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "byebye", Justification = "Correct value for this type of notification in SSDP.")]
         private Task SendByeByeNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
-            const string Header = "NOTIFY* HTTP/ 1.1";
+            string[] multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
+            Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
+            int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
-            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            for (int a = 0; a <= count; a++)
             {
-                // If needed later for non-server devices, these headers will need to be dynamic
-                ["HOST"] = "239.255.255.250:1900",
-                ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
-                ["SERVER"] = _server,
-                ["NTS"] = "ssdp:byebye",
-                ["NT"] = notificationType,
-                ["USN"] = uniqueServiceName
-            };
+                var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["HOST"] = multicastAddresses[a],
+                    ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
+                    ["SERVER"] = _server,
+                    ["NTS"] = "ssdp:byebye",
+                    ["NT"] = notificationType,
+                    ["USN"] = uniqueServiceName
+                };
 
-            var message = BuildMessage(Header, values);
+                var message = BuildMessage("NOTIFY* HTTP/ 1.1", values);
 
-            var sendCount = IsDisposed ? 1 : 3;
-            Task task1 = _socketServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
-            Task task2 = Task.CompletedTask;
-
-            if (_networkManager.IsIP6Enabled)
-            {
-                values["HOST"] = "[ff01::2]:1900";
-                message = BuildMessage(Header, values);
-                task2 = _socketServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
+                var sendCount = IsDisposed ? 1 : 3;
+                tasks[a] = _socketServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
             }
 
             _logger.LogInformation("Sent byebye notification : {0}", device);
 
-            return Task.WhenAll(task1, task2);
+            return Task.WhenAll(tasks);
         }
 
         private void DisposeRebroadcastTimer()
@@ -598,17 +598,13 @@ namespace Emby.Dlna.Rssdp
 
                 string agent = GetFirstHeaderValue("USER-AGENT", e.Message.Headers);
                 if (string.Equals(agent, SsdpUserAgent + "\\" + _systemId, StringComparison.OrdinalIgnoreCase)
-                    && _networkManager.IsValidInterfaceAddress(e.LocalIpAddress))
+                    && _networkManager.IsValidInterfaceAddress(e.LocalIPAddress))
                 {
                     _logger.LogDebug("Ignoring our own broadcast.");
                     return;
                 }
 
-                _ = ProcessSearchRequest(
-                        GetFirstHeaderValue("MX", e.Message.Headers),
-                        GetFirstHeaderValue("ST", e.Message.Headers),
-                        e.ReceivedFrom,
-                        e.LocalIpAddress);
+                _ = ProcessSearchRequest(GetFirstHeaderValue("MX", e.Message.Headers), GetFirstHeaderValue("ST", e.Message.Headers), e.LocalIPAddress, e.ReceivedFrom);
             }
         }
 

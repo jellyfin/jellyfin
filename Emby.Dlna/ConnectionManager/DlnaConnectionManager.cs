@@ -9,16 +9,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ConnectionManager
 {
-    public class ConnectionManager : BaseService, IConnectionManager
+    public class DlnaConnectionManager : BaseService, IConnectionManager
     {
         private readonly IDlnaManager _dlna;
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        public ConnectionManager(
+        public DlnaConnectionManager(
             IDlnaManager dlna,
             IServerConfigurationManager config,
-            ILogger<ConnectionManager> logger,
+            ILogger<DlnaConnectionManager> logger,
             IHttpClient httpClient)
             : base(logger, httpClient)
         {
@@ -39,7 +39,7 @@ namespace Emby.Dlna.ConnectionManager
             var profile = _dlna.GetProfile(request.Headers) ??
                          _dlna.GetDefaultProfile();
 
-            return new ControlHandler(_config, _logger, profile).ProcessControlRequestAsync(request);
+            return new DlnaControlHandler(_config, _logger, profile).ProcessControlRequestAsync(request);
         }
     }
 }

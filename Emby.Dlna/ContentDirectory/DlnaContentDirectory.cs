@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
 using System;
 using System.Linq;
@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
 {
-    public class ContentDirectory : BaseService, IContentDirectory
+    public class DlnaContentDirectory : BaseService, IContentDirectory
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IImageProcessor _imageProcessor;
@@ -33,14 +33,14 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ITVSeriesManager _tvSeriesManager;
 
-        public ContentDirectory(
+        public DlnaContentDirectory(
             IDlnaManager dlna,
             IUserDataManager userDataManager,
             IImageProcessor imageProcessor,
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             IUserManager userManager,
-            ILogger<ContentDirectory> logger,
+            ILogger<DlnaContentDirectory> logger,
             IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,

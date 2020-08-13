@@ -11,11 +11,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ConnectionManager
 {
-    public class ControlHandler : BaseControlHandler
+    public class DlnaControlHandler : BaseControlHandler
     {
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
+        public DlnaControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
             : base(config, logger)
         {
             _profile = profile;

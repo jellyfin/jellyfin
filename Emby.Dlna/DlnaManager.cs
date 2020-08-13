@@ -543,6 +543,7 @@ namespace Emby.Dlna
             };
         }
     }
+
     /*
     class DlnaProfileEntryPoint : IServerEntryPoint
     {

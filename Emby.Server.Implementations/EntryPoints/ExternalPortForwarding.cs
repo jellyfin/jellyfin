@@ -142,6 +142,8 @@ namespace Emby.Server.Implementations.EntryPoints
                 Stop();
                 Start();
             }
+
+            // TODO: check (!_config.Configuration.UPnPCreateHttpPortMap and _appHost.ListenWithHttps for changes and remove port mappings if they have.
         }
 
         /// <summary>
@@ -154,6 +156,12 @@ namespace Emby.Server.Implementations.EntryPoints
         private void Start()
         {
             if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
+            {
+                return;
+            }
+
+            // If not listening on Https, and not asked to map http port then exit.
+            if (!_appHost.ListenWithHttps && !_config.Configuration.UPnPCreateHttpPortMap)
             {
                 return;
             }
@@ -311,7 +319,10 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <returns>IEnumerable.</returns>
         private IEnumerable<Task> CreatePortMaps(INatDevice device)
         {
-            yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+            if (!_config.Configuration.UPnPCreateHttpPortMap)
+            {
+                yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+            }
 
             if (_appHost.ListenWithHttps)
             {
@@ -374,7 +385,10 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <returns>IEnumerable.</returns>
         private IEnumerable<Task> RemovePortMaps(INatDevice device)
         {
-            yield return RemovePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+            if (_config.Configuration.UPnPCreateHttpPortMap)
+            {
+                yield return RemovePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+            }
 
             if (_appHost.ListenWithHttps)
             {
