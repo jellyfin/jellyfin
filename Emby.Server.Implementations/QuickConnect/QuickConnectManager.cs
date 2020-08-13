@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,7 +9,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.QuickConnect;
-using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 using MediaBrowser.Common;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Common.Extensions;
@@ -163,7 +162,7 @@ namespace Emby.Server.Implementations.QuickConnect
         }
 
         /// <inheritdoc/>
-        public bool AuthorizeRequest(IRequest request, string code)
+        public bool AuthorizeRequest(HttpRequest request, string code)
         {
             ExpireRequests();
             AssertActive();

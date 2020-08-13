@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
 using MediaBrowser.Model.QuickConnect;
-using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.QuickConnect
 {
@@ -66,7 +65,7 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <param name="request">HTTP request object.</param>
         /// <param name="code">Identifying code for the request.</param>
         /// <returns>A boolean indicating if the authorization completed successfully.</returns>
-        bool AuthorizeRequest(IRequest request, string code);
+        bool AuthorizeRequest(HttpRequest request, string code);
 
         /// <summary>
         /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.
