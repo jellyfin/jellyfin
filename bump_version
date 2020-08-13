@@ -20,6 +20,12 @@ fi
 
 shared_version_file="./SharedVersion.cs"
 build_file="./build.yaml"
+# csproj files for nuget packages
+mediabrowser_common="MediaBrowser.Common/MediaBrowser.Common.csproj"
+jellyfin_data="Jellyfin.Data/Jellyfin.Data.csproj"
+mediabrowser_controller="MediaBrowser.Controller/MediaBrowser.Controller.csproj"
+mediabrowser_model="MediaBrowser.Model/MediaBrowser.Model.csproj"
+emby_naming="Emby.Naming/Emby.Naming.csproj"
 
 new_version="$1"
 
@@ -44,6 +50,23 @@ echo $old_version
 # Set the build.yaml version to the specified new_version
 old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
 sed -i "s/${old_version_sed}/${new_version}/g" ${build_file}
+
+# update nuget package version
+for f in ${mediabrowser_common} ${jellyfin_data} ${mediabrowser_controller} ${mediabrowser_model} ${emby_naming}
+do
+    code ${f}
+    echo ${f}
+    # Parse the version from the *.csproj file
+    old_version="$(
+        grep "PackageVersion" ${f} \
+            | awk '{$1=$1};1' \
+            | sed -E 's/<PackageVersion>([0-9\.]+[-a-z0-9]*)<\/PackageVersion>/\1/'
+    )"
+    echo old nuget version: $old_version
+
+    # Set the nuget version to the specified new_version
+    sed -i "s|${old_version}|${new_version}|g" ${f}
+done
 
 if [[ ${new_version} == *"-"* ]]; then
     new_version_deb="$( sed 's/-/~/g' <<<"${new_version}" )"

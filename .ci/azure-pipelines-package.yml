@@ -153,11 +153,11 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
-  - task: NuGetCommand@2
+  - task: DotNetCoreCLI@2
     inputs:
       command: 'pack'
-      packagesToPack: Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj
-      packDestination: '$(Build.ArtifactStagingDirectory)'
+      packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj'
+      versioningScheme: 'off'
 
   - task: NuGetCommand@2
     inputs:
