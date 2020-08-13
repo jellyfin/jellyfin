@@ -2089,7 +2089,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
             // If double rate deinterlacing is enabled and the input framerate is 30fps or below, otherwise the output framerate will be too high for many devices
-            var doubleRateDeinterlace = (options.DeinterlaceDoubleRate && (videoStream?.RealFrameRate ?? 60) <= 30);
+            var doubleRateDeinterlace = options.DeinterlaceDoubleRate && (videoStream?.RealFrameRate ?? 60) <= 30;
 
             // When the input may or may not be hardware VAAPI decodable
             if (isVaapiH264Encoder)
@@ -2150,7 +2150,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || state.DeInterlace("avc", true)
                 || state.DeInterlace("h265", true)
                 || state.DeInterlace("hevc", true))
-                && (!isVaapiH264Encoder && !isQsvH264Encoder && !isNvdecH264Decoder))
+                && !isVaapiH264Encoder
+                && !isQsvH264Encoder
+                && !isNvdecH264Decoder)
             {
                 if (string.Equals(options.DeinterlaceMethod, "bwdif", StringComparison.OrdinalIgnoreCase))
                 {
