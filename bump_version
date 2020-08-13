@@ -58,9 +58,9 @@ do
     echo ${f}
     # Parse the version from the *.csproj file
     old_version="$(
-        grep "PackageVersion" ${f} \
+        grep "VersionPrefix" ${f} \
             | awk '{$1=$1};1' \
-            | sed -E 's/<PackageVersion>([0-9\.]+[-a-z0-9]*)<\/PackageVersion>/\1/'
+            | sed -E 's/<VersionPrefix>([0-9\.]+[-a-z0-9]*)<\/VersionPrefix>/\1/'
     )"
     echo old nuget version: $old_version
 
