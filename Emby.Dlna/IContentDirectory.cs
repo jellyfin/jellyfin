@@ -2,7 +2,7 @@
 
 namespace Emby.Dlna
 {
-    public interface IContentDirectory : IEventManager, IUpnpService
+    public interface IContentDirectory : IDlnaEventManager, IUpnpService
     {
     }
 }

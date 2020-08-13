@@ -2,7 +2,7 @@
 
 namespace Emby.Dlna
 {
-    public interface IConnectionManager : IEventManager, IUpnpService
+    public interface IConnectionManager : IDlnaEventManager, IUpnpService
     {
     }
 }
