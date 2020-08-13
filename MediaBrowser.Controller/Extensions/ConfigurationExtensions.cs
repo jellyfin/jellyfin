@@ -34,6 +34,16 @@ namespace MediaBrowser.Controller.Extensions
         public const string PlaylistsAllowDuplicatesKey = "playlists:allowDuplicates";
 
         /// <summary>
+        /// The key for a setting that indicates whether kestrel should bind to a unix socket.
+        /// </summary>
+        public const string BindToUnixSocketKey = "kestrel:socket";
+
+        /// <summary>
+        /// The key for the unix socket path.
+        /// </summary>
+        public const string UnixSocketPathKey = "kestrel:socketPath";
+
+        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
@@ -65,5 +75,21 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>True if playlists should allow duplicates, otherwise false.</returns>
         public static bool DoPlaylistsAllowDuplicates(this IConfiguration configuration)
             => configuration.GetValue<bool>(PlaylistsAllowDuplicatesKey);
+
+        /// <summary>
+        /// Gets a value indicating whether kestrel should bind to a unix socket from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns><c>true</c> if kestrel should bind to a unix socket, otherwise <c>false</c>.</returns>
+        public static bool UseUnixSocket(this IConfiguration configuration)
+            => configuration.GetValue<bool>(BindToUnixSocketKey);
+
+        /// <summary>
+        /// Gets the path for the unix socket from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns>The unix socket path.</returns>
+        public static string GetUnixSocketPath(this IConfiguration configuration)
+            => configuration[UnixSocketPathKey];
     }
 }
