@@ -45,7 +45,7 @@
     "TvShows": "தொலைக்காட்சித் தொடர்கள்",
     "Sync": "ஒத்திசைவு",
     "StartupEmbyServerIsLoading": "ஜெல்லிஃபின் சேவையகம் துவங்குகிறது. சிறிது நேரம் கழித்து முயற்சிக்கவும்.",
-    "Songs": "பாட்டுகள்",
+    "Songs": "பாடல்கள்",
     "Shows": "தொடர்கள்",
     "ServerNameNeedsToBeRestarted": "{0} மறுதொடக்கம் செய்யப்பட வேண்டும்",
     "ScheduledTaskStartedWithName": "{0} துவங்கியது",
@@ -97,5 +97,8 @@
     "Application": "செயலி",
     "Albums": "ஆல்பங்கள்",
     "NewVersionIsAvailable": "ஜெல்லிஃபின் சேவையகத்தின் புதிய பதிப்பு பதிவிறக்கத்திற்கு கிடைக்கிறது.",
-    "MessageNamedServerConfigurationUpdatedWithValue": "சேவையக உள்ளமைவு பிரிவு {0 புதுப்பிக்கப்பட்டது"
+    "MessageNamedServerConfigurationUpdatedWithValue": "சேவையக உள்ளமைவு பிரிவு {0 புதுப்பிக்கப்பட்டது",
+    "TaskCleanCacheDescription": "கணினிக்கு இனி தேவைப்படாத தற்காலிக கோப்புகளை நீக்கு",
+    "UserOfflineFromDevice": "{0} இலிருந்து {1} துண்டிக்கப்பட்டுள்ளது",
+    "SubtitleDownloadFailureFromForItem": "வசன வரிகள் {0 } இலிருந்து {1} க்கு பதிவிறக்கத் தவறிவிட்டன"
 }
