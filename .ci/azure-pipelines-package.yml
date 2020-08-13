@@ -159,6 +159,11 @@ jobs:
       packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj'
       versioningScheme: 'off'
 
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: Jellyfin Nuget Packages
+
   - task: NuGetCommand@2
     inputs:
       command: 'push'
