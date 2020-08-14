@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -45,7 +44,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _installationManager.PluginUninstalled += OnPluginUninstalled;
             _installationManager.PluginUpdated += OnPluginUpdated;
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
 
@@ -123,18 +121,6 @@ namespace Emby.Server.Implementations.Activity
             }).ConfigureAwait(false);
         }
 
-        private async void OnPluginUninstalled(object sender, IPlugin e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("PluginUninstalledWithName"),
-                    e.Name),
-                NotificationType.PluginUninstalled.ToString(),
-                Guid.Empty))
-                .ConfigureAwait(false);
-        }
-
         private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             var installationInfo = e.InstallationInfo;
@@ -161,7 +147,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public void Dispose()
         {
-            _installationManager.PluginUninstalled -= OnPluginUninstalled;
             _installationManager.PluginUpdated -= OnPluginUpdated;
             _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
 
