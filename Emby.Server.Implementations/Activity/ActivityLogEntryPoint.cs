@@ -63,7 +63,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
 
-            _userManager.OnUserPasswordChanged += OnUserPasswordChanged;
             _userManager.OnUserLockedOut += OnUserLockedOut;
 
             return Task.CompletedTask;
@@ -143,18 +142,6 @@ namespace Emby.Server.Implementations.Activity
                     _localization.GetLocalizedString("LabelIpAddressValue"),
                     e.Argument.RemoteEndPoint),
             }).ConfigureAwait(false);
-        }
-
-        private async void OnUserPasswordChanged(object sender, GenericEventArgs<User> e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserPasswordChangedWithName"),
-                    e.Argument.Username),
-                "UserPasswordChanged",
-                e.Argument.Id))
-                .ConfigureAwait(false);
         }
 
         private async void OnSessionStarted(object sender, SessionEventArgs e)
@@ -265,7 +252,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
 
-            _userManager.OnUserPasswordChanged -= OnUserPasswordChanged;
             _userManager.OnUserLockedOut -= OnUserLockedOut;
         }
     }
