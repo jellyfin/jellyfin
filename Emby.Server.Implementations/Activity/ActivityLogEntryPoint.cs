@@ -12,7 +12,6 @@ using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Updates;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
@@ -54,7 +53,6 @@ namespace Emby.Server.Implementations.Activity
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
 
             _sessionManager.SessionStarted += OnSessionStarted;
-            _sessionManager.AuthenticationFailed += OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
 
@@ -102,24 +100,6 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("LabelIpAddressValue"),
                     e.Argument.SessionInfo.RemoteEndPoint),
-            }).ConfigureAwait(false);
-        }
-
-        private async void OnAuthenticationFailed(object sender, GenericEventArgs<AuthenticationRequest> e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("FailedLoginAttemptWithUserName"),
-                    e.Argument.Username),
-                "AuthenticationFailed",
-                Guid.Empty)
-            {
-                LogSeverity = LogLevel.Error,
-                ShortOverview = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("LabelIpAddressValue"),
-                    e.Argument.RemoteEndPoint),
             }).ConfigureAwait(false);
         }
 
@@ -227,7 +207,6 @@ namespace Emby.Server.Implementations.Activity
             _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
 
             _sessionManager.SessionStarted -= OnSessionStarted;
-            _sessionManager.AuthenticationFailed -= OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
         }
