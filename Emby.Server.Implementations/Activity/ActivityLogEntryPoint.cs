@@ -64,7 +64,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.SessionEnded += OnSessionEnded;
 
             _userManager.OnUserPasswordChanged += OnUserPasswordChanged;
-            _userManager.OnUserDeleted += OnUserDeleted;
             _userManager.OnUserLockedOut += OnUserLockedOut;
 
             return Task.CompletedTask;
@@ -144,18 +143,6 @@ namespace Emby.Server.Implementations.Activity
                     _localization.GetLocalizedString("LabelIpAddressValue"),
                     e.Argument.RemoteEndPoint),
             }).ConfigureAwait(false);
-        }
-
-        private async void OnUserDeleted(object sender, GenericEventArgs<User> e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserDeletedWithName"),
-                    e.Argument.Username),
-                "UserDeleted",
-                Guid.Empty))
-                .ConfigureAwait(false);
         }
 
         private async void OnUserPasswordChanged(object sender, GenericEventArgs<User> e)
@@ -279,7 +266,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.SessionEnded -= OnSessionEnded;
 
             _userManager.OnUserPasswordChanged -= OnUserPasswordChanged;
-            _userManager.OnUserDeleted -= OnUserDeleted;
             _userManager.OnUserLockedOut -= OnUserLockedOut;
         }
     }
