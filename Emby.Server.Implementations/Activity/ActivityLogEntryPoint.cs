@@ -2,10 +2,8 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Activity;
@@ -53,7 +51,6 @@ namespace Emby.Server.Implementations.Activity
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
 
             _sessionManager.SessionStarted += OnSessionStarted;
-            _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
 
             return Task.CompletedTask;
@@ -81,25 +78,6 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("LabelIpAddressValue"),
                     session.RemoteEndPoint),
-            }).ConfigureAwait(false);
-        }
-
-        private async void OnAuthenticationSucceeded(object sender, GenericEventArgs<AuthenticationResult> e)
-        {
-            var user = e.Argument.User;
-
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("AuthenticationSucceededWithUserName"),
-                    user.Name),
-                "AuthenticationSucceeded",
-                user.Id)
-            {
-                ShortOverview = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("LabelIpAddressValue"),
-                    e.Argument.SessionInfo.RemoteEndPoint),
             }).ConfigureAwait(false);
         }
 
@@ -207,7 +185,6 @@ namespace Emby.Server.Implementations.Activity
             _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
 
             _sessionManager.SessionStarted -= OnSessionStarted;
-            _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
         }
     }
