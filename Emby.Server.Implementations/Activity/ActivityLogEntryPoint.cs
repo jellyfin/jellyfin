@@ -63,7 +63,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
 
-            _userManager.OnUserCreated += OnUserCreated;
             _userManager.OnUserPasswordChanged += OnUserPasswordChanged;
             _userManager.OnUserDeleted += OnUserDeleted;
             _userManager.OnUserLockedOut += OnUserLockedOut;
@@ -167,18 +166,6 @@ namespace Emby.Server.Implementations.Activity
                     _localization.GetLocalizedString("UserPasswordChangedWithName"),
                     e.Argument.Username),
                 "UserPasswordChanged",
-                e.Argument.Id))
-                .ConfigureAwait(false);
-        }
-
-        private async void OnUserCreated(object sender, GenericEventArgs<User> e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserCreatedWithName"),
-                    e.Argument.Username),
-                "UserCreated",
                 e.Argument.Id))
                 .ConfigureAwait(false);
         }
@@ -291,7 +278,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
 
-            _userManager.OnUserCreated -= OnUserCreated;
             _userManager.OnUserPasswordChanged -= OnUserPasswordChanged;
             _userManager.OnUserDeleted -= OnUserDeleted;
             _userManager.OnUserLockedOut -= OnUserLockedOut;
