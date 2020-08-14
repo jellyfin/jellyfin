@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Plugins;
@@ -15,7 +13,6 @@ using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
-using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +25,6 @@ namespace Emby.Server.Implementations.Activity
     {
         private readonly IInstallationManager _installationManager;
         private readonly ISessionManager _sessionManager;
-        private readonly ITaskManager _taskManager;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
         private readonly ISubtitleManager _subManager;
@@ -38,7 +34,6 @@ namespace Emby.Server.Implementations.Activity
         /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="activityManager">The activity manager.</param>
         /// <param name="localization">The localization manager.</param>
         /// <param name="installationManager">The installation manager.</param>
@@ -46,7 +41,6 @@ namespace Emby.Server.Implementations.Activity
         /// <param name="userManager">The user manager.</param>
         public ActivityLogEntryPoint(
             ISessionManager sessionManager,
-            ITaskManager taskManager,
             IActivityManager activityManager,
             ILocalizationManager localization,
             IInstallationManager installationManager,
@@ -54,7 +48,6 @@ namespace Emby.Server.Implementations.Activity
             IUserManager userManager)
         {
             _sessionManager = sessionManager;
-            _taskManager = taskManager;
             _activityManager = activityManager;
             _localization = localization;
             _installationManager = installationManager;
@@ -65,8 +58,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _taskManager.TaskCompleted += OnTaskCompleted;
-
             _installationManager.PluginInstalled += OnPluginInstalled;
             _installationManager.PluginUninstalled += OnPluginUninstalled;
             _installationManager.PluginUpdated += OnPluginUpdated;
@@ -307,57 +298,12 @@ namespace Emby.Server.Implementations.Activity
             }).ConfigureAwait(false);
         }
 
-        private async void OnTaskCompleted(object sender, TaskCompletionEventArgs e)
-        {
-            var result = e.Result;
-            var task = e.Task;
-
-            if (task.ScheduledTask is IConfigurableScheduledTask activityTask
-                && !activityTask.IsLogged)
-            {
-                return;
-            }
-
-            var time = result.EndTimeUtc - result.StartTimeUtc;
-            var runningTime = string.Format(
-                CultureInfo.InvariantCulture,
-                _localization.GetLocalizedString("LabelRunningTimeValue"),
-                ToUserFriendlyString(time));
-
-            if (result.Status == TaskCompletionStatus.Failed)
-            {
-                var vals = new List<string>();
-
-                if (!string.IsNullOrEmpty(e.Result.ErrorMessage))
-                {
-                    vals.Add(e.Result.ErrorMessage);
-                }
-
-                if (!string.IsNullOrEmpty(e.Result.LongErrorMessage))
-                {
-                    vals.Add(e.Result.LongErrorMessage);
-                }
-
-                await CreateLogEntry(new ActivityLog(
-                    string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
-                    NotificationType.TaskFailed.ToString(),
-                    Guid.Empty)
-                {
-                    LogSeverity = LogLevel.Error,
-                    Overview = string.Join(Environment.NewLine, vals),
-                    ShortOverview = runningTime
-                }).ConfigureAwait(false);
-            }
-        }
-
         private async Task CreateLogEntry(ActivityLog entry)
             => await _activityManager.CreateAsync(entry).ConfigureAwait(false);
 
         /// <inheritdoc />
         public void Dispose()
         {
-            _taskManager.TaskCompleted -= OnTaskCompleted;
-
             _installationManager.PluginInstalled -= OnPluginInstalled;
             _installationManager.PluginUninstalled -= OnPluginUninstalled;
             _installationManager.PluginUpdated -= OnPluginUpdated;
@@ -374,88 +320,6 @@ namespace Emby.Server.Implementations.Activity
             _userManager.OnUserPasswordChanged -= OnUserPasswordChanged;
             _userManager.OnUserDeleted -= OnUserDeleted;
             _userManager.OnUserLockedOut -= OnUserLockedOut;
-        }
-
-        /// <summary>
-        /// Constructs a user-friendly string for this TimeSpan instance.
-        /// </summary>
-        private static string ToUserFriendlyString(TimeSpan span)
-        {
-            const int DaysInYear = 365;
-            const int DaysInMonth = 30;
-
-            // Get each non-zero value from TimeSpan component
-            var values = new List<string>();
-
-            // Number of years
-            int days = span.Days;
-            if (days >= DaysInYear)
-            {
-                int years = days / DaysInYear;
-                values.Add(CreateValueString(years, "year"));
-                days %= DaysInYear;
-            }
-
-            // Number of months
-            if (days >= DaysInMonth)
-            {
-                int months = days / DaysInMonth;
-                values.Add(CreateValueString(months, "month"));
-                days = days % DaysInMonth;
-            }
-
-            // Number of days
-            if (days >= 1)
-            {
-                values.Add(CreateValueString(days, "day"));
-            }
-
-            // Number of hours
-            if (span.Hours >= 1)
-            {
-                values.Add(CreateValueString(span.Hours, "hour"));
-            }
-
-            // Number of minutes
-            if (span.Minutes >= 1)
-            {
-                values.Add(CreateValueString(span.Minutes, "minute"));
-            }
-
-            // Number of seconds (include when 0 if no other components included)
-            if (span.Seconds >= 1 || values.Count == 0)
-            {
-                values.Add(CreateValueString(span.Seconds, "second"));
-            }
-
-            // Combine values into string
-            var builder = new StringBuilder();
-            for (int i = 0; i < values.Count; i++)
-            {
-                if (builder.Length > 0)
-                {
-                    builder.Append(i == values.Count - 1 ? " and " : ", ");
-                }
-
-                builder.Append(values[i]);
-            }
-
-            // Return result
-            return builder.ToString();
-        }
-
-        /// <summary>
-        /// Constructs a string description of a time-span value.
-        /// </summary>
-        /// <param name="value">The value of this item.</param>
-        /// <param name="description">The name of this item (singular form).</param>
-        private static string CreateValueString(int value, string description)
-        {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{0:#,##0} {1}",
-                value,
-                value == 1 ? description : string.Format(CultureInfo.InvariantCulture, "{0}s", description));
         }
     }
 }
