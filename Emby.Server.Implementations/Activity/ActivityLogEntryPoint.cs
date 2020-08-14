@@ -12,8 +12,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
@@ -28,7 +26,6 @@ namespace Emby.Server.Implementations.Activity
     /// </summary>
     public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {
-        private readonly ILogger<ActivityLogEntryPoint> _logger;
         private readonly IInstallationManager _installationManager;
         private readonly ISessionManager _sessionManager;
         private readonly ITaskManager _taskManager;
@@ -40,7 +37,6 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="activityManager">The activity manager.</param>
@@ -49,7 +45,6 @@ namespace Emby.Server.Implementations.Activity
         /// <param name="subManager">The subtitle manager.</param>
         /// <param name="userManager">The user manager.</param>
         public ActivityLogEntryPoint(
-            ILogger<ActivityLogEntryPoint> logger,
             ISessionManager sessionManager,
             ITaskManager taskManager,
             IActivityManager activityManager,
@@ -58,7 +53,6 @@ namespace Emby.Server.Implementations.Activity
             ISubtitleManager subManager,
             IUserManager userManager)
         {
-            _logger = logger;
             _sessionManager = sessionManager;
             _taskManager = taskManager;
             _activityManager = activityManager;
@@ -82,7 +76,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed += OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
-            _sessionManager.PlaybackStopped += OnPlaybackStopped;
 
             _subManager.SubtitleDownloadFailure += OnSubtitleDownloadFailure;
 
@@ -122,73 +115,6 @@ namespace Emby.Server.Implementations.Activity
                 ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
             }).ConfigureAwait(false);
-        }
-
-        private async void OnPlaybackStopped(object sender, PlaybackStopEventArgs e)
-        {
-            var item = e.MediaInfo;
-
-            if (item == null)
-            {
-                _logger.LogWarning("PlaybackStopped reported with null media info.");
-                return;
-            }
-
-            if (e.Item != null && e.Item.IsThemeMedia)
-            {
-                // Don't report theme song or local trailer playback
-                return;
-            }
-
-            if (e.Users.Count == 0)
-            {
-                return;
-            }
-
-            var user = e.Users[0];
-
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserStoppedPlayingItemWithValues"),
-                    user.Username,
-                    GetItemName(item),
-                    e.DeviceName),
-                GetPlaybackStoppedNotificationType(item.MediaType),
-                user.Id))
-                .ConfigureAwait(false);
-        }
-
-        private static string GetItemName(BaseItemDto item)
-        {
-            var name = item.Name;
-
-            if (!string.IsNullOrEmpty(item.SeriesName))
-            {
-                name = item.SeriesName + " - " + name;
-            }
-
-            if (item.Artists != null && item.Artists.Count > 0)
-            {
-                name = item.Artists[0] + " - " + name;
-            }
-
-            return name;
-        }
-
-        private static string GetPlaybackStoppedNotificationType(string mediaType)
-        {
-            if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
-            {
-                return NotificationType.AudioPlaybackStopped.ToString();
-            }
-
-            if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
-            {
-                return NotificationType.VideoPlaybackStopped.ToString();
-            }
-
-            return null;
         }
 
         private async void OnSessionEnded(object sender, SessionEventArgs e)
@@ -441,8 +367,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed -= OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
-
-            _sessionManager.PlaybackStopped -= OnPlaybackStopped;
 
             _subManager.SubtitleDownloadFailure -= OnSubtitleDownloadFailure;
 
