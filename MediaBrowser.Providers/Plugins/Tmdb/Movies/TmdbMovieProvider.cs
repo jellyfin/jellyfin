@@ -406,26 +406,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return mainResult;
         }
 
-        private static long _lastRequestTicks;
-        // The limit is 40 requests per 10 seconds
-        private const int RequestIntervalMs = 300;
-
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
         internal async Task<HttpResponseInfo> GetMovieDbResponse(HttpRequestOptions options)
         {
-            var delayTicks = (RequestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
-            var delayMs = Math.Min(delayTicks / 10000, RequestIntervalMs);
-
-            if (delayMs > 0)
-            {
-                _logger.LogDebug("Throttling Tmdb by {0} ms", delayMs);
-                await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
-            }
-
-            _lastRequestTicks = DateTime.UtcNow.Ticks;
-
             options.BufferContent = true;
             options.UserAgent = _appHost.ApplicationUserAgent;
 
