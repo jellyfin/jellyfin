@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -83,7 +82,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed += OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
-            _sessionManager.PlaybackStart += OnPlaybackStart;
             _sessionManager.PlaybackStopped += OnPlaybackStopped;
 
             _subManager.SubtitleDownloadFailure += OnSubtitleDownloadFailure;
@@ -161,41 +159,6 @@ namespace Emby.Server.Implementations.Activity
                 .ConfigureAwait(false);
         }
 
-        private async void OnPlaybackStart(object sender, PlaybackProgressEventArgs e)
-        {
-            var item = e.MediaInfo;
-
-            if (item == null)
-            {
-                _logger.LogWarning("PlaybackStart reported with null media info.");
-                return;
-            }
-
-            if (e.Item != null && e.Item.IsThemeMedia)
-            {
-                // Don't report theme song or local trailer playback
-                return;
-            }
-
-            if (e.Users.Count == 0)
-            {
-                return;
-            }
-
-            var user = e.Users.First();
-
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserStartedPlayingItemWithValues"),
-                    user.Username,
-                    GetItemName(item),
-                    e.DeviceName),
-                GetPlaybackNotificationType(item.MediaType),
-                user.Id))
-                .ConfigureAwait(false);
-        }
-
         private static string GetItemName(BaseItemDto item)
         {
             var name = item.Name;
@@ -211,21 +174,6 @@ namespace Emby.Server.Implementations.Activity
             }
 
             return name;
-        }
-
-        private static string GetPlaybackNotificationType(string mediaType)
-        {
-            if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
-            {
-                return NotificationType.AudioPlayback.ToString();
-            }
-
-            if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
-            {
-                return NotificationType.VideoPlayback.ToString();
-            }
-
-            return null;
         }
 
         private static string GetPlaybackStoppedNotificationType(string mediaType)
@@ -494,7 +442,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
 
-            _sessionManager.PlaybackStart -= OnPlaybackStart;
             _sessionManager.PlaybackStopped -= OnPlaybackStopped;
 
             _subManager.SubtitleDownloadFailure -= OnSubtitleDownloadFailure;
