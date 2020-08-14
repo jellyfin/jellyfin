@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
@@ -27,7 +26,6 @@ namespace Emby.Server.Implementations.Activity
         private readonly ISessionManager _sessionManager;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
-        private readonly ISubtitleManager _subManager;
         private readonly IUserManager _userManager;
 
         /// <summary>
@@ -37,21 +35,18 @@ namespace Emby.Server.Implementations.Activity
         /// <param name="activityManager">The activity manager.</param>
         /// <param name="localization">The localization manager.</param>
         /// <param name="installationManager">The installation manager.</param>
-        /// <param name="subManager">The subtitle manager.</param>
         /// <param name="userManager">The user manager.</param>
         public ActivityLogEntryPoint(
             ISessionManager sessionManager,
             IActivityManager activityManager,
             ILocalizationManager localization,
             IInstallationManager installationManager,
-            ISubtitleManager subManager,
             IUserManager userManager)
         {
             _sessionManager = sessionManager;
             _activityManager = activityManager;
             _localization = localization;
             _installationManager = installationManager;
-            _subManager = subManager;
             _userManager = userManager;
         }
 
@@ -67,8 +62,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed += OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
-
-            _subManager.SubtitleDownloadFailure += OnSubtitleDownloadFailure;
 
             _userManager.OnUserCreated += OnUserCreated;
             _userManager.OnUserPasswordChanged += OnUserPasswordChanged;
@@ -89,22 +82,6 @@ namespace Emby.Server.Implementations.Activity
                     e.Argument.Id)
             {
                 LogSeverity = LogLevel.Error
-            }).ConfigureAwait(false);
-        }
-
-        private async void OnSubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
-                    e.Provider,
-                    Notifications.NotificationEntryPoint.GetItemName(e.Item)),
-                "SubtitleDownloadFailure",
-                Guid.Empty)
-            {
-                ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
-                ShortOverview = e.Exception.Message
             }).ConfigureAwait(false);
         }
 
@@ -313,8 +290,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed -= OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
-
-            _subManager.SubtitleDownloadFailure -= OnSubtitleDownloadFailure;
 
             _userManager.OnUserCreated -= OnUserCreated;
             _userManager.OnUserPasswordChanged -= OnUserPasswordChanged;
