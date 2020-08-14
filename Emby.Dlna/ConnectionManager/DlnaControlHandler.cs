@@ -15,7 +15,7 @@ namespace Emby.Dlna.ConnectionManager
     {
         private readonly DeviceProfile _profile;
 
-        public DlnaControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
+        public DlnaControlHandler(IServerConfigurationManager config, ILogger<DlnaControlHandler> logger, DeviceProfile profile)
             : base(config, logger)
         {
             _profile = profile;

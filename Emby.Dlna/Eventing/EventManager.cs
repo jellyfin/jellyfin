@@ -21,6 +21,7 @@ namespace Emby.Dlna.Eventing
 
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public EventManager(ILogger logger, IHttpClient httpClient)
         {
@@ -93,8 +94,7 @@ namespace Emby.Dlna.Eventing
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
             _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
-
-            _subscriptions.TryRemove(subscriptionId, out EventSubscription sub);
+            _ = _subscriptions.TryRemove(subscriptionId, out _);
 
             return new EventSubscriptionResponse
             {
@@ -103,7 +103,6 @@ namespace Emby.Dlna.Eventing
             };
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
             var response = new EventSubscriptionResponse

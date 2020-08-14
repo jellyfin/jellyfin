@@ -1,5 +1,4 @@
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -36,14 +35,12 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="loggerFactory">Logger Factory.</param>
         /// <param name="gwMonitor">Gateway Monitor.</param>
         public ExternalPortForwarding(
-            ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
             IServerConfigurationManager config,
             INetworkManager networkManager,
@@ -51,12 +48,12 @@ namespace Emby.Server.Implementations.EntryPoints
             IGatewayMonitor gwMonitor)
         {
             _lock = new object();
-            _logger = logger;
-            _appHost = appHost;
-            _config = config;
-            _networkManager = networkManager;
-            _loggerFactory = loggerFactory;
-            _gatewayMonitor = gwMonitor;
+            _loggerFactory = loggerFactory ?? throw new NullReferenceException(nameof(loggerFactory));
+            _logger = loggerFactory.CreateLogger<ExternalPortForwarding>();
+            _appHost = appHost ?? throw new NullReferenceException(nameof(appHost));
+            _config = config ?? throw new NullReferenceException(nameof(config));
+            _networkManager = networkManager ?? throw new NullReferenceException(nameof(networkManager));
+            _gatewayMonitor = gwMonitor ?? throw new NullReferenceException(nameof(gwMonitor));
             _devices = new List<INatDevice>();
             _configIdentifier = GetConfigIdentifier();
             Mono.Nat.Logging.Logger.Factory = GetLogger;
@@ -143,7 +140,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 Start();
             }
 
-            // TODO: check (!_config.Configuration.UPnPCreateHttpPortMap and _appHost.ListenWithHttps for changes and remove port mappings if they have.
+            // TODO: check !_networkManager.UPnPActive for changes and remove port mappings if they have.
         }
 
         /// <summary>
@@ -155,13 +152,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private void Start()
         {
-            if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
-            {
-                return;
-            }
-
-            // If not listening on Https, and not asked to map http port then exit.
-            if (!_appHost.ListenWithHttps && !_config.Configuration.UPnPCreateHttpPortMap)
+            if (!_networkManager.IsuPnPActive)
             {
                 return;
             }
@@ -256,12 +247,12 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
 
-            var dlna = DlnaEntryPoint.Current;
+            var dlna = DlnaEntryPoint.Instance;
 
             // Only process the messages if playTo is enabled.
-            if (dlna != null && dlna.EnablePlayTo)
+            if (dlna != null && dlna.EnablePlayTo && dlna.SocketManager != null)
             {
-                await dlna.SocketServer.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
+                await dlna.SocketManager.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
             }
         }
 
@@ -447,17 +438,17 @@ namespace Emby.Server.Implementations.EntryPoints
 
             public void Info(string message)
             {
-                _logger.LogInformation(message);
+                _logger.LogInformation(message.Replace("\r", " ", StringComparison.OrdinalIgnoreCase).Replace("\n", string.Empty, StringComparison.OrdinalIgnoreCase));
             }
 
             public void Debug(string message)
             {
-                _logger.LogDebug(message);
+                _logger.LogDebug(message.Replace("\r", " ", StringComparison.OrdinalIgnoreCase).Replace("\n", string.Empty, StringComparison.OrdinalIgnoreCase));
             }
 
             public void Error(string message)
             {
-                _logger.LogError(message);
+                _logger.LogError(message.Replace("\r", " ", StringComparison.OrdinalIgnoreCase).Replace("\n", string.Empty, StringComparison.OrdinalIgnoreCase));
             }
         }
     }

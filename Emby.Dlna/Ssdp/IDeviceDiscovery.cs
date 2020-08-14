@@ -14,7 +14,7 @@ namespace Emby.Dlna.Ssdp
 
         void Dispose();
 
-        void Start(SocketServer socketServer);
+        void Start();
 
         void Stop();
     }

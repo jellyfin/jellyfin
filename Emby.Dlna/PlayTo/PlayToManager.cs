@@ -1,5 +1,4 @@
-#pragma warning disable CS1591
-
+#nullable enable
 using System;
 using System.Globalization;
 using System.Linq;
@@ -48,27 +47,28 @@ namespace Emby.Dlna.PlayTo
         private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery? deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
-            _logger = logger;
-            _sessionManager = sessionManager;
-            _libraryManager = libraryManager;
-            _userManager = userManager;
-            _dlnaManager = dlnaManager;
-            _appHost = appHost;
-            _imageProcessor = imageProcessor;
-            _deviceDiscovery = deviceDiscovery;
-            _httpClient = httpClient;
-            _config = config;
-            _userDataManager = userDataManager;
-            _localization = localization;
-            _mediaSourceManager = mediaSourceManager;
-            _mediaEncoder = mediaEncoder;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+            _libraryManager = libraryManager ?? throw new ArgumentNullException(nameof(libraryManager));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _dlnaManager = dlnaManager ?? throw new ArgumentNullException(nameof(dlnaManager));
+            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
+            _imageProcessor = imageProcessor ?? throw new ArgumentNullException(nameof(imageProcessor));
+            _deviceDiscovery = deviceDiscovery ?? throw new ArgumentNullException(nameof(deviceDiscovery));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _userDataManager = userDataManager ?? throw new ArgumentNullException(nameof(userDataManager));
+            _localization = localization ?? throw new ArgumentNullException(nameof(localization));
+            _mediaSourceManager = mediaSourceManager ?? throw new ArgumentNullException(nameof(mediaSourceManager));
+            _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
         }
 
         public void Start()
         {
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
+            _deviceDiscovery.Start();
         }
 
         private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)

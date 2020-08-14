@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Buffers;
 using System.Net;
@@ -32,7 +33,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// UDP socket being used.
         /// </summary>
-        private Socket _udpSocket;
+        private Socket? _udpSocket;
 
         private bool _disposed = false;
 
@@ -47,9 +48,9 @@ namespace Emby.Server.Implementations.EntryPoints
             IServerApplicationHost appHost,
             INetworkManager networkManager)
         {
-            _logger = logger;
-            _appHost = appHost;
-            _networkManager = networkManager;
+            _logger = logger ?? throw new NullReferenceException(nameof(logger));
+            _appHost = appHost ?? throw new NullReferenceException(nameof(appHost));
+            _networkManager = networkManager ?? throw new NullReferenceException(nameof(networkManager));
         }
 
         /// <inheritdoc />
@@ -57,8 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
-                var networkManager = NetworkManager.Instance;
-                _udpSocket = _networkManager.CreateUdpMulticastSocket(NetworkManager.DefaultMulticastTimeToLive, PortNumber);
+                _udpSocket = _networkManager.CreateUdpBroadcastSocket(PortNumber);
                 _ = Task.Run(async () => await BeginReceiveAsync().ConfigureAwait(false));
             }
             catch (SocketException ex)
@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            _udpSocket.Dispose();
+            _udpSocket?.Dispose();
             _disposed = true;
             GC.SuppressFinalize(this);
         }
@@ -128,6 +128,11 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <returns>Task.</returns>
         private async Task BeginReceiveAsync()
         {
+            if (_udpSocket == null)
+            {
+                throw new NullReferenceException("UdpSocket cannot be null.");
+            }
+
             var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 
             try
@@ -139,8 +144,8 @@ namespace Emby.Server.Implementations.EntryPoints
                     {
                         var result = await _udpSocket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, endpoint).ConfigureAwait(false);
 
-                        // If this from an excluded address don't both responding to it - but we will respond no matter where the request comes from.
-                        if (!NetworkManager.Instance.IsExcluded(result.RemoteEndPoint))
+                        // If this from an excluded address don't both responding to it.
+                        if (!_networkManager.IsExcluded(result.RemoteEndPoint))
                         {
                             var text = Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes);
                             if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))

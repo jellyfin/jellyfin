@@ -26,7 +26,7 @@ namespace Emby.Dlna.Rssdp
         private const string PnpRootDevice = "pnp:rootdevice";
         private const string UpnpRootDevice = "upnp:rootdevice";
 
-        private readonly ILogger _logger;
+        private readonly ILogger<SsdpDevicePublisher> _logger;
         private readonly string _server;
         private readonly string _systemId;
         private readonly IList<SsdpRootDevice> _devices;
@@ -38,7 +38,7 @@ namespace Emby.Dlna.Rssdp
         private Timer? _rebroadcastAliveNotificationsTimer;
 
         public SsdpDevicePublisher(
-            SocketServer socketServer,
+            SocketServer? socketServer,
             IServerApplicationHost applicationHost,
             ILoggerFactory loggerFactory,
             INetworkManager networkManager,
@@ -60,7 +60,6 @@ namespace Emby.Dlna.Rssdp
             SupportPnpRootDevice = true;
 
             _socketServer.RequestReceived += RequestReceived;
-            _socketServer.UsageCount++;
             AliveMessageInterval = aliveMessageInterval;
         }
 

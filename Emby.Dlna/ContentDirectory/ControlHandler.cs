@@ -59,7 +59,7 @@ namespace Emby.Dlna.ContentDirectory
         private readonly DeviceProfile _profile;
 
         public ControlHandler(
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             ILibraryManager libraryManager,
             DeviceProfile profile,
             string serverAddress,
@@ -74,7 +74,7 @@ namespace Emby.Dlna.ContentDirectory
             IUserViewManager userViewManager,
             IMediaEncoder mediaEncoder,
             ITVSeriesManager tvSeriesManager)
-            : base(config, logger)
+            : base(config, loggerFactory?.CreateLogger<ControlHandler>())
         {
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
@@ -102,6 +102,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
+            
             const string DeviceId = "test";
 
             if (string.Equals(methodName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))
@@ -181,8 +182,7 @@ namespace Emby.Dlna.ContentDirectory
 
             userdata.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
 
-            _userDataManager.SaveUserData(_user, item, userdata, UserDataSaveReason.TogglePlayed,
-                CancellationToken.None);
+            _userDataManager.SaveUserData(_user, item, userdata, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         private void HandleGetSearchCapabilities(XmlWriter xmlWriter)
@@ -640,57 +640,58 @@ namespace Emby.Dlna.ContentDirectory
                 return GetMusicGenres(item, user, query);
             }
 
-            var list = new List<ServerItem>();
-
-            list.Add(new ServerItem(item)
+            var list = new List<ServerItem>
             {
-                StubType = StubType.Latest
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Latest
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Playlists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Playlists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Albums
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Albums
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.AlbumArtists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.AlbumArtists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Artists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Artists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Songs
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Songs
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Genres
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Genres
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteArtists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteArtists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteAlbums
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteAlbums
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteSongs
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteSongs
+                }
+            };
 
             return new QueryResult<ServerItem>
             {
@@ -834,42 +835,43 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenres(item, user, query);
             }
 
-            var list = new List<ServerItem>();
-
-            list.Add(new ServerItem(item)
+            var list = new List<ServerItem>
             {
-                StubType = StubType.ContinueWatching
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.ContinueWatching
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.NextUp
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.NextUp
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Latest
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Latest
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Series
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Series
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteSeries
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteSeries
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteEpisodes
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteEpisodes
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Genres
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Genres
+                }
+            };
 
             return new QueryResult<ServerItem>
             {

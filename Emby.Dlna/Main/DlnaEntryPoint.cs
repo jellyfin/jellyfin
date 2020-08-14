@@ -1,7 +1,10 @@
-#pragma warning disable CS1591
+#nullable enable
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Emby.Dlna.ConnectionManager;
+using Emby.Dlna.ContentDirectory;
+using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Rssdp;
 using Emby.Dlna.Rssdp.Devices;
@@ -26,7 +29,7 @@ namespace Emby.Dlna.Main
 {
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
-        private readonly IServerConfigurationManager _config;
+        private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly ISessionManager _sessionManager;
@@ -39,17 +42,14 @@ namespace Emby.Dlna.Main
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
         private readonly IUserViewManager _userViewManager;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly ILoggerFactory _loggerFactory;
-
-        private PlayToManager _manager;
-        private SsdpDevicePublisher _publisher;
-        private SocketServer _socketServer;
+        private PlayToManager? _manager;
+        private SsdpDevicePublisher? _publisher;
         private bool _isDisposed;
 
         public DlnaEntryPoint(
@@ -65,49 +65,49 @@ namespace Emby.Dlna.Main
             IUserDataManager userDataManager,
             ILocalizationManager localizationManager,
             IMediaSourceManager mediaSourceManager,
-            IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
             ITVSeriesManager tvSeriesManager)
         {
-            _config = config;
-            _appHost = appHost;
-            _sessionManager = sessionManager;
-            _httpClient = httpClient;
-            _libraryManager = libraryManager;
-            _userManager = userManager;
-            _dlnaManager = dlnaManager;
-            _imageProcessor = imageProcessor;
-            _userDataManager = userDataManager;
-            _localization = localizationManager;
-            _mediaSourceManager = mediaSourceManager;
-            _deviceDiscovery = deviceDiscovery;
-            _mediaEncoder = mediaEncoder;
+            _configurationManager = config ?? throw new ArgumentNullException(nameof(config));
+            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
+            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _libraryManager = libraryManager ?? throw new ArgumentNullException(nameof(libraryManager));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _dlnaManager = dlnaManager ?? throw new ArgumentNullException(nameof(dlnaManager));
+            _imageProcessor = imageProcessor ?? throw new ArgumentNullException(nameof(imageProcessor));
+            _userDataManager = userDataManager ?? throw new ArgumentNullException(nameof(userDataManager));
+            _localization = localizationManager ?? throw new ArgumentNullException(nameof(localizationManager));
+            _mediaSourceManager = mediaSourceManager ?? throw new ArgumentNullException(nameof(mediaSourceManager));
+            _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _localizationManager = localizationManager ?? throw new ArgumentNullException(nameof(localizationManager));
+            _userViewManager = userViewManager ?? throw new ArgumentNullException(nameof(userViewManager));
+            _tvSeriesManager = tvSeriesManager ?? throw new ArgumentNullException(nameof(loggerFactory));
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-            _loggerFactory = loggerFactory;
-            _localizationManager = localizationManager;
-            _userViewManager = userViewManager;
-            _tvSeriesManager = tvSeriesManager;
             _networkManager.NetworkChanged += delegate { ReloadComponents(); };
 
-            Current = this;
+            Instance = this;
         }
 
-        public static DlnaEntryPoint Current { get; internal set; }
+        public static DlnaEntryPoint? Instance { get; internal set; }
 
-        public bool DLNAEnabled => _config.GetDlnaConfiguration().EnableServer;
+        public bool DLNAEnabled => _configurationManager.GetDlnaConfiguration().EnableServer;
 
-        public bool EnablePlayTo => _config.GetDlnaConfiguration().EnablePlayTo;
+        public bool EnablePlayTo => _configurationManager.GetDlnaConfiguration().EnablePlayTo;
 
-        public SocketServer SocketServer => _socketServer;
+        public SocketServer? SocketManager { get; private set; }
 
-        internal IContentDirectory ContentDirectory { get; private set; }
+        internal IContentDirectory? ContentDirectory { get; private set; }
 
-        internal IConnectionManager ConnectionManager { get; private set; }
+        internal IConnectionManager? ConnectionManager { get; private set; }
 
-        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
+        internal IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
+
+        internal IDeviceDiscovery? DeviceDiscovery { get; private set; }
 
         public async Task RunAsync()
         {
@@ -115,7 +115,7 @@ namespace Emby.Dlna.Main
 
             ReloadComponents();
 
-            _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
+            _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
         public void Dispose()
@@ -145,22 +145,17 @@ namespace Emby.Dlna.Main
             {
                 DisposeDevicePublisher();
                 DisposePlayToManager();
-                try
-                {
-                    _logger.LogInformation("Disposing DeviceDiscovery");
-                    _deviceDiscovery.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error stopping device discovery");
-                }
 
-                _socketServer?.Dispose();
-                _socketServer = null;
+                DeviceDiscovery?.Dispose();
+                DeviceDiscovery = null;
+
+                SocketManager?.Dispose();
+                SocketManager = null;
+
                 ContentDirectory = null;
                 ConnectionManager = null;
                 MediaReceiverRegistrar = null;
-                Current = null;
+                Instance = null;
             }
 
             _isDisposed = true;
@@ -171,7 +166,10 @@ namespace Emby.Dlna.Main
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
                 ReloadComponents();
-                _publisher.AliveMessageInterval = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
+                if (_publisher != null)
+                {
+                    _publisher.AliveMessageInterval = _configurationManager.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
+                }
             }
         }
 
@@ -182,63 +180,68 @@ namespace Emby.Dlna.Main
         {
             _logger.LogDebug("(Re)loading DLNA components.");
 
-            var options = _config.GetDlnaConfiguration();
+            var options = _configurationManager.GetDlnaConfiguration();
 
             if (options.EnableServer)
             {
                 if (ContentDirectory == null)
                 {
-                    ContentDirectory = new ContentDirectory.DlnaContentDirectory(
+                    ContentDirectory = new DlnaContentDirectory(
                         _dlnaManager,
                         _userDataManager,
                         _imageProcessor,
                         _libraryManager,
-                        _config,
+                        _configurationManager,
                         _userManager,
-                        _loggerFactory.CreateLogger<ContentDirectory.DlnaContentDirectory>(),
                         _httpClient,
                         _localizationManager,
                         _mediaSourceManager,
                         _userViewManager,
                         _mediaEncoder,
-                        _tvSeriesManager);
+                        _tvSeriesManager,
+                        _loggerFactory);
                 }
 
                 if (ConnectionManager == null)
                 {
-                    ConnectionManager = new ConnectionManager.DlnaConnectionManager(
+                    ConnectionManager = new DlnaConnectionManager(
                         _dlnaManager,
-                        _config,
-                        _loggerFactory.CreateLogger<ConnectionManager.DlnaConnectionManager>(),
+                        _configurationManager,
+                        _loggerFactory,
                         _httpClient);
                 }
 
                 if (MediaReceiverRegistrar == null)
                 {
-                    MediaReceiverRegistrar = new MediaReceiverRegistrar.DlnaMediaReceiverRegistrar(
-                        _loggerFactory.CreateLogger<MediaReceiverRegistrar.DlnaMediaReceiverRegistrar>(),
+                    MediaReceiverRegistrar = new DlnaMediaReceiverRegistrar(
+                        _loggerFactory,
                         _httpClient,
-                        _config);
+                        _configurationManager);
                 }
 
                 // Start device SSDP
-                try
+                SocketManager = SocketServer.Instance;
+                if (SocketManager == null)
                 {
-                    if (_socketServer == null)
-                    {
-                        _socketServer = new SocketServer(_networkManager, _config, _loggerFactory);
-                        _deviceDiscovery.Start(_socketServer);
-                    }
+                    SocketManager = new SocketServer(_networkManager, _configurationManager, _loggerFactory);
                 }
-                catch (Exception ex)
+
+                if (DeviceDiscovery == null)
                 {
-                    _logger.LogError(ex, "Error starting ssdp handlers");
+                    DeviceDiscovery = new DeviceDiscovery(
+                        _configurationManager,
+                        _loggerFactory,
+                        _networkManager,
+                        _appHost,
+                        SocketManager);
                 }
+
+                DeviceDiscovery.Start();
 
                 // This is true on startup and at network change.
                 if (_publisher == null)
                 {
-                    _publisher = new SsdpDevicePublisher(_socketServer, _appHost, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds)
+                    _publisher = new SsdpDevicePublisher(SocketManager, _appHost, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds)
                     {
                         SupportPnpRootDevice = false
                     };
@@ -249,15 +252,14 @@ namespace Emby.Dlna.Main
             else
             {
                 // Disable the server
-                _deviceDiscovery.Stop();
+                DeviceDiscovery?.Stop();
+                DeviceDiscovery = null;
 
-                if (_socketServer != null)
-                {
-                    _socketServer.Dispose();
-                    _socketServer = null;
-                }
+                SocketManager?.Dispose();
+                SocketManager = null;
 
                 DisposeDevicePublisher();
+
                 MediaReceiverRegistrar = null;
                 ContentDirectory = null;
                 ConnectionManager = null;
@@ -307,7 +309,7 @@ namespace Emby.Dlna.Main
 
                 SetProperies(device, fullService);
 
-                _ = _publisher.AddDevice(device);
+                _ = _publisher?.AddDevice(device);
 
                 var embeddedDevices = new[]
                 {
@@ -352,34 +354,32 @@ namespace Emby.Dlna.Main
         {
             lock (_syncLock)
             {
-                if (_manager != null)
+                if (_manager == null)
                 {
-                    return;
-                }
+                    try
+                    {
+                        _manager = new PlayToManager(
+                            _logger,
+                            _sessionManager,
+                            _libraryManager,
+                            _userManager,
+                            _dlnaManager,
+                            _appHost,
+                            _imageProcessor,
+                            DeviceDiscovery,
+                            _httpClient,
+                            _configurationManager,
+                            _userDataManager,
+                            _localization,
+                            _mediaSourceManager,
+                            _mediaEncoder);
 
-                try
-                {
-                    _manager = new PlayToManager(
-                        _logger,
-                        _sessionManager,
-                        _libraryManager,
-                        _userManager,
-                        _dlnaManager,
-                        _appHost,
-                        _imageProcessor,
-                        _deviceDiscovery,
-                        _httpClient,
-                        _config,
-                        _userDataManager,
-                        _localization,
-                        _mediaSourceManager,
-                        _mediaEncoder);
-
-                    _manager.Start();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error starting PlayTo manager");
+                        _manager.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error starting PlayTo manager");
+                    }
                 }
             }
         }

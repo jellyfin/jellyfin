@@ -250,7 +250,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
-            _networkManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+            _networkManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>(), this);
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
@@ -602,8 +602,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
             serviceCollection.AddSingleton<INotificationManager, NotificationManager>();
-
-            serviceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 

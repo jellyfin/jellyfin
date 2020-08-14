@@ -17,61 +17,29 @@ namespace Emby.Dlna.Ssdp
     {
         private readonly object _syncLock = new object();
         private readonly INetworkManager _networkManager;
-        private readonly ILogger _logger;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
+        private readonly SocketServer _socketServer;
 
-        private int _listenerCount;
         private bool _disposed;
-        private SsdpDeviceLocator? _deviceLocator;
-        private SocketServer? _socketServer;
 
-        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, IServerApplicationHost apphost)
+        private SsdpDeviceLocator? _deviceLocator;
+
+        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, IServerApplicationHost appHost, SocketServer? socketServer)
         {
-            _config = config;
-            _logger = loggerFactory.CreateLogger<DeviceDiscovery>();
-            _networkManager = networkManager;
-            _appHost = apphost;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
+            _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
         }
 
         /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscovered
-        {
-            add
-            {
-                lock (_syncLock)
-                {
-                    _listenerCount++;
-                    DeviceDiscoveredInternal += value;
-                }
-
-                StartInternal();
-            }
-
-            remove
-            {
-                lock (_syncLock)
-                {
-                    _listenerCount--;
-                    DeviceDiscoveredInternal -= value;
-                }
-            }
-        }
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscovered;
 
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
-
-        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscoveredInternal;
-
-        /// <summary>
-        /// Starts a device scan.
-        /// </summary>
-        /// <param name="socketServer">Communications server to use.</param>
-        public void Start(SocketServer socketServer)
-        {
-            _socketServer = socketServer;
-            StartInternal();
-        }
 
         /// <summary>
         /// Stops a device scan.
@@ -83,8 +51,6 @@ namespace Emby.Dlna.Ssdp
                 _deviceLocator.Dispose();
                 _deviceLocator = null;
             }
-
-            _socketServer = null;
         }
 
         /// <inheritdoc />
@@ -97,13 +63,16 @@ namespace Emby.Dlna.Ssdp
             }
         }
 
-        private void StartInternal()
+        /// <summary>
+        /// Starts a device scan.
+        /// </summary>
+        public void Start()
         {
             lock (_syncLock)
             {
-                if (_listenerCount > 0 && _deviceLocator == null && _socketServer != null)
+                if (DeviceDiscovered?.GetInvocationList().Length > 0 && _deviceLocator == null)
                 {
-                    _deviceLocator = new SsdpDeviceLocator(_socketServer, _logger, _networkManager, _appHost.SystemId);
+                    _deviceLocator = new SsdpDeviceLocator(_socketServer, _loggerFactory.CreateLogger<SsdpDeviceLocator>(), _networkManager, _appHost.SystemId);
 
                     // (Optional) Set the filter so we only see notifications for devices we care about
                     // (can be any search target value i.e device type, uuid value etc - any value that appears in the
@@ -139,7 +108,7 @@ namespace Emby.Dlna.Ssdp
                     LocalIpAddress = e.LocalIpAddress
                 });
 
-            DeviceDiscoveredInternal?.Invoke(this, args);
+            DeviceDiscovered?.Invoke(this, args);
         }
 
         private void OnDeviceLocatorDeviceUnavailable(object sender, DeviceUnavailableEventArgs e)

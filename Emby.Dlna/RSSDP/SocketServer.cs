@@ -43,13 +43,12 @@ namespace Emby.Dlna.Rssdp
         private readonly object _socketSynchroniser;
         private readonly HttpRequestParser _requestParser;
         private readonly HttpResponseParser _responseParser;
-        private readonly ILogger _logger;
+        private readonly ILogger<SocketServer> _logger;
         private readonly INetworkManager _networkManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly Dictionary<Socket, SocketState> _sockets;
-        private readonly int _multicastTtl;
-        private bool _externalPortForwardEnabled;
         private bool _disposed;
+        private bool _oldState;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SocketServer"/> class.
@@ -71,9 +70,8 @@ namespace Emby.Dlna.Rssdp
             _requestParser = new HttpRequestParser();
             _responseParser = new HttpResponseParser();
 
-            _multicastTtl = 4;
-            _externalPortForwardEnabled = _configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess;
-
+            Instance = this;
+            _oldState = _networkManager.IsuPnPActive;
             CreateSockets();
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -100,16 +98,18 @@ namespace Emby.Dlna.Rssdp
             Listening
         }
 
-        public int UsageCount { get; set; } = 1;
+        public static SocketServer? Instance { get; set; }
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCpunt implementation causes warning.
+#pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCount implementation causes warning.
         public void Dispose()
         {
-            if (UsageCount-- > 0)
+            // If we still have delegates, then don't dispose as we're still in use.
+            if (RequestReceived?.GetInvocationList().Length != 0)
             {
                 return;
             }
 
+            SocketServer.Instance = null;
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -121,14 +121,10 @@ namespace Emby.Dlna.Rssdp
         /// <param name="args">Event arguments.</param>
         public void ConfigurationUpdated(object sender, System.EventArgs args)
         {
-            // Check to see if uPNP has changed status.
-            bool newValue = _configurationManager.Configuration.EnableUPnP && _configurationManager.Configuration.EnableRemoteAccess;
-
-            if (newValue != _externalPortForwardEnabled)
+            if (_oldState != _networkManager.IsuPnPActive)
             {
-                // If it has create the missing sockets.
-                _externalPortForwardEnabled = newValue;
                 CreateSockets();
+                _oldState = _networkManager.IsuPnPActive;
             }
         }
 
@@ -233,7 +229,7 @@ namespace Emby.Dlna.Rssdp
         }
 
         /// <summary>
-        /// Sends a message to a particular address (unicast or multicast) via all available sockets.
+        /// Multicasts a message to a particular address (unicast or multicast) via all available sockets.
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="localIPAddress">The destination address.</param>
@@ -273,7 +269,6 @@ namespace Emby.Dlna.Rssdp
             }
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
-
             IPEndPoint endPoint = _networkManager.GetMulticastEndPoint(localIPAddress, 1900);
 
             Dictionary<Socket, SocketState>.KeyCollection sockets;
@@ -285,7 +280,7 @@ namespace Emby.Dlna.Rssdp
             if (sockets.Count > 0)
             {
                 var tasks = sockets
-                    .Where(s => (localIPAddress.Equals(IPAddress.Any) || localIPAddress.Equals(IPAddress.IPv6Any) || localIPAddress.Equals(s.LocalEndPoint)))
+                    .Where(s => localIPAddress.Equals(IPAddress.Any) || localIPAddress.Equals(IPAddress.IPv6Any) || localIPAddress.Equals(s.LocalEndPoint))
                     .Where(s => endPoint.AddressFamily == s.LocalEndPoint.AddressFamily)
                     .Select(s => SendFromSocketAsync(s, messageData, endPoint, sendCount));
                 await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -446,7 +441,7 @@ namespace Emby.Dlna.Rssdp
         }
 
         /// <summary>
-        /// Creates UDP port if the endpoint doesn't already have one defined.
+        /// Creates UDP port if one doesn't already exist for the ip address.
         /// </summary>
         /// <param name="listen">True if the socket is to be a listener.</param>
         /// <param name="localIPAddress">Interface IP upon which to listen.</param>
@@ -458,19 +453,10 @@ namespace Emby.Dlna.Rssdp
             {
                 try
                 {
-                    Socket socket;
-                    if (port == 0)
-                    {
-                        _logger.LogDebug("Creating socket for {0}.", localIPAddress);
-                        socket = _networkManager.CreateUdpMulticastSocket(localIPAddress, port);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("Creating multicast socket for {0} on {1}.", localIPAddress, port);
-                        socket = _networkManager.CreateUdpMulticastSocket(_multicastTtl, port);
-                    }
-
-                    _sockets.Add(socket, listen ? SocketState.Listener : SocketState.SendOnly);
+                    _logger.LogDebug("Creating socket for {0}.", localIPAddress);
+                    _sockets.Add(
+                        _networkManager.CreateUdpMulticastSocket(localIPAddress, port),
+                        listen ? SocketState.Listener : SocketState.SendOnly);
                 }
                 catch (SocketException ex)
                 {
@@ -533,8 +519,16 @@ namespace Emby.Dlna.Rssdp
                 // Only create the IPAny/v6Any and multicast ports once.
                 if (_sockets.Count == 0)
                 {
-                    CreateUniqueSocket(true, IPAddress.Any, 1900); // Multicast.
-                    CreateUniqueSocket(true, IPAddress.Any);
+                    if (!_networkManager.IsuPnPActive)
+                    {
+                        CreateUniqueSocket(true, IPAddress.Any, 1900);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Delegating 0.0.0.0:1900 to Mono.NAT.");
+                        CreateUniqueSocket(true, IPAddress.Any);
+                    }
+
                     if (_networkManager.IsIP6Enabled)
                     {
                         CreateUniqueSocket(true, IPAddress.IPv6Any);
@@ -548,7 +542,7 @@ namespace Emby.Dlna.Rssdp
                         // An interface with a negative tag has a gateway address and so will be listened to by Mono.NAT, if port forwarding is enabled.
                         // In this instance, Mono.NAT will send us this traffic, so we don't need to listen to these sockets.
                         // Mono isn't IPv6 compliant yet, so we will listen on IPv6 interfaces
-                        CreateUniqueSocket(!(_externalPortForwardEnabled && ip.Tag < 0 && ip.Address.AddressFamily == AddressFamily.InterNetwork), ip.Address);
+                        CreateUniqueSocket(!(_networkManager.IsuPnPActive && ip.Tag < 0 && ip.Address.AddressFamily == AddressFamily.InterNetwork), ip.Address);
                     }
                 }
             }
@@ -613,7 +607,7 @@ namespace Emby.Dlna.Rssdp
                     _sockets[socket] = SocketState.Listening;
                 }
 
-                var endPoint = socket.LocalEndPoint; // _networkManager.GetMulticastEndPoint(1900);  /// var endPoint = _networkManager.GetMulticastEndPoint(1900);  ///
+                var endPoint = socket.LocalEndPoint; // var endPoint = _networkManager.GetMulticastEndPoint(1900);
                 while (!_disposed)
                 {
                     try

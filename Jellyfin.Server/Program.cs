@@ -274,45 +274,15 @@ namespace Jellyfin.Server
                 {
                     NetCollection addresses = NetworkManager.Instance.GetAllBindInterfaces();
 
-                    if (addresses.Count > 0)
+                    // if (addresses.Count > 0)
+                    // {
+                    foreach (IPObject netAdd in addresses)
                     {
-                        foreach (IPObject netAdd in addresses)
-                        {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd);
-                            options.Listen(netAdd.Address, appHost.HttpPort);
-                            if (appHost.ListenWithHttps)
-                            {
-                                options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps(appHost.Certificate);
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
-                            }
-                            else if (builderContext.HostingEnvironment.IsDevelopment())
-                            {
-                                try
-                                {
-                                    options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
-                                    {
-                                        listenOptions.UseHttps();
-                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                    });
-                                }
-                                catch (InvalidOperationException)
-                                {
-                                    _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Kestrel listening on all interfaces");
-                        options.ListenAnyIP(appHost.HttpPort);
-
+                        _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd);
+                        options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
-                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                            options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
                             {
                                 listenOptions.UseHttps(appHost.Certificate);
                                 listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
@@ -322,7 +292,7 @@ namespace Jellyfin.Server
                         {
                             try
                             {
-                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                                options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
                                 {
                                     listenOptions.UseHttps();
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
@@ -334,6 +304,37 @@ namespace Jellyfin.Server
                             }
                         }
                     }
+
+                // }
+                    // else
+                    // {
+                    //    _logger.LogInformation("Kestrel listening on all interfaces");
+                    //    options.ListenAnyIP(appHost.HttpPort);
+                    //
+                    //    if (appHost.ListenWithHttps)
+                    //    {
+                    //        options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                    //        {
+                    //            listenOptions.UseHttps(appHost.Certificate);
+                    //            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    //        });
+                    //    }
+                    //    else if (builderContext.HostingEnvironment.IsDevelopment())
+                    //    {
+                    //        try
+                    //        {
+                    //            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                    //            {
+                    //                listenOptions.UseHttps();
+                    //                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    //            });
+                    //        }
+                    //        catch (InvalidOperationException)
+                    //        {
+                    //            _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                    //        }
+                    //    }
+                    // }
 
                     // Bind to unix socket (only on OSX and Linux)
                     if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

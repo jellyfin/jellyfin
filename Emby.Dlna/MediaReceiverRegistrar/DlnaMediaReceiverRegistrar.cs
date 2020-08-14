@@ -1,5 +1,5 @@
-﻿#pragma warning disable CS1591
-
+#nullable enable
+using System;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
@@ -13,12 +13,12 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         private readonly IServerConfigurationManager _config;
 
         public DlnaMediaReceiverRegistrar(
-            ILogger<DlnaMediaReceiverRegistrar> logger,
+            ILoggerFactory loggerFactory,
             IHttpClient httpClient,
             IServerConfigurationManager config)
-            : base(logger, httpClient)
+            : base(loggerFactory?.CreateLogger<DlnaMediaReceiverRegistrar>(), httpClient)
         {
-            _config = config;
+            _config = config ?? throw new NullReferenceException(nameof(config));
         }
 
         /// <inheritdoc />
@@ -30,10 +30,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
-            return new ControlHandler(
-                _config,
-                Logger)
-                .ProcessControlRequestAsync(request);
+            return new ControlHandler(_config, _logger).ProcessControlRequestAsync(request);
         }
     }
 }

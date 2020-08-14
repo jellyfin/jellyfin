@@ -1,5 +1,5 @@
-#pragma warning disable CS1591
-
+#nullable enable
+using System;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
@@ -12,19 +12,19 @@ namespace Emby.Dlna.ConnectionManager
     public class DlnaConnectionManager : BaseService, IConnectionManager
     {
         private readonly IDlnaManager _dlna;
-        private readonly ILogger _logger;
-        private readonly IServerConfigurationManager _config;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IServerConfigurationManager _configurationManager;
 
         public DlnaConnectionManager(
             IDlnaManager dlna,
-            IServerConfigurationManager config,
-            ILogger<DlnaConnectionManager> logger,
+            IServerConfigurationManager configurationManager,
+            ILoggerFactory loggerFactory,
             IHttpClient httpClient)
-            : base(logger, httpClient)
+            : base(loggerFactory?.CreateLogger<DlnaConnectionManager>(), httpClient)
         {
-            _dlna = dlna;
-            _config = config;
-            _logger = logger;
+            _dlna = dlna ?? throw new NullReferenceException(nameof(dlna));
+            _configurationManager = configurationManager ?? throw new NullReferenceException(nameof(configurationManager));
+            _loggerFactory = loggerFactory ?? throw new NullReferenceException(nameof(loggerFactory));
         }
 
         /// <inheritdoc />
@@ -36,10 +36,17 @@ namespace Emby.Dlna.ConnectionManager
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
-            var profile = _dlna.GetProfile(request.Headers) ??
-                         _dlna.GetDefaultProfile();
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            return new DlnaControlHandler(_config, _logger, profile).ProcessControlRequestAsync(request);
+            var profile = _dlna.GetProfile(request.Headers) ?? _dlna.GetDefaultProfile();
+
+            return new DlnaControlHandler(
+                _configurationManager,
+                _loggerFactory.CreateLogger<DlnaControlHandler>(),
+                profile).ProcessControlRequestAsync(request);
         }
     }
 }

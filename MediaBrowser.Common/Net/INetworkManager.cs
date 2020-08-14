@@ -31,6 +31,16 @@ namespace MediaBrowser.Common.Net
         bool EnableMultiSocketBinding { get; }
 
         /// <summary>
+        /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
+        /// </summary>
+        public bool TrustAllIP6Interfaces { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether uPNP is active.
+        /// </summary>
+        public bool IsuPnPActive { get; }
+
+        /// <summary>
         /// Gets returns the remote address filter.
         /// </summary>
         NetCollection RemoteAddressFilter { get; }
@@ -228,14 +238,6 @@ namespace MediaBrowser.Common.Net
         /// <param name="port">UDP port to bind.</param>
         /// <returns>A Socket.</returns>
         Socket CreateUdpMulticastSocket(IPAddress address, int port);
-
-        /// <summary>
-        /// Creates a new UDP acceptSocket that is a member of the specified multicast IP address, and binds it to the specified local port.
-        /// </summary>
-        /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
-        /// <param name="port">UDP port to bind.</param>
-        /// <returns>Socket interface object.</returns>
-        Socket CreateUdpMulticastSocket(int multicastTimeToLive, int port);
 
         /// <summary>
         /// Returns the correct multicast address based upon the value of the address provided.

@@ -1,5 +1,4 @@
-﻿#pragma warning disable CS1591
-
+#nullable enable
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,6 +31,7 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IUserViewManager _userViewManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly ILoggerFactory _loggerFactory;
 
         public DlnaContentDirectory(
             IDlnaManager dlna,
@@ -40,26 +40,27 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             IUserManager userManager,
-            ILogger<DlnaContentDirectory> logger,
             IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
             IUserViewManager userViewManager,
             IMediaEncoder mediaEncoder,
-            ITVSeriesManager tvSeriesManager)
-            : base(logger, httpClient)
+            ITVSeriesManager tvSeriesManager,
+            ILoggerFactory loggerFactory)
+            : base(loggerFactory?.CreateLogger<DlnaContentDirectory>(), httpClient)
         {
-            _dlna = dlna;
-            _userDataManager = userDataManager;
-            _imageProcessor = imageProcessor;
-            _libraryManager = libraryManager;
-            _config = config;
-            _userManager = userManager;
-            _localization = localization;
-            _mediaSourceManager = mediaSourceManager;
-            _userViewManager = userViewManager;
-            _mediaEncoder = mediaEncoder;
-            _tvSeriesManager = tvSeriesManager;
+            _dlna = dlna ?? throw new NullReferenceException(nameof(dlna));
+            _userDataManager = userDataManager ?? throw new NullReferenceException(nameof(userDataManager));
+            _imageProcessor = imageProcessor ?? throw new NullReferenceException(nameof(imageProcessor));
+            _libraryManager = libraryManager ?? throw new NullReferenceException(nameof(dlna));
+            _config = config ?? throw new NullReferenceException(nameof(config));
+            _userManager = userManager ?? throw new NullReferenceException(nameof(userManager));
+            _localization = localization ?? throw new NullReferenceException(nameof(localization));
+            _mediaSourceManager = mediaSourceManager ?? throw new NullReferenceException(nameof(mediaSourceManager));
+            _userViewManager = userViewManager ?? throw new NullReferenceException(nameof(userViewManager));
+            _mediaEncoder = mediaEncoder ?? throw new NullReferenceException(nameof(mediaEncoder));
+            _tvSeriesManager = tvSeriesManager ?? throw new NullReferenceException(nameof(tvSeriesManager));
+            _loggerFactory = loggerFactory ?? throw new NullReferenceException(nameof(loggerFactory));
         }
 
         private int SystemUpdateId
@@ -67,7 +68,6 @@ namespace Emby.Dlna.ContentDirectory
             get
             {
                 var now = DateTime.UtcNow;
-
                 return now.Year + now.DayOfYear + now.Hour;
             }
         }
@@ -89,7 +89,7 @@ namespace Emby.Dlna.ContentDirectory
             var user = GetUser(profile);
 
             return new ControlHandler(
-                Logger,
+                _loggerFactory,
                 _libraryManager,
                 profile,
                 serverAddress,

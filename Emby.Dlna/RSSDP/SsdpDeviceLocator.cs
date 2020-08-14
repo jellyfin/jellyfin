@@ -27,14 +27,14 @@ namespace Emby.Dlna.Rssdp
         private readonly List<DiscoveredSsdpDevice> _devices;
         private readonly SocketServer _socketServer;
         private readonly object _timerLock;
-        private readonly ILogger _logger;
+        private readonly ILogger<SsdpDeviceLocator> _logger;
         private readonly INetworkManager _networkManager;
         private readonly TimeSpan _defaultSearchWaitTime;
         private readonly TimeSpan _oneSecond;
         private readonly string _systemId;
         private Timer? _broadcastTimer;
 
-        public SsdpDeviceLocator(SocketServer socketServer, ILogger logger, INetworkManager networkManager, string systemId)
+        public SsdpDeviceLocator(SocketServer socketServer, ILogger<SsdpDeviceLocator> logger, INetworkManager networkManager, string systemId)
         {
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
@@ -296,7 +296,7 @@ namespace Emby.Dlna.Rssdp
 
         private Task BroadcastDiscoverMessage(TimeSpan mxValue)
         {
-            string[] multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
+            string[] multicastAddresses = { "239.255.255.250", "[ff02::C]", "[ff05::C]" };
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
             int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
@@ -306,7 +306,7 @@ namespace Emby.Dlna.Rssdp
                 {
                     ["HOST"] = multicastAddresses[a] + ":1900",
                     ["USER-AGENT"] = SsdpUserAgent + "\\" + _systemId,
-                    ["MAN"] = $"\"ssdp:discover\"",
+                    ["MAN"] = "ssdp:discover",
                     ["ST"] = "ssdp:all",
                     ["MX"] = mxValue.Seconds.ToString(CultureInfo.CurrentCulture)
                 };
@@ -353,7 +353,10 @@ namespace Emby.Dlna.Rssdp
             IPAddress localIpAddress = e.LocalIPAddress;
 
             var nt = GetFirstHeaderValue("NT", message.Headers);
-            _logger.LogDebug("Sniffer: {0} from {1} type {2}", message.Method.Method, e.ReceivedFrom.Address, nt);
+            if (!string.IsNullOrEmpty(nt))
+            {
+                _logger.LogDebug("Sniffer: {0} from {1} type {2}", message.Method.Method, e.ReceivedFrom.Address, nt);
+            }
             // TODO: Link in External Here!
 
             if (string.Equals(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase))

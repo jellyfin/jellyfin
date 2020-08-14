@@ -119,11 +119,11 @@ namespace Emby.Dlna.Api
 
         public IRequest Request { get; set; }
 
-        private IContentDirectory ContentDirectory => DlnaEntryPoint.Current.ContentDirectory;
+        private IContentDirectory ContentDirectory => DlnaEntryPoint.Instance.ContentDirectory;
 
-        private IConnectionManager ConnectionManager => DlnaEntryPoint.Current.ConnectionManager;
+        private IConnectionManager ConnectionManager => DlnaEntryPoint.Instance.ConnectionManager;
 
-        private IMediaReceiverRegistrar MediaReceiverRegistrar => DlnaEntryPoint.Current.MediaReceiverRegistrar;
+        private IMediaReceiverRegistrar MediaReceiverRegistrar => DlnaEntryPoint.Instance.MediaReceiverRegistrar;
 
         public DlnaServerService(
             IDlnaManager dlnaManager,
@@ -144,7 +144,7 @@ namespace Emby.Dlna.Api
 
         public object Get(GetDescriptionXml request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled)
             {
                 return null;
             }
@@ -163,7 +163,7 @@ namespace Emby.Dlna.Api
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetContentDirectory request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled || ContentDirectory == null)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled || ContentDirectory == null)
             {
                 return null;
             }
@@ -176,7 +176,7 @@ namespace Emby.Dlna.Api
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetMediaReceiverRegistrar request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled || MediaReceiverRegistrar == null)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled || MediaReceiverRegistrar == null)
             {
                 return null;
             }
@@ -189,7 +189,7 @@ namespace Emby.Dlna.Api
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetConnnectionManager request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled || ConnectionManager == null)
             {
                 return null;
             }
@@ -201,7 +201,7 @@ namespace Emby.Dlna.Api
 
         public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled || MediaReceiverRegistrar == null)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled || MediaReceiverRegistrar == null)
             {
                 return null;
             }
@@ -213,7 +213,7 @@ namespace Emby.Dlna.Api
 
         public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled || ConnectionManager == null)
             {
                 return null;
             }
@@ -225,7 +225,7 @@ namespace Emby.Dlna.Api
 
         public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled || ConnectionManager == null)
             {
                 return null;
             }
@@ -345,7 +345,7 @@ namespace Emby.Dlna.Api
 
         public object Get(GetIcon request)
         {
-            if (!DlnaEntryPoint.Current.DLNAEnabled)
+            if (!DlnaEntryPoint.Instance.DLNAEnabled)
             {
                 return false;
             }
@@ -398,7 +398,7 @@ namespace Emby.Dlna.Api
 
         private object ProcessEventRequest(IEventManager eventManager)
         {
-            if (eventManager == null || !DlnaEntryPoint.Current.DLNAEnabled)
+            if (eventManager == null || !DlnaEntryPoint.Instance.DLNAEnabled)
             {
                 return null;
             }
@@ -425,7 +425,7 @@ namespace Emby.Dlna.Api
 
         private object GetSubscriptionResponse(EventSubscriptionResponse response)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled)
+            if (DlnaEntryPoint.Instance.DLNAEnabled)
             {
                 return _resultFactory.GetResult(Request, response.Content, response.ContentType, response.Headers);
             }

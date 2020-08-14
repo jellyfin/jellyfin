@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
@@ -47,10 +48,10 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         private readonly List<PhysicalAddress> _macAddresses;
 
-        private readonly ILogger _logger;
+        private readonly ILogger<NetworkManager> _logger;
 
         private readonly IServerConfigurationManager _configurationManager;
-
+        private readonly IServerApplicationHost _appHost;
         private readonly Dictionary<IPNetAddress, string> _overrideAddresses;
 
         /// <summary>
@@ -98,14 +99,16 @@ namespace Emby.Server.Implementations.Networking
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkManager"/> class.
         /// </summary>
-        /// <param name="configurationManager">IServerConfigurationManager object.</param>
+        /// <param name="configurationManager">IServerConfigurationManager instance.</param>
         /// <param name="logger">Logger to use for messages.</param>
+        /// <param name="appHost">IServerApplicationHost instance.</param>
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in InitialiseLAN function. Compiler doesn't yet recognise this.
-        public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager> logger)
+        public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager> logger, IServerApplicationHost appHost)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
+            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
 
             _interfaceAddresses = new NetCollection();
             _macAddresses = new List<PhysicalAddress>();
@@ -161,8 +164,19 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
 
-        private bool TrustAllIP6Interfaces => _configurationManager.Configuration.TrustAllIP6Interfaces;
-        
+        /// <summary>
+        /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
+        /// </summary>
+        public bool TrustAllIP6Interfaces => _configurationManager.Configuration.TrustAllIP6Interfaces;
+
+        /// <summary>
+        /// Gets a value indicating whether uPNP is active.
+        /// </summary>
+        public bool IsuPnPActive => _configurationManager.Configuration.EnableUPnP &&
+            _configurationManager.Configuration.EnableRemoteAccess &&
+            (_appHost.ListenWithHttps ||
+            (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
+
         /// <summary>
         /// Parses a string and returns a range value if possible.
         /// </summary>
@@ -395,22 +409,6 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return retVal;
-        }
-
-        /// <inheritdoc/>
-        public Socket CreateUdpMulticastSocket(int multicastTimeToLive, int port)
-        {
-            if (port < 0 || port > 65536)
-            {
-                throw new ArgumentException("Port out of range", nameof(port));
-            }
-
-            if (multicastTimeToLive <= 0)
-            {
-                throw new ArgumentException("multicastTimeToLive cannot be zero or less.", nameof(multicastTimeToLive));
-            }
-
-            return CreateUdpMulticastSocket(IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, port);
         }
 
         /// <inheritdoc/>
@@ -913,6 +911,7 @@ namespace Emby.Server.Implementations.Networking
 
             if (Type.GetType("Mono.Runtime") == null)
             {
+                // Old bug fix for connection closed errors. https://stackoverflow.com/questions/7201862/an-existing-connection-was-forcibly-closed-by-the-remote-host/7478498#7478498.
                 uint ioc_IN = 0x80000000;
                 uint ioc_VENDOR = 0x18000000;
                 uint sio_UDP_CONNRESET = ioc_IN | ioc_VENDOR | 12;
