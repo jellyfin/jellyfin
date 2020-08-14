@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
-using MediaBrowser.Model.Updates;
 
 namespace Emby.Server.Implementations.Activity
 {
@@ -44,7 +43,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _installationManager.PluginUpdated += OnPluginUpdated;
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
 
             _sessionManager.SessionStarted += OnSessionStarted;
@@ -103,24 +101,6 @@ namespace Emby.Server.Implementations.Activity
             }).ConfigureAwait(false);
         }
 
-        private async void OnPluginUpdated(object sender, InstallationInfo e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("PluginUpdatedWithName"),
-                    e.Name),
-                NotificationType.PluginUpdateInstalled.ToString(),
-                Guid.Empty)
-            {
-                ShortOverview = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("VersionNumber"),
-                    e.Version),
-                Overview = e.Changelog
-            }).ConfigureAwait(false);
-        }
-
         private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             var installationInfo = e.InstallationInfo;
@@ -147,7 +127,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public void Dispose()
         {
-            _installationManager.PluginUpdated -= OnPluginUpdated;
             _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
 
             _sessionManager.SessionStarted -= OnSessionStarted;
