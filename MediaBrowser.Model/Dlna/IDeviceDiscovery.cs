@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Events;
+using Jellyfin.Data.Events;
 
 namespace MediaBrowser.Model.Dlna
 {

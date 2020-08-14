@@ -1,6 +1,6 @@
 using System;
 
-namespace MediaBrowser.Model.Events
+namespace Jellyfin.Data.Events
 {
     /// <summary>
     /// Provides a generic EventArgs subclass that can hold any kind of object.

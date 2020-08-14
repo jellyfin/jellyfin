@@ -4,13 +4,13 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 

@@ -7,11 +7,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 

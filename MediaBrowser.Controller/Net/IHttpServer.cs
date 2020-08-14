@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Events;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 

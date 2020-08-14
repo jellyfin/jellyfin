@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Library

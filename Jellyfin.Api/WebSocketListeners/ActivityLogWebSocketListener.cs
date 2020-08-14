@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.WebSocketListeners

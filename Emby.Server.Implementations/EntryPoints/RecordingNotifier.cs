@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;
@@ -43,22 +44,22 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        private async void OnLiveTvManagerSeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerSeriesTimerCreated(object sender, GenericEventArgs<TimerEventInfo> e)
         {
             await SendMessage("SeriesTimerCreated", e.Argument).ConfigureAwait(false);
         }
 
-        private async void OnLiveTvManagerTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerTimerCreated(object sender, GenericEventArgs<TimerEventInfo> e)
         {
             await SendMessage("TimerCreated", e.Argument).ConfigureAwait(false);
         }
 
-        private async void OnLiveTvManagerSeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerSeriesTimerCancelled(object sender, GenericEventArgs<TimerEventInfo> e)
         {
             await SendMessage("SeriesTimerCancelled", e.Argument).ConfigureAwait(false);
         }
 
-        private async void OnLiveTvManagerTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerTimerCancelled(object sender, GenericEventArgs<TimerEventInfo> e)
         {
             await SendMessage("TimerCancelled", e.Argument).ConfigureAwait(false);
         }

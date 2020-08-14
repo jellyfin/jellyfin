@@ -4,12 +4,12 @@
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Events;
 
 namespace Jellyfin.Server.Implementations.Users
 {
