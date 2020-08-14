@@ -247,9 +247,14 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 {
                     Name = tvdbTitles.FirstOrDefault(),
                     ProductionYear = firstAired.Year,
-                    SearchProviderName = Name,
-                    ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
+                    SearchProviderName = Name
                 };
+
+                if (!string.IsNullOrEmpty(seriesSearchResult.Banner))
+                {
+                    // Results from their Search endpoints already include the /banners/ part in the url, because reasons...
+                    remoteSearchResult.ImageUrl = TvdbUtils.TvdbImageBaseUrl + seriesSearchResult.Banner;
+                }
 
                 try
                 {
@@ -365,9 +370,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Type = PersonType.Actor,
                     Name = (actor.Name ?? string.Empty).Trim(),
                     Role = actor.Role,
-                    ImageUrl = TvdbUtils.BannerUrl + actor.Image,
                     SortOrder = actor.SortOrder
                 };
+
+                if (!string.IsNullOrEmpty(actor.Image))
+                {
+                    personInfo.ImageUrl = TvdbUtils.BannerUrl + actor.Image;
+                }
 
                 if (!string.IsNullOrWhiteSpace(personInfo.Name))
                 {

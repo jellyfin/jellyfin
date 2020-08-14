@@ -1,6 +1,20 @@
-#pragma warning disable CS1591
 #pragma warning disable CA1031 // Catch a more specific exception type, or rethrow the exception.
 #nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Security;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
+using Emby.Dlna.Common;
+using Emby.Dlna.Ssdp;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {

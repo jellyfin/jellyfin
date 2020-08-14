@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void InitGroup(SessionInfo session, CancellationToken cancellationToken);
+        void CreateGroup(SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to the group.

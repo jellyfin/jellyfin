@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     if (seasonInfo.External_Ids.Tvdb_Id > 0)
                     {
-                        result.Item.SetProviderId(MetadataProvider.Tvdb, seasonInfo.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
+                        result.Item.SetProviderId(MetadataProvider.Tvdb, seasonInfo.External_Ids.Tvdb_Id.Value.ToString(CultureInfo.InvariantCulture));
                     }
 
                     var credits = seasonInfo.Credits;

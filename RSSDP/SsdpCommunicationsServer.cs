@@ -339,7 +339,6 @@ namespace Rssdp.Infrastructure
         private ISocket ListenForBroadcastsAsync()
         {
             var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
-
             _ = ListenToSocketInternal(socket);
 
             return socket;

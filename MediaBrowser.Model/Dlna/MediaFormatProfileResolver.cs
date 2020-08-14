@@ -206,7 +206,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            return new MediaFormatProfile[] { };
+            return Array.Empty<MediaFormatProfile>();
         }
 
         private MediaFormatProfile ValueOf(string value)

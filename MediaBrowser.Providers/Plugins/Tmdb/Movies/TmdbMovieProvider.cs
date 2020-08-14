@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             using (HttpResponseInfo response = await GetMovieDbResponse(new HttpRequestOptions
             {
-                Url = string.Format(TmdbConfigUrl, TmdbUtils.ApiKey),
+                Url = string.Format(CultureInfo.InvariantCulture, TmdbConfigUrl, TmdbUtils.ApiKey),
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
             }).ConfigureAwait(false))
@@ -245,7 +245,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 preferredLanguage = "alllang";
             }
 
-            var filename = string.Format("all-{0}.json", preferredLanguage);
+            var filename = string.Format(CultureInfo.InvariantCulture, "all-{0}.json", preferredLanguage);
 
             return Path.Combine(path, filename);
         }
@@ -276,7 +276,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 languages.Add("en");
             }
 
-            return string.Join(",", languages.ToArray());
+            return string.Join(",", languages);
         }
 
         public static string NormalizeLanguage(string language)
@@ -321,11 +321,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <returns>Task{CompleteMovieData}.</returns>
         internal async Task<MovieResult> FetchMainResult(string id, bool isTmdbId, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetMovieInfo3, id, TmdbUtils.ApiKey);
+            var url = string.Format(CultureInfo.InvariantCulture, GetMovieInfo3, id, TmdbUtils.ApiKey);
 
             if (!string.IsNullOrEmpty(language))
             {
-                url += string.Format("&language={0}", NormalizeLanguage(language));
+                url += string.Format(CultureInfo.InvariantCulture, "&language={0}", NormalizeLanguage(language));
 
                 // Get images in english and with no language
                 url += "&include_image_language=" + GetImageLanguagesParam(language);
@@ -377,7 +377,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 _logger.LogInformation("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
-                url = string.Format(GetMovieInfo3, id, TmdbUtils.ApiKey) + "&language=en";
+                url = string.Format(CultureInfo.InvariantCulture, GetMovieInfo3, id, TmdbUtils.ApiKey) + "&language=en";
 
                 if (!string.IsNullOrEmpty(language))
                 {
@@ -406,26 +406,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return mainResult;
         }
 
-        private static long _lastRequestTicks;
-        // The limit is 40 requests per 10 seconds
-        private const int RequestIntervalMs = 300;
-
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
         internal async Task<HttpResponseInfo> GetMovieDbResponse(HttpRequestOptions options)
         {
-            var delayTicks = (RequestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
-            var delayMs = Math.Min(delayTicks / 10000, RequestIntervalMs);
-
-            if (delayMs > 0)
-            {
-                _logger.LogDebug("Throttling Tmdb by {0} ms", delayMs);
-                await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
-            }
-
-            _lastRequestTicks = DateTime.UtcNow.Ticks;
-
             options.BufferContent = true;
             options.UserAgent = _appHost.ApplicationUserAgent;
 

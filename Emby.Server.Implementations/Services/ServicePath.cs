@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.Services
             {
                 var component = components[i];
 
-                if (component.StartsWith(VariablePrefix))
+                if (component.StartsWith(VariablePrefix, StringComparison.Ordinal))
                 {
                     var variableName = component.Substring(1, component.Length - 2);
                     if (variableName[variableName.Length - 1] == WildCardChar)
@@ -488,7 +488,8 @@ namespace Emby.Server.Implementations.Services
                         sb.Append(value);
                         for (var j = pathIx + 1; j < requestComponents.Length; j++)
                         {
-                            sb.Append(PathSeperatorChar + requestComponents[j]);
+                            sb.Append(PathSeperatorChar)
+                                .Append(requestComponents[j]);
                         }
 
                         value = sb.ToString();
@@ -505,7 +506,8 @@ namespace Emby.Server.Implementations.Services
                             pathIx++;
                             while (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                             {
-                                sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
+                                sb.Append(PathSeperatorChar)
+                                    .Append(requestComponents[pathIx++]);
                             }
 
                             value = sb.ToString();

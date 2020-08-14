@@ -723,7 +723,7 @@ namespace MediaBrowser.Providers.Manager
                             userDataList.AddRange(localItem.UserDataList);
                         }
 
-                        MergeData(localItem, temp, new MetadataField[] { }, !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -849,7 +849,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
-                        MergeData(result, temp, new MetadataField[] { }, false, false);
+                        MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;

@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (DbUpdateConcurrencyException e)
                     {
-                        _logger.LogWarning(e, "Error updating user's last activity date.");
+                        _logger.LogDebug(e, "Error updating user's last activity date.");
                     }
                 }
             }
@@ -848,8 +848,8 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">info</exception>
-        /// <exception cref="ArgumentOutOfRangeException">positionTicks</exception>
+        /// <exception cref="ArgumentNullException"><c>info</c> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><c>info.PositionTicks</c> is <c>null</c> or negative.</exception>
         public async Task OnPlaybackStopped(PlaybackStopInfo info)
         {
             CheckDisposed();

@@ -144,7 +144,7 @@ namespace MediaBrowser.Model.Dlna
 
         public Dictionary<string, string> StreamOptions { get; private set; }
 
-        public string MediaSourceId => MediaSource == null ? null : MediaSource.Id;
+        public string MediaSourceId => MediaSource?.Id;
 
         public bool IsDirectStream =>
             PlayMethod == PlayMethod.DirectStream ||
@@ -813,18 +813,18 @@ namespace MediaBrowser.Model.Dlna
             {
                 var stream = TargetAudioStream;
 
-                string inputCodec = stream == null ? null : stream.Codec;
+                string inputCodec = stream?.Codec;
 
                 if (IsDirectStream)
                 {
-                    return string.IsNullOrEmpty(inputCodec) ? new string[] { } : new[] { inputCodec };
+                    return string.IsNullOrEmpty(inputCodec) ? Array.Empty<string>() : new[] { inputCodec };
                 }
 
                 foreach (string codec in AudioCodecs)
                 {
                     if (string.Equals(codec, inputCodec, StringComparison.OrdinalIgnoreCase))
                     {
-                        return string.IsNullOrEmpty(codec) ? new string[] { } : new[] { codec };
+                        return string.IsNullOrEmpty(codec) ? Array.Empty<string>() : new[] { codec };
                     }
                 }
 
@@ -838,18 +838,18 @@ namespace MediaBrowser.Model.Dlna
             {
                 var stream = TargetVideoStream;
 
-                string inputCodec = stream == null ? null : stream.Codec;
+                string inputCodec = stream?.Codec;
 
                 if (IsDirectStream)
                 {
-                    return string.IsNullOrEmpty(inputCodec) ? new string[] { } : new[] { inputCodec };
+                    return string.IsNullOrEmpty(inputCodec) ? Array.Empty<string>() : new[] { inputCodec };
                 }
 
                 foreach (string codec in VideoCodecs)
                 {
                     if (string.Equals(codec, inputCodec, StringComparison.OrdinalIgnoreCase))
                     {
-                        return string.IsNullOrEmpty(codec) ? new string[] { } : new[] { codec };
+                        return string.IsNullOrEmpty(codec) ? Array.Empty<string>() : new[] { codec };
                     }
                 }
 

@@ -77,7 +77,7 @@ namespace Emby.Naming.TV
 
             if (filename.StartsWith("s", StringComparison.OrdinalIgnoreCase))
             {
-                var testFilename = filename.Substring(1);
+                var testFilename = filename.AsSpan().Slice(1);
 
                 if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                 {

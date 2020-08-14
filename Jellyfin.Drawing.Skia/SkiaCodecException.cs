@@ -12,7 +12,7 @@ namespace Jellyfin.Drawing.Skia
         /// Initializes a new instance of the <see cref="SkiaCodecException" /> class.
         /// </summary>
         /// <param name="result">The non-successful codec result returned by Skia.</param>
-        public SkiaCodecException(SKCodecResult result) : base()
+        public SkiaCodecException(SKCodecResult result)
         {
             CodecResult = result;
         }

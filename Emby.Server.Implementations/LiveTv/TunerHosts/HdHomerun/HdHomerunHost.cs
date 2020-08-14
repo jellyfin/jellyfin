@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -23,7 +24,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
@@ -39,14 +40,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public HdHomerunHost(
             IServerConfigurationManager config,
             ILogger<HdHomerunHost> logger,
-            IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
             INetworkManager networkManager,
-            IStreamHelper streamHelper)
-            : base(config, logger, jsonSerializer, fileSystem)
+            IStreamHelper streamHelper,
+            IMemoryCache memoryCache)
+            : base(config, logger, fileSystem, memoryCache)
         {
             _httpClient = httpClient;
             _appHost = appHost;
@@ -75,18 +76,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 BufferContent = false
             };
 
-            using (var response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = response.Content)
+            using var response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
+            await using var stream = response.Content;
+            var lineup = await JsonSerializer.DeserializeAsync<List<Channels>>(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false) ?? new List<Channels>();
+
+            if (info.ImportFavoritesOnly)
             {
-                var lineup = await JsonSerializer.DeserializeFromStreamAsync<List<Channels>>(stream).ConfigureAwait(false) ?? new List<Channels>();
-
-                if (info.ImportFavoritesOnly)
-                {
-                    lineup = lineup.Where(i => i.Favorite).ToList();
-                }
-
-                return lineup.Where(i => !i.DRM).ToList();
+                lineup = lineup.Where(i => i.Favorite).ToList();
             }
+
+            return lineup.Where(i => !i.DRM).ToList();
         }
 
         private class HdHomerunChannelInfo : ChannelInfo
@@ -132,30 +132,30 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
-                using (var response = await _httpClient.SendAsync(new HttpRequestOptions()
+                using var response = await _httpClient.SendAsync(
+                    new HttpRequestOptions
                 {
-                    Url = string.Format("{0}/discover.json", GetApiUrl(info)),
+                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
                     CancellationToken = cancellationToken,
                     BufferContent = false
-                }, HttpMethod.Get).ConfigureAwait(false))
-                using (var stream = response.Content)
+                }, HttpMethod.Get).ConfigureAwait(false);
+                await using var stream = response.Content;
+                var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (!string.IsNullOrEmpty(cacheKey))
                 {
-                    var discoverResponse = await JsonSerializer.DeserializeFromStreamAsync<DiscoverResponse>(stream).ConfigureAwait(false);
-
-                    if (!string.IsNullOrEmpty(cacheKey))
+                    lock (_modelCache)
                     {
-                        lock (_modelCache)
-                        {
-                            _modelCache[cacheKey] = discoverResponse;
-                        }
+                        _modelCache[cacheKey] = discoverResponse;
                     }
-
-                    return discoverResponse;
                 }
+
+                return discoverResponse;
             }
             catch (HttpException ex)
             {
-                if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
                     var defaultValue = "HDHR";
                     var response = new DiscoverResponse
@@ -195,7 +195,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 while (!sr.EndOfStream)
                 {
                     string line = StripXML(sr.ReadLine());
-                    if (line.Contains("Channel"))
+                    if (line.Contains("Channel", StringComparison.Ordinal))
                     {
                         LiveTvTunerStatus status;
                         var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
@@ -226,6 +226,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private static string StripXML(string source)
         {
+            if (string.IsNullOrEmpty(source))
+            {
+                return string.Empty;
+            }
+
             char[] buffer = new char[source.Length];
             int bufferIndex = 0;
             bool inside = false;
@@ -270,7 +275,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
-                    var name = string.Format("Tuner {0}", i + 1);
+                    var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
                     var currentChannel = "none"; // @todo Get current channel and map back to Station Id
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
                     var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
