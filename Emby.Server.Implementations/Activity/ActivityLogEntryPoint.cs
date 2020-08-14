@@ -45,7 +45,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _installationManager.PluginInstalled += OnPluginInstalled;
             _installationManager.PluginUninstalled += OnPluginUninstalled;
             _installationManager.PluginUpdated += OnPluginUpdated;
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
@@ -136,23 +135,6 @@ namespace Emby.Server.Implementations.Activity
                 .ConfigureAwait(false);
         }
 
-        private async void OnPluginInstalled(object sender, InstallationInfo e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("PluginInstalledWithName"),
-                    e.Name),
-                NotificationType.PluginInstalled.ToString(),
-                Guid.Empty)
-            {
-                ShortOverview = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("VersionNumber"),
-                    e.Version)
-            }).ConfigureAwait(false);
-        }
-
         private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             var installationInfo = e.InstallationInfo;
@@ -179,7 +161,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public void Dispose()
         {
-            _installationManager.PluginInstalled -= OnPluginInstalled;
             _installationManager.PluginUninstalled -= OnPluginUninstalled;
             _installationManager.PluginUpdated -= OnPluginUpdated;
             _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
