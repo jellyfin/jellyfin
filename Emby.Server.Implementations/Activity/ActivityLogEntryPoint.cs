@@ -6,7 +6,6 @@ using Jellyfin.Data.Events;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Activity;
@@ -26,7 +25,6 @@ namespace Emby.Server.Implementations.Activity
         private readonly ISessionManager _sessionManager;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
-        private readonly IUserManager _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
@@ -35,19 +33,16 @@ namespace Emby.Server.Implementations.Activity
         /// <param name="activityManager">The activity manager.</param>
         /// <param name="localization">The localization manager.</param>
         /// <param name="installationManager">The installation manager.</param>
-        /// <param name="userManager">The user manager.</param>
         public ActivityLogEntryPoint(
             ISessionManager sessionManager,
             IActivityManager activityManager,
             ILocalizationManager localization,
-            IInstallationManager installationManager,
-            IUserManager userManager)
+            IInstallationManager installationManager)
         {
             _sessionManager = sessionManager;
             _activityManager = activityManager;
             _localization = localization;
             _installationManager = installationManager;
-            _userManager = userManager;
         }
 
         /// <inheritdoc />
@@ -63,23 +58,7 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
 
-            _userManager.OnUserLockedOut += OnUserLockedOut;
-
             return Task.CompletedTask;
-        }
-
-        private async void OnUserLockedOut(object sender, GenericEventArgs<User> e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        _localization.GetLocalizedString("UserLockedOutWithName"),
-                        e.Argument.Username),
-                    NotificationType.UserLockedOut.ToString(),
-                    e.Argument.Id)
-            {
-                LogSeverity = LogLevel.Error
-            }).ConfigureAwait(false);
         }
 
         private async void OnSessionEnded(object sender, SessionEventArgs e)
@@ -251,8 +230,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed -= OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
             _sessionManager.SessionEnded -= OnSessionEnded;
-
-            _userManager.OnUserLockedOut -= OnUserLockedOut;
         }
     }
 }
