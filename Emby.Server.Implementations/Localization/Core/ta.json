@@ -111,5 +111,7 @@
     "TaskRefreshChapterImagesDescription": "அத்தியாயங்களைக் கொண்ட வீடியோக்களுக்கான சிறு உருவங்களை உருவாக்குகிறது.",
     "ValueHasBeenAddedToLibrary": "உங்கள் மீடியா நூலகத்தில் {0} சேர்க்கப்பட்டது",
     "UserOnlineFromDevice": "{1} இருந்து {0} ஆன்லைன்",
-    "HomeVideos": "முகப்பு வீடியோக்கள்"
+    "HomeVideos": "முகப்பு வீடியோக்கள்",
+    "UserStoppedPlayingItemWithValues": "{2} இல் {1} முடித்துவிட்டது",
+    "UserStartedPlayingItemWithValues": "{0} {2}இல் {1} ஐ இயக்குகிறது"
 }
