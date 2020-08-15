@@ -38,7 +38,7 @@ namespace Mono.Nat
 		protected static readonly TimeSpan SearchPeriod = TimeSpan.FromMinutes (5);
 
 		public event EventHandler<DeviceEventArgs> DeviceFound;
-        public event EventHandler<DeviceEventUnknownArgs> DeviceUnknown;
+		public event EventHandler<DeviceEventUnknownArgs> DeviceUnknown;
 
 		public bool Listening => ListeningTask != null;
 		public abstract NatProtocol Protocol { get; }
@@ -122,10 +122,10 @@ namespace Mono.Nat
 			SearchTask = null;
 		}
 
-        protected void RaiseDeviceUnknown(IPAddress address, EndPoint remote, string response)
-        {
-            DeviceUnknown?.Invoke(this, new DeviceEventUnknownArgs(address, remote, response));
-        }
+		protected void RaiseDeviceUnknown(IPAddress address, EndPoint remote, string response, NatProtocol protocol)
+		{
+			DeviceUnknown?.Invoke(this, new DeviceEventUnknownArgs(address, remote, response, protocol));
+		}
 
 		protected void RaiseDeviceFound (NatDevice device)
 		{

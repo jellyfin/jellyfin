@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project>
 
 	<Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -31,11 +31,6 @@
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
 		<CoreCompileDependsOn>SetBuildVersion;$(CoreCompileDependsOn)</CoreCompileDependsOn>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-	  <WarningLevel>0</WarningLevel>
 	</PropertyGroup>
 
 	<Target Name="SetBuildVersion" DependsOnTargets="GitInfo">

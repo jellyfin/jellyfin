@@ -59,7 +59,7 @@ namespace Mono.Nat.Upnp
 			 */
 			"urn:schemas-upnp-org:service:WANIPConnection:",
 			"urn:schemas-upnp-org:service:WANPPPConnection:",
-        }.AsReadOnly();
+		}.AsReadOnly();
 
 		internal static UpnpSearcher Create()
 		{
@@ -74,39 +74,32 @@ namespace Mono.Nat.Upnp
 					{
 						if (address.Address.AddressFamily == AddressFamily.InterNetwork)
 						{
-                            try
-                            {
-                                var client = new UdpClient(new IPEndPoint(address.Address, 0));
-                                clients.Add(client, gateways);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex.Message);
-                                continue; // Move on to the next address.
-                            }
-                        }
-                    }
-                }
+							try
+							{
+								var client = new UdpClient(new IPEndPoint(address.Address, 0));
+								clients.Add(client, gateways);
 
-                // This enables NOTIFY messages to be received when MSSDP is running under Windows.
-                try
-                {
-                    var listener = new UdpClient(new IPEndPoint(IPAddress.Any, 1900));
-                   listener.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(gateways[0], IPAddress.Any));
-                    clients.Add(listener, gateways);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.Message + "\r\nMono.NAT will be unable to listen on windows systems if MSSDP is running.");
-                }
-
-            }
-            catch (Exception)
+								client = new UdpClient();
+								client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+								client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(gateways[0], IPAddress.Any));
+								client.Client.Bind(new IPEndPoint(address.Address, 1900));
+								clients.Add(client, gateways);
+							}
+							catch (Exception ex)
+							{
+								Log.Error(ex.Message);
+								continue; // Move on to the next address.
+							}
+						}
+					}
+				}
+			}
+			catch (Exception)
 			{
 				clients.Add(new UdpClient(0), gateways);
 			}
 
-            return new UpnpSearcher(new SocketGroup(clients, 1900));
+			return new UpnpSearcher(new SocketGroup(clients, 1900));
 		}
 
 		public override NatProtocol Protocol => NatProtocol.Upnp;
@@ -142,11 +135,10 @@ namespace Mono.Nat.Upnp
 
             // No matter what, this method should never throw an exception. If something goes wrong
             // we should still be in a position to handle the next reply correctly.
-            try
-            {
-                dataString = Encoding.UTF8.GetString(response);
+            try {
+                dataString = Encoding.UTF8.GetString (response);
 
-                Log.InfoFormatted("uPnP Search Response: {0}", dataString);
+                Log.InfoFormatted ("uPnP Search Response: {0}", dataString);
 
                 /* For UPnP Port Mapping we need ot find either WANPPPConnection or WANIPConnection.
 				 Any other device type is no good to us for this purpose. See the IGP overview paper
@@ -157,22 +149,18 @@ namespace Mono.Nat.Upnp
 				 version it is and apply the correct URN. */
 
                 string foundService = null;
-                foreach (var type in SupportedServices.Concat(DiscoverDeviceMessage.SupportedServiceTypes))
-                {
-                    if (dataString.IndexOf(type, StringComparison.OrdinalIgnoreCase) != -1)
-                    {
+                foreach (var type in SupportedServices.Concat(DiscoverDeviceMessage.SupportedServiceTypes)) {                    
+					if (dataString.IndexOf(type, StringComparison.OrdinalIgnoreCase) != -1) {
                         foundService = type;
                         break;
                     }
                 }
 
-                if (foundService == null)
-                {
-                    RaiseDeviceUnknown(localAddress, result.RemoteEndPoint, dataString);
+                if (foundService == null) {
+                    RaiseDeviceUnknown(localAddress, result.RemoteEndPoint, dataString, NatProtocol.Upnp);
                     return;
                 }
                     
-
 				Log.InfoFormatted("uPnP Search Response: Router advertised a '{0}' service", foundService);
 				var location = dataString.Split (new [] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries)
 					.Select (t => t.Trim ())
@@ -180,7 +168,7 @@ namespace Mono.Nat.Upnp
 
                 if (location == null)
                     return;
-                
+
 				var deviceLocation = location.Split (new [] { ':' }, 2).Skip (1).FirstOrDefault ();
 				var deviceServiceUri = new Uri (deviceLocation);
 
@@ -199,7 +187,7 @@ namespace Mono.Nat.Upnp
 				Log.InfoFormatted("Fetching service list: {0}", deviceServiceUri);
 				var d = await GetServicesList (localAddress, deviceServiceUri, token).ConfigureAwait (false);
 				if (d != null)
-                    RaiseDeviceFound(d);
+                    RaiseDeviceFound (d);
             } catch (Exception ex) {
 				Trace.WriteLine ("Unhandled exception when trying to decode a device's response Send me the following data: ");
 				Trace.WriteLine ("ErrorMessage:");

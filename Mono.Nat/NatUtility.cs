@@ -40,7 +40,6 @@ namespace Mono.Nat
 		public static event EventHandler<DeviceEventArgs> DeviceFound;
         public static event EventHandler<DeviceEventUnknownArgs> DeviceUnknown;
 
-
         static readonly object Locker = new object ();
 
 		static ISearcher pmp;
@@ -61,15 +60,15 @@ namespace Mono.Nat
 					if(pmp == null) {
 						pmp = PmpSearcher.Create();
 						pmp.DeviceFound += HandleDeviceFound;
-;                       pmp.DeviceUnknown += HandleDeviceUnknown;
-                    }
+						pmp.DeviceUnknown += HandleDeviceUnknown;
+					}
 					pmp.SearchAsync (gatewayAddress).FireAndForget ();
 				} else if (type == NatProtocol.Upnp) {
 					if (upnp == null)
 					{
 						upnp = UpnpSearcher.Create();
 						upnp.DeviceFound += HandleDeviceFound;
-                        upnp.DeviceUnknown += HandleDeviceUnknown;
+						upnp.DeviceUnknown += HandleDeviceUnknown;
 					}
 					upnp.SearchAsync (gatewayAddress).FireAndForget ();
 				} else {
@@ -103,7 +102,6 @@ namespace Mono.Nat
 						pmp = UpnpSearcher.Create();
 						pmp.DeviceFound += HandleDeviceFound;
                         pmp.DeviceUnknown += HandleDeviceUnknown;
-
                     }
 					pmp.SearchAsync().FireAndForget();
 				}

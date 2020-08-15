@@ -29,7 +29,7 @@ namespace Mono.Nat
 
 		public async Task<(IPAddress, UdpReceiveResult)> ReceiveAsync (CancellationToken token)
 		{
-			while (!token.IsCancellationRequested) {
+			while (true) {
 				foreach (var keypair in Sockets) {
 					try {
 						if (keypair.Key.Available > 0) {
@@ -43,9 +43,8 @@ namespace Mono.Nat
 				}
 
 				await Task.Delay (10, token);
+				token.ThrowIfCancellationRequested();
 			}
-
-            throw new TaskCanceledException();
 		}
 
 		public async Task SendAsync (byte [] buffer, IPAddress gatewayAddress, CancellationToken token)

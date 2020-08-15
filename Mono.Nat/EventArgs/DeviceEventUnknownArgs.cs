@@ -11,11 +11,14 @@ namespace Mono.Nat
 
         public EndPoint EndPoint { get; }
 
-        public DeviceEventUnknownArgs(IPAddress address, EndPoint endPoint, string data)
+        public NatProtocol Protocol { get; }
+
+        internal DeviceEventUnknownArgs(IPAddress address, EndPoint endPoint, string data, NatProtocol protocol)
         {
             Address = address;
             Data = data;
             EndPoint = endPoint;
+            Protocol = protocol;
         }
     }
 }
