@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -68,7 +67,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _userManager.OnUserDeleted += OnUserDeleted;
             _userManager.OnUserUpdated += OnUserUpdated;
 
             _appHost.HasPendingRestartChanged += OnHasPendingRestartChanged;
@@ -141,16 +139,6 @@ namespace Emby.Server.Implementations.EntryPoints
             await SendMessageToUserSession(e.Argument, "UserUpdated", dto).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Users the manager_ user deleted.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private async void OnUserDeleted(object sender, GenericEventArgs<User> e)
-        {
-            await SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N", CultureInfo.InvariantCulture)).ConfigureAwait(false);
-        }
-
         private async Task SendMessageToAdminSessions<T>(string name, T data)
         {
             try
@@ -192,7 +180,6 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                _userManager.OnUserDeleted -= OnUserDeleted;
                 _userManager.OnUserUpdated -= OnUserUpdated;
 
                 _installationManager.PluginUninstalled -= OnPluginUninstalled;
