@@ -25,11 +25,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private readonly IServerApplicationHost _appHost;
 
-        /// <summary>
-        /// The task manager.
-        /// </summary>
-        private readonly ITaskManager _taskManager;
-
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
@@ -37,17 +32,14 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="appHost">The application host.</param>
         /// <param name="installationManager">The installation manager.</param>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         public ServerEventNotifier(
             IServerApplicationHost appHost,
             IInstallationManager installationManager,
-            ITaskManager taskManager,
             ISessionManager sessionManager)
         {
             _installationManager = installationManager;
             _appHost = appHost;
-            _taskManager = taskManager;
             _sessionManager = sessionManager;
         }
 
@@ -61,8 +53,6 @@ namespace Emby.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationCancelled += OnPackageInstallationCancelled;
             _installationManager.PackageInstallationCompleted += OnPackageInstallationCompleted;
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
-
-            _taskManager.TaskCompleted += OnTaskCompleted;
 
             return Task.CompletedTask;
         }
@@ -85,11 +75,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             await SendMessageToAdminSessions("PackageInstallationFailed", e.InstallationInfo).ConfigureAwait(false);
-        }
-
-        private async void OnTaskCompleted(object sender, TaskCompletionEventArgs e)
-        {
-            await SendMessageToAdminSessions("ScheduledTaskEnded", e.Result).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -145,8 +130,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
 
                 _appHost.HasPendingRestartChanged -= OnHasPendingRestartChanged;
-
-                _taskManager.TaskCompleted -= OnTaskCompleted;
             }
         }
     }
