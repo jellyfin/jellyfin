@@ -909,15 +909,6 @@ namespace Emby.Server.Implementations.Networking
                 retVal.DualMode = true;
             }
 
-            if (Type.GetType("Mono.Runtime") == null)
-            {
-                // Old bug fix for connection closed errors. https://stackoverflow.com/questions/7201862/an-existing-connection-was-forcibly-closed-by-the-remote-host/7478498#7478498.
-                uint ioc_IN = 0x80000000;
-                uint ioc_VENDOR = 0x18000000;
-                uint sio_UDP_CONNRESET = ioc_IN | ioc_VENDOR | 12;
-                retVal.IOControl((int)sio_UDP_CONNRESET, new byte[] { Convert.ToByte(false) }, null);
-            }
-
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -1143,9 +1134,7 @@ namespace Emby.Server.Implementations.Networking
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
                     // Internal interfaces must be private and not excluded.
-                    _internalInterfaces = new NetCollection(
-                        _interfaceAddresses
-                        .Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.Contains(i)));
+                    _internalInterfaces = new NetCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.Contains(i)));
 
                     // Subnets are the same as the calculated internal interface.
                     _lanSubnets = NetCollection.AsNetworks(_internalInterfaces);

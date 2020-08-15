@@ -32,6 +32,7 @@ using System.Linq;
 
 using Mono.Nat.Pmp;
 using Mono.Nat.Upnp;
+using System.Threading;
 
 namespace Mono.Nat
 {
@@ -117,6 +118,45 @@ namespace Mono.Nat
 				}
 			}
 		}
+
+        /// <summary>
+        /// Parses a message received elsewhere.
+        /// </summary>
+        /// <param name="type">Type of message.</param>
+        /// <param name="localAddress"></param>
+        /// <param name="content"></param>
+        /// <param name="source"></param>
+        public static void ParseMessage(NatProtocol type, IPAddress localAddress, byte[] content, IPEndPoint source)
+        {
+            lock (Locker)
+            {
+                if (type == NatProtocol.Pmp)
+                {
+                    if (pmp == null)
+                    {
+                        pmp = UpnpSearcher.Create();
+                        pmp.DeviceFound += HandleDeviceFound;
+                        pmp.DeviceUnknown += HandleDeviceUnknown;
+                    }
+                    pmp.HandleMessageReceived(localAddress, content, source, CancellationToken.None);
+                }
+                else if (type == NatProtocol.Upnp)
+                {
+                    if (upnp == null)
+                    {
+                        upnp = UpnpSearcher.Create();
+                        upnp.DeviceFound += HandleDeviceFound;
+                        upnp.DeviceUnknown += HandleDeviceUnknown;
+                    }
+                    upnp.HandleMessageReceived(localAddress, content, source, CancellationToken.None);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unsuported type given");
+                }
+                { }
+            }
+        }
 
 		/// <summary>
 		/// Stop listening for responses to the search messages, and cancel any pending searches.

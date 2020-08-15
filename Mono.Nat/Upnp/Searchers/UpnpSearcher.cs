@@ -127,15 +127,19 @@ namespace Mono.Nat.Upnp
 			} while (true);
 		}
 
-		protected override async Task HandleMessageReceived (IPAddress localAddress, UdpReceiveResult result, CancellationToken token)
-		{
-			// Convert it to a string for easy parsing
-			string dataString = null;
-			var response = result.Buffer;
+        public override async Task HandleMessageReceived(IPAddress localAddress, byte[] response, IPEndPoint remoteEndPoint, CancellationToken token)
+        {
+            if (token == CancellationToken.None)
+            {
+                token = Cancellation.Token;
+            }
+
+            string dataString = null;
 
             // No matter what, this method should never throw an exception. If something goes wrong
             // we should still be in a position to handle the next reply correctly.
-            try {
+            try
+            {
                 dataString = Encoding.UTF8.GetString (response);
 
                 Log.InfoFormatted ("uPnP Search Response: {0}", dataString);
@@ -157,7 +161,7 @@ namespace Mono.Nat.Upnp
                 }
 
                 if (foundService == null) {
-                    RaiseDeviceUnknown(localAddress, result.RemoteEndPoint, dataString, NatProtocol.Upnp);
+                    RaiseDeviceUnknown(localAddress, remoteEndPoint, dataString, NatProtocol.Upnp);
                     return;
                 }
                     

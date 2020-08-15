@@ -30,6 +30,7 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,5 +75,14 @@ namespace Mono.Nat
 		/// The searcher will no longer listen for new devices.
 		/// </summary>
 		void Stop ();
-	}
+
+        /// <summary>
+        /// Permits Mono.NAT to process messages not received internally.
+        /// </summary>
+        /// <param name="localAddress">Interface ip.</param>
+        /// <param name="response">Response received.</param>
+        /// <param name="endpoint">Destination ip.</param>
+        /// <param name="token">Cancellation token.</param>
+        Task HandleMessageReceived(IPAddress localAddress, byte[] response, IPEndPoint endpoint, CancellationToken token);
+    }
 }

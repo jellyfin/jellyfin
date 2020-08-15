@@ -101,13 +101,13 @@ namespace Emby.Dlna.Main
 
         public SocketServer? SocketManager { get; private set; }
 
-        internal IContentDirectory? ContentDirectory { get; private set; }
+        public IContentDirectory? ContentDirectory { get; private set; }
 
-        internal IConnectionManager? ConnectionManager { get; private set; }
+        public IConnectionManager? ConnectionManager { get; private set; }
 
-        internal IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
+        public IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
 
-        internal IDeviceDiscovery? DeviceDiscovery { get; private set; }
+        public IDeviceDiscovery? DeviceDiscovery { get; private set; }
 
         public async Task RunAsync()
         {

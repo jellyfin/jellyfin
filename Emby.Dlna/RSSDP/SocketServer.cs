@@ -519,15 +519,7 @@ namespace Emby.Dlna.Rssdp
                 // Only create the IPAny/v6Any and multicast ports once.
                 if (_sockets.Count == 0)
                 {
-                    if (!_networkManager.IsuPnPActive)
-                    {
-                        CreateUniqueSocket(true, IPAddress.Any, 1900);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Delegating 0.0.0.0:1900 to Mono.NAT.");
-                        CreateUniqueSocket(true, IPAddress.Any);
-                    }
+                    CreateUniqueSocket(true, IPAddress.Any, 1900);
 
                     if (_networkManager.IsIP6Enabled)
                     {

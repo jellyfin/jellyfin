@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -131,16 +132,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
-                using (var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions()
-                    {
-                        Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
-                        CancellationToken = cancellationToken,
-                        BufferContent = false
-                    }, HttpMethod.Get).ConfigureAwait(false))
-                using (var stream = response.Content)
-                {
-                    var discoverResponse = await JsonSerializer.DeserializeFromStreamAsync<DiscoverResponse>(stream).ConfigureAwait(false);
+                using var response = await _httpClient.SendAsync(
+                   new HttpRequestOptions
+                   {
+                       Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
+                       CancellationToken = cancellationToken,
+                       BufferContent = false
+                   }, HttpMethod.Get).ConfigureAwait(false);
+                await using var stream = response.Content;
+                var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(cacheKey))
                 {
@@ -181,12 +182,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
-            using (var response = await _httpClient.SendAsync(new HttpRequestOptions()
-            {
-                Url = string.Format("{0}/tuners.html", GetApiUrl(info)),
-                CancellationToken = cancellationToken,
-                BufferContent = false
-            }, HttpMethod.Get).ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(
+                new HttpRequestOptions()
+                {
+                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)),
+                    CancellationToken = cancellationToken,
+                    BufferContent = false
+                }, HttpMethod.Get).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
             {

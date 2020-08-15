@@ -127,7 +127,13 @@ namespace Mono.Nat.Pmp
 
 		protected override async Task SearchAsync (IPAddress gatewayAddress, TimeSpan? repeatInterval, CancellationToken token)
 		{
-			do {
+            if (token == CancellationToken.None)
+            {
+                token = Cancellation.Token;
+            }
+
+            do
+            {
 				var currentSearch = CancellationTokenSource.CreateLinkedTokenSource (token);
 				Interlocked.Exchange (ref CurrentSearchCancellation, currentSearch)?.Cancel ();
 
@@ -154,11 +160,8 @@ namespace Mono.Nat.Pmp
 			}
 		}
 
-		protected override Task HandleMessageReceived (IPAddress localAddress, UdpReceiveResult result, CancellationToken token)
-		{
-			var response = result.Buffer;
-			var endpoint = result.RemoteEndPoint;
-
+        public override Task HandleMessageReceived(IPAddress localAddress, byte[] response, IPEndPoint endpoint, CancellationToken token)
+        { 
 			if (response.Length != 12)
 				return Task.CompletedTask;
 			if (response [0] != PmpConstants.Version)

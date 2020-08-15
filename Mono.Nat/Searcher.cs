@@ -47,7 +47,7 @@ namespace Mono.Nat
 		Task ListeningTask { get; set; }
 		protected SocketGroup Clients { get; }
 
-		CancellationTokenSource Cancellation;
+		protected CancellationTokenSource Cancellation;
 		protected CancellationTokenSource CurrentSearchCancellation;
 		CancellationTokenSource OverallSearchCancellation;
 		Task SearchTask { get; set; }
@@ -79,13 +79,13 @@ namespace Mono.Nat
 		{
 			while (!token.IsCancellationRequested) {
 				(var localAddress, var data) = await Clients.ReceiveAsync (token).ConfigureAwait (false);
-				await HandleMessageReceived (localAddress, data, token).ConfigureAwait (false);
+				await HandleMessageReceived (localAddress, data.Buffer, data.RemoteEndPoint, token).ConfigureAwait (false);
 			}
 		}
 
-		protected abstract Task HandleMessageReceived (IPAddress localAddress, UdpReceiveResult result, CancellationToken token);
+        public abstract Task HandleMessageReceived(IPAddress localAddress, byte[] response, IPEndPoint endpoint, CancellationToken token);
 
-		public async Task SearchAsync ()
+        public async Task SearchAsync ()
 		{
 			// Cancel any existing continuous search operation.
 			OverallSearchCancellation?.Cancel ();
