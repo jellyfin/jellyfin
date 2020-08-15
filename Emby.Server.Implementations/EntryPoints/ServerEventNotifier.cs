@@ -38,17 +38,11 @@ namespace Emby.Server.Implementations.EntryPoints
         public Task RunAsync()
         {
             _installationManager.PluginUninstalled += OnPluginUninstalled;
-            _installationManager.PackageInstalling += OnPackageInstalling;
             _installationManager.PackageInstallationCancelled += OnPackageInstallationCancelled;
             _installationManager.PackageInstallationCompleted += OnPackageInstallationCompleted;
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
 
             return Task.CompletedTask;
-        }
-
-        private async void OnPackageInstalling(object sender, InstallationInfo e)
-        {
-            await SendMessageToAdminSessions("PackageInstalling", e).ConfigureAwait(false);
         }
 
         private async void OnPackageInstallationCancelled(object sender, InstallationInfo e)
@@ -103,7 +97,6 @@ namespace Emby.Server.Implementations.EntryPoints
             if (dispose)
             {
                 _installationManager.PluginUninstalled -= OnPluginUninstalled;
-                _installationManager.PackageInstalling -= OnPackageInstalling;
                 _installationManager.PackageInstallationCancelled -= OnPackageInstallationCancelled;
                 _installationManager.PackageInstallationCompleted -= OnPackageInstallationCompleted;
                 _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
