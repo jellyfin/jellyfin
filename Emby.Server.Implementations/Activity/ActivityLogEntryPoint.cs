@@ -36,7 +36,6 @@ namespace Emby.Server.Implementations.Activity
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _sessionManager.SessionStarted += OnSessionStarted;
             _sessionManager.SessionEnded += OnSessionEnded;
 
             return Task.CompletedTask;
@@ -67,38 +66,12 @@ namespace Emby.Server.Implementations.Activity
             }).ConfigureAwait(false);
         }
 
-        private async void OnSessionStarted(object sender, SessionEventArgs e)
-        {
-            var session = e.SessionInfo;
-
-            if (string.IsNullOrEmpty(session.UserName))
-            {
-                return;
-            }
-
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserOnlineFromDevice"),
-                    session.UserName,
-                    session.DeviceName),
-                "SessionStarted",
-                session.UserId)
-            {
-                ShortOverview = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("LabelIpAddressValue"),
-                    session.RemoteEndPoint)
-            }).ConfigureAwait(false);
-        }
-
         private async Task CreateLogEntry(ActivityLog entry)
             => await _activityManager.CreateAsync(entry).ConfigureAwait(false);
 
         /// <inheritdoc />
         public void Dispose()
         {
-            _sessionManager.SessionStarted -= OnSessionStarted;
             _sessionManager.SessionEnded -= OnSessionEnded;
         }
     }
