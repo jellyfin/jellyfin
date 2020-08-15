@@ -20,26 +20,6 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<GenericEventArgs<User>> OnUserUpdated;
 
         /// <summary>
-        /// Occurs when a user is created.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserCreated;
-
-        /// <summary>
-        /// Occurs when a user is deleted.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserDeleted;
-
-        /// <summary>
-        /// Occurs when a user's password is changed.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserPasswordChanged;
-
-        /// <summary>
-        /// Occurs when a user is locked out.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
-
-        /// <summary>
         /// Gets the users.
         /// </summary>
         /// <value>The users.</value>
