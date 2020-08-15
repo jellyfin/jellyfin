@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Updates;
@@ -20,34 +19,24 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private readonly IInstallationManager _installationManager;
 
-        /// <summary>
-        /// The kernel.
-        /// </summary>
-        private readonly IServerApplicationHost _appHost;
-
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerEventNotifier"/> class.
         /// </summary>
-        /// <param name="appHost">The application host.</param>
         /// <param name="installationManager">The installation manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         public ServerEventNotifier(
-            IServerApplicationHost appHost,
             IInstallationManager installationManager,
             ISessionManager sessionManager)
         {
             _installationManager = installationManager;
-            _appHost = appHost;
             _sessionManager = sessionManager;
         }
 
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _appHost.HasPendingRestartChanged += OnHasPendingRestartChanged;
-
             _installationManager.PluginUninstalled += OnPluginUninstalled;
             _installationManager.PackageInstalling += OnPackageInstalling;
             _installationManager.PackageInstallationCancelled += OnPackageInstallationCancelled;
@@ -87,16 +76,6 @@ namespace Emby.Server.Implementations.EntryPoints
             await SendMessageToAdminSessions("PluginUninstalled", e).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Handles the HasPendingRestartChanged event of the kernel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private async void OnHasPendingRestartChanged(object sender, EventArgs e)
-        {
-            await _sessionManager.SendRestartRequiredNotification(CancellationToken.None).ConfigureAwait(false);
-        }
-
         private async Task SendMessageToAdminSessions<T>(string name, T data)
         {
             try
@@ -128,8 +107,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 _installationManager.PackageInstallationCancelled -= OnPackageInstallationCancelled;
                 _installationManager.PackageInstallationCompleted -= OnPackageInstallationCompleted;
                 _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
-
-                _appHost.HasPendingRestartChanged -= OnHasPendingRestartChanged;
             }
         }
     }
