@@ -11,17 +11,17 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
     /// <summary>
     /// Creates an entry in the activity log whenever a session ends.
     /// </summary>
-    public class SessionManagerEndedLogger : IEventConsumer<SessionEndedEventArgs>
+    public class SessionEndedLogger : IEventConsumer<SessionEndedEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SessionManagerEndedLogger"/> class.
+        /// Initializes a new instance of the <see cref="SessionEndedLogger"/> class.
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="activityManager">The activity manager.</param>
-        public SessionManagerEndedLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
+        public SessionEndedLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
         {
             _localizationManager = localizationManager;
             _activityManager = activityManager;
