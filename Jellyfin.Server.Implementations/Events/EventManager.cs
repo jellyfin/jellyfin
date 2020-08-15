@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Events;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Events
 {
@@ -11,14 +12,17 @@ namespace Jellyfin.Server.Implementations.Events
     /// </summary>
     public class EventManager : IEventManager
     {
+        private readonly ILogger<EventManager> _logger;
         private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventManager"/> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="appHost">The application host.</param>
-        public EventManager(IServerApplicationHost appHost)
+        public EventManager(ILogger<EventManager> logger, IServerApplicationHost appHost)
         {
+            _logger = logger;
             _appHost = appHost;
         }
 
@@ -42,7 +46,14 @@ namespace Jellyfin.Server.Implementations.Events
             using var scope = _appHost.ServiceProvider.CreateScope();
             foreach (var service in scope.ServiceProvider.GetServices<IEventConsumer<T>>())
             {
-                await service.OnEvent(eventArgs).ConfigureAwait(false);
+                try
+                {
+                    await service.OnEvent(eventArgs).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Uncaught exception in EventConsumer {type}: ", service.GetType());
+                }
             }
         }
     }
