@@ -1,16 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -20,11 +15,6 @@ namespace Emby.Server.Implementations.EntryPoints
     /// </summary>
     public class ServerEventNotifier : IServerEntryPoint
     {
-        /// <summary>
-        /// The user manager.
-        /// </summary>
-        private readonly IUserManager _userManager;
-
         /// <summary>
         /// The installation manager.
         /// </summary>
@@ -46,18 +36,15 @@ namespace Emby.Server.Implementations.EntryPoints
         /// Initializes a new instance of the <see cref="ServerEventNotifier"/> class.
         /// </summary>
         /// <param name="appHost">The application host.</param>
-        /// <param name="userManager">The user manager.</param>
         /// <param name="installationManager">The installation manager.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         public ServerEventNotifier(
             IServerApplicationHost appHost,
-            IUserManager userManager,
             IInstallationManager installationManager,
             ITaskManager taskManager,
             ISessionManager sessionManager)
         {
-            _userManager = userManager;
             _installationManager = installationManager;
             _appHost = appHost;
             _taskManager = taskManager;
@@ -67,8 +54,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _userManager.OnUserUpdated += OnUserUpdated;
-
             _appHost.HasPendingRestartChanged += OnHasPendingRestartChanged;
 
             _installationManager.PluginUninstalled += OnPluginUninstalled;
@@ -127,38 +112,11 @@ namespace Emby.Server.Implementations.EntryPoints
             await _sessionManager.SendRestartRequiredNotification(CancellationToken.None).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Users the manager_ user updated.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private async void OnUserUpdated(object sender, GenericEventArgs<User> e)
-        {
-            var dto = _userManager.GetUserDto(e.Argument);
-
-            await SendMessageToUserSession(e.Argument, "UserUpdated", dto).ConfigureAwait(false);
-        }
-
         private async Task SendMessageToAdminSessions<T>(string name, T data)
         {
             try
             {
                 await _sessionManager.SendMessageToAdminSessions(name, data, CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private async Task SendMessageToUserSession<T>(User user, string name, T data)
-        {
-            try
-            {
-                await _sessionManager.SendMessageToUserSessions(
-                    new List<Guid> { user.Id },
-                    name,
-                    data,
-                    CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -180,8 +138,6 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                _userManager.OnUserUpdated -= OnUserUpdated;
-
                 _installationManager.PluginUninstalled -= OnPluginUninstalled;
                 _installationManager.PackageInstalling -= OnPackageInstalling;
                 _installationManager.PackageInstallationCancelled -= OnPackageInstallationCancelled;

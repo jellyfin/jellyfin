@@ -11,7 +11,7 @@ using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Implementations.Events.Consumers
+namespace Jellyfin.Server.Implementations.Events.Consumers.System
 {
     /// <summary>
     /// Creates an activity log entry whenever a task is completed.
