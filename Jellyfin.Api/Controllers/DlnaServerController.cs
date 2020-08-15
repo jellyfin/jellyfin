@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Emby.Dlna;
@@ -48,10 +49,15 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult GetDescriptionXml([FromRoute] string serverId)
         {
-            var url = GetAbsoluteUri();
-            var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
-            return Ok(xml);
+            if (DlnaEntryPoint.Instance?.DLNAEnabled ?? false)
+            {
+                var url = GetAbsoluteUri();
+                var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
+                var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
+                return Ok(xml);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -271,7 +277,48 @@ namespace Jellyfin.Api.Controllers
 
         private string GetAbsoluteUri()
         {
-            return $"{Request.Scheme}://{Request.Host}{Request.Path}";
+            const string XForwardedProto = "X-Forwarded-Proto";
+            const string XForwardedFor = "X-Forwarded-For";
+            const string XForwardedPort = "X-Forwarded-Port";
+            const string XRealIP = "X-Real-IP";
+
+            // If the request has come through a proxy, then all this information might be wrong.
+
+            string host = Request.Host.Host;
+            string port = Request.Host.Port == null ? string.Empty : Request.Host.Port.ToString();
+            string scheme = Request.Scheme;
+
+            if (!Request.Headers.TryGetValue(XForwardedProto, out var value) && (value.Count > 0))
+            {
+                scheme = value[0].ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (Request.Headers.TryGetValue(XRealIP, out value) && value.Count > 0)
+            {
+                host = value[0].ToString(CultureInfo.InvariantCulture);
+            }
+            else if (Request.Headers.TryGetValue(XForwardedFor, out value) && value.Count > 0)
+            {
+                host = value[0].ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (Request.Headers.TryGetValue(XForwardedPort, out value) && value.Count > 0)
+            {
+                port = value[0].ToString(CultureInfo.InvariantCulture);
+            }
+
+            if ((string.Equals(port, "80", StringComparison.OrdinalIgnoreCase) && string.Equals(scheme, "http", StringComparison.OrdinalIgnoreCase)) ||
+                   (string.Equals(port, "443", StringComparison.OrdinalIgnoreCase) && string.Equals(scheme, "https", StringComparison.OrdinalIgnoreCase)))
+            {
+                port = string.Empty;
+            }
+
+            if (!string.IsNullOrEmpty(port))
+            {
+                return $"{scheme}://{host}:{port}{Request.Path}";
+            }
+
+            return $"{scheme}://{host}{Request.Path}";
         }
 
         private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)
