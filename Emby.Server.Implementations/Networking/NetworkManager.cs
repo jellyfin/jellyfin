@@ -779,10 +779,10 @@ namespace Emby.Server.Implementations.Networking
                     }
 
                     // No bind address, so return all internal interfaces.
-                    return _internalInterfaces;
+                    return new NetCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
                 }
 
-                return _bindAddresses;
+                return new NetCollection(_bindAddresses.Where(p => !p.IsLoopback()));
             }
         }
 

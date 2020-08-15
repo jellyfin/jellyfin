@@ -18,7 +18,7 @@ namespace Jellyfin.Api.Controllers
     [Route("Dlna")]
     public class DlnaServerController : BaseJellyfinApiController
     {
-        private const string XMLContentType = "text/xml; charset=UTF-8";
+        private const string XMLContentType = "text/xml;charset=UTF-8";
 
         private readonly IDlnaManager _dlnaManager;
         private readonly IContentDirectory? _contentDirectory;

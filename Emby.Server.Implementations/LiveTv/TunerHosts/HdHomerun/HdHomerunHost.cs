@@ -727,9 +727,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var list = new List<TunerHostInfo>();
 
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
-            using (var udpClient = _networkManager.CreateUdpBroadcastSocket(0))
+            try
             {
-                try
+                using (var udpClient = _networkManager.CreateUdpBroadcastSocket(0))
                 {
                     await udpClient.SendToAsync(discBytes, SocketFlags.None, new IPEndPoint(IPAddress.Broadcast, 65001)).ConfigureAwait(false);
                     var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
@@ -767,11 +767,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         ArrayPool<byte>.Shared.Return(receiveBuffer);
                     }
                 }
-                catch (Exception ex)
-                {
-                    // Socket timeout indicates all messages have been received.
-                    Logger.LogError(ex, "Error while sending discovery message");
-                }
+            }
+            catch (Exception ex)
+            {
+                // Socket timeout indicates all messages have been received.
+                Logger.LogError(ex, "Error while sending discovery message");
             }
 
             return list;
