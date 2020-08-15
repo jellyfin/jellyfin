@@ -426,7 +426,7 @@ namespace Emby.Server.Implementations.Channels
             var mediaInfo = await channel.GetChannelItemMediaInfo(id, cancellationToken)
                    .ConfigureAwait(false);
             var list = mediaInfo.ToList();
-            _memoryCache.CreateEntry(id).SetValue(list).SetAbsoluteExpiration(DateTimeOffset.UtcNow.AddMinutes(5));
+            _memoryCache.Set(id, list, DateTimeOffset.UtcNow.AddMinutes(5));
 
             return list;
         }

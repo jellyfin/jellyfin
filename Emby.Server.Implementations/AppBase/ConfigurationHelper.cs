@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.IO;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace Emby.Server.Implementations.AppBase
         {
             object configuration;
 
-            byte[] buffer = null;
+            byte[]? buffer = null;
 
             // Use try/catch to avoid the extra file system lookup using File.Exists
             try
@@ -36,19 +38,23 @@ namespace Emby.Server.Implementations.AppBase
                 configuration = Activator.CreateInstance(type);
             }
 
-            using var stream = new MemoryStream();
+            using var stream = new MemoryStream(buffer?.Length ?? 0);
             xmlSerializer.SerializeToStream(configuration, stream);
 
             // Take the object we just got and serialize it back to bytes
-            var newBytes = stream.ToArray();
+            byte[] newBytes = stream.GetBuffer();
+            int newBytesLen = (int)stream.Length;
 
             // If the file didn't exist before, or if something has changed, re-save
-            if (buffer == null || !buffer.SequenceEqual(newBytes))
+            if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 // Save it after load in case we got new items
-                File.WriteAllBytes(path, newBytes);
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    fs.Write(newBytes, 0, newBytesLen);
+                }
             }
 
             return configuration;
