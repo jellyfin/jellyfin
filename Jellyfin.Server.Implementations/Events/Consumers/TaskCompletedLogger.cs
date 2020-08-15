@@ -21,12 +21,18 @@ namespace Jellyfin.Server.Implementations.Events.Consumers
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskCompletedLogger"/> class.
+        /// </summary>
+        /// <param name="localizationManager">The localization manager.</param>
+        /// <param name="activityManager">The activity manager.</param>
         public TaskCompletedLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
         {
             _localizationManager = localizationManager;
             _activityManager = activityManager;
         }
 
+        /// <inheritdoc />
         public async Task OnEvent(TaskCompletionEventArgs e)
         {
             var result = e.Result;
