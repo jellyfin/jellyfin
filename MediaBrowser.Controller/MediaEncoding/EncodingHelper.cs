@@ -2147,9 +2147,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Add software deinterlace filter before scaling filter
             if ((state.DeInterlace("h264", true)
-                || state.DeInterlace("avc", true)
-                || state.DeInterlace("h265", true)
-                || state.DeInterlace("hevc", true))
+                 || state.DeInterlace("avc", true)
+                 || state.DeInterlace("h265", true)
+                 || state.DeInterlace("hevc", true))
                 && !isVaapiH264Encoder
                 && !isQsvH264Encoder
                 && !isNvdecH264Decoder)
