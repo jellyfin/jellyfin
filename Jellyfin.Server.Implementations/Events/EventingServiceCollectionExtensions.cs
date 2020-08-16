@@ -43,7 +43,7 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledLogger>();
             collection.AddScoped<IEventConsumer<PluginUninstalledEventArgs>, PluginUninstalledLogger>();
             collection.AddScoped<IEventConsumer<PluginUpdatedEventArgs>, PluginUpdatedLogger>();
-            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PackageInstallationFailedLogger>();
+            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedLogger>();
 
             collection.AddScoped<IEventConsumer<UserCreatedEventArgs>, UserCreatedLogger>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedLogger>();

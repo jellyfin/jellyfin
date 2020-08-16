@@ -13,17 +13,17 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
     /// <summary>
     /// Creates an entry in the activity log when a package installation fails.
     /// </summary>
-    public class PackageInstallationFailedLogger : IEventConsumer<InstallationFailedEventArgs>
+    public class PluginInstallationFailedLogger : IEventConsumer<InstallationFailedEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PackageInstallationFailedLogger"/> class.
+        /// Initializes a new instance of the <see cref="PluginInstallationFailedLogger"/> class.
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="activityManager">The activity manager.</param>
-        public PackageInstallationFailedLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
+        public PluginInstallationFailedLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
         {
             _localizationManager = localizationManager;
             _activityManager = activityManager;
