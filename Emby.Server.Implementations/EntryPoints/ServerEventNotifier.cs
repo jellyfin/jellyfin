@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -37,7 +36,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _installationManager.PluginUninstalled += OnPluginUninstalled;
             _installationManager.PackageInstallationCancelled += OnPackageInstallationCancelled;
             _installationManager.PackageInstallationCompleted += OnPackageInstallationCompleted;
             _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
@@ -58,16 +56,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             await SendMessageToAdminSessions("PackageInstallationFailed", e.InstallationInfo).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Installations the manager_ plugin uninstalled.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private async void OnPluginUninstalled(object sender, IPlugin e)
-        {
-            await SendMessageToAdminSessions("PluginUninstalled", e).ConfigureAwait(false);
         }
 
         private async Task SendMessageToAdminSessions<T>(string name, T data)
@@ -96,7 +84,6 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                _installationManager.PluginUninstalled -= OnPluginUninstalled;
                 _installationManager.PackageInstallationCancelled -= OnPackageInstallationCancelled;
                 _installationManager.PackageInstallationCompleted -= OnPackageInstallationCompleted;
                 _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
