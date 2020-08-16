@@ -2,6 +2,7 @@
 
 using System;
 using MediaBrowser.Model.Plugins;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -61,6 +62,18 @@ namespace MediaBrowser.Common.Plugins
         /// Called when just before the plugin is uninstalled from the server.
         /// </summary>
         void OnUninstalling();
+
+        /// <summary>
+        /// Registers the plugin's services to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        void RegisterServices(IServiceCollection serviceCollection);
+
+        /// <summary>
+        /// Unregisters the plugin's services from the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        void UnregisterServices(IServiceCollection serviceCollection);
     }
 
     public interface IHasPluginConfiguration

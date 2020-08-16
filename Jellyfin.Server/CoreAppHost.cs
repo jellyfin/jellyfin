@@ -33,30 +33,33 @@ namespace Jellyfin.Server
         /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="collection">The <see cref="IServiceCollection"/> to be used by the <see cref="CoreAppHost"/>.</param>
         public CoreAppHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            INetworkManager networkManager)
+            INetworkManager networkManager,
+            IServiceCollection collection)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
                 fileSystem,
-                networkManager)
+                networkManager,
+                collection)
         {
         }
 
         /// <inheritdoc/>
-        protected override void RegisterServices(IServiceCollection serviceCollection)
+        protected override void RegisterServices()
         {
             // Register an image encoder
             bool useSkiaEncoder = SkiaEncoder.IsNativeLibAvailable();
             Type imageEncoderType = useSkiaEncoder
                 ? typeof(SkiaEncoder)
                 : typeof(NullImageEncoder);
-            serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
+            ServiceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
 
             // Log a warning if the Skia encoder could not be used
             if (!useSkiaEncoder)
@@ -71,15 +74,15 @@ namespace Jellyfin.Server
             //         .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
             //     ServiceLifetime.Transient);
 
-            serviceCollection.AddEventServices();
-            serviceCollection.AddSingleton<IEventManager, EventManager>();
-            serviceCollection.AddSingleton<JellyfinDbProvider>();
+            ServiceCollection.AddEventServices();
+            ServiceCollection.AddSingleton<IEventManager, EventManager>();
+            ServiceCollection.AddSingleton<JellyfinDbProvider>();
 
-            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
-            serviceCollection.AddSingleton<IUserManager, UserManager>();
-            serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+            ServiceCollection.AddSingleton<IActivityManager, ActivityManager>();
+            ServiceCollection.AddSingleton<IUserManager, UserManager>();
+            ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
-            base.RegisterServices(serviceCollection);
+            base.RegisterServices();
         }
 
         /// <inheritdoc />

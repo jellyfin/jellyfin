@@ -72,6 +72,7 @@ namespace MediaBrowser.Api.Tests
             var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
 
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
+            var serviceCollection = new ServiceCollection();
             _disposableComponents.Add(loggerFactory);
 
             // Create the app host and initialize it
@@ -80,10 +81,10 @@ namespace MediaBrowser.Api.Tests
                 loggerFactory,
                 commandLineOpts,
                 new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(loggerFactory.CreateLogger<NetworkManager>()));
+                new NetworkManager(loggerFactory.CreateLogger<NetworkManager>()),
+                serviceCollection);
             _disposableComponents.Add(appHost);
-            var serviceCollection = new ServiceCollection();
-            appHost.Init(serviceCollection);
+            appHost.Init();
 
             // Configure the web host builder
             Program.ConfigureWebHostBuilder(builder, appHost, serviceCollection, commandLineOpts, startupConfig, appPaths);

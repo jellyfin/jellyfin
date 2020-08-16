@@ -116,8 +116,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Initializes this instance.
         /// </summary>
-        /// <param name="serviceCollection">The service collection.</param>
-        void Init(IServiceCollection serviceCollection);
+        void Init();
 
         /// <summary>
         /// Creates the instance.
