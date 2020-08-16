@@ -1069,7 +1069,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSchedulesDirectCountries()
         {
-            using var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient();
             // https://json.schedulesdirect.org/20141201/available/countries
             var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
                 .ConfigureAwait(false);
