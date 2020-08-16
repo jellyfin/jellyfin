@@ -1071,7 +1071,7 @@ namespace Jellyfin.Api.Controllers
         {
             var client = _httpClientFactory.CreateClient();
             // https://json.schedulesdirect.org/20141201/available/countries
-            var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
+            using var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
                 .ConfigureAwait(false);
 
             return File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), MediaTypeNames.Application.Json);

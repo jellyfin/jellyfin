@@ -245,7 +245,7 @@ namespace Jellyfin.Api.Controllers
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+            using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
             var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
