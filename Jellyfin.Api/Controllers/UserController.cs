@@ -227,11 +227,6 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
         {
-            if (request.Token == null)
-            {
-                return BadRequest("Access token is required.");
-            }
-
             var auth = _authContext.GetAuthorizationInfo(Request);
 
             try

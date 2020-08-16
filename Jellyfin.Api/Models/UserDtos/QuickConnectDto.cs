@@ -8,6 +8,7 @@
         /// <summary>
         /// Gets or sets the quick connect token.
         /// </summary>
+        [Required]
         public string? Token { get; set; }
     }
 }

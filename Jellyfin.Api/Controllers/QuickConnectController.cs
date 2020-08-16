@@ -46,7 +46,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QuickConnectState> GetStatus()
         {
             _quickConnect.ExpireRequests();
-            return Ok(_quickConnect.State);
+            return _quickConnect.State;
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QuickConnectResult> Initiate([FromQuery] string? friendlyName)
         {
-            return Ok(_quickConnect.TryConnect(friendlyName));
+            return _quickConnect.TryConnect(friendlyName);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Controllers
             try
             {
                 var result = _quickConnect.CheckRequestStatus(secret);
-                return Ok(result);
+                return result;
             }
             catch (ResourceNotFoundException)
             {
@@ -135,12 +135,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<bool> Authorize([FromQuery, Required] string? code)
         {
-            if (code == null)
-            {
-                return BadRequest("Missing code");
-            }
-
-            return Ok(_quickConnect.AuthorizeRequest(Request, code));
+            return _quickConnect.AuthorizeRequest(Request, code);
         }
 
         /// <summary>
@@ -153,7 +148,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<int> Deauthorize()
         {
-            var userId = _authContext.GetAuthorizationInfo(Request).UserId;
+            var userId = ClaimHelpers.GetUserId(request.HttpContext.User);
             return _quickConnect.DeleteAllDevices(userId);
         }
     }
