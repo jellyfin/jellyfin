@@ -26,11 +26,11 @@
 
 namespace Mono.Nat.Pmp
 {
-	class CreatePortMappingMessage : PortMappingMessage
-	{
-		public CreatePortMappingMessage (Mapping mapping)
-			: base (mapping, true)
-		{
-		}
-	}
+    class CreatePortMappingMessage : PortMappingMessage
+    {
+        public CreatePortMappingMessage (Mapping mapping)
+            : base (mapping, true)
+        {
+        }
+    }
 }

@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <returns>ILogger implementation.</returns>
         private NATLogger GetLogger(string name)
         {
-            return (NATLogger)new LoggingInterface(_loggerFactory.CreateLogger(name));
+            return new LoggingInterface(_loggerFactory.CreateLogger(name));
         }
 
         /// <summary>
@@ -137,7 +137,10 @@ namespace Emby.Server.Implementations.EntryPoints
             if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
             {
                 Stop();
-                Start();
+                if (_networkManager.IsuPnPActive)
+                {
+                    Start();
+                }
             }
 
             // TODO: check !_networkManager.UPnPActive for changes and remove port mappings if they have.
@@ -166,7 +169,6 @@ namespace Emby.Server.Implementations.EntryPoints
                         _logger.LogInformation("Starting NAT discovery.");
 
                         NatUtility.DeviceFound += KnownDeviceFound;
-                        NatUtility.DeviceUnknown += UnknownDeviceFound;
                         NatUtility.StartDiscovery();
 
                         _networkManager.NetworkChanged += OnNetworkChange;
@@ -219,7 +221,6 @@ namespace Emby.Server.Implementations.EntryPoints
 
                         NatUtility.StopDiscovery();
                         NatUtility.DeviceFound -= KnownDeviceFound;
-                        NatUtility.DeviceUnknown -= UnknownDeviceFound;
 
                         _gatewayMonitor.ResetGateways();
                         _gatewayMonitor.OnGatewayFailure -= OnNetworkChange;
@@ -235,24 +236,6 @@ namespace Emby.Server.Implementations.EntryPoints
                         _stopped = true;
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Enables sddp injection of devices found by Mono.Nat.
-        /// </summary>
-        /// <param name="sender">Mono.Nat instance.</param>
-        /// <param name="e">Information Mono received, but doesn't use.</param>
-        private async void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
-        {
-            _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
-
-            var dlna = DlnaEntryPoint.Instance;
-
-            // Only process the messages if playTo is enabled.
-            if (dlna != null && dlna.EnablePlayTo && dlna.SocketManager != null)
-            {
-                await dlna.SocketManager.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
             }
         }
 
@@ -282,10 +265,10 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error creating port forwarding rules");
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         /// <summary>
@@ -343,7 +326,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(
                     ex,
@@ -352,6 +334,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     publicPort,
                     device.DeviceEndpoint);
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         /// <summary>
@@ -409,7 +392,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(
                     ex,
@@ -418,6 +400,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     publicPort,
                     device.DeviceEndpoint);
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         /// <summary>

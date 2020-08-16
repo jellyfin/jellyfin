@@ -29,18 +29,18 @@ using System.Threading;
 
 namespace Mono.Nat
 {
-	static class BufferHelpers
-	{
-		const int Size = 8 * 1024;
+    static class BufferHelpers
+    {
+        const int Size = 8 * 1024;
 
 #if NETSTANDARD2_0
-		static byte[] CachedBuffer;
+        static byte[] CachedBuffer;
 
-		internal static byte[] Rent()
-			=> Interlocked.Exchange(ref CachedBuffer, null) ?? new byte[Size];
+        internal static byte[] Rent ()
+            => Interlocked.Exchange (ref CachedBuffer, null) ?? new byte[Size];
 
-		internal static byte[] Release(byte[] buffer)
-			=> Interlocked.Exchange(ref CachedBuffer, buffer);
+        internal static byte[] Release (byte[] buffer)
+            => Interlocked.Exchange (ref CachedBuffer, buffer);
 #else
 		internal static byte[] Rent()
 			=> System.Buffers.ArrayPool<byte>.Shared.Rent(Size);
@@ -48,5 +48,5 @@ namespace Mono.Nat
 		internal static void Release(byte[] buffer)
 			=> System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
 #endif
-	}
+    }
 }

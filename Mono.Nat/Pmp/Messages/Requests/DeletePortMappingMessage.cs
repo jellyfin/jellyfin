@@ -26,11 +26,11 @@
 
 namespace Mono.Nat.Pmp
 {
-	class DeletePortMappingMessage : PortMappingMessage
-	{
-		public DeletePortMappingMessage (Mapping mapping)
-			: base (mapping, false)
-		{
-		}
-	}
+    class DeletePortMappingMessage : PortMappingMessage
+    {
+        public DeletePortMappingMessage (Mapping mapping)
+            : base (mapping, false)
+        {
+        }
+    }
 }

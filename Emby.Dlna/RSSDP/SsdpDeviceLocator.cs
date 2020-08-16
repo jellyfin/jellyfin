@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Rsddp;
@@ -13,6 +14,7 @@ using Emby.Dlna.Rssdp.Devices;
 using Emby.Dlna.Rssdp.EventArgs;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
+using Mono.Nat;
 
 namespace Emby.Dlna.Rssdp
 {
@@ -253,10 +255,10 @@ namespace Emby.Dlna.Rssdp
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "SearchAsync failed.");
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private bool AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress localIpAddress)
@@ -357,10 +359,15 @@ namespace Emby.Dlna.Rssdp
             {
                 _logger.LogDebug("Sniffer: {0} from {1} type {2}", message.Method.Method, e.ReceivedFrom.Address, nt);
             }
-            // TODO: Link in External Here!
 
             if (string.Equals(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase))
             {
+                // If uPNP is running - pass these messages to mono.nat. It might want them.
+                if (_networkManager.IsuPnPActive)
+                {
+                    NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw, e.ReceivedFrom);
+                }
+
                 return;
             }
 

@@ -42,7 +42,7 @@ namespace Mono.Nat.Logging
         /// </summary>
         public static Func<string, ILogger> Factory { get; set; }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl (MethodImplOptions.NoInlining)]
         internal static Logger Create ()
         {
             var callingClassName = new StackFrame (1).GetMethod ().ReflectedType.FullName;
@@ -99,10 +99,10 @@ namespace Mono.Nat.Logging
                 Writer.Error (string.Format (format, p1));
         }
 
-        internal void ErrorFormatted(string format, object p1, object p2)
+        internal void ErrorFormatted (string format, object p1, object p2)
         {
             if (Writer != null)
-                Writer.Error(string.Format(format, p1, p2));
+                Writer.Error (string.Format (format, p1, p2));
         }
 
         internal void Exception (Exception ex, string message)

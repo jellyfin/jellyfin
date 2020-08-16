@@ -28,23 +28,23 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	sealed class GetSpecificPortMappingEntryMessage : RequestMessage
-	{
-		int ExternalPort { get; }
-		Protocol Protocol { get; }
+    sealed class GetSpecificPortMappingEntryMessage : RequestMessage
+    {
+        int ExternalPort { get; }
+        Protocol Protocol { get; }
 
-		public GetSpecificPortMappingEntryMessage (Protocol protocol, int externalPort, UpnpNatDevice device)
-			: base (device, "GetSpecificPortMappingEntry")
-		{
-			Protocol = protocol;
-			ExternalPort = externalPort;
-		}
+        public GetSpecificPortMappingEntryMessage (Protocol protocol, int externalPort, UpnpNatDevice device)
+            : base (device, "GetSpecificPortMappingEntry")
+        {
+            Protocol = protocol;
+            ExternalPort = externalPort;
+        }
 
-		public override void Encode (XmlWriter writer)
-		{
-			WriteFullElement (writer, "NewRemoteHost", "");
-			WriteFullElement (writer, "NewExternalPort", ExternalPort.ToString ());
-			WriteFullElement (writer, "NewProtocol", Protocol);
-		}
-	}
+        public override void Encode (XmlWriter writer)
+        {
+            WriteFullElement (writer, "NewRemoteHost", "");
+            WriteFullElement (writer, "NewExternalPort", ExternalPort.ToString ());
+            WriteFullElement (writer, "NewProtocol", Protocol);
+        }
+    }
 }

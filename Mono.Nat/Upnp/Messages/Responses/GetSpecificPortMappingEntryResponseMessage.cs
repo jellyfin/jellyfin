@@ -29,21 +29,21 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	class GetSpecificPortMappingEntryResponseMessage : ResponseMessage
-	{
-		public bool Enabled { get; }
-		public string InternalClient { get; }
-		public int InternalPort { get; }
-		public int LeaseDuration { get; }
-		public string PortMappingDescription { get; }
+    class GetSpecificPortMappingEntryResponseMessage : ResponseMessage
+    {
+        public bool Enabled { get; }
+        public string InternalClient { get; }
+        public int InternalPort { get; }
+        public int LeaseDuration { get; }
+        public string PortMappingDescription { get; }
 
-		public GetSpecificPortMappingEntryResponseMessage (XmlNode data)
-		{
-			Enabled = data ["NewEnabled"].InnerText == "1";
-			InternalClient = data ["NewInternalClient"].InnerText;
-			InternalPort = Convert.ToInt32 (data ["NewInternalPort"].InnerText);
-			LeaseDuration = Convert.ToInt32 (data ["NewLeaseDuration"].InnerText);
-			PortMappingDescription = data ["NewPortMappingDescription"].InnerText;
-		}
-	}
+        public GetSpecificPortMappingEntryResponseMessage (XmlNode data)
+        {
+            Enabled = data["NewEnabled"].InnerText == "1";
+            InternalClient = data["NewInternalClient"].InnerText;
+            InternalPort = Convert.ToInt32 (data["NewInternalPort"].InnerText);
+            LeaseDuration = Convert.ToInt32 (data["NewLeaseDuration"].InnerText);
+            PortMappingDescription = data["NewPortMappingDescription"].InnerText;
+        }
+    }
 }

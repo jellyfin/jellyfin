@@ -32,27 +32,27 @@ using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
-	abstract class NatDevice : INatDevice
-	{
-		public DateTime LastSeen { get; internal set; }
-		public IPEndPoint DeviceEndpoint { get; }
-		public NatProtocol NatProtocol { get; }
+    abstract class NatDevice : INatDevice
+    {
+        public DateTime LastSeen { get; internal set; }
+        public IPEndPoint DeviceEndpoint { get; }
+        public NatProtocol NatProtocol { get; }
 
-		protected NatDevice (IPEndPoint deviceEndpoint, NatProtocol natProtocol)
-		{
-			LastSeen = DateTime.UtcNow;
-			DeviceEndpoint = deviceEndpoint;
-			NatProtocol = natProtocol;
-		}
+        protected NatDevice (IPEndPoint deviceEndpoint, NatProtocol natProtocol)
+        {
+            LastSeen = DateTime.UtcNow;
+            DeviceEndpoint = deviceEndpoint;
+            NatProtocol = natProtocol;
+        }
 
-		public abstract Task<Mapping> CreatePortMapAsync (Mapping mapping);
+        public abstract Task<Mapping> CreatePortMapAsync (Mapping mapping);
 
-		public abstract Task<Mapping> DeletePortMapAsync (Mapping mapping);
+        public abstract Task<Mapping> DeletePortMapAsync (Mapping mapping);
 
-		public abstract Task<Mapping []> GetAllMappingsAsync ();
+        public abstract Task<Mapping[]> GetAllMappingsAsync ();
 
-		public abstract Task<IPAddress> GetExternalIPAsync ();
+        public abstract Task<IPAddress> GetExternalIPAsync ();
 
-		public abstract Task<Mapping> GetSpecificMappingAsync (Protocol protocol, int publicPort);
-	}
+        public abstract Task<Mapping> GetSpecificMappingAsync (Protocol protocol, int publicPort);
+    }
 }

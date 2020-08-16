@@ -102,7 +102,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
-            
+
             const string DeviceId = "test";
 
             if (string.Equals(methodName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))

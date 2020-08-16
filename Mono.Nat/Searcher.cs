@@ -33,115 +33,115 @@ using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
-	abstract class Searcher : ISearcher
-	{
-		protected static readonly TimeSpan SearchPeriod = TimeSpan.FromMinutes (5);
+    abstract class Searcher : ISearcher
+    {
+        protected static readonly TimeSpan SearchPeriod = TimeSpan.FromMinutes (5);
 
-		public event EventHandler<DeviceEventArgs> DeviceFound;
-		public event EventHandler<DeviceEventUnknownArgs> DeviceUnknown;
+        public event EventHandler<DeviceEventArgs> DeviceFound;
+        public event EventHandler<DeviceEventUnknownArgs> UnknownDeviceFound;
 
-		public bool Listening => ListeningTask != null;
-		public abstract NatProtocol Protocol { get; }
+        public bool Listening => ListeningTask != null;
+        public abstract NatProtocol Protocol { get; }
 
-		Dictionary<NatDevice, NatDevice> Devices { get; }
-		Task ListeningTask { get; set; }
-		protected SocketGroup Clients { get; }
+        Dictionary<NatDevice, NatDevice> Devices { get; }
+        Task ListeningTask { get; set; }
+        protected SocketGroup Clients { get; }
 
-		protected CancellationTokenSource Cancellation;
-		protected CancellationTokenSource CurrentSearchCancellation;
-		CancellationTokenSource OverallSearchCancellation;
-		Task SearchTask { get; set; }
+        protected CancellationTokenSource Cancellation;
+        protected CancellationTokenSource CurrentSearchCancellation;
+        CancellationTokenSource OverallSearchCancellation;
+        Task SearchTask { get; set; }
 
-		protected Searcher (SocketGroup clients)
-		{
-			Clients = clients;
-			Devices = new Dictionary<NatDevice, NatDevice> ();
-		}
+        protected Searcher (SocketGroup clients)
+        {
+            Clients = clients;
+            Devices = new Dictionary<NatDevice, NatDevice> ();
+        }
 
-		protected void BeginListening ()
-		{
-			// Begin listening, if we are not already listening.
-			if (!Listening) {
-				Cancellation?.Cancel ();
-				Cancellation = new CancellationTokenSource ();
-				lock (Devices)
-					Devices.Clear();
-				ListeningTask = ListenAsync (Cancellation.Token);
-			}
-		}
+        protected void BeginListening ()
+        {
+            // Begin listening, if we are not already listening.
+            if (!Listening) {
+                Cancellation?.Cancel ();
+                Cancellation = new CancellationTokenSource ();
+                lock (Devices)
+                    Devices.Clear ();
+                ListeningTask = ListenAsync (Cancellation.Token);
+            }
+        }
 
-		public void Dispose ()
-		{
-			Clients.Dispose();
-		}
+        public void Dispose ()
+        {
+            Clients.Dispose ();
+        }
 
-		async Task ListenAsync (CancellationToken token)
-		{
-			while (!token.IsCancellationRequested) {
-				(var localAddress, var data) = await Clients.ReceiveAsync (token).ConfigureAwait (false);
-				await HandleMessageReceived (localAddress, data.Buffer, data.RemoteEndPoint, token).ConfigureAwait (false);
-			}
-		}
+        async Task ListenAsync (CancellationToken token)
+        {
+            while (!token.IsCancellationRequested) {
+                (var localAddress, var data) = await Clients.ReceiveAsync (token).ConfigureAwait (false);
+                await HandleMessageReceived (localAddress, data.Buffer, data.RemoteEndPoint, token).ConfigureAwait (false);
+            }
+        }
 
-        public abstract Task HandleMessageReceived(IPAddress localAddress, byte[] response, IPEndPoint endpoint, CancellationToken token);
+        public abstract Task HandleMessageReceived (IPAddress localAddress, byte[] response, IPEndPoint endpoint, CancellationToken token);
 
         public async Task SearchAsync ()
-		{
-			// Cancel any existing continuous search operation.
-			OverallSearchCancellation?.Cancel ();
-			if (SearchTask != null)
-				await SearchTask.CatchExceptions ();
+        {
+            // Cancel any existing continuous search operation.
+            OverallSearchCancellation?.Cancel ();
+            if (SearchTask != null)
+                await SearchTask.CatchExceptions ();
 
-			// Create a CancellationTokenSource for the search we're about to perform.
-			BeginListening ();
-			OverallSearchCancellation = CancellationTokenSource.CreateLinkedTokenSource (Cancellation.Token);
+            // Create a CancellationTokenSource for the search we're about to perform.
+            BeginListening ();
+            OverallSearchCancellation = CancellationTokenSource.CreateLinkedTokenSource (Cancellation.Token);
 
-			SearchTask = SearchAsync (null, SearchPeriod, OverallSearchCancellation.Token);
-			await SearchTask;
-		}
-
-		public async Task SearchAsync (IPAddress gatewayAddress)
-		{
-			BeginListening ();
-			await SearchAsync (gatewayAddress, null, Cancellation.Token).ConfigureAwait (false);
-		}
-
-		protected abstract Task SearchAsync (IPAddress gatewayAddress, TimeSpan? repeatInterval, CancellationToken token);
-
-		public void Stop ()
-		{
-			Cancellation?.Cancel ();
-			ListeningTask?.WaitAndForget ();
-			SearchTask?.WaitAndForget ();
-
-			lock (Devices)
-				Devices.Clear();
-
-			Cancellation = null;
-			ListeningTask = null;
-			SearchTask = null;
-		}
-
-		protected void RaiseDeviceUnknown(IPAddress address, EndPoint remote, string response, NatProtocol protocol)
-		{
-			DeviceUnknown?.Invoke(this, new DeviceEventUnknownArgs(address, remote, response, protocol));
-		}
-
-		protected void RaiseDeviceFound (NatDevice device)
-		{
-			CurrentSearchCancellation?.Cancel ();
-
-			NatDevice actualDevice;
-			lock (Devices) {
-				if (Devices.TryGetValue (device, out actualDevice))
-					actualDevice.LastSeen = DateTime.UtcNow;
-				else
-					Devices[device] = device;
-			}
-			// If we did not find the device in the dictionary, raise an event as it's the first time
-			// we've encountered it!
-			if (actualDevice == null)
-                DeviceFound?.Invoke(this, new DeviceEventArgs(device));
+            SearchTask = SearchAsync (null, SearchPeriod, OverallSearchCancellation.Token);
+            await SearchTask;
         }
-	}
+
+        public async Task SearchAsync (IPAddress gatewayAddress)
+        {
+            BeginListening ();
+            await SearchAsync (gatewayAddress, null, Cancellation.Token).ConfigureAwait (false);
+        }
+
+        protected abstract Task SearchAsync (IPAddress gatewayAddress, TimeSpan? repeatInterval, CancellationToken token);
+
+        public void Stop ()
+        {
+            Cancellation?.Cancel ();
+            ListeningTask?.WaitAndForget ();
+            SearchTask?.WaitAndForget ();
+
+            lock (Devices)
+                Devices.Clear ();
+
+            Cancellation = null;
+            ListeningTask = null;
+            SearchTask = null;
+        }
+
+        protected void RaiseDeviceUnknown (IPAddress address, EndPoint remote, string response, NatProtocol protocol)
+        {
+            UnknownDeviceFound?.Invoke (this, new DeviceEventUnknownArgs (address, remote, response, protocol));
+        }
+
+        protected void RaiseDeviceFound (NatDevice device)
+        {
+            CurrentSearchCancellation?.Cancel ();
+
+            NatDevice actualDevice;
+            lock (Devices) {
+                if (Devices.TryGetValue (device, out actualDevice))
+                    actualDevice.LastSeen = DateTime.UtcNow;
+                else
+                    Devices[device] = device;
+            }
+            // If we did not find the device in the dictionary, raise an event as it's the first time
+            // we've encountered it!
+            if (actualDevice == null)
+                DeviceFound?.Invoke (this, new DeviceEventArgs (device));
+        }
+    }
 }

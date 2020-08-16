@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 
 namespace Emby.Dlna.Rssdp.EventArgs
 {
@@ -12,20 +13,27 @@ namespace Emby.Dlna.Rssdp.EventArgs
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestReceivedEventArgs"/> class.
         /// </summary>
+        /// <param name="rawData">The pre-processed raw data.</param>
         /// <param name="message">Request message.</param>
         /// <param name="receivedFrom">Received from.</param>
         /// <param name="localIPAddress">Interface IP Address upon which it was received.</param>
-        public RequestReceivedEventArgs(HttpRequestMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress)
+        public RequestReceivedEventArgs(string rawData, HttpRequestMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress)
         {
+            Raw = Encoding.UTF8.GetBytes(rawData);
             Message = message;
             ReceivedFrom = receivedFrom;
             LocalIPAddress = localIPAddress;
         }
 
         /// <summary>
+        /// Gets the pre-processed raw data.
+        /// </summary>
+        public byte[] Raw { get; }
+
+        /// <summary>
         /// Gets the Local IP Address.
         /// </summary>
-        public IPAddress LocalIPAddress { get; private set; }
+        public IPAddress LocalIPAddress { get; }
 
         /// <summary>
         /// Gets the <see cref="HttpRequestMessage"/> that was received.

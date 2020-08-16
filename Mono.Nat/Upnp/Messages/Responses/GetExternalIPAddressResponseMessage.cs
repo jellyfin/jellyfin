@@ -29,13 +29,13 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	class GetExternalIPAddressResponseMessage : ResponseMessage
-	{
-		public IPAddress ExternalIPAddress { get; }
+    class GetExternalIPAddressResponseMessage : ResponseMessage
+    {
+        public IPAddress ExternalIPAddress { get; }
 
-		public GetExternalIPAddressResponseMessage (XmlNode node)
-		{
-			ExternalIPAddress = IPAddress.Parse (node ["NewExternalIPAddress"].InnerText);
-		}
-	}
+        public GetExternalIPAddressResponseMessage (XmlNode node)
+        {
+            ExternalIPAddress = IPAddress.Parse (node["NewExternalIPAddress"].InnerText);
+        }
+    }
 }

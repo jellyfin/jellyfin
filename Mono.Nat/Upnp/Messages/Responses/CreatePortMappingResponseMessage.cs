@@ -26,8 +26,8 @@
 
 namespace Mono.Nat.Upnp
 {
-	class CreatePortMappingResponseMessage : ResponseMessage
-	{
+    class CreatePortMappingResponseMessage : ResponseMessage
+    {
 
-	}
+    }
 }

@@ -15,6 +15,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
+using Mono.Nat;
 
 namespace Emby.Dlna.Rssdp
 {
@@ -182,6 +183,7 @@ namespace Emby.Dlna.Rssdp
                 }
             }
 
+            // Calculate which sockets to send the message through.
             IEnumerable<KeyValuePair<Socket, SocketState>> sockets;
             Dictionary<Socket, SocketState> sendSockets;
 
@@ -216,6 +218,7 @@ namespace Emby.Dlna.Rssdp
 
                 if (!sockets.Any())
                 {
+                    CreateSockets();
                     _logger.LogError("Unable to locate or create socket for {0}:{1}", localIPAddress, receivedFrom);
                     return;
                 }
@@ -268,7 +271,17 @@ namespace Emby.Dlna.Rssdp
                 throw new ArgumentNullException(nameof(localIPAddress));
             }
 
+            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
+            {
+                if (!_networkManager.IsInLocalNetwork(localIPAddress))
+                {
+                    _logger.LogDebug("SSDP filtered due to attempt to send from a non LAN interface {0}.", localIPAddress);
+                    return;
+                }
+            }
+
             byte[] messageData = Encoding.UTF8.GetBytes(message);
+            // Get the correct FamilyAdddress endpoint.
             IPEndPoint endPoint = _networkManager.GetMulticastEndPoint(localIPAddress, 1900);
 
             Dictionary<Socket, SocketState>.KeyCollection sockets;
@@ -370,7 +383,7 @@ namespace Emby.Dlna.Rssdp
                         return Task.CompletedTask;
                     }
 
-                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(requestMessage, receivedFrom, localIPAddress));
+                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress));
                 }
             }
 
@@ -388,6 +401,7 @@ namespace Emby.Dlna.Rssdp
                 _disposed = true;
                 _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
                 _networkManager.NetworkChanged -= ConfigurationUpdated;
+                NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
                 lock (_socketSynchroniser)
                 {
                     if (_sockets.Count > 0)
@@ -446,8 +460,10 @@ namespace Emby.Dlna.Rssdp
         /// <param name="listen">True if the socket is to be a listener.</param>
         /// <param name="localIPAddress">Interface IP upon which to listen.</param>
         /// <param name="port">Port upon which to listen. If the port number isn't zero, the socket is initialised for multicasts.</param>
-        private void CreateUniqueSocket(bool listen, IPAddress localIPAddress, int port = 0)
+        /// <returns>Success of the operation.</returns>
+        private bool CreateUniqueSocket(bool listen, IPAddress localIPAddress, int port = 0)
         {
+            bool res = true;
             var sockets = _sockets.Keys.Where(k => k.LocalAddressEquals(localIPAddress));
             if (!sockets.Any())
             {
@@ -461,6 +477,7 @@ namespace Emby.Dlna.Rssdp
                 catch (SocketException ex)
                 {
                     _logger.LogError(ex, "Error creating socket {0} port {1}", localIPAddress, port);
+                    res = false;
                 }
             }
             else
@@ -480,7 +497,7 @@ namespace Emby.Dlna.Rssdp
                         socket.Dispose();
 
                         // As we have to closed this port - we'll need another one creating.
-                        CreateUniqueSocket(listen, localIPAddress, port);
+                        res = CreateUniqueSocket(listen, localIPAddress, port);
                     }
                     else if (state == SocketState.SendOnly && listen)
                     {
@@ -489,6 +506,8 @@ namespace Emby.Dlna.Rssdp
                     }
                 }
             }
+
+            return res;
         }
 
         /// <summary>
@@ -519,7 +538,10 @@ namespace Emby.Dlna.Rssdp
                 // Only create the IPAny/v6Any and multicast ports once.
                 if (_sockets.Count == 0)
                 {
-                    CreateUniqueSocket(true, IPAddress.Any, 1900);
+                    if (!CreateUniqueSocket(true, IPAddress.Any, 1900))
+                    {
+                        CreateUniqueSocket(true, IPAddress.Any);
+                    }
 
                     if (_networkManager.IsIP6Enabled)
                     {
@@ -531,15 +553,26 @@ namespace Emby.Dlna.Rssdp
                 {
                     foreach (IPObject ip in ba)
                     {
-                        // An interface with a negative tag has a gateway address and so will be listened to by Mono.NAT, if port forwarding is enabled.
-                        // In this instance, Mono.NAT will send us this traffic, so we don't need to listen to these sockets.
-                        // Mono isn't IPv6 compliant yet, so we will listen on IPv6 interfaces
+                        // An interface with a negative tag value has a gateway address and so will be listened to and passed to us by Mono.NAT (if enabled),
+                        // Mono isn't IPv6 compliant yet, so we will still need to listen on IPv6 interfaces.
                         CreateUniqueSocket(!(_networkManager.IsuPnPActive && ip.Tag < 0 && ip.Address.AddressFamily == AddressFamily.InterNetwork), ip.Address);
                     }
                 }
             }
 
             _ = StartListening();
+        }
+
+        /// <summary>
+        /// Enables sddp injection of devices found by Mono.Nat.
+        /// </summary>
+        /// <param name="sender">Mono.Nat instance.</param>
+        /// <param name="e">Information Mono received, but doesn't use.</param>
+        private async void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
+        {
+            _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
+
+            await ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -552,6 +585,24 @@ namespace Emby.Dlna.Rssdp
             {
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
+
+            try
+            {
+                if (_networkManager.IsuPnPActive)
+                {
+                    NatUtility.UnknownDeviceFound += UnknownDeviceFound;
+                }
+                else
+                {
+                    NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
+                }
+            }
+#pragma warning disable CA1031 // Do not catch general exception types: Catches unknown task exceptions and logs them.
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error linking to Mono.NAT.");
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
 
             try
             {
@@ -568,10 +619,10 @@ namespace Emby.Dlna.Rssdp
             }
 #pragma warning disable CA1031 // Do not catch general exception types: Catches unknown task exceptions and logs them.
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error starting Listeners.");
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         /// <summary>

@@ -29,52 +29,51 @@ using System.Text;
 
 namespace Mono.Nat.Upnp
 {
-	static class DiscoverDeviceMessage
-	{
-		internal static readonly string[] SupportedServiceTypes = new[] {
-			"urn:schemas-upnp-org:device:InternetGatewayDevice:1",
-			"urn:schemas-upnp-org:device:InternetGatewayDevice:2",
-			"urn:schemas-upnp-org:device:InternetGatewayDevice:",
-		};
+    static class DiscoverDeviceMessage
+    {
+        internal static readonly string[] SupportedServiceTypes = new[] {
+            "urn:schemas-upnp-org:device:InternetGatewayDevice:1",
+            "urn:schemas-upnp-org:device:InternetGatewayDevice:2",
+            "urn:schemas-upnp-org:device:InternetGatewayDevice:",
+        };
 
-		static readonly string[] SearchServiceTypes = new [] {
-			"all",
-			"urn:schemas-upnp-org:device:InternetGatewayDevice:1",
-			"urn:schemas-upnp-org:device:InternetGatewayDevice:2",
-		};
+        static readonly string[] SearchServiceTypes = new[] {
+            "all",
+            "urn:schemas-upnp-org:device:InternetGatewayDevice:1",
+            "urn:schemas-upnp-org:device:InternetGatewayDevice:2",
+        };
 
-		/// <summary>
-		/// The message sent to discover all uPnP devices on the network
-		/// </summary>
-		/// <returns></returns>
-		public static byte [][] EncodeSSDP ()
-		{
-			var results = new byte[SearchServiceTypes.Length][];
-			for (int i = 0; i < SearchServiceTypes.Length; i++) {
-				var s = "M-SEARCH * HTTP/1.1\r\n"
-						+ "HOST: 239.255.255.250:1900\r\n"
-						+ "MAN: \"ssdp:discover\"\r\n"
-						+ "MX: 3\r\n"
-						+ string.Format("ST: ssdp:{0}\r\n\r\n", SearchServiceTypes[i]);
-				results[i] = Encoding.ASCII.GetBytes(s);
-			}
-			return results;
-		}
+        /// <summary>
+        /// The message sent to discover all uPnP devices on the network
+        /// </summary>
+        /// <returns></returns>
+        public static byte[][] EncodeSSDP ()
+        {
+            var results = new byte[SearchServiceTypes.Length][];
+            for (int i = 0; i < SearchServiceTypes.Length; i++) {
+                var s = "M-SEARCH * HTTP/1.1\r\n"
+                        + "HOST: 239.255.255.250:1900\r\n"
+                        + "MAN: \"ssdp:discover\"\r\n"
+                        + "MX: 3\r\n"
+                        + string.Format ("ST: ssdp:{0}\r\n\r\n", SearchServiceTypes[i]);
+                results[i] = Encoding.ASCII.GetBytes (s);
+            }
+            return results;
+        }
 
-		public static byte [][] EncodeUnicast (IPAddress gatewayAddress)
-		{
-			//Format obtained from http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf pg 31
-			//This method only works with upnp 1.1 routers... unfortunately
-			var results = new byte[SearchServiceTypes.Length][];
-			for (int i = 0; i < SearchServiceTypes.Length; i++)
-			{
-				string s = "M-SEARCH * HTTP/1.1\r\n"
-						+ "HOST: " + gatewayAddress + ":1900\r\n"
-						+ "MAN: \"ssdp:discover\"\r\n"
-						+ string.Format("ST: ssdp:{0}\r\n\r\n", SearchServiceTypes[i]);
-				results[i] = Encoding.ASCII.GetBytes(s);
-			}
-			return results;
-		}
-	}
+        public static byte[][] EncodeUnicast (IPAddress gatewayAddress)
+        {
+            //Format obtained from http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf pg 31
+            //This method only works with upnp 1.1 routers... unfortunately
+            var results = new byte[SearchServiceTypes.Length][];
+            for (int i = 0; i < SearchServiceTypes.Length; i++) {
+                string s = "M-SEARCH * HTTP/1.1\r\n"
+                        + "HOST: " + gatewayAddress + ":1900\r\n"
+                        + "MAN: \"ssdp:discover\"\r\n"
+                        + string.Format ("ST: ssdp:{0}\r\n\r\n", SearchServiceTypes[i]);
+                results[i] = Encoding.ASCII.GetBytes (s);
+            }
+            return results;
+        }
+    }
 }

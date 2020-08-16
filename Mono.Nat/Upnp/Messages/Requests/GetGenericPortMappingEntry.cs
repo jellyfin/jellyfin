@@ -28,19 +28,19 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	class GetGenericPortMappingEntry : RequestMessage
-	{
-		int Index { get; }
+    class GetGenericPortMappingEntry : RequestMessage
+    {
+        int Index { get; }
 
-		public GetGenericPortMappingEntry (int index, UpnpNatDevice device)
-			: base (device, "GetGenericPortMappingEntry")
-		{
-			Index = index;
-		}
+        public GetGenericPortMappingEntry (int index, UpnpNatDevice device)
+            : base (device, "GetGenericPortMappingEntry")
+        {
+            Index = index;
+        }
 
-		public override void Encode (XmlWriter writer)
-		{
-			WriteFullElement (writer, "NewPortMappingIndex", Index);
-		}
-	}
+        public override void Encode (XmlWriter writer)
+        {
+            WriteFullElement (writer, "NewPortMappingIndex", Index);
+        }
+    }
 }

@@ -29,23 +29,23 @@ using System.Net;
 
 namespace Mono.Nat.Upnp
 {
-	class GetServicesMessage : IRequestMessage
-	{
-		Uri DeviceServiceUri { get; }
+    class GetServicesMessage : IRequestMessage
+    {
+        Uri DeviceServiceUri { get; }
 
-		public GetServicesMessage (Uri deviceServiceUri)
-		{
-			DeviceServiceUri = deviceServiceUri ?? throw new ArgumentNullException (nameof (deviceServiceUri));
-		}
+        public GetServicesMessage (Uri deviceServiceUri)
+        {
+            DeviceServiceUri = deviceServiceUri ?? throw new ArgumentNullException (nameof (deviceServiceUri));
+        }
 
-		public HttpWebRequest Encode (out byte [] body)
-		{
-			HttpWebRequest req = (HttpWebRequest) WebRequest.Create (DeviceServiceUri);
-			req.Headers.Add ("ACCEPT-LANGUAGE", "en");
-			req.Method = "GET";
+        public HttpWebRequest Encode (out byte[] body)
+        {
+            HttpWebRequest req = (HttpWebRequest) WebRequest.Create (DeviceServiceUri);
+            req.Headers.Add ("ACCEPT-LANGUAGE", "en");
+            req.Method = "GET";
 
-			body = Array.Empty<byte>();
-			return req;
-		}
-	}
+            body = Array.Empty<byte> ();
+            return req;
+        }
+    }
 }

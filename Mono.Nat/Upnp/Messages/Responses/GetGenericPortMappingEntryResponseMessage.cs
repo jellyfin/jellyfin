@@ -29,28 +29,28 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	class GetGenericPortMappingEntryResponseMessage : ResponseMessage
-	{
-		public bool Enabled { get; }
-		public int ExternalPort { get; }
-		public string InternalClient { get; }
-		public int InternalPort { get; }
-		public int LeaseDuration { get; }
-		public string PortMappingDescription { get; }
-		public Protocol Protocol { get; }
-		public string RemoteHost { get; }
+    class GetGenericPortMappingEntryResponseMessage : ResponseMessage
+    {
+        public bool Enabled { get; }
+        public int ExternalPort { get; }
+        public string InternalClient { get; }
+        public int InternalPort { get; }
+        public int LeaseDuration { get; }
+        public string PortMappingDescription { get; }
+        public Protocol Protocol { get; }
+        public string RemoteHost { get; }
 
-		public GetGenericPortMappingEntryResponseMessage (XmlNode data)
-		{
-			RemoteHost = data ["NewRemoteHost"].InnerText;
-			ExternalPort = Convert.ToInt32 (data ["NewExternalPort"].InnerText);
-			Protocol = data ["NewProtocol"].InnerText == "TCP" ? Protocol.Tcp : Protocol.Udp;
+        public GetGenericPortMappingEntryResponseMessage (XmlNode data)
+        {
+            RemoteHost = data["NewRemoteHost"].InnerText;
+            ExternalPort = Convert.ToInt32 (data["NewExternalPort"].InnerText);
+            Protocol = data["NewProtocol"].InnerText == "TCP" ? Protocol.Tcp : Protocol.Udp;
 
-			InternalPort = Convert.ToInt32 (data ["NewInternalPort"].InnerText);
-			InternalClient = data ["NewInternalClient"].InnerText;
-			Enabled = data ["NewEnabled"].InnerText == "1";
-			PortMappingDescription = data ["NewPortMappingDescription"].InnerText;
-			LeaseDuration = Convert.ToInt32 (data ["NewLeaseDuration"].InnerText);
-		}
-	}
+            InternalPort = Convert.ToInt32 (data["NewInternalPort"].InnerText);
+            InternalClient = data["NewInternalClient"].InnerText;
+            Enabled = data["NewEnabled"].InnerText == "1";
+            PortMappingDescription = data["NewPortMappingDescription"].InnerText;
+            LeaseDuration = Convert.ToInt32 (data["NewLeaseDuration"].InnerText);
+        }
+    }
 }

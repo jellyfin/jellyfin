@@ -28,21 +28,21 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	sealed class DeletePortMappingMessage : RequestMessage
-	{
-		Mapping Mapping { get; }
+    sealed class DeletePortMappingMessage : RequestMessage
+    {
+        Mapping Mapping { get; }
 
-		public DeletePortMappingMessage (Mapping mapping, UpnpNatDevice device)
-			: base (device, "DeletePortMapping")
-		{
-			Mapping = mapping;
-		}
+        public DeletePortMappingMessage (Mapping mapping, UpnpNatDevice device)
+            : base (device, "DeletePortMapping")
+        {
+            Mapping = mapping;
+        }
 
-		public override void Encode (XmlWriter writer)
-		{
-			WriteFullElement (writer, "NewRemoteHost", "");
-			WriteFullElement (writer, "NewExternalPort", Mapping.PublicPort);
-			WriteFullElement (writer, "NewProtocol", Mapping.Protocol);
-		}
-	}
+        public override void Encode (XmlWriter writer)
+        {
+            WriteFullElement (writer, "NewRemoteHost", "");
+            WriteFullElement (writer, "NewExternalPort", Mapping.PublicPort);
+            WriteFullElement (writer, "NewProtocol", Mapping.Protocol);
+        }
+    }
 }

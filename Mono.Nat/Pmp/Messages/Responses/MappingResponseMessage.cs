@@ -26,13 +26,13 @@
 
 namespace Mono.Nat.Pmp
 {
-	class MappingResponseMessage : ResponseMessage
-	{
-		public Mapping Mapping { get; }
+    class MappingResponseMessage : ResponseMessage
+    {
+        public Mapping Mapping { get; }
 
-		public MappingResponseMessage (Mapping mapping)
-		{
-			Mapping = mapping;
-		}
-	}
+        public MappingResponseMessage (Mapping mapping)
+        {
+            Mapping = mapping;
+        }
+    }
 }

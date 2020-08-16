@@ -13,7 +13,7 @@ namespace Mono.Nat
 
         public NatProtocol Protocol { get; }
 
-        internal DeviceEventUnknownArgs(IPAddress address, EndPoint endPoint, string data, NatProtocol protocol)
+        internal DeviceEventUnknownArgs (IPAddress address, EndPoint endPoint, string data, NatProtocol protocol)
         {
             Address = address;
             Data = data;

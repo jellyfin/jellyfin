@@ -36,8 +36,8 @@ using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
-	interface ISearcher : IDisposable
-	{
+    interface ISearcher : IDisposable
+    {
         /// <summary>
         /// This event is raised whenever a device which supports port mapping is discovered
         /// </summary>
@@ -46,35 +46,35 @@ namespace Mono.Nat
         /// <summary>
         /// This event is raised whenever a device which doesn't supports port mapping is discovered.
         /// </summary>
-        event EventHandler<DeviceEventUnknownArgs> DeviceUnknown;
+        event EventHandler<DeviceEventUnknownArgs> UnknownDeviceFound;
 
         /// <summary>
         /// The port mapping protocol supported by the device
         /// </summary>
         NatProtocol Protocol { get; }
 
-		/// <summary>
-		/// While running the searcher constantly listens for UDP broadcasts when new devices come online.
-		/// </summary>
-		bool Listening { get; }
+        /// <summary>
+        /// While running the searcher constantly listens for UDP broadcasts when new devices come online.
+        /// </summary>
+        bool Listening { get; }
 
-		/// <summary>
-		/// Periodically send a multicast UDP message to scan for new devices.
-		/// If the searcher is not listening, it will begin listening until 'Stop' is invoked.
-		/// </summary>
-		Task SearchAsync ();
+        /// <summary>
+        /// Periodically send a multicast UDP message to scan for new devices.
+        /// If the searcher is not listening, it will begin listening until 'Stop' is invoked.
+        /// </summary>
+        Task SearchAsync ();
 
-		/// <summary>
-		/// Immediately sends a unicast UDP message to this IP address to check for a compatible device.
-		/// If the searcher is not listening, it will begin listening until 'Stop' is invoked.
-		/// </summary>
-		/// <param name="gatewayAddress">The IP address which should</param>
-		Task SearchAsync (IPAddress gatewayAddress);
+        /// <summary>
+        /// Immediately sends a unicast UDP message to this IP address to check for a compatible device.
+        /// If the searcher is not listening, it will begin listening until 'Stop' is invoked.
+        /// </summary>
+        /// <param name="gatewayAddress">The IP address which should</param>
+        Task SearchAsync (IPAddress gatewayAddress);
 
-		/// <summary>
-		/// The searcher will no longer listen for new devices.
-		/// </summary>
-		void Stop ();
+        /// <summary>
+        /// The searcher will no longer listen for new devices.
+        /// </summary>
+        void Stop ();
 
         /// <summary>
         /// Permits Mono.NAT to process messages not received internally.
@@ -83,6 +83,6 @@ namespace Mono.Nat
         /// <param name="response">Response received.</param>
         /// <param name="endpoint">Destination ip.</param>
         /// <param name="token">Cancellation token.</param>
-        Task HandleMessageReceived(IPAddress localAddress, byte[] response, IPEndPoint endpoint, CancellationToken token);
+        Task HandleMessageReceived (IPAddress localAddress, byte[] response, IPEndPoint endpoint, CancellationToken token);
     }
 }

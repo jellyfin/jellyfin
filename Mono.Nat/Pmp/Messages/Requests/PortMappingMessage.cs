@@ -29,44 +29,44 @@ using System.Net;
 
 namespace Mono.Nat.Pmp
 {
-	abstract class PortMappingMessage
-	{
-		bool Create { get; }
-		public Mapping Mapping { get; }
+    abstract class PortMappingMessage
+    {
+        bool Create { get; }
+        public Mapping Mapping { get; }
 
-		public PortMappingMessage (Mapping mapping, bool create)
-		{
-			Mapping = mapping;
-			Create = create;
-		}
+        public PortMappingMessage (Mapping mapping, bool create)
+        {
+            Mapping = mapping;
+            Create = create;
+        }
 
-		public byte [] Encode ()
-		{
-			var package = new byte [12];
+        public byte[] Encode ()
+        {
+            var package = new byte[12];
 
-			package[0] = PmpConstants.Version;
-			package[1] = Mapping.Protocol == Protocol.Tcp ? PmpConstants.OperationCodeTcp : PmpConstants.OperationCodeUdp;
+            package[0] = PmpConstants.Version;
+            package[1] = Mapping.Protocol == Protocol.Tcp ? PmpConstants.OperationCodeTcp : PmpConstants.OperationCodeUdp;
 
-			// package[2] and package [3] are reserved and set to zero
+            // package[2] and package [3] are reserved and set to zero
 
-			var privatePort = IPAddress.HostToNetworkOrder((short)Mapping.PrivatePort);
-			package[4] = (byte)(privatePort);
-			package[5] = (byte)(privatePort >> 8);
+            var privatePort = IPAddress.HostToNetworkOrder ((short) Mapping.PrivatePort);
+            package[4] = (byte) (privatePort);
+            package[5] = (byte) (privatePort >> 8);
 
-			// package[6] -> package[11] are all zeros if we are no creating a port mapping.
-			if (Create) {
-				var publicPort = IPAddress.HostToNetworkOrder((short)Mapping.PublicPort);
-				package[6] = (byte)(publicPort);
-				package[7] = (byte)(publicPort >> 8);
+            // package[6] -> package[11] are all zeros if we are no creating a port mapping.
+            if (Create) {
+                var publicPort = IPAddress.HostToNetworkOrder ((short) Mapping.PublicPort);
+                package[6] = (byte) (publicPort);
+                package[7] = (byte) (publicPort >> 8);
 
-				var lifespan = IPAddress.HostToNetworkOrder(Mapping.Lifetime == 0 ? 7200 : Mapping.Lifetime);
-				package[8] = (byte)(lifespan);
-				package[9] = (byte)(lifespan >> 8);
-				package[10] = (byte)(lifespan >> 16);
-				package[11] = (byte)(lifespan >> 24);
-			}
+                var lifespan = IPAddress.HostToNetworkOrder (Mapping.Lifetime == 0 ? 7200 : Mapping.Lifetime);
+                package[8] = (byte) (lifespan);
+                package[9] = (byte) (lifespan >> 8);
+                package[10] = (byte) (lifespan >> 16);
+                package[11] = (byte) (lifespan >> 24);
+            }
 
-			return package;
-		}
-	}
+            return package;
+        }
+    }
 }

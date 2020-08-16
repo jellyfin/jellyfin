@@ -26,12 +26,12 @@
 
 namespace Mono.Nat.Upnp
 {
-	sealed class GetExternalIPAddressMessage : RequestMessage
-	{
-		public GetExternalIPAddressMessage (UpnpNatDevice device)
-			: base (device, "GetExternalIPAddress")
-		{
+    sealed class GetExternalIPAddressMessage : RequestMessage
+    {
+        public GetExternalIPAddressMessage (UpnpNatDevice device)
+            : base (device, "GetExternalIPAddress")
+        {
 
-		}
-	}
+        }
+    }
 }

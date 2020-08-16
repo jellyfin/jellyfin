@@ -29,48 +29,49 @@ using System.Security.Permissions;
 
 namespace Mono.Nat
 {
-	[Serializable]
-	public class MappingException : Exception
-	{
-		public ErrorCode ErrorCode { get; private set; } = ErrorCode.Unknown;
-		public string ErrorText { get; private set; }
+    [Serializable]
+    public class MappingException : Exception
+    {
+        public ErrorCode ErrorCode { get; private set; } = ErrorCode.Unknown;
+        public string ErrorText { get; private set; }
 
-		#region Constructors
-		public MappingException ()
-		{
-		}
+        #region Constructors
+        public MappingException ()
+        {
+        }
 
-		public MappingException (string message)
-			: base (message)
-		{
-		}
+        public MappingException (string message)
+            : base (message)
+        {
+        }
 
-		public MappingException (ErrorCode errorCode, string errorText)
-			: base (string.Format ("Error {0}: {1}", errorCode, errorText))
-		{
-			ErrorCode = errorCode;
-			ErrorText = errorText;
-		}
+        public MappingException (ErrorCode errorCode, string errorText)
+            : base (string.Format ("Error {0}: {1}", errorCode, errorText))
+        {
+            ErrorCode = errorCode;
+            ErrorText = errorText;
+        }
 
-		public MappingException (string message, Exception innerException)
-			: base (message, innerException)
-		{
-		}
+        public MappingException (string message, Exception innerException)
+            : base (message, innerException)
+        {
+        }
 
-		protected MappingException (System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
-			: base (info, context)
-		{
-		}
-		#endregion
+        protected MappingException (System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+            : base (info, context)
+        {
+        }
+        #endregion
 
-		[SecurityPermission (SecurityAction.Demand, SerializationFormatter = true)]
-		public override void GetObjectData (System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
-		{
-			if (info == null) throw new ArgumentNullException ("info");
+        [SecurityPermission (SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData (System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        {
+            if (info == null)
+                throw new ArgumentNullException ("info");
 
-			ErrorCode = (ErrorCode) info.GetInt32 ("errorCode");
-			ErrorText = info.GetString ("errorText");
-			base.GetObjectData (info, context);
-		}
-	}
+            ErrorCode = (ErrorCode) info.GetInt32 ("errorCode");
+            ErrorText = info.GetString ("errorText");
+            base.GetObjectData (info, context);
+        }
+    }
 }
