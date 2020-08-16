@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -146,8 +146,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("{itemId}/{stream=stream}.{container?}", Name = "GetAudioStreamByContainer")]
         [HttpGet("{itemId}/stream", Name = "GetAudioStream")]
+        [HttpGet("{itemId}/stream.mp3", Name = "GetAudioStream_2")]
         [HttpHead("{itemId}/{stream=stream}.{container?}", Name = "HeadAudioStreamByContainer")]
         [HttpHead("{itemId}/stream", Name = "HeadAudioStream")]
+        [HttpHead("{itemId}/stream.mp3", Name = "HeadAudioStream_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAudioStream(
             [FromRoute] Guid itemId,

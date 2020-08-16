@@ -365,6 +365,7 @@ namespace Emby.Dlna.Rssdp
                 // If uPNP is running - pass these messages to mono.nat. It might want them.
                 if (_networkManager.IsuPnPActive)
                 {
+                    _logger.LogDebug("Passing notify message to Mono.Nat.");
                     NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw, e.ReceivedFrom);
                 }
 
