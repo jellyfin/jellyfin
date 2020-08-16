@@ -37,7 +37,6 @@ namespace Emby.Server.Implementations.EntryPoints
         public Task RunAsync()
         {
             _installationManager.PackageInstallationCancelled += OnPackageInstallationCancelled;
-            _installationManager.PackageInstallationCompleted += OnPackageInstallationCompleted;
 
             return Task.CompletedTask;
         }
@@ -45,11 +44,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private async void OnPackageInstallationCancelled(object sender, InstallationInfo e)
         {
             await SendMessageToAdminSessions("PackageInstallationCancelled", e).ConfigureAwait(false);
-        }
-
-        private async void OnPackageInstallationCompleted(object sender, InstallationInfo e)
-        {
-            await SendMessageToAdminSessions("PackageInstallationCompleted", e).ConfigureAwait(false);
         }
 
         private async Task SendMessageToAdminSessions<T>(string name, T data)
@@ -79,7 +73,6 @@ namespace Emby.Server.Implementations.EntryPoints
             if (dispose)
             {
                 _installationManager.PackageInstallationCancelled -= OnPackageInstallationCancelled;
-                _installationManager.PackageInstallationCompleted -= OnPackageInstallationCompleted;
             }
         }
     }
