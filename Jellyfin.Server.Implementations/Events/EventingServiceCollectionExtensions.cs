@@ -40,10 +40,15 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<SessionStartedEventArgs>, SessionStartedLogger>();
             collection.AddScoped<IEventConsumer<SessionEndedEventArgs>, SessionEndedLogger>();
 
+            collection.AddScoped<IEventConsumer<PluginInstallingEventArgs>, PluginInstallingNotifier>();
             collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledLogger>();
+            collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledNotifier>();
             collection.AddScoped<IEventConsumer<PluginUninstalledEventArgs>, PluginUninstalledLogger>();
+            collection.AddScoped<IEventConsumer<PluginUninstalledEventArgs>, PluginUninstalledNotifier>();
             collection.AddScoped<IEventConsumer<PluginUpdatedEventArgs>, PluginUpdatedLogger>();
             collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedLogger>();
+            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedNotifier>();
+            collection.AddScoped<IEventConsumer<PluginInstallationCancelledEventArgs>, PluginInstallationCancelledNotifier>();
 
             collection.AddScoped<IEventConsumer<UserCreatedEventArgs>, UserCreatedLogger>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedLogger>();
