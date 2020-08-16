@@ -354,18 +354,12 @@ namespace Emby.Dlna.Rssdp
             HttpRequestMessage message = e.Message;
             IPAddress localIpAddress = e.LocalIPAddress;
 
-            var nt = GetFirstHeaderValue("NT", message.Headers);
-            if (!string.IsNullOrEmpty(nt))
-            {
-                _logger.LogDebug("Sniffer: {0} from {1} type {2}", message.Method.Method, e.ReceivedFrom.Address, nt);
-            }
-
             if (string.Equals(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase))
             {
-                // If uPNP is running - pass these messages to mono.nat. It might want them.
-                if (_networkManager.IsuPnPActive)
+                // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
+                if (_networkManager.IsuPnPActive && !e.Simulated)
                 {
-                    _logger.LogDebug("Passing notify message to Mono.Nat.");
+                    // _logger.LogDebug("Passing notify message to Mono.Nat.");
                     NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw, e.ReceivedFrom);
                 }
 

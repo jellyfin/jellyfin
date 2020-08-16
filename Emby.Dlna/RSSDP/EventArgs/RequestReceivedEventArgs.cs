@@ -17,13 +17,20 @@ namespace Emby.Dlna.Rssdp.EventArgs
         /// <param name="message">Request message.</param>
         /// <param name="receivedFrom">Received from.</param>
         /// <param name="localIPAddress">Interface IP Address upon which it was received.</param>
-        public RequestReceivedEventArgs(string rawData, HttpRequestMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress)
+        /// <param name="simulated">True if the message didn't arrive via JF UDP.</param>
+        public RequestReceivedEventArgs(string rawData, HttpRequestMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress, bool simulated)
         {
             Raw = Encoding.UTF8.GetBytes(rawData);
             Message = message;
             ReceivedFrom = receivedFrom;
             LocalIPAddress = localIPAddress;
+            Simulated = simulated;
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the data arrived through a UDP port or by other means.
+        /// </summary>
+        public bool Simulated { get; }
 
         /// <summary>
         /// Gets the pre-processed raw data.

@@ -306,8 +306,9 @@ namespace Emby.Dlna.Rssdp
         /// <param name="data">The data to process.</param>
         /// <param name="receivedFrom">The remote endpoint.</param>
         /// <param name="localIPAddress">The interface ip upon which it was receieved.</param>
+        /// <param name="simulated">True if the data didn't arrive through JF's UDP ports.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task ProcessMessage(string data, IPEndPoint receivedFrom, IPAddress localIPAddress)
+        public Task ProcessMessage(string data, IPEndPoint receivedFrom, IPAddress localIPAddress, bool simulated)
         {
             if (receivedFrom == null)
             {
@@ -383,7 +384,7 @@ namespace Emby.Dlna.Rssdp
                         return Task.CompletedTask;
                     }
 
-                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress));
+                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress, simulated));
                 }
             }
 
@@ -570,9 +571,8 @@ namespace Emby.Dlna.Rssdp
         /// <param name="e">Information Mono received, but doesn't use.</param>
         private async void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
         {
-            _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
-
-            await ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
+            // _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
+            await ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address, true).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -666,7 +666,7 @@ namespace Emby.Dlna.Rssdp
                                 return;
                             }
 
-                            await ProcessMessage(Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes), farEnd, socket.LocalAddress()).ConfigureAwait(false);
+                            await ProcessMessage(Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes), farEnd, socket.LocalAddress(), false).ConfigureAwait(false);
                         }
 
                         await Task.Delay(10).ConfigureAwait(false);
