@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -148,8 +149,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<int> Deauthorize()
         {
-            var userId = ClaimHelpers.GetUserId(request.HttpContext.User);
-            return _quickConnect.DeleteAllDevices(userId);
+            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
+            if (!userId.HasValue)
+            {
+                return 0;
+            }
+
+            return _quickConnect.DeleteAllDevices(userId.Value);
         }
     }
 }

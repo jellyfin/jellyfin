@@ -1,4 +1,6 @@
-﻿namespace Jellyfin.Api.Models.UserDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Jellyfin.Api.Models.UserDtos
 {
     /// <summary>
     /// The quick connect request body.
