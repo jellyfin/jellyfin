@@ -120,14 +120,10 @@ namespace MediaBrowser.Providers.Studios
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                BufferContent = false
-            });
+            var httpClient = _httpClientFactory.CreateClient();
+            return httpClient.GetAsync(url, cancellationToken);
         }
 
         /// <summary>
@@ -135,7 +131,6 @@ namespace MediaBrowser.Providers.Studios
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="file">The file.</param>
-        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
