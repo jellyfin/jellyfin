@@ -1065,13 +1065,13 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Available countries returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the available countries.</returns>
         [HttpGet("ListingProviders/SchedulesDirect/Countries")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
+        // [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSchedulesDirectCountries()
         {
             var client = _httpClientFactory.CreateClient();
             // https://json.schedulesdirect.org/20141201/available/countries
-            using var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
+            var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
                 .ConfigureAwait(false);
 
             return File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), MediaTypeNames.Application.Json);

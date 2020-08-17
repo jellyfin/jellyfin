@@ -180,9 +180,10 @@ namespace MediaBrowser.Providers.Manager
                 };
             }
 
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             await SaveImage(
                 item,
-                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                stream,
                 contentType,
                 type,
                 imageIndex,
