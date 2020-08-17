@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Emby.Dlna.Rssdp.Devices;
 
 namespace Emby.Dlna.Rssdp
@@ -15,7 +16,7 @@ namespace Emby.Dlna.Rssdp
         /// Gets returns a read only list of devices being published by this instance.
         /// </summary>
         /// <seealso cref="SsdpDevice"/>
-        System.Collections.Generic.IEnumerable<SsdpRootDevice> Devices { get; }
+        IEnumerable<SsdpRootDevice> Devices { get; }
 
         /// <summary>
         /// Adds a device (and it's children) to the list of devices being published by this server, making them discoverable to SSDP clients.
@@ -23,12 +24,5 @@ namespace Emby.Dlna.Rssdp
         /// <param name="device">The <see cref="SsdpRootDevice"/> instance to add.</param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         Task AddDevice(SsdpRootDevice device);
-
-        /// <summary>
-        /// Removes a device (and it's children) from the list of devices being published by this server, making them undiscoverable.
-        /// </summary>
-        /// <param name="device">The <see cref="SsdpRootDevice"/> instance to add.</param>
-        /// <returns>An awaitable <see cref="Task"/>.</returns>
-        Task RemoveDevice(SsdpRootDevice device);
     }
 }

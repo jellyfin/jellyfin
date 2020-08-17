@@ -52,7 +52,6 @@ namespace Emby.Dlna.Rssdp
             };
 
             _socketServer.ResponseReceived += ProcessSearchResponseMessage;
-            Instance = this;
         }
 
         /// <summary>
@@ -60,18 +59,12 @@ namespace Emby.Dlna.Rssdp
         /// <list type="bullet">
         /// <item>An 'alive' notification is received that a device, regardless of whether or not that device is not already in the cache or has
         /// previously raised this event.</item>
-        /// <item>For each item found during a device <see cref="SearchAsync()"/> (cached or not), allowing clients to respond to found devices
+        /// <item>For each item found during a device (cached or not), allowing clients to respond to found devices
         /// before the entire search is complete.</item>
-        /// <item>Only if the notification type matches the <see cref="NotificationFilter"/> property. By default the filter is null, meaning all
-        /// notifications raise events (regardless of ant </item>
         /// </list>
         /// <para>This event may be raised from a background thread, if interacting with UI or other objects with specific thread affinity invoking
         /// to the relevant thread is required.</para>
         /// </summary>
-        /// <seealso cref="NotificationFilter"/>
-        /// <seealso cref="DeviceUnavailable"/>
-        /// <seealso cref="StartListeningForNotifications"/>
-        /// <seealso cref="StopListeningForNotifications"/>
         public event EventHandler<DeviceAvailableEventArgs>? DeviceAvailable;
 
         /// <summary>
@@ -81,23 +74,17 @@ namespace Emby.Dlna.Rssdp
         /// <para>Devices *should* broadcast these types of notifications, but not all devices do and sometimes (in the event of power loss for example)
         /// it might not be possible for a device to do so. You should also implement error handling when trying to contact a device, even if RSSDP is
         /// reporting that device as available.</para>
-        /// <para>This event is only raised if the notification type matches the <see cref="NotificationFilter"/> property. A null or empty string for
-        /// the <see cref="NotificationFilter"/> will be treated as no filter and raise the event for all notifications.</para>
         /// <para>The <see cref="DeviceUnavailableEventArgs.DiscoveredDevice"/> property may contain either a fully complete <see cref="DiscoveredSsdpDevice"/>
         /// instance, or one containing just a USN and NotificationType property. Full information is available if the device was previously discovered and cached,
         /// but only partial information if a byebye notification was received for a previously unseen or expired device.</para>
         /// <para>This event may be raised from a background thread, if interacting with UI or other objects with specific thread affinity invoking to the
         /// relevant thread is required.</para>
         /// </remarks>
-        /// <seealso cref="NotificationFilter"/>
-        /// <seealso cref="DeviceAvailable"/>
-        /// <seealso cref="StartListeningForNotifications"/>
-        /// <seealso cref="StopListeningForNotifications"/>
         public event EventHandler<DeviceUnavailableEventArgs>? DeviceUnavailable;
 
         /// <summary>
         /// Gets or sets a string containing the filter for notifications. Notifications not matching the filter will not raise the
-        /// <see cref="ISsdpDeviceLocator.DeviceAvailable"/> or <see cref="ISsdpDeviceLocator.DeviceUnavailable"/> events.
+        /// <see cref="ISsdpPlayToLocator.DeviceAvailable"/> or <see cref="ISsdpPlayToLocator.DeviceUnavailable"/> events.
         /// </summary>
         /// <remarks>
         /// <para>Device alive/byebye notifications whose NT header does not match this filter value will still be captured and cached internally,
@@ -108,15 +95,9 @@ namespace Emby.Dlna.Rssdp
         /// <example>urn:schemas-upnp-org:device:WANDevice:1</example>
         /// <example>uuid:9F15356CC-95FA-572E-0E99-85B456BD3012</example>
         /// </remarks>
-        /// <seealso cref="ISsdpDeviceLocator.DeviceAvailable"/>
-        /// <seealso cref="ISsdpDeviceLocator.DeviceUnavailable"/>
-        /// <seealso cref="ISsdpDeviceLocator.StartListeningForNotifications"/>
-        /// <seealso cref="ISsdpDeviceLocator.StopListeningForNotifications"/>
         private string[] SsdpFilter { get; set; }
 
-        public static SsdpPlayToLocator? Instance { get; set; }
-
-        public void RestartBroadcastTimer(TimeSpan dueTime, TimeSpan period)
+        public void Start(TimeSpan dueTime, TimeSpan period)
         {
             lock (_timerLock)
             {
@@ -129,67 +110,6 @@ namespace Emby.Dlna.Rssdp
                     _broadcastTimer.Change(dueTime, period);
                 }
             }
-        }
-
-        /// <summary>
-        /// Performs a search for all devices using the default search timeout.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task SearchAsync()
-        {
-            return SearchAsync(_defaultSearchWaitTime);
-        }
-
-        public Task SearchAsync(TimeSpan searchWaitTime)
-        {
-            if (searchWaitTime.TotalSeconds < 0)
-            {
-                throw new ArgumentException("searchWaitTime must be a positive time.");
-            }
-
-            if (searchWaitTime.TotalSeconds > 0 && searchWaitTime.TotalSeconds <= 1)
-            {
-                throw new ArgumentException("searchWaitTime must be zero (if you are not using the result and relying entirely in the events), or greater than one second.");
-            }
-
-            ThrowIfDisposed();
-
-            return BroadcastDiscoverMessage(SearchTimeToMXValue(searchWaitTime));
-        }
-
-        /// <summary>
-        /// Starts listening for broadcast notifications of service availability.
-        /// </summary>
-        /// <remarks>
-        /// <para>When called the system will listen for 'alive' and 'byebye' notifications. This can speed up searching,
-        /// as well as provide dynamic notification of new devices appearing on the network, and previously discovered devices disappearing.</para>
-        /// </remarks>
-        /// <seealso cref="StopListeningForNotifications"/>
-        /// <seealso cref="DeviceAvailable"/>
-        /// <seealso cref="DeviceUnavailable"/>
-        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/>  ty is true.</exception>
-        public void StartListeningForNotifications()
-        {
-            ThrowIfDisposed();
-            _socketServer.RequestReceived += ProcessNotificationMessage;
-            _socketServer.ResponseReceived += ProcessSearchResponseMessage;
-        }
-
-        /// <summary>
-        /// Stops listening for broadcast notifications of service availability.
-        /// </summary>
-        /// <remarks>
-        /// <para>Does nothing if this instance is not already listening for notifications.</para>
-        /// </remarks>
-        /// <seealso cref="StartListeningForNotifications"/>
-        /// <seealso cref="DeviceAvailable"/>
-        /// <seealso cref="DeviceUnavailable"/>
-        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
-        public void StopListeningForNotifications()
-        {
-            ThrowIfDisposed();
-            _socketServer.RequestReceived -= ProcessNotificationMessage;
-            _socketServer.ResponseReceived -= ProcessSearchResponseMessage;
         }
 
         /// <summary>
@@ -211,8 +131,6 @@ namespace Emby.Dlna.Rssdp
                     _socketServer.ResponseReceived -= ProcessSearchResponseMessage;
                     _socketServer.RequestReceived -= ProcessNotificationMessage;
                 }
-
-                Instance = null;
             }
         }
 
@@ -257,12 +175,13 @@ namespace Emby.Dlna.Rssdp
 
         private async void OnBroadcastTimerCallback(object state)
         {
-            StartListeningForNotifications();
+            _socketServer.RequestReceived += ProcessNotificationMessage;
+            _socketServer.ResponseReceived += ProcessSearchResponseMessage;
             RemoveExpiredDevicesFromCache();
 
             try
             {
-                await SearchAsync(_defaultSearchWaitTime).ConfigureAwait(false);
+                await BroadcastDiscoverMessage(SearchTimeToMXValue(_defaultSearchWaitTime)).ConfigureAwait(false);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -426,7 +345,7 @@ namespace Emby.Dlna.Rssdp
 
         private void RemoveExpiredDevicesFromCache()
         {
-            if (this.IsDisposed)
+            if (IsDisposed)
             {
                 return;
             }

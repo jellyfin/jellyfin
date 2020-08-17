@@ -20,10 +20,8 @@ namespace Emby.Dlna.Ssdp
         private readonly ILoggerFactory _loggerFactory;
         private readonly IServerConfigurationManager _config;
         private readonly SocketServer _socketServer;
-
-        private bool _disposed;
-
         private SsdpPlayToLocator? _deviceLocator;
+        private bool _disposed;
 
         public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, SocketServer? socketServer)
         {
@@ -38,6 +36,25 @@ namespace Emby.Dlna.Ssdp
 
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
+
+        /// <summary>
+        /// Starts a device scan.
+        /// </summary>
+        public void Start()
+        {
+            lock (_syncLock)
+            {
+                if (_deviceLocator == null)
+                {
+                    var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
+
+                    _deviceLocator = new SsdpPlayToLocator(_socketServer, _loggerFactory.CreateLogger<SsdpPlayToLocator>(), _networkManager);
+                    _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
+                    _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
+                    _deviceLocator.Start(TimeSpan.FromSeconds(5), interval);
+                }
+            }
+        }
 
         /// <inheritdoc />
         public void Dispose()
@@ -56,31 +73,14 @@ namespace Emby.Dlna.Ssdp
             }
         }
 
-        /// <summary>
-        /// Starts a device scan.
-        /// </summary>
-        public void Start()
-        {
-            lock (_syncLock)
-            {
-                if (DeviceDiscovered?.GetInvocationList().Length > 0 && _deviceLocator == null)
-                {
-                    var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
-
-                    _deviceLocator = new SsdpPlayToLocator(_socketServer, _loggerFactory.CreateLogger<SsdpPlayToLocator>(), _networkManager);
-                    _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
-                    _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
-                    _deviceLocator.RestartBroadcastTimer(TimeSpan.FromSeconds(5), interval);
-                }
-            }
-        }
-
         // Process each found device in the event handler
         private void OnDeviceLocatorDeviceAvailable(object sender, DeviceAvailableEventArgs e)
         {
             var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
 
-            var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
+            var headerDict = originalHeaders == null
+                ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>()
+                : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
 
             var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
 
@@ -99,7 +99,9 @@ namespace Emby.Dlna.Ssdp
         {
             var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
 
-            var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
+            var headerDict = originalHeaders == null
+                ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>()
+                : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
 
             var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
 

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,63 +18,11 @@ namespace Emby.Dlna.Rsddp
         /// <summary>
         /// Event raised when a device becomes available or is found by a search request.
         /// </summary>
-        /// <seealso cref="NotificationFilter"/>
-        /// <seealso cref="DeviceUnavailable"/>
-        /// <seealso cref="StartListeningForNotifications"/>
-        /// <seealso cref="StopListeningForNotifications"/>
         event EventHandler<DeviceAvailableEventArgs>? DeviceAvailable;
 
         /// <summary>
         /// Event raised when a device explicitly notifies of shutdown or a device expires from the cache.
         /// </summary>
-        /// <seeseealso cref="NotificationFilter"/>
-        /// <seealso cref="DeviceAvailable"/>
-        /// <seealso cref="StartListeningForNotifications"/>
-        /// <seealso cref="StopListeningForNotifications"/>
         event EventHandler<DeviceUnavailableEventArgs>? DeviceUnavailable;
-
-        /// <summary>
-        /// Aynchronously performs a search for all devices using the default search timeout, and returns an awaitable task
-        /// that can be used to retrieve the results.
-        /// </summary>
-        /// <returns>A task whose result is an <see cref="IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances,
-        /// representing all found devices.</returns>
-        Task SearchAsync();
-
-        /// <summary>
-        /// Performs a search for all devices using the specified search timeout.
-        /// </summary>
-        /// <param name="searchWaitTime">The amount of time to wait for network responses to the search request.
-        /// Longer values will likely return more devices, but increase search time. A value between 1 and 5 is
-        /// recommended by the UPnP 1.1 specification. Specify TimeSpan.Zero to return only devices already in the cache.</param>
-        /// <returns>A task whose result is an <see cref="IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" />
-        /// instances, representing all found devices.</returns>
-        Task SearchAsync(TimeSpan searchWaitTime);
-
-        /// <summary>
-        /// Starts listening for broadcast notifications of service availability.
-        /// </summary>
-        /// <remarks>
-        /// <para>When called the system will listen for 'alive' and 'byebye' notifications. This can speed up searching, as
-        /// well as provide dynamic notification of new devices appearing on the network, and previously discovered devices disappearing.</para>
-        /// </remarks>
-        /// <seealso cref="StopListeningForNotifications"/>
-        /// <seealso cref="DeviceAvailable"/>
-        /// <seealso cref="DeviceUnavailable"/>
-        /// <seealso cref="NotificationFilter"/>
-        void StartListeningForNotifications();
-
-        /// <summary>
-        /// Stops listening for broadcast notifications of service availability.
-        /// </summary>
-        /// <remarks>
-        /// <para>Does nothing if this instance is not already listening for notifications.</para>
-        /// </remarks>
-        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
-        /// <seealso cref="StartListeningForNotifications"/>
-        /// <seealso cref="DeviceAvailable"/>
-        /// <seealso cref="DeviceUnavailable"/>
-        /// <seealso cref="NotificationFilter"/>
-        void StopListeningForNotifications();
     }
 }
