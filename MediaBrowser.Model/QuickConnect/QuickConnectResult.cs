@@ -23,11 +23,6 @@ namespace MediaBrowser.Model.QuickConnect
         public string? Code { get; set; }
 
         /// <summary>
-        /// Gets or sets the device friendly name.
-        /// </summary>
-        public string? FriendlyName { get; set; }
-
-        /// <summary>
         /// Gets or sets the private access token.
         /// </summary>
         public string? Authentication { get; set; }

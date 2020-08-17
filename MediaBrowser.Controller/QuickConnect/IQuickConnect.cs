@@ -1,6 +1,5 @@
 using System;
 using MediaBrowser.Model.QuickConnect;
-using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.QuickConnect
 {
@@ -15,9 +14,9 @@ namespace MediaBrowser.Controller.QuickConnect
         int CodeLength { get; set; }
 
         /// <summary>
-        /// Gets or sets the string to prefix internal access tokens with.
+        /// Gets or sets the name of internal access tokens.
         /// </summary>
-        string TokenNamePrefix { get; set; }
+        string TokenName { get; set; }
 
         /// <summary>
         /// Gets the current state of quick connect.
@@ -48,9 +47,8 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <summary>
         /// Initiates a new quick connect request.
         /// </summary>
-        /// <param name="friendlyName">Friendly device name to display in the request UI.</param>
         /// <returns>A quick connect result with tokens to proceed or throws an exception if not active.</returns>
-        QuickConnectResult TryConnect(string friendlyName);
+        QuickConnectResult TryConnect();
 
         /// <summary>
         /// Checks the status of an individual request.
@@ -62,10 +60,10 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <summary>
         /// Authorizes a quick connect request to connect as the calling user.
         /// </summary>
-        /// <param name="request">HTTP request object.</param>
+        /// <param name="userId">User id.</param>
         /// <param name="code">Identifying code for the request.</param>
         /// <returns>A boolean indicating if the authorization completed successfully.</returns>
-        bool AuthorizeRequest(HttpRequest request, string code);
+        bool AuthorizeRequest(Guid userId, string code);
 
         /// <summary>
         /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.

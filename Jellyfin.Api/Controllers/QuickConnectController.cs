@@ -1,8 +1,8 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Model.QuickConnect;
@@ -18,22 +18,18 @@ namespace Jellyfin.Api.Controllers
     public class QuickConnectController : BaseJellyfinApiController
     {
         private readonly IQuickConnect _quickConnect;
-        private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QuickConnectController"/> class.
         /// </summary>
         /// <param name="quickConnect">Instance of the <see cref="IQuickConnect"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         public QuickConnectController(
             IQuickConnect quickConnect,
-            IUserManager userManager,
             IAuthorizationContext authContext)
         {
             _quickConnect = quickConnect;
-            _userManager = userManager;
             _authContext = authContext;
         }
 
@@ -53,15 +49,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Initiate a new quick connect request.
         /// </summary>
-        /// <param name="friendlyName">Device friendly name.</param>
         /// <response code="200">Quick connect request successfully created.</response>
         /// <response code="401">Quick connect is not active on this server.</response>
         /// <returns>A <see cref="QuickConnectResult"/> with a secret and code for future use or an error message.</returns>
         [HttpGet("Initiate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QuickConnectResult> Initiate([FromQuery] string? friendlyName)
+        public ActionResult<QuickConnectResult> Initiate()
         {
-            return _quickConnect.TryConnect(friendlyName);
+            return _quickConnect.TryConnect();
         }
 
         /// <summary>
@@ -74,12 +69,11 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Connect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<QuickConnectResult> Connect([FromQuery] string? secret)
+        public ActionResult<QuickConnectResult> Connect([FromQuery, Required] string secret)
         {
             try
             {
-                var result = _quickConnect.CheckRequestStatus(secret);
-                return result;
+                return _quickConnect.CheckRequestStatus(secret);
             }
             catch (ResourceNotFoundException)
             {
@@ -117,9 +111,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Available")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Available([FromQuery] QuickConnectState? status)
+        public ActionResult Available([FromQuery] QuickConnectState status = QuickConnectState.Available)
         {
-            _quickConnect.SetState(status ?? QuickConnectState.Available);
+            _quickConnect.SetState(status);
             return NoContent();
         }
 
@@ -127,16 +121,22 @@ namespace Jellyfin.Api.Controllers
         /// Authorizes a pending quick connect request.
         /// </summary>
         /// <param name="code">Quick connect code to authorize.</param>
+        /// <param name="userId">User id.</param>
         /// <response code="200">Quick connect result authorized successfully.</response>
-        /// <response code="400">Missing quick connect code.</response>
+        /// <response code="403">User is not allowed to authorize quick connect requests.</response>
         /// <returns>Boolean indicating if the authorization was successful.</returns>
         [HttpPost("Authorize")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<bool> Authorize([FromQuery, Required] string? code)
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public ActionResult<bool> Authorize([FromQuery, Required] string code, [FromQuery, Required] Guid userId)
         {
-            return _quickConnect.AuthorizeRequest(Request, code);
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            {
+                return Forbid("User is not allowed to authorize quick connect requests.");
+            }
+
+            return _quickConnect.AuthorizeRequest(userId, code);
         }
 
         /// <summary>

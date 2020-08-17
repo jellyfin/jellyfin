@@ -239,11 +239,9 @@ namespace Jellyfin.Api.Controllers
                     DeviceName = auth.Device,
                 };
 
-                var result = await _sessionManager.AuthenticateQuickConnect(
+                return await _sessionManager.AuthenticateQuickConnect(
                     authRequest,
                     request.Token).ConfigureAwait(false);
-
-                return result;
             }
             catch (SecurityException e)
             {
