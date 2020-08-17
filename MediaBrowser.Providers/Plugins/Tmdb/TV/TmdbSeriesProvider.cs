@@ -415,7 +415,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             using var mainRequestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            mainRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                mainRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var mainResponse = await TmdbMovieProvider.Current.GetMovieDbResponse(mainRequestMessage);
             await using var mainStream = await mainResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var mainResult = await _jsonSerializer.DeserializeFromStreamAsync<SeriesResult>(mainStream).ConfigureAwait(false);
@@ -444,7 +448,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
 
                 using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+                foreach (var header in TmdbUtils.AcceptHeaders)
+                {
+                    mainRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+                }
+
                 using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage);
                 await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 var englishResult = await _jsonSerializer.DeserializeFromStreamAsync<SeriesResult>(stream).ConfigureAwait(false);
@@ -501,7 +509,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 externalSource);
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 

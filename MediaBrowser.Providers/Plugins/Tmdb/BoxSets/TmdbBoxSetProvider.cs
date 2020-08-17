@@ -189,7 +189,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             cancellationToken.ThrowIfCancellationRequested();
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var mainResponse = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage);
             await using var stream = await mainResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var mainResult = await _json.DeserializeFromStreamAsync<CollectionResult>(stream).ConfigureAwait(false);
@@ -209,7 +213,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                     }
 
                     using var langRequestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-                    langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+                    foreach (var header in TmdbUtils.AcceptHeaders)
+                    {
+                        langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+                    }
+
                     await using var langStream = await mainResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
                     mainResult = await _json.DeserializeFromStreamAsync<CollectionResult>(langStream).ConfigureAwait(false);
                 }

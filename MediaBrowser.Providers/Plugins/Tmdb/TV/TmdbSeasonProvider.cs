@@ -213,7 +213,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             return await _jsonSerializer.DeserializeFromStreamAsync<SeasonResult>(stream).ConfigureAwait(false);

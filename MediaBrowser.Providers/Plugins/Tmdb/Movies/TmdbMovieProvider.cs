@@ -146,7 +146,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             }
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, string.Format(CultureInfo.InvariantCulture, TmdbConfigUrl, TmdbUtils.ApiKey));
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var response = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(stream).ConfigureAwait(false);
@@ -325,7 +329,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var mainResponse = await GetMovieDbResponse(requestMessage);
             if (mainResponse.StatusCode == HttpStatusCode.NotFound)
             {
@@ -354,7 +362,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
 
                 using var langRequestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-                langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+                foreach (var header in TmdbUtils.AcceptHeaders)
+                {
+                    langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+                }
+
                 using var langResponse = await GetMovieDbResponse(langRequestMessage);
 
                 await using var langStream = await langResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);

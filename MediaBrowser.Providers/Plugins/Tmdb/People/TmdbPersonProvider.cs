@@ -98,7 +98,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), TmdbUtils.ApiKey);
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
@@ -225,7 +229,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", TmdbUtils.ApiKey, id);
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             await using var fs = new FileStream(dataFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);

@@ -170,7 +170,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, type);
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var searchResults = await _json.DeserializeFromStreamAsync<TmdbSearchResult<MovieResult>>(stream).ConfigureAwait(false);
@@ -209,7 +213,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, "tv");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(TmdbUtils.AcceptHeader));
+            foreach (var header in TmdbUtils.AcceptHeaders)
+            {
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+            }
+
             using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var searchResults = await _json.DeserializeFromStreamAsync<TmdbSearchResult<TvResult>>(stream).ConfigureAwait(false);
