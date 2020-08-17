@@ -26,7 +26,8 @@ namespace Emby.Dlna.Rssdp.EventArgs
         public IPAddress LocalIpAddress { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
+        /// Gets a value indicating whether the device was discovered due to an alive notification, or a search and was not already in the cache.
+        /// Returns false if the item came from the cache but matched the current search request.
         /// </summary>
         public bool IsNewlyDiscovered { get; }
 

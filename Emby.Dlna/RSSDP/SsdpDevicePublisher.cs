@@ -14,6 +14,7 @@ using Emby.Dlna.Rssdp.EventArgs;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using Microsoft.Extensions.Logging;
+using Mono.Nat;
 
 namespace Emby.Dlna.Rssdp
 {
@@ -22,13 +23,10 @@ namespace Emby.Dlna.Rssdp
     /// </summary>
     public class SsdpDevicePublisher : SsdpInfrastructure, ISsdpDevicePublisher
     {
-        private const string SsdpUserAgent = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
         private const string PnpRootDevice = "pnp:rootdevice";
         private const string UpnpRootDevice = "upnp:rootdevice";
 
         private readonly ILogger<SsdpDevicePublisher> _logger;
-        private readonly string _server;
-        private readonly string _systemId;
         private readonly IList<SsdpRootDevice> _devices;
         private readonly IReadOnlyList<SsdpRootDevice> _readOnlyDevices;
         private readonly INetworkManager _networkManager;
@@ -39,7 +37,6 @@ namespace Emby.Dlna.Rssdp
 
         public SsdpDevicePublisher(
             SocketServer? socketServer,
-            IServerApplicationHost applicationHost,
             ILoggerFactory loggerFactory,
             INetworkManager networkManager,
             int aliveMessageInterval)
@@ -47,20 +44,13 @@ namespace Emby.Dlna.Rssdp
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
             _logger = loggerFactory.CreateLogger<SsdpDevicePublisher>();
-            _systemId = applicationHost?.SystemId ?? throw new ArgumentNullException(nameof(applicationHost));
-
-            _server = MediaBrowser.Common.System.OperatingSystem.Name + "/" +
-                Environment.OSVersion.VersionString + " UPnP/1.0 RSSDP/1.0";
-
             _devices = new List<SsdpRootDevice>();
             _readOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_devices);
             _recentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _random = new Random();
-
             SupportPnpRootDevice = true;
-
-            _socketServer.RequestReceived += RequestReceived;
             AliveMessageInterval = aliveMessageInterval;
+            _socketServer.RequestReceived += RequestReceived;
         }
 
         public int AliveMessageInterval { get; set; }
@@ -162,9 +152,7 @@ namespace Emby.Dlna.Rssdp
                 try
                 {
                     _logger.LogInformation("Device Added {0}", Expand(device));
-
                     await SendAliveNotifications(device, true, true).ConfigureAwait(false);
-
                     StartBroadcastingAliveMessages(TimeSpan.FromSeconds(AliveMessageInterval));
                 }
                 catch (Exception ex)
@@ -206,7 +194,7 @@ namespace Emby.Dlna.Rssdp
         }
 
         /// <summary>
-        /// Stops listening for requests, stops sending periodic broadcasts, disposes all internal resources.
+        /// Stops listening for requests, stops sending periodic broadcasts, disposes all internal relocalIPs.
         /// </summary>
         /// <param name="disposing">Is disposing.</param>
         protected override void Dispose(bool disposing)
@@ -214,9 +202,7 @@ namespace Emby.Dlna.Rssdp
             if (disposing)
             {
                 DisposeRebroadcastTimer();
-
                 _socketServer.RequestReceived -= RequestReceived;
-
                 var tasks = Devices.ToList().Select(RemoveDevice).ToArray();
                 Task.WaitAll(tasks);
             }
@@ -227,54 +213,20 @@ namespace Emby.Dlna.Rssdp
             return $"{udn}::{fullDeviceType}";
         }
 
-        private async Task ProcessSearchRequest(string mx, string searchTarget, IPAddress source, IPEndPoint destination)
+        private async Task ProcessSearchRequest(int maxWaitInterval, string searchTarget, IPAddress localIP, IPEndPoint receivedFrom)
         {
-            if (string.IsNullOrEmpty(searchTarget))
-            {
-                _logger.LogWarning("Invalid search request received From {0}, Target is null/empty.", destination);
-                return;
-            }
-
-            _logger.LogDebug("Search Request Received From {0}, Target = {1}", destination.ToString(), searchTarget);
-
-            if (IsDuplicateSearchRequest(searchTarget, destination))
-            {
-                // WriteTrace("Search Request is Duplicate, ignoring.");
-                return;
-            }
-
-            if (searchTarget.StartsWith("ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:", StringComparison.OrdinalIgnoreCase))
-            {
-                // Mono.Nat.
-            }
-
-            // Wait on random interval up to MX, as per SSDP spec.
-            // Also, as per UPnP 1.1/SSDP spec ignore missing/bank MX header. If over 120, assume random value between 0 and 120.
-            // Using 16 as minimum as that's often the minimum system clock frequency anyway.
-            if (string.IsNullOrEmpty(mx))
-            {
-                // Windows Explorer is poorly behaved and doesn't supply an MX header value.
-                mx = "1";
-            }
-
-            if (!int.TryParse(mx, out int maxWaitInterval) || maxWaitInterval <= 0)
-            {
-                return;
-            }
-
             if (maxWaitInterval > 120)
             {
                 maxWaitInterval = _random.Next(0, 120);
             }
 
             // Do not block synchronously as that may tie up a threadpool thread for several seconds.
-
             _ = Task.Delay(_random.Next(16, maxWaitInterval * 1000));
 
-            await ProcessSearchRequestAsync(searchTarget, source, destination).ConfigureAwait(false);
+            await ProcessSearchRequestAsync(searchTarget, localIP, receivedFrom).ConfigureAwait(false);
         }
 
-        private async Task ProcessSearchRequestAsync(string searchTarget, IPAddress source, IPEndPoint destination )
+        private async Task ProcessSearchRequestAsync(string searchTarget, IPAddress localIP, IPEndPoint receivedFrom)
         {
             // Copying devices to local array here to avoid threading issues/enumerator exceptions.
             IEnumerable<SsdpDevice>? devices = null;
@@ -285,7 +237,7 @@ namespace Emby.Dlna.Rssdp
                     devices = Flatten<SsdpDevice>(_devices).ToArray();
                 }
                 else if (string.Equals(UpnpRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) ||
-                    (this.SupportPnpRootDevice && string.Equals(PnpRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase)))
+                    (SupportPnpRootDevice && string.Equals(PnpRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase)))
                 {
                     devices = _devices.ToArray();
                 }
@@ -312,10 +264,10 @@ namespace Emby.Dlna.Rssdp
                     var rt = device.ToRootDevice();
 
                     // Response is sent only when the device in the same subnet, or the are private address on the local device.
-                    if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, destination.Address) ||
-                        _networkManager.OnSameMachine(rt.Address, destination.Address))
+                    if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, receivedFrom.Address) ||
+                        _networkManager.OnSameMachine(rt.Address, receivedFrom.Address))
                     {
-                        await SendDeviceSearchResponsesAsync(device, source, destination).ConfigureAwait(false);
+                        await SendDeviceSearchResponsesAsync(device, localIP, receivedFrom).ConfigureAwait(false);
                     }
                 }
             }
@@ -325,21 +277,21 @@ namespace Emby.Dlna.Rssdp
             }
         }
 
-        private async Task SendDeviceSearchResponsesAsync(SsdpDevice device, IPAddress source, IPEndPoint destination)
+        private async Task SendDeviceSearchResponsesAsync(SsdpDevice device, IPAddress localIP, IPEndPoint receivedFrom)
         {
             bool isRootDevice = (device as SsdpRootDevice) != null;
             if (isRootDevice)
             {
-                await SendSearchResponseAsync(UpnpRootDevice, device, GetUsn(device.Udn, UpnpRootDevice), destination, source).ConfigureAwait(false);
+                await SendSearchResponseAsync(UpnpRootDevice, device, GetUsn(device.Udn, UpnpRootDevice), receivedFrom, localIP).ConfigureAwait(false);
 
-                if (this.SupportPnpRootDevice)
+                if (SupportPnpRootDevice)
                 {
-                    await SendSearchResponseAsync(PnpRootDevice, device, GetUsn(device.Udn, PnpRootDevice), destination, source).ConfigureAwait(false);
+                    await SendSearchResponseAsync(PnpRootDevice, device, GetUsn(device.Udn, PnpRootDevice), receivedFrom, localIP).ConfigureAwait(false);
                 }
             }
 
-            await SendSearchResponseAsync(device.Udn, device, device.Udn, destination, source).ConfigureAwait(false);
-            await SendSearchResponseAsync(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), destination, source).ConfigureAwait(false);
+            await SendSearchResponseAsync(device.Udn, device, device.Udn, receivedFrom, localIP).ConfigureAwait(false);
+            await SendSearchResponseAsync(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), receivedFrom, localIP).ConfigureAwait(false);
         }
 
         private async Task SendSearchResponseAsync(string searchTarget, SsdpDevice device, string uniqueServiceName, IPEndPoint endPoint, IPAddress localIP)
@@ -352,7 +304,7 @@ namespace Emby.Dlna.Rssdp
                 ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
                 ["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds,
                 ["ST"] = searchTarget,
-                ["SERVER"] = _server,
+                ["SERVER"] = _networkManager.SsdpServer,
                 ["USN"] = uniqueServiceName,
                 ["LOCATION"] = rootDevice.Location.ToString()
             };
@@ -360,7 +312,7 @@ namespace Emby.Dlna.Rssdp
             var message = BuildMessage("HTTP/1.1 200 OK", values);
 
             await _socketServer.SendMessageAsync(System.Text.Encoding.UTF8.GetBytes(message), localIP, endPoint).ConfigureAwait(false);
-            _logger.LogInformation("Sent search response to {0} : {1}", endPoint, device);
+            _logger.LogDebug("-> RESPONSE: {0} : {1}", endPoint, device);
         }
 
         private bool IsDuplicateSearchRequest(string searchTarget, EndPoint endPoint)
@@ -418,7 +370,7 @@ namespace Emby.Dlna.Rssdp
                     return;
                 }
 
-                _logger.LogInformation("Begin sending alive notifications for all Devices");
+                // _logger.LogInformation("Begin sending alive notifications for all Devices");
 
                 SsdpRootDevice[] devices;
                 lock (_devices)
@@ -438,7 +390,12 @@ namespace Emby.Dlna.Rssdp
                     first = false;
                 }
 
-                _logger.LogInformation("Completed transmitting alive notifications for all Devices");
+                if (first)
+                {
+                    _logger.LogWarning("Nothing to publish.");
+                }
+
+                // _logger.LogInformation("Completed transmitting alive notifications for all Devices");
             }
             catch (ObjectDisposedException ex)
             {
@@ -483,19 +440,18 @@ namespace Emby.Dlna.Rssdp
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    // If needed later for non-server devices, these headers will need to be dynamic
                     ["HOST"] = multicastAddresses[a],
                     ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.CurrentCulture),
                     ["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds,
                     ["LOCATION"] = rootDevice.Location.ToString(),
-                    ["SERVER"] = _server,
+                    ["SERVER"] = _networkManager.SsdpServer,
                     ["NTS"] = "ssdp:alive",
                     ["NT"] = notificationType,
                     ["USN"] = uniqueServiceName
                 };
 
                 var message = BuildMessage("NOTIFY * HTTP / 1.1", values);
-                _logger.LogDebug("Sending alive notification on {0} {1}", multicastAddresses[a], uniqueServiceName);
+                _logger.LogDebug("-> SSDP:ALIVE : {1} - {2}", multicastAddresses[a], uniqueServiceName);
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
             }
 
@@ -541,7 +497,7 @@ namespace Emby.Dlna.Rssdp
                 {
                     ["HOST"] = multicastAddresses[a],
                     ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
-                    ["SERVER"] = _server,
+                    ["SERVER"] = _networkManager.SsdpServer,
                     ["NTS"] = "ssdp:byebye",
                     ["NT"] = notificationType,
                     ["USN"] = uniqueServiceName
@@ -553,7 +509,7 @@ namespace Emby.Dlna.Rssdp
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
             }
 
-            _logger.LogInformation("Sent byebye notification : {0}", device);
+            _logger.LogInformation("-> SSDP:BYEBYE : {0}", device);
 
             return Task.WhenAll(tasks);
         }
@@ -593,17 +549,50 @@ namespace Emby.Dlna.Rssdp
 
             if (string.Equals(e.Message.Method.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
-                // Only process requests that don't originate from ourselves.
+                var searchTarget = GetFirstHeaderValue("ST", e.Message.Headers);
 
-                string agent = GetFirstHeaderValue("USER-AGENT", e.Message.Headers);
-                if (string.Equals(agent, SsdpUserAgent + "\\" + _systemId, StringComparison.OrdinalIgnoreCase)
-                    && _networkManager.IsValidInterfaceAddress(e.LocalIPAddress))
+                if (searchTarget.StartsWith("ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:", StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogDebug("Ignoring our own broadcast.");
+                    // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
+                    if (_networkManager.IsuPnPActive && !e.Simulated)
+                    {
+                        // _logger.LogDebug("Passing notify message to Mono.Nat.");
+                        NatUtility.ParseMessage(NatProtocol.Upnp, e.LocalIPAddress, e.Raw, e.ReceivedFrom);
+                    }
+
                     return;
                 }
 
-                _ = ProcessSearchRequest(GetFirstHeaderValue("MX", e.Message.Headers), GetFirstHeaderValue("ST", e.Message.Headers), e.LocalIPAddress, e.ReceivedFrom);
+                if (string.IsNullOrEmpty(searchTarget))
+                {
+                    _logger.LogWarning("Invalid search request received From {0}, Target is null/empty.", e.ReceivedFrom);
+                    return;
+                }
+
+                if (IsDuplicateSearchRequest(searchTarget, e.ReceivedFrom))
+                {
+                    // WriteTrace("Search Request is Duplicate, ignoring.");
+                    return;
+                }
+
+                _logger.LogDebug("<- M-SEARCH: {0} : {1}", e.ReceivedFrom.Address, searchTarget);
+
+                string mx = GetFirstHeaderValue("MX", e.Message.Headers);
+                // Wait on random interval up to MX, as per SSDP spec.
+                // Also, as per UPnP 1.1/SSDP spec ignore missing/bank MX header. If over 120, assume random value between 0 and 120.
+                // Using 16 as minimum as that's often the minimum system clock frequency anyway.
+                if (string.IsNullOrEmpty(mx))
+                {
+                    // Windows Explorer is poorly behaved and doesn't supply an MX header value.
+                    mx = "1";
+                }
+
+                if (!int.TryParse(mx, out int maxWaitInterval) || maxWaitInterval <= 0)
+                {
+                    return;
+                }
+
+                _ = ProcessSearchRequest(maxWaitInterval, searchTarget, e.LocalIPAddress, e.ReceivedFrom);
             }
         }
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -16,6 +17,12 @@ namespace Emby.Dlna.Rssdp.Parsers
     public abstract class HttpParserBase<T>
         where T : new()
     {
+        protected static readonly string[] ContentHeaderNames = new string[]
+        {
+            "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length",
+            "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
+        };
+
         private readonly string[] _lineTerminators = new string[] { "\r\n", "\n" };
         private readonly char[] _separatorCharacters = new char[] { ',', ';' };
 
@@ -37,7 +44,7 @@ namespace Emby.Dlna.Rssdp.Parsers
         /// <param name="headers">A reference to the <see cref="HttpHeaders"/> collection for the
         /// <paramref name="message"/> object.</param>
         /// <param name="data">A string containing the data to be parsed.</param>
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
+        /// [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
         protected virtual void Parse(T message, HttpHeaders headers, string data)
         {
             if (message == null)
@@ -84,7 +91,10 @@ namespace Emby.Dlna.Rssdp.Parsers
         /// </summary>
         /// <param name="headerName">A string containing the name of the header to return the type of.</param>
         /// <returns>Result of the operation.</returns>
-        protected abstract bool IsContentHeader(string headerName);
+        protected bool IsContentHeader(string headerName)
+        {
+            return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Parses the HTTP version text from an HTTP request or response status line and returns a
@@ -171,7 +181,8 @@ namespace Emby.Dlna.Rssdp.Parsers
             }
             else
             {
-                headersToAddTo.TryAddWithoutValidation(headerName, values.First());
+                // Capitalise header to help out with some slightly non-standard PLAYTO players.
+                headersToAddTo.TryAddWithoutValidation(headerName.ToUpper(CultureInfo.InvariantCulture), values.First());
             }
         }
 

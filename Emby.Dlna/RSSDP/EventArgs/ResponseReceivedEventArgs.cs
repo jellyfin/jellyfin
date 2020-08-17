@@ -15,12 +15,18 @@ namespace Emby.Dlna.Rssdp.EventArgs
         /// <param name="message">Response message.</param>
         /// <param name="receivedFrom">Received from.</param>
         /// <param name="localIPAddress">Interface IP Address upon which it was received.</param>
-        public ResponseReceivedEventArgs(HttpResponseMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress)
+        public ResponseReceivedEventArgs(HttpResponseMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress, bool simulated)
         {
             Message = message;
             ReceivedFrom = receivedFrom;
             LocalIPAddress = localIPAddress;
+            Simulated = simulated;
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the data arrived through a UDP port or by other means.
+        /// </summary>
+        public bool Simulated { get; }
 
         /// <summary>
         /// Gets the interface ip upon which the message was received.

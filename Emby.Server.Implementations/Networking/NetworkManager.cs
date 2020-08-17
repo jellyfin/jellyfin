@@ -178,6 +178,16 @@ namespace Emby.Server.Implementations.Networking
             (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
 
         /// <summary>
+        /// Gets the SsdpServer name used in advertisements.
+        /// </summary>
+        public string SsdpServer => MediaBrowser.Common.System.OperatingSystem.Name + "/" + Environment.OSVersion.VersionString + " UPnP/1.0 RSSDP/1.0";
+
+        /// <summary>
+        /// Gets the unqiue user agent used in ssdp communications.
+        /// </summary>
+        public string SsdpUserAgent => "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2" + "\\" + _appHost.SystemId;
+
+        /// <summary>
         /// Parses a string and returns a range value if possible.
         /// </summary>
         /// <param name="rangeStr">String to parse.</param>
@@ -442,6 +452,18 @@ namespace Emby.Server.Implementations.Networking
             lock (_intLock)
             {
                 return _macAddresses.ToList();
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool IsGatewayInterface(object addressObj)
+        {
+            var address = (addressObj is IPAddress addressIP) ? addressIP :
+                (addressObj is IPObject addressIPObj) ? addressIPObj.Address : IPAddress.None;
+
+            lock (_intLock)
+            {
+                return _internalInterfaces.Where(i => i.Address.Equals(address) && (i.Tag < 0)).Any();
             }
         }
 

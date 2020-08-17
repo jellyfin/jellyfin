@@ -50,6 +50,8 @@ namespace Emby.Dlna.Main
         private readonly ILoggerFactory _loggerFactory;
         private PlayToManager? _manager;
         private SsdpDevicePublisher? _publisher;
+        private SocketServer? _socketManager;
+        private IDeviceDiscovery? _deviceDiscovery;
         private bool _isDisposed;
 
         public DlnaEntryPoint(
@@ -99,15 +101,11 @@ namespace Emby.Dlna.Main
 
         public bool EnablePlayTo => _configurationManager.GetDlnaConfiguration().EnablePlayTo;
 
-        public SocketServer? SocketManager { get; private set; }
-
         public IContentDirectory? ContentDirectory { get; private set; }
 
         public IConnectionManager? ConnectionManager { get; private set; }
 
         public IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
-
-        public IDeviceDiscovery? DeviceDiscovery { get; private set; }
 
         public async Task RunAsync()
         {
@@ -144,18 +142,25 @@ namespace Emby.Dlna.Main
             if (disposing)
             {
                 DisposeDevicePublisher();
-                DisposePlayToManager();
 
-                DeviceDiscovery?.Dispose();
-                DeviceDiscovery = null;
-
-                SocketManager?.Dispose();
-                SocketManager = null;
+                lock (_syncLock)
+                {
+                    _manager?.Dispose();
+                    _manager = null;
+                }
 
                 ContentDirectory = null;
                 ConnectionManager = null;
                 MediaReceiverRegistrar = null;
                 Instance = null;
+
+                // This object will actually only dispose if no longer in use.
+                _deviceDiscovery?.Dispose();
+                _deviceDiscovery = null;
+
+                // This object will actually only dispose if no longer in use.
+                _socketManager?.Dispose();
+                _socketManager = null;
             }
 
             _isDisposed = true;
@@ -182,8 +187,15 @@ namespace Emby.Dlna.Main
 
             var options = _configurationManager.GetDlnaConfiguration();
 
+            if (options.EnablePlayTo || options.EnableServer)
+            {
+                // Start SSDP communication handlers.
+                _socketManager = _socketManager = SocketServer.Instance ?? new SocketServer(_networkManager, _configurationManager, _loggerFactory);
+            }
+
             if (options.EnableServer)
             {
+                // Create SSDP server.
                 if (ContentDirectory == null)
                 {
                     ContentDirectory = new DlnaContentDirectory(
@@ -219,29 +231,10 @@ namespace Emby.Dlna.Main
                         _configurationManager);
                 }
 
-                // Start device SSDP
-                SocketManager = SocketServer.Instance;
-                if (SocketManager == null)
-                {
-                    SocketManager = new SocketServer(_networkManager, _configurationManager, _loggerFactory);
-                }
-
-                if (DeviceDiscovery == null)
-                {
-                    DeviceDiscovery = new DeviceDiscovery(
-                        _configurationManager,
-                        _loggerFactory,
-                        _networkManager,
-                        _appHost,
-                        SocketManager);
-                }
-
-                DeviceDiscovery.Start();
-
                 // This is true on startup and at network change.
                 if (_publisher == null)
                 {
-                    _publisher = new SsdpDevicePublisher(SocketManager, _appHost, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds)
+                    _publisher = new SsdpDevicePublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds)
                     {
                         SupportPnpRootDevice = false
                     };
@@ -252,11 +245,14 @@ namespace Emby.Dlna.Main
             else
             {
                 // Disable the server
-                DeviceDiscovery?.Stop();
-                DeviceDiscovery = null;
 
-                SocketManager?.Dispose();
-                SocketManager = null;
+                // This object will actually only dispose if no longer in use.
+                _deviceDiscovery?.Dispose();
+                _deviceDiscovery = null;
+
+                // This object will actually only dispose if no longer in use.
+                _socketManager?.Dispose();
+                _socketManager = null;
 
                 DisposeDevicePublisher();
 
@@ -267,11 +263,49 @@ namespace Emby.Dlna.Main
 
             if (options.EnablePlayTo)
             {
-                StartPlayToManager();
+                if (_deviceDiscovery == null)
+                {
+                    _deviceDiscovery = new DeviceDiscovery(_configurationManager, _loggerFactory, _networkManager, _socketManager);
+                }
+
+                lock (_syncLock)
+                {
+                    if (_manager == null)
+                    {
+                        try
+                        {
+                            _manager = new PlayToManager(
+                                _logger,
+                                _sessionManager,
+                                _libraryManager,
+                                _userManager,
+                                _dlnaManager,
+                                _appHost,
+                                _imageProcessor,
+                                _deviceDiscovery,
+                                _httpClient,
+                                _configurationManager,
+                                _userDataManager,
+                                _localization,
+                                _mediaSourceManager,
+                                _mediaEncoder);
+
+                            _manager.Start();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error starting PlayTo manager");
+                        }
+                    }
+                }
             }
             else
             {
-                DisposePlayToManager();
+                lock (_syncLock)
+                {
+                    _manager?.Dispose();
+                    _manager = null;
+                }
             }
         }
 
@@ -348,61 +382,6 @@ namespace Emby.Dlna.Main
             device.DeviceTypeNamespace = deviceTypeNamespace;
             device.DeviceClass = serviceParts[1];
             device.DeviceType = serviceParts[2];
-        }
-
-        private void StartPlayToManager()
-        {
-            lock (_syncLock)
-            {
-                if (_manager == null)
-                {
-                    try
-                    {
-                        _manager = new PlayToManager(
-                            _logger,
-                            _sessionManager,
-                            _libraryManager,
-                            _userManager,
-                            _dlnaManager,
-                            _appHost,
-                            _imageProcessor,
-                            DeviceDiscovery,
-                            _httpClient,
-                            _configurationManager,
-                            _userDataManager,
-                            _localization,
-                            _mediaSourceManager,
-                            _mediaEncoder);
-
-                        _manager.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error starting PlayTo manager");
-                    }
-                }
-            }
-        }
-
-        private void DisposePlayToManager()
-        {
-            lock (_syncLock)
-            {
-                if (_manager != null)
-                {
-                    try
-                    {
-                        _logger.LogInformation("Disposing PlayToManager");
-                        _manager.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error disposing PlayTo manager");
-                    }
-
-                    _manager = null;
-                }
-            }
         }
     }
 }

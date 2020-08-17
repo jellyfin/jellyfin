@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -717,7 +717,7 @@ namespace Jellyfin.Api.Controllers
 
             if (remoteClientMaxBitrate > 0)
             {
-                var isInLocalNetwork = _networkManager.IsInLocalNetwork(Request.HttpContext.Connection.RemoteIpAddress.ToString());
+                var isInLocalNetwork = _networkManager.IsInLocalNetwork(Request.HttpContext.Connection.RemoteIpAddress);
 
                 _logger.LogInformation("RemoteClientBitrateLimit: {0}, RemoteIp: {1}, IsInLocalNetwork: {2}", remoteClientMaxBitrate, Request.HttpContext.Connection.RemoteIpAddress.ToString(), isInLocalNetwork);
                 if (!isInLocalNetwork)

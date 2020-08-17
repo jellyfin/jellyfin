@@ -24,8 +24,6 @@ namespace Emby.Dlna.Rssdp
     /// </summary>
     public class SsdpDeviceLocator : SsdpInfrastructure, ISsdpDeviceLocator
     {
-        private const string SsdpUserAgent = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-
         private readonly List<DiscoveredSsdpDevice> _devices;
         private readonly SocketServer _socketServer;
         private readonly object _timerLock;
@@ -33,19 +31,24 @@ namespace Emby.Dlna.Rssdp
         private readonly INetworkManager _networkManager;
         private readonly TimeSpan _defaultSearchWaitTime;
         private readonly TimeSpan _oneSecond;
-        private readonly string _systemId;
         private Timer? _broadcastTimer;
 
-        public SsdpDeviceLocator(SocketServer socketServer, ILogger<SsdpDeviceLocator> logger, INetworkManager networkManager, string systemId)
+        public SsdpDeviceLocator(SocketServer socketServer, ILogger<SsdpDeviceLocator> logger, INetworkManager networkManager)
         {
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _defaultSearchWaitTime = TimeSpan.FromSeconds(4);
             _oneSecond = TimeSpan.FromSeconds(1);
-            _systemId = systemId;
             _timerLock = new object();
             _devices = new List<DiscoveredSsdpDevice>();
+
+            SsdpFilter = new string[]
+            {
+                "urn:schemas-upnp-org:device:MediaServer:",
+                "urn:schemas-upnp-org:device:MediaRenderer:",
+                "urn:schemas-upnp-org:device:MediaPlayer:"
+            };
 
             _socketServer.ResponseReceived += ProcessSearchResponseMessage;
         }
@@ -107,7 +110,7 @@ namespace Emby.Dlna.Rssdp
         /// <seealso cref="ISsdpDeviceLocator.DeviceUnavailable"/>
         /// <seealso cref="ISsdpDeviceLocator.StartListeningForNotifications"/>
         /// <seealso cref="ISsdpDeviceLocator.StopListeningForNotifications"/>
-        public string? NotificationFilter { get; set; }
+        private string[] SsdpFilter { get; set; }
 
         public void RestartBroadcastTimer(TimeSpan dueTime, TimeSpan period)
         {
@@ -212,7 +215,7 @@ namespace Emby.Dlna.Rssdp
                 return TimeSpan.Zero;
             }
 
-            return (TimeSpan)(headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero);
+            return headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero;
         }
 
         private static DiscoveredSsdpDevice? FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
@@ -279,21 +282,19 @@ namespace Emby.Dlna.Rssdp
                 }
             }
 
-            if (!NotificationTypeMatchesFilter(device))
-            {
-                return isNewDevice;
-            }
-
             DeviceAvailable?.Invoke(this, new DeviceAvailableEventArgs(device, isNewDevice, localIpAddress));
 
             return isNewDevice;
         }
 
-        private bool NotificationTypeMatchesFilter(DiscoveredSsdpDevice device)
+        /// <summary>
+        /// Returns true if the device type passed is one that we want.
+        /// </summary>
+        /// <param name="device">Device to check.</param>
+        /// <returns>Result of the operation.</returns>
+        private bool SsdpTypeMatchesFilter(DiscoveredSsdpDevice device)
         {
-            return string.IsNullOrEmpty(this.NotificationFilter)
-                || this.NotificationFilter == "ssdp:all"
-                || device.NotificationType == this.NotificationFilter;
+            return SsdpFilter.Where(m => m.StartsWith(device.NotificationType, StringComparison.OrdinalIgnoreCase)).Any();
         }
 
         private Task BroadcastDiscoverMessage(TimeSpan mxValue)
@@ -307,8 +308,8 @@ namespace Emby.Dlna.Rssdp
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["HOST"] = multicastAddresses[a] + ":1900",
-                    ["USER-AGENT"] = SsdpUserAgent + "\\" + _systemId,
-                    ["MAN"] = "ssdp:discover",
+                    ["USER-AGENT"] = _networkManager.SsdpUserAgent,
+                    ["MAN"] = "\"ssdp:discover\"",
                     ["ST"] = "ssdp:all",
                     ["MX"] = mxValue.Seconds.ToString(CultureInfo.CurrentCulture)
                 };
@@ -318,13 +319,13 @@ namespace Emby.Dlna.Rssdp
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, a == 0 ? IPAddress.Any : IPAddress.IPv6Any);
             }
 
+            _logger.LogDebug("-> M-SEARCH");
             return Task.WhenAll(tasks);
         }
 
         private void ProcessSearchResponseMessage(object sender, ResponseReceivedEventArgs e)
         {
             HttpResponseMessage message = e.Message;
-            IPAddress localIpAddress = e.LocalIPAddress;
 
             if (!message.IsSuccessStatusCode)
             {
@@ -342,9 +343,15 @@ namespace Emby.Dlna.Rssdp
                     GetFirstHeaderValue("USN", message.Headers),
                     message.Headers);
 
-                if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
+                if (!SsdpTypeMatchesFilter(device))
                 {
-                    _logger.LogDebug("Found DLNA Device : {0} {1}", device.DescriptionLocation, localIpAddress);
+                    // Filtered type - not interested.
+                    return;
+                }
+
+                if (AddOrUpdateDiscoveredDevice(device, e.LocalIPAddress))
+                {
+                    _logger.LogDebug("Found DLNA Device : {0} {1}", device.DescriptionLocation, e.LocalIPAddress);
                 }
             }
         }
@@ -366,60 +373,41 @@ namespace Emby.Dlna.Rssdp
                 return;
             }
 
+            var device = new DiscoveredSsdpDevice(
+                   DateTimeOffset.Now,
+                   CacheAgeFromHeader(message.Headers.CacheControl),
+                   GetFirstHeaderUriValue("Location", message.Headers),
+                   GetFirstHeaderValue("NT", message.Headers),
+                   GetFirstHeaderValue("USN", message.Headers),
+                   message.Headers);
+
+            if (!SsdpTypeMatchesFilter(device))
+            {
+                // Filtered type - not interested.
+                return;
+            }
+
             var notificationType = GetFirstHeaderValue("NTS", message.Headers);
-            if (string.Equals(notificationType, "ssdp:alive", StringComparison.OrdinalIgnoreCase))
-            {
-                ProcessAliveNotification(message, localIpAddress);
-            }
-            else if (string.Equals(notificationType, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
-            {
-                ProcessByeByeNotification(message);
-            }
-        }
 
-        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress localIpAddress)
-        {
-            var location = GetFirstHeaderUriValue("Location", message.Headers);
-            if (location != null)
+            if (device.DescriptionLocation != null && string.Equals(notificationType, "ssdp:alive", StringComparison.OrdinalIgnoreCase))
             {
-                var device = new DiscoveredSsdpDevice(
-                    DateTimeOffset.Now,
-                    CacheAgeFromHeader(message.Headers.CacheControl),
-                    location,
-                    GetFirstHeaderValue("NT", message.Headers),
-                    GetFirstHeaderValue("USN", message.Headers),
-                    message.Headers);
-
+                // Process Alive Notification.
                 if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                 {
-                    _logger.LogDebug("Alive notification received: {0} ", device.DescriptionLocation);
+                    _logger.LogDebug("<- ALIVE : {0} ", device.DescriptionLocation);
                 }
+
+                return;
             }
-        }
 
-        private void ProcessByeByeNotification(HttpRequestMessage message)
-        {
-            var notficationType = GetFirstHeaderValue("NT", message.Headers);
-            if (!string.IsNullOrEmpty(notficationType))
+            if (!string.IsNullOrEmpty(device.NotificationType) && string.Equals(notificationType, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
             {
-                var usn = GetFirstHeaderValue("USN", message.Headers);
-
-                if (!DeviceDied(usn, false))
+                // Process ByeBye Notification.
+                if (!DeviceDied(device.Usn, false))
                 {
-                    var deadDevice = new DiscoveredSsdpDevice(
-                        DateTime.UtcNow,
-                        TimeSpan.Zero,
-                        null,
-                        GetFirstHeaderValue("NT", message.Headers),
-                        usn,
-                        message.Headers);
+                    _logger.LogDebug("Byebye: {0}", device);
 
-                    _logger.LogDebug("Byebye: {0}", deadDevice);
-
-                    if (NotificationTypeMatchesFilter(deadDevice))
-                    {
-                        DeviceUnavailable?.Invoke(this, new DeviceUnavailableEventArgs(deadDevice, false));
-                    }
+                    DeviceUnavailable?.Invoke(this, new DeviceUnavailableEventArgs(device, false));
                 }
             }
         }
@@ -449,9 +437,7 @@ namespace Emby.Dlna.Rssdp
                 }
             }
 
-            // Don't do this inside lock because DeviceDied raises an event
-            // which means public code may execute during lock and cause
-            // problems.
+            // Don't do this inside lock because DeviceDied raises an event which means public code may execute during lock and cause problems.
             foreach (var expiredUsn in (from expiredDevice in expiredDevices select expiredDevice.Usn).Distinct())
             {
                 if (this.IsDisposed)
@@ -484,10 +470,7 @@ namespace Emby.Dlna.Rssdp
             {
                 foreach (var removedDevice in existingDevices)
                 {
-                    if (NotificationTypeMatchesFilter(removedDevice))
-                    {
-                        DeviceUnavailable?.Invoke(this, new DeviceUnavailableEventArgs(removedDevice, expired));
-                    }
+                    DeviceUnavailable?.Invoke(this, new DeviceUnavailableEventArgs(removedDevice, expired));
                 }
 
                 return true;

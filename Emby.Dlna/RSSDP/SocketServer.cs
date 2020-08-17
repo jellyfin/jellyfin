@@ -144,23 +144,18 @@ namespace Emby.Dlna.Rssdp
         /// </summary>
         /// <param name="messageData">The mesage to send.</param>
         /// <param name="localIPAddress">The interface ip to use.</param>
-        /// <param name="receivedFrom">The destination endpoint.</param>
+        /// <param name="endPoint">The destination endpoint.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task SendMessageAsync(byte[] messageData, IPAddress localIPAddress, IPEndPoint receivedFrom)
+        public async Task SendMessageAsync(byte[] messageData, IPAddress localIPAddress, IPEndPoint endPoint)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
 
-            if (messageData == null)
+            if (endPoint == null)
             {
-                throw new ArgumentNullException(nameof(messageData));
-            }
-
-            if (receivedFrom == null)
-            {
-                throw new ArgumentNullException(nameof(receivedFrom));
+                throw new ArgumentNullException(nameof(endPoint));
             }
 
             if (localIPAddress == null)
@@ -168,19 +163,9 @@ namespace Emby.Dlna.Rssdp
                 throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            if (!_networkManager.IsInLocalNetwork(receivedFrom.Address))
+            if (IsInvalid(localIPAddress, endPoint))
             {
-                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", receivedFrom.Address);
                 return;
-            }
-
-            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
-            {
-                if (!_networkManager.IsInLocalNetwork(localIPAddress))
-                {
-                    _logger.LogDebug("SSDP filtered due to attempt to send from a non LAN interface {0}.", localIPAddress);
-                    return;
-                }
             }
 
             // Calculate which sockets to send the message through.
@@ -199,7 +184,7 @@ namespace Emby.Dlna.Rssdp
                         sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.Any) || localIPAddress.Equals(i.Key.LocalAddress()));
 
                         // If sending to the loopback address, filter the socket list as well
-                        if (receivedFrom.Address.Equals(IPAddress.Loopback))
+                        if (endPoint.Address.Equals(IPAddress.Loopback))
                         {
                             sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.Any) || i.Key.LocalAddressEquals(IPAddress.Loopback));
                         }
@@ -209,7 +194,7 @@ namespace Emby.Dlna.Rssdp
                         sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.IPv6Any) || localIPAddress.Equals(i.Key.LocalAddress()));
 
                         // If sending to the loopback address, filter the socket list as well
-                        if (receivedFrom.Equals(IPAddress.IPv6Loopback))
+                        if (endPoint.Equals(IPAddress.IPv6Loopback))
                         {
                             sockets = sockets.Where(i => i.Key.LocalAddressEquals(IPAddress.IPv6Any) || i.Key.LocalAddressEquals(IPAddress.IPv6Loopback));
                         }
@@ -218,8 +203,7 @@ namespace Emby.Dlna.Rssdp
 
                 if (!sockets.Any())
                 {
-                    CreateSockets();
-                    _logger.LogError("Unable to locate or create socket for {0}:{1}", localIPAddress, receivedFrom);
+                    _logger.LogError("Unable to locate socket for {0}:{1}", localIPAddress, endPoint);
                     return;
                 }
 
@@ -227,7 +211,7 @@ namespace Emby.Dlna.Rssdp
                 sendSockets = new Dictionary<Socket, SocketState>(sockets);
             }
 
-            var tasks = sendSockets.Select(i => SendFromSocketAsync(i.Key, messageData, receivedFrom, UdpResendCount));
+            var tasks = sendSockets.Select(i => SendFromSocketAsync(i.Key, messageData, endPoint, UdpResendCount));
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
@@ -239,16 +223,6 @@ namespace Emby.Dlna.Rssdp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task SendMulticastMessageAsync(string message, IPAddress localIPAddress)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            if (localIPAddress == null)
-            {
-                throw new ArgumentNullException(nameof(localIPAddress));
-            }
-
             await SendMulticastMessageAsync(message, UdpResendCount, localIPAddress).ConfigureAwait(false);
         }
 
@@ -266,18 +240,19 @@ namespace Emby.Dlna.Rssdp
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
 
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             if (localIPAddress == null)
             {
                 throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
+            if (IsInvalid(localIPAddress, null))
             {
-                if (!_networkManager.IsInLocalNetwork(localIPAddress))
-                {
-                    _logger.LogDebug("SSDP filtered due to attempt to send from a non LAN interface {0}.", localIPAddress);
-                    return;
-                }
+                return;
             }
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
@@ -325,67 +300,59 @@ namespace Emby.Dlna.Rssdp
                 throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            if (!_networkManager.IsInLocalNetwork(receivedFrom.Address))
+            if (IsInvalid(localIPAddress, receivedFrom, true, simulated))
             {
-                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", receivedFrom.Address);
                 return Task.CompletedTask;
             }
 
-            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
-            {
-                if (!_networkManager.IsInLocalNetwork(localIPAddress))
-                {
-                    _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", localIPAddress);
-                    return Task.CompletedTask;
-                }
-            }
-
             // _logger.LogDebug("Processing inbound SSDP from {0}.", endPoint.Address);
-
-            // Responses start with the HTTP version, prefixed with HTTP/ while requests start with a method which can
-            // vary and might be one we haven't seen/don't know. We'll check if this message is a request or a response
-            // by checking for the HTTP/ prefix on the start of the message.
-            if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                HttpResponseMessage? responseMessage = null;
-                try
+                // Responses start with the HTTP version, prefixed with HTTP/ while requests start with a method which can
+                // vary and might be one we haven't seen/don't know. We'll check if this message is a request or a response
+                // by checking for the HTTP/ prefix on the start of the message.
+                if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
                 {
-                    responseMessage = _responseParser.Parse(data);
+                    HttpResponseMessage? responseMessage = _responseParser.Parse(data);
+                    if (responseMessage != null)
+                    {
+                        try
+                        {
+                            ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, receivedFrom, localIPAddress, simulated));
+                        }
+                        finally
+                        {
+                            responseMessage?.Dispose();
+                        }
+                    }
                 }
-                catch (ArgumentException)
+                else
                 {
-                    // Ignore invalid packets.
-                }
+                    HttpRequestMessage? requestMessage = _requestParser.Parse(data);
+                    if (requestMessage != null)
+                    {
+                        try
+                        {
+                            // SSDP specification says only * is currently used but other uri's might be implemented in the future
+                            // and should be ignored unless understood.
+                            // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
+                            if (requestMessage.RequestUri.ToString() != "*")
+                            {
+                                return Task.CompletedTask;
+                            }
 
-                if (responseMessage != null)
-                {
-                    ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, receivedFrom, localIPAddress));
+                            RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress, simulated));
+                        }
+                        finally
+                        {
+                            requestMessage?.Dispose();
+                        }
+                    }
                 }
             }
-            else
+            catch (ArgumentException)
             {
-                HttpRequestMessage? requestMessage = null;
-                try
-                {
-                    requestMessage = _requestParser.Parse(data);
-                }
-                catch (ArgumentException)
-                {
-                    // Ignore invalid packets.
-                }
-
-                if (requestMessage != null)
-                {
-                    // SSDP specification says only * is currently used but other uri's might be implemented in the future
-                    // and should be ignored unless understood.
-                    // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
-                    if (requestMessage.RequestUri.ToString() != "*")
-                    {
-                        return Task.CompletedTask;
-                    }
-
-                    RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress, simulated));
-                }
+                // Ignore invalid packets.
             }
 
             return Task.CompletedTask;
@@ -409,7 +376,7 @@ namespace Emby.Dlna.Rssdp
                     {
                         foreach (var (socket, state) in _sockets)
                         {
-                            _logger.LogInformation("{0} disposing socket {1}", this.GetType().Name, socket.LocalEndPoint);
+                            _logger.LogInformation("Disposing socket {1}", socket.LocalEndPoint);
                             socket.Dispose();
                         }
                     }
@@ -417,6 +384,63 @@ namespace Emby.Dlna.Rssdp
                     _sockets.Clear();
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks to see if the networks where the traffic flows are valid.
+        /// </summary>
+        /// <param name="localIPAddress">IP address.</param>
+        /// <param name="endPoint">Endpoint address.</param>
+        /// <param name="matchSockets">Check the endpoint address and port against the sockets to see if it's from us.</param>
+        /// <param name="simulated">Was the message passed to us by Mono.NAT.</param>
+        /// <returns>True if the communication is permitted.</returns>
+        private bool IsInvalid(IPAddress localIPAddress, IPEndPoint? endPoint, bool matchSockets = false, bool simulated = false)
+        {
+            const string ErrFiltered = "FILTERED: Attempt to send from a non LAN interface: {0}";
+            const string ErrBlocked = "FILTERED: Sending to non-LAN address: {0}.";
+            const string ErrLoopback = "FILTERED: Sending to Self: {0}.";
+
+            // Is the remote endpoint outside the LAN?
+            if (endPoint != null && !_networkManager.IsInLocalNetwork(endPoint.Address))
+            {
+                _logger.LogDebug(ErrBlocked, endPoint.Address);
+                return true;
+            }
+
+            // Did it arrive on a Non-LAN interface?
+            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
+            {
+                if (!_networkManager.IsInLocalNetwork(localIPAddress))
+                {
+                    _logger.LogDebug(ErrFiltered, localIPAddress);
+                    return true;
+                }
+            }
+
+            if (matchSockets && endPoint != null)
+            {
+                // Did we send this?
+                lock (_socketSynchroniser)
+                {
+                    if (_sockets.Where(s => s.Key.LocalEndPoint.Equals(endPoint)).Any())
+                    {
+                        _logger.LogDebug(ErrLoopback, endPoint.Address);
+                        return true;
+                    }
+                }
+
+                // Did it come from Mono.NAT?
+                if (simulated &&
+                    _networkManager.IsuPnPActive &&
+                    endPoint.Port == 1900 &&
+                    _networkManager.IsGatewayInterface(endPoint.Address))
+                {
+                    _logger.LogDebug(ErrLoopback, endPoint.Address);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -556,7 +580,7 @@ namespace Emby.Dlna.Rssdp
                     {
                         // An interface with a negative tag value has a gateway address and so will be listened to and passed to us by Mono.NAT (if enabled),
                         // Mono isn't IPv6 compliant yet, so we will still need to listen on IPv6 interfaces.
-                        CreateUniqueSocket(!(_networkManager.IsuPnPActive && ip.Tag < 0 && ip.Address.AddressFamily == AddressFamily.InterNetwork), ip.Address);
+                        CreateUniqueSocket(!(_networkManager.IsuPnPActive && _networkManager.IsGatewayInterface(ip) && ip.Address.AddressFamily == AddressFamily.InterNetwork), ip.Address);
                     }
                 }
             }
@@ -650,7 +674,7 @@ namespace Emby.Dlna.Rssdp
                     _sockets[socket] = SocketState.Listening;
                 }
 
-                var endPoint = socket.LocalEndPoint; // var endPoint = _networkManager.GetMulticastEndPoint(1900);
+                var endPoint = socket.LocalEndPoint;
                 while (!_disposed)
                 {
                     try
@@ -659,14 +683,7 @@ namespace Emby.Dlna.Rssdp
 
                         if (result.ReceivedBytes > 0)
                         {
-                            var farEnd = (IPEndPoint)result.RemoteEndPoint;
-                            if (!_networkManager.IsInLocalNetwork(farEnd.Address))
-                            {
-                                _logger.LogDebug("SSDP filtered from non-LAN address {0}.", farEnd.Address);
-                                return;
-                            }
-
-                            await ProcessMessage(Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes), farEnd, socket.LocalAddress(), false).ConfigureAwait(false);
+                            await ProcessMessage(Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes), (IPEndPoint)result.RemoteEndPoint, socket.LocalAddress(), false).ConfigureAwait(false);
                         }
 
                         await Task.Delay(10).ConfigureAwait(false);

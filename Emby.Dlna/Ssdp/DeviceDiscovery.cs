@@ -19,19 +19,17 @@ namespace Emby.Dlna.Ssdp
         private readonly INetworkManager _networkManager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IServerConfigurationManager _config;
-        private readonly IServerApplicationHost _appHost;
         private readonly SocketServer _socketServer;
 
         private bool _disposed;
 
         private SsdpDeviceLocator? _deviceLocator;
 
-        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, IServerApplicationHost appHost, SocketServer? socketServer)
+        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, SocketServer? socketServer)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
-            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
             _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
         }
 
@@ -41,25 +39,20 @@ namespace Emby.Dlna.Ssdp
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
 
-        /// <summary>
-        /// Stops a device scan.
-        /// </summary>
-        public void Stop()
-        {
-            if (_deviceLocator != null)
-            {
-                _deviceLocator.Dispose();
-                _deviceLocator = null;
-            }
-        }
-
         /// <inheritdoc />
         public void Dispose()
         {
+            // If we still have delegates, then don't dispose as we're still in use.
+            if (DeviceDiscovered?.GetInvocationList().Length != 0)
+            {
+                return;
+            }
+
             if (!_disposed)
             {
                 _disposed = true;
-                Stop();
+                _deviceLocator?.Dispose();
+                _deviceLocator = null;
             }
         }
 
@@ -72,21 +65,12 @@ namespace Emby.Dlna.Ssdp
             {
                 if (DeviceDiscovered?.GetInvocationList().Length > 0 && _deviceLocator == null)
                 {
-                    _deviceLocator = new SsdpDeviceLocator(_socketServer, _loggerFactory.CreateLogger<SsdpDeviceLocator>(), _networkManager, _appHost.SystemId);
-
-                    // (Optional) Set the filter so we only see notifications for devices we care about
-                    // (can be any search target value i.e device type, uuid value etc - any value that appears in the
-                    // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
-                    // _DeviceLocator.NotificationFilter = "upnp:rootdevice";
-
-                    // Connect our event handler so we process devices as they are found
-                    _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
-                    _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
-
-                    var dueTime = TimeSpan.FromSeconds(5);
                     var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
 
-                    _deviceLocator.RestartBroadcastTimer(dueTime, interval);
+                    _deviceLocator = new SsdpDeviceLocator(_socketServer, _loggerFactory.CreateLogger<SsdpDeviceLocator>(), _networkManager);
+                    _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
+                    _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
+                    _deviceLocator.RestartBroadcastTimer(TimeSpan.FromSeconds(5), interval);
                 }
             }
         }

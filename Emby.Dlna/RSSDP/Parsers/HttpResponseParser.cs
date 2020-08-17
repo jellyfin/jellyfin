@@ -11,11 +11,6 @@ namespace Emby.Dlna.Rssdp.Parsers
     /// </summary>
     public sealed class HttpResponseParser : HttpParserBase<HttpResponseMessage>
     {
-        private readonly string[] _contentHeaderNames = new string[]
-        {
-            "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
-        };
-
         /// <summary>
         /// Parses the specified data into a <see cref="HttpResponseMessage"/> instance.
         /// </summary>
@@ -41,16 +36,6 @@ namespace Emby.Dlna.Rssdp.Parsers
 
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
-        /// </summary>
-        /// <param name="headerName">A string containing the name of the header to return the type of.</param>
-        /// <returns>A boolean, true if th specified header relates to HTTP content, otherwise false.</returns>
-        protected override bool IsContentHeader(string headerName)
-        {
-            return _contentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

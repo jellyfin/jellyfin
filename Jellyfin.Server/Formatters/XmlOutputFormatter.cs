@@ -16,7 +16,6 @@ namespace Jellyfin.Server.Formatters
         /// </summary>
         public XmlOutputFormatter()
         {
-            SupportedMediaTypes.Add("text/xml");
             SupportedMediaTypes.Add("text/xml;charset=UTF-8");
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);

@@ -41,6 +41,16 @@ namespace MediaBrowser.Common.Net
         public bool IsuPnPActive { get; }
 
         /// <summary>
+        /// Gets the SsdpServer name used in advertisements.
+        /// </summary>
+        public string SsdpServer { get; }
+
+        /// <summary>
+        /// Gets the unqiue user agent used in ssdp communications.
+        /// </summary>
+        public string SsdpUserAgent { get; }
+
+        /// <summary>
         /// Gets returns the remote address filter.
         /// </summary>
         NetCollection RemoteAddressFilter { get; }
@@ -118,6 +128,13 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>List of MAC addresses.</returns>
         List<PhysicalAddress> GetMacAddresses();
+
+        /// <summary>
+        /// Checks to see if the IP Address provided matches an interface that has a gateway.
+        /// </summary>
+        /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
+        /// <returns>Result of the check.</returns>
+        public bool IsGatewayInterface(object addressObj);
 
         /// <summary>
         /// Returns true if the address is a private address.

@@ -15,7 +15,5 @@ namespace Emby.Dlna.Ssdp
         void Dispose();
 
         void Start();
-
-        void Stop();
     }
 }
