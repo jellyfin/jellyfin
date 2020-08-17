@@ -49,7 +49,7 @@ namespace Emby.Dlna.Main
         private readonly ILocalizationManager _localizationManager;
         private readonly ILoggerFactory _loggerFactory;
         private PlayToManager? _manager;
-        private SsdpDevicePublisher? _publisher;
+        private SsdpServerPublisher? _publisher;
         private SocketServer? _socketManager;
         private IDeviceDiscovery? _deviceDiscovery;
         private bool _isDisposed;
@@ -234,10 +234,7 @@ namespace Emby.Dlna.Main
                 // This is true on startup and at network change.
                 if (_publisher == null)
                 {
-                    _publisher = new SsdpDevicePublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds)
-                    {
-                        SupportPnpRootDevice = false
-                    };
+                    _publisher = new SsdpServerPublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds);
 
                     RegisterServerEndpoints();
                 }

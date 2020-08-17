@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,7 +13,7 @@ namespace Emby.Dlna.Rsddp
     /// <remarks>
     /// <para>Discovering devices includes explicit search requests as well as listening for broadcast status notifications.</para>
     /// </remarks>
-    public interface ISsdpDeviceLocator
+    public interface ISsdpPlayToLocator
     {
         /// <summary>
         /// Event raised when a device becomes available or is found by a search request.

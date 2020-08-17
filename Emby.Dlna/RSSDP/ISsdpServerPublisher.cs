@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Emby.Dlna.Rssdp.Devices;
 
 namespace Emby.Dlna.Rssdp
@@ -9,9 +9,7 @@ namespace Emby.Dlna.Rssdp
     /// <remarks>
     /// <para>Publishing a device includes sending notifications (alive and byebye) as well as responding to search requests when appropriate.</para>
     /// </remarks>
-    /// <seealso cref="SsdpRootDevice"/>
-    /// <seealso cref="ISsdpDeviceLocator"/>
-    public interface ISsdpDevicePublisher
+    public interface ISsdpServerPublisher
     {
         /// <summary>
         /// Gets returns a read only list of devices being published by this instance.

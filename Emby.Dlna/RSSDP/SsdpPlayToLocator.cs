@@ -22,18 +22,18 @@ namespace Emby.Dlna.Rssdp
     /// Uses DeviceDiscovery to allow you to search the network for a particular device, device types, or UPnP service types.
     /// Listenings for broadcast notifications of device availability and raises events to indicate changes in status.
     /// </summary>
-    public class SsdpDeviceLocator : SsdpInfrastructure, ISsdpDeviceLocator
+    public class SsdpPlayToLocator : SsdpInfrastructure, ISsdpPlayToLocator
     {
         private readonly List<DiscoveredSsdpDevice> _devices;
         private readonly SocketServer _socketServer;
         private readonly object _timerLock;
-        private readonly ILogger<SsdpDeviceLocator> _logger;
+        private readonly ILogger<SsdpPlayToLocator> _logger;
         private readonly INetworkManager _networkManager;
         private readonly TimeSpan _defaultSearchWaitTime;
         private readonly TimeSpan _oneSecond;
         private Timer? _broadcastTimer;
 
-        public SsdpDeviceLocator(SocketServer socketServer, ILogger<SsdpDeviceLocator> logger, INetworkManager networkManager)
+        public SsdpPlayToLocator(SocketServer socketServer, ILogger<SsdpPlayToLocator> logger, INetworkManager networkManager)
         {
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
@@ -47,10 +47,12 @@ namespace Emby.Dlna.Rssdp
             {
                 "urn:schemas-upnp-org:device:MediaServer:",
                 "urn:schemas-upnp-org:device:MediaRenderer:",
-                "urn:schemas-upnp-org:device:MediaPlayer:"
+                "urn:schemas-upnp-org:device:MediaPlayer:",
+                "urn:schemas-upnp-org:device:InternetGatewayDevice:"
             };
 
             _socketServer.ResponseReceived += ProcessSearchResponseMessage;
+            Instance = this;
         }
 
         /// <summary>
@@ -112,6 +114,8 @@ namespace Emby.Dlna.Rssdp
         /// <seealso cref="ISsdpDeviceLocator.StopListeningForNotifications"/>
         private string[] SsdpFilter { get; set; }
 
+        public static SsdpPlayToLocator? Instance { get; set; }
+
         public void RestartBroadcastTimer(TimeSpan dueTime, TimeSpan period)
         {
             lock (_timerLock)
@@ -168,6 +172,7 @@ namespace Emby.Dlna.Rssdp
         {
             ThrowIfDisposed();
             _socketServer.RequestReceived += ProcessNotificationMessage;
+            _socketServer.ResponseReceived += ProcessSearchResponseMessage;
         }
 
         /// <summary>
@@ -184,6 +189,7 @@ namespace Emby.Dlna.Rssdp
         {
             ThrowIfDisposed();
             _socketServer.RequestReceived -= ProcessNotificationMessage;
+            _socketServer.ResponseReceived -= ProcessSearchResponseMessage;
         }
 
         /// <summary>
@@ -205,6 +211,8 @@ namespace Emby.Dlna.Rssdp
                     _socketServer.ResponseReceived -= ProcessSearchResponseMessage;
                     _socketServer.RequestReceived -= ProcessNotificationMessage;
                 }
+
+                Instance = null;
             }
         }
 
@@ -294,7 +302,7 @@ namespace Emby.Dlna.Rssdp
         /// <returns>Result of the operation.</returns>
         private bool SsdpTypeMatchesFilter(DiscoveredSsdpDevice device)
         {
-            return SsdpFilter.Where(m => m.StartsWith(device.NotificationType, StringComparison.OrdinalIgnoreCase)).Any();
+            return SsdpFilter.Where(m => device.NotificationType.StartsWith(m, StringComparison.OrdinalIgnoreCase)).Any();
         }
 
         private Task BroadcastDiscoverMessage(TimeSpan mxValue)
@@ -361,17 +369,7 @@ namespace Emby.Dlna.Rssdp
             HttpRequestMessage message = e.Message;
             IPAddress localIpAddress = e.LocalIPAddress;
 
-            if (string.Equals(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase))
-            {
-                // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                if (_networkManager.IsuPnPActive && !e.Simulated)
-                {
-                    // _logger.LogDebug("Passing notify message to Mono.Nat.");
-                    NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw, e.ReceivedFrom);
-                }
-
-                return;
-            }
+            var notificationType = GetFirstHeaderValue("NTS", message.Headers);
 
             var device = new DiscoveredSsdpDevice(
                    DateTimeOffset.Now,
@@ -387,17 +385,31 @@ namespace Emby.Dlna.Rssdp
                 return;
             }
 
-            var notificationType = GetFirstHeaderValue("NTS", message.Headers);
-
-            if (device.DescriptionLocation != null && string.Equals(notificationType, "ssdp:alive", StringComparison.OrdinalIgnoreCase))
+            if (device.DescriptionLocation != null)
             {
-                // Process Alive Notification.
-                if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
+                if (notificationType.StartsWith("urn:schemas-upnp-org:device:InternetGatewayDevice:", StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogDebug("<- ALIVE : {0} ", device.DescriptionLocation);
+                    // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
+                    if (_networkManager.IsuPnPActive && !e.Simulated)
+                    {
+                        // _logger.LogDebug("Passing NOTIFY message to Mono.Nat.");
+                        NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw, e.ReceivedFrom);
+                        return;
+                    }
+
+                    return;
                 }
 
-                return;
+                if (string.Equals(notificationType, "ssdp:alive", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Process Alive Notification.
+                    if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
+                    {
+                        _logger.LogDebug("<- ALIVE : {0} ", device.DescriptionLocation);
+                    }
+
+                    return;
+                }
             }
 
             if (!string.IsNullOrEmpty(device.NotificationType) && string.Equals(notificationType, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))

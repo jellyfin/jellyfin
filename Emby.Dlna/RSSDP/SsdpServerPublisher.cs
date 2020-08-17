@@ -8,11 +8,9 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.Rssdp;
 using Emby.Dlna.Rssdp.Devices;
 using Emby.Dlna.Rssdp.EventArgs;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
@@ -21,12 +19,12 @@ namespace Emby.Dlna.Rssdp
     /// <summary>
     /// Provides the platform independent logic for publishing SSDP devices (notifications and search responses).
     /// </summary>
-    public class SsdpDevicePublisher : SsdpInfrastructure, ISsdpDevicePublisher
+    public class SsdpServerPublisher : SsdpInfrastructure, ISsdpServerPublisher
     {
         private const string PnpRootDevice = "pnp:rootdevice";
         private const string UpnpRootDevice = "upnp:rootdevice";
 
-        private readonly ILogger<SsdpDevicePublisher> _logger;
+        private readonly ILogger<SsdpServerPublisher> _logger;
         private readonly IList<SsdpRootDevice> _devices;
         private readonly IReadOnlyList<SsdpRootDevice> _readOnlyDevices;
         private readonly INetworkManager _networkManager;
@@ -35,7 +33,7 @@ namespace Emby.Dlna.Rssdp
         private readonly IDictionary<string, SearchRequest> _recentSearchRequests;
         private Timer? _rebroadcastAliveNotificationsTimer;
 
-        public SsdpDevicePublisher(
+        public SsdpServerPublisher(
             SocketServer? socketServer,
             ILoggerFactory loggerFactory,
             INetworkManager networkManager,
@@ -43,12 +41,12 @@ namespace Emby.Dlna.Rssdp
         {
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
-            _logger = loggerFactory.CreateLogger<SsdpDevicePublisher>();
+            _logger = loggerFactory.CreateLogger<SsdpServerPublisher>();
             _devices = new List<SsdpRootDevice>();
             _readOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_devices);
             _recentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _random = new Random();
-            SupportPnpRootDevice = true;
+            SupportPnpRootDevice = false;
             AliveMessageInterval = aliveMessageInterval;
             _socketServer.RequestReceived += RequestReceived;
         }
@@ -359,7 +357,7 @@ namespace Emby.Dlna.Rssdp
         }
 
         /// <summary>
-        /// Async timer callback that sends alive notifications - (hence the use of async void).
+        /// Async timer callback that sends alive NOTIFY ssdp-all notifications.
         /// </summary>
         private async void SendAllAliveNotificationsAsync()
         {
@@ -392,7 +390,7 @@ namespace Emby.Dlna.Rssdp
 
                 if (first)
                 {
-                    _logger.LogWarning("Nothing to publish.");
+                    _logger.LogError("Something went wrong. There is nothing to publish.");
                 }
 
                 // _logger.LogInformation("Completed transmitting alive notifications for all Devices");
@@ -404,12 +402,18 @@ namespace Emby.Dlna.Rssdp
             }
         }
 
+        /// <summary>
+        /// Advertises the device and associated services with a NOTIFY / ssdp-all.
+        /// </summary>
+        /// <param name="device">Device to advertise.</param>
+        /// <param name="isRoot">True if this is a root device.</param>
+        /// <param name="udn">USN.</param>
         private async Task SendAliveNotifications(SsdpDevice device, bool isRoot, bool udn)
         {
             if (isRoot)
             {
                 await SendAliveNotification(device, UpnpRootDevice, GetUsn(device.Udn, UpnpRootDevice)).ConfigureAwait(false);
-                if (this.SupportPnpRootDevice)
+                if (SupportPnpRootDevice)
                 {
                     await SendAliveNotification(device, PnpRootDevice, GetUsn(device.Udn, PnpRootDevice)).ConfigureAwait(false);
                 }
@@ -428,6 +432,12 @@ namespace Emby.Dlna.Rssdp
             }
         }
 
+        /// <summary>
+        /// Advertises the device with a NOTIFY / ssdp-all. Used by SendAliveNotification.
+        /// </summary>
+        /// <param name="device">Device to advertise.</param>
+        /// <param name="notificationType">Device type.</param>
+        /// <param name="uniqueServiceName">USN.</param>
         private Task SendAliveNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
             var rootDevice = device.ToRootDevice();

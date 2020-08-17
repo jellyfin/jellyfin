@@ -23,7 +23,7 @@ namespace Emby.Dlna.Ssdp
 
         private bool _disposed;
 
-        private SsdpDeviceLocator? _deviceLocator;
+        private SsdpPlayToLocator? _deviceLocator;
 
         public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, SocketServer? socketServer)
         {
@@ -67,7 +67,7 @@ namespace Emby.Dlna.Ssdp
                 {
                     var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
 
-                    _deviceLocator = new SsdpDeviceLocator(_socketServer, _loggerFactory.CreateLogger<SsdpDeviceLocator>(), _networkManager);
+                    _deviceLocator = new SsdpPlayToLocator(_socketServer, _loggerFactory.CreateLogger<SsdpPlayToLocator>(), _networkManager);
                     _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
                     _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
                     _deviceLocator.RestartBroadcastTimer(TimeSpan.FromSeconds(5), interval);
