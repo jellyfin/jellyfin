@@ -332,7 +332,7 @@ namespace Jellyfin.Api.Controllers
         private async Task DownloadImage(string providerName, string url, Guid urlHash, string pointerCachePath)
         {
             using var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
-            var ext = result.Content.Headers.ContentType.MediaType.Split('/').LastOrDefault();
+            var ext = result.Content.Headers.ContentType.MediaType.Split('/').Last();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
