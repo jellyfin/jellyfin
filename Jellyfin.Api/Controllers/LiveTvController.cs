@@ -1065,7 +1065,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Available countries returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the available countries.</returns>
         [HttpGet("ListingProviders/SchedulesDirect/Countries")]
-        // [Authorize(Policy = Policies.DefaultAuthorization)]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSchedulesDirectCountries()
         {
