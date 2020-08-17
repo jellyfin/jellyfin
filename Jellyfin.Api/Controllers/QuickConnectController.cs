@@ -1,9 +1,7 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Model.QuickConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -18,19 +16,14 @@ namespace Jellyfin.Api.Controllers
     public class QuickConnectController : BaseJellyfinApiController
     {
         private readonly IQuickConnect _quickConnect;
-        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QuickConnectController"/> class.
         /// </summary>
         /// <param name="quickConnect">Instance of the <see cref="IQuickConnect"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        public QuickConnectController(
-            IQuickConnect quickConnect,
-            IAuthorizationContext authContext)
+        public QuickConnectController(IQuickConnect quickConnect)
         {
             _quickConnect = quickConnect;
-            _authContext = authContext;
         }
 
         /// <summary>
@@ -121,22 +114,22 @@ namespace Jellyfin.Api.Controllers
         /// Authorizes a pending quick connect request.
         /// </summary>
         /// <param name="code">Quick connect code to authorize.</param>
-        /// <param name="userId">User id.</param>
         /// <response code="200">Quick connect result authorized successfully.</response>
-        /// <response code="403">User is not allowed to authorize quick connect requests.</response>
+        /// <response code="403">Unknown user id.</response>
         /// <returns>Boolean indicating if the authorization was successful.</returns>
         [HttpPost("Authorize")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult<bool> Authorize([FromQuery, Required] string code, [FromQuery, Required] Guid userId)
+        public ActionResult<bool> Authorize([FromQuery, Required] string code)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
+            if (!userId.HasValue)
             {
-                return Forbid("User is not allowed to authorize quick connect requests.");
+                return Forbid("Unknown user id");
             }
 
-            return _quickConnect.AuthorizeRequest(userId, code);
+            return _quickConnect.AuthorizeRequest(userId.Value, code);
         }
 
         /// <summary>
