@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ namespace MediaBrowser.Providers.Manager
     {
         private readonly object _refreshQueueLock = new object();
         private readonly ILogger<ProviderManager> _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
@@ -66,7 +67,7 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager"/> class.
         /// </summary>
-        /// <param name="httpClient">The Http client.</param>
+        /// <param name="httpClientFactory">The Http client factory.</param>
         /// <param name="subtitleManager">The subtitle manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="libraryMonitor">The library monitor.</param>
@@ -75,7 +76,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="libraryManager">The library manager.</param>
         public ProviderManager(
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
             IServerConfigurationManager configurationManager,
             ILibraryMonitor libraryMonitor,
@@ -85,7 +86,7 @@ namespace MediaBrowser.Providers.Manager
             ILibraryManager libraryManager)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _configurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
@@ -155,25 +156,23 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            using var response = await _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                BufferContent = false
-            }).ConfigureAwait(false);
+            var httpClient = _httpClientFactory.CreateClient();
+            using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+
+            var contentType = response.Content.Headers.ContentType.MediaType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
-            if (string.IsNullOrEmpty(response.ContentType))
+            if (string.IsNullOrEmpty(contentType))
             {
                 if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    response.ContentType = "image/png";
+                    contentType = "image/png";
                 }
             }
 
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
-            if (response.ContentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
+            if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
                 throw new HttpException("Invalid image received.")
                 {
@@ -181,7 +180,13 @@ namespace MediaBrowser.Providers.Manager
                 };
             }
 
-            await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken).ConfigureAwait(false);
+            await SaveImage(
+                item,
+                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                contentType,
+                type,
+                imageIndex,
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
