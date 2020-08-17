@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,7 +16,6 @@ using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IUserManager _userManager;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly ISessionContext _sessionContext;
@@ -52,7 +52,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="liveTvManager">Instance of the <see cref="ILiveTvManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="httpClient">Instance of the <see cref="IHttpClient"/> interface.</param>
+        /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="sessionContext">Instance of the <see cref="ISessionContext"/> interface.</param>
@@ -62,7 +62,7 @@ namespace Jellyfin.Api.Controllers
         public LiveTvController(
             ILiveTvManager liveTvManager,
             IUserManager userManager,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IDtoService dtoService,
             ISessionContext sessionContext,
@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Controllers
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
             _sessionContext = sessionContext;
@@ -1069,13 +1069,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSchedulesDirectCountries()
         {
+            var client = _httpClientFactory.CreateClient();
             // https://json.schedulesdirect.org/20141201/available/countries
-            var response = await _httpClient.Get(new HttpRequestOptions
-            {
-                Url = "https://json.schedulesdirect.org/20141201/available/countries",
-                BufferContent = false
-            }).ConfigureAwait(false);
-            return File(response, MediaTypeNames.Application.Json);
+            using var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
+                .ConfigureAwait(false);
+
+            return File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), MediaTypeNames.Application.Json);
         }
 
         /// <summary>

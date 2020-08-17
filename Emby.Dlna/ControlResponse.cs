@@ -16,5 +16,11 @@ namespace Emby.Dlna
         public string Xml { get; set; }
 
         public bool IsSuccessful { get; set; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Xml;
+        }
     }
 }
