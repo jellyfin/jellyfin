@@ -120,16 +120,17 @@ namespace Emby.Dlna.Rssdp
         {
             if (disposing)
             {
-                lock (_timerLock)
-                {
-                    _broadcastTimer?.Dispose();
-                    _broadcastTimer = null;
-                }
-
                 if (_socketServer != null)
                 {
                     _socketServer.ResponseReceived -= ProcessSearchResponseMessage;
                     _socketServer.RequestReceived -= ProcessNotificationMessage;
+                }
+
+                _logger.LogDebug("Disposing.");
+                lock (_timerLock)
+                {
+                    _broadcastTimer?.Dispose();
+                    _broadcastTimer = null;
                 }
             }
         }
@@ -175,6 +176,11 @@ namespace Emby.Dlna.Rssdp
 
         private async void OnBroadcastTimerCallback(object state)
         {
+            if (IsDisposed)
+            {
+                return;
+            }
+
             _socketServer.RequestReceived += ProcessNotificationMessage;
             _socketServer.ResponseReceived += ProcessSearchResponseMessage;
             RemoveExpiredDevicesFromCache();
@@ -252,6 +258,11 @@ namespace Emby.Dlna.Rssdp
 
         private void ProcessSearchResponseMessage(object sender, ResponseReceivedEventArgs e)
         {
+            if (IsDisposed)
+            {
+                return;
+            }
+
             HttpResponseMessage message = e.Message;
 
             if (!message.IsSuccessStatusCode)
@@ -285,6 +296,11 @@ namespace Emby.Dlna.Rssdp
 
         private void ProcessNotificationMessage(object sender, RequestReceivedEventArgs e)
         {
+            if (IsDisposed)
+            {
+                return;
+            }
+
             HttpRequestMessage message = e.Message;
             IPAddress localIpAddress = e.LocalIPAddress;
 
@@ -359,7 +375,7 @@ namespace Emby.Dlna.Rssdp
 
                 foreach (var device in expiredDevices)
                 {
-                    if (this.IsDisposed)
+                    if (IsDisposed)
                     {
                         return;
                     }
@@ -371,7 +387,7 @@ namespace Emby.Dlna.Rssdp
             // Don't do this inside lock because DeviceDied raises an event which means public code may execute during lock and cause problems.
             foreach (var expiredUsn in (from expiredDevice in expiredDevices select expiredDevice.Usn).Distinct())
             {
-                if (this.IsDisposed)
+                if (IsDisposed)
                 {
                     return;
                 }
@@ -388,7 +404,7 @@ namespace Emby.Dlna.Rssdp
                 existingDevices = FindExistingDeviceNotifications(_devices, deviceUsn);
                 foreach (var existingDevice in existingDevices)
                 {
-                    if (this.IsDisposed)
+                    if (IsDisposed)
                     {
                         return true;
                     }

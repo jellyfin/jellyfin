@@ -59,8 +59,14 @@ namespace Emby.Dlna.Ssdp
         /// <inheritdoc />
         public void Dispose()
         {
+            if (_deviceLocator != null)
+            {
+                _deviceLocator.DeviceAvailable -= OnDeviceLocatorDeviceAvailable;
+                _deviceLocator.DeviceUnavailable -= OnDeviceLocatorDeviceUnavailable;
+            }
+
             // If we still have delegates, then don't dispose as we're still in use.
-            if (DeviceDiscovered?.GetInvocationList().Length != 0)
+            if (DeviceDiscovered != null && DeviceDiscovered.GetInvocationList().Length != 0)
             {
                 return;
             }

@@ -199,8 +199,13 @@ namespace Emby.Dlna.Rssdp
         {
             if (disposing)
             {
-                DisposeRebroadcastTimer();
+                _logger.LogDebug("Disposing.");
+
+                _rebroadcastAliveNotificationsTimer?.Dispose();
+                _rebroadcastAliveNotificationsTimer = null;
+
                 _socketServer.RequestReceived -= RequestReceived;
+
                 var tasks = Devices.ToList().Select(RemoveDevice).ToArray();
                 Task.WaitAll(tasks);
             }
@@ -522,16 +527,6 @@ namespace Emby.Dlna.Rssdp
             _logger.LogInformation("-> SSDP:BYEBYE : {0}", device);
 
             return Task.WhenAll(tasks);
-        }
-
-        private void DisposeRebroadcastTimer()
-        {
-            var timer = _rebroadcastAliveNotificationsTimer;
-            _rebroadcastAliveNotificationsTimer = null;
-            if (timer != null)
-            {
-                timer.Dispose();
-            }
         }
 
         /// <summary>

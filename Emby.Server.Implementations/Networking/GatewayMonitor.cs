@@ -23,12 +23,12 @@ namespace Emby.Server.Implementations.Networking
         /// <summary>
         /// Logger.
         /// </summary>
-        private readonly ILogger<GatewayMonitor> _logger = null!;
+        private readonly ILogger<GatewayMonitor> _logger;
 
         /// <summary>
         /// Required for access to configuration.
         /// </summary>
-        private readonly IServerConfigurationManager _config = null!;
+        private readonly IServerConfigurationManager _config;
 
         /// <summary>
         /// List of IPAddresses to monitor.
@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.Networking
             _config = config ?? throw new ArgumentException("config cannot be null.");
             _gwAddress = new List<IPAddress>();
             _config.ConfigurationUpdated += ConfigChanged;
-            LoadConfiguration();
+            _every = _config.Configuration.GatewayMonitorPeriod;
         }
 
         /// <summary>
@@ -138,6 +138,7 @@ namespace Emby.Server.Implementations.Networking
                 return;
             }
 
+            _config.ConfigurationUpdated -= ConfigChanged;
             _pinger?.Dispose();
             _disposed = true;
         }
@@ -153,17 +154,12 @@ namespace Emby.Server.Implementations.Networking
             var result = await ping.SendPingAsync(gwAddress, 2000).ConfigureAwait(false);
             return result.Status == IPStatus.Success;
         }
-
-        private void LoadConfiguration()
-        {
-            _every = _config.Configuration.GatewayMonitorPeriod;
-        }
-
+        
         private void ConfigChanged(object sender, EventArgs args)
         {
             lock (_gwLock)
             {
-                LoadConfiguration();
+                _every = _config.Configuration.GatewayMonitorPeriod;
             }
         }
 

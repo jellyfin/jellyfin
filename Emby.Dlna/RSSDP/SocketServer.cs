@@ -110,7 +110,6 @@ namespace Emby.Dlna.Rssdp
                 return;
             }
 
-            SocketServer.Instance = null;
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -367,6 +366,8 @@ namespace Emby.Dlna.Rssdp
             if (disposing)
             {
                 _disposed = true;
+                _logger.LogDebug("Disposing.");
+                Instance = null;
                 _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
                 _networkManager.NetworkChanged -= ConfigurationUpdated;
                 NatUtility.UnknownDeviceFound -= UnknownDeviceFound;

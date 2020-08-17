@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Networking
     /// <summary>
     /// Class to take care of network interface management.
     /// </summary>
-    public class NetworkManager : INetworkManager
+    public class NetworkManager : INetworkManager, IDisposable
     {
         /// <summary>
         /// Default ttl.
@@ -95,6 +95,7 @@ namespace Emby.Server.Implementations.Networking
         /// Flag set when _lanAddressses is set to _interfaceAddresses as no custom LAN has been defined in the config.
         /// </summary>
         private bool _usingInterfaces;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkManager"/> class.
@@ -238,6 +239,13 @@ namespace Emby.Server.Implementations.Networking
             // Random Port.
             range.min = range.max = 0;
             return false;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <inheritdoc/>
@@ -908,6 +916,25 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return IPNetAddress.TryParse(token, out result);
+        }
+
+        /// <summary>
+        /// Protected implementation of Dispose pattern.
+        /// </summary>
+        /// <param name="disposing">True to dispose the managed state.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _configurationManager.ConfigurationUpdating -= ConfigurationUpdating;
+                    NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+                    NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
+                }
+
+                _disposed = true;
+            }
         }
 
         /// <summary>

@@ -90,7 +90,7 @@ namespace Emby.Dlna.Main
             _userViewManager = userViewManager ?? throw new ArgumentNullException(nameof(userViewManager));
             _tvSeriesManager = tvSeriesManager ?? throw new ArgumentNullException(nameof(loggerFactory));
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-            _networkManager.NetworkChanged += delegate { ReloadComponents(); };
+            _networkManager.NetworkChanged += TriggerReload;
 
             Instance = this;
         }
@@ -149,6 +149,9 @@ namespace Emby.Dlna.Main
                     _manager = null;
                 }
 
+                _networkManager.NetworkChanged -= TriggerReload;
+                _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
+
                 ContentDirectory = null;
                 ConnectionManager = null;
                 MediaReceiverRegistrar = null;
@@ -178,130 +181,130 @@ namespace Emby.Dlna.Main
             }
         }
 
+        private void TriggerReload(object sender, EventArgs e)
+        {
+            ReloadComponents();
+        }
+
         /// <summary>
         /// (Re)initialises the DLNA settings.
         /// </summary>
         private void ReloadComponents()
         {
             _logger.LogDebug("(Re)loading DLNA components.");
-
-            var options = _configurationManager.GetDlnaConfiguration();
-
-            if (options.EnablePlayTo || options.EnableServer)
+            lock (_syncLock)
             {
-                // Start SSDP communication handlers.
-                _socketManager = _socketManager = SocketServer.Instance ?? new SocketServer(_networkManager, _configurationManager, _loggerFactory);
-            }
 
-            if (options.EnableServer)
-            {
-                // Create SSDP server.
-                if (ContentDirectory == null)
+                var options = _configurationManager.GetDlnaConfiguration();
+
+                if (options.EnablePlayTo || options.EnableServer)
                 {
-                    ContentDirectory = new DlnaContentDirectory(
-                        _dlnaManager,
-                        _userDataManager,
-                        _imageProcessor,
-                        _libraryManager,
-                        _configurationManager,
-                        _userManager,
-                        _httpClient,
-                        _localizationManager,
-                        _mediaSourceManager,
-                        _userViewManager,
-                        _mediaEncoder,
-                        _tvSeriesManager,
-                        _loggerFactory);
+                    // Start SSDP communication handlers.
+                    _socketManager = _socketManager = SocketServer.Instance ?? new SocketServer(_networkManager, _configurationManager, _loggerFactory);
                 }
 
-                if (ConnectionManager == null)
+                if (options.EnableServer)
                 {
-                    ConnectionManager = new DlnaConnectionManager(
-                        _dlnaManager,
-                        _configurationManager,
-                        _loggerFactory,
-                        _httpClient);
-                }
-
-                if (MediaReceiverRegistrar == null)
-                {
-                    MediaReceiverRegistrar = new DlnaMediaReceiverRegistrar(
-                        _loggerFactory,
-                        _httpClient,
-                        _configurationManager);
-                }
-
-                // This is true on startup and at network change.
-                if (_publisher == null)
-                {
-                    _publisher = new SsdpServerPublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds);
-
-                    RegisterServerEndpoints();
-                }
-            }
-            else
-            {
-                // Disable the server
-
-                // This object will actually only dispose if no longer in use.
-                _deviceDiscovery?.Dispose();
-                _deviceDiscovery = null;
-
-                // This object will actually only dispose if no longer in use.
-                _socketManager?.Dispose();
-                _socketManager = null;
-
-                DisposeDevicePublisher();
-
-                MediaReceiverRegistrar = null;
-                ContentDirectory = null;
-                ConnectionManager = null;
-            }
-
-            if (options.EnablePlayTo)
-            {
-                if (_deviceDiscovery == null)
-                {
-                    _deviceDiscovery = new DeviceDiscovery(_configurationManager, _loggerFactory, _networkManager, _socketManager);
-                }
-
-                lock (_syncLock)
-                {
-                    if (_manager == null)
+                    // Create SSDP server.
+                    if (ContentDirectory == null)
                     {
-                        try
-                        {
-                            _manager = new PlayToManager(
-                                _logger,
-                                _sessionManager,
-                                _libraryManager,
-                                _userManager,
-                                _dlnaManager,
-                                _appHost,
-                                _imageProcessor,
-                                _deviceDiscovery,
-                                _httpClient,
-                                _configurationManager,
-                                _userDataManager,
-                                _localization,
-                                _mediaSourceManager,
-                                _mediaEncoder);
+                        ContentDirectory = new DlnaContentDirectory(
+                            _dlnaManager,
+                            _userDataManager,
+                            _imageProcessor,
+                            _libraryManager,
+                            _configurationManager,
+                            _userManager,
+                            _httpClient,
+                            _localizationManager,
+                            _mediaSourceManager,
+                            _userViewManager,
+                            _mediaEncoder,
+                            _tvSeriesManager,
+                            _loggerFactory);
+                    }
 
-                            _manager.Start();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error starting PlayTo manager");
-                        }
+                    if (ConnectionManager == null)
+                    {
+                        ConnectionManager = new DlnaConnectionManager(
+                            _dlnaManager,
+                            _configurationManager,
+                            _loggerFactory,
+                            _httpClient);
+                    }
+
+                    if (MediaReceiverRegistrar == null)
+                    {
+                        MediaReceiverRegistrar = new DlnaMediaReceiverRegistrar(
+                            _loggerFactory,
+                            _httpClient,
+                            _configurationManager);
+                    }
+
+                    // This is true on startup and at network change.
+                    if (_publisher == null)
+                    {
+                        _publisher = new SsdpServerPublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds);
+
+                        RegisterServerEndpoints();
                     }
                 }
-            }
-            else
-            {
-                lock (_syncLock)
+                else
                 {
-                    _manager?.Dispose();
-                    _manager = null;
+                    // Disable the server
+
+                    // This object will actually only dispose if no longer in use.
+                    _deviceDiscovery?.Dispose();
+                    _deviceDiscovery = null;
+
+                    // This object will actually only dispose if no longer in use.
+                    _socketManager?.Dispose();
+                    _socketManager = null;
+
+                    DisposeDevicePublisher();
+
+                    MediaReceiverRegistrar = null;
+                    ContentDirectory = null;
+                    ConnectionManager = null;
+                    GC.Collect();
+                }
+
+                if (options.EnablePlayTo)
+                {
+                    if (_deviceDiscovery == null)
+                    {
+                        _deviceDiscovery = new DeviceDiscovery(_configurationManager, _loggerFactory, _networkManager, _socketManager);
+                    }
+
+                    if (_manager == null)
+                    {
+                        _manager = new PlayToManager(
+                            _logger,
+                            _sessionManager,
+                            _libraryManager,
+                            _userManager,
+                            _dlnaManager,
+                            _appHost,
+                            _imageProcessor,
+                            _deviceDiscovery,
+                            _httpClient,
+                            _configurationManager,
+                            _userDataManager,
+                            _localization,
+                            _mediaSourceManager,
+                            _mediaEncoder);
+
+                        _manager.Start();
+                    }
+                }
+                else
+                {
+                    lock (_syncLock)
+                    {
+                        _manager?.Dispose();
+                        _manager = null;
+                        GC.Collect();
+                    }
                 }
             }
         }

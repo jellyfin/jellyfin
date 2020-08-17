@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -38,10 +39,10 @@ namespace Emby.Dlna.PlayTo
         private readonly IServerConfigurationManager _config;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
-
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly List<Device> _devices;
 
         private bool _disposed;
         private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
@@ -63,6 +64,7 @@ namespace Emby.Dlna.PlayTo
             _localization = localization ?? throw new ArgumentNullException(nameof(localization));
             _mediaSourceManager = mediaSourceManager ?? throw new ArgumentNullException(nameof(mediaSourceManager));
             _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
+            _devices = new List<Device>();
         }
 
         public void Start()
@@ -177,20 +179,11 @@ namespace Emby.Dlna.PlayTo
             if (controller == null)
             {
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, cancellationToken).ConfigureAwait(false);
+                _devices.Add(device);
 
                 string deviceName = device.Properties.Name;
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
-
-                string serverAddress;
-                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IPAddress.Any) || info.LocalIpAddress.Equals(IPAddress.IPv6Any))
-                {
-                    serverAddress = _appHost.GetSmartApiUrl(string.Empty);
-                }
-                else
-                {
-                    serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
-                }
 
                 controller = new PlayToController(
                     sessionInfo,
@@ -200,7 +193,7 @@ namespace Emby.Dlna.PlayTo
                     _dlnaManager,
                     _userManager,
                     _imageProcessor,
-                    serverAddress,
+                    _appHost.GetSmartApiUrl(info.LocalIpAddress),
                     null,
                     _deviceDiscovery,
                     _userDataManager,
@@ -235,7 +228,6 @@ namespace Emby.Dlna.PlayTo
 
                     SupportsMediaControl = true
                 });
-
                 _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
             }
         }
@@ -243,7 +235,10 @@ namespace Emby.Dlna.PlayTo
         /// <inheritdoc />
         public void Dispose()
         {
+            _logger.LogDebug("Disposed.");
+
             _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
+            _deviceDiscovery?.Dispose();
 
             try
             {
@@ -253,7 +248,19 @@ namespace Emby.Dlna.PlayTo
             {
             }
 
-            _sessionLock.Dispose();
+            // Dispose the CreateuPnpDeviceAsync created in AddDevice.
+            foreach (var device in _devices)
+            {
+                device?.Dispose();
+            }
+
+            // Stop any active sessions and dispose of the PlayToControllers created.
+            _sessionManager.Sessions.ToList().ForEach(s =>
+                {
+                    s.StopController<PlayToController>();
+                    _sessionManager.ReportSessionEnded(s.Id);
+                });
+
             _disposeCancellationTokenSource.Dispose();
 
             _disposed = true;
