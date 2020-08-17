@@ -20,13 +20,13 @@ namespace MediaBrowser.Providers.Studios
     public class StudiosImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
 
-        public StudiosImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _config = config;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
         }
 
@@ -108,14 +108,14 @@ namespace MediaBrowser.Providers.Studios
         {
             const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studiothumbs.txt";
 
-            return EnsureList(url, file, _httpClient, _fileSystem, cancellationToken);
+            return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         private Task<string> EnsurePosterList(string file, CancellationToken cancellationToken)
         {
             const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studioposters.txt";
 
-            return EnsureList(url, file, _httpClient, _fileSystem, cancellationToken);
+            return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         public int Order => 0;
@@ -139,26 +139,18 @@ namespace MediaBrowser.Providers.Studios
         /// <param name="fileSystem">The file system.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task<string> EnsureList(string url, string file, IHttpClient httpClient, IFileSystem fileSystem, CancellationToken cancellationToken)
+        public async Task<string> EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
             var fileInfo = fileSystem.GetFileInfo(file);
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                var httpClient = _httpClientFactory.CreateClient();
 
-                using (var res = await httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        CancellationToken = cancellationToken,
-                        Url = url
-                    },
-                    HttpMethod.Get).ConfigureAwait(false))
-                using (var content = res.Content)
-                using (var fileStream = new FileStream(file, FileMode.Create))
-                {
-                    await content.CopyToAsync(fileStream).ConfigureAwait(false);
-                }
+                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                await using var response = await httpClient.GetStreamAsync(url).ConfigureAwait(false);
+                await using var fileStream = new FileStream(file, FileMode.Create);
+                await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
             return file;
