@@ -1,4 +1,5 @@
 ﻿using Jellyfin.Data.Events;
+using Jellyfin.Data.Events.System;
 using Jellyfin.Data.Events.Users;
 using Jellyfin.Server.Implementations.Events.Consumers.Library;
 using Jellyfin.Server.Implementations.Events.Consumers.Security;
@@ -30,34 +31,42 @@ namespace Jellyfin.Server.Implementations.Events
         /// <param name="collection">The service collection.</param>
         public static void AddEventServices(this IServiceCollection collection)
         {
+            // Library consumers
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
-            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationResult>>, AuthenticationSucceededLogger>();
+            // Security consumers
             collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationRequest>>, AuthenticationFailedLogger>();
+            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationResult>>, AuthenticationSucceededLogger>();
 
+            // Session consumers
             collection.AddScoped<IEventConsumer<PlaybackStartEventArgs>, PlaybackStartLogger>();
             collection.AddScoped<IEventConsumer<PlaybackStopEventArgs>, PlaybackStopLogger>();
-            collection.AddScoped<IEventConsumer<SessionStartedEventArgs>, SessionStartedLogger>();
             collection.AddScoped<IEventConsumer<SessionEndedEventArgs>, SessionEndedLogger>();
+            collection.AddScoped<IEventConsumer<SessionStartedEventArgs>, SessionStartedLogger>();
 
-            collection.AddScoped<IEventConsumer<PluginInstallingEventArgs>, PluginInstallingNotifier>();
+            // System consumers
+            collection.AddScoped<IEventConsumer<PendingRestartEventArgs>, PendingRestartNotifier>();
+            collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedLogger>();
+            collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedNotifier>();
+
+            // Update consumers
+            collection.AddScoped<IEventConsumer<PluginInstallationCancelledEventArgs>, PluginInstallationCancelledNotifier>();
+            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedLogger>();
+            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedNotifier>();
             collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledLogger>();
             collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledNotifier>();
+            collection.AddScoped<IEventConsumer<PluginInstallingEventArgs>, PluginInstallingNotifier>();
             collection.AddScoped<IEventConsumer<PluginUninstalledEventArgs>, PluginUninstalledLogger>();
             collection.AddScoped<IEventConsumer<PluginUninstalledEventArgs>, PluginUninstalledNotifier>();
             collection.AddScoped<IEventConsumer<PluginUpdatedEventArgs>, PluginUpdatedLogger>();
-            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedLogger>();
-            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedNotifier>();
-            collection.AddScoped<IEventConsumer<PluginInstallationCancelledEventArgs>, PluginInstallationCancelledNotifier>();
 
+            // User consumers
             collection.AddScoped<IEventConsumer<UserCreatedEventArgs>, UserCreatedLogger>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedLogger>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedNotifier>();
-            collection.AddScoped<IEventConsumer<UserUpdatedEventArgs>, UserUpdatedNotifier>();
             collection.AddScoped<IEventConsumer<UserLockedOutEventArgs>, UserLockedOutLogger>();
             collection.AddScoped<IEventConsumer<UserPasswordChangedEventArgs>, UserPasswordChangedLogger>();
-
-            collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedLogger>();
+            collection.AddScoped<IEventConsumer<UserUpdatedEventArgs>, UserUpdatedNotifier>();
         }
     }
 }
