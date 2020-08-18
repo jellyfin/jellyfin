@@ -73,6 +73,7 @@ namespace Jellyfin.Server
 
             // TODO app.UseMiddleware<WebSocketMiddleware>();
 
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
