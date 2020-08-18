@@ -464,6 +464,7 @@ namespace Emby.Dlna.Rssdp
             {
                 while (sendCount-- > 0)
                 {
+                    _logger.LogDebug("sending to {0}", destination.Address);
                     await socket.SendToAsync(messageData, SocketFlags.None, destination).ConfigureAwait(false);
                     await Task.Delay(100).ConfigureAwait(false);
                 }
