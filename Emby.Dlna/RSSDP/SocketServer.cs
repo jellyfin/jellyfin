@@ -460,7 +460,7 @@ namespace Emby.Dlna.Rssdp
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
 
-            _logger.LogDebug("Transmitting on ip : {0} {1}", socket.LocalAddress, destination.Address);
+            _logger.LogDebug("Transmitting on ip : {0}", socket.LocalAddress(), destination.Address);
             
             try
             {
