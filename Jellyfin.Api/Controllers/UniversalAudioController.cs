@@ -119,10 +119,10 @@ namespace Jellyfin.Api.Controllers
 
             if (deviceProfile == null)
             {
-                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
-                if (caps != null)
+                var clientCapabilities = _deviceManager.GetCapabilities(authInfo.DeviceId);
+                if (clientCapabilities != null)
                 {
-                    deviceProfile = caps.DeviceProfile;
+                    deviceProfile = clientCapabilities.DeviceProfile;
                 }
             }
 
