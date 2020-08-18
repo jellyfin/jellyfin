@@ -91,5 +91,12 @@
     "NotificationOptionAudioPlaybackStopped": "Pemutaran audio berhenti",
     "NotificationOptionAudioPlayback": "Pemutaran audio dimulai",
     "MixedContent": "Konten campur",
-    "PluginUninstalledWithName": "{0} telah dihapus"
+    "PluginUninstalledWithName": "{0} telah dihapus",
+    "TaskRefreshChapterImagesDescription": "Membuat gambar mini untuk video yang memiliki bab.",
+    "TaskRefreshChapterImages": "Ekstrak Gambar Bab",
+    "TaskCleanCacheDescription": "Menghapus file cache yang tidak lagi dibutuhkan oleh sistem.",
+    "TaskCleanCache": "Bersihkan Cache Direktori",
+    "TasksLibraryCategory": "Perpustakaan",
+    "TasksMaintenanceCategory": "Perbaikan",
+    "TasksApplicationCategory": "Aplikasi"
 }
