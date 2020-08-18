@@ -1,10 +1,10 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -19,16 +19,16 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 {
     public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
 
-        public OmdbImageProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbImageProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var list = new List<RemoteImageInfo>();
 
-            var provider = new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _appHost, _configurationManager);
+            var provider = new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _appHost, _configurationManager);
 
             if (!string.IsNullOrWhiteSpace(imdbId))
             {
@@ -79,13 +79,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return list;
         }
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
         }
 
         public string Name => "The Open Movie Database";

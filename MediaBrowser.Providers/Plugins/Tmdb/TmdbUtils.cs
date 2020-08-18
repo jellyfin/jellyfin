@@ -1,4 +1,5 @@
 using System;
+using System.Net.Mime;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
 
@@ -32,7 +33,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <summary>
         /// Value of the Accept header for requests to the provider.
         /// </summary>
-        public const string AcceptHeader = "application/json,image/*";
+        public static readonly string[] AcceptHeaders = { MediaTypeNames.Application.Json, "image/*" };
 
         /// <summary>
         /// Maps the TMDB provided roles for crew members to Jellyfin roles.

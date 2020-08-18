@@ -297,7 +297,7 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                using var httpClient = _httpClientFactory.CreateClient();
+                var httpClient = _httpClientFactory.CreateClient();
                 return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, httpClient).ConfigureAwait(false);
             }
 

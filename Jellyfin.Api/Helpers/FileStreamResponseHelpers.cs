@@ -36,7 +36,8 @@ namespace Jellyfin.Api.Helpers
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, useragent);
             }
 
-            using var response = await httpClient.GetAsync(state.MediaPath).ConfigureAwait(false);
+            // Can't dispose the response as it's required up the call chain.
+            var response = await httpClient.GetAsync(state.MediaPath).ConfigureAwait(false);
             var contentType = response.Content.Headers.ContentType.ToString();
 
             controller.Response.Headers[HeaderNames.AcceptRanges] = "none";

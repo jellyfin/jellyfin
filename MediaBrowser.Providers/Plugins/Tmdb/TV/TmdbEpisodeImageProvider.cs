@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -26,8 +26,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             IRemoteImageProvider,
             IHasOrder
     {
-        public TmdbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
-            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
+        public TmdbEpisodeImageProvider(IHttpClientFactory httpClientFactory, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
+            : base(httpClientFactory, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
         { }
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
@@ -115,7 +115,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return images.Stills ?? new List<Still>();
         }
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return GetResponse(url, cancellationToken);
         }

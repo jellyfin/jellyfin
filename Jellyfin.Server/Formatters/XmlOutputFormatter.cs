@@ -1,4 +1,5 @@
 using System;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 namespace Jellyfin.Server.Formatters
 {
     /// <summary>
-    /// Css output formatter.
+    /// Xml output formatter.
     /// </summary>
     public class XmlOutputFormatter : TextOutputFormatter
     {
@@ -16,17 +17,13 @@ namespace Jellyfin.Server.Formatters
         /// </summary>
         public XmlOutputFormatter()
         {
+            SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
             SupportedMediaTypes.Add("text/xml;charset=UTF-8");
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
         }
 
-        /// <summary>
-        /// Write context object to stream.
-        /// </summary>
-        /// <param name="context">Writer context.</param>
-        /// <param name="selectedEncoding">Unused. Writer encoding.</param>
-        /// <returns>Write stream task.</returns>
+        /// <inheritdoc />
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             return context.HttpContext.Response.WriteAsync(context.Object?.ToString());
