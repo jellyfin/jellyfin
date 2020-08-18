@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Events;
@@ -56,7 +55,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 return;
             }
 
-            var user = eventArgs.Users.First();
+            var user = eventArgs.Users[0];
 
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
