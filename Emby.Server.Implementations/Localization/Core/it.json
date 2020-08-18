@@ -102,7 +102,7 @@
     "TaskUpdatePluginsDescription": "Scarica e installa gli aggiornamenti per i plugin che sono stati configurati per essere aggiornati contemporaneamente.",
     "TaskUpdatePlugins": "Aggiorna i Plugin",
     "TaskRefreshPeopleDescription": "Aggiorna i metadati per gli attori e registi nella tua libreria multimediale.",
-    "TaskRefreshPeople": "Aggiorna persone",
+    "TaskRefreshPeople": "Aggiornamento Persone",
     "TaskCleanLogsDescription": "Rimuovi i file di log più vecchi di {0} giorni.",
     "TaskCleanLogs": "Pulisci la cartella dei log",
     "TaskRefreshLibraryDescription": "Analizza la tua libreria multimediale per nuovi file e rinnova i metadati.",
