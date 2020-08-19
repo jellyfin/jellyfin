@@ -51,7 +51,6 @@ namespace Jellyfin.Server
             services
                 .AddTransient<UserAgentDelegatingHandler>()
                 .AddHttpClient<DefaultHttpClient>()
-                .ConfigureHttpClient((sp, options) => {})
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler())
                 .AddHttpMessageHandler<UserAgentDelegatingHandler>();
         }
