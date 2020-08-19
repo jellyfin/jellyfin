@@ -465,9 +465,16 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
+                    using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-                    await _providerManager.SaveImage(item, response.Content, response.ContentType, type, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(
+                        item,
+                        stream,
+                        response.Content.Headers.ContentType.MediaType,
+                        type,
+                        null,
+                        cancellationToken).ConfigureAwait(false);
 
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                     return true;
@@ -565,14 +572,14 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
+                    using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
                     // If there's already an image of the same size, skip it
-                    if (response.ContentLength.HasValue)
+                    if (response.Content.Headers.ContentLength.HasValue)
                     {
                         try
                         {
-                            if (item.GetImages(imageType).Any(i => _fileSystem.GetFileInfo(i.Path).Length == response.ContentLength.Value))
+                            if (item.GetImages(imageType).Any(i => _fileSystem.GetFileInfo(i.Path).Length == response.Content.Headers.ContentLength.Value))
                             {
                                 response.Content.Dispose();
                                 continue;
@@ -584,7 +591,14 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
 
-                    await _providerManager.SaveImage(item, response.Content, response.ContentType, imageType, null, cancellationToken).ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await _providerManager.SaveImage(
+                        item,
+                        stream,
+                        response.Content.Headers.ContentType.MediaType,
+                        imageType,
+                        null,
+                        cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                 }
                 catch (HttpException ex)

@@ -386,7 +386,7 @@ namespace Jellyfin.Api.Controllers
             var user = _userManager.GetUserById(userId);
 
             // If removing admin access
-            if (!(newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator)))
+            if (!newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))
             {
                 if (_userManager.Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
                 {

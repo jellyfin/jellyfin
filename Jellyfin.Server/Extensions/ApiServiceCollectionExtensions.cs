@@ -154,6 +154,7 @@ namespace Jellyfin.Server.Extensions
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
+                    opts.OutputFormatters.Add(new XmlOutputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
