@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -157,7 +158,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
-        Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
+        Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
 
         Dictionary<Guid, Guid> GetRefreshQueue();
 

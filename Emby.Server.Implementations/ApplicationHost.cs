@@ -635,6 +635,9 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
             ServiceCollection.AddSingleton<TranscodingJobHelper>();
+            ServiceCollection.AddScoped<MediaInfoHelper>();
+            ServiceCollection.AddScoped<AudioHelper>();
+            ServiceCollection.AddScoped<DynamicHlsHelper>();
         }
 
         /// <summary>
