@@ -1,11 +1,11 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
 using System.Linq;
 using System.Xml.Linq;
 
 namespace Emby.Dlna.Ssdp
 {
-    public static class Extensions
+    public static class XElementExtensions
     {
         public static string GetValue(this XElement container, XName name)
         {

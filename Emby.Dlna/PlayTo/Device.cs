@@ -55,8 +55,6 @@ namespace Emby.Dlna.PlayTo
 
         private readonly ILogger _logger;
 
-        private readonly IServerConfigurationManager _config;
-
         public Action OnDeviceUnavailable { get; set; }
 
         public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, IServerConfigurationManager config)
@@ -64,7 +62,6 @@ namespace Emby.Dlna.PlayTo
             Properties = deviceProperties;
             _httpClient = httpClient;
             _logger = logger;
-            _config = config;
         }
 
         public void Start()
@@ -275,7 +272,7 @@ namespace Emby.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, string.Format("{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
+            await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, string.Format(CultureInfo.InvariantCulture, "{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
                 .ConfigureAwait(false);
 
             RestartTimer(true);
@@ -285,7 +282,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            url = url.Replace("&", "&amp;");
+            url = url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
 
             _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
 
@@ -819,7 +816,7 @@ namespace Emby.Dlna.PlayTo
             // some devices send back invalid xml
             try
             {
-                return XElement.Parse(xml.Replace("&", "&amp;"));
+                return XElement.Parse(xml.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase));
             }
             catch (XmlException)
             {
@@ -848,7 +845,7 @@ namespace Emby.Dlna.PlayTo
                 ParentId = container.GetAttributeValue(uPnpNamespaces.ParentId),
                 Title = container.GetValue(uPnpNamespaces.title),
                 IconUrl = container.GetValue(uPnpNamespaces.Artwork),
-                SecondText = "",
+                SecondText = string.Empty,
                 Url = url,
                 ProtocolInfo = GetProtocolInfo(container),
                 MetaData = container.ToString()
@@ -941,12 +938,12 @@ namespace Emby.Dlna.PlayTo
                 return url;
             }
 
-            if (!url.Contains("/"))
+            if (!url.Contains("/", StringComparison.OrdinalIgnoreCase))
             {
                 url = "/dmr/" + url;
             }
 
-            if (!url.StartsWith("/"))
+            if (!url.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
                 url = "/" + url;
             }

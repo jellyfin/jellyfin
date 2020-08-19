@@ -58,7 +58,7 @@ namespace Emby.Dlna
         {
             try
             {
-                await ExtractSystemProfilesAsync();
+                await ExtractSystemProfilesAsync().ConfigureAwait(false);
                 LoadProfiles();
             }
             catch (Exception ex)

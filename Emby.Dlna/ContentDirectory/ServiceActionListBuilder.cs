@@ -5,9 +5,9 @@ using Emby.Dlna.Common;
 
 namespace Emby.Dlna.ContentDirectory
 {
-    public class ServiceActionListBuilder
+    public static class ServiceActionListBuilder
     {
-        public IEnumerable<ServiceAction> GetActions()
+        public static IEnumerable<ServiceAction> GetActions()
         {
             return new[]
             {
@@ -170,7 +170,7 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetBrowseAction()
+        private static ServiceAction GetBrowseAction()
         {
             var action = new ServiceAction
             {
@@ -250,7 +250,7 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetBrowseByLetterAction()
+        private static ServiceAction GetBrowseByLetterAction()
         {
             var action = new ServiceAction
             {
@@ -337,7 +337,7 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetXSetBookmarkAction()
+        private static ServiceAction GetXSetBookmarkAction()
         {
             var action = new ServiceAction
             {

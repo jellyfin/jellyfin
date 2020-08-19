@@ -12,11 +12,17 @@ namespace Emby.Dlna.MediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DlnaMediaReceiverRegistrar"/> class.
+        /// </summary>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="httpClient">httpClient instance.</param>
+        /// <param name="config">Configuration instance</param>
         public DlnaMediaReceiverRegistrar(
-            ILoggerFactory loggerFactory,
+            ILogger logger,
             IHttpClient httpClient,
             IServerConfigurationManager config)
-            : base(loggerFactory?.CreateLogger<DlnaMediaReceiverRegistrar>(), httpClient)
+            : base(logger, httpClient)
         {
             _config = config ?? throw new NullReferenceException(nameof(config));
         }
@@ -24,7 +30,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new MediaReceiverRegistrarXmlBuilder().GetXml();
+            return MediaReceiverRegistrarXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />

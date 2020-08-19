@@ -169,6 +169,29 @@ namespace Emby.Dlna.Main
             _isDisposed = true;
         }
 
+        private static string CreateUuid(string text)
+        {
+            if (!Guid.TryParse(text, out var guid))
+            {
+                guid = text.GetMD5();
+            }
+
+            return guid.ToString("N", CultureInfo.InvariantCulture);
+        }
+
+        private static void SetProperies(SsdpDevice device, string fullDeviceType)
+        {
+            var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+            var serviceParts = service.Split(':');
+
+            var deviceTypeNamespace = serviceParts[0].Replace('.', '-');
+
+            device.DeviceTypeNamespace = deviceTypeNamespace;
+            device.DeviceClass = serviceParts[1];
+            device.DeviceType = serviceParts[2];
+        }
+
         private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
@@ -194,7 +217,6 @@ namespace Emby.Dlna.Main
             _logger.LogDebug("(Re)loading DLNA components.");
             lock (_syncLock)
             {
-
                 var options = _configurationManager.GetDlnaConfiguration();
 
                 if (options.EnablePlayTo || options.EnableServer)
@@ -205,6 +227,8 @@ namespace Emby.Dlna.Main
 
                 if (options.EnableServer)
                 {
+                    _logger.LogDebug("Starting DLNA Server.");
+
                     // Create SSDP server.
                     if (ContentDirectory == null)
                     {
@@ -229,14 +253,14 @@ namespace Emby.Dlna.Main
                         ConnectionManager = new DlnaConnectionManager(
                             _dlnaManager,
                             _configurationManager,
-                            _loggerFactory,
+                            _loggerFactory.CreateLogger<DlnaControlHandler>(),
                             _httpClient);
                     }
 
                     if (MediaReceiverRegistrar == null)
                     {
                         MediaReceiverRegistrar = new DlnaMediaReceiverRegistrar(
-                            _loggerFactory,
+                            _loggerFactory.CreateLogger<DlnaMediaReceiverRegistrar>(),
                             _httpClient,
                             _configurationManager);
                     }
@@ -251,7 +275,7 @@ namespace Emby.Dlna.Main
                 }
                 else
                 {
-                    // Disable the server
+                    _logger.LogDebug("Stopping DLNA Server.");
 
                     // This object will actually only dispose if no longer in use.
                     _deviceDiscovery?.Dispose();
@@ -359,29 +383,6 @@ namespace Emby.Dlna.Main
                     device.AddDevice(embeddedDevice);
                 }
             }
-        }
-
-        private string CreateUuid(string text)
-        {
-            if (!Guid.TryParse(text, out var guid))
-            {
-                guid = text.GetMD5();
-            }
-
-            return guid.ToString("N", CultureInfo.InvariantCulture);
-        }
-
-        private void SetProperies(SsdpDevice device, string fullDeviceType)
-        {
-            var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
-
-            var serviceParts = service.Split(':');
-
-            var deviceTypeNamespace = serviceParts[0].Replace('.', '-');
-
-            device.DeviceTypeNamespace = deviceTypeNamespace;
-            device.DeviceClass = serviceParts[1];
-            device.DeviceType = serviceParts[2];
         }
     }
 }

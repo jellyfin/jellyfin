@@ -1,11 +1,8 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Emby.Dlna.Rssdp.Devices;
 using Emby.Dlna.Rssdp.EventArgs;
 
-namespace Emby.Dlna.Rsddp
+namespace Emby.Dlna.Rssdp
 {
     /// <summary>
     /// Interface for components that discover the existence of SSDP devices.

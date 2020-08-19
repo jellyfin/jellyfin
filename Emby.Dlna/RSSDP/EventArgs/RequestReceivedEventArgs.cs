@@ -6,7 +6,7 @@ using System.Text;
 namespace Emby.Dlna.Rssdp.EventArgs
 {
     /// <summary>
-    /// Provides arguments for the <see cref="ISsdpCommunicationsServer.RequestReceived"/> event.
+    /// Provides arguments for the <see cref="SocketServer.RequestReceived"/> event.
     /// </summary>
     public sealed class RequestReceivedEventArgs : System.EventArgs
     {

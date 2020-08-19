@@ -5,9 +5,9 @@ using Emby.Dlna.Common;
 
 namespace Emby.Dlna.ConnectionManager
 {
-    public class ServiceActionListBuilder
+    public static class ServiceActionListBuilder
     {
-        public IEnumerable<ServiceAction> GetActions()
+        public static IEnumerable<ServiceAction> GetActions()
         {
             var list = new List<ServiceAction>
             {
@@ -146,7 +146,7 @@ namespace Emby.Dlna.ConnectionManager
             return action;
         }
 
-        private ServiceAction GetProtocolInfo()
+        private static ServiceAction GetProtocolInfo()
         {
             var action = new ServiceAction
             {
@@ -170,7 +170,7 @@ namespace Emby.Dlna.ConnectionManager
             return action;
         }
 
-        private ServiceAction GetCurrentConnectionIDs()
+        private static ServiceAction GetCurrentConnectionIDs()
         {
             var action = new ServiceAction
             {
@@ -187,7 +187,7 @@ namespace Emby.Dlna.ConnectionManager
             return action;
         }
 
-        private ServiceAction ConnectionComplete()
+        private static ServiceAction ConnectionComplete()
         {
             var action = new ServiceAction
             {

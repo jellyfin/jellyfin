@@ -1,11 +1,10 @@
-using System;
 using System.Net;
 using System.Net.Http;
 
 namespace Emby.Dlna.Rssdp.EventArgs
 {
     /// <summary>
-    /// Provides arguments for the <see cref="ISsdpCommunicationsServer.ResponseReceived"/> event.
+    /// Provides arguments for the <see cref="SocketServer.ResponseReceived"/> event.
     /// </summary>
     public sealed class ResponseReceivedEventArgs : System.EventArgs
     {
@@ -15,6 +14,7 @@ namespace Emby.Dlna.Rssdp.EventArgs
         /// <param name="message">Response message.</param>
         /// <param name="receivedFrom">Received from.</param>
         /// <param name="localIPAddress">Interface IP Address upon which it was received.</param>
+        /// <param name="simulated">True if the data was passed internally.</param>
         public ResponseReceivedEventArgs(HttpResponseMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress, bool simulated)
         {
             Message = message;
@@ -39,7 +39,7 @@ namespace Emby.Dlna.Rssdp.EventArgs
         public HttpResponseMessage Message { get; }
 
         /// <summary>
-        /// Gets the <see cref="UdpEndPoint"/> the response came from.
+        /// Gets the <see cref="IPEndPoint"/> the response came from.
         /// </summary>
         public IPEndPoint ReceivedFrom { get; }
     }

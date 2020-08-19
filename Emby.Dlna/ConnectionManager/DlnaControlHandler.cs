@@ -1,5 +1,4 @@
-#pragma warning disable CS1591
-
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -15,7 +14,7 @@ namespace Emby.Dlna.ConnectionManager
     {
         private readonly DeviceProfile _profile;
 
-        public DlnaControlHandler(IServerConfigurationManager config, ILogger<DlnaControlHandler> logger, DeviceProfile profile)
+        public DlnaControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
             : base(config, logger)
         {
             _profile = profile;

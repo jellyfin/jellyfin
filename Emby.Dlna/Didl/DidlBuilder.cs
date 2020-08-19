@@ -207,7 +207,8 @@ namespace Emby.Dlna.Didl
             var targetWidth = streamInfo.TargetWidth;
             var targetHeight = streamInfo.TargetHeight;
 
-            var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
+            var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(
+                streamInfo.Container,
                 streamInfo.TargetVideoCodec.FirstOrDefault(),
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetWidth,
@@ -583,7 +584,8 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
             }
 
-            var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
+            var mediaProfile = _profile.GetAudioMediaProfile(
+                streamInfo.Container,
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetChannels,
                 targetAudioBitrate,
@@ -596,7 +598,8 @@ namespace Emby.Dlna.Didl
                 ? MimeTypes.GetMimeType(filename)
                 : mediaProfile.MimeType;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(streamInfo.Container,
+            var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(
+                streamInfo.Container,
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetAudioBitrate,
                 targetSampleRate,
@@ -751,6 +754,7 @@ namespace Emby.Dlna.Didl
                         AddValue(writer, "dc", "description", desc, NS_DC);
                     }
                 }
+
                 // if (filter.Contains("upnp:longDescription"))
                 //{
                 //    if (!string.IsNullOrWhiteSpace(item.Overview))

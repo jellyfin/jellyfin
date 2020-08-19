@@ -185,6 +185,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
+#pragma warning disable CA2000 // Dispose objects before losing scope: Taken care of in dispose.
                 controller = new PlayToController(
                     sessionInfo,
                     _sessionManager,
@@ -201,6 +202,7 @@ namespace Emby.Dlna.PlayTo
                     _mediaSourceManager,
                     _config,
                     _mediaEncoder);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
                 sessionInfo.AddController(controller);
 
@@ -262,6 +264,9 @@ namespace Emby.Dlna.PlayTo
                 });
 
             _disposeCancellationTokenSource.Dispose();
+
+            _sessionLock?.Release();
+            _sessionLock?.Dispose();
 
             _disposed = true;
         }

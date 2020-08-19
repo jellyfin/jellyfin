@@ -51,6 +51,7 @@ namespace Emby.Dlna.Rssdp
             _socketServer.RequestReceived += RequestReceived;
         }
 
+        /// <inheritdoc/>
         public int AliveMessageInterval { get; set; }
 
         /// <summary>
@@ -101,6 +102,7 @@ namespace Emby.Dlna.Rssdp
             }
         }
 
+        /// <inheritdoc/>
         public void StartBroadcastingAliveMessages(TimeSpan interval)
         {
             if (_rebroadcastAliveNotificationsTimer != null)
@@ -149,7 +151,7 @@ namespace Emby.Dlna.Rssdp
             {
                 try
                 {
-                    _logger.LogInformation("Device Added {0}", Expand(device));
+                    _logger.LogInformation("Device Added {0}", device);
                     await SendAliveNotifications(device, true, true).ConfigureAwait(false);
                     StartBroadcastingAliveMessages(TimeSpan.FromSeconds(AliveMessageInterval));
                 }
@@ -185,7 +187,7 @@ namespace Emby.Dlna.Rssdp
 
             if (wasRemoved)
             {
-                _logger.LogInformation("Device Removed {0}", Expand(device));
+                _logger.LogInformation("Device Removed {0}", device);
 
                 await SendByeByeNotifications(device, true).ConfigureAwait(false);
             }
@@ -262,9 +264,11 @@ namespace Emby.Dlna.Rssdp
             {
                 var deviceList = devices.ToList();
 
+                SsdpRootDevice rt;
+
                 foreach (var device in deviceList)
                 {
-                    var rt = device.ToRootDevice();
+                    rt = device.ToRootDevice();
 
                     // Response is sent only when the device in the same subnet, or the are private address on the local device.
                     if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, receivedFrom.Address) ||
@@ -313,9 +317,8 @@ namespace Emby.Dlna.Rssdp
             };
 
             var message = BuildMessage("HTTP/1.1 200 OK", values);
-
-            await _socketServer.SendMessageAsync(System.Text.Encoding.UTF8.GetBytes(message), localIP, endPoint).ConfigureAwait(false);
-            _logger.LogDebug("-> RESPONSE: {0} : {1}", endPoint, device);
+            _logger.LogDebug("->OK : {0}, {1}", localIP, endPoint.Address);
+            await _socketServer.SendMessageAsync(message, localIP, endPoint).ConfigureAwait(false);
         }
 
         private bool IsDuplicateSearchRequest(string searchTarget, EndPoint endPoint)
@@ -465,8 +468,8 @@ namespace Emby.Dlna.Rssdp
                     ["USN"] = uniqueServiceName
                 };
 
-                var message = BuildMessage("NOTIFY * HTTP / 1.1", values);
-                _logger.LogDebug("-> SSDP:ALIVE : {1} - {2}", multicastAddresses[a], uniqueServiceName);
+                var message = BuildMessage("NOTIFY* HTTP/1.1", values);
+                _logger.LogDebug("->NOTIFY ssdp:alive : {0}, {1}", rootDevice.Address, multicastAddresses[a]);
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
             }
 
@@ -519,30 +522,13 @@ namespace Emby.Dlna.Rssdp
                 };
 
                 var message = BuildMessage("NOTIFY* HTTP/ 1.1", values);
-
+                var addr = device.ToRootDevice().Address;
+                _logger.LogDebug("->NOTIFY ssdp:byebye {0} : {1}", addr, multicastAddresses[a]);
                 var sendCount = IsDisposed ? 1 : 3;
-                tasks[a] = _socketServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
+                tasks[a] = _socketServer.SendMulticastMessageAsync(message, sendCount, addr);
             }
-
-            _logger.LogInformation("-> SSDP:BYEBYE : {0}", device);
 
             return Task.WhenAll(tasks);
-        }
-
-        /// <summary>
-        /// Expands the device's name.
-        /// </summary>
-        /// <param name="device">The device to expand.</param>
-        private string Expand(SsdpDevice device)
-        {
-            if (device is SsdpRootDevice rootDevice)
-            {
-                return device.DeviceType + " - " + device.Uuid + " - " + rootDevice.Location;
-            }
-            else
-            {
-                return device.DeviceType + " - " + device.Uuid;
-            }
         }
 
         private void RequestReceived(object sender, RequestReceivedEventArgs e)

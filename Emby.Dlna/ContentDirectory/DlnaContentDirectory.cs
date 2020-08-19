@@ -63,7 +63,7 @@ namespace Emby.Dlna.ContentDirectory
             _loggerFactory = loggerFactory ?? throw new NullReferenceException(nameof(loggerFactory));
         }
 
-        private int SystemUpdateId
+        private static int SystemUpdateId
         {
             get
             {
@@ -75,12 +75,17 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new ContentDirectoryXmlBuilder().GetXml();
+            return ContentDirectoryXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var profile = _dlna.GetProfile(request.Headers) ??
                           _dlna.GetDefaultProfile();
 
@@ -89,7 +94,7 @@ namespace Emby.Dlna.ContentDirectory
             var user = GetUser(profile);
 
             return new ControlHandler(
-                _loggerFactory,
+                _loggerFactory.CreateLogger<ControlHandler>(),
                 _libraryManager,
                 profile,
                 serverAddress,

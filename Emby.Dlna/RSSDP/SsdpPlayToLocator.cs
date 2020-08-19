@@ -6,10 +6,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.Rsddp;
 using Emby.Dlna.Rssdp.Devices;
 using Emby.Dlna.Rssdp.EventArgs;
 using MediaBrowser.Common.Net;
@@ -248,11 +246,12 @@ namespace Emby.Dlna.Rssdp
                 };
 
                 var message = BuildMessage("M-SEARCH * HTTP/1.1", values);
+                IPAddress dest = a == 0 ? IPAddress.Any : IPAddress.IPv6Any;
 
-                tasks[a] = _socketServer.SendMulticastMessageAsync(message, a == 0 ? IPAddress.Any : IPAddress.IPv6Any);
+                _logger.LogDebug("->M-SEARCH {0} : {1}", dest, multicastAddresses[a]);
+                tasks[a] = _socketServer.SendMulticastMessageAsync(message, dest);
             }
 
-            _logger.LogDebug("-> M-SEARCH");
             return Task.WhenAll(tasks);
         }
 
@@ -340,7 +339,7 @@ namespace Emby.Dlna.Rssdp
                     // Process Alive Notification.
                     if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                     {
-                        _logger.LogDebug("<- ALIVE : {0} ", device.DescriptionLocation);
+                        _logger.LogDebug("<- ssdpalive : {0} ", device.DescriptionLocation);
                     }
 
                     return;

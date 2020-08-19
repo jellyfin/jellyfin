@@ -223,14 +223,22 @@ namespace Emby.Dlna.Rssdp.Devices
 
         public SsdpRootDevice ToRootDevice()
         {
-            var rootDevice = this as SsdpRootDevice;
+            SsdpDevice? rootDevice = null;
+            if (this is SsdpRootDevice root)
+            {
+                rootDevice = root;
+            }
+            else if (this is SsdpEmbeddedDevice embedded)
+            {
+                rootDevice = embedded?.RootDevice;
+            }
 
             if (rootDevice == null)
             {
-                rootDevice = ((SsdpEmbeddedDevice)this).RootDevice;
+                throw new NullReferenceException("RootDevice cannot be null.");
             }
 
-            return rootDevice ?? throw new NullReferenceException("Something went wrong. RootDevice cannot be Null.");
+            return (SsdpRootDevice)rootDevice;
         }
 
         /// <summary>
@@ -254,7 +262,7 @@ namespace Emby.Dlna.Rssdp.Devices
                 throw new ArgumentNullException(nameof(device));
             }
 
-            var thisRootDevice = this.ToRootDevice();
+            SsdpDevice thisRootDevice = ToRootDevice();
             if (device.RootDevice != null && device.RootDevice != thisRootDevice)
             {
                 throw new InvalidOperationException("This device is already associated with a different root device (has been added as a child in another branch).");
@@ -268,7 +276,7 @@ namespace Emby.Dlna.Rssdp.Devices
             bool wasAdded = false;
             lock (_devices)
             {
-                device.RootDevice = thisRootDevice;
+                device.RootDevice = thisRootDevice as SsdpRootDevice;
                 if (!_devices.Contains(device))
                 {
                     _devices.Add(device);

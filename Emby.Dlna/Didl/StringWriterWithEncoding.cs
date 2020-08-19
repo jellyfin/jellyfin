@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -20,7 +21,7 @@ namespace Emby.Dlna.Didl
         }
 
         public StringWriterWithEncoding(StringBuilder sb)
-            : base(sb)
+            : base(sb, CultureInfo.InvariantCulture)
         {
         }
 
@@ -42,7 +43,7 @@ namespace Emby.Dlna.Didl
         }
 
         public StringWriterWithEncoding(StringBuilder sb, Encoding encoding)
-            : base(sb)
+            : base(sb, CultureInfo.InvariantCulture)
         {
             _encoding = encoding;
         }

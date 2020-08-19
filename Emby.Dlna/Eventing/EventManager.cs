@@ -59,10 +59,7 @@ namespace Emby.Dlna.Eventing
             var timeout = ParseTimeout(requestedTimeoutString) ?? 300;
             var id = "uuid:" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
-            _logger.LogDebug("Creating event subscription for {0} with timeout of {1} to {2}",
-                notificationType,
-                timeout,
-                callbackUrl);
+            _logger.LogDebug("Creating event subscription for {0} with timeout of {1} to {2}", notificationType, timeout, callbackUrl);
 
             _subscriptions.TryAdd(id, new EventSubscription
             {
@@ -94,7 +91,7 @@ namespace Emby.Dlna.Eventing
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
             _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
-            _ = _subscriptions.TryRemove(subscriptionId, out _);
+            _subscriptions.TryRemove(subscriptionId, out _);
 
             return new EventSubscriptionResponse
             {

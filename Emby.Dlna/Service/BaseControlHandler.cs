@@ -31,6 +31,11 @@ namespace Emby.Dlna.Service
         {
             try
             {
+                if (request == null)
+                {
+                    throw new ArgumentNullException(nameof(request));
+                }
+
                 LogRequest(request);
 
                 var response = await ProcessControlRequestInternalAsync(request).ConfigureAwait(false);
