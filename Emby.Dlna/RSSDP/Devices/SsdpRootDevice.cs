@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Net;
+using MediaBrowser.Common.Networking;
 
 namespace Emby.Dlna.Rssdp.Devices
 {
@@ -21,18 +22,17 @@ namespace Emby.Dlna.Rssdp.Devices
         /// <param name="cacheLifetime">Cache lifetime.</param>
         /// <param name="location">Location.</param>
         /// <param name="address">IP Address.</param>
-        /// <param name="subnetMask">Subnet mask.</param>
+        /// <param name="subnetPrefix">Subnet mask prefix.</param>
         /// <param name="friendlyName">Friendly name.</param>
         /// <param name="manufacturer">Manufacturer.</param>
         /// <param name="modelName">Model name.</param>
         /// <param name="udn">UDN.</param>
-        public SsdpRootDevice(TimeSpan cacheLifetime, Uri location, IPAddress address, IPAddress subnetMask, string friendlyName, string manufacturer, string modelName, string udn)
+        public SsdpRootDevice(TimeSpan cacheLifetime, Uri location, IPObject address, string friendlyName, string manufacturer, string modelName, string udn)
             : base(friendlyName, manufacturer, modelName, udn)
         {
             CacheLifetime = cacheLifetime;
             Location = location;
-            Address = address;
-            SubnetMask = subnetMask;
+            NetworkAddress = address;
         }
 
         /// <summary>
@@ -52,14 +52,14 @@ namespace Emby.Dlna.Rssdp.Devices
         public Uri Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the Address used to check if the received message from same interface with this device/tree. Required.
+        /// Gets or sets the IP Object Address used to check if the received message from same interface with this device/tree. Required.
         /// </summary>
-        public IPAddress Address { get; set; }
+        public IPObject NetworkAddress { get; set; }
 
-        /// <summary>
-        /// Gets or sets the SubnetMask used to check if the received message from same interface with this device/tree. Required.
-        /// </summary>
-        public IPAddress SubnetMask { get; set; }
+       /// <summary>
+       /// Gets the Address used to check if the received message from same interface with this device/tree.
+       /// </summary>
+        public IPAddress Address { get => NetworkAddress.Address; }
 
         /// <summary>
         /// Gets or sets the base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
@@ -101,7 +101,7 @@ namespace Emby.Dlna.Rssdp.Devices
                 return false;
             }
 
-            return string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase) && Address.Equals(other.Address);
+            return string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase) && NetworkAddress.Equals(other.NetworkAddress);
         }
 
         /// <inheritdoc/>

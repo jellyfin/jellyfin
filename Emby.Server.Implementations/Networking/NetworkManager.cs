@@ -249,12 +249,6 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address)
-        {
-            return IPObject.NetworkAddress(subnetIP, subnetMask).Equals(IPObject.NetworkAddress(address, subnetMask));
-        }
-
-        /// <inheritdoc/>
         public bool OnSameMachine(IPAddress addr1, IPAddress addr2)
         {
             if (addr1 == null || addr2 == null)

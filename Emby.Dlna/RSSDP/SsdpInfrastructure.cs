@@ -32,12 +32,12 @@ namespace Emby.Dlna.Rssdp
 
             const string ArgFormat = "{0}: {1}\r\n";
 
-            builder.AppendFormat(CultureInfo.CurrentCulture, "{0}\r\n", header);
+            builder.AppendFormat(CultureInfo.InvariantCulture, "{0}\r\n", header);
             if (values != null)
             {
                 foreach (var pair in values)
                 {
-                    builder.AppendFormat(CultureInfo.CurrentCulture, ArgFormat, pair.Key, pair.Value);
+                    builder.AppendFormat(CultureInfo.InvariantCulture, ArgFormat, pair.Key, pair.Value);
                 }
             }
 

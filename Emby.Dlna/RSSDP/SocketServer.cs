@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna.Rssdp.EventArgs;
 using Emby.Dlna.Rssdp.Parsers;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
@@ -77,6 +78,7 @@ namespace Emby.Dlna.Rssdp
             CreateSockets();
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+            _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
             _networkManager.NetworkChanged += NetworkChanged;
         }
 
@@ -118,9 +120,15 @@ namespace Emby.Dlna.Rssdp
                 _oldState = _networkManager.IsuPnPActive;
             }
 
-            _tracing = _configurationManager.GetDlnaConfiguration().EnableDebugLog;
         }
 
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        {
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                _tracing = _configurationManager.GetDlnaConfiguration().EnableDebugLog;
+            }
+        }
         /// <summary>
         /// Triggered on a network change.
         /// </summary>
@@ -154,7 +162,7 @@ namespace Emby.Dlna.Rssdp
             {
                 throw new ArgumentNullException(nameof(localIPAddress));
             }
-            
+
             if (IsInvalid(localIPAddress, endPoint, false, false))
             {
                 return;
@@ -360,6 +368,7 @@ namespace Emby.Dlna.Rssdp
                 Instance = null;
 
                 _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
+                _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
                 _networkManager.NetworkChanged -= ConfigurationUpdated;
                 NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
 
@@ -457,6 +466,7 @@ namespace Emby.Dlna.Rssdp
                     {
                         _logger.LogDebug("{0}->{1}:{2}", socket.LocalAddress(), destination.Address, message);
                     }
+
                     try
                     {
                         await socket.SendToAsync(messageData, SocketFlags.None, destination).ConfigureAwait(false);

@@ -32,6 +32,7 @@ namespace MediaBrowser.Common.Networking
         public NetCollection(NetCollection net)
         {
             Items = new List<IPObject>();
+
             if (net != null)
             {
                 Items.AddRange(net.Items);
@@ -126,7 +127,7 @@ namespace MediaBrowser.Common.Networking
                 if (i is IPNetAddress nw)
                 {
                     // Add the subnet calculated from the interface address/mask.
-                    IPNetAddress lan = new IPNetAddress(IPObject.NetworkAddress(nw.Address, nw.Mask), nw.Mask)
+                    IPNetAddress lan = new IPNetAddress(nw.NetworkAddress, (byte)(nw.SubnetPrefix > 64 ? 64 : nw.SubnetPrefix))
                     {
                         Tag = i.Tag
                     };
@@ -138,7 +139,7 @@ namespace MediaBrowser.Common.Networking
                     // Flatten out IPHost and add all its ip addresses.
                     foreach (var addr in ((IPHost)i).GetAddresses())
                     {
-                        IPNetAddress host = new IPNetAddress(addr, 32)
+                        IPNetAddress host = new IPNetAddress(addr)
                         {
                             Tag = i.Tag
                         };

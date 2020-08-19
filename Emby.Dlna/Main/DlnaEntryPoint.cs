@@ -197,6 +197,7 @@ namespace Emby.Dlna.Main
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
                 ReloadComponents();
+
                 if (_publisher != null)
                 {
                     _publisher.AliveMessageInterval = _configurationManager.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
@@ -227,11 +228,11 @@ namespace Emby.Dlna.Main
 
                 if (options.EnableServer)
                 {
-                    _logger.LogDebug("Starting DLNA Server.");
 
                     // Create SSDP server.
                     if (ContentDirectory == null)
                     {
+                        _logger.LogDebug("Starting DLNA Server.");
                         ContentDirectory = new DlnaContentDirectory(
                             _dlnaManager,
                             _userDataManager,
@@ -275,7 +276,6 @@ namespace Emby.Dlna.Main
                 }
                 else
                 {
-                    _logger.LogDebug("Stopping DLNA Server.");
 
                     // This object will actually only dispose if no longer in use.
                     _deviceDiscovery?.Dispose();
@@ -287,8 +287,12 @@ namespace Emby.Dlna.Main
 
                     DisposeDevicePublisher();
 
+                    if (ContentDirectory != null)
+                    {
+                        _logger.LogDebug("Stopping DLNA Server.");
+                        ContentDirectory = null;
+                    }
                     MediaReceiverRegistrar = null;
-                    ContentDirectory = null;
                     ConnectionManager = null;
                     GC.Collect();
                 }
@@ -302,6 +306,7 @@ namespace Emby.Dlna.Main
 
                     if (_manager == null)
                     {
+                        _logger.LogDebug("Starting playTo.");
                         _manager = new PlayToManager(
                             _logger,
                             _sessionManager,
@@ -323,11 +328,15 @@ namespace Emby.Dlna.Main
                 }
                 else
                 {
-                    lock (_syncLock)
+                    if (_manager != null)
                     {
-                        _manager?.Dispose();
-                        _manager = null;
-                        GC.Collect();
+                        _logger.LogDebug("Stopping playTo.");
+                        lock (_syncLock)
+                        {
+                            _manager?.Dispose();
+                            _manager = null;
+                            GC.Collect();
+                        }
                     }
                 }
             }
@@ -358,8 +367,7 @@ namespace Emby.Dlna.Main
                 SsdpRootDevice device = new SsdpRootDevice(
                     TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     uri, // Must point to the URL that serves your devices UPnP description document.
-                    addr.Address,
-                    addr.Mask,
+                    addr,
                     "Jellyfin",
                     "Jellyfin",
                     "Jellyfin Server",

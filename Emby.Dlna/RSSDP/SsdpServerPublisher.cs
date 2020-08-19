@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Emby.Dlna.Rssdp.Devices;
 using Emby.Dlna.Rssdp.EventArgs;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
@@ -271,8 +272,7 @@ namespace Emby.Dlna.Rssdp
                     rt = device.ToRootDevice();
 
                     // Response is sent only when the device in the same subnet, or the are private address on the local device.
-                    if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, receivedFrom.Address) ||
-                        _networkManager.OnSameMachine(rt.Address, receivedFrom.Address))
+                    if (IPObject.IsInSameSubnet(rt.NetworkAddress, receivedFrom.Address) || _networkManager.OnSameMachine(rt.Address, receivedFrom.Address))
                     {
                         await SendDeviceSearchResponsesAsync(device, localIP, receivedFrom).ConfigureAwait(false);
                     }
@@ -468,8 +468,8 @@ namespace Emby.Dlna.Rssdp
                     ["USN"] = uniqueServiceName
                 };
 
-                var message = BuildMessage("NOTIFY* HTTP/1.1", values);
-                _logger.LogDebug("->NOTIFY ssdp:alive : {0}, {1}", rootDevice.Address, multicastAddresses[a]);
+                var message = BuildMessage("NOTIFY * HTTP/1.1", values);
+                _logger.LogDebug("-> NOTIFY ssdp:alive : {0} -> {1} : {2}", rootDevice.Address, multicastAddresses[a], message);
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
             }
 

@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 
@@ -32,9 +33,14 @@ namespace MediaBrowser.Common.Networking
         public abstract IPAddress Address { get; set; }
 
         /// <summary>
+        /// Gets the object's network address.
+        /// </summary>
+        public virtual IPAddress NetworkAddress { get; internal set; } = IPAddress.None;
+
+        /// <summary>
         /// Gets the object's IP address.
         /// </summary>
-        public abstract IPAddress Mask { get; }
+        public abstract byte SubnetPrefix { get; }
 
         /// <summary>
         /// Gets the AddressFamily of this object.
@@ -89,13 +95,7 @@ namespace MediaBrowser.Common.Networking
 
             if (!address.Equals(IPAddress.None))
             {
-                byte[] b = address.GetAddressBytes();
-                if (address.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return CompareByteArray(b, Ipv4Loopback, 4);
-                }
-
-                return CompareByteArray(b, Ipv6Loopback, 16);
+                return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
             }
 
             return false;
@@ -161,10 +161,11 @@ namespace MediaBrowser.Common.Networking
         /// Convert a subnet mask in CIDR notation to a dotted decimal string value. IPv4 only.
         /// </summary>
         /// <param name="cidr">Subnet mask in CIDR notation.</param>
+        /// <param name="family">IPv4 or IPv6 family.</param>
         /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
-        public static IPAddress CidrToMask(byte cidr)
+        public static IPAddress CidrToMask(byte cidr, AddressFamily family)
         {
-            uint addr = 0xFFFFFFFF << (32 - cidr);
+            uint addr = 0xFFFFFFFF << (family == AddressFamily.InterNetwork ? 32 : 128 - cidr);
             addr =
                 ((addr & 0xff000000) >> 24) |
                 ((addr & 0x00ff0000) >> 8) |
@@ -179,14 +180,14 @@ namespace MediaBrowser.Common.Networking
         /// </summary>
         /// <param name="mask">Subnet mask.</param>
         /// <returns>Byte CIDR representing the mask.</returns>
-        public static int MaskToCidr(IPAddress mask)
+        public static byte MaskToCidr(IPAddress mask)
         {
             if (mask == null)
             {
                 throw new ArgumentNullException(nameof(mask));
             }
 
-            int cidrnet = 0;
+            byte cidrnet = 0;
             if (!mask.Equals(IPAddress.Any))
             {
                 byte[] bytes = mask.GetAddressBytes();
@@ -199,7 +200,7 @@ namespace MediaBrowser.Common.Networking
                         if (zeroed)
                         {
                             // Invalid netmask.
-                            return ~cidrnet;
+                            return (byte)~cidrnet;
                         }
 
                         if ((v & 0x80) == 0)
@@ -218,46 +219,71 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
+        /// Returns the network address of an object.
+        /// </summary>
+        /// <param name="address">IP Address to convert.</param>
+        /// <param name="subnetPrefix">Subnet prefix.</param>
+        /// <returns>IPAddress.</returns>
+        public static IPAddress Network(IPAddress address, byte subnetPrefix)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (IsLoopback(address))
+            {
+                return address;
+            }
+
+            if (subnetPrefix > 64)
+            {
+                subnetPrefix = 64;
+            }
+
+            byte[] addressBytes = address.GetAddressBytes();
+
+            int div = subnetPrefix / 8;
+            int mod = subnetPrefix % 8;
+            if (mod != 0)
+            {
+                addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
+                div++;
+            }
+
+            for (int octet = div; octet < addressBytes.Length; octet++)
+            {
+                addressBytes[octet] = 0;
+            }
+
+            return new IPAddress(addressBytes);
+        }
+
+        /// <summary>
         /// Returns the Network address of an ip address.
         /// </summary>
-        /// <param name="address">IP address.</param>
-        /// <param name="mask">Submask.</param>
+        /// <param name="address">IP object address.</param>
+        /// <param name="other">IP address to compare.</param>
         /// <returns>The network ip address of the subnet.</returns>
-        public static IPAddress NetworkAddress(IPAddress address, IPAddress mask)
+        public static bool IsInSameSubnet(IPObject address, IPAddress other)
         {
-            if (address == null || mask == null)
+            if (address == null)
             {
-                throw new ArgumentNullException(address == null ? nameof(address) : nameof(address));
+                throw new ArgumentNullException(nameof(address));
             }
 
-            if (address.Equals(IPAddress.None) || (mask.Equals(IPAddress.Any) && address.AddressFamily != AddressFamily.InterNetworkV6))
+            if (other == null)
             {
-                throw new ArgumentException("{0} must contain a value.", address.Equals(IPAddress.None) ? nameof(address) : nameof(mask));
+                throw new ArgumentNullException(nameof(other));
             }
 
-            if (address.AddressFamily == AddressFamily.InterNetwork)
+            if (address.AddressFamily != other.AddressFamily)
             {
-                byte[] addressBytes4 = address.GetAddressBytes();
-                byte[] maskBytes4 = mask.GetAddressBytes();
-
-                if (addressBytes4.Length != maskBytes4.Length)
-                {
-                    throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
-                }
-
-                byte[] networkAddress4 = new byte[addressBytes4.Length];
-                for (int i = 0; i < networkAddress4.Length; i++)
-                {
-                    networkAddress4[i] = (byte)(addressBytes4[i] & maskBytes4[i]);
-                }
-
-                return new IPAddress(networkAddress4);
+                return false;
             }
 
-            // First 64 bits contain the routing prefix.
-            byte[] addressBytes = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            Array.Copy(address.GetAddressBytes(), addressBytes, 8);
-            return new IPAddress(addressBytes);
+            IPAddress network = Network(other, address.SubnetPrefix);
+            return address.NetworkAddress.Equals(network);
         }
 
         /// <summary>

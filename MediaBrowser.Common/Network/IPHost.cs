@@ -78,7 +78,7 @@ namespace MediaBrowser.Common.Networking
         /// Gets the object's first IP's mask.
         /// The setter does nothing.
         /// </summary>
-        public override IPAddress Mask
+        public override byte SubnetPrefix
         {
             get
             {
@@ -87,7 +87,7 @@ namespace MediaBrowser.Common.Networking
                     ResolveHost();
                 }
 
-                return _addresses.Length > 0 ? IPAddress.Broadcast : IPAddress.None;
+                return (byte)((_addresses.Length > 0) ? 128 : 0);
             }
         }
 
@@ -104,6 +104,17 @@ namespace MediaBrowser.Common.Networking
             get
             {
                 return _addresses.Length > 0;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override IPAddress NetworkAddress
+        {
+            get => this[0];
+
+            internal set
+            {
+                // Not applicable;
             }
         }
 

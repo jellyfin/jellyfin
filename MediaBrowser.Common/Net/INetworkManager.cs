@@ -233,15 +233,6 @@ namespace MediaBrowser.Common.Net
         NetCollection GetFilteredLANSubnets(NetCollection? filter = null);
 
         /// <summary>
-        /// Returns true if the IP address in address2 is within the network subnetIP/subnetMask.
-        /// </summary>
-        /// <param name="subnetIP">Subnet IP.</param>
-        /// <param name="subnetMask">Subnet Mask.</param>
-        /// <param name="address">Address to check.</param>
-        /// <returns>True if address is in the subnet.</returns>
-        bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address);
-
-        /// <summary>
         /// Creates an UDP Socket.
         /// </summary>
         /// <param name="port">UDP port to bind.</param>

@@ -22,6 +22,7 @@ namespace NetworkTesting
         [InlineData("localhost:1345")]
         [InlineData("www.google.co.uk")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124")]
         [InlineData("fe80::7add:12ff:febb:c67b%16")]
         [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
@@ -70,11 +71,11 @@ namespace NetworkTesting
             "[]",
             "[192.158.0.0/16,192.0.0.0/8]")]
         [InlineData("192.158.1.2/16, localhost, fd23:184f:2029:0:3139:7386:67d7:d517,    [10.10.10.10]",
-            "[192.158.1.2/16,127.0.0.1/32,fd23:184f:2029:0:3139:7386:67d7:d517]",
+            "[192.158.1.2/16,127.0.0.1/32,fd23:184f:2029:0:3139:7386:67d7:d517/128]",
             "[192.158.1.2/16,127.0.0.1/32]",
             "[10.10.10.10/32]",
             "[10.10.10.10/32]",
-            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029::]")]
+            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029::/56]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
             var conf = new ServerConfiguration()

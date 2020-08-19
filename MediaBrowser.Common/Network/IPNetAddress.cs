@@ -47,13 +47,19 @@ namespace MediaBrowser.Common.Networking
         private IPAddress _address;
 
         /// <summary>
+        /// Object's network address.
+        /// </summary>
+        private byte _subnetPrefix;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
         /// <param name="address">Address to assign.</param>
         public IPNetAddress(IPAddress address)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            Mask = IPAddress.Any;
+            _subnetPrefix = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+            NetworkAddress = Network(_address, _subnetPrefix);
         }
 
         /// <summary>
@@ -64,25 +70,30 @@ namespace MediaBrowser.Common.Networking
         public IPNetAddress(IPAddress address, IPAddress subnet)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            Mask = subnet ?? throw new ArgumentNullException(nameof(subnet));
+            if (subnet == null)
+            {
+                throw new ArgumentNullException(nameof(subnet));
+            }
+
+            if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                throw new ArgumentException("This method of creation is only for IPv4 addresses.");
+            }
+
+            _subnetPrefix = MaskToCidr(subnet);
+            NetworkAddress = Network(_address, _subnetPrefix);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
         /// <param name="address">IP Address.</param>
-        /// <param name="cidr">Mask as a CIDR.</param>
-        public IPNetAddress(IPAddress address, byte cidr)
+        /// <param name="subnetPrefix">Mask as a CIDR.</param>
+        public IPNetAddress(IPAddress address, byte subnetPrefix)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                Mask = IPAddress.Any;
-            }
-            else
-            {
-                Mask = CidrToMask(cidr);
-            }
+            _subnetPrefix = subnetPrefix;
+            NetworkAddress = Network(_address, subnetPrefix);
         }
 
         /// <summary>
@@ -97,14 +108,37 @@ namespace MediaBrowser.Common.Networking
 
             set
             {
-                _address = value ?? IPAddress.None;
+                if (value != null)
+                {
+                    _address = value;
+                    NetworkAddress = Network(value, SubnetPrefix);
+                }
+                else
+                {
+                    _address = IPAddress.None;
+                    NetworkAddress = IPAddress.None;
+                }
             }
         }
+
+        /// <inheritdoc/>
+        public override byte SubnetPrefix => _subnetPrefix;
 
         /// <summary>
         /// Gets the subnet mask of this object.
         /// </summary>
-        public override IPAddress Mask { get; }
+        public IPAddress Mask
+        {
+            get
+            {
+                if (!_address.Equals(IPAddress.None))
+                {
+                    return CidrToMask(_subnetPrefix, _address.AddressFamily);
+                }
+
+                return IPAddress.None;
+            }
+        }
 
         /// <summary>
         /// Try to parse the address and subnet strings into an IPNetAddress object.
@@ -121,7 +155,7 @@ namespace MediaBrowser.Common.Networking
                 // Try to parse it as is.
                 if (IPAddress.TryParse(addr, out IPAddress res))
                 {
-                    ip = new IPNetAddress(res, 32);
+                    ip = new IPNetAddress(res);
                     return true;
                 }
 
@@ -137,7 +171,7 @@ namespace MediaBrowser.Common.Networking
                     {
                         if (byte.TryParse(tokens[1], out byte cidr))
                         {
-                            ip = new IPNetAddress(res, CidrToMask(cidr));
+                            ip = new IPNetAddress(res, cidr);
                             return true;
                         }
 
@@ -176,10 +210,12 @@ namespace MediaBrowser.Common.Networking
         /// <returns>Comparison result.</returns>
         public override bool Contains(IPAddress address)
         {
-            IPAddress nwAdd1 = IPObject.NetworkAddress(Address, Mask);
-            IPAddress nwAdd2 = IPObject.NetworkAddress(address, Mask);
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
 
-            return nwAdd1.Equals(nwAdd2) && !nwAdd1.Equals(IPAddress.None);
+            return !Address.Equals(IPAddress.None) && !address.Equals(IPAddress.None) && IPObject.IsInSameSubnet(this, address);
         }
 
         /// <summary>
@@ -201,7 +237,7 @@ namespace MediaBrowser.Common.Networking
             }
             else if (address is IPNetAddress netaddrObj)
             {
-                return Contains(netaddrObj.Address);
+                return NetworkAddress.Equals(netaddrObj.NetworkAddress) && SubnetPrefix <= netaddrObj.SubnetPrefix;
             }
 
             return false;
@@ -333,7 +369,7 @@ namespace MediaBrowser.Common.Networking
 
                 if (!Mask.Equals(IPAddress.Any))
                 {
-                    return $"{Address}/" + IPObject.MaskToCidr(Mask);
+                    return $"{Address}/{SubnetPrefix}";
                 }
 
                 return Address.ToString();
