@@ -359,53 +359,52 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Information retrieved.</response>
         /// <returns>An array of <see cref="FontFile"/> with the available font files.</returns>
-        [HttpGet("/FallbackFont/Fonts")]
+        [HttpGet("FallbackFont/Fonts")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<FontFile[]> GetFallbackFontList()
+        /// <summary>
+        /// Gets a list of available fallback font files.
+        /// </summary>
+        /// <response code="200">Information retrieved.</response>
+        /// <returns>An array of <see cref="FontFile"/> with the available font files.</returns>
+        [HttpGet("FallbackFont/Fonts")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IEnumerable<FontFile> GetFallbackFontList()
         {
-            IEnumerable<FileSystemMetadata> fontFiles = Enumerable.Empty<FileSystemMetadata>();
-
-            var encodingOptions = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager);
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
             var fallbackFontPath = encodingOptions.FallbackFontPath;
 
             if (!string.IsNullOrEmpty(fallbackFontPath))
             {
-                try
-                {
-                    fontFiles = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
+                var files = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
 
-                    var result = fontFiles.Select(i => new FontFile
+                var fontFiles = files
+                    .Select(i => new FontFile
                     {
                         Name = i.Name,
                         Size = i.Length,
                         DateCreated = _fileSystem.GetCreationTimeUtc(i),
                         DateModified = _fileSystem.GetLastWriteTimeUtc(i)
-                    }).OrderBy(i => i.Size)
-                        .ThenBy(i => i.Name)
-                        .ThenByDescending(i => i.DateModified)
-                        .ThenByDescending(i => i.DateCreated)
-                        .ToArray();
+                    })
+                    .OrderBy(i => i.Size)
+                    .ThenBy(i => i.Name)
+                    .ThenByDescending(i => i.DateModified)
+                    .ThenByDescending(i => i.DateCreated);
 
-                    // max total size 20M
-                    var maxSize = 20971520;
-                    var sizeCounter = 0L;
-                    for (int i = 0; i < result.Length; i++)
+                // max total size 20M
+                const int MaxSize = 20971520;
+                var sizeCounter = 0L;
+                foreach (var fontFile in fontFiles)
+                {
+                    sizeCounter += fontFile.Size;
+                    if (sizeCounter >= MaxSize)
                     {
-                        sizeCounter += result[i].Size;
-                        if (sizeCounter >= maxSize)
-                        {
-                            _logger.LogWarning("Some fonts will not be sent due to size limitations");
-                            Array.Resize(ref result, i);
-                            break;
-                        }
+                        _logger.LogWarning("Some fonts will not be sent due to size limitations");
+                        yield break;
                     }
 
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting fallback font list");
+                    yield return fontFile;
                 }
             }
             else
@@ -413,8 +412,6 @@ namespace Jellyfin.Api.Controllers
                 _logger.LogWarning("The path of fallback font folder has not been set");
                 encodingOptions.EnableFallbackFont = false;
             }
-
-            return File(Encoding.UTF8.GetBytes("[]"), MediaTypeNames.Application.Json);
         }
 
         /// <summary>
@@ -423,12 +420,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="name">The name of the fallback font file to get.</param>
         /// <response code="200">Fallback font file retrieved.</response>
         /// <returns>The fallback font file.</returns>
-        [HttpGet("/FallbackFont/Fonts/{name}")]
+        [HttpGet("FallbackFont/Fonts/{name}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult GetFallbackFont([FromRoute, Required] string? name)
+        public ActionResult GetFallbackFont([FromRoute, Required] string name)
         {
-            var encodingOptions = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager);
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
             var fallbackFontPath = encodingOptions.FallbackFontPath;
 
             if (!string.IsNullOrEmpty(fallbackFontPath))
@@ -441,7 +438,7 @@ namespace Jellyfin.Api.Controllers
 
                     if (fontFile != null && fileSize != null && fileSize > 0)
                     {
-                        _logger.LogDebug("Fallback font size is {0} Bytes", fileSize);
+                        _logger.LogDebug("Fallback font size is {fileSize} Bytes", fileSize);
 
                         FileStream stream = new FileStream(fontFile.FullName, FileMode.Open, FileAccess.Read);
                         return File(stream, MimeTypes.GetMimeType(fontFile.FullName));
