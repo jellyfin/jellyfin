@@ -38,8 +38,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase);
 
         private const string SearchUrl = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
-        private const string SearchUrlWithYear = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}&first_air_date_year={4}";
-
+        private const string SearchUrlTvWithYear = TmdbUtils.BaseTmdbApiUrl + @"3/search/tv?api_key={1}&query={0}&language={2}&first_air_date_year={3}";
+        private const string SearchUrlMovieWithYear = TmdbUtils.BaseTmdbApiUrl + @"3/search/movie?api_key={1}&query={0}&language={2}&primary_release_year={3}";
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
         private readonly ILibraryManager _libraryManager;
@@ -173,11 +173,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 url3 = string.Format(
                     CultureInfo.InvariantCulture,
-                    SearchUrl,
+                    SearchUrlMovieWithYear,
                     WebUtility.UrlEncode(name),
                     TmdbUtils.ApiKey,
                     language,
-                    type) + "&primary_release_year=" + year;
+                    year);
             }
             else
             {
@@ -246,15 +246,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 url3 = string.Format(
                     CultureInfo.InvariantCulture,
-                    SearchUrlWithYear,
+                    SearchUrlTvWithYear,
                     WebUtility.UrlEncode(name),
                     TmdbUtils.ApiKey,
                     language,
-                    "tv",
                     year);
             }
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
             foreach (var header in TmdbUtils.AcceptHeaders)
             {
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
