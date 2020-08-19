@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
@@ -19,8 +20,6 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
-        public Guid[] SpecialFeatureIds { get; set; }
-
         public Movie()
         {
             SpecialFeatureIds = Array.Empty<Guid>();
@@ -28,6 +27,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             LocalTrailerIds = Array.Empty<Guid>();
             RemoteTrailerIds = Array.Empty<Guid>();
         }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> SpecialFeatureIds { get; set; }
 
         /// <inheritdoc />
         public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
@@ -47,6 +49,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             get => TmdbCollectionName;
             set => TmdbCollectionName = value;
         }
+
+        [JsonIgnore]
+        public override bool StopRefreshIfLocalMetadataFound => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -107,6 +112,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return itemsChanged;
         }
 
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Movie;
@@ -135,6 +141,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return info;
         }
 
+        /// <inheritdoc />
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {
             var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
@@ -171,6 +178,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return hasChanges;
         }
 
+        /// <inheritdoc />
         public override List<ExternalUrl> GetRelatedUrls()
         {
             var list = base.GetRelatedUrls();
@@ -187,8 +195,5 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             return list;
         }
-
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }
