@@ -157,10 +157,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
-                    var defaultValue = "HDHR";
+                    const string DefaultValue = "HDHR";
                     var response = new DiscoverResponse
                     {
-                        ModelNumber = defaultValue
+                        ModelNumber = DefaultValue
                     };
                     if (!string.IsNullOrEmpty(cacheKey))
                     {
