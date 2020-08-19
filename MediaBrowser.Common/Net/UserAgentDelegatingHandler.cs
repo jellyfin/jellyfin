@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -13,20 +12,17 @@ namespace MediaBrowser.Common.Net
     /// </summary>
     public class UserAgentDelegatingHandler : DelegatingHandler
     {
+        private readonly ProductInfoHeaderValue[] _userAgentValues;
+
         /// <inheritdoc />
         public UserAgentDelegatingHandler(IApplicationHost applicationHost)
         {
-            UserAgentValues = new List<ProductInfoHeaderValue>
+            _userAgentValues = new []
             {
                 new ProductInfoHeaderValue(applicationHost.Name.Replace(' ', '-'),  applicationHost.ApplicationVersionString),
                 new ProductInfoHeaderValue($"({Environment.OSVersion}; {applicationHost.ApplicationUserAgentAddress})")
             };
         }
-
-        /// <summary>
-        /// Gets or sets the user agent values.
-        /// </summary>
-        public List<ProductInfoHeaderValue> UserAgentValues { get; set; }
 
         /// <summary>
         /// Send request message.
@@ -40,9 +36,9 @@ namespace MediaBrowser.Common.Net
         {
             if (request.Headers.UserAgent.Count == 0)
             {
-                foreach (var userAgentValue in UserAgentValues)
+                for (var i = 0; i < _userAgentValues.Length; i++)
                 {
-                    request.Headers.UserAgent.Add(userAgentValue);
+                    request.Headers.UserAgent.Add(_userAgentValues[i]);
                 }
             }
 
