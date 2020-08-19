@@ -82,8 +82,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableRemoteAccess { get; set; }
 
-        public bool CollectionsUpgraded { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
         /// </summary>
@@ -257,6 +255,16 @@ namespace MediaBrowser.Model.Configuration
         public string[] UninstalledPlugins { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether slow server responses should be logged as a warning.
+        /// </summary>
+        public bool EnableSlowResponseWarning { get; set; }
+
+        /// <summary>
+        /// Gets or sets the threshold for the slow response time warning in ms.
+        /// </summary>
+        public long SlowResponseThresholdMs { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -269,6 +277,9 @@ namespace MediaBrowser.Model.Configuration
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = false;
+            SkipDeserializationForBasicTypes = true;
+
+            PluginRepositories = new List<RepositoryInfo>();
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -282,6 +293,9 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
+            EnableNormalizedItemByNameIds = true;
+            DisableLiveTvChannelUserDataName = true;
+            EnableNewOmdbSupport = true;
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
@@ -355,6 +369,9 @@ namespace MediaBrowser.Model.Configuration
                     DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
+
+            EnableSlowResponseWarning = true;
+            SlowResponseThresholdMs = 500;
         }
     }
 

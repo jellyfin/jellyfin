@@ -11,6 +11,7 @@ using System.Xml;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;

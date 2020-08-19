@@ -17,6 +17,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public override string Description => "Get metadata for movies and other video content from TheTVDB.";
 
+        // TODO remove when plugin removed from server.
+        public override string ConfigurationFileName => "Jellyfin.Plugin.TheTvdb.xml";
+
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
         {

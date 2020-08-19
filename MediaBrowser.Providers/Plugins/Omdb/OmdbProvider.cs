@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -25,14 +24,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IApplicationHost _appHost;
 
-        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
@@ -62,7 +61,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -163,7 +162,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -293,15 +292,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var url = GetOmdbUrl(string.Format("i={0}&plot=short&tomatoes=true&r=json", imdbParam), _appHost, cancellationToken);
 
-            using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
-            {
-                using (var stream = response.Content)
-                {
-                    var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    _jsonSerializer.SerializeToFile(rootObject, path);
-                }
-            }
+            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(), url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            _jsonSerializer.SerializeToFile(rootObject, path);
 
             return path;
         }
@@ -330,28 +325,18 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var url = GetOmdbUrl(string.Format("i={0}&season={1}&detail=full", imdbParam, seasonId), _appHost, cancellationToken);
 
-            using (var response = await GetOmdbResponse(_httpClient, url, cancellationToken).ConfigureAwait(false))
-            {
-                using (var stream = response.Content)
-                {
-                    var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    _jsonSerializer.SerializeToFile(rootObject, path);
-                }
-            }
+            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(), url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            _jsonSerializer.SerializeToFile(rootObject, path);
 
             return path;
         }
 
-        public static Task<HttpResponseInfo> GetOmdbResponse(IHttpClient httpClient, string url, CancellationToken cancellationToken)
+        public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
         {
-            return httpClient.SendAsync(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                BufferContent = true,
-                EnableDefaultUserAgent = true
-            }, HttpMethod.Get);
+            return httpClient.GetAsync(url, cancellationToken);
         }
 
         internal string GetDataFilePath(string imdbId)

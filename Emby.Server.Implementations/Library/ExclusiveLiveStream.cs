@@ -11,6 +11,17 @@ namespace Emby.Server.Implementations.Library
 {
     public class ExclusiveLiveStream : ILiveStream
     {
+        private readonly Func<Task> _closeFn;
+
+        public ExclusiveLiveStream(MediaSourceInfo mediaSource, Func<Task> closeFn)
+        {
+            MediaSource = mediaSource;
+            EnableStreamSharing = false;
+            _closeFn = closeFn;
+            ConsumerCount = 1;
+            UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        }
+
         public int ConsumerCount { get; set; }
 
         public string OriginalStreamId { get; set; }
@@ -21,18 +32,7 @@ namespace Emby.Server.Implementations.Library
 
         public MediaSourceInfo MediaSource { get; set; }
 
-        public string UniqueId { get; private set; }
-
-        private Func<Task> _closeFn;
-
-        public ExclusiveLiveStream(MediaSourceInfo mediaSource, Func<Task> closeFn)
-        {
-            MediaSource = mediaSource;
-            EnableStreamSharing = false;
-            _closeFn = closeFn;
-            ConsumerCount = 1;
-            UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-        }
+        public string UniqueId { get; }
 
         public Task Close()
         {

@@ -47,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     text = Regex.Replace(text, @"\\n", " ", RegexOptions.IgnoreCase);
 
                     writer.WriteLine(text);
-                    writer.WriteLine(string.Empty);
+                    writer.WriteLine();
                 }
             }
         }
