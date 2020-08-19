@@ -108,15 +108,7 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <inheritdoc/>
-        public override IPAddress NetworkAddress
-        {
-            get => this[0];
-
-            internal set
-            {
-                // Not applicable;
-            }
-        }
+        public override IPObject NetworkAddress => new IPNetAddress(this[0]);
 
         /// <summary>
         /// Gets the host name of this object.

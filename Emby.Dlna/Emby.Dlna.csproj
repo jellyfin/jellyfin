@@ -35,6 +35,10 @@
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningsAsErrors>NU1605;CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Images\logo120.jpg" />
     <EmbeddedResource Include="Images\logo120.png" />

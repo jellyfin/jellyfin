@@ -521,7 +521,7 @@ namespace Emby.Dlna.Rssdp
                     ["USN"] = uniqueServiceName
                 };
 
-                var message = BuildMessage("NOTIFY* HTTP/ 1.1", values);
+                var message = BuildMessage("NOTIFY * HTTP/1.1", values);
                 var addr = device.ToRootDevice().Address;
                 _logger.LogDebug("->NOTIFY ssdp:byebye {0} : {1}", addr, multicastAddresses[a]);
                 var sendCount = IsDisposed ? 1 : 3;

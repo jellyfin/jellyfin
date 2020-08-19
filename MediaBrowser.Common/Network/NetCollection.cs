@@ -127,7 +127,7 @@ namespace MediaBrowser.Common.Networking
                 if (i is IPNetAddress nw)
                 {
                     // Add the subnet calculated from the interface address/mask.
-                    IPNetAddress lan = new IPNetAddress(nw.NetworkAddress, (byte)(nw.SubnetPrefix > 64 ? 64 : nw.SubnetPrefix))
+                    IPNetAddress lan = new IPNetAddress(nw.NetworkAddress.Address, nw.NetworkAddress.SubnetPrefix)
                     {
                         Tag = i.Tag
                     };
@@ -386,9 +386,9 @@ namespace MediaBrowser.Common.Networking
 
             NetCollection nc = new NetCollection();
 
-            foreach (IPObject i in Items)
+            foreach (IPObject i in target.Items)
             {
-                if (target.Contains(i, out IPObject? match))
+                if (Contains(i, out IPObject? match))
                 {
                     if (match != null) // && IPObject.MaskToCidr(match.Mask) < IPObject.MaskToCidr(i.Mask))
                     {

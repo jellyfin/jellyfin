@@ -51,6 +51,8 @@ namespace MediaBrowser.Common.Networking
         /// </summary>
         private byte _subnetPrefix;
 
+        private IPNetAddress? _networkAddress;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
@@ -59,7 +61,6 @@ namespace MediaBrowser.Common.Networking
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
             _subnetPrefix = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
-            NetworkAddress = Network(_address, _subnetPrefix);
         }
 
         /// <summary>
@@ -81,7 +82,6 @@ namespace MediaBrowser.Common.Networking
             }
 
             _subnetPrefix = MaskToCidr(subnet);
-            NetworkAddress = Network(_address, _subnetPrefix);
         }
 
         /// <summary>
@@ -93,7 +93,6 @@ namespace MediaBrowser.Common.Networking
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
             _subnetPrefix = subnetPrefix;
-            NetworkAddress = Network(_address, subnetPrefix);
         }
 
         /// <summary>
@@ -108,16 +107,22 @@ namespace MediaBrowser.Common.Networking
 
             set
             {
-                if (value != null)
+                _address = value ?? IPAddress.None;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override IPObject NetworkAddress
+        {
+            get
+            {
+                if (_networkAddress == null)
                 {
-                    _address = value;
-                    NetworkAddress = Network(value, SubnetPrefix);
+                    var value = Network(_address, _subnetPrefix);
+                    _networkAddress = new IPNetAddress(value.Item1, value.Item2);
                 }
-                else
-                {
-                    _address = IPAddress.None;
-                    NetworkAddress = IPAddress.None;
-                }
+
+                return _networkAddress;
             }
         }
 
@@ -237,7 +242,17 @@ namespace MediaBrowser.Common.Networking
             }
             else if (address is IPNetAddress netaddrObj)
             {
-                return NetworkAddress.Equals(netaddrObj.NetworkAddress) && SubnetPrefix <= netaddrObj.SubnetPrefix;
+                if (NetworkAddress.Equals(netaddrObj.NetworkAddress))
+                {
+                    return true;
+                }
+
+                if (NetworkAddress.SubnetPrefix < netaddrObj.SubnetPrefix)
+                {
+                    // Test to see if address is a member of this subnet.
+                    var test = Network(netaddrObj.Address, NetworkAddress.SubnetPrefix);
+                    return NetworkAddress.Address.Equals(test.Item1);
+                }
             }
 
             return false;

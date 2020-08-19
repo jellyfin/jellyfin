@@ -1,7 +1,5 @@
 #nullable enable
-
 using System;
-using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 
@@ -35,7 +33,7 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Gets the object's network address.
         /// </summary>
-        public virtual IPAddress NetworkAddress { get; internal set; } = IPAddress.None;
+        public abstract IPObject NetworkAddress { get; }
 
         /// <summary>
         /// Gets the object's IP address.
@@ -224,7 +222,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="address">IP Address to convert.</param>
         /// <param name="subnetPrefix">Subnet prefix.</param>
         /// <returns>IPAddress.</returns>
-        public static IPAddress Network(IPAddress address, byte subnetPrefix)
+        internal static Tuple<IPAddress, byte> Network(IPAddress address, byte subnetPrefix)
         {
             if (address == null)
             {
@@ -233,7 +231,7 @@ namespace MediaBrowser.Common.Networking
 
             if (IsLoopback(address))
             {
-                return address;
+                return Tuple.Create<IPAddress, byte>(address, subnetPrefix);
             }
 
             if (subnetPrefix > 64)
@@ -256,7 +254,23 @@ namespace MediaBrowser.Common.Networking
                 addressBytes[octet] = 0;
             }
 
-            return new IPAddress(addressBytes);
+            // Reduce the subnet prefix where possible.
+            // if (address.AddressFamily == AddressFamily.InterNetworkV6 && subnetPrefix == 64)
+            // {
+            //    for (int octet = addressBytes.Length - 1; octet > 0; octet--)
+            //    {
+            //        if (addressBytes[octet] == 0)
+            //        {
+            //            subnetPrefix = (byte)(octet * 4);
+            //        }
+            //        else
+            //        {
+            //            break;
+            //        }
+            //    }
+            // }
+
+            return Tuple.Create<IPAddress, byte>(new IPAddress(addressBytes), subnetPrefix);
         }
 
         /// <summary>
@@ -282,8 +296,8 @@ namespace MediaBrowser.Common.Networking
                 return false;
             }
 
-            IPAddress network = Network(other, address.SubnetPrefix);
-            return address.NetworkAddress.Equals(network);
+            var network = Network(other, address.SubnetPrefix);
+            return address.NetworkAddress.Address.Equals(network.Item1);
         }
 
         /// <summary>

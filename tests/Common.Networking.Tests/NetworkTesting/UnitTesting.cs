@@ -75,7 +75,7 @@ namespace NetworkTesting
             "[192.158.1.2/16,127.0.0.1/32]",
             "[10.10.10.10/32]",
             "[10.10.10.10/32]",
-            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029::/56]")]
+            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029::/64]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
             var conf = new ServerConfiguration()
