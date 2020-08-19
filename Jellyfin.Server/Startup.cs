@@ -1,13 +1,20 @@
+using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
+using System.Reflection;
+using Emby.Server.Implementations;
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http.Logging;
 using Prometheus;
 
 namespace Jellyfin.Server
@@ -44,7 +51,13 @@ namespace Jellyfin.Server
             services.AddCustomAuthentication();
 
             services.AddJellyfinApiAuthorization();
-            services.AddHttpClient();
+
+            services
+                .AddTransient<UserAgentDelegatingHandler>()
+                .AddHttpClient<DefaultHttpClient>()
+                .ConfigureHttpClient((sp, options) => {})
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler())
+                .AddHttpMessageHandler<UserAgentDelegatingHandler>();
         }
 
         /// <summary>
