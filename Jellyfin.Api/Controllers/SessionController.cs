@@ -413,7 +413,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostFullCapabilities(
-            [FromQuery, Required] string? id,
+            [FromQuery] string? id,
             [FromBody, Required] ClientCapabilities capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -480,7 +480,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Password reset providers retrieved.</response>
         /// <returns>An <see cref="IEnumerable{NameIdPair}"/> with the password reset providers.</returns>
-        [HttpGet("Auto/PasswordResetProviders")]
+        [HttpGet("Auth/PasswordResetProviders")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.RequiresElevation)]
         public ActionResult<IEnumerable<NameIdPair>> GetPasswordResetProviders()
