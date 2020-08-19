@@ -465,10 +465,10 @@ namespace Jellyfin.Api.Helpers
             var profile = request.DeviceProfile;
             if (profile == null)
             {
-                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
-                if (caps != null)
+                var clientCapabilities = _deviceManager.GetCapabilities(authInfo.DeviceId);
+                if (clientCapabilities != null)
                 {
-                    profile = caps.DeviceProfile;
+                    profile = clientCapabilities.DeviceProfile;
                 }
             }
 
