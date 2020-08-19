@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -20,6 +22,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Subtitles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +36,7 @@ namespace Jellyfin.Api.Controllers
     [Route("")]
     public class SubtitleController : BaseJellyfinApiController
     {
+        private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ISubtitleEncoder _subtitleEncoder;
@@ -45,6 +49,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleController"/> class.
         /// </summary>
+        /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
         /// <param name="subtitleManager">Instance of <see cref="ISubtitleManager"/> interface.</param>
         /// <param name="subtitleEncoder">Instance of <see cref="ISubtitleEncoder"/> interface.</param>
@@ -54,6 +59,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of <see cref="ILogger{SubtitleController}"/> interface.</param>
         public SubtitleController(
+            IServerConfigurationManager serverConfigurationManager,
             ILibraryManager libraryManager,
             ISubtitleManager subtitleManager,
             ISubtitleEncoder subtitleEncoder,
@@ -63,6 +69,7 @@ namespace Jellyfin.Api.Controllers
             IAuthorizationContext authContext,
             ILogger<SubtitleController> logger)
         {
+            _serverConfigurationManager = serverConfigurationManager;
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _subtitleEncoder = subtitleEncoder;
@@ -345,6 +352,117 @@ namespace Jellyfin.Api.Controllers
                 endPositionTicks ?? 0,
                 copyTimestamps,
                 CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets a list of available fallback font files.
+        /// </summary>
+        /// <response code="200">Information retrieved.</response>
+        /// <returns>An array of <see cref="FontFile"/> with the available font files.</returns>
+        [HttpGet("/FallbackFont/Fonts")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<FontFile[]> GetFallbackFontList()
+        {
+            IEnumerable<FileSystemMetadata> fontFiles = Enumerable.Empty<FileSystemMetadata>();
+
+            var encodingOptions = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager);
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                try
+                {
+                    fontFiles = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
+
+                    var result = fontFiles.Select(i => new FontFile
+                    {
+                        Name = i.Name,
+                        Size = i.Length,
+                        DateCreated = _fileSystem.GetCreationTimeUtc(i),
+                        DateModified = _fileSystem.GetLastWriteTimeUtc(i)
+                    }).OrderBy(i => i.Size)
+                        .ThenBy(i => i.Name)
+                        .ThenByDescending(i => i.DateModified)
+                        .ThenByDescending(i => i.DateCreated)
+                        .ToArray();
+
+                    // max total size 20M
+                    var maxSize = 20971520;
+                    var sizeCounter = 0L;
+                    for (int i = 0; i < result.Length; i++)
+                    {
+                        sizeCounter += result[i].Size;
+                        if (sizeCounter >= maxSize)
+                        {
+                            _logger.LogWarning("Some fonts will not be sent due to size limitations");
+                            Array.Resize(ref result, i);
+                            break;
+                        }
+                    }
+
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting fallback font list");
+                }
+            }
+            else
+            {
+                _logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
+
+            return File(Encoding.UTF8.GetBytes("[]"), MediaTypeNames.Application.Json);
+        }
+
+        /// <summary>
+        /// Gets a fallback font file.
+        /// </summary>
+        /// <param name="name">The name of the fallback font file to get.</param>
+        /// <response code="200">Fallback font file retrieved.</response>
+        /// <returns>The fallback font file.</returns>
+        [HttpGet("/FallbackFont/Fonts/{name}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult GetFallbackFont([FromRoute, Required] string? name)
+        {
+            var encodingOptions = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager);
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                try
+                {
+                    var fontFile = _fileSystem.GetFiles(fallbackFontPath)
+                        .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+                    var fileSize = fontFile?.Length;
+
+                    if (fontFile != null && fileSize != null && fileSize > 0)
+                    {
+                        _logger.LogDebug("Fallback font size is {0} Bytes", fileSize);
+
+                        FileStream stream = new FileStream(fontFile.FullName, FileMode.Open, FileAccess.Read);
+                        return File(stream, MimeTypes.GetMimeType(fontFile.FullName));
+                    }
+                    else
+                    {
+                        _logger.LogWarning("The selected font is null or empty");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error reading fallback font");
+                }
+            }
+            else
+            {
+                _logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
+
+            return File(Encoding.UTF8.GetBytes(string.Empty), MediaTypeNames.Text.Plain);
         }
     }
 }
