@@ -1,3 +1,6 @@
+using System;
+using System.ComponentModel;
+using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
@@ -100,6 +103,9 @@ namespace Jellyfin.Server
             });
 
             app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);
+
+            // Add type descriptor for legacy datetime parsing.
+            TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));
         }
     }
 }
