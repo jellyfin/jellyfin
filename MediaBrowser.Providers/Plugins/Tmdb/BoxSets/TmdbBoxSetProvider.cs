@@ -180,7 +180,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
             if (!string.IsNullOrEmpty(language))
             {
-                url += string.Format("&language={0}", TmdbMovieProvider.NormalizeLanguage(language));
+                url += string.Format(CultureInfo.InvariantCulture, "&language={0}", TmdbMovieProvider.NormalizeLanguage(language));
 
                 // Get images in english and with no language
                 url += "&include_image_language=" + TmdbMovieProvider.GetImageLanguagesParam(language);
@@ -250,7 +250,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         {
             var path = GetDataPath(appPaths, tmdbId);
 
-            var filename = string.Format("all-{0}.json", preferredLanguage ?? string.Empty);
+            var filename = string.Format(CultureInfo.InvariantCulture, "all-{0}.json", preferredLanguage ?? string.Empty);
 
             return Path.Combine(path, filename);
         }

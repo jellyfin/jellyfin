@@ -552,8 +552,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var thumbnail = enableThumbnail ? ",thumbnail=24" : string.Empty;
 
-            var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
-                string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
+            var args = useIFrame ? string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
+                string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
@@ -570,7 +570,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (offset.HasValue)
             {
-                args = string.Format("-ss {0} ", GetTimeParameter(offset.Value)) + args;
+                args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
             }
 
             if (videoStream != null)
@@ -641,7 +641,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (exitCode == -1 || !file.Exists || file.Length == 0)
                 {
-                    var msg = string.Format("ffmpeg image extraction failed for {0}", inputPath);
+                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath);
 
                     _logger.LogError(msg);
 
@@ -684,13 +684,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var maxWidthParam = maxWidth.Value.ToString(_usCulture);
 
-                vf += string.Format(",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
+                vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }
 
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
@@ -790,7 +790,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (exitCode == -1)
                 {
-                    var msg = string.Format("ffmpeg image extraction failed for {0}", inputArgument);
+                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputArgument);
 
                     _logger.LogError(msg);
 

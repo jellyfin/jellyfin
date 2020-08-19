@@ -496,7 +496,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 list.Add(new ExternalUrl
                 {
                     Name = "Trakt",
-                    Url = string.Format("https://trakt.tv/shows/{0}", imdbId)
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/shows/{0}", imdbId)
                 });
             }
 
