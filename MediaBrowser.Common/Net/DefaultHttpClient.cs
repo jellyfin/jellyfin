@@ -27,16 +27,6 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="url">Url to request.</param>
         /// <returns>A <see cref="Task"/> containing the <see cref="HttpResponseMessage"/>.</returns>
-        public Task<HttpResponseMessage> GetAsync(string url)
-        {
-            return _httpClient.GetAsync(url);
-        }
-
-        /// <summary>
-        /// Make GET request.
-        /// </summary>
-        /// <param name="url">Url to request.</param>
-        /// <returns>A <see cref="Task"/> containing the <see cref="HttpResponseMessage"/>.</returns>
         public Task<HttpResponseMessage> GetAsync(Uri url)
         {
             return _httpClient.GetAsync(url);
@@ -48,30 +38,9 @@ namespace MediaBrowser.Common.Net
         /// <param name="url">Url to request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A <see cref="Task"/> containing the <see cref="HttpResponseMessage"/>.</returns>
-        public Task<HttpResponseMessage> GetAsync(string url, CancellationToken cancellationToken)
-        {
-            return _httpClient.GetAsync(url, cancellationToken);
-        }
-
-        /// <summary>
-        /// Make GET request.
-        /// </summary>
-        /// <param name="url">Url to request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="Task"/> containing the <see cref="HttpResponseMessage"/>.</returns>
         public Task<HttpResponseMessage> GetAsync(Uri url, CancellationToken cancellationToken)
         {
             return _httpClient.GetAsync(url, cancellationToken);
-        }
-
-        /// <summary>
-        /// Get stream.
-        /// </summary>
-        /// <param name="url">Url to get stream from.</param>
-        /// <returns>A <see cref="Task"/> containing the <see cref="Stream"/>.</returns>
-        public Task<Stream> GetStreamAsync(string url)
-        {
-            return _httpClient.GetStreamAsync(url);
         }
 
         /// <summary>

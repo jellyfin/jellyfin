@@ -14,10 +14,13 @@ namespace MediaBrowser.Common.Net
     {
         private readonly ProductInfoHeaderValue[] _userAgentValues;
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserAgentDelegatingHandler"/> class.
+        /// </summary>
+        /// <param name="applicationHost">Instance of the <see cref="IApplicationHost"/> interface.</param>
         public UserAgentDelegatingHandler(IApplicationHost applicationHost)
         {
-            _userAgentValues = new []
+            _userAgentValues = new[]
             {
                 new ProductInfoHeaderValue(applicationHost.Name.Replace(' ', '-'),  applicationHost.ApplicationVersionString),
                 new ProductInfoHeaderValue($"({Environment.OSVersion}; {applicationHost.ApplicationUserAgentAddress})")

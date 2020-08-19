@@ -8,7 +8,9 @@ namespace MediaBrowser.Common.Net
     /// </summary>
     public class DefaultHttpClientHandler : HttpClientHandler
     {
-        /// <inheritdoc />
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultHttpClientHandler"/> class.
+        /// </summary>
         public DefaultHttpClientHandler()
         {
             // TODO change to DecompressionMethods.All with .NET5
