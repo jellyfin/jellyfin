@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +21,7 @@ namespace MediaBrowser.Common.Net
         {
             _userAgentValues = new[]
             {
-                new ProductInfoHeaderValue(applicationHost.Name.Replace(' ', '-'),  applicationHost.ApplicationVersionString),
-                new ProductInfoHeaderValue($"({Environment.OSVersion}; {applicationHost.ApplicationUserAgentAddress})")
+                new ProductInfoHeaderValue(applicationHost.Name.Replace(' ', '-'),  applicationHost.ApplicationVersionString)
             };
         }
 
