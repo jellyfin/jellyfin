@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,9 +18,18 @@ namespace MediaBrowser.MediaEncoding.Probing
 {
     public class ProbeResultNormalizer
     {
+        // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
+        private const int MaxSubtitleDescriptionExtractionLength = 100;
+
+        private const string ArtistReplaceValue = " | ";
+
+        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
+
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
+
+        private List<string> _splitWhiteList = null;
 
         public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
@@ -368,7 +379,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private List<NameValuePair> ReadValueArray(XmlReader reader)
         {
-
             var pairs = new List<NameValuePair>();
 
             reader.MoveToContent();
@@ -949,50 +959,46 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
+            var peoples = new List<BaseItemPerson>();
             var composer = FFProbeHelpers.GetDictionaryValue(tags, "composer");
             if (!string.IsNullOrWhiteSpace(composer))
             {
-                var peoples = new List<BaseItemPerson>();
                 foreach (var person in Split(composer, false))
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
                 }
-
-                audio.People = peoples.ToArray();
             }
 
-            // var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
-            // if (!string.IsNullOrWhiteSpace(conductor))
-            //{
-            //    foreach (var person in Split(conductor, false))
-            //    {
-            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
-            //    }
-            //}
+            var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
+            if (!string.IsNullOrWhiteSpace(conductor))
+            {
+                foreach (var person in Split(conductor, false))
+                {
+                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+                }
+            }
 
-            // var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
-            // if (!string.IsNullOrWhiteSpace(lyricist))
-            //{
-            //    foreach (var person in Split(lyricist, false))
-            //    {
-            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
-            //    }
-            //}
+            var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            if (!string.IsNullOrWhiteSpace(lyricist))
+            {
+                foreach (var person in Split(lyricist, false))
+                {
+                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                }
+            }
 
             // Check for writer some music is tagged that way as alternative to composer/lyricist
             var writer = FFProbeHelpers.GetDictionaryValue(tags, "writer");
 
             if (!string.IsNullOrWhiteSpace(writer))
             {
-                var peoples = new List<BaseItemPerson>();
                 foreach (var person in Split(writer, false))
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
                 }
-
-                audio.People = peoples.ToArray();
             }
 
+            audio.People = peoples.ToArray();
             audio.Album = FFProbeHelpers.GetDictionaryValue(tags, "album");
 
             var artists = FFProbeHelpers.GetDictionaryValue(tags, "artists");
@@ -1117,8 +1123,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
-
         /// <summary>
         /// Splits the specified val.
         /// </summary>
@@ -1137,8 +1141,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => i.Trim());
         }
-
-        private const string ArtistReplaceValue = " | ";
 
         private IEnumerable<string> SplitArtists(string val, char[] delimiters, bool splitFeaturing)
         {
@@ -1168,9 +1170,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             artistsFound.AddRange(artists);
             return artistsFound;
         }
-
-
-        private List<string> _splitWhiteList = null;
 
         private IEnumerable<string> GetSplitWhitelist()
         {
@@ -1248,7 +1247,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the disc number, which is sometimes can be in the form of '1', or '1/3'
+        /// Gets the disc number, which is sometimes can be in the form of '1', or '1/3'.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="tagName">Name of the tag.</param>
@@ -1293,8 +1292,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             return info;
         }
-
-        private const int MaxSubtitleDescriptionExtractionLength = 100; // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
 
         private void FetchWtvInfo(MediaInfo video, InternalMediaInfoResult data)
         {
@@ -1367,7 +1364,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             // OR -> COMMENT. SUBTITLE: DESCRIPTION
             // e.g. -> 4/13. The Doctor's Wife: Science fiction drama. When he follows a Time Lord distress signal, the Doctor puts Amy, Rory and his beloved TARDIS in grave danger. Also in HD. [AD,S]
             // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
-            if (string.IsNullOrWhiteSpace(subTitle) && !string.IsNullOrWhiteSpace(description) && description.Substring(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).Contains(":")) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
+            if (string.IsNullOrWhiteSpace(subTitle)
+                && !string.IsNullOrWhiteSpace(description)
+                && description.AsSpan().Slice(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).IndexOf(':') != -1) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
             {
                 string[] parts = description.Split(':');
                 if (parts.Length > 0)
@@ -1375,11 +1374,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     string subtitle = parts[0];
                     try
                     {
-                        if (subtitle.Contains("/")) // It contains a episode number and season number
+                        if (subtitle.Contains('/', StringComparison.Ordinal)) // It contains a episode number and season number
                         {
                             string[] numbers = subtitle.Split(' ');
-                            video.IndexNumber = int.Parse(numbers[0].Replace(".", "").Split('/')[0]);
-                            int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", "").Split('/')[1]);
+                            video.IndexNumber = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[0]);
+                            int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[1]);
 
                             description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }
@@ -1390,8 +1389,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     }
                     catch // Default parsing
                     {
-                        if (subtitle.Contains(".")) // skip the comment, keep the subtitle
+                        if (subtitle.Contains('.', StringComparison.Ordinal))
+                        {
+                            // skip the comment, keep the subtitle
                             description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                        }
                         else
                         {
                             description = subtitle.Trim(); // Clean up whitespaces and save it

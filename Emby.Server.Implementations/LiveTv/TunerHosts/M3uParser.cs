@@ -158,15 +158,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts[nameParts.Length - 1].Trim() : null;
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
             string attributeValue;
-            double doubleValue;
 
             if (attributes.TryGetValue("tvg-chno", out attributeValue))
             {
-                if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                 {
                     numberString = attributeValue;
                 }
@@ -176,36 +175,36 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 if (attributes.TryGetValue("tvg-id", out attributeValue))
                 {
-                    if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                    if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                     {
                         numberString = attributeValue;
                     }
                     else if (attributes.TryGetValue("channel-id", out attributeValue))
                     {
-                        if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                        if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                         {
                             numberString = attributeValue;
                         }
                     }
                 }
 
-                if (String.IsNullOrWhiteSpace(numberString))
+                if (string.IsNullOrWhiteSpace(numberString))
                 {
                     // Using this as a fallback now as this leads to Problems with channels like "5 USA"
                     // where 5 isnt ment to be the channel number
                     // Check for channel number with the format from SatIp
                     // #EXTINF:0,84. VOX Schweiz
                     // #EXTINF:0,84.0 - VOX Schweiz
-                    if (!string.IsNullOrWhiteSpace(nameInExtInf))
+                    if (!nameInExtInf.IsEmpty && !nameInExtInf.IsWhiteSpace())
                     {
                         var numberIndex = nameInExtInf.IndexOf(' ');
                         if (numberIndex > 0)
                         {
-                            var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+                            var numberPart = nameInExtInf.Slice(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                             {
-                                numberString = numberPart;
+                                numberString = numberPart.ToString();
                             }
                         }
                     }
@@ -231,7 +230,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     try
                     {
-                        numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
+                        numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/')[^1]);
 
                         if (!IsValidChannelNumber(numberString))
                         {
@@ -258,7 +257,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 return false;
             }
 
-            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
             {
                 return false;
             }
@@ -281,7 +280,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                     {
                         // channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });

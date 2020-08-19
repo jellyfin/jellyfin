@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
@@ -28,7 +29,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -54,7 +54,6 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
         private readonly ILocalizationManager _localization;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
@@ -73,7 +72,6 @@ namespace Emby.Server.Implementations.LiveTv
             ILibraryManager libraryManager,
             ITaskManager taskManager,
             ILocalizationManager localization,
-            IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IChannelManager channelManager,
             LiveTvDtoService liveTvDtoService)
@@ -85,7 +83,6 @@ namespace Emby.Server.Implementations.LiveTv
             _libraryManager = libraryManager;
             _taskManager = taskManager;
             _localization = localization;
-            _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
@@ -2234,7 +2231,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)
         {
-            info = _jsonSerializer.DeserializeFromString<TunerHostInfo>(_jsonSerializer.SerializeToString(info));
+            info = JsonSerializer.Deserialize<TunerHostInfo>(JsonSerializer.Serialize(info));
 
             var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
@@ -2278,7 +2275,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
             // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
-            info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
+            info = JsonSerializer.Deserialize<ListingsProviderInfo>(JsonSerializer.Serialize(info));
 
             var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 

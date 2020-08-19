@@ -99,6 +99,12 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (string.IsNullOrEmpty(token))
             {
+                token = queryString["ApiKey"];
+            }
+
+            // TODO deprecate this query parameter.
+            if (string.IsNullOrEmpty(token))
+            {
                 token = queryString["api_key"];
             }
 
@@ -276,12 +282,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         private static string NormalizeValue(string value)
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
-
-            return WebUtility.HtmlEncode(value);
+            return string.IsNullOrEmpty(value) ? value : WebUtility.HtmlEncode(value);
         }
     }
 }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -46,7 +45,7 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using MediaBrowser.Api;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -97,7 +96,6 @@ using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -192,7 +190,7 @@ namespace Emby.Server.Implementations
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected ServerApplicationPaths ApplicationPaths { get; set; }
+        protected IServerApplicationPaths ApplicationPaths { get; set; }
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -236,7 +234,7 @@ namespace Emby.Server.Implementations
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         public ApplicationHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
@@ -554,8 +552,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
-            serviceCollection.AddSingleton<IDisplayPreferencesRepository, SqliteDisplayPreferencesRepository>();
-
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
             serviceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
@@ -634,6 +630,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<EncodingHelper>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
+
+            serviceCollection.AddSingleton<TranscodingJobHelper>();
         }
 
         /// <summary>
@@ -650,7 +648,6 @@ namespace Emby.Server.Implementations
             _httpServer = Resolve<IHttpServer>();
             _httpClient = Resolve<IHttpClient>();
 
-            ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
             SetStaticProperties();
@@ -795,7 +792,6 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            Resolve<IUserManager>().AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
@@ -1034,12 +1030,6 @@ namespace Emby.Server.Implementations
                     yield return plugAss;
                 }
             }
-
-            // Include composable parts in the Api assembly
-            yield return typeof(ApiEntryPoint).Assembly;
-
-            // Include composable parts in the Dashboard assembly
-            yield return typeof(DashboardService).Assembly;
 
             // Include composable parts in the Model assembly
             yield return typeof(SystemInfo).Assembly;

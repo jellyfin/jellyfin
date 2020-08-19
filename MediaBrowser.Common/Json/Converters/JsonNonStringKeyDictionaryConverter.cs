@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Json.Converters
         /// <param name="typeToConvert">The type to convert.</param>
         /// <param name="options">The json serializer options.</param>
         /// <returns>Typed dictionary.</returns>
-        /// <exception cref="NotSupportedException">Not supported.</exception>
+        /// <exception cref="NotSupportedException">Dictionary key type not supported.</exception>
         public override IDictionary<TKey, TValue> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var convertedType = typeof(Dictionary<,>).MakeGenericType(typeof(string), typeToConvert.GenericTypeArguments[1]);
@@ -72,7 +72,7 @@ namespace MediaBrowser.Common.Json.Converters
             {
                 if (k != null)
                 {
-                  convertedDictionary[k.ToString()] = v;
+                    convertedDictionary[k.ToString()] = v;
                 }
             }
 

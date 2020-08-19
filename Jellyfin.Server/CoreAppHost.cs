@@ -9,6 +9,7 @@ using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
@@ -33,9 +34,9 @@ namespace Jellyfin.Server
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            StartupOptions options,
+            IStartupOptions options,
             IFileSystem fileSystem,
             INetworkManager networkManager)
             : base(
@@ -63,16 +64,18 @@ namespace Jellyfin.Server
                 Logger.LogWarning($"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
             }
 
-            // TODO: Set up scoping and use AddDbContextPool
-            serviceCollection.AddDbContext<JellyfinDb>(
-                options => options
-                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
-                ServiceLifetime.Transient);
+            // TODO: Set up scoping and use AddDbContextPool,
+            // can't register as Transient since tracking transient in GC is funky
+            // serviceCollection.AddDbContext<JellyfinDb>(
+            //     options => options
+            //         .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
+            //     ServiceLifetime.Transient);
 
             serviceCollection.AddSingleton<JellyfinDbProvider>();
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
+            serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
             base.RegisterServices(serviceCollection);
         }
