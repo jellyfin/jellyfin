@@ -977,12 +977,12 @@ namespace Emby.Dlna.Didl
 
             writer.WriteStartElement("upnp", "albumArtURI", NsUpnp);
             writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
-            writer.WriteString(albumartUrlInfo.Url);
+            writer.WriteString(albumartUrlInfo.url);
             writer.WriteFullEndElement();
 
             // TOOD: Remove these default values
             var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
-            writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.Url);
+            writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.url);
 
             if (!_profile.EnableAlbumArtInDidl)
             {
@@ -1029,8 +1029,8 @@ namespace Emby.Dlna.Didl
 
             // Images must have a reported size or many clients (Bubble upnp), will only use the first thumbnail
             // rather than using a larger one when available
-            var width = albumartUrlInfo.Width ?? maxWidth;
-            var height = albumartUrlInfo.Height ?? maxHeight;
+            var width = albumartUrlInfo.width ?? maxWidth;
+            var height = albumartUrlInfo.height ?? maxHeight;
 
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
@@ -1047,7 +1047,7 @@ namespace Emby.Dlna.Didl
                 "resolution",
                 string.Format(CultureInfo.InvariantCulture, "{0}x{1}", width, height));
 
-            writer.WriteString(albumartUrlInfo.Url);
+            writer.WriteString(albumartUrlInfo.url);
 
             writer.WriteFullEndElement();
         }
@@ -1143,7 +1143,6 @@ namespace Emby.Dlna.Didl
 
             if (width == 0 || height == 0)
             {
-                // _imageProcessor.GetImageSize(item, imageInfo);
                 width = null;
                 height = null;
             }
@@ -1152,18 +1151,6 @@ namespace Emby.Dlna.Didl
                 width = null;
                 height = null;
             }
-
-            // try
-            // {
-            //    var size = _imageProcessor.GetImageSize(imageInfo);
-
-            //    width = size.Width;
-            //    height = size.Height;
-            // }
-            // catch
-            // {
-
-            // }
 
             var inputFormat = (Path.GetExtension(imageInfo.Path) ?? string.Empty)
                 .TrimStart('.')
@@ -1179,30 +1166,6 @@ namespace Emby.Dlna.Didl
                 Format = inputFormat,
                 ItemImageInfo = imageInfo
             };
-        }
-
-        private class ImageDownloadInfo
-        {
-            internal Guid ItemId;
-            internal string ImageTag;
-            internal ImageType Type;
-
-            internal int? Width;
-            internal int? Height;
-
-            internal bool IsDirectStream;
-
-            internal string Format;
-
-            internal ItemImageInfo ItemImageInfo;
-        }
-
-        private class ImageUrlInfo
-        {
-            internal string Url;
-
-            internal int? Width;
-            internal int? Height;
         }
 
         public static string GetClientId(BaseItem item, StubType? stubType)
@@ -1222,7 +1185,7 @@ namespace Emby.Dlna.Didl
             return id;
         }
 
-        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
+        private (string url, int? width, int? height) GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
         {
             var url = string.Format(
                 CultureInfo.InvariantCulture,
@@ -1260,12 +1223,26 @@ namespace Emby.Dlna.Didl
             // just lie
             info.IsDirectStream = true;
 
-            return new ImageUrlInfo
-            {
-                Url = url,
-                Width = width,
-                Height = height
-            };
+            return (url, width, height);
+        }
+
+        private class ImageDownloadInfo
+        {
+            internal Guid ItemId { get; set; }
+
+            internal string ImageTag { get; set; }
+
+            internal ImageType Type { get; set; }
+
+            internal int? Width { get; set; }
+
+            internal int? Height { get; set; }
+
+            internal bool IsDirectStream { get; set; }
+
+            internal string Format { get; set; }
+
+            internal ItemImageInfo ItemImageInfo { get; set; }
         }
     }
 }

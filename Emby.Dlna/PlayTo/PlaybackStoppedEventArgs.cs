@@ -6,6 +6,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlaybackStoppedEventArgs : EventArgs
     {
-        public uBaseObject MediaInfo { get; set; }
+        public UBaseObject MediaInfo { get; set; }
     }
 }

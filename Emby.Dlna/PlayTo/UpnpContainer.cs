@@ -6,22 +6,22 @@ using Emby.Dlna.Ssdp;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class UpnpContainer : uBaseObject
+    public class UpnpContainer : UBaseObject
     {
-        public static uBaseObject Create(XElement container)
+        public static UBaseObject Create(XElement container)
         {
             if (container == null)
             {
                 throw new ArgumentNullException(nameof(container));
             }
 
-            return new uBaseObject
+            return new UBaseObject
             {
-                Id = container.GetAttributeValue(uPnpNamespaces.Id),
-                ParentId = container.GetAttributeValue(uPnpNamespaces.ParentId),
-                Title = container.GetValue(uPnpNamespaces.title),
-                IconUrl = container.GetValue(uPnpNamespaces.Artwork),
-                UpnpClass = container.GetValue(uPnpNamespaces.uClass)
+                Id = container.GetAttributeValue(UPnpNamespaces.Id),
+                ParentId = container.GetAttributeValue(UPnpNamespaces.ParentId),
+                Title = container.GetValue(UPnpNamespaces.Title),
+                IconUrl = container.GetValue(UPnpNamespaces.Artwork),
+                UpnpClass = container.GetValue(UPnpNamespaces.Class)
             };
         }
     }

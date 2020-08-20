@@ -210,15 +210,6 @@ namespace Emby.Dlna.Service
             }
         }
 
-        private class ControlRequestInfo
-        {
-            public string LocalName { get; set; }
-
-            public string NamespaceURI { get; set; }
-
-            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
         protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
 
         private void LogRequest(ControlRequest request)
@@ -239,6 +230,15 @@ namespace Emby.Dlna.Service
             }
 
             Logger.LogDebug("Control response. Headers: {@Headers}\n{Xml}", response.Headers, response.Xml);
+        }
+
+        private class ControlRequestInfo
+        {
+            public string LocalName { get; set; }
+
+            public string NamespaceURI { get; set; }
+
+            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

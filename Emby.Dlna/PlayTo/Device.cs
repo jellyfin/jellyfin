@@ -21,14 +21,37 @@ namespace Emby.Dlna.PlayTo
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
+        private readonly IHttpClient _httpClient;
+
+        private readonly ILogger _logger;
+
+        private readonly object _timerLock = new object();
         private Timer _timer;
+        private int _muteVol;
+        private int _volume;
+        private DateTime _lastVolumeRefresh;
+        private bool _volumeRefreshActive;
+        private int _connectFailureCount;
+        private bool _disposed;
+
+        public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger)
+        {
+            Properties = deviceProperties;
+            _httpClient = httpClient;
+            _logger = logger;
+        }
+
+        public event EventHandler<PlaybackStartEventArgs> PlaybackStart;
+
+        public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
+
+        public event EventHandler<PlaybackStoppedEventArgs> PlaybackStopped;
+
+        public event EventHandler<MediaChangedEventArgs> MediaChanged;
 
         public DeviceInfo Properties { get; set; }
 
-        private int _muteVol;
         public bool IsMuted { get; set; }
-
-        private int _volume;
 
         public int Volume
         {
@@ -53,18 +76,13 @@ namespace Emby.Dlna.PlayTo
 
         public bool IsStopped => TransportState == TransportState.Stopped;
 
-        private readonly IHttpClient _httpClient;
-
-        private readonly ILogger _logger;
-
         public Action OnDeviceUnavailable { get; set; }
 
-        public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger)
-        {
-            Properties = deviceProperties;
-            _httpClient = httpClient;
-            _logger = logger;
-        }
+        private TransportCommands AvCommands { get; set; }
+
+        private TransportCommands RendererCommands { get; set; }
+
+        public UBaseObject CurrentMediaInfo { get; private set; }
 
         public void Start()
         {
@@ -72,8 +90,6 @@ namespace Emby.Dlna.PlayTo
             _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
         }
 
-        private DateTime _lastVolumeRefresh;
-        private bool _volumeRefreshActive;
         private Task RefreshVolumeIfNeeded()
         {
             if (_volumeRefreshActive
@@ -104,7 +120,6 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private readonly object _timerLock = new object();
         private void RestartTimer(bool immediate = false)
         {
             lock (_timerLock)
@@ -232,6 +247,9 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Sets volume on a scale of 0-100.
         /// </summary>
+        /// <param name="value">The volume on a scale of 0-100.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task SetVolume(int value, CancellationToken cancellationToken)
         {
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
@@ -405,8 +423,6 @@ namespace Emby.Dlna.PlayTo
             RestartTimer(true);
         }
 
-        private int _connectFailureCount;
-
         private async void TimerCallback(object sender)
         {
             if (_disposed)
@@ -538,7 +554,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            var volume = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i != null);
+            var volume = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i != null);
             var volumeValue = volume?.Value;
 
             if (string.IsNullOrWhiteSpace(volumeValue))
@@ -588,7 +604,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            var valueNode = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetMuteResponse")
+            var valueNode = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetMuteResponse")
                                             .Select(i => i.Element("CurrentMute"))
                                             .FirstOrDefault(i => i != null);
 
@@ -622,7 +638,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             var transportState =
-                result.Document.Descendants(uPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i != null);
+                result.Document.Descendants(UPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i != null);
 
             var transportStateValue = transportState?.Value;
 
@@ -635,7 +651,7 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private async Task<uBaseObject> GetMediaInfo(TransportCommands avCommands, CancellationToken cancellationToken)
+        private async Task<UBaseObject> GetMediaInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetMediaInfo");
             if (command == null)
@@ -670,7 +686,7 @@ namespace Emby.Dlna.PlayTo
                 return null;
             }
 
-            var e = track.Element(uPnpNamespaces.items) ?? track;
+            var e = track.Element(UPnpNamespaces.Items) ?? track;
 
             var elementString = (string)e;
 
@@ -686,13 +702,13 @@ namespace Emby.Dlna.PlayTo
                 return null;
             }
 
-            e = track.Element(uPnpNamespaces.items) ?? track;
+            e = track.Element(UPnpNamespaces.Items) ?? track;
 
             elementString = (string)e;
 
             if (!string.IsNullOrWhiteSpace(elementString))
             {
-                return new uBaseObject
+                return new UBaseObject
                 {
                     Url = elementString
                 };
@@ -701,7 +717,7 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private async Task<(bool, uBaseObject)> GetPositionInfo(TransportCommands avCommands, CancellationToken cancellationToken)
+        private async Task<(bool, UBaseObject)> GetPositionInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetPositionInfo");
             if (command == null)
@@ -730,10 +746,10 @@ namespace Emby.Dlna.PlayTo
                 return (false, null);
             }
 
-            var trackUriElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i != null);
+            var trackUriElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i != null);
             var trackUri = trackUriElem?.Value;
 
-            var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
+            var durationElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
             var duration = durationElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(duration)
@@ -746,7 +762,7 @@ namespace Emby.Dlna.PlayTo
                 Duration = null;
             }
 
-            var positionElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
+            var positionElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
             var position = positionElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(position) && !string.Equals(position, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
@@ -786,7 +802,7 @@ namespace Emby.Dlna.PlayTo
                 return (true, null);
             }
 
-            var e = uPnpResponse.Element(uPnpNamespaces.items);
+            var e = uPnpResponse.Element(UPnpNamespaces.Items);
 
             var uTrack = CreateUBaseObject(e, trackUri);
 
@@ -827,26 +843,26 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private static uBaseObject CreateUBaseObject(XElement container, string trackUri)
+        private static UBaseObject CreateUBaseObject(XElement container, string trackUri)
         {
             if (container == null)
             {
                 throw new ArgumentNullException(nameof(container));
             }
 
-            var url = container.GetValue(uPnpNamespaces.Res);
+            var url = container.GetValue(UPnpNamespaces.Res);
 
             if (string.IsNullOrWhiteSpace(url))
             {
                 url = trackUri;
             }
 
-            return new uBaseObject
+            return new UBaseObject
             {
-                Id = container.GetAttributeValue(uPnpNamespaces.Id),
-                ParentId = container.GetAttributeValue(uPnpNamespaces.ParentId),
-                Title = container.GetValue(uPnpNamespaces.title),
-                IconUrl = container.GetValue(uPnpNamespaces.Artwork),
+                Id = container.GetAttributeValue(UPnpNamespaces.Id),
+                ParentId = container.GetAttributeValue(UPnpNamespaces.ParentId),
+                Title = container.GetValue(UPnpNamespaces.Title),
+                IconUrl = container.GetValue(UPnpNamespaces.Artwork),
                 SecondText = string.Empty,
                 Url = url,
                 ProtocolInfo = GetProtocolInfo(container),
@@ -861,11 +877,11 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(container));
             }
 
-            var resElement = container.Element(uPnpNamespaces.Res);
+            var resElement = container.Element(UPnpNamespaces.Res);
 
             if (resElement != null)
             {
-                var info = resElement.Attribute(uPnpNamespaces.ProtocolInfo);
+                var info = resElement.Attribute(UPnpNamespaces.ProtocolInfo);
 
                 if (info != null && !string.IsNullOrWhiteSpace(info.Value))
                 {
@@ -953,11 +969,7 @@ namespace Emby.Dlna.PlayTo
             return baseUrl + url;
         }
 
-        private TransportCommands AvCommands { get; set; }
-
-        private TransportCommands RendererCommands { get; set; }
-
-        public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, IServerConfigurationManager config, ILogger logger, CancellationToken cancellationToken)
+        public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
         {
             var ssdpHttpClient = new SsdpHttpClient(httpClient);
 
@@ -965,13 +977,13 @@ namespace Emby.Dlna.PlayTo
 
             var friendlyNames = new List<string>();
 
-            var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
+            var name = document.Descendants(UPnpNamespaces.Ud.GetName("friendlyName")).FirstOrDefault();
             if (name != null && !string.IsNullOrWhiteSpace(name.Value))
             {
                 friendlyNames.Add(name.Value);
             }
 
-            var room = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
+            var room = document.Descendants(UPnpNamespaces.Ud.GetName("roomName")).FirstOrDefault();
             if (room != null && !string.IsNullOrWhiteSpace(room.Value))
             {
                 friendlyNames.Add(room.Value);
@@ -983,74 +995,74 @@ namespace Emby.Dlna.PlayTo
                 BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)
             };
 
-            var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
+            var model = document.Descendants(UPnpNamespaces.Ud.GetName("modelName")).FirstOrDefault();
             if (model != null)
             {
                 deviceProperties.ModelName = model.Value;
             }
 
-            var modelNumber = document.Descendants(uPnpNamespaces.ud.GetName("modelNumber")).FirstOrDefault();
+            var modelNumber = document.Descendants(UPnpNamespaces.Ud.GetName("modelNumber")).FirstOrDefault();
             if (modelNumber != null)
             {
                 deviceProperties.ModelNumber = modelNumber.Value;
             }
 
-            var uuid = document.Descendants(uPnpNamespaces.ud.GetName("UDN")).FirstOrDefault();
+            var uuid = document.Descendants(UPnpNamespaces.Ud.GetName("UDN")).FirstOrDefault();
             if (uuid != null)
             {
                 deviceProperties.UUID = uuid.Value;
             }
 
-            var manufacturer = document.Descendants(uPnpNamespaces.ud.GetName("manufacturer")).FirstOrDefault();
+            var manufacturer = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturer")).FirstOrDefault();
             if (manufacturer != null)
             {
                 deviceProperties.Manufacturer = manufacturer.Value;
             }
 
-            var manufacturerUrl = document.Descendants(uPnpNamespaces.ud.GetName("manufacturerURL")).FirstOrDefault();
+            var manufacturerUrl = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturerURL")).FirstOrDefault();
             if (manufacturerUrl != null)
             {
                 deviceProperties.ManufacturerUrl = manufacturerUrl.Value;
             }
 
-            var presentationUrl = document.Descendants(uPnpNamespaces.ud.GetName("presentationURL")).FirstOrDefault();
+            var presentationUrl = document.Descendants(UPnpNamespaces.Ud.GetName("presentationURL")).FirstOrDefault();
             if (presentationUrl != null)
             {
                 deviceProperties.PresentationUrl = presentationUrl.Value;
             }
 
-            var modelUrl = document.Descendants(uPnpNamespaces.ud.GetName("modelURL")).FirstOrDefault();
+            var modelUrl = document.Descendants(UPnpNamespaces.Ud.GetName("modelURL")).FirstOrDefault();
             if (modelUrl != null)
             {
                 deviceProperties.ModelUrl = modelUrl.Value;
             }
 
-            var serialNumber = document.Descendants(uPnpNamespaces.ud.GetName("serialNumber")).FirstOrDefault();
+            var serialNumber = document.Descendants(UPnpNamespaces.Ud.GetName("serialNumber")).FirstOrDefault();
             if (serialNumber != null)
             {
                 deviceProperties.SerialNumber = serialNumber.Value;
             }
 
-            var modelDescription = document.Descendants(uPnpNamespaces.ud.GetName("modelDescription")).FirstOrDefault();
+            var modelDescription = document.Descendants(UPnpNamespaces.Ud.GetName("modelDescription")).FirstOrDefault();
             if (modelDescription != null)
             {
                 deviceProperties.ModelDescription = modelDescription.Value;
             }
 
-            var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
+            var icon = document.Descendants(UPnpNamespaces.Ud.GetName("icon")).FirstOrDefault();
             if (icon != null)
             {
                 deviceProperties.Icon = CreateIcon(icon);
             }
 
-            foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
+            foreach (var services in document.Descendants(UPnpNamespaces.Ud.GetName("serviceList")))
             {
                 if (services == null)
                 {
                     continue;
                 }
 
-                var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
+                var servicesList = services.Descendants(UPnpNamespaces.Ud.GetName("service"));
                 if (servicesList == null)
                 {
                     continue;
@@ -1077,11 +1089,11 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(element));
             }
 
-            var mimeType = element.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype"));
-            var width = element.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
-            var height = element.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
-            var depth = element.GetDescendantValue(uPnpNamespaces.ud.GetName("depth"));
-            var url = element.GetDescendantValue(uPnpNamespaces.ud.GetName("url"));
+            var mimeType = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("mimetype"));
+            var width = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("width"));
+            var height = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("height"));
+            var depth = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("depth"));
+            var url = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("url"));
 
             var widthValue = int.Parse(width, NumberStyles.Integer, UsCulture);
             var heightValue = int.Parse(height, NumberStyles.Integer, UsCulture);
@@ -1098,11 +1110,11 @@ namespace Emby.Dlna.PlayTo
 
         private static DeviceService Create(XElement element)
         {
-            var type = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceType"));
-            var id = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceId"));
-            var scpdUrl = element.GetDescendantValue(uPnpNamespaces.ud.GetName("SCPDURL"));
-            var controlURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("controlURL"));
-            var eventSubURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("eventSubURL"));
+            var type = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceType"));
+            var id = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceId"));
+            var scpdUrl = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("SCPDURL"));
+            var controlURL = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("controlURL"));
+            var eventSubURL = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("eventSubURL"));
 
             return new DeviceService
             {
@@ -1114,14 +1126,7 @@ namespace Emby.Dlna.PlayTo
             };
         }
 
-        public event EventHandler<PlaybackStartEventArgs> PlaybackStart;
-        public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
-        public event EventHandler<PlaybackStoppedEventArgs> PlaybackStopped;
-        public event EventHandler<MediaChangedEventArgs> MediaChanged;
-
-        public uBaseObject CurrentMediaInfo { get; private set; }
-
-        private void UpdateMediaInfo(uBaseObject mediaInfo, TransportState state)
+        private void UpdateMediaInfo(UBaseObject mediaInfo, TransportState state)
         {
             TransportState = state;
 
@@ -1149,7 +1154,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private void OnPlaybackStart(uBaseObject mediaInfo)
+        private void OnPlaybackStart(UBaseObject mediaInfo)
         {
             if (string.IsNullOrWhiteSpace(mediaInfo.Url))
             {
@@ -1162,7 +1167,7 @@ namespace Emby.Dlna.PlayTo
             });
         }
 
-        private void OnPlaybackProgress(uBaseObject mediaInfo)
+        private void OnPlaybackProgress(UBaseObject mediaInfo)
         {
             if (string.IsNullOrWhiteSpace(mediaInfo.Url))
             {
@@ -1175,7 +1180,7 @@ namespace Emby.Dlna.PlayTo
             });
         }
 
-        private void OnPlaybackStop(uBaseObject mediaInfo)
+        private void OnPlaybackStop(UBaseObject mediaInfo)
         {
             PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
             {
@@ -1183,7 +1188,7 @@ namespace Emby.Dlna.PlayTo
             });
         }
 
-        private void OnMediaChanged(uBaseObject old, uBaseObject newMedia)
+        private void OnMediaChanged(UBaseObject old, UBaseObject newMedia)
         {
             MediaChanged?.Invoke(this, new MediaChangedEventArgs
             {
@@ -1192,8 +1197,7 @@ namespace Emby.Dlna.PlayTo
             });
         }
 
-        bool _disposed;
-
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
@@ -1222,6 +1226,7 @@ namespace Emby.Dlna.PlayTo
             _disposed = true;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, "{0} - {1}", Properties.Name, Properties.BaseUrl);

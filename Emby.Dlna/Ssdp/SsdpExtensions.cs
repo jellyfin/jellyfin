@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace Emby.Dlna.Ssdp
 {
-    public static class Extensions
+    public static class SsdpExtensions
     {
         public static string GetValue(this XElement container, XName name)
         {
