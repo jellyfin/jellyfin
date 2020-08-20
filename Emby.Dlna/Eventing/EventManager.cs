@@ -23,6 +23,8 @@ namespace Emby.Dlna.Eventing
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
         public EventManager(ILogger logger, IHttpClient httpClient)
         {
             _httpClient = httpClient;
