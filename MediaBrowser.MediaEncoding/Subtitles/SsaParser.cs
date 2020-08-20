@@ -8,10 +8,11 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
     /// <summary>
-    /// Credit to https://github.com/SubtitleEdit/subtitleedit/blob/a299dc4407a31796364cc6ad83f0d3786194ba22/src/Logic/SubtitleFormats/SubStationAlpha.cs
+    /// <see href="https://github.com/SubtitleEdit/subtitleedit/blob/a299dc4407a31796364cc6ad83f0d3786194ba22/src/Logic/SubtitleFormats/SubStationAlpha.cs">Credit</see>.
     /// </summary>
     public class SsaParser : ISubtitleParser
     {
+        /// <inheritdoc />
         public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();
@@ -45,7 +46,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         header.AppendLine(line);
                     }
 
-                    if (line.Trim().ToLowerInvariant() == "[events]")
+                    if (string.Equals(line.Trim(), "[events]", StringComparison.OrdinalIgnoreCase))
                     {
                         eventsStarted = true;
                     }
@@ -63,27 +64,27 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                                 format = line.ToLowerInvariant().Substring(8).Split(',');
                                 for (int i = 0; i < format.Length; i++)
                                 {
-                                    if (format[i].Trim().ToLowerInvariant() == "layer")
+                                    if (string.Equals(format[i].Trim(), "layer", StringComparison.OrdinalIgnoreCase))
                                     {
                                         indexLayer = i;
                                     }
-                                    else if (format[i].Trim().ToLowerInvariant() == "start")
+                                    else if (string.Equals(format[i].Trim(), "start", StringComparison.OrdinalIgnoreCase))
                                     {
                                         indexStart = i;
                                     }
-                                    else if (format[i].Trim().ToLowerInvariant() == "end")
+                                    else if (string.Equals(format[i].Trim(), "end", StringComparison.OrdinalIgnoreCase))
                                     {
                                         indexEnd = i;
                                     }
-                                    else if (format[i].Trim().ToLowerInvariant() == "text")
+                                    else if (string.Equals(format[i].Trim(), "text", StringComparison.OrdinalIgnoreCase))
                                     {
                                         indexText = i;
                                     }
-                                    else if (format[i].Trim().ToLowerInvariant() == "effect")
+                                    else if (string.Equals(format[i].Trim(), "effect", StringComparison.OrdinalIgnoreCase))
                                     {
                                         indexEffect = i;
                                     }
-                                    else if (format[i].Trim().ToLowerInvariant() == "style")
+                                    else if (string.Equals(format[i].Trim(), "style", StringComparison.OrdinalIgnoreCase))
                                     {
                                         indexStyle = i;
                                     }
@@ -178,17 +179,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             // h:mm:ss.cc
             string[] timeCode = time.Split(':', '.');
-            return new TimeSpan(0, int.Parse(timeCode[0]),
-                                int.Parse(timeCode[1]),
-                                int.Parse(timeCode[2]),
-                                int.Parse(timeCode[3]) * 10).Ticks;
+            return new TimeSpan(
+                0,
+                int.Parse(timeCode[0]),
+                int.Parse(timeCode[1]),
+                int.Parse(timeCode[2]),
+                int.Parse(timeCode[3]) * 10).Ticks;
         }
 
-        public static string GetFormattedText(string text)
+        private static string GetFormattedText(string text)
         {
             text = text.Replace("\\n", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
-
-            bool italic = false;
 
             for (int i = 0; i < 10; i++) // just look ten times...
             {
@@ -200,7 +201,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         string fontName = text.Substring(start + 4, end - (start + 4));
                         string extraTags = string.Empty;
-                        CheckAndAddSubTags(ref fontName, ref extraTags, out italic);
+                        CheckAndAddSubTags(ref fontName, ref extraTags, out bool italic);
                         text = text.Remove(start, end - start + 1);
                         if (italic)
                         {
@@ -231,7 +232,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         string fontSize = text.Substring(start + 4, end - (start + 4));
                         string extraTags = string.Empty;
-                        CheckAndAddSubTags(ref fontSize, ref extraTags, out italic);
+                        CheckAndAddSubTags(ref fontSize, ref extraTags, out bool italic);
                         if (IsInteger(fontSize))
                         {
                             text = text.Remove(start, end - start + 1);
@@ -265,7 +266,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         string color = text.Substring(start + 4, end - (start + 4));
                         string extraTags = string.Empty;
-                        CheckAndAddSubTags(ref color, ref extraTags, out italic);
+                        CheckAndAddSubTags(ref color, ref extraTags, out bool italic);
 
                         color = color.Replace("&", string.Empty).TrimStart('H');
                         color = color.PadLeft(6, '0');
@@ -283,6 +284,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
                         }
+
                         int indexOfEndTag = text.IndexOf("{\\c}", start);
                         if (indexOfEndTag > 0)
                         {
@@ -303,7 +305,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         string color = text.Substring(start + 5, end - (start + 5));
                         string extraTags = string.Empty;
-                        CheckAndAddSubTags(ref color, ref extraTags, out italic);
+                        CheckAndAddSubTags(ref color, ref extraTags, out bool italic);
 
                         color = color.Replace("&", string.Empty).TrimStart('H');
                         color = color.PadLeft(6, '0');
@@ -321,6 +323,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
                         }
+
                         text += "</font>";
                     }
                 }
@@ -354,14 +357,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         private static bool IsInteger(string s)
-        {
-            if (int.TryParse(s, out var i))
-            {
-                return true;
-            }
-
-            return false;
-        }
+            => int.TryParse(s, out _);
 
         private static int CountTagInText(string text, string tag)
         {

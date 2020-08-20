@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Providers;
@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Music
 
         public string Name => TmdbMovieProvider.Current.Name;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

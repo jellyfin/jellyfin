@@ -52,6 +52,8 @@ namespace MediaBrowser.Controller.Net
             return (Roles ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        public bool IgnoreLegacyAuth { get; set; }
+        
         public bool AllowLocalOnly { get; set; }
     }
 
@@ -66,5 +68,7 @@ namespace MediaBrowser.Controller.Net
         bool AllowLocalOnly { get; }
 
         string[] GetRoles();
+        
+        bool IgnoreLegacyAuth { get; }
     }
 }

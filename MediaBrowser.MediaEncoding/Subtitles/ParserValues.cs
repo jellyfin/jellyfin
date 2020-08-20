@@ -1,6 +1,9 @@
+#nullable enable
+#pragma warning disable CS1591
+
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
-    public class ParserValues
+    public static class ParserValues
     {
         public const string NewLine = "\r\n";
     }

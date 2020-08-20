@@ -1,4 +1,9 @@
+using System;
+using System.ComponentModel;
+using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.Middleware;
+using Jellyfin.Server.Models;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -41,6 +46,7 @@ namespace Jellyfin.Server
             services.AddCustomAuthentication();
 
             services.AddJellyfinApiAuthorization();
+            services.AddHttpClient();
         }
 
         /// <summary>
@@ -59,15 +65,20 @@ namespace Jellyfin.Server
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseMiddleware<ResponseTimeMiddleware>();
+
             app.UseWebSockets();
 
             app.UseResponseCompression();
 
             // TODO app.UseMiddleware<WebSocketMiddleware>();
 
-            // TODO use when old API is removed: app.UseAuthentication();
-            app.UseJellyfinApiSwagger();
+            app.UseAuthentication();
+            app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
+            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
             app.UseAuthorization();
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
@@ -85,6 +96,9 @@ namespace Jellyfin.Server
             });
 
             app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);
+
+            // Add type descriptor for legacy datetime parsing.
+            TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));
         }
     }
 }

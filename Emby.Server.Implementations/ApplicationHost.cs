@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -43,10 +42,10 @@ using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using Emby.Server.Implementations.SyncPlay;
-using MediaBrowser.Api;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -78,8 +77,8 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Controller.TV;
 using MediaBrowser.Controller.SyncPlay;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Configuration;
@@ -97,7 +96,6 @@ using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -192,7 +190,7 @@ namespace Emby.Server.Implementations
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected ServerApplicationPaths ApplicationPaths { get; set; }
+        protected IServerApplicationPaths ApplicationPaths { get; set; }
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -236,7 +234,7 @@ namespace Emby.Server.Implementations
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         public ApplicationHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
@@ -484,12 +482,10 @@ namespace Emby.Server.Implementations
 
                 foreach (var plugin in Plugins)
                 {
-                    pluginBuilder.AppendLine(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0} {1}",
-                            plugin.Name,
-                            plugin.Version));
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
                 }
 
                 Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
@@ -555,8 +551,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
-
-            serviceCollection.AddSingleton<IDisplayPreferencesRepository, SqliteDisplayPreferencesRepository>();
 
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
@@ -636,6 +630,11 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<EncodingHelper>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
+
+            serviceCollection.AddSingleton<TranscodingJobHelper>();
+            serviceCollection.AddScoped<MediaInfoHelper>();
+            serviceCollection.AddScoped<AudioHelper>();
+            serviceCollection.AddScoped<DynamicHlsHelper>();
         }
 
         /// <summary>
@@ -652,7 +651,6 @@ namespace Emby.Server.Implementations
             _httpServer = Resolve<IHttpServer>();
             _httpClient = Resolve<IHttpClient>();
 
-            ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
             SetStaticProperties();
@@ -797,7 +795,6 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            Resolve<IUserManager>().AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
@@ -869,6 +866,11 @@ namespace Emby.Server.Implementations
                 catch (FileNotFoundException ex)
                 {
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
+                    continue;
+                }
+                catch (TypeLoadException ex)
+                {
+                    Logger.LogError(ex, "Error loading types from {Assembly}.", ass.FullName);
                     continue;
                 }
 
@@ -1032,12 +1034,6 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            // Include composable parts in the Api assembly
-            yield return typeof(ApiEntryPoint).Assembly;
-
-            // Include composable parts in the Dashboard assembly
-            yield return typeof(DashboardService).Assembly;
-
             // Include composable parts in the Model assembly
             yield return typeof(SystemInfo).Assembly;
 
@@ -1153,7 +1149,7 @@ namespace Emby.Server.Implementations
                     return null;
                 }
 
-                return GetLocalApiUrl(addresses.First());
+                return GetLocalApiUrl(addresses[0]);
             }
             catch (Exception ex)
             {
@@ -1226,7 +1222,7 @@ namespace Emby.Server.Implementations
             var addresses = ServerConfigurationManager
                 .Configuration
                 .LocalNetworkAddresses
-                .Select(NormalizeConfiguredLocalAddress)
+                .Select(x => NormalizeConfiguredLocalAddress(x))
                 .Where(i => i != null)
                 .ToList();
 
@@ -1247,8 +1243,7 @@ namespace Emby.Server.Implementations
                     }
                 }
 
-                var valid = await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
-                if (valid)
+                if (await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false))
                 {
                     resultList.Add(address);
 
@@ -1262,13 +1257,12 @@ namespace Emby.Server.Implementations
             return resultList;
         }
 
-        public IPAddress NormalizeConfiguredLocalAddress(string address)
+        public IPAddress NormalizeConfiguredLocalAddress(ReadOnlySpan<char> address)
         {
             var index = address.Trim('/').IndexOf('/');
-
             if (index != -1)
             {
-                address = address.Substring(index + 1);
+                address = address.Slice(index + 1);
             }
 
             if (IPAddress.TryParse(address.Trim('/'), out IPAddress result))

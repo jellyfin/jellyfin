@@ -613,7 +613,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!IsFileProtocol)
                 {
-                    return new string[] { };
+                    return Array.Empty<string>();
                 }
 
                 return new[] { Path };
@@ -675,11 +675,11 @@ namespace MediaBrowser.Controller.Entities
                 return System.IO.Path.Combine(basePath, "channels", ChannelId.ToString("N", CultureInfo.InvariantCulture), Id.ToString("N", CultureInfo.InvariantCulture));
             }
 
-            var idString = Id.ToString("N", CultureInfo.InvariantCulture);
+            ReadOnlySpan<char> idString = Id.ToString("N", CultureInfo.InvariantCulture);
 
             basePath = System.IO.Path.Combine(basePath, "library");
 
-            return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
+            return System.IO.Path.Join(basePath, idString.Slice(0, 2), idString);
         }
 
         /// <summary>
@@ -702,26 +702,27 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
             {
-                sortable = sortable.Replace(removeChar, string.Empty);
+                sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
             }
 
             foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
             {
-                sortable = sortable.Replace(replaceChar, " ");
+                sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
             }
 
             foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
             {
                 // Remove from beginning if a space follows
-                if (sortable.StartsWith(search + " "))
+                if (sortable.StartsWith(search + " ", StringComparison.Ordinal))
                 {
                     sortable = sortable.Remove(0, search.Length + 1);
                 }
+
                 // Remove from middle if surrounded by spaces
-                sortable = sortable.Replace(" " + search + " ", " ");
+                sortable = sortable.Replace(" " + search + " ", " ", StringComparison.Ordinal);
 
                 // Remove from end if followed by a space
-                if (sortable.EndsWith(" " + search))
+                if (sortable.EndsWith(" " + search, StringComparison.Ordinal))
                 {
                     sortable = sortable.Remove(sortable.Length - (search.Length + 1));
                 }
@@ -751,6 +752,7 @@ namespace MediaBrowser.Controller.Entities
 
                 builder.Append(chunkBuilder);
             }
+
             // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
         }

@@ -4,6 +4,7 @@
 
 set -o errexit
 set -o pipefail
+set -o xtrace
 
 usage() {
     echo -e "bump_version - increase the shared version and generate changelogs"
@@ -58,7 +59,7 @@ sed -i "s/${old_version_sed}/${new_version}/g" ${debian_equivs_file}
 debian_changelog_file="debian/changelog"
 debian_changelog_temp="$( mktemp )"
 # Create new temp file with our changelog
-echo -e "jellyfin (${new_version_deb}) unstable; urgency=medium
+echo -e "jellyfin-server (${new_version_deb}) unstable; urgency=medium
 
   * New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}
 

@@ -14,40 +14,27 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            static void ThrowFormatException() => throw new FormatException("Invalid format for an integer.");
-            ReadOnlySpan<byte> span = stackalloc byte[0];
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                ReadOnlySpan<byte> span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                if (Utf8Parser.TryParse(span, out int number, out int bytesConsumed) && span.Length == bytesConsumed)
+                {
+                    return number;
+                }
 
-            if (reader.HasValueSequence)
-            {
-                long sequenceLength = reader.ValueSequence.Length;
-                Span<byte> stackSpan = stackalloc byte[(int)sequenceLength];
-                reader.ValueSequence.CopyTo(stackSpan);
-                span = stackSpan;
-            }
-            else
-            {
-                span = reader.ValueSpan;
-            }
-
-            if (!Utf8Parser.TryParse(span, out int number, out _))
-            {
-                ThrowFormatException();
+                if (int.TryParse(reader.GetString(), out number))
+                {
+                    return number;
+                }
             }
 
-            return number;
+            return reader.GetInt32();
         }
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
         {
-            static void ThrowInvalidOperationException() => throw new InvalidOperationException();
-            Span<byte> span = stackalloc byte[16];
-            if (Utf8Formatter.TryFormat(value, span, out int bytesWritten))
-            {
-                writer.WriteStringValue(span.Slice(0, bytesWritten));
-            }
-
-            ThrowInvalidOperationException();
+            writer.WriteNumberValue(value);
         }
     }
 }

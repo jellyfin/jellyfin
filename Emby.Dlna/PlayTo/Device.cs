@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
-using Emby.Dlna.Server;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -19,6 +19,8 @@ namespace Emby.Dlna.PlayTo
 {
     public class Device : IDisposable
     {
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
         private Timer _timer;
 
         public DeviceInfo Properties { get; set; }
@@ -55,16 +57,13 @@ namespace Emby.Dlna.PlayTo
 
         private readonly ILogger _logger;
 
-        private readonly IServerConfigurationManager _config;
-
         public Action OnDeviceUnavailable { get; set; }
 
-        public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, IServerConfigurationManager config)
+        public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger)
         {
             Properties = deviceProperties;
             _httpClient = httpClient;
             _logger = logger;
-            _config = config;
         }
 
         public void Start()
@@ -275,7 +274,7 @@ namespace Emby.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, string.Format("{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
+            await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, string.Format(CultureInfo.InvariantCulture, "{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
                 .ConfigureAwait(false);
 
             RestartTimer(true);
@@ -285,7 +284,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            url = url.Replace("&", "&amp;");
+            url = url.Replace("&", "&amp;", StringComparison.Ordinal);
 
             _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
 
@@ -297,8 +296,8 @@ namespace Emby.Dlna.PlayTo
 
             var dictionary = new Dictionary<string, string>
             {
-                {"CurrentURI", url},
-                {"CurrentURIMetaData", CreateDidlMeta(metaData)}
+                { "CurrentURI", url },
+                { "CurrentURIMetaData", CreateDidlMeta(metaData) }
             };
 
             var service = GetAvTransportService();
@@ -334,7 +333,7 @@ namespace Emby.Dlna.PlayTo
                 return string.Empty;
             }
 
-            return DescriptionXmlBuilder.Escape(value);
+            return SecurityElement.Escape(value);
         }
 
         private Task SetPlay(TransportCommands avCommands, CancellationToken cancellationToken)
@@ -732,10 +731,10 @@ namespace Emby.Dlna.PlayTo
             }
 
             var trackUriElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i != null);
-            var trackUri = trackUriElem == null ? null : trackUriElem.Value;
+            var trackUri = trackUriElem?.Value;
 
             var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
-            var duration = durationElem == null ? null : durationElem.Value;
+            var duration = durationElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(duration)
                 && !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
@@ -748,7 +747,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             var positionElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
-            var position = positionElem == null ? null : positionElem.Value;
+            var position = positionElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(position) && !string.Equals(position, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
@@ -819,7 +818,7 @@ namespace Emby.Dlna.PlayTo
             // some devices send back invalid xml
             try
             {
-                return XElement.Parse(xml.Replace("&", "&amp;"));
+                return XElement.Parse(xml.Replace("&", "&amp;", StringComparison.Ordinal));
             }
             catch (XmlException)
             {
@@ -848,7 +847,7 @@ namespace Emby.Dlna.PlayTo
                 ParentId = container.GetAttributeValue(uPnpNamespaces.ParentId),
                 Title = container.GetValue(uPnpNamespaces.title),
                 IconUrl = container.GetValue(uPnpNamespaces.Artwork),
-                SecondText = "",
+                SecondText = string.Empty,
                 Url = url,
                 ProtocolInfo = GetProtocolInfo(container),
                 MetaData = container.ToString()
@@ -941,12 +940,12 @@ namespace Emby.Dlna.PlayTo
                 return url;
             }
 
-            if (!url.Contains("/"))
+            if (!url.Contains('/', StringComparison.Ordinal))
             {
                 url = "/dmr/" + url;
             }
 
-            if (!url.StartsWith("/"))
+            if (!url.StartsWith("/", StringComparison.Ordinal))
             {
                 url = "/" + url;
             }
@@ -981,7 +980,7 @@ namespace Emby.Dlna.PlayTo
             var deviceProperties = new DeviceInfo()
             {
                 Name = string.Join(" ", friendlyNames),
-                BaseUrl = string.Format("http://{0}:{1}", url.Host, url.Port)
+                BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)
             };
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
@@ -1068,10 +1067,9 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            return new Device(deviceProperties, httpClient, logger, config);
+            return new Device(deviceProperties, httpClient, logger);
         }
 
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         private static DeviceIcon CreateIcon(XElement element)
         {
             if (element == null)
@@ -1222,7 +1220,7 @@ namespace Emby.Dlna.PlayTo
 
         public override string ToString()
         {
-            return string.Format("{0} - {1}", Properties.Name, Properties.BaseUrl);
+            return string.Format(CultureInfo.InvariantCulture, "{0} - {1}", Properties.Name, Properties.BaseUrl);
         }
     }
 }

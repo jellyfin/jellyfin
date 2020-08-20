@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -102,6 +104,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         // $ ffmpeg -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
         private static readonly IReadOnlyDictionary<string, Version> _ffmpegVersionMap = new Dictionary<string, Version>
         {
+            { "libavutil=56.51,libavcodec=58.91,libavformat=58.45,libavdevice=58.10,libavfilter=7.85,libswscale=5.7,libswresample=3.7,libpostproc=55.7,", new Version(4, 3) },
             { "libavutil=56.31,libavcodec=58.54,libavformat=58.29,libavdevice=58.8,libavfilter=7.57,libswscale=5.5,libswresample=3.5,libpostproc=55.5,", new Version(4, 2) },
             { "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3,", new Version(4, 1) },
             { "libavutil=56.14,libavcodec=58.18,libavformat=58.12,libavdevice=58.3,libavfilter=7.16,libswscale=5.1,libswresample=3.1,libpostproc=55.1,", new Version(4, 0) },
@@ -119,6 +122,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             _logger = logger;
             _encoderPath = encoderPath;
+        }
+
+        private enum Codec
+        {
+            Encoder,
+            Decoder
         }
 
         public static Version MinVersion { get; } = new Version(4, 0);
@@ -207,12 +216,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// to parse. If this is not available, then we try to match known library versions to FFmpeg versions.
         /// If that fails then we test the libraries to determine if they're newer than our minimum versions.
         /// </summary>
-        /// <param name="output"></param>
-        /// <returns></returns>
+        /// <param name="output">The output from "ffmpeg -version".</param>
+        /// <returns>The FFmpeg version.</returns>
         internal Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
-            var match = Regex.Match(output, @"^ffmpeg version n?((?:\d+\.?)+)");
+            var match = Regex.Match(output, @"^ffmpeg version n?((?:[0-9]+\.?)+)");
 
             if (match.Success)
             {
@@ -268,11 +277,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <summary>
         /// Grabs the library names and major.minor version numbers from the 'ffmpeg -version' output
+        /// and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc.".
         /// </summary>
-        /// <param name="output"></param>
-        /// <param name="versionString"></param>
-        /// <param name="versionMap"></param>
-        /// <returns></returns>
+        /// <param name="output">The 'ffmpeg -version' output.</param>
+        /// <returns>The library names and major.minor version numbers.</returns>
         private static bool TryGetFFmpegLibraryVersions(string output, out string versionString, out IReadOnlyDictionary<string, Version> versionMap)
         {
             var sb = new StringBuilder(144);
@@ -281,7 +289,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             foreach (Match match in Regex.Matches(
                 output,
-                @"((?<name>lib\w+)\s+(?<major>\d+)\.\s*(?<minor>\d+))",
+                @"((?<name>lib\w+)\s+(?<major>[0-9]+)\.\s*(?<minor>[0-9]+))",
                 RegexOptions.Multiline))
             {
                 sb.Append(match.Groups["name"])
@@ -304,12 +312,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return sb.Length > 0;
         }
 
-        private enum Codec
-        {
-            Encoder,
-            Decoder
-        }
-
         private IEnumerable<string> GetHwaccelTypes()
         {
             string output = null;
@@ -327,7 +329,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var found = output.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
+            var found = output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
             _logger.LogInformation("Available hwaccel types: {Types}", found);
 
             return found;

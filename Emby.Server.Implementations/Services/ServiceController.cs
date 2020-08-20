@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
@@ -91,12 +92,22 @@ namespace Emby.Server.Implementations.Services
         {
             if (restPath.Path[0] != '/')
             {
-                throw new ArgumentException(string.Format("Route '{0}' on '{1}' must start with a '/'", restPath.Path, restPath.RequestType.GetMethodName()));
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Route '{0}' on '{1}' must start with a '/'",
+                        restPath.Path,
+                        restPath.RequestType.GetMethodName()));
             }
 
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
             {
-                throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. ", restPath.Path, restPath.RequestType.GetMethodName()));
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Route '{0}' on '{1}' contains invalid chars. ",
+                        restPath.Path,
+                        restPath.RequestType.GetMethodName()));
             }
 
             if (RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out List<RestPath> pathsAtFirstMatch))
@@ -179,8 +190,7 @@ namespace Emby.Server.Implementations.Services
 
             var service = httpHost.CreateInstance(serviceType);
 
-            var serviceRequiresContext = service as IRequiresRequest;
-            if (serviceRequiresContext != null)
+            if (service is IRequiresRequest serviceRequiresContext)
             {
                 serviceRequiresContext.Request = req;
             }
@@ -189,5 +199,4 @@ namespace Emby.Server.Implementations.Services
             return ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName());
         }
     }
-
 }
