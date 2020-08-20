@@ -15,7 +15,7 @@ namespace Emby.Dlna.Service
 {
     public abstract class BaseControlHandler
     {
-        private const string NsSoapenv = "http://schemas.xmlsoap.org/soap/envelope/";
+        private const string NsSoapEnv = "http://schemas.xmlsoap.org/soap/envelope/";
 
         protected BaseControlHandler(IServerConfigurationManager config, ILogger logger)
         {
@@ -80,10 +80,10 @@ namespace Emby.Dlna.Service
             {
                 writer.WriteStartDocument(true);
 
-                writer.WriteStartElement("SOAP-ENV", "Envelope", NsSoapenv);
-                writer.WriteAttributeString(string.Empty, "encodingStyle", NsSoapenv, "http://schemas.xmlsoap.org/soap/encoding/");
+                writer.WriteStartElement("SOAP-ENV", "Envelope", NsSoapEnv);
+                writer.WriteAttributeString(string.Empty, "encodingStyle", NsSoapEnv, "http://schemas.xmlsoap.org/soap/encoding/");
 
-                writer.WriteStartElement("SOAP-ENV", "Body", NsSoapenv);
+                writer.WriteStartElement("SOAP-ENV", "Body", NsSoapEnv);
                 writer.WriteStartElement("u", requestInfo.LocalName + "Response", requestInfo.NamespaceURI);
 
                 WriteResult(requestInfo.LocalName, requestInfo.Headers, writer);
