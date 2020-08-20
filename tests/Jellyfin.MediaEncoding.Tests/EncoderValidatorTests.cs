@@ -24,7 +24,8 @@ namespace Jellyfin.MediaEncoding.Tests
         [InlineData(EncoderValidatorTestsData.FFmpegV42Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV414Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV404Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput, true)]
+        [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput2, true)]
+        [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput, false)]
         public void ValidateVersionInternalTest(string versionOutput, bool valid)
         {
             var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());
@@ -41,7 +42,8 @@ namespace Jellyfin.MediaEncoding.Tests
                 yield return new object?[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
                 yield return new object?[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
                 yield return new object?[] { EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, new Version(4, 0) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput2, new Version(4, 0) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, null };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
