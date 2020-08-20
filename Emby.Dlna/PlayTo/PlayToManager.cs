@@ -297,7 +297,7 @@ namespace Emby.Dlna.PlayTo
             {
                 _disposeCancellationTokenSource.Cancel();
             }
-            catch ()
+            catch
             {
             }
 
