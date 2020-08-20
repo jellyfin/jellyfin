@@ -15,6 +15,6 @@ namespace Emby.Dlna
 
         public string ContentType { get; set; }
 
-        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; }
     }
 }

@@ -495,8 +495,8 @@ namespace Emby.Dlna
         /// Recreates the object using serialization, to ensure it's not a subclass.
         /// If it's a subclass it may not serlialize properly to xml (different root element tag name).
         /// </summary>
-        /// <param name="profile"></param>
-        /// <returns></returns>
+        /// <param name="profile">The device profile.</param>
+        /// <returns>The reserialized device profile.</returns>
         private DeviceProfile ReserializeProfile(DeviceProfile profile)
         {
             if (profile.GetType() == typeof(DeviceProfile))
@@ -507,13 +507,6 @@ namespace Emby.Dlna
             var json = _jsonSerializer.SerializeToString(profile);
 
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
-        }
-
-        private class InternalProfileInfo
-        {
-            internal DeviceProfileInfo Info { get; set; }
-
-            internal string Path { get; set; }
         }
 
         public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
@@ -539,6 +532,13 @@ namespace Emby.Dlna
                 Format = format,
                 Stream = _assembly.GetManifestResourceStream(resource)
             };
+        }
+
+        private class InternalProfileInfo
+        {
+            internal DeviceProfileInfo Info { get; set; }
+
+            internal string Path { get; set; }
         }
     }
 

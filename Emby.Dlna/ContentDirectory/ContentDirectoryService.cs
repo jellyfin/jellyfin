@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
 {
-    public class ContentDirectory : BaseService, IContentDirectory
+    public class ContentDirectoryService : BaseService, IContentDirectory
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IImageProcessor _imageProcessor;
@@ -33,14 +33,14 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ITVSeriesManager _tvSeriesManager;
 
-        public ContentDirectory(
+        public ContentDirectoryService(
             IDlnaManager dlna,
             IUserDataManager userDataManager,
             IImageProcessor imageProcessor,
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             IUserManager userManager,
-            ILogger<ContentDirectory> logger,
+            ILogger<ContentDirectoryService> logger,
             IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,

@@ -7,12 +7,12 @@ namespace Emby.Dlna
 {
     public class ControlRequest
     {
-        public ControlRequest()
+        public ControlRequest(IHeaderDictionary headers)
         {
-            Headers = new HeaderDictionary();
+            Headers = headers;
         }
 
-        public IHeaderDictionary Headers { get; set; }
+        public IHeaderDictionary Headers { get; }
 
         public Stream InputXml { get; set; }
 

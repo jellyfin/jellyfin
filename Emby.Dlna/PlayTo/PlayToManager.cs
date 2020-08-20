@@ -174,7 +174,7 @@ namespace Emby.Dlna.PlayTo
 
             if (controller == null)
             {
-                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, cancellationToken).ConfigureAwait(false);
+                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _logger, cancellationToken).ConfigureAwait(false);
 
                 string deviceName = device.Properties.Name;
 

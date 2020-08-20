@@ -1,10 +1,11 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class uBaseObject
+    public class UBaseObject
     {
         public string Id { get; set; }
 
@@ -20,7 +21,7 @@ namespace Emby.Dlna.PlayTo
 
         public string Url { get; set; }
 
-        public string[] ProtocolInfo { get; set; }
+        public IReadOnlyList<string> ProtocolInfo { get; set; }
 
         public string UpnpClass { get; set; }
 
@@ -49,7 +50,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        public bool Equals(uBaseObject obj)
+        public bool Equals(UBaseObject obj)
         {
             if (obj == null)
             {

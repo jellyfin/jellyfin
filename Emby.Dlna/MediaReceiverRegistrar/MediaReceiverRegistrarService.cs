@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
-    public class MediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar
+    public class MediaReceiverRegistrarService : BaseService, IMediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
 
-        public MediaReceiverRegistrar(
-            ILogger<MediaReceiverRegistrar> logger,
+        public MediaReceiverRegistrarService(
+            ILogger<MediaReceiverRegistrarService> logger,
             IHttpClient httpClient,
             IServerConfigurationManager config)
             : base(logger, httpClient)
