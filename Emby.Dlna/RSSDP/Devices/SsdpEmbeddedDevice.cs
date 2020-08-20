@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 #nullable enable
 using System;
 
@@ -10,8 +11,8 @@ namespace Emby.Dlna.Rssdp.Devices
     {
         private SsdpRootDevice? _rootDevice;
 
-        public SsdpEmbeddedDevice(SsdpRootDevice rootDevice, string udn)
-            : base(rootDevice?.FriendlyName ?? throw new ArgumentNullException(nameof(rootDevice)), rootDevice.Manufacturer, rootDevice.ModelName, udn)
+        public SsdpEmbeddedDevice(string friendlyName, string manufacturer, string modelName, string uuid)
+        : base(friendlyName, manufacturer, modelName, uuid)
         {
         }
 

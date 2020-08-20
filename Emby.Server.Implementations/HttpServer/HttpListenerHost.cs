@@ -315,7 +315,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 // Only check private address ranges.
-                if (!_networkManager.IsLANAddressRange(h))
+                if (!_networkManager.IsInLocalNetwork(h))
                 {
                     return true;
                 }

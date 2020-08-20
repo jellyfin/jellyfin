@@ -592,11 +592,11 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = RequestHelpers.GetGuids(genreIds)
             };
 
-            if (!librarySeriesId.Equals(Guid.Empty))
+            if (librarySeriesId != null && !librarySeriesId.Equals(Guid.Empty))
             {
                 query.IsSeries = true;
 
-                if (_libraryManager.GetItemById(librarySeriesId ?? Guid.Empty) is Series series)
+                if (_libraryManager.GetItemById(librarySeriesId.Value) is Series series)
                 {
                     query.Name = series.Name;
                 }
@@ -1004,7 +1004,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="validateLogin">Validate login.</param>
         /// <response code="200">Created listings provider returned.</response>
         /// <returns>A <see cref="OkResult"/> containing the created listings provider.</returns>
-        [HttpGet("ListingProviders")]
+        [HttpPost("ListingProviders")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA5350:RemoveSha1", MessageId = "AddListingProvider", Justification = "Imported from ServiceStack")]

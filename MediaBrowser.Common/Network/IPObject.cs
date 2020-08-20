@@ -36,9 +36,9 @@ namespace MediaBrowser.Common.Networking
         public abstract IPObject NetworkAddress { get; }
 
         /// <summary>
-        /// Gets the object's IP address.
+        /// Gets or sets the object's IP address.
         /// </summary>
-        public abstract byte SubnetPrefix { get; }
+        public abstract byte SubnetPrefix { get; set; }
 
         /// <summary>
         /// Gets the AddressFamily of this object.
@@ -217,90 +217,6 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
-        /// Returns the network address of an object.
-        /// </summary>
-        /// <param name="address">IP Address to convert.</param>
-        /// <param name="subnetPrefix">Subnet prefix.</param>
-        /// <returns>IPAddress.</returns>
-        internal static Tuple<IPAddress, byte> Network(IPAddress address, byte subnetPrefix)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (IsLoopback(address))
-            {
-                return Tuple.Create<IPAddress, byte>(address, subnetPrefix);
-            }
-
-            if (subnetPrefix > 64)
-            {
-                subnetPrefix = 64;
-            }
-
-            byte[] addressBytes = address.GetAddressBytes();
-
-            int div = subnetPrefix / 8;
-            int mod = subnetPrefix % 8;
-            if (mod != 0)
-            {
-                addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
-                div++;
-            }
-
-            for (int octet = div; octet < addressBytes.Length; octet++)
-            {
-                addressBytes[octet] = 0;
-            }
-
-            // Reduce the subnet prefix where possible.
-            // if (address.AddressFamily == AddressFamily.InterNetworkV6 && subnetPrefix == 64)
-            // {
-            //    for (int octet = addressBytes.Length - 1; octet > 0; octet--)
-            //    {
-            //        if (addressBytes[octet] == 0)
-            //        {
-            //            subnetPrefix = (byte)(octet * 4);
-            //        }
-            //        else
-            //        {
-            //            break;
-            //        }
-            //    }
-            // }
-
-            return Tuple.Create<IPAddress, byte>(new IPAddress(addressBytes), subnetPrefix);
-        }
-
-        /// <summary>
-        /// Returns the Network address of an ip address.
-        /// </summary>
-        /// <param name="address">IP object address.</param>
-        /// <param name="other">IP address to compare.</param>
-        /// <returns>The network ip address of the subnet.</returns>
-        public static bool IsInSameSubnet(IPObject address, IPAddress other)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (other == null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-
-            if (address.AddressFamily != other.AddressFamily)
-            {
-                return false;
-            }
-
-            var network = Network(other, address.SubnetPrefix);
-            return address.NetworkAddress.Address.Equals(network.Item1);
-        }
-
-        /// <summary>
         /// Tests to see if this object is a Loopback address.
         /// </summary>
         /// <returns>True if it is.</returns>
@@ -412,23 +328,40 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
-        /// Compares two byte arrays.
+        /// Returns the network address of an object.
         /// </summary>
-        /// <param name="src">Array one.</param>
-        /// <param name="dest">Array two.</param>
-        /// <param name="len">Length of both arrays. Must be the same.</param>
-        /// <returns>True if the two arrays match.</returns>
-        internal static bool CompareByteArray(byte[] src, byte[] dest, byte len)
+        /// <param name="address">IP Address to convert.</param>
+        /// <param name="subnetPrefix">Subnet prefix.</param>
+        /// <returns>IPAddress.</returns>
+        internal static Tuple<IPAddress, byte> Network(IPAddress address, byte subnetPrefix)
         {
-            for (int i = 0; i < len; i++)
+            if (address == null)
             {
-                if (src[i] != dest[i])
-                {
-                    return false;
-                }
+                throw new ArgumentNullException(nameof(address));
             }
 
-            return true;
+            if (IsLoopback(address))
+            {
+                return Tuple.Create<IPAddress, byte>(address, subnetPrefix);
+            }
+
+            byte[] addressBytes = address.GetAddressBytes();
+
+            int div = subnetPrefix / 8;
+            int mod = subnetPrefix % 8;
+            if (mod != 0)
+            {
+                mod = 8 - mod;
+                addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
+                div++;
+            }
+
+            for (int octet = div; octet < addressBytes.Length; octet++)
+            {
+                addressBytes[octet] = 0;
+            }
+
+            return Tuple.Create<IPAddress, byte>(new IPAddress(addressBytes), subnetPrefix);
         }
     }
 }

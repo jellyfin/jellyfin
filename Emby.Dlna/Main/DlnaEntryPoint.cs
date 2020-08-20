@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 #nullable enable
 using System;
 using System.Globalization;
@@ -19,6 +20,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
@@ -27,6 +29,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Main
 {
+    /// <summary>
+    /// Manages all DLNA functionality.
+    /// </summary>
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
         private readonly IServerConfigurationManager _configurationManager;
@@ -48,12 +53,15 @@ namespace Emby.Dlna.Main
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly ILoggerFactory _loggerFactory;
-        private PlayToManager? _manager;
+        private readonly INotificationManager _notificationManager;
         private SsdpServerPublisher? _publisher;
         private SocketServer? _socketManager;
         private IDeviceDiscovery? _deviceDiscovery;
         private bool _isDisposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DlnaEntryPoint"/> class.
+        /// </summary>
         public DlnaEntryPoint(
             IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
@@ -70,7 +78,8 @@ namespace Emby.Dlna.Main
             IMediaEncoder mediaEncoder,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
-            ITVSeriesManager tvSeriesManager)
+            ITVSeriesManager tvSeriesManager,
+            INotificationManager notificationManager)
         {
             _configurationManager = config ?? throw new ArgumentNullException(nameof(config));
             _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
@@ -90,23 +99,51 @@ namespace Emby.Dlna.Main
             _userViewManager = userViewManager ?? throw new ArgumentNullException(nameof(userViewManager));
             _tvSeriesManager = tvSeriesManager ?? throw new ArgumentNullException(nameof(loggerFactory));
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
+            _notificationManager = notificationManager ?? throw new ArgumentNullException(nameof(notificationManager));
             _networkManager.NetworkChanged += TriggerReload;
 
             Instance = this;
         }
 
+        /// <summary>
+        /// Gets the singleton instance of this object.
+        /// </summary>
         public static DlnaEntryPoint? Instance { get; internal set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the DLNA server is enabled.
+        /// </summary>
         public bool DLNAEnabled => _configurationManager.GetDlnaConfiguration().EnableServer;
 
+        /// <summary>
+        /// Gets a value indicating whether DLNA PlayTo is enabled.
+        /// </summary>
         public bool EnablePlayTo => _configurationManager.GetDlnaConfiguration().EnablePlayTo;
 
+        /// <summary>
+        /// Gets the DLNA server' ContentDirectory instance.
+        /// </summary>
         public IContentDirectory? ContentDirectory { get; private set; }
 
+        /// <summary>
+        /// Gets the DLNA server' ConnectionManager instance.
+        /// </summary>
         public IConnectionManager? ConnectionManager { get; private set; }
 
+        /// <summary>
+        /// Gets the DLNA server's MediaReceiverRegistrar instance.
+        /// </summary>
         public IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
 
+        /// <summary>
+        /// Gets the PlayToManager instance.
+        /// </summary>
+        public PlayToManager? PlayToManager { get; internal set; }
+
+        /// <summary>
+        /// Executes DlnaEntryPoint's functionality.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
@@ -116,12 +153,16 @@ namespace Emby.Dlna.Main
             _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes the device publisher instance.
+        /// </summary>
         public void DisposeDevicePublisher()
         {
             if (_publisher != null)
@@ -132,6 +173,7 @@ namespace Emby.Dlna.Main
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void Dispose(bool disposing)
         {
             if (_isDisposed)
@@ -145,8 +187,8 @@ namespace Emby.Dlna.Main
 
                 lock (_syncLock)
                 {
-                    _manager?.Dispose();
-                    _manager = null;
+                    PlayToManager?.Dispose();
+                    PlayToManager = null;
                 }
 
                 _networkManager.NetworkChanged -= TriggerReload;
@@ -292,6 +334,7 @@ namespace Emby.Dlna.Main
                         _logger.LogDebug("Stopping DLNA Server.");
                         ContentDirectory = null;
                     }
+
                     MediaReceiverRegistrar = null;
                     ConnectionManager = null;
                     GC.Collect();
@@ -304,16 +347,16 @@ namespace Emby.Dlna.Main
                         _deviceDiscovery = new DeviceDiscovery(_configurationManager, _loggerFactory, _networkManager, _socketManager);
                     }
 
-                    if (_manager == null)
+                    if (PlayToManager == null)
                     {
                         _logger.LogDebug("Starting playTo.");
-                        _manager = new PlayToManager(
-                            _logger,
+                        PlayToManager = new PlayToManager(
+                            _loggerFactory.CreateLogger<PlayToManager>(),
+                            _appHost,
                             _sessionManager,
                             _libraryManager,
                             _userManager,
                             _dlnaManager,
-                            _appHost,
                             _imageProcessor,
                             _deviceDiscovery,
                             _httpClient,
@@ -321,20 +364,21 @@ namespace Emby.Dlna.Main
                             _userDataManager,
                             _localization,
                             _mediaSourceManager,
-                            _mediaEncoder);
+                            _mediaEncoder,
+                            _notificationManager);
 
-                        _manager.Start();
+                        PlayToManager.Start();
                     }
                 }
                 else
                 {
-                    if (_manager != null)
+                    if (PlayToManager != null)
                     {
                         _logger.LogDebug("Stopping playTo.");
                         lock (_syncLock)
                         {
-                            _manager?.Dispose();
-                            _manager = null;
+                            PlayToManager?.Dispose();
+                            PlayToManager = null;
                             GC.Collect();
                         }
                     }
@@ -348,6 +392,7 @@ namespace Emby.Dlna.Main
         private void RegisterServerEndpoints()
         {
             var udn = CreateUuid(_appHost.SystemId);
+            var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
             foreach (IPObject addr in _networkManager.GetInternalBindAddresses())
             {
@@ -356,8 +401,6 @@ namespace Emby.Dlna.Main
                     // Don't advertise loopbacks
                     continue;
                 }
-
-                var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr.Address);
 
@@ -386,7 +429,11 @@ namespace Emby.Dlna.Main
 
                 foreach (var subDevice in embeddedDevices)
                 {
-                    var embeddedDevice = new SsdpEmbeddedDevice(device, udn);  // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
+                    var embeddedDevice = new SsdpEmbeddedDevice(
+                        device.FriendlyName,
+                        device.Manufacturer,
+                        device.ModelName,
+                        udn);
                     SetProperies(embeddedDevice, subDevice);
                     device.AddDevice(embeddedDevice);
                 }

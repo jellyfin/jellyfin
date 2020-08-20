@@ -75,8 +75,8 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
-        /// Gets the object's first IP's mask.
-        /// The setter does nothing.
+        /// Gets or sets the object's first IP's subnet prefix.
+        /// The setter does nothing, but shouldn't raise an exception.
         /// </summary>
         public override byte SubnetPrefix
         {
@@ -88,6 +88,11 @@ namespace MediaBrowser.Common.Networking
                 }
 
                 return (byte)((_addresses.Length > 0) ? 128 : 0);
+            }
+
+            set
+            {
+                // Not implemented.
             }
         }
 

@@ -2,9 +2,11 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
+using Emby.Dlna.PlayTo;
 using Jellyfin.Api.Attributes;
 using MediaBrowser.Controller.Dlna;
 using Microsoft.AspNetCore.Http;
@@ -269,6 +271,36 @@ namespace Jellyfin.Api.Controllers
             }
 
             return NotFound();
+        }
+
+        /// <summary>
+        /// Processes device subscription events.
+        /// </summary>
+        /// <param name="id">Id of the device.</param>
+        /// <param name="requestStream">XML data stream.</param>
+        /// <returns>Event subscription response.</returns>
+        [HttpSubscribe("Eventing/{Id}/")]
+        [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [Produces(XMLContentType)]
+        public async Task<ActionResult> ProcessDeviceNotifification(string id, Stream requestStream)
+        {
+            try
+            {
+                using var reader = new StreamReader(requestStream, Encoding.UTF8);
+                string response = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                if (DlnaEntryPoint.Instance?.PlayToManager != null)
+                {
+                    await DlnaEntryPoint.Instance.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);
+                }
+            }
+            catch
+            {
+                // Ignore connection forcible closed messages.
+            }
+
+            return Ok();
         }
 
         private ActionResult GetIconInternal(string fileName)

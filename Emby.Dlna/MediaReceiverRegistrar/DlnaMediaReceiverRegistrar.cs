@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
+    /// <summary>
+    /// Implements the DLNA functionality within JellyFin.
+    /// </summary>
     public class DlnaMediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;

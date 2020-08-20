@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 #nullable enable
 using System;
 using System.Collections;
@@ -272,7 +273,7 @@ namespace Emby.Dlna.Rssdp
                     rt = device.ToRootDevice();
 
                     // Response is sent only when the device in the same subnet, or the are private address on the local device.
-                    if (IPObject.IsInSameSubnet(rt.NetworkAddress, receivedFrom.Address) || _networkManager.OnSameMachine(rt.Address, receivedFrom.Address))
+                    if (rt.NetAddress.Contains(receivedFrom.Address) || (rt.NetAddress.IsLoopback() && _networkManager.IsInLocalNetwork(receivedFrom.Address)))
                     {
                         await SendDeviceSearchResponsesAsync(device, localIP, receivedFrom).ConfigureAwait(false);
                     }
@@ -317,7 +318,11 @@ namespace Emby.Dlna.Rssdp
             };
 
             var message = BuildMessage("HTTP/1.1 200 OK", values);
-            _logger.LogDebug("->OK : {0}, {1}", localIP, endPoint.Address);
+            if (_socketServer.Tracing)
+            {
+                _logger.LogDebug("->OK : {0}, {1}", localIP, endPoint.Address);
+            }
+
             await _socketServer.SendMessageAsync(message, localIP, endPoint).ConfigureAwait(false);
         }
 
@@ -469,7 +474,11 @@ namespace Emby.Dlna.Rssdp
                 };
 
                 var message = BuildMessage("NOTIFY * HTTP/1.1", values);
-                _logger.LogDebug("-> NOTIFY ssdp:alive : {0} -> {1} : {2}", rootDevice.Address, multicastAddresses[a], message);
+                if (_socketServer.Tracing)
+                { 
+                    _logger.LogDebug("-> NOTIFY ssdp:alive : {0} -> {1} : {2}", rootDevice.Address, multicastAddresses[a], message);
+                }
+
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
             }
 
@@ -523,7 +532,11 @@ namespace Emby.Dlna.Rssdp
 
                 var message = BuildMessage("NOTIFY * HTTP/1.1", values);
                 var addr = device.ToRootDevice().Address;
-                _logger.LogDebug("->NOTIFY ssdp:byebye {0} : {1}", addr, multicastAddresses[a]);
+                if (_socketServer.Tracing)
+                {
+                    _logger.LogDebug("->NOTIFY ssdp:byebye {0} : {1}", addr, multicastAddresses[a]);
+                }
+
                 var sendCount = IsDisposed ? 1 : 3;
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, sendCount, addr);
             }
@@ -566,7 +579,10 @@ namespace Emby.Dlna.Rssdp
                     return;
                 }
 
-                _logger.LogDebug("<- M-SEARCH: {0} : {1}", e.ReceivedFrom.Address, searchTarget);
+                if (_socketServer.Tracing)
+                {
+                    _logger.LogDebug("<- M-SEARCH: {0} : {1}", e.ReceivedFrom.Address, searchTarget);
+                }
 
                 string mx = GetFirstHeaderValue("MX", e.Message.Headers);
                 // Wait on random interval up to MX, as per SSDP spec.

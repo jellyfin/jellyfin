@@ -22,17 +22,16 @@ namespace Emby.Dlna.Rssdp.Devices
         /// <param name="cacheLifetime">Cache lifetime.</param>
         /// <param name="location">Location.</param>
         /// <param name="address">IP Address.</param>
-        /// <param name="subnetPrefix">Subnet mask prefix.</param>
         /// <param name="friendlyName">Friendly name.</param>
         /// <param name="manufacturer">Manufacturer.</param>
         /// <param name="modelName">Model name.</param>
-        /// <param name="udn">UDN.</param>
-        public SsdpRootDevice(TimeSpan cacheLifetime, Uri location, IPObject address, string friendlyName, string manufacturer, string modelName, string udn)
-            : base(friendlyName, manufacturer, modelName, udn)
+        /// <param name="uuid">UDN.</param>
+        public SsdpRootDevice(TimeSpan cacheLifetime, Uri location, IPObject address, string friendlyName, string manufacturer, string modelName, string uuid)
+            : base(friendlyName, manufacturer, modelName, uuid)
         {
             CacheLifetime = cacheLifetime;
             Location = location;
-            NetworkAddress = address;
+            NetAddress = address;
         }
 
         /// <summary>
@@ -54,12 +53,12 @@ namespace Emby.Dlna.Rssdp.Devices
         /// <summary>
         /// Gets or sets the IP Object Address used to check if the received message from same interface with this device/tree. Required.
         /// </summary>
-        public IPObject NetworkAddress { get; set; }
+        public IPObject NetAddress { get; set; }
 
        /// <summary>
        /// Gets the Address used to check if the received message from same interface with this device/tree.
        /// </summary>
-        public IPAddress Address { get => NetworkAddress.Address; }
+        public IPAddress Address { get => NetAddress.Address; }
 
         /// <summary>
         /// Gets or sets the base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
@@ -101,7 +100,7 @@ namespace Emby.Dlna.Rssdp.Devices
                 return false;
             }
 
-            return string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase) && NetworkAddress.Equals(other.NetworkAddress);
+            return string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase) && NetAddress.Equals(other.NetAddress);
         }
 
         /// <inheritdoc/>

@@ -21,6 +21,11 @@ namespace MediaBrowser.Model.Net
         public bool IsTimedOut { get; set; }
 
         /// <summary>
+        /// Gets or sets the webservice response text that accompanied the error code.
+        /// </summary>
+        public string? ResponseText { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="HttpException" /> class.
         /// </summary>
         /// <param name="message">The message.</param>

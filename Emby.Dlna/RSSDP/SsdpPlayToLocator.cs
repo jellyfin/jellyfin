@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -247,8 +248,11 @@ namespace Emby.Dlna.Rssdp
 
                 var message = BuildMessage("M-SEARCH * HTTP/1.1", values);
                 IPAddress dest = a == 0 ? IPAddress.Any : IPAddress.IPv6Any;
+                if (_socketServer.Tracing)
+                {
+                    _logger.LogDebug("->M-SEARCH {0} : {1}", dest, multicastAddresses[a]);
+                }
 
-                _logger.LogDebug("->M-SEARCH {0} : {1}", dest, multicastAddresses[a]);
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, dest);
             }
 
@@ -339,7 +343,10 @@ namespace Emby.Dlna.Rssdp
                     // Process Alive Notification.
                     if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                     {
-                        _logger.LogDebug("<- ssdpalive : {0} ", device.DescriptionLocation);
+                        if (_socketServer.Tracing)
+                        {
+                            _logger.LogDebug("<- ssdpalive : {0} ", device.DescriptionLocation);
+                        }
                     }
 
                     return;
@@ -351,7 +358,10 @@ namespace Emby.Dlna.Rssdp
                 // Process ByeBye Notification.
                 if (!DeviceDied(device.Usn, false))
                 {
-                    _logger.LogDebug("Byebye: {0}", device);
+                    if (_socketServer.Tracing)
+                    {
+                        _logger.LogDebug("Byebye: {0}", device);
+                    }
 
                     DeviceUnavailable?.Invoke(this, new DeviceUnavailableEventArgs(device, false));
                 }

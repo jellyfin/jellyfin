@@ -72,13 +72,6 @@ namespace MediaBrowser.Controller
         string GetLoopbackHttpApiUrl();
 
         /// <summary>
-        /// Gets a local (LAN) URL that can be used to access the API. HTTPS will be preferred when available.
-        /// </summary>
-        /// <param name="address">The IP address to use as the hostname in the URL.</param>
-        /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(IPAddress address);
-
-        /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
         /// Note: if passing non-null scheme or port it is up to the caller to ensure they form the correct pair.
         /// </summary>
@@ -92,7 +85,7 @@ namespace MediaBrowser.Controller
         /// preferring the HTTPS port, if available.
         /// </param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(ReadOnlySpan<char> hostname, string scheme = null, int? port = null);
+        string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
 
         /// <summary>
         /// Open a URL in an external browser window.

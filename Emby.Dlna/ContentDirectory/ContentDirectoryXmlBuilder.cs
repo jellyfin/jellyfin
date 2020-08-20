@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 #nullable enable
 using System.Collections.Generic;
 using Emby.Dlna.Common;

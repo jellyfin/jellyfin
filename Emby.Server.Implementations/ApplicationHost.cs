@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -15,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
-using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -48,11 +45,9 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
@@ -82,11 +77,9 @@ using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
@@ -619,6 +612,9 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
             serviceCollection.AddSingleton<TranscodingJobHelper>();
+            serviceCollection.AddScoped<MediaInfoHelper>();
+            serviceCollection.AddScoped<AudioHelper>();
+            serviceCollection.AddScoped<DynamicHlsHelper>();
         }
 
         /// <summary>
@@ -1137,39 +1133,6 @@ namespace Emby.Server.Implementations
             return GetLocalApiUrl(smart);
         }
 
-        /// <summary>
-        /// Removes the scope id from IPv6 addresses.
-        /// </summary>
-        /// <param name="address">The IPv6 address.</param>
-        /// <returns>The IPv6 address without the scope id.</returns>
-        private ReadOnlySpan<char> RemoveScopeId(ReadOnlySpan<char> address)
-        {
-            var index = address.IndexOf('%');
-            if (index == -1)
-            {
-                return address;
-            }
-
-            return address.Slice(0, index);
-        }
-
-        /// <inheritdoc />
-        public string GetLocalApiUrl(IPAddress ipAddress)
-        {
-            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                var str = RemoveScopeId(ipAddress.ToString());
-                Span<char> span = new char[str.Length + 2];
-                span[0] = '[';
-                str.CopyTo(span.Slice(1));
-                span[^1] = ']';
-
-                return GetLocalApiUrl(span);
-            }
-
-            return GetLocalApiUrl(ipAddress.ToString());
-        }
-
         /// <inheritdoc/>
         public string GetLoopbackHttpApiUrl()
         {
@@ -1182,14 +1145,14 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(ReadOnlySpan<char> host, string scheme = null, int? port = null)
+        public string GetLocalApiUrl(string host, string scheme = null, int? port = null)
         {
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
             return new UriBuilder
             {
                 Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
-                Host = host.ToString(),
+                Host = host,
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
                 Path = ServerConfigurationManager.Configuration.BaseUrl
             }.ToString().TrimEnd('/');

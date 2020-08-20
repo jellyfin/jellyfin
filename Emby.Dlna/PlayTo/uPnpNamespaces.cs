@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace Emby.Dlna.PlayTo
 {
-    public static class uPnpNamespaces
+    public class uPnpNamespaces
     {
         public static XNamespace dc = "http://purl.org/dc/elements/1.1/";
         public static XNamespace ns = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";

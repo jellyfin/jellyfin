@@ -75,7 +75,7 @@ namespace NetworkTesting
             "[192.158.1.2/16,127.0.0.1/32]",
             "[10.10.10.10/32]",
             "[10.10.10.10/32]",
-            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029::/64]")]
+            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
             var conf = new ServerConfiguration()
@@ -116,6 +116,56 @@ namespace NetworkTesting
         }
 
         [Theory]
+        [InlineData("192.168.5.85/24", "192.168.5.1")]
+        [InlineData("192.168.5.85/24", "192.168.5.254")]
+        [InlineData("10.128.240.50/30", "10.128.240.48")]
+        [InlineData("10.128.240.50/30", "10.128.240.49")]
+        [InlineData("10.128.240.50/30", "10.128.240.50")]
+        [InlineData("10.128.240.50/30", "10.128.240.51")]
+        public void IpV4SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
+        {
+            var ipAddressObj = IPNetAddress.Parse(netMask);
+            Assert.True(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+        }
+
+        [Theory]
+        [InlineData("192.168.5.85/24", "192.168.4.254")]
+        [InlineData("192.168.5.85/24", "191.168.5.254")]
+        [InlineData("10.128.240.50/30", "10.128.240.47")]
+        [InlineData("10.128.240.50/30", "10.128.240.52")]
+        [InlineData("10.128.240.50/30", "10.128.239.50")]
+        [InlineData("10.128.240.50/30", "10.127.240.51")]
+        public void IpV4SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
+        {
+            var ipAddressObj = IPNetAddress.Parse(netMask);
+            Assert.False(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+        }
+
+        [Theory]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:FFFF:FFFF:FFFF:FFFF")]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:0001:0000:0000:0000")]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:FFFF:FFFF:FFFF:FFF0")]
+        [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
+        public void IpV6SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
+        {
+            var ipAddressObj = IPNetAddress.Parse(netMask);
+            Assert.True(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+        }
+
+        [Theory]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0011:FFFF:FFFF:FFFF:FFFF")]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0013:0000:0000:0000:0000")]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0013:0001:0000:0000:0000")]
+        [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0011:FFFF:FFFF:FFFF:FFF0")]
+        [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0001")]
+        public void IpV6SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
+        {
+            var ipAddressObj = IPNetAddress.Parse(netMask);
+            Assert.False(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+        }
+
+        [Theory]
         [InlineData("10.0.0.0/255.0.0.0", "10.10.10.1/32")]
         [InlineData("10.0.0.0/8", "10.10.10.1/32")]
         [InlineData("10.0.0.0/255.0.0.0", "10.10.10.1")]
@@ -127,6 +177,7 @@ namespace NetworkTesting
         [InlineData("10.10.10.0/255.255.255.0", "10.10.10.1/32")]
         [InlineData("10.10.10.0/24", "10.10.10.1/32")]
         [InlineData("10.10.10.0/255.255.255.0", "10.10.10.1")]
+
         public void TestSubnets(string network, string ip)
         {
             Assert.True(NetCollection.TryParse(network, out IPObject? networkObj));
@@ -141,8 +192,8 @@ namespace NetworkTesting
 
         [Theory]
         [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24", "172.168.1.2/24")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24, 10.10.10.1", "172.168.1.2/24,10.10.10.1/32")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/255.255.255.0, 10.10.10.1", "192.168.1.2/24,10.10.10.1/32")]
+        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24, 10.10.10.1", "172.168.1.2/24,10.10.10.1/24")]
+        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/255.255.255.0, 10.10.10.1", "192.168.1.2/24,10.10.10.1/24")]
         [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/24, 100.10.10.1", "192.168.1.2/24")]
         [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "194.168.1.2/24, 100.10.10.1", "")]
 

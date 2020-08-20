@@ -49,8 +49,6 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Object's network address.
         /// </summary>
-        private byte _subnetPrefix;
-
         private IPNetAddress? _networkAddress;
 
         /// <summary>
@@ -60,7 +58,7 @@ namespace MediaBrowser.Common.Networking
         public IPNetAddress(IPAddress address)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            _subnetPrefix = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+            SubnetPrefix = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
         }
 
         /// <summary>
@@ -81,7 +79,7 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentException("This method of creation is only for IPv4 addresses.");
             }
 
-            _subnetPrefix = MaskToCidr(subnet);
+            SubnetPrefix = MaskToCidr(subnet);
         }
 
         /// <summary>
@@ -92,7 +90,7 @@ namespace MediaBrowser.Common.Networking
         public IPNetAddress(IPAddress address, byte subnetPrefix)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            _subnetPrefix = subnetPrefix;
+            SubnetPrefix = subnetPrefix;
         }
 
         /// <summary>
@@ -118,7 +116,7 @@ namespace MediaBrowser.Common.Networking
             {
                 if (_networkAddress == null)
                 {
-                    var value = Network(_address, _subnetPrefix);
+                    var value = Network(_address, SubnetPrefix);
                     _networkAddress = new IPNetAddress(value.Item1, value.Item2);
                 }
 
@@ -127,7 +125,7 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <inheritdoc/>
-        public override byte SubnetPrefix => _subnetPrefix;
+        public override byte SubnetPrefix { get; set; }
 
         /// <summary>
         /// Gets the subnet mask of this object.
@@ -138,7 +136,7 @@ namespace MediaBrowser.Common.Networking
             {
                 if (!_address.Equals(IPAddress.None))
                 {
-                    return CidrToMask(_subnetPrefix, _address.AddressFamily);
+                    return CidrToMask(SubnetPrefix, _address.AddressFamily);
                 }
 
                 return IPAddress.None;
@@ -220,7 +218,8 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentNullException(nameof(address));
             }
 
-            return !Address.Equals(IPAddress.None) && !address.Equals(IPAddress.None) && IPObject.IsInSameSubnet(this, address);
+            var altAddress = Network(address, SubnetPrefix);
+            return NetworkAddress.Address.Equals(altAddress.Item1);
         }
 
         /// <summary>
@@ -242,17 +241,15 @@ namespace MediaBrowser.Common.Networking
             }
             else if (address is IPNetAddress netaddrObj)
             {
-                if (NetworkAddress.Equals(netaddrObj.NetworkAddress))
+                var netAddress = NetworkAddress.NetworkAddress.Address;
+                // Have the same network address, but different subnets?
+                if (netAddress.Equals(netaddrObj.NetworkAddress.Address))
                 {
-                    return true;
+                    return NetworkAddress.SubnetPrefix <= netaddrObj.SubnetPrefix;
                 }
 
-                if (NetworkAddress.SubnetPrefix < netaddrObj.SubnetPrefix)
-                {
-                    // Test to see if address is a member of this subnet.
-                    var test = Network(netaddrObj.Address, NetworkAddress.SubnetPrefix);
-                    return NetworkAddress.Address.Equals(test.Item1);
-                }
+                var altAddress = Network(netaddrObj.Address, SubnetPrefix);
+                return netAddress.Equals(altAddress.Item1);
             }
 
             return false;
@@ -263,42 +260,9 @@ namespace MediaBrowser.Common.Networking
         {
             if (other is IPNetAddress otherObj && !Address.Equals(IPAddress.None) && !otherObj.Address.Equals(IPAddress.None))
             {
-                if (Address.AddressFamily == otherObj.Address.AddressFamily)
-                {
-                    // Compare only the address for IPv6, but both Address and Mask for IPv4.
-
-                    if (Address.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        if (!Mask.Equals(IPAddress.Any))
-                        {
-                            // Return true if ipObj is a host and we're a network and the host matches ours.
-                            return Address.Equals(otherObj.Address) && Mask.Equals(otherObj.Mask);
-                        }
-
-                        return Address.Equals(otherObj.Address);
-                    }
-
-                    if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                    {
-                        return Address.Equals(otherObj.Address);
-                    }
-                }
-                else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    // Is one an ipv4 to ipv6 mapping?
-                    return string.Equals(
-                        Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                        otherObj.ToString(),
-                        StringComparison.OrdinalIgnoreCase);
-                }
-                else if (Address.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    // Is one an ipv4 to ipv6 mapping?
-                    return string.Equals(
-                        otherObj.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                        Address.ToString(),
-                        StringComparison.OrdinalIgnoreCase);
-                }
+                return Address.AddressFamily == otherObj.Address.AddressFamily &&
+                    Address.Equals(otherObj.Address) &&
+                    SubnetPrefix == otherObj.SubnetPrefix;
             }
 
             return false;

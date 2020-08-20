@@ -20,7 +20,6 @@ namespace Emby.Dlna.Rssdp.Devices
     public abstract class SsdpDevice
     {
         private readonly IList<SsdpDevice> _devices;
-        private string _udn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpDevice"/> class.
@@ -30,8 +29,8 @@ namespace Emby.Dlna.Rssdp.Devices
         /// <param name="friendlyName">Friendly name.</param>
         /// <param name="manufacturer">Manufacturer.</param>
         /// <param name="modelName">Model name.</param>
-        /// <param name="udn">UDN.</param>
-        protected SsdpDevice(string friendlyName, string manufacturer, string modelName, string udn)
+        /// <param name="uuid">UDN.</param>
+        protected SsdpDevice(string friendlyName, string manufacturer, string modelName, string uuid)
         {
             DeviceTypeNamespace = "schemas-upnp-org";
             DeviceType = "Basic";
@@ -39,10 +38,11 @@ namespace Emby.Dlna.Rssdp.Devices
 
             _devices = new List<SsdpDevice>();
             this.Devices = new ReadOnlyCollection<SsdpDevice>(_devices);
+
             FriendlyName = friendlyName;
             ModelName = modelName;
             Manufacturer = manufacturer;
-            _udn = udn;
+            Uuid = uuid;
         }
 
         /// <summary>
@@ -123,33 +123,17 @@ namespace Emby.Dlna.Rssdp.Devices
         /// <para>Technically this library implements UPnP 1.0, so any value is allowed, but we advise using UPnP 1.1 compatible values for good behaviour and
         /// forward compatibility with future versions.</para>
         /// </remarks>
-        public string? Uuid { get; set; }
+        public string Uuid { get; set; }
 
         /// <summary>
-        /// Gets or sets a unique device name for this device. Optional, not recommended to be explicitly set.
+        /// Gets a unique device name for this device. Optional, not recommended to be explicitly set.
         /// </summary>
-        /// <remarks>
-        /// <para>* In general you should not explicitly set this property. If it is not set (or set to null/empty string) the property will return a UDN
-        /// value that is correct as per the UPnP specification, based on the other device properties.</para>
-        /// <para>The setter is provided to allow for devices that do not correctly follow the specification (when we discover them), rather than to
-        /// intentionally deviate from the specification.</para>
-        /// <para>If a value is explicitly set, it is used verbatim, and so any prefix (such as uuid:) must be provided in the value.</para>
-        /// </remarks>
         public string Udn
         {
             get
             {
-                if (string.IsNullOrEmpty(_udn) && !string.IsNullOrEmpty(this.Uuid))
-                {
-                    return "uuid:" + this.Uuid;
-                }
-                else
-                {
-                    return _udn;
-                }
+                return "uuid:" + this.Uuid;
             }
-
-            set => _udn = value ?? throw new ArgumentNullException(nameof(Udn));
         }
 
         /// <summary>
@@ -221,6 +205,10 @@ namespace Emby.Dlna.Rssdp.Devices
         /// <seealso cref="RemoveDevice"/>
         public IList<SsdpDevice> Devices { get; }
 
+        /// <summary>
+        /// Returns the root device of this object.
+        /// </summary>
+        /// <returns>Root device in the structure.</returns>
         public SsdpRootDevice ToRootDevice()
         {
             SsdpDevice? rootDevice = null;
@@ -323,11 +311,16 @@ namespace Emby.Dlna.Rssdp.Devices
             }
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{DeviceType} - {Uuid}";
         }
 
+        /// <summary>
+        /// Changes the root of a device.
+        /// </summary>
+        /// <param name="value">New root device.</param>
         protected void ChangeRoot(SsdpRootDevice? value)
         {
             lock (_devices)

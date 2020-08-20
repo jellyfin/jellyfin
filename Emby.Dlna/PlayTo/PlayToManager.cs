@@ -1,4 +1,4 @@
-#nullable enable
+#pragma warning disable CS1591
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,17 +9,18 @@ using System.Threading.Tasks;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +30,6 @@ namespace Emby.Dlna.PlayTo
     {
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
-
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -42,13 +42,28 @@ namespace Emby.Dlna.PlayTo
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly INotificationManager _notificationManager;
+        private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+        private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private readonly List<Device> _devices;
-
         private bool _disposed;
-        private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
-        private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery? deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
+        public PlayToManager(
+            ILogger logger,
+            IServerApplicationHost appHost,
+            ISessionManager sessionManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IDlnaManager dlnaManager,
+            IImageProcessor imageProcessor,
+            IDeviceDiscovery deviceDiscovery,
+            IHttpClient httpClient,
+            IServerConfigurationManager config,
+            IUserDataManager userDataManager,
+            ILocalizationManager localization,
+            IMediaSourceManager mediaSourceManager,
+            IMediaEncoder mediaEncoder,
+            INotificationManager notificationManager)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
@@ -64,13 +79,40 @@ namespace Emby.Dlna.PlayTo
             _localization = localization ?? throw new ArgumentNullException(nameof(localization));
             _mediaSourceManager = mediaSourceManager ?? throw new ArgumentNullException(nameof(mediaSourceManager));
             _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
+            _notificationManager = notificationManager ?? throw new ArgumentNullException(nameof(notificationManager));
             _devices = new List<Device>();
         }
+
+        public event EventHandler<DlnaEventArgs> DLNAEvents;
 
         public void Start()
         {
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
             _deviceDiscovery.Start();
+        }
+
+        public Task NotifyDevice(DlnaEventArgs args)
+        {
+            DLNAEvents?.Invoke(this, args);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sends a client notification message.
+        /// </summary>
+        /// <param name="device">Device sending the notification.</param>
+        /// <param name="notification">The notification to send.</param>
+        /// <returns>Task.</returns>
+        public async Task SendNotification(Device device, NotificationRequest notification)
+        {
+            try
+            {
+                await _notificationManager.SendNotification(notification, null, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{0} : Error sending notification.", device?.Properties.Name);
+            }
         }
 
         private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
@@ -95,8 +137,7 @@ namespace Emby.Dlna.PlayTo
             string location = info.Location.ToString();
 
             // It has to report that it's a media renderer
-            if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
-                     nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!usn.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase) && !nt.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase))
             {
                 // _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
@@ -118,7 +159,7 @@ namespace Emby.Dlna.PlayTo
                     return;
                 }
 
-                await AddDevice(info, location, cancellationToken).ConfigureAwait(false);
+                await AddDevice(info, location).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -157,7 +198,7 @@ namespace Emby.Dlna.PlayTo
             return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
+        private async Task<bool> AddDevice(UpnpDeviceInfo info, string location)
         {
             var uri = info.Location;
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
@@ -178,14 +219,19 @@ namespace Emby.Dlna.PlayTo
 
             if (controller == null)
             {
-                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, cancellationToken).ConfigureAwait(false);
-                _devices.Add(device);
+                string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
+
+                var device = await Device.CreateuPnpDeviceAsync(this, uri, _httpClient, _logger, serverAddress).ConfigureAwait(false);
+                if (device == null)
+                {
+                    return false;
+                }
 
                 string deviceName = device.Properties.Name;
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-#pragma warning disable CA2000 // Dispose objects before losing scope: Taken care of in dispose.
+#pragma warning disable CA2000 // Dispose objects before losing scope: This object is disposed of in the dispose section.
                 controller = new PlayToController(
                     sessionInfo,
                     _sessionManager,
@@ -194,7 +240,7 @@ namespace Emby.Dlna.PlayTo
                     _dlnaManager,
                     _userManager,
                     _imageProcessor,
-                    _appHost.GetSmartApiUrl(info.LocalIpAddress),
+                    serverAddress,
                     null,
                     _deviceDiscovery,
                     _userDataManager,
@@ -230,8 +276,13 @@ namespace Emby.Dlna.PlayTo
 
                     SupportsMediaControl = true
                 });
+
                 _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+
+                return true;
             }
+
+            return false;
         }
 
         /// <inheritdoc />

@@ -92,8 +92,17 @@ namespace Emby.Dlna.Rssdp
         /// </summary>
         public event EventHandler<ResponseReceivedEventArgs>? ResponseReceived;
 
+        /// <summary>
+        /// Gets or sets the singleton instance of this object.
+        /// </summary>
         public static SocketServer? Instance { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether detailed DNLA debug logging is active.
+        /// </summary>
+        public bool Tracing { get => _tracing; }
+
+        /// <inheritdoc/>
 #pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCount implementation causes warning.
         public void Dispose()
         {
@@ -119,24 +128,6 @@ namespace Emby.Dlna.Rssdp
                 CreateSockets();
                 _oldState = _networkManager.IsuPnPActive;
             }
-
-        }
-
-        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
-        {
-            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
-            {
-                _tracing = _configurationManager.GetDlnaConfiguration().EnableDebugLog;
-            }
-        }
-        /// <summary>
-        /// Triggered on a network change.
-        /// </summary>
-        /// <param name="sender">NetworkManager object.</param>
-        /// <param name="args">Event arguments.</param>
-        public void NetworkChanged(object sender, System.EventArgs args)
-        {
-            CreateSockets();
         }
 
         /// <summary>
@@ -386,6 +377,24 @@ namespace Emby.Dlna.Rssdp
                     _sockets.Clear();
                 }
             }
+        }
+
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        {
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                _tracing = _configurationManager.GetDlnaConfiguration().EnableDebugLog;
+            }
+        }
+
+        /// <summary>
+        /// Triggered on a network change.
+        /// </summary>
+        /// <param name="sender">NetworkManager object.</param>
+        /// <param name="args">Event arguments.</param>
+        private void NetworkChanged(object sender, System.EventArgs args)
+        {
+            CreateSockets();
         }
 
         /// <summary>

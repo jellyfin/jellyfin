@@ -95,6 +95,10 @@ namespace Emby.Server.Implementations.Networking
         /// Flag set when _lanAddressses is set to _interfaceAddresses as no custom LAN has been defined in the config.
         /// </summary>
         private bool _usingInterfaces;
+
+        /// <summary>
+        /// True if this object is disposed.
+        /// </summary>
         private bool _disposed;
 
         /// <summary>
@@ -103,7 +107,6 @@ namespace Emby.Server.Implementations.Networking
         /// <param name="configurationManager">IServerConfigurationManager instance.</param>
         /// <param name="logger">Logger to use for messages.</param>
         /// <param name="appHost">IServerApplicationHost instance.</param>
-
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in InitialiseLAN function. Compiler doesn't yet recognise this.
         public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager> logger, IServerApplicationHost appHost)
         {
@@ -175,18 +178,17 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         public bool IsuPnPActive => _configurationManager.Configuration.EnableUPnP &&
             _configurationManager.Configuration.EnableRemoteAccess &&
-            (_appHost.ListenWithHttps ||
-            (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
+            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
 
         /// <summary>
         /// Gets the SsdpServer name used in advertisements.
         /// </summary>
-        public string SsdpServer => MediaBrowser.Common.System.OperatingSystem.Name + "/" + Environment.OSVersion.VersionString + " UPnP/1.0 RSSDP/1.0";
+        public string SsdpServer => $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
 
         /// <summary>
         /// Gets the unqiue user agent used in ssdp communications.
         /// </summary>
-        public string SsdpUserAgent => "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2" + "\\" + _appHost.SystemId;
+        public string SsdpUserAgent => $"UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2 /{_appHost.SystemId}";
 
         /// <summary>
         /// Parses a string and returns a range value if possible.
@@ -249,56 +251,41 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public bool OnSameMachine(IPAddress addr1, IPAddress addr2)
-        {
-            if (addr1 == null || addr2 == null)
-            {
-                return false;
-            }
-
-            if (_configurationManager.Configuration.TrustAllIP6Interfaces && addr2.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                return IPObject.IsLoopback(addr1);
-            }
-
-            return IPObject.IsLoopback(addr1) && IsInLocalNetwork(addr2);
-        }
-
-        /// <inheritdoc/>
         public void ConfigurationUpdating(object sender, GenericEventArgs<ServerConfiguration> newConfig)
         {
             // Only process what has changed.
-
             if (newConfig == null)
             {
                 throw new ArgumentNullException(nameof(newConfig));
             }
 
             bool lanRefresh = false;
-            // IP6 settings changed. - Needs to be public for testing.
+
             if (IsIP6Enabled != newConfig.Argument.EnableIPV6)
             {
+                // IP6 settings changed.
                 InitialiseInterfaces();
                 lanRefresh = true;
             }
 
-            if (lanRefresh || !_configurationManager.Configuration.LocalNetworkSubnets.SequenceEqual(newConfig.Argument.LocalNetworkSubnets))
+            var conf = _configurationManager.Configuration;
+            if (lanRefresh || !conf.LocalNetworkSubnets.SequenceEqual(newConfig.Argument.LocalNetworkSubnets))
             {
                 InitialiseLAN();
                 lanRefresh = true;
             }
 
-            if (lanRefresh || !_configurationManager.Configuration.LocalNetworkAddresses.SequenceEqual(newConfig.Argument.LocalNetworkAddresses))
+            if (lanRefresh || !conf.LocalNetworkAddresses.SequenceEqual(newConfig.Argument.LocalNetworkAddresses))
             {
                 InitialiseBind();
             }
 
-            if (!_configurationManager.Configuration.RemoteIPFilter.SequenceEqual(newConfig.Argument.RemoteIPFilter))
+            if (!conf.RemoteIPFilter.SequenceEqual(newConfig.Argument.RemoteIPFilter))
             {
                 InitialiseRemote();
             }
 
-            if (!_configurationManager.Configuration.PublishedServerUriBySubnet.SequenceEqual(newConfig.Argument.PublishedServerUriBySubnet))
+            if (!conf.PublishedServerUriBySubnet.SequenceEqual(newConfig.Argument.PublishedServerUriBySubnet))
             {
                 InitialiseOverrides();
             }
@@ -393,22 +380,15 @@ namespace Emby.Server.Implementations.Networking
             retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                if (address.IsIPv6LinkLocal)
-                {
-                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(IPNetAddress.MulticastIPv6LL));
-                }
-                else
-                {
-                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(IPNetAddress.MulticastIPv6));
-                }
+                retVal.SetSocketOption(
+                    SocketOptionLevel.IPv6,
+                    SocketOptionName.AddMembership,
+                    new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LL : IPNetAddress.MulticastIPv6));
             }
             else
             {
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPNetAddress.MulticastIPv4, address));
             }
-
-            // retVal.MulticastLoopback = true;
-            // retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
 
             try
             {
@@ -460,8 +440,9 @@ namespace Emby.Server.Implementations.Networking
         /// <inheritdoc/>
         public bool IsGatewayInterface(object addressObj)
         {
-            var address = (addressObj is IPAddress addressIP) ? addressIP :
-                (addressObj is IPObject addressIPObj) ? addressIPObj.Address : IPAddress.None;
+            var address = (addressObj is IPAddress addressIP) ?
+                addressIP : (addressObj is IPObject addressIPObj) ?
+                    addressIPObj.Address : IPAddress.None;
 
             lock (_intLock)
             {
@@ -484,48 +465,6 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return false;
-        }
-
-        /// <inheritdoc/>
-        public bool IsInLocalNetwork(string endpoint)
-        {
-            if (IPHost.TryParse(endpoint, out IPHost ep))
-            {
-                lock (_intLock)
-                {
-                    return _filteredLANSubnets.Contains(ep);
-                }
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public bool IsInLocalNetwork(IPNetAddress endpoint)
-        {
-            if (endpoint == null)
-            {
-                throw new ArgumentNullException(nameof(endpoint));
-            }
-
-            lock (_intLock)
-            {
-                return _filteredLANSubnets.Contains(endpoint);
-            }
-        }
-
-        /// <inheritdoc/>
-        public bool IsInLocalNetwork(IPAddress endpoint)
-        {
-            if (endpoint == null)
-            {
-                throw new ArgumentNullException(nameof(endpoint));
-            }
-
-            lock (_intLock)
-            {
-                return _filteredLANSubnets.Contains(endpoint);
-            }
         }
 
         /// <inheritdoc/>
@@ -554,12 +493,9 @@ namespace Emby.Server.Implementations.Networking
                                 AddToCollection(col, v.Substring(1));
                             }
                         }
-                        else
+                        else if (!bracketed)
                         {
-                            if (!bracketed)
-                            {
-                                AddToCollection(col, v);
-                            }
+                            AddToCollection(col, v);
                         }
                     }
                     catch (ArgumentException e)
@@ -592,6 +528,7 @@ namespace Emby.Server.Implementations.Networking
                     {
                         IPAddress.Any
                     };
+
                     if (IsIP6Enabled)
                     {
                         result.Add(IPAddress.IPv6Any);
@@ -608,7 +545,7 @@ namespace Emby.Server.Implementations.Networking
         /// <inheritdoc/>
         public string GetBindInterface(object source)
         {
-            // Parse the source to see if we need to respond with an internal or external bind interface.
+            // Parse the source object in an attempt to discover where the request originated.
             IPObject sourceAddr;
             if (source is string sourceStr && !string.IsNullOrEmpty(sourceStr))
             {
@@ -618,7 +555,7 @@ namespace Emby.Server.Implementations.Networking
                 }
                 else
                 {
-                    // Assume it's external, as we might not be able to resolve the host.
+                    // Assume it's external, as we cannot resolve the host.
                     sourceAddr = IPHost.None;
                 }
             }
@@ -628,18 +565,19 @@ namespace Emby.Server.Implementations.Networking
             }
             else
             {
-                // If we get nothing assume external.
+                // If we have no idea, then assume it came from an external address.
                 sourceAddr = IPHost.None;
             }
 
+            // Do we have a source?
             bool haveSource = !sourceAddr.Address.Equals(IPAddress.None);
 
             if (haveSource && !IsIP6Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                _logger.LogWarning("IPv6 disabled in jellyfin, but enabled in OS. This may affect how the interface is selected.");
+                _logger.LogWarning("IPv6 disabled in JellyFin, but enabled in OS. This may affect how the interface is selected.");
             }
 
-            bool isExternal = haveSource && !IsLANAddressRange(sourceAddr);
+            bool isExternal = haveSource && !IsInLocalNetwork(sourceAddr);
 
             string bindPreference = string.Empty;
             if (haveSource)
@@ -696,7 +634,7 @@ namespace Emby.Server.Implementations.Networking
                         {
                             if (intf.Contains(sourceAddr))
                             {
-                                ipresult = intf.Address.ToString();
+                                ipresult = CleanIP6String(intf.Address);
                                 _logger.LogDebug("GetBindInterface: Has source, matched user defined interface on range. {0}", ipresult);
                                 return ipresult;
                             }
@@ -704,17 +642,16 @@ namespace Emby.Server.Implementations.Networking
                     }
 
                     // Check to see if any of the bind interfaces are in the same subnet.
-                    var ncRes = nc.Where(p => !IsLANAddressRange(p) && !p.IsLoopback())
-                        .OrderBy(p => p.Tag);
+                    var ncRes = nc.Where(p => !IsInLocalNetwork(p) && !p.IsLoopback()).OrderBy(p => p.Tag);
 
                     if (ncRes.Any())
                     {
-                        ipresult = ncRes.First().Address.ToString();
+                        ipresult = CleanIP6String(ncRes.First().Address);
                         _logger.LogDebug("GetBindInterface: Has source, select best user defined interface. {0}", ipresult);
                         return ipresult;
                     }
 
-                    ipresult = nc[0].Address.ToString();
+                    ipresult = CleanIP6String(nc[0].Address);
                     _logger.LogDebug("GetBindInterface: Selected first user defined interface.", ipresult);
                     return ipresult;
                 }
@@ -724,7 +661,7 @@ namespace Emby.Server.Implementations.Networking
                     // Get the first LAN interface address that isn't a loopback.
                     var extResult = _interfaceAddresses
                         .Exclude(_bindExclusions)
-                        .Where(p => !IsLANAddressRange(p) && !p.IsLoopback())
+                        .Where(p => !IsInLocalNetwork(p) && !p.IsLoopback())
                         .OrderBy(p => p.Tag);
 
                     if (extResult.Any())
@@ -735,16 +672,16 @@ namespace Emby.Server.Implementations.Networking
                             // (For systems with multiple internal network cards, and multiple subnets)
                             foreach (var intf in extResult)
                             {
-                                if (!IsLANAddressRange(intf) && intf.Contains(sourceAddr))
+                                if (!IsInLocalNetwork(intf) && intf.Contains(sourceAddr))
                                 {
-                                    ipresult = intf.Address.ToString();
+                                    ipresult = CleanIP6String(intf.Address);
                                     _logger.LogDebug("GetBindInterface: Selected best external on interface on range. {0}", ipresult);
                                     return ipresult;
                                 }
                             }
                         }
 
-                        ipresult = extResult.First().Address.ToString();
+                        ipresult = CleanIP6String(extResult.First().Address);
                         _logger.LogDebug("GetBindInterface: Selected first external interface. {0}", ipresult);
                         return ipresult;
                     }
@@ -755,7 +692,7 @@ namespace Emby.Server.Implementations.Networking
                 // Get the first LAN interface address that isn't a loopback.
                 var result = _interfaceAddresses
                     .Exclude(_bindExclusions)
-                    .Where(p => IsLANAddressRange(p) && !p.IsLoopback())
+                    .Where(p => IsInLocalNetwork(p) && !p.IsLoopback())
                     .OrderBy(p => p.Tag);
 
                 if (result.Any())
@@ -766,16 +703,16 @@ namespace Emby.Server.Implementations.Networking
                         // (For systems with multiple internal network cards, and multiple subnets)
                         foreach (var intf in result)
                         {
-                            if (IsLANAddressRange(intf) && intf.Contains(sourceAddr))
+                            if (IsInLocalNetwork(intf) && intf.Contains(sourceAddr))
                             {
-                                ipresult = intf.Address.ToString();
+                                ipresult = CleanIP6String(intf.Address);
                                 _logger.LogDebug("GetBindInterface: Has source, matched best internal interface on range. {0}", ipresult);
                                 return ipresult;
                             }
                         }
                     }
 
-                    ipresult = result.First().Address.ToString();
+                    ipresult = CleanIP6String(result.First().Address);
                     _logger.LogDebug("GetBindInterface: Matched first internal interface. {0}", ipresult);
                     return ipresult;
                 }
@@ -811,7 +748,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public bool IsLANAddressRange(IPObject address)
+        public bool IsInLocalNetwork(IPObject address)
         {
             if (address == null)
             {
@@ -824,8 +761,46 @@ namespace Emby.Server.Implementations.Networking
                 return true;
             }
 
-            // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _filteredLANSubnets.Contains(address);
+            lock (_intLock)
+            {
+                // As private addresses can be redefined by Configuration.LocalNetworkAddresses
+                return _filteredLANSubnets.Contains(address);
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool IsInLocalNetwork(string address)
+        {
+            if (IPHost.TryParse(address, out IPHost ep))
+            {
+                lock (_intLock)
+                {
+                    return _filteredLANSubnets.Contains(ep);
+                }
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public bool IsInLocalNetwork(IPAddress address)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
+            if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                return true;
+            }
+
+            lock (_intLock)
+            {
+                // As private addresses can be redefined by Configuration.LocalNetworkAddresses
+                return _filteredLANSubnets.Contains(address);
+            }
         }
 
         /// <inheritdoc/>
@@ -929,6 +904,19 @@ namespace Emby.Server.Implementations.Networking
 
                 _disposed = true;
             }
+        }
+
+        private string CleanIP6String(IPAddress address)
+        {
+            var str = address.ToString();
+            int i = str.IndexOf("%", StringComparison.OrdinalIgnoreCase);
+
+            if (i != -1)
+            {
+                return str.Substring(0, i - 1);
+            }
+
+            return str;
         }
 
         /// <summary>
@@ -1208,7 +1196,7 @@ namespace Emby.Server.Implementations.Networking
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
                     _internalInterfaces = new NetCollection(_interfaceAddresses
-                        .Where(i => IsLANAddressRange(i) &&
+                        .Where(i => IsInLocalNetwork(i) &&
                             !_excludedSubnets.Contains(i) &&
                             _lanSubnets.Contains(i)));
                 }

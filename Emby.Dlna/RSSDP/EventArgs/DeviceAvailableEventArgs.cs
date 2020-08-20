@@ -5,7 +5,7 @@ using Emby.Dlna.Rssdp.Devices;
 namespace Emby.Dlna.Rssdp.EventArgs
 {
     /// <summary>
-    /// Event arguments for the <see cref="Rsddp.ISsdpPlayToLocator.DeviceAvailable"/> event.
+    /// Event arguments for the <see cref="ISsdpPlayToLocator.DeviceAvailable"/> event.
     /// </summary>
     public sealed class DeviceAvailableEventArgs : System.EventArgs
     {
@@ -23,6 +23,9 @@ namespace Emby.Dlna.Rssdp.EventArgs
             LocalIpAddress = ipAddress;
         }
 
+        /// <summary>
+        /// Gets or sets the IP address.
+        /// </summary>
         public IPAddress LocalIpAddress { get; set; }
 
         /// <summary>

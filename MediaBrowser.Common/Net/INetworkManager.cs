@@ -145,41 +145,28 @@ namespace MediaBrowser.Common.Net
         bool IsPrivateAddressRange(IPObject address);
 
         /// <summary>
-        /// Returns true if the two addresses are on the same machine.
+        /// Returns true if the address is part of the user defined LAN.
+        /// The config option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
-        /// <param name="addr1">Address 1.</param>
-        /// <param name="addr2">Address 2.</param>
-        /// <returns>True if both are on this machine.</returns>
-        public bool OnSameMachine(IPAddress addr1, IPAddress addr2);
+        /// <param name="address">IP to check.</param>
+        /// <returns>True if endpoint is within the LAN range.</returns>
+        bool IsInLocalNetwork(string address);
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
         /// The config option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
-        /// <param name="address">Address to check.</param>
-        /// <returns>True or False.</returns>
-        bool IsLANAddressRange(IPObject address);
+        /// <param name="address">IP to check.</param>
+        /// <returns>True if endpoint is within the LAN range.</returns>
+        bool IsInLocalNetwork(IPObject address);
 
         /// <summary>
-        /// Calculates if the endpoint given falls within the LAN networks specified in config.
+        /// Returns true if the address is part of the user defined LAN.
+        /// The config option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
-        /// <param name="endpoint">IP to check.</param>
+        /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
-        bool IsInLocalNetwork(string endpoint);
-
-        /// <summary>
-        /// Calculates if the endpoint given falls within the LAN networks specified in config.
-        /// </summary>
-        /// <param name="endpoint">IP to check.</param>
-        /// <returns>True if endpoint is within the LAN range.</returns>
-        bool IsInLocalNetwork(IPNetAddress endpoint);
-
-        /// <summary>
-        /// Calculates if the endpoint given falls within the LAN networks specified in config.
-        /// </summary>
-        /// <param name="endpoint">IP to check.</param>
-        /// <returns>True if endpoint is within the LAN range.</returns>
-        bool IsInLocalNetwork(IPAddress endpoint);
+        bool IsInLocalNetwork(IPAddress address);
 
         /// <summary>
         /// Attempts to convert the token to an IP address, permitting for interface descriptions and indexes.
