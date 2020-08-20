@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1305
 
 using System;
 using System.Globalization;
@@ -29,7 +30,6 @@ namespace Emby.Dlna.Didl
             : base(sb, formatProvider)
         {
         }
-
 
         public StringWriterWithEncoding(Encoding encoding)
         {

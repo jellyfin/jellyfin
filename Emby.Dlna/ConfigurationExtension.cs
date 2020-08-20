@@ -19,7 +19,7 @@ namespace Emby.Dlna
     {
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
-            return new ConfigurationStore[]
+            return new[]
             {
                 new ConfigurationStore
                 {

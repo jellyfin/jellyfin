@@ -54,6 +54,10 @@ namespace Emby.Dlna
             _appHost = appHost;
         }
 
+        private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
+
+        private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
+
         public async Task InitProfilesAsync()
         {
             try
@@ -240,7 +244,7 @@ namespace Emby.Dlna
             }
             else
             {
-                var headerString = string.Join(", ", headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
+                var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
                 _logger.LogDebug("No matching device profile found. {0}", headerString);
             }
 
@@ -279,10 +283,6 @@ namespace Emby.Dlna
 
             return false;
         }
-
-        private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
-
-        private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
 
         private IEnumerable<DeviceProfile> GetProfiles(string path, DeviceProfileType type)
         {

@@ -261,17 +261,17 @@ namespace Emby.Dlna.PlayTo
                 {
                     PlayableMediaTypes = profile.GetSupportedMediaTypes(),
 
-                    SupportedCommands = new string[]
+                    SupportedCommands = new[]
                     {
-                            GeneralCommandType.VolumeDown.ToString(),
-                            GeneralCommandType.VolumeUp.ToString(),
-                            GeneralCommandType.Mute.ToString(),
-                            GeneralCommandType.Unmute.ToString(),
-                            GeneralCommandType.ToggleMute.ToString(),
-                            GeneralCommandType.SetVolume.ToString(),
-                            GeneralCommandType.SetAudioStreamIndex.ToString(),
-                            GeneralCommandType.SetSubtitleStreamIndex.ToString(),
-                            GeneralCommandType.PlayMediaSource.ToString()
+                        GeneralCommandType.VolumeDown.ToString(),
+                        GeneralCommandType.VolumeUp.ToString(),
+                        GeneralCommandType.Mute.ToString(),
+                        GeneralCommandType.Unmute.ToString(),
+                        GeneralCommandType.ToggleMute.ToString(),
+                        GeneralCommandType.SetVolume.ToString(),
+                        GeneralCommandType.SetAudioStreamIndex.ToString(),
+                        GeneralCommandType.SetSubtitleStreamIndex.ToString(),
+                        GeneralCommandType.PlayMediaSource.ToString()
                     },
 
                     SupportsMediaControl = true
@@ -297,7 +297,7 @@ namespace Emby.Dlna.PlayTo
             {
                 _disposeCancellationTokenSource.Cancel();
             }
-            catch
+            catch (Exception ex)
             {
             }
 

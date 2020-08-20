@@ -38,6 +38,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
+        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
+
         public HdHomerunHost(
             IServerConfigurationManager config,
             ILogger<HdHomerunHost> logger,
@@ -114,7 +116,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         }
 
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
-
         private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
@@ -133,12 +134,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             try
             {
                 using var response = await _httpClient.SendAsync(
-                   new HttpRequestOptions
-                   {
-                       Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
-                       CancellationToken = cancellationToken,
-                       BufferContent = false
-                   }, HttpMethod.Get).ConfigureAwait(false);
+                    new HttpRequestOptions
+                {
+                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
+                    CancellationToken = cancellationToken,
+                    BufferContent = false
+                }, HttpMethod.Get).ConfigureAwait(false);
                 await using var stream = response.Content;
                 var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
@@ -157,10 +158,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
-                    var defaultValue = "HDHR";
+                    const string DefaultValue = "HDHR";
                     var response = new DiscoverResponse
                     {
-                        ModelNumber = defaultValue
+                        ModelNumber = DefaultValue
                     };
                     if (!string.IsNullOrEmpty(cacheKey))
                     {
@@ -188,7 +189,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     Url = string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)),
                     CancellationToken = cancellationToken,
                     BufferContent = false
-                }, HttpMethod.Get).ConfigureAwait(false))
+                },
+                HttpMethod.Get).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
             {

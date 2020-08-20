@@ -33,7 +33,6 @@ namespace Emby.Dlna.PlayTo
     {
         private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
 
-        private Device _device;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
@@ -706,6 +705,10 @@ namespace Emby.Dlna.PlayTo
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -874,6 +877,9 @@ namespace Emby.Dlna.PlayTo
 
         private class StreamParams
         {
+            private MediaSourceInfo mediaSource;
+            private IMediaSourceManager _mediaSourceManager;
+
             public Guid ItemId { get; set; }
 
             public bool IsDirectStream { get; set; }
