@@ -4308,7 +4308,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ProductionYear=@Years");
                 if (statement != null)
                 {
-                    statement.TryBind("@Years", query.Years[0].ToString());
+                    statement.TryBind("@Years", query.Years[0].ToString(CultureInfo.InvariantCulture));
                 }
             }
             else if (query.Years.Length > 1)
@@ -5170,7 +5170,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     insertText.Append(',');
                 }
 
-                insertText.AppendFormat("(@ItemId, @AncestorId{0}, @AncestorIdText{0})", i.ToString(CultureInfo.InvariantCulture));
+                insertText.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    "(@ItemId, @AncestorId{0}, @AncestorIdText{0})",
+                    i.ToString(CultureInfo.InvariantCulture));
             }
 
             using (var statement = PrepareStatement(db, insertText.ToString()))
