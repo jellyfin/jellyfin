@@ -1639,35 +1639,45 @@ namespace MediaBrowser.Controller.MediaEncoding
             var outputSizeParam = ReadOnlySpan<char>.Empty;
             var request = state.BaseRequest;
 
-            // Add resolution params, if specified
-            if (request.Width.HasValue
-                || request.Height.HasValue
-                || request.MaxHeight.HasValue
-                || request.MaxWidth.HasValue)
+            outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
+
+            // All possible beginning of video filters
+            // Don't break the order
+            string[] beginOfOutputSizeParam = new[]
             {
-                outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
+                // for tonemap_opencl
+                "hwupload,tonemap_opencl",
 
-                // All possible beginning of video filters
-                // Don't break the order
-                string[] beginOfParam = new[]
-                {
-                    "hwupload,tonemap_opencl",
-                    "hwupload=extra_hw_frames",
-                    "vpp",
-                    "hwdownload",
-                    "format",
-                    "yadif",
-                    "scale"
-                };
+                // hwupload=extra_hw_frames=64,vpp_qsv (for overlay_qsv on linux)
+                "hwupload=extra_hw_frames",
 
-                for (int i = 0, index = -1; i < beginOfParam.Length; i++)
+                // vpp_qsv
+                "vpp",
+
+                // hwdownload,format=p010le (hardware decode + software encode for vaapi)
+                "hwdownload",
+
+                // format=nv12|vaapi,hwupload,scale_vaapi
+                "format",
+
+                // bwdif,scale=expr
+                "bwdif",
+
+                // yadif,scale=expr
+                "yadif",
+
+                // scale=expr
+                "scale"
+            };
+
+            var index = -1;
+            foreach (var param in beginOfOutputSizeParam)
+            {
+                index = outputSizeParam.IndexOf(param, StringComparison.OrdinalIgnoreCase);
+                if (index != -1)
                 {
-                    index = outputSizeParam.IndexOf(beginOfParam[i], StringComparison.OrdinalIgnoreCase);
-                    if (index != -1)
-                    {
-                        outputSizeParam = outputSizeParam.Slice(index);
-                        break;
-                    }
+                    outputSizeParam = outputSizeParam.Slice(index);
+                    break;
                 }
             }
 
