@@ -2,6 +2,18 @@ namespace Jellyfin.MediaEncoding.Tests
 {
     internal static class EncoderValidatorTestsData
     {
+        public const string FFmpegV431Output = @"ffmpeg version n4.3.1 Copyright (c) 2000-2020 the FFmpeg developers
+built with gcc 10.1.0 (GCC)
+configuration: --prefix=/usr --disable-debug --disable-static --disable-stripping --enable-avisynth --enable-fontconfig --enable-gmp --enable-gnutls --enable-gpl --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libdav1d --enable-libdrm --enable-libfreetype --enable-libfribidi --enable-libgsm --enable-libiec61883 --enable-libjack --enable-libmfx --enable-libmodplug --enable-libmp3lame --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-librav1e --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libv4l2 --enable-libvidstab --enable-libvmaf --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxcb --enable-libxml2 --enable-libxvid --enable-nvdec --enable-nvenc --enable-omx --enable-shared --enable-version3
+libavutil      56. 51.100 / 56. 51.100
+libavcodec     58. 91.100 / 58. 91.100
+libavformat    58. 45.100 / 58. 45.100
+libavdevice    58. 10.100 / 58. 10.100
+libavfilter     7. 85.100 /  7. 85.100
+libswscale      5.  7.100 /  5.  7.100
+libswresample   3.  7.100 /  3.  7.100
+libpostproc    55.  7.100 / 55.  7.100";
+
         public const string FFmpegV43Output = @"ffmpeg version 4.3 Copyright (c) 2000-2020 the FFmpeg developers
 built with gcc 7 (Ubuntu 7.5.0-3ubuntu1~18.04)
 configuration: --prefix=/usr/lib/jellyfin-ffmpeg --target-os=linux --disable-doc --disable-ffplay --disable-shared --disable-libxcb --disable-vdpau --disable-sdl2 --disable-xlib --enable-gpl --enable-version3 --enable-static --enable-libfontconfig --enable-fontconfig --enable-gmp --enable-gnutls --enable-libass --enable-libbluray --enable-libdrm --enable-libfreetype --enable-libfribidi --enable-libmp3lame --enable-libopus --enable-libtheora --enable-libvorbis --enable-libwebp --enable-libx264 --enable-libx265 --enable-libzvbi --arch=amd64 --enable-amf --enable-nvenc --enable-nvdec --enable-vaapi --enable-opencl
