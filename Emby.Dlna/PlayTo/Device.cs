@@ -45,13 +45,13 @@ namespace Emby.Dlna.PlayTo
 
         public TimeSpan Position { get; set; } = TimeSpan.FromSeconds(0);
 
-        public TRANSPORTSTATE TransportState { get; private set; }
+        public TransportState TransportState { get; private set; }
 
-        public bool IsPlaying => TransportState == TRANSPORTSTATE.PLAYING;
+        public bool IsPlaying => TransportState == TransportState.Playing;
 
-        public bool IsPaused => TransportState == TRANSPORTSTATE.PAUSED || TransportState == TRANSPORTSTATE.PAUSED_PLAYBACK;
+        public bool IsPaused => TransportState == TransportState.Paused || TransportState == TransportState.PausedPlayback;
 
-        public bool IsStopped => TransportState == TRANSPORTSTATE.STOPPED;
+        public bool IsStopped => TransportState == TransportState.Stopped;
 
         private readonly IHttpClient _httpClient;
 
@@ -400,7 +400,7 @@ namespace Emby.Dlna.PlayTo
             await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
-            TransportState = TRANSPORTSTATE.PAUSED;
+            TransportState = TransportState.Paused;
 
             RestartTimer(true);
         }
@@ -435,7 +435,7 @@ namespace Emby.Dlna.PlayTo
                 if (transportState.HasValue)
                 {
                     // If we're not playing anything no need to get additional data
-                    if (transportState.Value == TRANSPORTSTATE.STOPPED)
+                    if (transportState.Value == TransportState.Stopped)
                     {
                         UpdateMediaInfo(null, transportState.Value);
                     }
@@ -464,7 +464,7 @@ namespace Emby.Dlna.PlayTo
                     }
 
                     // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
-                    if (transportState.Value == TRANSPORTSTATE.STOPPED)
+                    if (transportState.Value == TransportState.Stopped)
                     {
                         RestartTimerInactive();
                     }
@@ -595,7 +595,7 @@ namespace Emby.Dlna.PlayTo
             IsMuted = string.Equals(valueNode?.Value, "1", StringComparison.OrdinalIgnoreCase);
         }
 
-        private async Task<TRANSPORTSTATE?> GetTransportInfo(TransportCommands avCommands, CancellationToken cancellationToken)
+        private async Task<TransportState?> GetTransportInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetTransportInfo");
             if (command == null)
@@ -627,7 +627,7 @@ namespace Emby.Dlna.PlayTo
             var transportStateValue = transportState?.Value;
 
             if (transportStateValue != null
-                && Enum.TryParse(transportStateValue, true, out TRANSPORTSTATE state))
+                && Enum.TryParse(transportStateValue, true, out TransportState state))
             {
                 return state;
             }
@@ -1121,7 +1121,7 @@ namespace Emby.Dlna.PlayTo
 
         public uBaseObject CurrentMediaInfo { get; private set; }
 
-        private void UpdateMediaInfo(uBaseObject mediaInfo, TRANSPORTSTATE state)
+        private void UpdateMediaInfo(uBaseObject mediaInfo, TransportState state)
         {
             TransportState = state;
 
@@ -1130,7 +1130,7 @@ namespace Emby.Dlna.PlayTo
 
             if (previousMediaInfo == null && mediaInfo != null)
             {
-                if (state != TRANSPORTSTATE.STOPPED)
+                if (state != TransportState.Stopped)
                 {
                     OnPlaybackStart(mediaInfo);
                 }
@@ -1200,6 +1200,10 @@ namespace Emby.Dlna.PlayTo
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

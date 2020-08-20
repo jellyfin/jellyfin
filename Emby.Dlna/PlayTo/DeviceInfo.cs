@@ -8,6 +8,9 @@ namespace Emby.Dlna.PlayTo
 {
     public class DeviceInfo
     {
+        private readonly List<DeviceService> _services = new List<DeviceService>();
+        private string _baseUrl = string.Empty;
+
         public DeviceInfo()
         {
             Name = "Generic Device";
@@ -33,7 +36,6 @@ namespace Emby.Dlna.PlayTo
 
         public string PresentationUrl { get; set; }
 
-        private string _baseUrl = string.Empty;
         public string BaseUrl
         {
             get => _baseUrl;
@@ -42,7 +44,6 @@ namespace Emby.Dlna.PlayTo
 
         public DeviceIcon Icon { get; set; }
 
-        private readonly List<DeviceService> _services = new List<DeviceService>();
         public List<DeviceService> Services => _services;
 
         public DeviceIdentification ToDeviceIdentification()

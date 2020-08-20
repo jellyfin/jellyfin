@@ -7,6 +7,11 @@ namespace Emby.Dlna
 {
     public class ControlRequest
     {
+        public ControlRequest()
+        {
+            Headers = new HeaderDictionary();
+        }
+
         public IHeaderDictionary Headers { get; set; }
 
         public Stream InputXml { get; set; }
@@ -14,10 +19,5 @@ namespace Emby.Dlna
         public string TargetServerUuId { get; set; }
 
         public string RequestedUrl { get; set; }
-
-        public ControlRequest()
-        {
-            Headers = new HeaderDictionary();
-        }
     }
 }

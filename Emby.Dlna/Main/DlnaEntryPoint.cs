@@ -54,13 +54,7 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
 
-        public IContentDirectory ContentDirectory { get; private set; }
-
-        public IConnectionManager ConnectionManager { get; private set; }
-
-        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
-
-        public static DlnaEntryPoint Current { get; private set; }
+        private bool _disposed;
 
         public DlnaEntryPoint(
             IServerConfigurationManager config,
@@ -126,6 +120,14 @@ namespace Emby.Dlna.Main
                 config);
             Current = this;
         }
+        
+        public static DlnaEntryPoint Current { get; private set; }
+
+        public IContentDirectory ContentDirectory { get; private set; }
+
+        public IConnectionManager ConnectionManager { get; private set; }
+
+        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public async Task RunAsync()
         {
@@ -399,11 +401,40 @@ namespace Emby.Dlna.Main
             }
         }
 
+        public void DisposeDevicePublisher()
+        {
+            if (_publisher != null)
+            {
+                _logger.LogInformation("Disposing SsdpDevicePublisher");
+                _publisher.Dispose();
+                _publisher = null;
+            }
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
-            DisposeDevicePublisher();
-            DisposePlayToManager();
-            DisposeDeviceDiscovery();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                DisposeDevicePublisher();
+                DisposePlayToManager();
+                DisposeDeviceDiscovery();
+            }
 
             if (_communicationsServer != null)
             {
@@ -416,16 +447,8 @@ namespace Emby.Dlna.Main
             ConnectionManager = null;
             MediaReceiverRegistrar = null;
             Current = null;
-        }
 
-        public void DisposeDevicePublisher()
-        {
-            if (_publisher != null)
-            {
-                _logger.LogInformation("Disposing SsdpDevicePublisher");
-                _publisher.Dispose();
-                _publisher = null;
-            }
+            _disposed = true;
         }
     }
 }

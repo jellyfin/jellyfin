@@ -31,7 +31,6 @@ namespace Emby.Dlna.PlayTo
     {
         private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
 
-        private Device _device;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
@@ -50,6 +49,7 @@ namespace Emby.Dlna.PlayTo
         private readonly string _accessToken;
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
+        private Device _device;
         private int _currentPlaylistIndex;
 
         private bool _disposed;
@@ -372,8 +372,12 @@ namespace Emby.Dlna.PlayTo
 
             if (!command.ControllingUserId.Equals(Guid.Empty))
             {
-                _sessionManager.LogSessionActivity(_session.Client, _session.ApplicationVersion, _session.DeviceId,
-                       _session.DeviceName, _session.RemoteEndPoint, user);
+                _sessionManager.LogSessionActivity(
+                    _session.Client,
+                    _session.ApplicationVersion,
+                    _session.DeviceId,
+                    _session.DeviceName,
+                    _session.RemoteEndPoint, user);
             }
 
             return PlayItems(playlist, cancellationToken);
@@ -633,6 +637,10 @@ namespace Emby.Dlna.PlayTo
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -778,7 +786,7 @@ namespace Emby.Dlna.PlayTo
             const int maxWait = 15000000;
             const int interval = 500;
             var currentWait = 0;
-            while (_device.TransportState != TRANSPORTSTATE.PLAYING && currentWait < maxWait)
+            while (_device.TransportState != TransportState.Playing && currentWait < maxWait)
             {
                 await Task.Delay(interval).ConfigureAwait(false);
                 currentWait += interval;
@@ -789,6 +797,9 @@ namespace Emby.Dlna.PlayTo
 
         private class StreamParams
         {
+            private MediaSourceInfo mediaSource;
+            private IMediaSourceManager _mediaSourceManager;
+
             public Guid ItemId { get; set; }
 
             public bool IsDirectStream { get; set; }
@@ -809,15 +820,11 @@ namespace Emby.Dlna.PlayTo
 
             public BaseItem Item { get; set; }
 
-            private MediaSourceInfo MediaSource;
-
-            private IMediaSourceManager _mediaSourceManager;
-
             public async Task<MediaSourceInfo> GetMediaSource(CancellationToken cancellationToken)
             {
-                if (MediaSource != null)
+                if (mediaSource != null)
                 {
-                    return MediaSource;
+                    return mediaSource;
                 }
 
                 var hasMediaSources = Item as IHasMediaSources;
@@ -827,9 +834,9 @@ namespace Emby.Dlna.PlayTo
                     return null;
                 }
 
-                MediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
 
-                return MediaSource;
+                return mediaSource;
             }
 
             private static Guid GetItemId(string url)

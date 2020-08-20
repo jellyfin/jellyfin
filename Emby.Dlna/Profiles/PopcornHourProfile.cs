@@ -93,8 +93,8 @@ namespace Emby.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
-                    Codec="h264",
-                    Conditions = new []
+                    Codec = "h264",
+                    Conditions = new[]
                     {
                         new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline"),
                         new ProfileCondition
@@ -122,7 +122,7 @@ namespace Emby.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -150,7 +150,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.VideoAudio,
                     Codec = "aac",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -166,7 +166,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.Audio,
                     Codec = "aac",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -182,7 +182,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.Audio,
                     Codec = "mp3",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -202,7 +202,7 @@ namespace Emby.Dlna.Profiles
                 }
             };
 
-            ResponseProfiles = new ResponseProfile[]
+            ResponseProfiles = new[]
             {
                 new ResponseProfile
                 {

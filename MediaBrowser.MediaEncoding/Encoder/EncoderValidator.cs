@@ -87,7 +87,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_videotoolbox"
         };
 
-        // Try and use the individual library versions to determine a FFmpeg version
+        // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
+        private static readonly IReadOnlyDictionary<string, Version> _ffmpegMinimumLibraryVersions = new Dictionary<string, Version>
+        {
+            { "libavutil", new Version(56, 14) },
+            { "libavcodec", new Version(58, 18) },
+            { "libavformat", new Version(58, 12) },
+            { "libavdevice", new Version(58, 3) },
+            { "libavfilter", new Version(7, 16) },
+            { "libswscale", new Version(5, 1) },
+            { "libswresample", new Version(3, 1) },
+            { "libpostproc", new Version(55, 1) }
+        };
+
         // This lookup table is to be maintained with the following command line:
         // $ ffmpeg -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
         private static readonly IReadOnlyDictionary<string, Version> _ffmpegVersionMap = new Dictionary<string, Version>
@@ -156,32 +168,36 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Work out what the version under test is
             var version = GetFFmpegVersion(versionOutput);
 
-            _logger.LogInformation("Found ffmpeg version {0}", version != null ? version.ToString() : "unknown");
+            _logger.LogInformation("Found ffmpeg version {Version}", version != null ? version.ToString() : "unknown");
 
             if (version == null)
             {
-                if (MinVersion != null && MaxVersion != null) // Version is unknown
+                if (MaxVersion != null) // Version is unknown
                 {
                     if (MinVersion == MaxVersion)
                     {
-                        _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", MinVersion);
+                        _logger.LogWarning("FFmpeg validation: We recommend version {MinVersion}", MinVersion);
                     }
                     else
                     {
-                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);
+                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {MinVersion} and maximum of {MaxVersion}", MinVersion, MaxVersion);
                     }
+                }
+                else
+                {
+                    _logger.LogWarning("FFmpeg validation: We recommend minimum version {MinVersion}", MinVersion);
                 }
 
                 return false;
             }
-            else if (MinVersion != null && version < MinVersion) // Version is below what we recommend
+            else if (version < MinVersion) // Version is below what we recommend
             {
-                _logger.LogWarning("FFmpeg validation: The minimum recommended ffmpeg version is {0}", MinVersion);
+                _logger.LogWarning("FFmpeg validation: The minimum recommended version is {MinVersion}", MinVersion);
                 return false;
             }
             else if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
             {
-                _logger.LogWarning("FFmpeg validation: The maximum recommended ffmpeg version is {0}", MaxVersion);
+                _logger.LogWarning("FFmpeg validation: The maximum recommended version is {MaxVersion}", MaxVersion);
                 return false;
             }
 
@@ -197,13 +213,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Using the output from "ffmpeg -version" work out the FFmpeg version.
         /// For pre-built binaries the first line should contain a string like "ffmpeg version x.y", which is easy
-        /// to parse.  If this is not available, then we try to match known library versions to FFmpeg versions.
-        /// If that fails then we use one of the main libraries to determine if it's new/older than the latest
-        /// we have stored.
+        /// to parse. If this is not available, then we try to match known library versions to FFmpeg versions.
+        /// If that fails then we test the libraries to determine if they're newer than our minimum versions.
         /// </summary>
         /// <param name="output">The output from "ffmpeg -version".</param>
         /// <returns>The FFmpeg version.</returns>
-        internal static Version GetFFmpegVersion(string output)
+        internal Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
             var match = Regex.Match(output, @"^ffmpeg version n?((?:[0-9]+\.?)+)");
@@ -214,12 +229,50 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                // Create a reduced version string and lookup key from dictionary
-                var reducedVersion = GetLibrariesVersionString(output);
+                if (!TryGetFFmpegLibraryVersions(output, out string versionString, out IReadOnlyDictionary<string, Version> versionMap))
+                {
+                    _logger.LogError("No ffmpeg library versions found");
 
-                // Try to lookup the string and return Key, otherwise if not found returns null
-                return _ffmpegVersionMap.TryGetValue(reducedVersion, out Version version) ? version : null;
+                    return null;
+                }
+
+                // First try to lookup the full version string
+                if (_ffmpegVersionMap.TryGetValue(versionString, out Version version))
+                {
+                    return version;
+                }
+
+                // Then try to test for minimum library versions
+                return TestMinimumFFmpegLibraryVersions(versionMap);
             }
+        }
+
+        private Version TestMinimumFFmpegLibraryVersions(IReadOnlyDictionary<string, Version> versionMap)
+        {
+            var allVersionsValidated = true;
+
+            foreach (var minimumVersion in _ffmpegMinimumLibraryVersions)
+            {
+                if (versionMap.TryGetValue(minimumVersion.Key, out var foundVersion))
+                {
+                    if (foundVersion >= minimumVersion.Value)
+                    {
+                        _logger.LogInformation("Found {Library} version {FoundVersion} ({MinimumVersion})", minimumVersion.Key, foundVersion, minimumVersion.Value);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Found {Library} version {FoundVersion} lower than recommended version {MinimumVersion}", minimumVersion.Key, foundVersion, minimumVersion.Value);
+                        allVersionsValidated = false;
+                    }
+                }
+                else
+                {
+                    _logger.LogError("{Library} version not found", minimumVersion.Key);
+                    allVersionsValidated = false;
+                }
+            }
+
+            return allVersionsValidated ? MinVersion : null;
         }
 
         /// <summary>
@@ -228,23 +281,35 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="output">The 'ffmpeg -version' output.</param>
         /// <returns>The library names and major.minor version numbers.</returns>
-        private static string GetLibrariesVersionString(string output)
+        private static bool TryGetFFmpegLibraryVersions(string output, out string versionString, out IReadOnlyDictionary<string, Version> versionMap)
         {
-            var rc = new StringBuilder(144);
-            foreach (Match m in Regex.Matches(
+            var sb = new StringBuilder(144);
+
+            var map = new Dictionary<string, Version>();
+
+            foreach (Match match in Regex.Matches(
                 output,
                 @"((?<name>lib\w+)\s+(?<major>[0-9]+)\.\s*(?<minor>[0-9]+))",
                 RegexOptions.Multiline))
             {
-                rc.Append(m.Groups["name"])
+                sb.Append(match.Groups["name"])
                     .Append('=')
-                    .Append(m.Groups["major"])
+                    .Append(match.Groups["major"])
                     .Append('.')
-                    .Append(m.Groups["minor"])
+                    .Append(match.Groups["minor"])
                     .Append(',');
+
+                var str = $"{match.Groups["major"]}.{match.Groups["minor"]}";
+
+                var version = Version.Parse(str);
+
+                map.Add(match.Groups["name"].Value, version);
             }
 
-            return rc.Length == 0 ? null : rc.ToString();
+            versionString = sb.ToString();
+            versionMap = map;
+
+            return sb.Length > 0;
         }
 
         private IEnumerable<string> GetHwaccelTypes()

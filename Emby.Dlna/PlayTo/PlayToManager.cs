@@ -92,7 +92,7 @@ namespace Emby.Dlna.PlayTo
 
             // It has to report that it's a media renderer
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
-                     nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
+                nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
             {
                 // _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
@@ -192,20 +192,20 @@ namespace Emby.Dlna.PlayTo
 
                 controller = new PlayToController(
                     sessionInfo,
-                   _sessionManager,
-                   _libraryManager,
-                   _logger,
-                   _dlnaManager,
-                   _userManager,
-                   _imageProcessor,
-                   serverAddress,
-                   null,
-                   _deviceDiscovery,
-                   _userDataManager,
-                   _localization,
-                   _mediaSourceManager,
-                   _config,
-                   _mediaEncoder);
+                    _sessionManager,
+                    _libraryManager,
+                    _logger,
+                    _dlnaManager,
+                    _userManager,
+                    _imageProcessor,
+                    serverAddress,
+                    null,
+                    _deviceDiscovery,
+                    _userDataManager,
+                    _localization,
+                    _mediaSourceManager,
+                    _config,
+                    _mediaEncoder);
 
                 sessionInfo.AddController(controller);
 
@@ -218,17 +218,17 @@ namespace Emby.Dlna.PlayTo
                 {
                     PlayableMediaTypes = profile.GetSupportedMediaTypes(),
 
-                    SupportedCommands = new string[]
+                    SupportedCommands = new[]
                     {
-                            GeneralCommandType.VolumeDown.ToString(),
-                            GeneralCommandType.VolumeUp.ToString(),
-                            GeneralCommandType.Mute.ToString(),
-                            GeneralCommandType.Unmute.ToString(),
-                            GeneralCommandType.ToggleMute.ToString(),
-                            GeneralCommandType.SetVolume.ToString(),
-                            GeneralCommandType.SetAudioStreamIndex.ToString(),
-                            GeneralCommandType.SetSubtitleStreamIndex.ToString(),
-                            GeneralCommandType.PlayMediaSource.ToString()
+                        GeneralCommandType.VolumeDown.ToString(),
+                        GeneralCommandType.VolumeUp.ToString(),
+                        GeneralCommandType.Mute.ToString(),
+                        GeneralCommandType.Unmute.ToString(),
+                        GeneralCommandType.ToggleMute.ToString(),
+                        GeneralCommandType.SetVolume.ToString(),
+                        GeneralCommandType.SetAudioStreamIndex.ToString(),
+                        GeneralCommandType.SetSubtitleStreamIndex.ToString(),
+                        GeneralCommandType.PlayMediaSource.ToString()
                     },
 
                     SupportsMediaControl = true
@@ -247,8 +247,9 @@ namespace Emby.Dlna.PlayTo
             {
                 _disposeCancellationTokenSource.Cancel();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogDebug(ex, "Error while disposing PlayToManager");
             }
 
             _sessionLock.Dispose();
