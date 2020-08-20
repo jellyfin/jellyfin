@@ -288,6 +288,7 @@ namespace Jellyfin.Server.Implementations.Users
                 dbContext.Remove(user.ProfileImage);
             }
 
+            dbContext.RemoveRange(dbContext.UserItemData.Where(data => data.UserId == user.Id));
             dbContext.RemoveRange(user.Permissions);
             dbContext.RemoveRange(user.Preferences);
             dbContext.RemoveRange(user.AccessSchedules);
