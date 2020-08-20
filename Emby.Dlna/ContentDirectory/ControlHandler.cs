@@ -253,7 +253,7 @@ namespace Emby.Dlna.ContentDirectory
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
             var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
 
             var provided = 0;
 
@@ -362,8 +362,8 @@ namespace Emby.Dlna.ContentDirectory
 
         private void HandleSearch(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
-            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", ""));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
+            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", string.Empty));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
             var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
 
             // sort example: dc:title, dc:date

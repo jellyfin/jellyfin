@@ -24,16 +24,6 @@ namespace Emby.Dlna.PlayTo
 
         public string UpnpClass { get; set; }
 
-        public bool Equals(uBaseObject obj)
-        {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
-
-            return string.Equals(Id, obj.Id, StringComparison.Ordinal);
-        }
-
         public string MediaType
         {
             get
@@ -57,6 +47,16 @@ namespace Emby.Dlna.PlayTo
 
                 return null;
             }
+        }
+
+        public bool Equals(uBaseObject obj)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException(nameof(obj));
+            }
+
+            return string.Equals(Id, obj.Id, StringComparison.InvariantCulture);
         }
     }
 }
