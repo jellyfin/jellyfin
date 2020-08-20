@@ -4,7 +4,7 @@ using Emby.Dlna.Rssdp.Devices;
 namespace Emby.Dlna.Rssdp.EventArgs
 {
     /// <summary>
-    /// Event arguments for the <see cref="Rsddp.ISsdpPlayToLocator.DeviceUnavailable"/> event.
+    /// Event arguments for the <see cref="ISsdpPlayToLocator.DeviceUnavailable"/> event.
     /// </summary>
     public sealed class DeviceUnavailableEventArgs : System.EventArgs
     {
