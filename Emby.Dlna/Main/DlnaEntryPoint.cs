@@ -60,7 +60,7 @@ namespace Emby.Dlna.Main
 
         public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
-        public static DlnaEntryPoint Current { get; private set; };
+        public static DlnaEntryPoint Current { get; private set; }
 
         public DlnaEntryPoint(
             IServerConfigurationManager config,
