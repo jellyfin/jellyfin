@@ -1627,6 +1627,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // format=nv12|vaapi,hwupload,scale_vaapi
                 "format",
 
+                // bwdif,scale=expr
+                "bwdif",
+
                 // yadif,scale=expr
                 "yadif",
 
