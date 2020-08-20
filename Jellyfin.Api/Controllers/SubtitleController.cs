@@ -393,6 +393,7 @@ namespace Jellyfin.Api.Controllers
                         _logger.LogWarning("Some fonts will not be sent due to size limitations");
                         yield break;
                     }
+
                     yield return fontFile;
                 }
             }
@@ -425,7 +426,7 @@ namespace Jellyfin.Api.Controllers
 
                 if (fontFile != null && fileSize != null && fileSize > 0)
                 {
-                    _logger.LogDebug("Fallback font size is {fileSize} Bytes", fileSize);
+                    _logger.LogDebug("Fallback font size is {FileSize} Bytes", fileSize);
 
                     FileStream stream = new FileStream(fontFile.FullName, FileMode.Open, FileAccess.Read);
                     return File(stream, MimeTypes.GetMimeType(fontFile.FullName));

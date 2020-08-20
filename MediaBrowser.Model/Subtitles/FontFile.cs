@@ -1,17 +1,17 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 
 namespace MediaBrowser.Model.Subtitles
 {
+    /// <summary>
+    /// Class FontFile.
+    /// </summary>
     public class FontFile
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the size.
