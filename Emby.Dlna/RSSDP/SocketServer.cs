@@ -51,7 +51,6 @@ namespace Emby.Dlna.Rssdp
         private readonly List<Socket> _sockets;
         private bool _disposed;
         private bool _oldState;
-        private bool _tracing;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SocketServer"/> class.
@@ -74,7 +73,7 @@ namespace Emby.Dlna.Rssdp
 
             Instance = this;
             _oldState = _networkManager.IsuPnPActive;
-            _tracing = configurationManager.GetDlnaConfiguration().EnableDebugLog;
+            Tracing = configurationManager.GetDlnaConfiguration().EnableDebugLog;
             CreateSockets();
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -100,7 +99,7 @@ namespace Emby.Dlna.Rssdp
         /// <summary>
         /// Gets a value indicating whether detailed DNLA debug logging is active.
         /// </summary>
-        public bool Tracing { get => _tracing; }
+        public bool Tracing { get; private set; }
 
         /// <inheritdoc/>
 #pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCount implementation causes warning.
@@ -383,7 +382,7 @@ namespace Emby.Dlna.Rssdp
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                _tracing = _configurationManager.GetDlnaConfiguration().EnableDebugLog;
+                Tracing = _configurationManager.GetDlnaConfiguration().EnableDebugLog;
             }
         }
 
@@ -407,9 +406,10 @@ namespace Emby.Dlna.Rssdp
         /// <returns>True if the communication is permitted.</returns>
         private bool IsInvalid(IPAddress localIPAddress, IPEndPoint? endPoint, bool matchSockets, bool sourceInternal = false)
         {
-            const string ErrFiltered = "FILTERED: Attempt to send from a non LAN interface: {0}";
             const string ErrBlocked = "FILTERED: Sending to non-LAN address: {0}.";
             const string ErrLoopback = "FILTERED: Sending to Self: {0} -> {0}/{1}. uPnP?";
+
+            bool isInterfaceAddress = false;
 
             // Is the remote endpoint outside the LAN?
             if (endPoint != null)
@@ -419,40 +419,38 @@ namespace Emby.Dlna.Rssdp
                     return true;
                 }
 
+                isInterfaceAddress = _networkManager.IsValidInterfaceAddress(endPoint.Address);
+
+                // Windows can use a random interface to talk to apps running on the same machine.
+                if (isInterfaceAddress)
+                {
+                    return false;
+                }
+
                 if (!_networkManager.IsInLocalNetwork(endPoint.Address))
                 {
                     _logger.LogDebug(ErrBlocked, endPoint.Address);
                     return true;
                 }
-            }
 
-            // Did it arrive on a Non-LAN interface?
-            if (!localIPAddress.Equals(IPAddress.Any) && !localIPAddress.Equals(IPAddress.IPv6Any))
-            {
-                if (!_networkManager.IsInLocalNetwork(localIPAddress))
+                if (matchSockets)
                 {
-                    _logger.LogDebug(ErrFiltered, localIPAddress);
-                    return true;
-                }
-            }
+                    // Did we send this?
+                    lock (_socketSynchroniser)
+                    {
+                        if (_sockets.Where(s => s.LocalEndPoint.Equals(endPoint)).Any())
+                        {
+                            _logger.LogDebug(ErrLoopback, localIPAddress, endPoint.Address, endPoint.Port);
+                            return true;
+                        }
+                    }
 
-            if (matchSockets && endPoint != null)
-            {
-                // Did we send this?
-                lock (_socketSynchroniser)
-                {
-                    if (_sockets.Where(s => s.LocalEndPoint.Equals(endPoint)).Any())
+                    // Did it come from Mono.NAT?
+                    if (sourceInternal && _networkManager.IsuPnPActive && endPoint.Port == 1900 && _networkManager.IsGatewayInterface(endPoint.Address))
                     {
                         _logger.LogDebug(ErrLoopback, localIPAddress, endPoint.Address, endPoint.Port);
                         return true;
                     }
-                }
-
-                // Did it come from Mono.NAT?
-                if (sourceInternal && _networkManager.IsuPnPActive && endPoint.Port == 1900 && _networkManager.IsGatewayInterface(endPoint.Address))
-                {
-                    _logger.LogDebug(ErrLoopback, localIPAddress, endPoint.Address, endPoint.Port);
-                    return true;
                 }
             }
 
@@ -479,7 +477,7 @@ namespace Emby.Dlna.Rssdp
             {
                 foreach (var socket in sockets)
                 {
-                    if (_tracing)
+                    if (Tracing)
                     {
                         _logger.LogDebug("{0}->{1}:{2}", socket.LocalAddress(), destination.Address, message);
                     }
@@ -651,6 +649,115 @@ namespace Emby.Dlna.Rssdp
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
+        private Task ListenToSocketAsyncAlternative(Socket socket)
+        {
+
+                void Accept(SocketAsyncEventArgs? acceptEventArg)
+                {
+                    if (acceptEventArg == null)
+                    {
+                        acceptEventArg = new SocketAsyncEventArgs();
+                        acceptEventArg.Completed += delegate (object sender, SocketAsyncEventArgs e) { Accepted(e); };
+                    }
+                    else
+                    {
+                        acceptEventArg.AcceptSocket = null;
+                    }
+
+                    bool willRaiseEvent = socket.AcceptAsync(acceptEventArg);
+
+                    if (!willRaiseEvent)
+                    {
+                        Accepted(acceptEventArg);
+                    }
+                }
+
+                void Accepted(SocketAsyncEventArgs acceptEventArg)
+                {
+                    var acceptSocket = acceptEventArg.AcceptSocket;
+                    var readEventArgs = CreateArg(acceptSocket);
+
+                    var willRaiseEvent = acceptSocket.ReceiveAsync(readEventArgs);
+
+                    Accept(acceptEventArg);
+
+                    if (!willRaiseEvent)
+                    {
+                        Received(readEventArgs);
+                    }
+                }
+
+                SocketAsyncEventArgs CreateArg(Socket acceptSocket)
+                {
+                    var arg = new SocketAsyncEventArgs();
+                    arg.Completed += delegate (object sender, SocketAsyncEventArgs e)
+                        {
+                            if (e.LastOperation == SocketAsyncOperation.Receive)
+                            {
+                                Received(e);
+                            }
+                        };
+
+                    var buffer = new byte[64 * 1024];
+                    arg.SetBuffer(buffer, 0, buffer.Length);
+                    arg.AcceptSocket = acceptSocket;
+                    arg.SocketFlags = SocketFlags.None;
+
+                    return arg;
+                }
+
+                void Received(SocketAsyncEventArgs e)
+                {
+                    if (e.SocketError != SocketError.Success || e.BytesTransferred == 0 || e.Buffer == null || e.Buffer.Length == 0)
+                    {
+                        // Kill(e);
+                        return;
+                    }
+
+                    var bytesList = new List<byte>();
+                    for (var i = 0; i < e.BytesTransferred; i++)
+                    {
+                        bytesList.Add(e.Buffer[i]);
+                    }
+
+                    var bytes = bytesList.ToArray();
+
+                    var remote = (IPEndPoint)e.ConnectSocket.RemoteEndPoint;
+                    var local = ((IPEndPoint)e.ConnectSocket.LocalEndPoint).Address;
+                    string buffer = Encoding.UTF8.GetString(bytes);
+
+                    if (Tracing)
+                    {
+                        _logger.LogDebug("{0}->{1}:{2}", remote.Address, local, buffer);
+                    }
+
+                    ProcessMessage(buffer, remote, local, false);
+
+                    e.SocketFlags = SocketFlags.None;
+                    for (int i = 0; i < e.Buffer.Length; i++)
+                    {
+                        e.Buffer[i] = 0;
+                    }
+
+                    e.SetBuffer(0, e.Buffer.Length);
+
+                    var willRaiseEvent = e.AcceptSocket.ReceiveAsync(e);
+                    if (!willRaiseEvent)
+                    {
+                        Received(e);
+                    }
+                }
+
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(this.GetType().FullName);
+                }
+
+                socket.Listen(100);
+                Accept(null);
+                return Task.CompletedTask;
+            }
+
         /// <summary>
         /// Async Listening Method.
         /// </summary>
@@ -663,7 +770,7 @@ namespace Emby.Dlna.Rssdp
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
 
-            var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
+            var receiveBuffer = ArrayPool<byte>.Shared.Rent(1024);
             IPEndPoint listeningOn = (IPEndPoint)socket.LocalEndPoint;
             IPEndPoint remote;
             string buffer;
@@ -682,15 +789,13 @@ namespace Emby.Dlna.Rssdp
                         {
                             remote = (IPEndPoint)result.RemoteEndPoint;
                             buffer = Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes);
-                            if (_tracing)
+                            if (Tracing)
                             {
                                 _logger.LogDebug("{0}->{1}:{2}", remote.Address, listeningOn.Address, buffer);
                             }
 
                             await ProcessMessage(buffer, remote, socket.LocalAddress(), false).ConfigureAwait(false);
                         }
-
-                        await Task.Delay(10).ConfigureAwait(false);
                     }
                     catch (Exception e) when (e is ObjectDisposedException || e is TaskCanceledException)
                     {

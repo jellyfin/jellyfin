@@ -272,8 +272,8 @@ namespace Emby.Dlna.Rssdp
                 {
                     rt = device.ToRootDevice();
 
-                    // Response is sent only when the device in the same subnet, or the are private address on the local device.
-                    if (rt.NetAddress.Contains(receivedFrom.Address) || (rt.NetAddress.IsLoopback() && _networkManager.IsInLocalNetwork(receivedFrom.Address)))
+                    // Response is sent only when the device in the same subnet, or the the message has come from one of our interfaces.
+                    if (rt.NetAddress.Contains(receivedFrom.Address) || _networkManager.IsValidInterfaceAddress(receivedFrom.Address))
                     {
                         await SendDeviceSearchResponsesAsync(device, localIP, receivedFrom).ConfigureAwait(false);
                     }
