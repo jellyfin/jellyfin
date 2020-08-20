@@ -377,7 +377,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
-            args = string.Format(args, probeSizeArgument, inputPath).Trim();
+            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath).Trim();
 
             var process = new Process
             {
@@ -856,7 +856,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:").Replace("'", "'\\\\\\''");
+            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", "'\\\\\\''", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />

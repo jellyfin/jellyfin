@@ -31,7 +31,7 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            return string.Equals(Id, obj.Id);
+            return string.Equals(Id, obj.Id, StringComparison.Ordinal);
         }
 
         public string MediaType
