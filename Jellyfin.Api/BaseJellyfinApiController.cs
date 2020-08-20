@@ -8,7 +8,10 @@ namespace Jellyfin.Api
     /// </summary>
     [ApiController]
     [Route("[controller]")]
-    [Produces(MediaTypeNames.Application.Json)]
+    [Produces(
+        MediaTypeNames.Application.Json,
+        MediaTypeNames.Application.Json + "; profile=\"CamelCase\"",
+        MediaTypeNames.Application.Json + "; profile=\"PascalCase\"")]
     public class BaseJellyfinApiController : ControllerBase
     {
     }
