@@ -16,6 +16,7 @@ namespace Jellyfin.Server.Formatters
         {
             SupportedMediaTypes.Clear();
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json;profile=\"CamelCase\""));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json; charset=utf-8"));
         }
     }
 }

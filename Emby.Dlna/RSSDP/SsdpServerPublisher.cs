@@ -475,7 +475,7 @@ namespace Emby.Dlna.Rssdp
 
                 var message = BuildMessage("NOTIFY * HTTP/1.1", values);
                 if (_socketServer.Tracing)
-                { 
+                {
                     _logger.LogDebug("-> NOTIFY ssdp:alive : {0} -> {1} : {2}", rootDevice.Address, multicastAddresses[a], message);
                 }
 

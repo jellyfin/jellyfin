@@ -412,10 +412,18 @@ namespace Emby.Dlna.Rssdp
             const string ErrLoopback = "FILTERED: Sending to Self: {0} -> {0}/{1}. uPnP?";
 
             // Is the remote endpoint outside the LAN?
-            if (endPoint != null && !_networkManager.IsInLocalNetwork(endPoint.Address))
+            if (endPoint != null)
             {
-                _logger.LogDebug(ErrBlocked, endPoint.Address);
-                return true;
+                if (_networkManager.IsExcluded(endPoint.Address))
+                {
+                    return true;
+                }
+
+                if (!_networkManager.IsInLocalNetwork(endPoint.Address))
+                {
+                    _logger.LogDebug(ErrBlocked, endPoint.Address);
+                    return true;
+                }
             }
 
             // Did it arrive on a Non-LAN interface?

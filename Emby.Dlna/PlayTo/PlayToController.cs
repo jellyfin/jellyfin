@@ -588,28 +588,29 @@ namespace Emby.Dlna.PlayTo
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
                 var list = new ContentFeatureBuilder(profile)
-                    .BuildVideoHeader(streamInfo.Container,
-                    streamInfo.TargetVideoCodec.FirstOrDefault(),
-                    streamInfo.TargetAudioCodec.FirstOrDefault(),
-                    streamInfo.TargetWidth,
-                    streamInfo.TargetHeight,
-                    streamInfo.TargetVideoBitDepth,
-                    streamInfo.TargetVideoBitrate,
-                    streamInfo.TargetTimestamp,
-                    streamInfo.IsDirectStream,
-                    streamInfo.RunTimeTicks ?? 0,
-                    streamInfo.TargetVideoProfile,
-                    streamInfo.TargetVideoLevel,
-                    streamInfo.TargetFramerate ?? 0,
-                    streamInfo.TargetPacketLength,
-                    streamInfo.TranscodeSeekInfo,
-                    streamInfo.IsTargetAnamorphic,
-                    streamInfo.IsTargetInterlaced,
-                    streamInfo.TargetRefFrames,
-                    streamInfo.TargetVideoStreamCount,
-                    streamInfo.TargetAudioStreamCount,
-                    streamInfo.TargetVideoCodecTag,
-                    streamInfo.IsTargetAVC);
+                    .BuildVideoHeader(
+                        streamInfo.Container,
+                        streamInfo.TargetVideoCodec.FirstOrDefault(),
+                        streamInfo.TargetAudioCodec.FirstOrDefault(),
+                        streamInfo.TargetWidth,
+                        streamInfo.TargetHeight,
+                        streamInfo.TargetVideoBitDepth,
+                        streamInfo.TargetVideoBitrate,
+                        streamInfo.TargetTimestamp,
+                        streamInfo.IsDirectStream,
+                        streamInfo.RunTimeTicks ?? 0,
+                        streamInfo.TargetVideoProfile,
+                        streamInfo.TargetVideoLevel,
+                        streamInfo.TargetFramerate ?? 0,
+                        streamInfo.TargetPacketLength,
+                        streamInfo.TranscodeSeekInfo,
+                        streamInfo.IsTargetAnamorphic,
+                        streamInfo.IsTargetInterlaced,
+                        streamInfo.TargetRefFrames,
+                        streamInfo.TargetVideoStreamCount,
+                        streamInfo.TargetAudioStreamCount,
+                        streamInfo.TargetVideoCodecTag,
+                        streamInfo.IsTargetAVC);
 
                 return list.Count == 0 ? null : list[0];
             }
