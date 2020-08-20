@@ -1,9 +1,9 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -17,13 +17,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbAlbumImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _json;
 
-        public AudioDbAlbumImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IJsonSerializer json)
+        public AudioDbAlbumImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IJsonSerializer json)
         {
             _config = config;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _json = json;
         }
 
@@ -94,13 +94,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         }
 
         /// <inheritdoc />
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            var httpClient = _httpClientFactory.CreateClient();
+            return httpClient.GetAsync(url, cancellationToken);
         }
 
         /// <inheritdoc />

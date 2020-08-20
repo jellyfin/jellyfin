@@ -54,11 +54,11 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
 
-        internal IContentDirectory ContentDirectory { get; private set; }
+        public IContentDirectory ContentDirectory { get; private set; }
 
-        internal IConnectionManager ConnectionManager { get; private set; }
+        public IConnectionManager ConnectionManager { get; private set; }
 
-        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
+        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public static DlnaEntryPoint Current;
 

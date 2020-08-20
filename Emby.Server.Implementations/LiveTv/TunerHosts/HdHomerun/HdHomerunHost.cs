@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -23,7 +24,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
@@ -36,17 +37,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
+        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
+
         public HdHomerunHost(
             IServerConfigurationManager config,
             ILogger<HdHomerunHost> logger,
-            IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
             INetworkManager networkManager,
-            IStreamHelper streamHelper)
-            : base(config, logger, jsonSerializer, fileSystem)
+            IStreamHelper streamHelper,
+            IMemoryCache memoryCache)
+            : base(config, logger, fileSystem, memoryCache)
         {
             _httpClient = httpClient;
             _appHost = appHost;
@@ -75,18 +78,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 BufferContent = false
             };
 
-            using (var response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = response.Content)
+            using var response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
+            await using var stream = response.Content;
+            var lineup = await JsonSerializer.DeserializeAsync<List<Channels>>(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false) ?? new List<Channels>();
+
+            if (info.ImportFavoritesOnly)
             {
-                var lineup = await JsonSerializer.DeserializeFromStreamAsync<List<Channels>>(stream).ConfigureAwait(false) ?? new List<Channels>();
-
-                if (info.ImportFavoritesOnly)
-                {
-                    lineup = lineup.Where(i => i.Favorite).ToList();
-                }
-
-                return lineup.Where(i => !i.DRM).ToList();
+                lineup = lineup.Where(i => i.Favorite).ToList();
             }
+
+            return lineup.Where(i => !i.DRM).ToList();
         }
 
         private class HdHomerunChannelInfo : ChannelInfo
@@ -114,7 +116,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }).Cast<ChannelInfo>().ToList();
         }
 
-        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
         private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
@@ -132,35 +133,35 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
-                using (var response = await _httpClient.SendAsync(new HttpRequestOptions()
+                using var response = await _httpClient.SendAsync(
+                    new HttpRequestOptions
                 {
-                    Url = string.Format("{0}/discover.json", GetApiUrl(info)),
+                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
                     CancellationToken = cancellationToken,
                     BufferContent = false
-                }, HttpMethod.Get).ConfigureAwait(false))
-                using (var stream = response.Content)
+                }, HttpMethod.Get).ConfigureAwait(false);
+                await using var stream = response.Content;
+                var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (!string.IsNullOrEmpty(cacheKey))
                 {
-                    var discoverResponse = await JsonSerializer.DeserializeFromStreamAsync<DiscoverResponse>(stream).ConfigureAwait(false);
-
-                    if (!string.IsNullOrEmpty(cacheKey))
+                    lock (_modelCache)
                     {
-                        lock (_modelCache)
-                        {
-                            _modelCache[cacheKey] = discoverResponse;
-                        }
+                        _modelCache[cacheKey] = discoverResponse;
                     }
-
-                    return discoverResponse;
                 }
+
+                return discoverResponse;
             }
             catch (HttpException ex)
             {
-                if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
-                    var defaultValue = "HDHR";
+                    const string DefaultValue = "HDHR";
                     var response = new DiscoverResponse
                     {
-                        ModelNumber = defaultValue
+                        ModelNumber = DefaultValue
                     };
                     if (!string.IsNullOrEmpty(cacheKey))
                     {
@@ -182,12 +183,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
-            using (var response = await _httpClient.SendAsync(new HttpRequestOptions()
-            {
-                Url = string.Format("{0}/tuners.html", GetApiUrl(info)),
-                CancellationToken = cancellationToken,
-                BufferContent = false
-            }, HttpMethod.Get).ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(
+                new HttpRequestOptions()
+                {
+                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)),
+                    CancellationToken = cancellationToken,
+                    BufferContent = false
+                },
+                HttpMethod.Get).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
             {
@@ -730,7 +733,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken);
+                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken).ConfigureAwait(false);
                     var receiveBuffer = new byte[8192];
 
                     while (!cancellationToken.IsCancellationRequested)

@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.MediaInfo;
 
@@ -12,7 +15,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var url = inputFiles[0];
 
-                return string.Format("\"{0}\"", url);
+                return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", url);
             }
 
             return GetConcatInputArgument(inputFiles);
@@ -31,7 +34,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var files = string.Join("|", inputFiles.Select(NormalizePath));
 
-                return string.Format("concat:\"{0}\"", files);
+                return string.Format(CultureInfo.InvariantCulture, "concat:\"{0}\"", files);
             }
 
             // Determine the input path for video files
@@ -47,13 +50,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             if (path.IndexOf("://") != -1)
             {
-                return string.Format("\"{0}\"", path);
+                return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", path);
             }
 
             // Quotes are valid path characters in linux and they need to be escaped here with a leading \
             path = NormalizePath(path);
 
-            return string.Format("file:\"{0}\"", path);
+            return string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", path);
         }
 
         /// <summary>

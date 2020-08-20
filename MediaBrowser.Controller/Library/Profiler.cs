@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Library
@@ -13,6 +14,7 @@ namespace MediaBrowser.Controller.Library
         /// The name.
         /// </summary>
         readonly string _name;
+
         /// <summary>
         /// The stopwatch.
         /// </summary>
@@ -44,6 +46,7 @@ namespace MediaBrowser.Controller.Library
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -58,13 +61,19 @@ namespace MediaBrowser.Controller.Library
                 string message;
                 if (_stopwatch.ElapsedMilliseconds > 300000)
                 {
-                    message = string.Format("{0} took {1} minutes.",
-                        _name, ((float)_stopwatch.ElapsedMilliseconds / 60000).ToString("F"));
+                    message = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0} took {1} minutes.",
+                        _name,
+                        ((float)_stopwatch.ElapsedMilliseconds / 60000).ToString("F", CultureInfo.InvariantCulture));
                 }
                 else
                 {
-                    message = string.Format("{0} took {1} seconds.",
-                        _name, ((float)_stopwatch.ElapsedMilliseconds / 1000).ToString("#0.000"));
+                    message = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0} took {1} seconds.",
+                        _name,
+                        ((float)_stopwatch.ElapsedMilliseconds / 1000).ToString("#0.000", CultureInfo.InvariantCulture));
                 }
 
                 _logger.LogInformation(message);

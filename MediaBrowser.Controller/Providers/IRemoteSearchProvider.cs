@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -12,6 +13,6 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
-        Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken);
+        Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken);
     }
 }

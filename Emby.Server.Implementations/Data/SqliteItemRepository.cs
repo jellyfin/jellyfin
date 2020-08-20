@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
@@ -400,6 +401,8 @@ namespace Emby.Server.Implementations.Data
             "OwnerId"
         };
 
+        private static readonly string _retriveItemColumnsSelectQuery = $"select {string.Join(',', _retriveItemColumns)} from TypedBaseItems where guid = @guid";
+
         private static readonly string[] _mediaStreamSaveColumns =
         {
             "ItemId",
@@ -439,6 +442,12 @@ namespace Emby.Server.Implementations.Data
             "ColorTransfer"
         };
 
+        private static readonly string _mediaStreamSaveColumnsInsertQuery =
+            $"insert into mediastreams ({string.Join(',', _mediaStreamSaveColumns)}) values ";
+
+        private static readonly string _mediaStreamSaveColumnsSelectQuery =
+            $"select {string.Join(',', _mediaStreamSaveColumns)} from mediastreams where ItemId=@ItemId";
+
         private static readonly string[] _mediaAttachmentSaveColumns =
         {
             "ItemId",
@@ -450,102 +459,15 @@ namespace Emby.Server.Implementations.Data
             "MIMEType"
         };
 
+        private static readonly string _mediaAttachmentSaveColumnsSelectQuery =
+            $"select {string.Join(',', _mediaAttachmentSaveColumns)} from mediaattachments where ItemId=@ItemId";
+
         private static readonly string _mediaAttachmentInsertPrefix;
 
-        private static string GetSaveItemCommandText()
-        {
-            var saveColumns = new[]
-            {
-                "guid",
-                "type",
-                "data",
-                "Path",
-                "StartDate",
-                "EndDate",
-                "ChannelId",
-                "IsMovie",
-                "IsSeries",
-                "EpisodeTitle",
-                "IsRepeat",
-                "CommunityRating",
-                "CustomRating",
-                "IndexNumber",
-                "IsLocked",
-                "Name",
-                "OfficialRating",
-                "MediaType",
-                "Overview",
-                "ParentIndexNumber",
-                "PremiereDate",
-                "ProductionYear",
-                "ParentId",
-                "Genres",
-                "InheritedParentalRatingValue",
-                "SortName",
-                "ForcedSortName",
-                "RunTimeTicks",
-                "Size",
-                "DateCreated",
-                "DateModified",
-                "PreferredMetadataLanguage",
-                "PreferredMetadataCountryCode",
-                "Width",
-                "Height",
-                "DateLastRefreshed",
-                "DateLastSaved",
-                "IsInMixedFolder",
-                "LockedFields",
-                "Studios",
-                "Audio",
-                "ExternalServiceId",
-                "Tags",
-                "IsFolder",
-                "UnratedType",
-                "TopParentId",
-                "TrailerTypes",
-                "CriticRating",
-                "CleanName",
-                "PresentationUniqueKey",
-                "OriginalTitle",
-                "PrimaryVersionId",
-                "DateLastMediaAdded",
-                "Album",
-                "IsVirtualItem",
-                "SeriesName",
-                "UserDataKey",
-                "SeasonName",
-                "SeasonId",
-                "SeriesId",
-                "ExternalSeriesId",
-                "Tagline",
-                "ProviderIds",
-                "Images",
-                "ProductionLocations",
-                "ExtraIds",
-                "TotalBitrate",
-                "ExtraType",
-                "Artists",
-                "AlbumArtists",
-                "ExternalId",
-                "SeriesPresentationUniqueKey",
-                "ShowId",
-                "OwnerId"
-            };
-
-            var saveItemCommandCommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns) + ") values (";
-
-            for (var i = 0; i < saveColumns.Length; i++)
-            {
-                if (i != 0)
-                {
-                    saveItemCommandCommandText += ",";
-                }
-
-                saveItemCommandCommandText += "@" + saveColumns[i];
-            }
-
-            return saveItemCommandCommandText + ")";
-        }
+        private const string SaveItemCommandText =
+            @"replace into TypedBaseItems
+            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
+            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
 
         /// <summary>
         /// Save a standard item in the repo.
@@ -636,7 +558,7 @@ namespace Emby.Server.Implementations.Data
         {
             var statements = PrepareAll(db, new string[]
             {
-                GetSaveItemCommandText(),
+                SaveItemCommandText,
                 "delete from AncestorIds where ItemId=@ItemId"
             }).ToList();
 
@@ -1056,7 +978,10 @@ namespace Emby.Server.Implementations.Data
                     continue;
                 }
 
-                str.Append($"{i.Key}={i.Value}|");
+                str.Append(i.Key)
+                    .Append('=')
+                    .Append(i.Value)
+                    .Append('|');
             }
 
             if (str.Length == 0)
@@ -1110,8 +1035,8 @@ namespace Emby.Server.Implementations.Data
                     continue;
                 }
 
-                str.Append(ToValueString(i))
-                    .Append('|');
+                AppendItemImageInfo(str, i);
+                str.Append('|');
             }
 
             str.Length -= 1; // Remove last |
@@ -1145,26 +1070,26 @@ namespace Emby.Server.Implementations.Data
             item.ImageInfos = list.ToArray();
         }
 
-        public string ToValueString(ItemImageInfo image)
+        public void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)
         {
-            const string Delimeter = "*";
+            const char Delimiter = '*';
 
             var path = image.Path ?? string.Empty;
             var hash = image.BlurHash ?? string.Empty;
 
-            return GetPathToSave(path) +
-                   Delimeter +
-                   image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
-                   Delimeter +
-                   image.Type +
-                   Delimeter +
-                   image.Width.ToString(CultureInfo.InvariantCulture) +
-                   Delimeter +
-                   image.Height.ToString(CultureInfo.InvariantCulture) +
-                   Delimeter +
-                   // Replace delimiters with other characters.
-                   // This can be removed when we migrate to a proper DB.
-                   hash.Replace('*', '/').Replace('|', '\\');
+            bldr.Append(GetPathToSave(path))
+                .Append(Delimiter)
+                .Append(image.DateModified.Ticks)
+                .Append(Delimiter)
+                .Append(image.Type)
+                .Append(Delimiter)
+                .Append(image.Width)
+                .Append(Delimiter)
+                .Append(image.Height)
+                .Append(Delimiter)
+                // Replace delimiters with other characters.
+                // This can be removed when we migrate to a proper DB.
+                .Append(hash.Replace('*', '/').Replace('|', '\\'));
         }
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
@@ -1226,7 +1151,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = PrepareStatement(connection, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
+                using (var statement = PrepareStatement(connection, _retriveItemColumnsSelectQuery))
                 {
                     statement.TryBind("@guid", id);
 
@@ -4635,13 +4560,13 @@ namespace Emby.Server.Implementations.Data
             if (query.AncestorIds.Length > 1)
             {
                 var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
+                whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
             }
 
             if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
             {
                 var inClause = "select guid from TypedBaseItems where PresentationUniqueKey=@AncestorWithPresentationUniqueKey";
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
+                whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
                 if (statement != null)
                 {
                     statement.TryBind("@AncestorWithPresentationUniqueKey", query.AncestorWithPresentationUniqueKey);
@@ -5737,10 +5662,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             const int Limit = 100;
             var startIndex = 0;
 
+            const string StartInsertText = "insert into ItemValues (ItemId, Type, Value, CleanValue) values ";
+            var insertText = new StringBuilder(StartInsertText);
             while (startIndex < values.Count)
             {
-                var insertText = new StringBuilder("insert into ItemValues (ItemId, Type, Value, CleanValue) values ");
-
                 var endIndex = Math.Min(values.Count, startIndex + Limit);
 
                 for (var i = startIndex; i < endIndex; i++)
@@ -5782,6 +5707,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 }
 
                 startIndex += Limit;
+                insertText.Length = StartInsertText.Length;
             }
         }
 
@@ -5819,10 +5745,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             var startIndex = 0;
             var listIndex = 0;
 
+            const string StartInsertText = "insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values ";
+            var insertText = new StringBuilder(StartInsertText);
             while (startIndex < people.Count)
             {
-                var insertText = new StringBuilder("insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values ");
-
                 var endIndex = Math.Min(people.Count, startIndex + Limit);
                 for (var i = startIndex; i < endIndex; i++)
                 {
@@ -5856,6 +5782,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 }
 
                 startIndex += Limit;
+                insertText.Length = StartInsertText.Length;
             }
         }
 
@@ -5894,10 +5821,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 throw new ArgumentNullException(nameof(query));
             }
 
-            var cmdText = "select "
-                        + string.Join(",", _mediaStreamSaveColumns)
-                        + " from mediastreams where"
-                        + " ItemId=@ItemId";
+            var cmdText = _mediaStreamSaveColumnsSelectQuery;
 
             if (query.Type.HasValue)
             {
@@ -5974,18 +5898,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             const int Limit = 10;
             var startIndex = 0;
 
+            var insertText = new StringBuilder(_mediaStreamSaveColumnsInsertQuery);
             while (startIndex < streams.Count)
             {
-                var insertText = new StringBuilder("insert into mediastreams (");
-                foreach (var column in _mediaStreamSaveColumns)
-                {
-                    insertText.Append(column).Append(',');
-                }
-
-                // Remove last comma
-                insertText.Length--;
-                insertText.Append(") values ");
-
                 var endIndex = Math.Min(streams.Count, startIndex + Limit);
 
                 for (var i = startIndex; i < endIndex; i++)
@@ -6068,6 +5983,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 }
 
                 startIndex += Limit;
+                insertText.Length = _mediaStreamSaveColumnsInsertQuery.Length;
             }
         }
 
@@ -6251,10 +6167,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 throw new ArgumentNullException(nameof(query));
             }
 
-            var cmdText = "select "
-                        + string.Join(",", _mediaAttachmentSaveColumns)
-                        + " from mediaattachments where"
-                        + " ItemId=@ItemId";
+            var cmdText = _mediaAttachmentSaveColumnsSelectQuery;
 
             if (query.Index.HasValue)
             {
@@ -6322,10 +6235,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             const int InsertAtOnce = 10;
 
+            var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
             for (var startIndex = 0; startIndex < attachments.Count; startIndex += InsertAtOnce)
             {
-                var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
-
                 var endIndex = Math.Min(attachments.Count, startIndex + InsertAtOnce);
 
                 for (var i = startIndex; i < endIndex; i++)
@@ -6371,6 +6283,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     statement.Reset();
                     statement.MoveNext();
                 }
+
+                insertText.Length = _mediaAttachmentInsertPrefix.Length;
             }
         }
 

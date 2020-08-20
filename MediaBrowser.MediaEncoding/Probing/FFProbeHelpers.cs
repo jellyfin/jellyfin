@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {
+    /// <summary>
+    /// Class containing helper methods for working with FFprobe output.
+    /// </summary>
     public static class FFProbeHelpers
     {
         /// <summary>
