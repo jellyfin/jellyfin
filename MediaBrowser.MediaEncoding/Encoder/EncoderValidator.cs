@@ -280,6 +280,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc.".
         /// </summary>
         /// <param name="output">The 'ffmpeg -version' output.</param>
+        /// <param name="versionString">The string used to look up in the predefined table of FFmpeg versions.</param>
+        /// <param name="versionMap">Individual library versions used to determine if minimum FFmpeg version id found.</param>
         /// <returns>The library names and major.minor version numbers.</returns>
         private static bool TryGetFFmpegLibraryVersions(string output, out string versionString, out IReadOnlyDictionary<string, Version> versionMap)
         {
