@@ -65,12 +65,6 @@ namespace MediaBrowser.Model.System
         /// <value>The completed installations.</value>
         public InstallationInfo[] CompletedInstallations { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can self restart.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        public bool CanSelfRestart { get; set; }
-
         public bool CanLaunchWebBrowser { get; set; }
 
         /// <summary>
