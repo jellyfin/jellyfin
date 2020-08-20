@@ -50,7 +50,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        public bool Equals(uBaseObject obj)
+        public bool Equals(UBaseObject obj)
         {
             if (obj == null)
             {
