@@ -729,7 +729,7 @@ namespace Emby.Server.Implementations.Library
             Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
-                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
+                             ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
                              .DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved

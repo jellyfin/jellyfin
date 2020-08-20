@@ -30,10 +30,8 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
-    public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
+    public sealed class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
-        public static DlnaEntryPoint Current;
-
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
@@ -122,6 +120,8 @@ namespace Emby.Dlna.Main
                 config);
             Current = this;
         }
+        
+        public static DlnaEntryPoint Current { get; private set; }
 
         public IContentDirectory ContentDirectory { get; private set; }
 
