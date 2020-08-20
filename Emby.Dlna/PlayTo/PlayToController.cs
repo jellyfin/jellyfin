@@ -51,7 +51,7 @@ namespace Emby.Dlna.PlayTo
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
         private int _currentPlaylistIndex = -1;
-
+        private Device _device;
         private bool _disposed;
 
         public PlayToController(
@@ -877,7 +877,7 @@ namespace Emby.Dlna.PlayTo
 
         private class StreamParams
         {
-            private MediaSourceInfo mediaSource;
+            private MediaSourceInfo _mediaSource;
             private IMediaSourceManager _mediaSourceManager;
 
             public Guid ItemId { get; set; }
@@ -899,10 +899,6 @@ namespace Emby.Dlna.PlayTo
             public string LiveStreamId { get; set; }
 
             public BaseItem Item { get; set; }
-
-            private MediaSourceInfo _mediaSource;
-
-            private IMediaSourceManager _mediaSourceManager;
 
             public async Task<MediaSourceInfo> GetMediaSource(CancellationToken cancellationToken)
             {

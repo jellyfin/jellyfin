@@ -38,8 +38,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
-        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
-
         public HdHomerunHost(
             IServerConfigurationManager config,
             ILogger<HdHomerunHost> logger,
