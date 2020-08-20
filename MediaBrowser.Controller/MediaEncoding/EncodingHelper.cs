@@ -1609,64 +1609,39 @@ namespace MediaBrowser.Controller.MediaEncoding
             var outputSizeParam = ReadOnlySpan<char>.Empty;
             var request = state.BaseRequest;
 
-            // Add resolution params, if specified
-            if (request.Width.HasValue
-                || request.Height.HasValue
-                || request.MaxHeight.HasValue
-                || request.MaxWidth.HasValue)
-            {
-                outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
+            outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
 
+            // All possible beginning of video filters
+            // Don't break the order
+            string[] beginOfOutputSizeParam = new[]
+            {
                 // hwupload=extra_hw_frames=64,vpp_qsv (for overlay_qsv on linux)
-                var index = outputSizeParam.IndexOf("hwupload=extra_hw_frames", StringComparison.OrdinalIgnoreCase);
+                "hwupload=extra_hw_frames",
+
+                // vpp_qsv
+                "vpp",
+
+                // hwdownload,format=p010le (hardware decode + software encode for vaapi)
+                "hwdownload",
+
+                // format=nv12|vaapi,hwupload,scale_vaapi
+                "format",
+
+                // yadif,scale=expr
+                "yadif",
+
+                // scale=expr
+                "scale"
+            };
+
+            var index = -1;
+            foreach (var param in beginOfOutputSizeParam)
+            {
+                index = outputSizeParam.IndexOf(param, StringComparison.OrdinalIgnoreCase);
                 if (index != -1)
                 {
                     outputSizeParam = outputSizeParam.Slice(index);
-                }
-                else
-                {
-                    // vpp_qsv
-                    index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
-                    if (index != -1)
-                    {
-                        outputSizeParam = outputSizeParam.Slice(index);
-                    }
-                    else
-                    {
-                        // hwdownload,format=p010le (hardware decode + software encode for vaapi)
-                        index = outputSizeParam.IndexOf("hwdownload", StringComparison.OrdinalIgnoreCase);
-                        if (index != -1)
-                        {
-                            outputSizeParam = outputSizeParam.Slice(index);
-                        }
-                        else
-                        {
-                            // format=nv12|vaapi,hwupload,scale_vaapi
-                            index = outputSizeParam.IndexOf("format", StringComparison.OrdinalIgnoreCase);
-                            if (index != -1)
-                            {
-                                outputSizeParam = outputSizeParam.Slice(index);
-                            }
-                            else
-                            {
-                                // yadif,scale=expr
-                                index = outputSizeParam.IndexOf("yadif", StringComparison.OrdinalIgnoreCase);
-                                if (index != -1)
-                                {
-                                    outputSizeParam = outputSizeParam.Slice(index);
-                                }
-                                else
-                                {
-                                    // scale=expr
-                                    index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
-                                    if (index != -1)
-                                    {
-                                        outputSizeParam = outputSizeParam.Slice(index);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    break;
                 }
             }
 
