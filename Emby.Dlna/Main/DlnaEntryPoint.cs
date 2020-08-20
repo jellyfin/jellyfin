@@ -93,14 +93,14 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
-            ContentDirectory = new ContentDirectory.ContentDirectory(
+            ContentDirectory = new ContentDirectory.ContentDirectoryService(
                 dlnaManager,
                 userDataManager,
                 imageProcessor,
                 libraryManager,
                 config,
                 userManager,
-                loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
+                loggerFactory.CreateLogger<ContentDirectory.ContentDirectoryService>(),
                 httpClient,
                 localizationManager,
                 mediaSourceManager,
@@ -108,19 +108,19 @@ namespace Emby.Dlna.Main
                 mediaEncoder,
                 tvSeriesManager);
 
-            ConnectionManager = new ConnectionManager.ConnectionManager(
+            ConnectionManager = new ConnectionManager.ConnectionManagerService(
                 dlnaManager,
                 config,
-                loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
+                loggerFactory.CreateLogger<ConnectionManager.ConnectionManagerService>(),
                 httpClient);
 
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
-                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
+            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
+                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
                 httpClient,
                 config);
             Current = this;
         }
-        
+
         public static DlnaEntryPoint Current { get; private set; }
 
         public IContentDirectory ContentDirectory { get; private set; }
@@ -414,27 +414,14 @@ namespace Emby.Dlna.Main
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and optionally managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                DisposeDevicePublisher();
-                DisposePlayToManager();
-                DisposeDeviceDiscovery();
-            }
+            DisposeDevicePublisher();
+            DisposePlayToManager();
+            DisposeDeviceDiscovery();
 
             if (_communicationsServer != null)
             {
