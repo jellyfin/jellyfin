@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("MediaEncoder/Path")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdateMediaEncoderPath([FromForm, Required] MediaEncoderPathDto mediaEncoderPath)
+        public ActionResult UpdateMediaEncoderPath([FromBody, Required] MediaEncoderPathDto mediaEncoderPath)
         {
             _mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
             return NoContent();
