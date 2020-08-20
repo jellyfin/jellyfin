@@ -249,7 +249,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.LogDebug("Error while disposing PlayToManager", ex);
+                _logger.LogDebug(ex, "Error while disposing PlayToManager");
             }
 
             _sessionLock.Dispose();
