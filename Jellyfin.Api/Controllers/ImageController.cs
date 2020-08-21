@@ -174,7 +174,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteItemImage(
+        public async Task<ActionResult> DeleteItemImage(
             [FromRoute] Guid itemId,
             [FromRoute] ImageType imageType,
             [FromRoute] int? imageIndex = null)
@@ -185,7 +185,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            item.DeleteImage(imageType, imageIndex ?? 0);
+            await item.DeleteImageAsync(imageType, imageIndex ?? 0).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -218,7 +218,7 @@ namespace Jellyfin.Api.Controllers
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
             await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
-            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -237,7 +237,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateItemImageIndex(
+        public async Task<ActionResult> UpdateItemImageIndex(
             [FromRoute] Guid itemId,
             [FromRoute] ImageType imageType,
             [FromRoute] int imageIndex,
@@ -249,7 +249,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            item.SwapImages(imageType, imageIndex, newIndex);
+            await item.SwapImagesAsync(imageType, imageIndex, newIndex).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -264,7 +264,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ImageInfo>> GetItemImageInfos([FromRoute] Guid itemId)
+        public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -281,7 +281,7 @@ namespace Jellyfin.Api.Controllers
                 return list;
             }
 
-            _libraryManager.UpdateImages(item); // this makes sure dimensions and hashes are correct
+            await _libraryManager.UpdateImagesAsync(item).ConfigureAwait(false); // this makes sure dimensions and hashes are correct
 
             foreach (var image in itemImages)
             {
