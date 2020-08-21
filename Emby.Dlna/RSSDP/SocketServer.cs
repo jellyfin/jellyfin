@@ -246,7 +246,7 @@ namespace Emby.Dlna.Rssdp
             lock (_socketSynchroniser)
             {
                 sendSockets = new List<Socket>(_sockets
-                    .Where(s => s.LocalAddressEquals(IPAddress.Any) || s.LocalAddressEquals(IPAddress.IPv6Any) || s.LocalAddressEquals(localIPAddress)
+                    .Where(s => s.LocalAddressEquals(IPAddress.Any) || s.LocalAddressEquals(IPAddress.IPv6Any) || s.LocalAddressEquals(localIPAddress))
                     .Where(s => localIPAddress.AddressFamily == s.LocalEndPoint.AddressFamily));
 
                 if (sendSockets.Count <= 0)
