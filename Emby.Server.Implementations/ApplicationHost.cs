@@ -1127,10 +1127,22 @@ namespace Emby.Server.Implementations
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return smart;
+                return smart.Trim('/');
             }
 
-            return GetLocalApiUrl(smart);
+            // Has it got a port defined?
+            var parts = smart.Split(':');
+            if (parts.Length > 1)
+            {
+                if (int.TryParse(parts[1], out int port))
+                {
+                    return GetLocalApiUrl(parts[0].Trim('/'), null, port);
+                }
+
+                Logger.LogError("Unable to parse bind interface: {0}", smart);
+            }
+
+            return GetLocalApiUrl(smart.Trim('/'));
         }
 
         /// <inheritdoc/>

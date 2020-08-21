@@ -580,26 +580,23 @@ namespace Emby.Server.Implementations.Networking
             bool isExternal = haveSource && !IsInLocalNetwork(sourceAddr);
 
             string bindPreference = string.Empty;
-            if (haveSource)
+            // Check for user override.
+            foreach (var addr in _overrideAddresses)
             {
-                // Check for user override.
-                foreach (var addr in _overrideAddresses)
+                if (addr.Key.Address.Equals(IPAddress.Broadcast))
                 {
-                    if (addr.Key.Equals(IPAddress.Broadcast))
-                    {
-                        bindPreference = addr.Value;
-                        break;
-                    }
-                    else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && isExternal)
-                    {
-                        bindPreference = addr.Value;
-                        break;
-                    }
-                    else if (addr.Key.Contains(sourceAddr))
-                    {
-                        bindPreference = addr.Value;
-                        break;
-                    }
+                    bindPreference = addr.Value;
+                    break;
+                }
+                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isExternal)
+                {
+                    bindPreference = addr.Value;
+                    break;
+                }
+                else if (haveSource && addr.Key.Contains(sourceAddr))
+                {
+                    bindPreference = addr.Value;
+                    break;
                 }
             }
 
