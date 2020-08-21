@@ -19,12 +19,13 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// Initializes a new instance of the <see cref="DlnaMediaReceiverRegistrar"/> class.
         /// </summary>
         /// <param name="logger">Logger instance.</param>
-        /// <param name="httpClient">httpClient instance.</param>
         /// <param name="config">Configuration instance</param>
+        /// <param name="httpClient">httpClient instance.</param>
         public DlnaMediaReceiverRegistrar(
             ILogger logger,
-            IHttpClient httpClient,
-            IServerConfigurationManager config)
+            IServerConfigurationManager config,
+            IHttpClient httpClient
+            )
             : base(logger, httpClient)
         {
             _config = config ?? throw new NullReferenceException(nameof(config));

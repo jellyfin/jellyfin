@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
@@ -43,6 +44,12 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="id">The identifier.</param>
         void DeleteProfile(string id);
+
+        /// <summary>
+        /// Extracts and loads the profiles.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task InitProfilesAsync();
 
         /// <summary>
         /// Gets the profile.

@@ -183,7 +183,7 @@ namespace Emby.Dlna.PlayTo
         private string _mediaPlaying = string.Empty;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Device"/> class.
+        /// Initializes a new instance of the <see cref="DeviceInterface"/> class.
         /// </summary>
         /// <param name="playToManager">Our playToManager<see cref="PlayToManager"/>.</param>
         /// <param name="deviceProperties">The deviceProperties<see cref="DeviceInfo"/>.</param>
@@ -2364,9 +2364,9 @@ namespace Emby.Dlna.PlayTo
 
         internal class ValueRange
         {
-            internal double FivePoints = 0;
-            internal double Range = 0;
-            internal int Min = 0;
+            internal double FivePoints;
+            internal double Range;
+            internal int Min;
             internal int Max = 100;
         }
 

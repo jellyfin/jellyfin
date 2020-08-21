@@ -81,26 +81,27 @@ namespace Emby.Dlna.Main
             ITVSeriesManager tvSeriesManager,
             INotificationManager notificationManager)
         {
-            _configurationManager = config ?? throw new ArgumentNullException(nameof(config));
-            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
-            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _libraryManager = libraryManager ?? throw new ArgumentNullException(nameof(libraryManager));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _dlnaManager = dlnaManager ?? throw new ArgumentNullException(nameof(dlnaManager));
-            _imageProcessor = imageProcessor ?? throw new ArgumentNullException(nameof(imageProcessor));
-            _userDataManager = userDataManager ?? throw new ArgumentNullException(nameof(userDataManager));
-            _localization = localizationManager ?? throw new ArgumentNullException(nameof(localizationManager));
-            _mediaSourceManager = mediaSourceManager ?? throw new ArgumentNullException(nameof(mediaSourceManager));
-            _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
-            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-            _localizationManager = localizationManager ?? throw new ArgumentNullException(nameof(localizationManager));
-            _userViewManager = userViewManager ?? throw new ArgumentNullException(nameof(userViewManager));
-            _tvSeriesManager = tvSeriesManager ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _configurationManager = config;
+            _appHost = appHost;
+            _sessionManager = sessionManager;
+            _httpClient = httpClient;
+            _libraryManager = libraryManager;
+            _userManager = userManager;
+            _dlnaManager = dlnaManager;
+            _imageProcessor = imageProcessor;
+            _userDataManager = userDataManager;
+            _localization = localizationManager;
+            _mediaSourceManager = mediaSourceManager;
+            _mediaEncoder = mediaEncoder;
+            _networkManager = networkManager;
+            _loggerFactory = loggerFactory;
+            _localizationManager = localizationManager;
+            _userViewManager = userViewManager;
+            _tvSeriesManager = tvSeriesManager;
+            _notificationManager = notificationManager;
+
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-            _notificationManager = notificationManager ?? throw new ArgumentNullException(nameof(notificationManager));
-            _networkManager.NetworkChanged += TriggerReload;
+            _networkManager.NetworkChanged += NetworkChanged;
 
             Instance = this;
         }
@@ -146,9 +147,9 @@ namespace Emby.Dlna.Main
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task RunAsync()
         {
-            await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
+            await _dlnaManager.InitProfilesAsync().ConfigureAwait(false);
 
-            ReloadComponents();
+            CheckComponents();
 
             _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
@@ -191,7 +192,7 @@ namespace Emby.Dlna.Main
                     PlayToManager = null;
                 }
 
-                _networkManager.NetworkChanged -= TriggerReload;
+                _networkManager.NetworkChanged -= NetworkChanged;
                 _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
 
                 ContentDirectory = null;
@@ -238,7 +239,7 @@ namespace Emby.Dlna.Main
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                ReloadComponents();
+                CheckComponents();
 
                 if (_publisher != null)
                 {
@@ -247,17 +248,16 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private void TriggerReload(object sender, EventArgs e)
+        private void NetworkChanged(object sender, EventArgs e)
         {
-            ReloadComponents();
+            CheckComponents();
         }
 
         /// <summary>
         /// (Re)initialises the DLNA settings.
         /// </summary>
-        private void ReloadComponents()
+        private void CheckComponents()
         {
-            _logger.LogDebug("(Re)loading DLNA components.");
             lock (_syncLock)
             {
                 var options = _configurationManager.GetDlnaConfiguration();
@@ -271,18 +271,18 @@ namespace Emby.Dlna.Main
                 if (options.EnableServer)
                 {
 
-                    // Create SSDP server.
                     if (ContentDirectory == null)
                     {
                         _logger.LogDebug("Starting DLNA Server.");
                         ContentDirectory = new DlnaContentDirectory(
+                            _loggerFactory.CreateLogger<DlnaContentDirectory>(),
+                            _configurationManager,
+                            _httpClient,
                             _dlnaManager,
                             _userDataManager,
                             _imageProcessor,
                             _libraryManager,
-                            _configurationManager,
                             _userManager,
-                            _httpClient,
                             _localizationManager,
                             _mediaSourceManager,
                             _userViewManager,
@@ -294,26 +294,26 @@ namespace Emby.Dlna.Main
                     if (ConnectionManager == null)
                     {
                         ConnectionManager = new DlnaConnectionManager(
-                            _dlnaManager,
-                            _configurationManager,
                             _loggerFactory.CreateLogger<DlnaControlHandler>(),
-                            _httpClient);
+                            _configurationManager,
+                            _httpClient,
+                            _dlnaManager);
                     }
 
                     if (MediaReceiverRegistrar == null)
                     {
                         MediaReceiverRegistrar = new DlnaMediaReceiverRegistrar(
                             _loggerFactory.CreateLogger<DlnaMediaReceiverRegistrar>(),
-                            _httpClient,
-                            _configurationManager);
+                            _configurationManager,
+                            _httpClient);
                     }
 
                     // This is true on startup and at network change.
                     if (_publisher == null)
                     {
+                        _logger.LogDebug("Publishing DLNA services.");
                         _publisher = new SsdpServerPublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds);
-
-                        RegisterServerEndpoints();
+                        RegisterDLNAServerEndpoints();
                     }
                 }
                 else
@@ -389,7 +389,7 @@ namespace Emby.Dlna.Main
         /// <summary>
         /// Registers SSDP endpoints on the internal interfaces.
         /// </summary>
-        private void RegisterServerEndpoints()
+        private void RegisterDLNAServerEndpoints()
         {
             var udn = CreateUuid(_appHost.SystemId);
             var fullService = "urn:schemas-upnp-org:device:MediaServer:1";

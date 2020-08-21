@@ -564,7 +564,7 @@ namespace Emby.Dlna.PlayTo
             return playlistItem;
         }
 
-        private string GetDlnaHeaders(PlaylistItem item)
+        private static string GetDlnaHeaders(PlaylistItem item)
         {
             var profile = item.Profile;
             var streamInfo = item.StreamInfo;

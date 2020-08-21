@@ -16,10 +16,10 @@ namespace Emby.Dlna.ConnectionManager
         private readonly IServerConfigurationManager _configurationManager;
 
         public DlnaConnectionManager(
-            IDlnaManager dlna,
-            IServerConfigurationManager configurationManager,
             ILogger logger,
-            IHttpClient httpClient)
+            IServerConfigurationManager configurationManager,
+            IHttpClient httpClient,
+            IDlnaManager dlna)
             : base(logger, httpClient)
         {
             _dlna = dlna ?? throw new NullReferenceException(nameof(dlna));

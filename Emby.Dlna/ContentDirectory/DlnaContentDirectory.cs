@@ -35,21 +35,23 @@ namespace Emby.Dlna.ContentDirectory
         private readonly ILoggerFactory _loggerFactory;
 
         public DlnaContentDirectory(
+            ILogger logger,
+            IServerConfigurationManager config,
+            IHttpClient httpClient,
             IDlnaManager dlna,
             IUserDataManager userDataManager,
             IImageProcessor imageProcessor,
             ILibraryManager libraryManager,
-            IServerConfigurationManager config,
             IUserManager userManager,
-            IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
             IUserViewManager userViewManager,
             IMediaEncoder mediaEncoder,
             ITVSeriesManager tvSeriesManager,
             ILoggerFactory loggerFactory)
-            : base(loggerFactory?.CreateLogger<DlnaContentDirectory>(), httpClient)
+            : base(logger, httpClient)
         {
+            // Checking due to dynamic nature of the server.
             _dlna = dlna ?? throw new NullReferenceException(nameof(dlna));
             _userDataManager = userDataManager ?? throw new NullReferenceException(nameof(userDataManager));
             _imageProcessor = imageProcessor ?? throw new NullReferenceException(nameof(imageProcessor));

@@ -657,7 +657,7 @@ namespace Emby.Dlna.Rssdp
                     if (acceptEventArg == null)
                     {
                         acceptEventArg = new SocketAsyncEventArgs();
-                        acceptEventArg.Completed += delegate (object sender, SocketAsyncEventArgs e) { Accepted(e); };
+                        acceptEventArg.Completed += delegate(object sender, SocketAsyncEventArgs e) { Accepted(e); };
                     }
                     else
                     {
@@ -690,7 +690,7 @@ namespace Emby.Dlna.Rssdp
                 SocketAsyncEventArgs CreateArg(Socket acceptSocket)
                 {
                     var arg = new SocketAsyncEventArgs();
-                    arg.Completed += delegate (object sender, SocketAsyncEventArgs e)
+                    arg.Completed += delegate(object sender, SocketAsyncEventArgs e)
                         {
                             if (e.LastOperation == SocketAsyncOperation.Receive)
                             {

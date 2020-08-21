@@ -174,7 +174,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private string GetUuid(string usn)
+        private static string GetUuid(string usn)
         {
             var found = false;
             var index = usn.IndexOf("uuid:", StringComparison.OrdinalIgnoreCase);
