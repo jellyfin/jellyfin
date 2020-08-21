@@ -153,27 +153,23 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemIds">The ids of the items to play, comma delimited.</param>
         /// <param name="startPositionTicks">The starting position of the first item.</param>
         /// <param name="playCommand">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
-        /// <param name="playRequest">The <see cref="PlayRequest"/>.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Playing")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
-            [FromRoute, Required] string? sessionId,
-            [FromQuery] Guid[] itemIds,
+            [FromRoute, Required] string sessionId,
+            [FromQuery, Required] Guid[] itemIds,
             [FromQuery] long? startPositionTicks,
-            [FromQuery] PlayCommand playCommand,
-            [FromBody, Required] PlayRequest playRequest)
+            [FromQuery, Required] PlayCommand playCommand)
         {
-            if (playRequest == null)
+            var playRequest = new PlayRequest
             {
-                throw new ArgumentException("Request Body may not be null");
-            }
-
-            playRequest.ItemIds = itemIds;
-            playRequest.StartPositionTicks = startPositionTicks;
-            playRequest.PlayCommand = playCommand;
+                ItemIds = itemIds,
+                StartPositionTicks = startPositionTicks,
+                PlayCommand = playCommand
+            };
 
             _sessionManager.SendPlayCommand(
                 RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
