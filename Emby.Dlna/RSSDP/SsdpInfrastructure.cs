@@ -30,14 +30,12 @@ namespace Emby.Dlna.Rssdp
         {
             var builder = new StringBuilder();
 
-            const string ArgFormat = "{0}: {1}\r\n";
-
             builder.AppendFormat(CultureInfo.InvariantCulture, "{0}\r\n", header);
             if (values != null)
             {
                 foreach (var pair in values)
                 {
-                    builder.AppendFormat(CultureInfo.InvariantCulture, ArgFormat, pair.Key, pair.Value);
+                    builder.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1}\r\n", pair.Key, pair.Value);
                 }
             }
 
@@ -124,7 +122,7 @@ namespace Emby.Dlna.Rssdp
         /// <seealso cref="Dispose()"/>
         protected virtual void ThrowIfDisposed()
         {
-            if (this.IsDisposed)
+            if (IsDisposed)
             {
                 throw new ObjectDisposedException(this.GetType().FullName);
             }

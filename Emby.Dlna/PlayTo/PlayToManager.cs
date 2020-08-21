@@ -81,15 +81,12 @@ namespace Emby.Dlna.PlayTo
             _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
             _notificationManager = notificationManager ?? throw new ArgumentNullException(nameof(notificationManager));
             _devices = new List<DeviceInterface>();
-        }
 
-        public event EventHandler<DlnaEventArgs> DLNAEvents;
-
-        public void Start()
-        {
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
             _deviceDiscovery.Start();
         }
+
+        public event EventHandler<DlnaEventArgs> DLNAEvents;
 
         public Task NotifyDevice(DlnaEventArgs args)
         {

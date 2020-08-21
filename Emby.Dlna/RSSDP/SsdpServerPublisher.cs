@@ -25,7 +25,11 @@ namespace Emby.Dlna.Rssdp
     {
         private const string PnpRootDevice = "pnp:rootdevice";
         private const string UpnpRootDevice = "upnp:rootdevice";
+        private const string SsdpResponse = "HTTP/1.1 200 OK";
+        private const string SsdpNotify = "NOTIFY * HTTP/1.1";
+        private const string SsdpInternetGateway = "ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:";
 
+        private readonly string[] _multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
         private readonly ILogger<SsdpServerPublisher> _logger;
         private readonly IList<SsdpRootDevice> _devices;
         private readonly IReadOnlyList<SsdpRootDevice> _readOnlyDevices;
@@ -53,7 +57,9 @@ namespace Emby.Dlna.Rssdp
             _socketServer.RequestReceived += RequestReceived;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the frequency of the SSDP alive messages (in seconds).
+        /// </summary>
         public int AliveMessageInterval { get; set; }
 
         /// <summary>
@@ -71,58 +77,6 @@ namespace Emby.Dlna.Rssdp
         /// Gets or sets a value indicating whether it treats root devices as both upnp:rootdevice and pnp:rootdevice types.
         /// </summary>
         public bool SupportPnpRootDevice { get; set; }
-
-        /// <summary>
-        /// Recursive SelectMany - modified from.
-        /// https://stackoverflow.com/questions/13409194/is-it-possible-to-implement-a-recursive-selectmany.
-        /// </summary>
-        /// <typeparam name="T">Type to enumerate.</typeparam>
-        /// <param name="collection">Collection to enumerate.</param>
-        /// <returns>A flattened representation.</returns>
-        public static IEnumerable<T> Flatten<T>(IEnumerable collection)
-        {
-            if (collection == null)
-            {
-                yield return (T)Enumerable.Empty<T>();
-            }
-            else
-            {
-                foreach (var o in collection)
-                {
-                    if (o is IEnumerable enumerable && !(o is T))
-                    {
-                        foreach (T t in Flatten<T>(enumerable))
-                        {
-                            yield return t;
-                        }
-                    }
-                    else
-                    {
-                        yield return (T)o;
-                    }
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        public void StartBroadcastingAliveMessages(TimeSpan interval)
-        {
-            if (_rebroadcastAliveNotificationsTimer != null)
-            {
-                _rebroadcastAliveNotificationsTimer.Change(TimeSpan.FromSeconds(5), interval);
-            }
-            else
-            {
-                _rebroadcastAliveNotificationsTimer = new Timer(
-                    delegate
-                    {
-                        SendAllAliveNotificationsAsync();
-                    },
-                    null,
-                    TimeSpan.FromSeconds(5),
-                    interval);
-            }
-        }
 
         /// <summary>
         /// Adds a device (and it's children) to the list of devices being published by this server,
@@ -151,16 +105,9 @@ namespace Emby.Dlna.Rssdp
 
             if (wasAdded)
             {
-                try
-                {
-                    _logger.LogInformation("Device Added {0}", device);
-                    await SendAliveNotifications(device, true, true).ConfigureAwait(false);
-                    StartBroadcastingAliveMessages(TimeSpan.FromSeconds(AliveMessageInterval));
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error sending Alive messages.");
-                }
+                _logger.LogInformation("Device Added {0}", device);
+                await SendAliveNotifications(device, true, true).ConfigureAwait(false);
+                StartBroadcastingAliveMessages(TimeSpan.FromSeconds(AliveMessageInterval));
             }
         }
 
@@ -218,6 +165,57 @@ namespace Emby.Dlna.Rssdp
         private static string GetUsn(string udn, string fullDeviceType)
         {
             return $"{udn}::{fullDeviceType}";
+        }
+
+        /// <summary>
+        /// Recursive SelectMany - modified from.
+        /// https://stackoverflow.com/questions/13409194/is-it-possible-to-implement-a-recursive-selectmany.
+        /// </summary>
+        /// <typeparam name="T">Type to enumerate.</typeparam>
+        /// <param name="collection">Collection to enumerate.</param>
+        /// <returns>A flattened representation.</returns>
+        private static IEnumerable<T> Flatten<T>(IEnumerable collection)
+        {
+            if (collection == null)
+            {
+                yield return (T)Enumerable.Empty<T>();
+            }
+            else
+            {
+                foreach (var o in collection)
+                {
+                    if (o is IEnumerable enumerable && !(o is T))
+                    {
+                        foreach (T t in Flatten<T>(enumerable))
+                        {
+                            yield return t;
+                        }
+                    }
+                    else
+                    {
+                        yield return (T)o;
+                    }
+                }
+            }
+        }
+
+        private void StartBroadcastingAliveMessages(TimeSpan interval)
+        {
+            if (_rebroadcastAliveNotificationsTimer != null)
+            {
+                _rebroadcastAliveNotificationsTimer.Change(TimeSpan.FromSeconds(5), interval);
+            }
+            else
+            {
+                _rebroadcastAliveNotificationsTimer = new Timer(
+                    delegate
+                    {
+                        SendAllAliveNotificationsAsync();
+                    },
+                    null,
+                    TimeSpan.FromSeconds(5),
+                    interval);
+            }
         }
 
         private async Task ProcessSearchRequest(int maxWaitInterval, string searchTarget, IPAddress localIP, IPEndPoint receivedFrom)
@@ -317,7 +315,7 @@ namespace Emby.Dlna.Rssdp
                 ["LOCATION"] = rootDevice.Location.ToString()
             };
 
-            var message = BuildMessage("HTTP/1.1 200 OK", values);
+            var message = BuildMessage(SsdpResponse, values);
             if (_socketServer.Tracing)
             {
                 _logger.LogDebug("->OK : {0}, {1}", localIP, endPoint.Address);
@@ -376,10 +374,7 @@ namespace Emby.Dlna.Rssdp
         {
             try
             {
-                if (IsDisposed)
-                {
-                    return;
-                }
+                ThrowIfDisposed();
 
                 // _logger.LogInformation("Begin sending alive notifications for all Devices");
 
@@ -392,10 +387,7 @@ namespace Emby.Dlna.Rssdp
                 bool first = true;
                 foreach (var device in devices)
                 {
-                    if (IsDisposed)
-                    {
-                        return;
-                    }
+                    ThrowIfDisposed();
 
                     await SendAliveNotifications(device, true, first).ConfigureAwait(false);
                     first = false;
@@ -455,7 +447,6 @@ namespace Emby.Dlna.Rssdp
         {
             var rootDevice = device.ToRootDevice();
 
-            string[] multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
             int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
@@ -463,7 +454,7 @@ namespace Emby.Dlna.Rssdp
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["HOST"] = multicastAddresses[a],
+                    ["HOST"] = _multicastAddresses[a],
                     ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.CurrentCulture),
                     ["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds,
                     ["LOCATION"] = rootDevice.Location.ToString(),
@@ -473,10 +464,10 @@ namespace Emby.Dlna.Rssdp
                     ["USN"] = uniqueServiceName
                 };
 
-                var message = BuildMessage("NOTIFY * HTTP/1.1", values);
+                var message = BuildMessage(SsdpNotify, values);
                 if (_socketServer.Tracing)
                 {
-                    _logger.LogDebug("-> NOTIFY ssdp:alive : {0} -> {1} : {2}", rootDevice.Address, multicastAddresses[a], message);
+                    _logger.LogDebug("-> NOTIFY ssdp:alive : {0} -> {1} : {2}", rootDevice.Address, _multicastAddresses[a], message);
                 }
 
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, rootDevice.Address);
@@ -491,9 +482,9 @@ namespace Emby.Dlna.Rssdp
             if (isRoot)
             {
                 tasks.Add(SendByeByeNotification(device, UpnpRootDevice, GetUsn(device.Udn, UpnpRootDevice)));
-                if (this.SupportPnpRootDevice)
+                if (SupportPnpRootDevice)
                 {
-                    tasks.Add(SendByeByeNotification(device, "pnp:rootdevice", GetUsn(device.Udn, "pnp:rootdevice")));
+                    tasks.Add(SendByeByeNotification(device, PnpRootDevice, GetUsn(device.Udn, PnpRootDevice)));
                 }
             }
 
@@ -514,7 +505,6 @@ namespace Emby.Dlna.Rssdp
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "byebye", Justification = "Correct value for this type of notification in SSDP.")]
         private Task SendByeByeNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
-            string[] multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
             int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
@@ -522,7 +512,7 @@ namespace Emby.Dlna.Rssdp
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["HOST"] = multicastAddresses[a],
+                    ["HOST"] = _multicastAddresses[a],
                     ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
                     ["SERVER"] = _networkManager.SsdpServer,
                     ["NTS"] = "ssdp:byebye",
@@ -534,7 +524,7 @@ namespace Emby.Dlna.Rssdp
                 var addr = device.ToRootDevice().Address;
                 if (_socketServer.Tracing)
                 {
-                    _logger.LogDebug("->NOTIFY ssdp:byebye {0} : {1}", addr, multicastAddresses[a]);
+                    _logger.LogDebug("->NOTIFY ssdp:byebye {0} : {1}", addr, _multicastAddresses[a]);
                 }
 
                 var sendCount = IsDisposed ? 1 : 3;
@@ -546,16 +536,13 @@ namespace Emby.Dlna.Rssdp
 
         private void RequestReceived(object sender, RequestReceivedEventArgs e)
         {
-            if (this.IsDisposed)
-            {
-                return;
-            }
+            ThrowIfDisposed();
 
             if (string.Equals(e.Message.Method.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
                 var searchTarget = GetFirstHeaderValue("ST", e.Message.Headers);
 
-                if (searchTarget.StartsWith("ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:", StringComparison.OrdinalIgnoreCase))
+                if (searchTarget.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
                 {
                     // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
                     if (_networkManager.IsuPnPActive && !e.Simulated)
@@ -632,12 +619,12 @@ namespace Emby.Dlna.Rssdp
             /// </summary>
             public string Key
             {
-                get { return this.SearchTarget + ":" + this.EndPoint.ToString(); }
+                get { return SearchTarget + ":" + EndPoint.ToString(); }
             }
 
             public bool IsOld()
             {
-                return DateTime.UtcNow.Subtract(this.Received).TotalMilliseconds > 500;
+                return DateTime.UtcNow.Subtract(Received).TotalMilliseconds > 500;
             }
         }
     }

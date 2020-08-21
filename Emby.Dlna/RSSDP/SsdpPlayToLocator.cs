@@ -23,6 +23,9 @@ namespace Emby.Dlna.Rssdp
     /// </summary>
     public class SsdpPlayToLocator : SsdpInfrastructure, ISsdpPlayToLocator
     {
+        private const string SsdpSearch = "M-SEARCH * HTTP/1.1";
+        private const string SsdpInternetGateway = "ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:";
+        private readonly string[] _multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
         private readonly List<DiscoveredSsdpDevice> _devices;
         private readonly SocketServer _socketServer;
         private readonly object _timerLock;
@@ -30,6 +33,7 @@ namespace Emby.Dlna.Rssdp
         private readonly INetworkManager _networkManager;
         private readonly TimeSpan _defaultSearchWaitTime;
         private readonly TimeSpan _oneSecond;
+        private readonly string[] _ssdpFilter;
         private Timer? _broadcastTimer;
 
         public SsdpPlayToLocator(SocketServer socketServer, ILogger<SsdpPlayToLocator> logger, INetworkManager networkManager)
@@ -42,7 +46,7 @@ namespace Emby.Dlna.Rssdp
             _timerLock = new object();
             _devices = new List<DiscoveredSsdpDevice>();
 
-            SsdpFilter = new string[]
+            _ssdpFilter = new string[]
             {
                 "urn:schemas-upnp-org:device:MediaServer:",
                 "urn:schemas-upnp-org:device:MediaRenderer:",
@@ -80,21 +84,6 @@ namespace Emby.Dlna.Rssdp
         /// relevant thread is required.</para>
         /// </remarks>
         public event EventHandler<DeviceUnavailableEventArgs>? DeviceUnavailable;
-
-        /// <summary>
-        /// Gets or sets a string containing the filter for notifications. Notifications not matching the filter will not raise the
-        /// <see cref="ISsdpPlayToLocator.DeviceAvailable"/> or <see cref="ISsdpPlayToLocator.DeviceUnavailable"/> events.
-        /// </summary>
-        /// <remarks>
-        /// <para>Device alive/byebye notifications whose NT header does not match this filter value will still be captured and cached internally,
-        /// but will not raise events about device availability. Usually used with either a device type of uuid NT header value.</para>
-        /// <para>If the value is null or empty string then, all notifications are reported.</para>
-        /// <para>Example filters follow.</para>
-        /// <example>upnp:rootdevice</example>
-        /// <example>urn:schemas-upnp-org:device:WANDevice:1</example>
-        /// <example>uuid:9F15356CC-95FA-572E-0E99-85B456BD3012</example>
-        /// </remarks>
-        private string[] SsdpFilter { get; set; }
 
         public void Start(TimeSpan dueTime, TimeSpan period)
         {
@@ -175,10 +164,7 @@ namespace Emby.Dlna.Rssdp
 
         private async void OnBroadcastTimerCallback(object state)
         {
-            if (IsDisposed)
-            {
-                return;
-            }
+            ThrowIfDisposed();
 
             _socketServer.RequestReceived += ProcessNotificationMessage;
             _socketServer.ResponseReceived += ProcessSearchResponseMessage;
@@ -226,12 +212,11 @@ namespace Emby.Dlna.Rssdp
         /// <returns>Result of the operation.</returns>
         private bool SsdpTypeMatchesFilter(DiscoveredSsdpDevice device)
         {
-            return SsdpFilter.Where(m => device.NotificationType.StartsWith(m, StringComparison.OrdinalIgnoreCase)).Any();
+            return _ssdpFilter.Where(m => device.NotificationType.StartsWith(m, StringComparison.OrdinalIgnoreCase)).Any();
         }
 
         private Task BroadcastDiscoverMessage(TimeSpan mxValue)
         {
-            string[] multicastAddresses = { "239.255.255.250", "[ff02::C]", "[ff05::C]" };
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
             int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
@@ -239,18 +224,18 @@ namespace Emby.Dlna.Rssdp
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["HOST"] = multicastAddresses[a] + ":1900",
+                    ["HOST"] = _multicastAddresses[a] + ":1900",
                     ["USER-AGENT"] = _networkManager.SsdpUserAgent,
                     ["MAN"] = "\"ssdp:discover\"",
                     ["ST"] = "ssdp:all",
                     ["MX"] = mxValue.Seconds.ToString(CultureInfo.CurrentCulture)
                 };
 
-                var message = BuildMessage("M-SEARCH * HTTP/1.1", values);
+                var message = BuildMessage(SsdpSearch, values);
                 IPAddress dest = a == 0 ? IPAddress.Any : IPAddress.IPv6Any;
                 if (_socketServer.Tracing)
                 {
-                    _logger.LogDebug("->M-SEARCH {0} : {1}", dest, multicastAddresses[a]);
+                    _logger.LogDebug("->M-SEARCH {0} : {1}", dest, _multicastAddresses[a]);
                 }
 
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, dest);
@@ -261,10 +246,7 @@ namespace Emby.Dlna.Rssdp
 
         private void ProcessSearchResponseMessage(object sender, ResponseReceivedEventArgs e)
         {
-            if (IsDisposed)
-            {
-                return;
-            }
+            ThrowIfDisposed();
 
             HttpResponseMessage message = e.Message;
 
@@ -299,10 +281,7 @@ namespace Emby.Dlna.Rssdp
 
         private void ProcessNotificationMessage(object sender, RequestReceivedEventArgs e)
         {
-            if (IsDisposed)
-            {
-                return;
-            }
+            ThrowIfDisposed();
 
             HttpRequestMessage message = e.Message;
             IPAddress localIpAddress = e.LocalIPAddress;
@@ -325,7 +304,7 @@ namespace Emby.Dlna.Rssdp
 
             if (device.DescriptionLocation != null)
             {
-                if (notificationType.StartsWith("urn:schemas-upnp-org:device:InternetGatewayDevice:", StringComparison.OrdinalIgnoreCase))
+                if (notificationType.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
                 {
                     // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
                     if (_networkManager.IsuPnPActive && !e.Simulated)
@@ -370,24 +349,19 @@ namespace Emby.Dlna.Rssdp
 
         private void RemoveExpiredDevicesFromCache()
         {
-            if (IsDisposed)
-            {
-                return;
-            }
+            ThrowIfDisposed();
 
-#pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
+            #pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
             DiscoveredSsdpDevice[]? expiredDevices = null;
-#pragma warning restore SA1011 // Closing square brackets should be spaced correctly
+            #pragma warning restore SA1011 // Closing square brackets should be spaced correctly
+
             lock (_devices)
             {
                 expiredDevices = (from device in _devices where device.IsExpired() select device).ToArray();
 
                 foreach (var device in expiredDevices)
                 {
-                    if (IsDisposed)
-                    {
-                        return;
-                    }
+                    ThrowIfDisposed();
 
                     _devices.Remove(device);
                 }
@@ -396,10 +370,7 @@ namespace Emby.Dlna.Rssdp
             // Don't do this inside lock because DeviceDied raises an event which means public code may execute during lock and cause problems.
             foreach (var expiredUsn in (from expiredDevice in expiredDevices select expiredDevice.Usn).Distinct())
             {
-                if (IsDisposed)
-                {
-                    return;
-                }
+                ThrowIfDisposed();
 
                 DeviceDied(expiredUsn, true);
             }
@@ -413,10 +384,7 @@ namespace Emby.Dlna.Rssdp
                 existingDevices = FindExistingDeviceNotifications(_devices, deviceUsn);
                 foreach (var existingDevice in existingDevices)
                 {
-                    if (IsDisposed)
-                    {
-                        return true;
-                    }
+                    ThrowIfDisposed();
 
                     _devices.Remove(existingDevice);
                 }

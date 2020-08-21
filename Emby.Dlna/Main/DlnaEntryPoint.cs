@@ -174,7 +174,11 @@ namespace Emby.Dlna.Main
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Disposes of unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">A Boolean value that indicates whether the method call comes from a Dispose method
+        /// or from a finalizer (its value is false).</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_isDisposed)
@@ -273,7 +277,7 @@ namespace Emby.Dlna.Main
 
                     if (ContentDirectory == null)
                     {
-                        _logger.LogDebug("Starting DLNA Server.");
+                        _logger.LogDebug("DLNA Server : Starting Content Directory service.");
                         ContentDirectory = new DlnaContentDirectory(
                             _loggerFactory.CreateLogger<DlnaContentDirectory>(),
                             _configurationManager,
@@ -293,6 +297,7 @@ namespace Emby.Dlna.Main
 
                     if (ConnectionManager == null)
                     {
+                        _logger.LogDebug("DLNA Server : Starting Connection Manager service.");
                         ConnectionManager = new DlnaConnectionManager(
                             _loggerFactory.CreateLogger<DlnaControlHandler>(),
                             _configurationManager,
@@ -302,6 +307,7 @@ namespace Emby.Dlna.Main
 
                     if (MediaReceiverRegistrar == null)
                     {
+                        _logger.LogDebug("DLNA Server : Starting Media Receiver Registrar service.");
                         MediaReceiverRegistrar = new DlnaMediaReceiverRegistrar(
                             _loggerFactory.CreateLogger<DlnaMediaReceiverRegistrar>(),
                             _configurationManager,
@@ -311,32 +317,28 @@ namespace Emby.Dlna.Main
                     // This is true on startup and at network change.
                     if (_publisher == null)
                     {
-                        _logger.LogDebug("Publishing DLNA services.");
+                        _logger.LogDebug("DLNA Server : Starting DLNA advertisements.");
                         _publisher = new SsdpServerPublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds);
                         RegisterDLNAServerEndpoints();
                     }
                 }
                 else
                 {
+                    _logger.LogDebug("DLNA Server : Stopping all DLNA services.");
+                    DisposeDevicePublisher();
 
                     // This object will actually only dispose if no longer in use.
                     _deviceDiscovery?.Dispose();
                     _deviceDiscovery = null;
 
+                    ContentDirectory = null;
+                    MediaReceiverRegistrar = null;
+                    ConnectionManager = null;
+
                     // This object will actually only dispose if no longer in use.
                     _socketManager?.Dispose();
                     _socketManager = null;
 
-                    DisposeDevicePublisher();
-
-                    if (ContentDirectory != null)
-                    {
-                        _logger.LogDebug("Stopping DLNA Server.");
-                        ContentDirectory = null;
-                    }
-
-                    MediaReceiverRegistrar = null;
-                    ConnectionManager = null;
                     GC.Collect();
                 }
 
@@ -344,12 +346,13 @@ namespace Emby.Dlna.Main
                 {
                     if (_deviceDiscovery == null)
                     {
+                        _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
                         _deviceDiscovery = new DeviceDiscovery(_configurationManager, _loggerFactory, _networkManager, _socketManager);
                     }
 
                     if (PlayToManager == null)
                     {
-                        _logger.LogDebug("Starting playTo.");
+                        _logger.LogDebug("DLNA PlayTo: Starting Service.");
                         PlayToManager = new PlayToManager(
                             _loggerFactory.CreateLogger<PlayToManager>(),
                             _appHost,
@@ -366,15 +369,13 @@ namespace Emby.Dlna.Main
                             _mediaSourceManager,
                             _mediaEncoder,
                             _notificationManager);
-
-                        PlayToManager.Start();
                     }
                 }
                 else
                 {
                     if (PlayToManager != null)
                     {
-                        _logger.LogDebug("Stopping playTo.");
+                        _logger.LogDebug("DLNA PlayTo: Stopping Service.");
                         lock (_syncLock)
                         {
                             PlayToManager?.Dispose();
@@ -391,8 +392,9 @@ namespace Emby.Dlna.Main
         /// </summary>
         private void RegisterDLNAServerEndpoints()
         {
+            const string FullService = "urn:schemas-upnp-org:device:MediaServer:1";
+
             var udn = CreateUuid(_appHost.SystemId);
-            var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
             foreach (IPObject addr in _networkManager.GetInternalBindAddresses())
             {
@@ -402,7 +404,7 @@ namespace Emby.Dlna.Main
                     continue;
                 }
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr.Address);
+                _logger.LogInformation("Registering publisher for {0} on {1}", FullService, addr.Address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
@@ -416,7 +418,7 @@ namespace Emby.Dlna.Main
                     "Jellyfin Server",
                     udn); // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
 
-                SetProperies(device, fullService);
+                SetProperies(device, FullService);
 
                 _ = _publisher?.AddDevice(device);
 
