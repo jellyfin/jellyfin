@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -258,8 +259,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 RegexOptions.Multiline))
             {
                 var version = new Version(
-                    int.Parse(match.Groups["major"].Value),
-                    int.Parse(match.Groups["minor"].Value));
+                    int.Parse(match.Groups["major"].Value, CultureInfo.InvariantCulture),
+                    int.Parse(match.Groups["minor"].Value, CultureInfo.InvariantCulture));
 
                 map.Add(match.Groups["name"].Value, version);
             }

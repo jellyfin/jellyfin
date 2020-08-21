@@ -771,7 +771,7 @@ namespace Emby.Server.Implementations.Library
             if (folder.ParentId != rootFolder.Id)
             {
                 folder.ParentId = rootFolder.Id;
-                folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
+                folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             rootFolder.AddVirtualChild(folder);
@@ -1868,7 +1868,8 @@ namespace Emby.Server.Implementations.Library
             return image.Path != null && !image.IsLocalFile;
         }
 
-        public void UpdateImages(BaseItem item, bool forceUpdate = false)
+        /// <inheritdoc />
+        public async Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false)
         {
             if (item == null)
             {
@@ -1891,7 +1892,7 @@ namespace Emby.Server.Implementations.Library
                     try
                     {
                         var index = item.GetImageIndex(img);
-                        image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
+                        image = await ConvertImageToLocal(item, img, index).ConfigureAwait(false);
                     }
                     catch (ArgumentException)
                     {
@@ -1913,7 +1914,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                    _logger.LogError(ex, "Cannot get image dimensions for {0}", image.Path);
                     image.Width = 0;
                     image.Height = 0;
                     continue;
@@ -1943,10 +1944,8 @@ namespace Emby.Server.Implementations.Library
             RegisterItem(item);
         }
 
-        /// <summary>
-        /// Updates the item.
-        /// </summary>
-        public void UpdateItems(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
             foreach (var item in items)
             {
@@ -1957,7 +1956,7 @@ namespace Emby.Server.Implementations.Library
 
                 item.DateLastSaved = DateTime.UtcNow;
 
-                UpdateImages(item, updateReason >= ItemUpdateType.ImageUpdate);
+                await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
             }
 
             _itemRepository.SaveItems(items, cancellationToken);
@@ -1991,17 +1990,9 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        /// <summary>
-        /// Updates the item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parent">The parent item.</param>
-        /// <param name="updateReason">The update reason.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
-        {
-            UpdateItems(new[] { item }, parent, updateReason, cancellationToken);
-        }
+        /// <inheritdoc />
+        public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+            => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
 
         /// <summary>
         /// Reports the item removed.
@@ -2233,7 +2224,7 @@ namespace Emby.Server.Implementations.Library
 
             if (refresh)
             {
-                item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
+                item.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
                 ProviderManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
             }
 
@@ -2420,7 +2411,7 @@ namespace Emby.Server.Implementations.Library
             if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
             {
                 item.ViewType = viewType;
-                item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
@@ -2902,7 +2893,7 @@ namespace Emby.Server.Implementations.Library
 
                     await ProviderManager.SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
 
-                    item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+                    await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
                     return item.GetImageInfo(image.Type, imageIndex);
                 }
@@ -2920,7 +2911,7 @@ namespace Emby.Server.Implementations.Library
 
             // Remove this image to prevent it from retrying over and over
             item.RemoveImage(image);
-            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             throw new InvalidOperationException();
         }
