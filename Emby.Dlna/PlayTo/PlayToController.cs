@@ -749,36 +749,33 @@ namespace Emby.Dlna.PlayTo
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
                     case GeneralCommandType.SetAudioStreamIndex:
+                        if (command.Arguments.TryGetValue("Index", out string index))
                         {
-                            if (command.Arguments.TryGetValue("Index", out string arg))
+                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
-                                {
-                                    return SetAudioStreamIndex(val);
-                                }
-
-                                throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                                return SetAudioStreamIndex(val);
                             }
 
-                            throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
+                            throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
                         }
+
+                        throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
                     case GeneralCommandType.SetSubtitleStreamIndex:
+                        if (command.Arguments.TryGetValue("Index", out index))
                         {
-                            if (command.Arguments.TryGetValue("Index", out string arg))
+                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
-                                {
-                                    return SetSubtitleStreamIndex(val);
-                                }
-
-                                throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                                return SetSubtitleStreamIndex(val);
                             }
 
-                            throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
+                            throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
                         }
+
+                        throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
                     case GeneralCommandType.SetVolume:
+                        if (command.Arguments.TryGetValue("Volume", out string vol))
                         {
-                            if (command.Arguments.TryGetValue("Volume", out string arg))
+                            if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
                             {
                                 if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var volume))
                                 {
@@ -786,12 +783,10 @@ namespace Emby.Dlna.PlayTo
                                     return Task.CompletedTask;
                                 }
 
-                                throw new ArgumentException("Unsupported volume value supplied.");
-                            }
-
-                            throw new ArgumentException("Volume argument cannot be null");
+                            throw new ArgumentException("Unsupported volume value supplied.");
                         }
 
+                        throw new ArgumentException("Volume argument cannot be null");
                     default:
                         return Task.CompletedTask;
                 }
@@ -873,6 +868,62 @@ namespace Emby.Dlna.PlayTo
             }
 
             await _device.Seek(TimeSpan.FromTicks(positionTicks)).ConfigureAwait(false);
+        }
+
+        private static int? GetIntValue(IReadOnlyDictionary<string, string> values, string name)
+        {
+            var value = values.GetValueOrDefault(name);
+
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
+        private static long GetLongValue(IReadOnlyDictionary<string, string> values, string name)
+        {
+            var value = values.GetValueOrDefault(name);
+
+            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+
+            return 0;
+        }
+
+        /// <inheritdoc />
+        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
+            if (_device == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendPlayCommand(data as PlayRequest, cancellationToken);
+            }
+
+            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
+            }
+
+            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendGeneralCommand(data as GeneralCommand, cancellationToken);
+            }
+
+            // Not supported or needed right now
+            return Task.CompletedTask;
         }
 
         private class StreamParams

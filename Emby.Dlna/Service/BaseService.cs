@@ -19,19 +19,25 @@ namespace Emby.Dlna.Service
             _eventManager = new EventManager(logger, _httpClient);
         }
 
+        protected IEventManager EventManager { get; }
+
+        protected IHttpClient HttpClient { get; }
+
+        protected ILogger Logger { get; }
+
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
-            return _eventManager.CancelEventSubscription(subscriptionId);
+            return EventManager.CancelEventSubscription(subscriptionId);
         }
 
         public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string timeoutString, string callbackUrl)
         {
-            return _eventManager.RenewEventSubscription(subscriptionId, notificationType, timeoutString, callbackUrl);
+            return EventManager.RenewEventSubscription(subscriptionId, notificationType, timeoutString, callbackUrl);
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string timeoutString, string callbackUrl)
         {
-            return _eventManager.CreateEventSubscription(notificationType, timeoutString, callbackUrl);
+            return EventManager.CreateEventSubscription(notificationType, timeoutString, callbackUrl);
         }
     }
 }

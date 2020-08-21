@@ -6,8 +6,8 @@ namespace Emby.Dlna.PlayTo
 {
     public class MediaChangedEventArgs : EventArgs
     {
-        public uBaseObject OldMediaInfo { get; set; }
+        public UBaseObject OldMediaInfo { get; set; }
 
-        public uBaseObject NewMediaInfo { get; set; }
+        public UBaseObject NewMediaInfo { get; set; }
     }
 }

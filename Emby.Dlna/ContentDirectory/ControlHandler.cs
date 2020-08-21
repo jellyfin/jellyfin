@@ -40,10 +40,10 @@ namespace Emby.Dlna.ContentDirectory
 {
     public class ControlHandler : BaseControlHandler
     {
-        private const string NSDC = "http://purl.org/dc/elements/1.1/";
-        private const string NSDIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
-        private const string NSDLNA = "urn:schemas-dlna-org:metadata-1-0/";
-        private const string NSUPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
+        private const string NsDc = "http://purl.org/dc/elements/1.1/";
+        private const string NsDidl = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
+        private const string NsDlna = "urn:schemas-dlna-org:metadata-1-0/";
+        private const string NsUpnp = "urn:schemas-upnp-org:metadata-1-0/upnp/";
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataManager;
@@ -191,7 +191,12 @@ namespace Emby.Dlna.ContentDirectory
 
             userdata.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
 
-            _userDataManager.SaveUserData(_user, item, userdata, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            _userDataManager.SaveUserData(
+                _user,
+                item,
+                userdata,
+                UserDataSaveReason.TogglePlayed,
+                CancellationToken.None);
         }
 
         private static void HandleGetSearchCapabilities(XmlWriter xmlWriter)
@@ -267,7 +272,7 @@ namespace Emby.Dlna.ContentDirectory
             var provided = 0;
 
             // Default to null instead of 0
-            // Upnp inspector sends 0 as requestedCount when it wants everything :
+            // Upnp inspector sends 0 as requestedCount when it wants everything
             int? requestedCount = null;
             int? start = 0;
 
@@ -295,11 +300,11 @@ namespace Emby.Dlna.ContentDirectory
 
                 using (var writer = XmlWriter.Create(builder, settings))
                 {
-                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NSDIDL);
+                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
 
-                    writer.WriteAttributeString("xmlns", "dc", null, NSDC);
-                    writer.WriteAttributeString("xmlns", "dlna", null, NSDLNA);
-                    writer.WriteAttributeString("xmlns", "upnp", null, NSUPNP);
+                    writer.WriteAttributeString("xmlns", "dc", null, NsDc);
+                    writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
+                    writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
 
                     DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
@@ -405,11 +410,11 @@ namespace Emby.Dlna.ContentDirectory
 
                 using (var writer = XmlWriter.Create(builder, settings))
                 {
-                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NSDIDL);
+                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
 
-                    writer.WriteAttributeString("xmlns", "dc", null, NSDC);
-                    writer.WriteAttributeString("xmlns", "dlna", null, NSDLNA);
-                    writer.WriteAttributeString("xmlns", "upnp", null, NSUPNP);
+                    writer.WriteAttributeString("xmlns", "dc", null, NsDc);
+                    writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
+                    writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
 
                     DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
@@ -1156,7 +1161,8 @@ namespace Emby.Dlna.ContentDirectory
                     IncludeItemTypes = new[] { nameof(Audio) },
                     ParentId = parent?.Id ?? Guid.Empty,
                     GroupItems = true
-                }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+                },
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1202,13 +1208,14 @@ namespace Emby.Dlna.ContentDirectory
 
             var items = _userViewManager.GetLatestItems(
                 new LatestItemsQuery
-            {
-                UserId = user.Id,
-                Limit = 50,
-                IncludeItemTypes = new[] { nameof(Movie) },
-                ParentId = parent?.Id ?? Guid.Empty,
-                GroupItems = true
-            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+                {
+                    UserId = user.Id,
+                    Limit = 50,
+                    IncludeItemTypes = new[] { nameof(Movie) },
+                    ParentId = parent?.Id ?? Guid.Empty,
+                    GroupItems = true
+                },
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1372,45 +1379,5 @@ namespace Emby.Dlna.ContentDirectory
 
             return new ServerItem(_libraryManager.GetUserRootFolder());
         }
-    }
-
-    internal class ServerItem
-    {
-        public BaseItem Item { get; set; }
-
-        public StubType? StubType { get; set; }
-
-        public ServerItem(BaseItem item)
-        {
-            Item = item;
-
-            if (item is IItemByName && !(item is Folder))
-            {
-                StubType = Dlna.ContentDirectory.StubType.Folder;
-            }
-        }
-    }
-
-    public enum StubType
-    {
-        Folder = 0,
-        Latest = 2,
-        Playlists = 3,
-        Albums = 4,
-        AlbumArtists = 5,
-        Artists = 6,
-        Songs = 7,
-        Genres = 8,
-        FavoriteSongs = 9,
-        FavoriteArtists = 10,
-        FavoriteAlbums = 11,
-        ContinueWatching = 12,
-        Movies = 13,
-        Collections = 14,
-        Favorites = 15,
-        NextUp = 16,
-        Series = 17,
-        FavoriteSeries = 18,
-        FavoriteEpisodes = 19
     }
 }

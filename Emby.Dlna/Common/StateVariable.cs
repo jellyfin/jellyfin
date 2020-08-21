@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 
 namespace Emby.Dlna.Common
 {
@@ -17,7 +18,7 @@ namespace Emby.Dlna.Common
 
         public bool SendsEvents { get; set; }
 
-        public string[] AllowedValues { get; set; }
+        public IReadOnlyList<string> AllowedValues { get; set; }
 
         /// <inheritdoc />
         public override string ToString()
