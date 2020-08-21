@@ -165,7 +165,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] PlayCommand playCommand)
         {
             var playRequest = new PlayRequest
-
             {
                 ItemIds = itemIds,
                 StartPositionTicks = startPositionTicks,
