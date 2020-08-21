@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Formatters
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
             SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
-            // SupportedMediaTypes.Add("text/xml; charset=UTF-8");
+            SupportedMediaTypes.Add("text/xml;charset=UTF-8");
         }
 
         /// <inheritdoc />
