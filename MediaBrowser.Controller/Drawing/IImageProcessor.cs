@@ -85,7 +85,8 @@ namespace MediaBrowser.Controller.Drawing
         /// Creates the image collage.
         /// </summary>
         /// <param name="options">The options.</param>
-        void CreateImageCollage(ImageCollageOptions options);
+        /// <param name="libraryName">The library name to draw onto the collage.</param>
+        void CreateImageCollage(ImageCollageOptions options, string? libraryName);
 
         bool SupportsTransparency(string path);
     }
