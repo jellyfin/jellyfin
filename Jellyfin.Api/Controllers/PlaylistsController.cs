@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> AddToPlaylist(
-            [FromRoute] Guid playlistId,
+            [FromRoute] string? playlistId,
             [FromQuery] string? ids,
             [FromQuery] Guid? userId)
         {

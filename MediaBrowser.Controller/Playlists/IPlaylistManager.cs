@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -31,7 +29,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="itemIds">The item ids.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
-        Task AddToPlaylistAsync(Guid playlistId, ICollection<Guid> itemIds, Guid userId);
+        Task AddToPlaylistAsync(string playlistId, ICollection<Guid> itemIds, Guid userId);
 
         /// <summary>
         /// Removes from playlist.
