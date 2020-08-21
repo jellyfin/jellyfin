@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="itemIds">The item ids.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
-        Task AddToPlaylistAsync(string playlistId, ICollection<Guid> itemIds, Guid userId);
+        Task AddToPlaylistAsync(Guid playlistId, ICollection<Guid> itemIds, Guid userId);
 
         /// <summary>
         /// Removes from playlist.
