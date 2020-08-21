@@ -2,6 +2,18 @@ namespace Jellyfin.MediaEncoding.Tests
 {
     internal static class EncoderValidatorTestsData
     {
+        public const string FFmpegV431Output = @"ffmpeg version n4.3.1 Copyright (c) 2000-2020 the FFmpeg developers
+built with gcc 10.1.0 (GCC)
+configuration: --prefix=/usr --disable-debug --disable-static --disable-stripping --enable-avisynth --enable-fontconfig --enable-gmp --enable-gnutls --enable-gpl --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libdav1d --enable-libdrm --enable-libfreetype --enable-libfribidi --enable-libgsm --enable-libiec61883 --enable-libjack --enable-libmfx --enable-libmodplug --enable-libmp3lame --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-librav1e --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libv4l2 --enable-libvidstab --enable-libvmaf --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxcb --enable-libxml2 --enable-libxvid --enable-nvdec --enable-nvenc --enable-omx --enable-shared --enable-version3
+libavutil      56. 51.100 / 56. 51.100
+libavcodec     58. 91.100 / 58. 91.100
+libavformat    58. 45.100 / 58. 45.100
+libavdevice    58. 10.100 / 58. 10.100
+libavfilter     7. 85.100 /  7. 85.100
+libswscale      5.  7.100 /  5.  7.100
+libswresample   3.  7.100 /  3.  7.100
+libpostproc    55.  7.100 / 55.  7.100";
+
         public const string FFmpegV43Output = @"ffmpeg version 4.3 Copyright (c) 2000-2020 the FFmpeg developers
 built with gcc 7 (Ubuntu 7.5.0-3ubuntu1~18.04)
 configuration: --prefix=/usr/lib/jellyfin-ffmpeg --target-os=linux --disable-doc --disable-ffplay --disable-shared --disable-libxcb --disable-vdpau --disable-sdl2 --disable-xlib --enable-gpl --enable-version3 --enable-static --enable-libfontconfig --enable-fontconfig --enable-gmp --enable-gnutls --enable-libass --enable-libbluray --enable-libdrm --enable-libfreetype --enable-libfribidi --enable-libmp3lame --enable-libopus --enable-libtheora --enable-libvorbis --enable-libwebp --enable-libx264 --enable-libx265 --enable-libzvbi --arch=amd64 --enable-amf --enable-nvenc --enable-nvdec --enable-vaapi --enable-opencl
@@ -63,7 +75,7 @@ libswscale      5.  1.100 /  5.  1.100
 libswresample   3.  1.100 /  3.  1.100
 libpostproc    55.  1.100 / 55.  1.100";
 
-        public const string FFmpegGitUnknownOutput = @"ffmpeg version N-94303-g7cb4f8c962 Copyright (c) 2000-2019 the FFmpeg developers
+        public const string FFmpegGitUnknownOutput2 = @"ffmpeg version N-94303-g7cb4f8c962 Copyright (c) 2000-2019 the FFmpeg developers
 built with gcc 9.1.1 (GCC) 20190716
 configuration: --enable-gpl --enable-version3 --enable-sdl2 --enable-fontconfig --enable-gnutls --enable-iconv --enable-libass --enable-libdav1d --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libtheora --enable-libtwolame --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libzimg --enable-lzma --enable-zlib --enable-gmp --enable-libvidstab --enable-libvorbis --enable-libvo-amrwbenc --enable-libmysofa --enable-libspeex --enable-libxvid --enable-libaom --enable-libmfx --enable-amf --enable-ffnvcodec --enable-cuvid --enable-d3d11va --enable-nvenc --enable-nvdec --enable-dxva2 --enable-avisynth --enable-libopenmpt
 libavutil      56. 30.100 / 56. 30.100
@@ -74,5 +86,17 @@ libavfilter     7. 56.101 /  7. 56.101
 libswscale      5.  4.101 /  5.  4.101
 libswresample   3.  4.100 /  3.  4.100
 libpostproc    55.  4.100 / 55.  4.100";
+
+        public const string FFmpegGitUnknownOutput = @"ffmpeg version N-45325-gb173e0353-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2018 the FFmpeg developers
+built with gcc 6.3.0 (Debian 6.3.0-18+deb9u1) 20170516
+configuration: --enable-gpl --enable-version3 --enable-static --disable-debug --disable-ffplay --disable-indev=sndio --disable-outdev=sndio --cc=gcc-6 --enable-fontconfig --enable-frei0r --enable-gnutls --enable-gray --enable-libfribidi --enable-libass --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-librubberband --enable-libsoxr --enable-libspeex --enable-libvorbis --enable-libopus --enable-libtheora --enable-libvidstab --enable-libvo-amrwbenc --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libzimg
+libavutil      56.  9.100 / 56.  9.100
+libavcodec     58. 14.100 / 58. 14.100
+libavformat    58. 10.100 / 58. 10.100
+libavdevice    58.  2.100 / 58.  2.100
+libavfilter     7. 13.100 /  7. 13.100
+libswscale      5.  0.102 /  5.  0.102
+libswresample   3.  0.101 /  3.  0.101
+libpostproc    55.  0.100 / 55.  0.100";
     }
 }
