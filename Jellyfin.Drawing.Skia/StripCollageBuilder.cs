@@ -123,12 +123,12 @@ namespace Jellyfin.Drawing.Skia
             {
                 Color = SKColors.White,
                 Style = SKPaintStyle.Fill,
-                TextSize = 56,
+                TextSize = 112,
                 TextAlign = SKTextAlign.Center,
                 Typeface = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright),
                 IsAntialias = true
             };
-            canvas.DrawText(libraryName, width / 2f, height / 2f, textPaint);
+            canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
 
             return bitmap;
         }
