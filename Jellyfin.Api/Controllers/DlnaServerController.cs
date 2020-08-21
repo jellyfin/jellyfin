@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna;
@@ -20,8 +21,6 @@ namespace Jellyfin.Api.Controllers
     [Route("Dlna")]
     public class DlnaServerController : BaseJellyfinApiController
     {
-        private const string XMLContentType = "text/xml; charset=UTF-8";
-
         private readonly IDlnaManager _dlnaManager;
         private readonly IContentDirectory? _contentDirectory;
         private readonly IConnectionManager? _connectionManager;
@@ -47,7 +46,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the description xml.</returns>
         [HttpGet("{serverId}/description")]
         [HttpGet("{serverId}/description.xml", Name = "GetDescriptionXml_2")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult GetDescriptionXml([FromRoute] string serverId)
         {
@@ -71,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{serverId}/ContentDirectory")]
         [HttpGet("{serverId}/ContentDirectory/ContentDirectory")]
         [HttpGet("{serverId}/ContentDirectory/ContentDirectory.xml", Name = "GetContentDirectory_2")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetContentDirectory([FromRoute] string serverId)
@@ -92,7 +91,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{serverId}/MediaReceiverRegistrar")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml", Name = "GetMediaReceiverRegistrar_2")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetMediaReceiverRegistrar([FromRoute] string serverId)
@@ -113,7 +112,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{serverId}/ConnectionManager")]
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager")]
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager.xml", Name = "GetConnectionManager_2")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetConnectionManager([FromRoute] string serverId)
@@ -132,7 +131,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ContentDirectory/Control")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute] string serverId)
         {
             if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
@@ -149,7 +148,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ConnectionManager/Control")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute] string serverId)
         {
             if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
@@ -166,7 +165,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/MediaReceiverRegistrar/Control")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute] string serverId)
         {
             if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _mediaReceiverRegistrar != null)
@@ -185,7 +184,7 @@ namespace Jellyfin.Api.Controllers
         [HttpSubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [HttpUnsubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
@@ -206,7 +205,7 @@ namespace Jellyfin.Api.Controllers
         [HttpUnsubscribe("{serverId}/ContentDirectory/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string serverId)
         {
             if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
@@ -226,7 +225,7 @@ namespace Jellyfin.Api.Controllers
         [HttpUnsubscribe("{serverId}/ConnectionManager/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string serverId)
         {
             if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
@@ -245,7 +244,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Icon stream.</returns>
         [HttpGet("{serverId}/icons/{fileName}")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult GetIconId([FromRoute] string serverId, [FromRoute] string fileName)
         {
             if (DlnaEntryPoint.Instance?.DLNAEnabled ?? false)
@@ -262,7 +261,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fileName">The icon filename.</param>
         /// <returns>Icon stream.</returns>
         [HttpGet("icons/{fileName}")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult GetIcon([FromRoute] string fileName)
         {
             if (DlnaEntryPoint.Instance?.DLNAEnabled ?? false)
@@ -282,7 +281,7 @@ namespace Jellyfin.Api.Controllers
         [HttpSubscribe("Eventing/{Id}/")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        [Produces(XMLContentType)]
+        [Produces(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult> ProcessDeviceNotifification(string id, Stream requestStream)
         {
             try
