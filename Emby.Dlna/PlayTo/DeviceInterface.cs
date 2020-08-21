@@ -60,7 +60,7 @@ namespace Emby.Dlna.PlayTo
     /// Both these two methods work side by side getting constant updates, using mutual
     /// caching to ensure the device isn't polled too frequently.
     /// </summary>
-    public class Device : IDisposable
+    public class DeviceInterface : IDisposable
     {
         /// <summary>
         /// Defines the USERAGENT that we send to devices.
@@ -190,7 +190,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="httpClient">Our httpClient<see cref="IHttpClient"/>.</param>
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="webUrl">The webUrl.</param>
-        public Device(PlayToManager playToManager, DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, string webUrl)
+        public DeviceInterface(PlayToManager playToManager, DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, string webUrl)
         {
             Properties = deviceProperties;
             _httpClient = httpClient;
@@ -344,7 +344,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="serverUrl">The serverUrl.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        public static async Task<Device?> CreateuPnpDeviceAsync(
+        public static async Task<DeviceInterface?> CreateuPnpDeviceAsync(
             PlayToManager playToManager,
             Uri url,
             IHttpClient httpClient,
@@ -495,7 +495,7 @@ namespace Emby.Dlna.PlayTo
 
             try
             {
-                return new Device(playToManager, deviceProperties, httpClient, logger, serverUrl);
+                return new DeviceInterface(playToManager, deviceProperties, httpClient, logger, serverUrl);
             }
 #pragma warning disable CA1031 // Do not catch general exception types : Don't let our errors affect our owners.
             catch

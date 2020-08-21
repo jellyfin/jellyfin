@@ -51,7 +51,7 @@ namespace Emby.Dlna.PlayTo
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
         private int _currentPlaylistIndex = -1;
-        private Device _device;
+        private DeviceInterface _device;
         private bool _disposed;
 
         public PlayToController(
@@ -92,7 +92,7 @@ namespace Emby.Dlna.PlayTo
 
         public bool SupportsMediaControl => IsSessionActive;
 
-        public void Init(Device device)
+        public void Init(DeviceInterface device)
         {
             _device = device;
             _device.OnDeviceUnavailable = OnDeviceUnavailable;

@@ -45,7 +45,7 @@ namespace Emby.Dlna.PlayTo
         private readonly INotificationManager _notificationManager;
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
-        private readonly List<Device> _devices;
+        private readonly List<DeviceInterface> _devices;
         private bool _disposed;
 
         public PlayToManager(
@@ -80,7 +80,7 @@ namespace Emby.Dlna.PlayTo
             _mediaSourceManager = mediaSourceManager ?? throw new ArgumentNullException(nameof(mediaSourceManager));
             _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
             _notificationManager = notificationManager ?? throw new ArgumentNullException(nameof(notificationManager));
-            _devices = new List<Device>();
+            _devices = new List<DeviceInterface>();
         }
 
         public event EventHandler<DlnaEventArgs> DLNAEvents;
@@ -103,7 +103,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="device">Device sending the notification.</param>
         /// <param name="notification">The notification to send.</param>
         /// <returns>Task.</returns>
-        public async Task SendNotification(Device device, NotificationRequest notification)
+        public async Task SendNotification(DeviceInterface device, NotificationRequest notification)
         {
             try
             {
@@ -221,7 +221,7 @@ namespace Emby.Dlna.PlayTo
             {
                 string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
 
-                var device = await Device.CreateuPnpDeviceAsync(this, uri, _httpClient, _logger, serverAddress).ConfigureAwait(false);
+                var device = await DeviceInterface.CreateuPnpDeviceAsync(this, uri, _httpClient, _logger, serverAddress).ConfigureAwait(false);
                 if (device == null)
                 {
                     return false;
