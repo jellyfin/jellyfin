@@ -729,7 +729,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
             try
             {
-                using (var udpClient = _networkManager.CreateUdpBroadcastSocket(0))
+                using (var udpClient = _networkManager.CreateUdpBroadcastSocket(_networkManager.GetPort(Config.Configuration.HDHomerunPortRange)))
                 {
                     await udpClient.SendToAsync(discBytes, SocketFlags.None, new IPEndPoint(IPAddress.Broadcast, 65001)).ConfigureAwait(false);
                     var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);

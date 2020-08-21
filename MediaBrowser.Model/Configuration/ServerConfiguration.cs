@@ -254,6 +254,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] LocalNetworkAddresses { get; set; }
 
+        public string HDHomerunPortRange { get; set; }
+
         /// <summary>
         /// Gets or sets PublishedServerUri to advertise for specific subnets.
         /// </summary>
@@ -307,6 +309,7 @@ namespace MediaBrowser.Model.Configuration
             LocalNetworkSubnets = Array.Empty<string>();
             LocalNetworkAddresses = Array.Empty<string>();
             PublishedServerUriBySubnet = Array.Empty<string>();
+            HDHomerunPortRange = string.Empty;
             EnableUPnP = false;
             UPnPCreateHttpPortMap = false;
             PublicPort = DefaultHttpPort;
