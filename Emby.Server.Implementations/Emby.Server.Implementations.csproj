@@ -43,7 +43,7 @@
     <PackageReference Include="ServiceStack.Text.Core" Version="5.9.0" />
     <PackageReference Include="sharpcompress" Version="0.25.1" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.1.0" />
-    <PackageReference Include="DotNet.Glob" Version="3.0.9" />
+    <PackageReference Include="DotNet.Glob" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
