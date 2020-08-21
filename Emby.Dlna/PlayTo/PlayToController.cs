@@ -325,7 +325,7 @@ namespace Emby.Dlna.PlayTo
 
         /// <summary>
         /// Shuffles a list.
-        /// https://stackoverflow.com/questions/273313/randomize-a-listt
+        /// https://stackoverflow.com/questions/273313/randomize-a-listt.
         /// </summary>
         private void ShufflePlaylist()
         {
@@ -749,33 +749,38 @@ namespace Emby.Dlna.PlayTo
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
                     case GeneralCommandType.SetAudioStreamIndex:
-                        if (command.Arguments.TryGetValue("Index", out string index))
                         {
-                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                            if (command.Arguments.TryGetValue("Index", out string arg))
                             {
-                                return SetAudioStreamIndex(val);
+                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
+                                {
+                                    return SetAudioStreamIndex(val);
+                                }
+
+                                throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
                             }
 
-                            throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                            throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
                         }
 
-                        throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
                     case GeneralCommandType.SetSubtitleStreamIndex:
-                        if (command.Arguments.TryGetValue("Index", out index))
                         {
-                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                            if (command.Arguments.TryGetValue("Index", out string arg))
                             {
-                                return SetSubtitleStreamIndex(val);
+                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
+                                {
+                                    return SetSubtitleStreamIndex(val);
+                                }
+
+                                throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
                             }
 
-                            throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                            throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
                         }
 
-                        throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
                     case GeneralCommandType.SetVolume:
-                        if (command.Arguments.TryGetValue("Volume", out string vol))
                         {
-                            if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
+                            if (command.Arguments.TryGetValue("Volume", out string arg))
                             {
                                 if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var volume))
                                 {
@@ -783,10 +788,12 @@ namespace Emby.Dlna.PlayTo
                                     return Task.CompletedTask;
                                 }
 
-                            throw new ArgumentException("Unsupported volume value supplied.");
+                                throw new ArgumentException("Unsupported volume value supplied.");
+                            }
+
+                            throw new ArgumentException("Volume argument cannot be null");
                         }
 
-                        throw new ArgumentException("Volume argument cannot be null");
                     default:
                         return Task.CompletedTask;
                 }
@@ -864,6 +871,7 @@ namespace Emby.Dlna.PlayTo
                 {
                     return;
                 }
+
                 currentWait += Interval;
             }
 
@@ -907,19 +915,22 @@ namespace Emby.Dlna.PlayTo
                 return Task.CompletedTask;
             }
 
+            // Ensure the device is initialised.
+            _device.DeviceInitialise().ConfigureAwait(false);
+
             if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
             {
-                return SendPlayCommand(data as PlayRequest, cancellationToken);
+                return SendPlayCommand(data as PlayRequest);
             }
 
             if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
             {
-                return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
+                return SendPlaystateCommand(data as PlaystateRequest);
             }
 
             if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
             {
-                return SendGeneralCommand(data as GeneralCommand, cancellationToken);
+                return SendGeneralCommand(data as GeneralCommand);
             }
 
             // Not supported or needed right now
@@ -1040,65 +1051,6 @@ namespace Emby.Dlna.PlayTo
 
                 return request;
             }
-        }
-
-        private static int? GetIntValue(IReadOnlyDictionary<string, string> values, string name)
-        {
-            var value = values.GetValueOrDefault(name);
-
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private static long GetLongValue(IReadOnlyDictionary<string, string> values, string name)
-        {
-            var value = values.GetValueOrDefault(name);
-
-            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
-            {
-                return result;
-            }
-
-            return 0;
-        }
-
-        /// <inheritdoc />
-        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
-
-            if (_device == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            // Ensure the device is initialised.
-            _device.DeviceInitialise().ConfigureAwait(false);
-
-            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
-            {
-                return SendPlayCommand(data as PlayRequest);
-            }
-
-            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
-            {
-                return SendPlaystateCommand(data as PlaystateRequest);
-            }
-
-            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
-            {
-                return SendGeneralCommand(data as GeneralCommand);
-            }
-
-            // Not supported or needed right now
-            return Task.CompletedTask;
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
-            return new ControlHandler(_config, _logger).ProcessControlRequestAsync(request);
+            return new ControlHandler(_config, Logger).ProcessControlRequestAsync(request);
         }
     }
 }

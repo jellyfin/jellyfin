@@ -977,12 +977,12 @@ namespace Emby.Dlna.Didl
 
             writer.WriteStartElement("upnp", "albumArtURI", NsUpnp);
             writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
-            writer.WriteString(albumartUrlInfo.url);
+            writer.WriteString(albumartUrlInfo.Url);
             writer.WriteFullEndElement();
 
             // TOOD: Remove these default values
             var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
-            writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.url);
+            writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.Url);
 
             if (!_profile.EnableAlbumArtInDidl)
             {
@@ -1029,8 +1029,8 @@ namespace Emby.Dlna.Didl
 
             // Images must have a reported size or many clients (Bubble upnp), will only use the first thumbnail
             // rather than using a larger one when available
-            var width = albumartUrlInfo.width ?? maxWidth;
-            var height = albumartUrlInfo.height ?? maxHeight;
+            var width = albumartUrlInfo.Width ?? maxWidth;
+            var height = albumartUrlInfo.Height ?? maxHeight;
 
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
@@ -1047,7 +1047,7 @@ namespace Emby.Dlna.Didl
                 "resolution",
                 string.Format(CultureInfo.InvariantCulture, "{0}x{1}", width, height));
 
-            writer.WriteString(albumartUrlInfo.url);
+            writer.WriteString(albumartUrlInfo.Url);
 
             writer.WriteFullEndElement();
         }
@@ -1185,7 +1185,7 @@ namespace Emby.Dlna.Didl
             return id;
         }
 
-        private (string url, int? width, int? height) GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
+        private (string Url, int? Width, int? Height) GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
         {
             var url = string.Format(
                 CultureInfo.InvariantCulture,

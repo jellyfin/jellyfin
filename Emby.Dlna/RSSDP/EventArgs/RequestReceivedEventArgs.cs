@@ -10,6 +10,8 @@ namespace Emby.Dlna.Rssdp.EventArgs
     /// </summary>
     public sealed class RequestReceivedEventArgs : System.EventArgs
     {
+        private byte[] _raw;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestReceivedEventArgs"/> class.
         /// </summary>
@@ -20,7 +22,7 @@ namespace Emby.Dlna.Rssdp.EventArgs
         /// <param name="simulated">True if the message didn't arrive via JF UDP.</param>
         public RequestReceivedEventArgs(string rawData, HttpRequestMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress, bool simulated)
         {
-            Raw = Encoding.UTF8.GetBytes(rawData);
+            _raw = Encoding.UTF8.GetBytes(rawData);
             Message = message;
             ReceivedFrom = receivedFrom;
             LocalIPAddress = localIPAddress;
@@ -31,11 +33,6 @@ namespace Emby.Dlna.Rssdp.EventArgs
         /// Gets a value indicating whether the data arrived through a UDP port or by other means.
         /// </summary>
         public bool Simulated { get; }
-
-        /// <summary>
-        /// Gets the pre-processed raw data.
-        /// </summary>
-        public byte[] Raw { get; }
 
         /// <summary>
         /// Gets the Local IP Address.
@@ -51,5 +48,14 @@ namespace Emby.Dlna.Rssdp.EventArgs
         /// Gets the <see cref="IPEndPoint"/> the request came from.
         /// </summary>
         public IPEndPoint ReceivedFrom { get; }
+
+        /// <summary>
+        /// Gets the pre-processed raw data.
+        /// </summary>
+        /// <returns>A Byte array containing the original message.</returns>
+        public byte[] Raw()
+        {
+            return _raw;
+        }
     }
 }

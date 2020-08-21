@@ -8,15 +8,11 @@ namespace Emby.Dlna.Service
 {
     public class BaseService : IEventManager
     {
-        protected IEventManager _eventManager;
-        protected IHttpClient _httpClient;
-        protected ILogger _logger;
-
         protected BaseService(ILogger logger, IHttpClient httpClient)
         {
-            _logger = logger;
-            _httpClient = httpClient;
-            _eventManager = new EventManager(logger, _httpClient);
+            Logger = logger;
+            HttpClient = httpClient;
+            EventManager = new EventManager(logger, HttpClient);
         }
 
         protected IEventManager EventManager { get; }

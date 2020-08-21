@@ -42,7 +42,7 @@ namespace Emby.Dlna.ConnectionManager
 
             var profile = _dlna.GetProfile(request.Headers) ?? _dlna.GetDefaultProfile();
 
-            return new DlnaControlHandler(_configurationManager, _logger, profile).ProcessControlRequestAsync(request);
+            return new DlnaControlHandler(_configurationManager, Logger, profile).ProcessControlRequestAsync(request);
         }
     }
 }

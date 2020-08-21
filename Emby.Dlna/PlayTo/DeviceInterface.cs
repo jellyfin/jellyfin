@@ -198,7 +198,7 @@ namespace Emby.Dlna.PlayTo
             _jellyfinUrl = webUrl;
             _playToManager = playToManager;
 
-            TransportState = TransportState.NO_MEDIA_PRESENT;
+            TransportState = TransportState.NOMEDIAPRESENT;
         }
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets the current media information.
         /// </summary>
-        public uBaseObject? CurrentMediaInfo { get; private set; }
+        public UBaseObject? CurrentMediaInfo { get; private set; }
 
         /// <summary>
         /// Gets or sets the Volume.
@@ -308,7 +308,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets a value indicating whether IsPaused.
         /// </summary>
-        public bool IsPaused => TransportState == TransportState.PAUSED || TransportState == TransportState.PAUSED_PLAYBACK;
+        public bool IsPaused => TransportState == TransportState.PAUSED || TransportState == TransportState.PAUSEDPLAYBACK;
 
         /// <summary>
         /// Gets a value indicating whether IsStopped.
@@ -365,7 +365,7 @@ namespace Emby.Dlna.PlayTo
 
             var friendlyNames = new List<string>();
 
-            var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
+            var name = document.Descendants(UPnpNamespaces.Ud.GetName("friendlyName")).FirstOrDefault();
             if (name != null && !string.IsNullOrWhiteSpace(name.Value))
             {
                 // Some devices include their MAC addresses as part of their name.
@@ -376,7 +376,7 @@ namespace Emby.Dlna.PlayTo
                 friendlyNames.Add(value);
             }
 
-            var room = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
+            var room = document.Descendants(UPnpNamespaces.Ud.GetName("roomName")).FirstOrDefault();
             if (room != null && !string.IsNullOrWhiteSpace(room.Value))
             {
                 friendlyNames.Add(room.Value);
@@ -388,65 +388,65 @@ namespace Emby.Dlna.PlayTo
                 BaseUrl = string.Format(_usCulture, "http://{0}:{1}", url.Host, url.Port)
             };
 
-            var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
+            var model = document.Descendants(UPnpNamespaces.Ud.GetName("modelName")).FirstOrDefault();
             if (model != null)
             {
                 deviceProperties.ModelName = model.Value;
             }
 
-            var modelNumber = document.Descendants(uPnpNamespaces.ud.GetName("modelNumber")).FirstOrDefault();
+            var modelNumber = document.Descendants(UPnpNamespaces.Ud.GetName("modelNumber")).FirstOrDefault();
             if (modelNumber != null)
             {
                 deviceProperties.ModelNumber = modelNumber.Value;
             }
 
-            var uuid = document.Descendants(uPnpNamespaces.ud.GetName("UDN")).FirstOrDefault();
+            var uuid = document.Descendants(UPnpNamespaces.Ud.GetName("UDN")).FirstOrDefault();
             if (uuid != null)
             {
                 deviceProperties.UUID = uuid.Value;
             }
 
-            var manufacturer = document.Descendants(uPnpNamespaces.ud.GetName("manufacturer")).FirstOrDefault();
+            var manufacturer = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturer")).FirstOrDefault();
             if (manufacturer != null)
             {
                 deviceProperties.Manufacturer = manufacturer.Value;
             }
 
-            var manufacturerUrl = document.Descendants(uPnpNamespaces.ud.GetName("manufacturerURL")).FirstOrDefault();
+            var manufacturerUrl = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturerURL")).FirstOrDefault();
             if (manufacturerUrl != null)
             {
                 deviceProperties.ManufacturerUrl = manufacturerUrl.Value;
             }
 
-            var presentationUrl = document.Descendants(uPnpNamespaces.ud.GetName("presentationURL")).FirstOrDefault();
+            var presentationUrl = document.Descendants(UPnpNamespaces.Ud.GetName("presentationURL")).FirstOrDefault();
             if (presentationUrl != null)
             {
                 deviceProperties.PresentationUrl = presentationUrl.Value;
             }
 
-            var modelUrl = document.Descendants(uPnpNamespaces.ud.GetName("modelURL")).FirstOrDefault();
+            var modelUrl = document.Descendants(UPnpNamespaces.Ud.GetName("modelURL")).FirstOrDefault();
             if (modelUrl != null)
             {
                 deviceProperties.ModelUrl = modelUrl.Value;
             }
 
-            var serialNumber = document.Descendants(uPnpNamespaces.ud.GetName("serialNumber")).FirstOrDefault();
+            var serialNumber = document.Descendants(UPnpNamespaces.Ud.GetName("serialNumber")).FirstOrDefault();
             if (serialNumber != null)
             {
                 deviceProperties.SerialNumber = serialNumber.Value;
             }
 
-            var modelDescription = document.Descendants(uPnpNamespaces.ud.GetName("modelDescription")).FirstOrDefault();
+            var modelDescription = document.Descendants(UPnpNamespaces.Ud.GetName("modelDescription")).FirstOrDefault();
             if (modelDescription != null)
             {
                 deviceProperties.ModelDescription = modelDescription.Value;
             }
 
-            var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
+            var icon = document.Descendants(UPnpNamespaces.Ud.GetName("icon")).FirstOrDefault();
             if (icon != null)
             {
-                var width = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
-                var height = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
+                var width = icon.GetDescendantValue(UPnpNamespaces.Ud.GetName("width"));
+                var height = icon.GetDescendantValue(UPnpNamespaces.Ud.GetName("height"));
                 if (!int.TryParse(width, NumberStyles.Integer, _usCulture, out int widthValue))
                 {
                     logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
@@ -461,22 +461,22 @@ namespace Emby.Dlna.PlayTo
 
                 deviceProperties.Icon = new DeviceIcon
                 {
-                    Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
-                    MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
-                    Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
+                    Depth = icon.GetDescendantValue(UPnpNamespaces.Ud.GetName("depth")),
+                    MimeType = icon.GetDescendantValue(UPnpNamespaces.Ud.GetName("mimetype")),
+                    Url = icon.GetDescendantValue(UPnpNamespaces.Ud.GetName("url")),
                     Height = heightValue,
                     Width = widthValue
                 };
             }
 
-            foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
+            foreach (var services in document.Descendants(UPnpNamespaces.Ud.GetName("serviceList")))
             {
                 if (services == null)
                 {
                     continue;
                 }
 
-                var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
+                var servicesList = services.Descendants(UPnpNamespaces.Ud.GetName("service"));
                 if (servicesList == null)
                 {
                     continue;
@@ -756,13 +756,13 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Creates a uBaseObject from the information provided.
+        /// Creates a UBaseObject from the information provided.
         /// </summary>
         /// <param name="properties">The XML properties.</param>
-        /// <returns>The <see cref="uBaseObject"/>.</returns>
-        private static uBaseObject? CreateUBaseObject(XMLProperties properties)
+        /// <returns>The <see cref="UBaseObject"/>.</returns>
+        private static UBaseObject? CreateUBaseObject(XMLProperties properties)
         {
-            var uBase = new uBaseObject();
+            var uBase = new UBaseObject();
 
             if (properties.TryGetValue("res.protocolInfo", out string value) && !string.IsNullOrEmpty(value))
             {
@@ -830,11 +830,11 @@ namespace Emby.Dlna.PlayTo
         /// <returns>The <see cref="DeviceService"/>.</returns>
         private static DeviceService Create(XElement element)
         {
-            var type = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceType"));
-            var id = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceId"));
-            var scpdUrl = element.GetDescendantValue(uPnpNamespaces.ud.GetName("SCPDURL"));
-            var controlURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("controlURL"));
-            var eventSubURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("eventSubURL"));
+            var type = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceType"));
+            var id = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceId"));
+            var scpdUrl = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("SCPDURL"));
+            var controlURL = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("controlURL"));
+            var eventSubURL = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("eventSubURL"));
 
             return new DeviceService
             {
@@ -1752,7 +1752,7 @@ namespace Emby.Dlna.PlayTo
                             Duration = dur;
                         }
 
-                        uBaseObject? currentObject = null;
+                        UBaseObject? currentObject = null;
                         // Have we parsed any item metadata?
                         if (!reply.ContainsKey("DIDL-Lite.xmlns"))
                         {
@@ -1842,7 +1842,7 @@ namespace Emby.Dlna.PlayTo
                             }
 
                             // Get current media info.
-                            uBaseObject? currentObject = null;
+                            UBaseObject? currentObject = null;
 
                             // Have we parsed any item metadata?
                             if (!response.ContainsKey("DIDL-Lite.xmlns"))
@@ -2129,8 +2129,8 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Runs the GetMediaInfo command.
         /// </summary>
-        /// <returns>The <see cref="Task{uBaseObject}"/>.</returns>
-        private async Task<uBaseObject?> GetMediaInfo()
+        /// <returns>The <see cref="Task{UBaseObject}"/>.</returns>
+        private async Task<UBaseObject?> GetMediaInfo()
         {
             if (_disposed)
             {
@@ -2148,7 +2148,7 @@ namespace Emby.Dlna.PlayTo
                 _lastMetaRefresh = DateTime.UtcNow;
                 RestartTimer(Normal);
 
-                var retVal = new uBaseObject();
+                var retVal = new UBaseObject();
                 if (response.TryGetValue("item.id", out string value))
                 {
                     retVal.Id = value;
@@ -2277,8 +2277,8 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Updates the media info, firing events.
         /// </summary>
-        /// <param name="mediaInfo">The mediaInfo<see cref="uBaseObject"/>.</param>
-        private void UpdateMediaInfo(uBaseObject? mediaInfo)
+        /// <param name="mediaInfo">The mediaInfo<see cref="UBaseObject"/>.</param>
+        private void UpdateMediaInfo(UBaseObject? mediaInfo)
         {
             var previousMediaInfo = CurrentMediaInfo;
             CurrentMediaInfo = mediaInfo;

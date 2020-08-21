@@ -310,7 +310,7 @@ namespace Emby.Dlna.Rssdp
                     if (_networkManager.IsuPnPActive && !e.Simulated)
                     {
                         // _logger.LogDebug("Passing NOTIFY message to Mono.Nat.");
-                        NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw, e.ReceivedFrom);
+                        NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw(), e.ReceivedFrom);
                         return;
                     }
 

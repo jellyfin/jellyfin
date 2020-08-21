@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable SA1611 // Element parameters should be documented
 #nullable enable
 using System;
 using System.Globalization;
@@ -274,7 +274,6 @@ namespace Emby.Dlna.Main
 
                 if (options.EnableServer)
                 {
-
                     if (ContentDirectory == null)
                     {
                         _logger.LogDebug("DLNA Server : Starting Content Directory service.");

@@ -8,10 +8,10 @@ namespace Emby.Dlna.PlayTo
         STOPPED,
         PLAYING,
         TRANSITIONING,
-        PAUSED_PLAYBACK,
-        PAUSED_RECORDING,
+        PAUSEDPLAYBACK,
+        PAUSEDRECORDING,
         RECORDING,
-        NO_MEDIA_PRESENT,
+        NOMEDIAPRESENT,
         PAUSED,
         ERROR
     }
