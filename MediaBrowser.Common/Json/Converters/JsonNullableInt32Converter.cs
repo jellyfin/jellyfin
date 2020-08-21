@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace MediaBrowser.Common.Json.Converters
 {
     /// <summary>
-    /// Converts a GUID object or value to/from JSON.
+    /// Converts a nullable int32 object or value to/from JSON.
     /// </summary>
     public class JsonNullableInt32Converter : JsonConverter<int?>
     {
