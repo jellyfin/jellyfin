@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Drawing;

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Model.LiveTv;
 
@@ -5,6 +7,11 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvTunerInfo
     {
+        public LiveTvTunerInfo()
+        {
+            Clients = new List<string>();
+        }
+
         /// <summary>
         /// Gets or sets the type of the source.
         /// </summary>
@@ -64,10 +71,5 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance can reset; otherwise, <c>false</c>.</value>
         public bool CanReset { get; set; }
-
-        public LiveTvTunerInfo()
-        {
-            Clients = new List<string>();
-        }
     }
 }

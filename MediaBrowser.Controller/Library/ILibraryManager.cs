@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -63,6 +65,7 @@ namespace MediaBrowser.Controller.Library
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="isFolder"><c>true</c> is the path is a directory; otherwise <c>false</c>.</param>
         /// <returns>BaseItem.</returns>
         BaseItem FindByPath(string path, bool? isFolder);
 
