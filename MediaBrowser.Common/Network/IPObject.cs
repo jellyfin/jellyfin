@@ -145,10 +145,10 @@ namespace MediaBrowser.Common.Networking
                     }
 
                     byte[] octet = address.GetAddressBytes();
-                    uint word = (uint)(octet[0] << 8);
+                    uint word = (uint)(octet[0] << 8) + octet[1];
 
-                    return (word == 0xfc00 && word <= 0xfdff) // Unique local address. (fc00::/7)
-                           || word == 0x100; // Discard prefix.
+                    return (word >= 0xfc00 && word <= 0xfdff) // Unique local address. (fc00::/7)
+                        || word == 0x100; // Discard prefix.
                 }
             }
 

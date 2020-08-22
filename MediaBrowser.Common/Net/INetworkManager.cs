@@ -95,8 +95,9 @@ namespace MediaBrowser.Common.Net
         /// Interface that have been specifically excluded from binding are not used in any of the calculations.
         /// </summary>
         /// <param name="source">Source of the request.</param>
+        /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(object source);
+        string GetBindInterface(object source, out int? port);
 
         /// <summary>
         /// Called when the configuration has changed.

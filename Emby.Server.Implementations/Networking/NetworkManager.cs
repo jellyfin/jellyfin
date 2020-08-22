@@ -575,8 +575,9 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public string GetBindInterface(object source)
+        public string GetBindInterface(object source, out int? port)
         {
+            port = null;
             // Parse the source object in an attempt to discover where the request originated.
             IPObject sourceAddr;
             if (source is string sourceStr && !string.IsNullOrEmpty(sourceStr))
@@ -647,7 +648,18 @@ namespace Emby.Server.Implementations.Networking
 
             if (!string.IsNullOrEmpty(bindPreference))
             {
-                _logger.LogInformation("Using BindAddress {0}", bindPreference);
+                // Has it got a port defined?
+                var parts = bindPreference.Split(':');
+                if (parts.Length > 1)
+                {
+                    if (int.TryParse(parts[1], out int p))
+                    {
+                        bindPreference = parts[0];
+                        port = p;
+                    }
+                }
+
+                _logger.LogInformation("Using BindAddress {0}:{1}", bindPreference, port);
                 return bindPreference;
             }
 
@@ -1099,7 +1111,6 @@ namespace Emby.Server.Implementations.Networking
         /// <param name="e">Event arguments.</param>
         private void OnNetworkAddressChanged(object sender, EventArgs e)
         {
-            _logger.LogDebug("NetworkAddressChanged");
             OnNetworkChanged();
         }
 
@@ -1131,6 +1142,7 @@ namespace Emby.Server.Implementations.Networking
         {
             if (!_eventfire)
             {
+                _logger.LogDebug("Network Address Change Event.");
                 // As network events tend to fire one after the other only fire once every second.
                 _eventfire = true;
                 _ = OnNetworkChangeAsync();
@@ -1376,6 +1388,7 @@ namespace Emby.Server.Implementations.Networking
                     }
 
                     _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
+                    _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses);
 
                     // If for some reason we don't have an interface info, resolve our DNS name.
                     if (_interfaceAddresses.Count == 0)
