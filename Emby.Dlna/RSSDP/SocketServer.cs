@@ -603,8 +603,21 @@ namespace Emby.Dlna.Rssdp
         /// <param name="e">Information Mono received, but doesn't use.</param>
         private async void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
         {
+            IPEndPoint ep = (IPEndPoint)e.EndPoint;
+
+            // Only process the IP address family that we are configured for.
+            if (!_networkManager.IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
+            {
+                return;
+            }
+
+            if (!_networkManager.IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                return;
+            }
+
             // _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
-            await ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address, true).ConfigureAwait(false);
+            await ProcessMessage(e.Data, ep, e.Address, true).ConfigureAwait(false);
         }
 
         /// <summary>
