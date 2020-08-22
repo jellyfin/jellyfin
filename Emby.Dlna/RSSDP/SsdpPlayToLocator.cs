@@ -217,8 +217,9 @@ namespace Emby.Dlna.Rssdp
 
         private Task BroadcastDiscoverMessage(TimeSpan mxValue)
         {
+            // Sends this message out across IP4/6 addresses depending upon settings.
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
-            int count = _networkManager.IsIP6Enabled ? 2 : 0;
+            int count = _networkManager.IsIP6Enabled ? 2 : _networkManager.IsIP4Enabled ? 0 : 1;
 
             for (int a = count - 1; a >= 0; a--)
             {
