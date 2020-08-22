@@ -26,6 +26,11 @@ namespace MediaBrowser.Common.Net
         bool IsIP6Enabled { get; }
 
         /// <summary>
+        /// Gets a value indicating whether IP4 is enabled.
+        /// </summary>
+        bool IsIP4Enabled { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the system supports multi-socket binding.
         /// </summary>
         bool EnableMultiSocketBinding { get; }
@@ -67,10 +72,15 @@ namespace MediaBrowser.Common.Net
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
         /// The priority of selection is as follows:-
-        /// User interface preference (private/public), depending upon the source subnet(if known).
+        ///
+        /// The value contained in the startup parameter --published-server-url.
+        ///
+        /// If the user specified custom subnet overrides, the correct subnet for the source address.
+        ///
         /// If the user specified bind interfaces to use:-
         ///  The bind interface that contains the source subnet.
-        ///  The first bind interface specified by the user
+        ///  The first bind interface specified that suits best first the source's endpoint. eg. external or internal.
+        ///
         /// If the source is from a public subnet address range and the user hasn't specified any bind addresses:-
         ///  The first public interface that isn't a loopback and contains the source subnet.
         ///  The first public interface that isn't a loopback. Priority is given to interfaces with gateways.
@@ -80,10 +90,9 @@ namespace MediaBrowser.Common.Net
         ///  The first private interface that contains the source subnet.
         ///  The first private interface that isn't a loopback. Priority is given to interfaces with gateways.
         ///
-        /// If no interfaces meet any of these criteria, the IPv4 loopback address is returned.
+        /// If no interfaces meet any of these criteria, then a loopback address is returned.
         ///
         /// Interface that have been specifically excluded from binding are not used in any of the calculations.
-        /// IPv6 addresses follow the system wide setting.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
@@ -122,6 +131,12 @@ namespace MediaBrowser.Common.Net
         /// <param name="range">Upper and Lower boundary of ports to select.</param>
         /// <returns>System.Int32.</returns>
         int GetUdpPortFromRange((int min, int max) range);
+
+        /// <summary>
+        /// Removes invalid addresses from an IPHost object, based upon IP settings.
+        /// </summary>
+        /// <param name="obj">IPHost object to restrict.</param>
+        public void Restrict(IPHost obj);
 
         /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.

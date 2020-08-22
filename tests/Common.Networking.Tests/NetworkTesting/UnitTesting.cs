@@ -16,6 +16,25 @@ namespace NetworkTesting
     public class NetTesting
     {
         [Theory]
+        [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
+        public void TextIsInNetwork(string network, string value)
+        {
+            var conf = new ServerConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+                LocalNetworkSubnets = network.Split(',')
+            };
+
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>(), Mock.Of<IServerApplicationHost>());
+            
+            Assert.True(!nm.IsInLocalNetwork(value));
+        }
+
+
+        [Theory]
         [InlineData("127.0.0.1")]
         [InlineData("127.0.0.1:123")]
         [InlineData("localhost")]
@@ -80,7 +99,8 @@ namespace NetworkTesting
         {
             var conf = new ServerConfiguration()
             {
-                EnableIPV6 = true
+                EnableIPV6 = true,
+                EnableIPV4 = true
             };
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
@@ -201,7 +221,8 @@ namespace NetworkTesting
         {
             var conf = new ServerConfiguration()
             {
-                EnableIPV6 = true
+                EnableIPV6 = true,
+                EnableIPV4 = true
             };
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
@@ -242,7 +263,8 @@ namespace NetworkTesting
 
             var conf = new ServerConfiguration()
             {
-                EnableIPV6 = true
+                EnableIPV6 = true,
+                EnableIPV4 = true
             };
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
@@ -289,7 +311,8 @@ namespace NetworkTesting
             var conf = new ServerConfiguration()
             {
                 LocalNetworkAddresses = bindAddresses.Split(','),
-                EnableIPV6 = ipv6enabled
+                EnableIPV6 = ipv6enabled,
+                EnableIPV4 = true
             };
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
@@ -342,6 +365,7 @@ namespace NetworkTesting
             {
                 LocalNetworkAddresses = bindAddresses.Split(','),
                 EnableIPV6 = ipv6enabled,
+                EnableIPV4 = true,
                 PublishedServerUriBySubnet = new string[] { publishedServers }
             };
 

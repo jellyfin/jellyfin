@@ -450,7 +450,7 @@ namespace Emby.Dlna.Rssdp
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
             int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
-            for (int a = 0; a <= count; a++)
+            for (int a = count - 1; a >= 0; a--)
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -508,7 +508,7 @@ namespace Emby.Dlna.Rssdp
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
             int count = _networkManager.IsIP6Enabled ? 2 : 0;
 
-            for (int a = 0; a <= count; a++)
+            for (int a = count - 1; a >= 0; a--)
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {

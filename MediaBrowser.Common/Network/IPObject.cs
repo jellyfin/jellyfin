@@ -38,7 +38,7 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Gets or sets the object's IP address.
         /// </summary>
-        public abstract byte SubnetPrefix { get; set; }
+        public abstract byte PrefixLength { get; set; }
 
         /// <summary>
         /// Gets the AddressFamily of this object.
@@ -226,9 +226,10 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
-        /// Removes IP6 addresses from this object.
+        /// Removes all addresses of a specific type from this object.
         /// </summary>
-        public virtual void RemoveIP6()
+        /// <param name="family">Type of address to remove.</param>
+        public virtual void Remove(AddressFamily family)
         {
             // This method only peforms a function in the IPHost implementation of IPObject.
         }
@@ -331,9 +332,9 @@ namespace MediaBrowser.Common.Networking
         /// Returns the network address of an object.
         /// </summary>
         /// <param name="address">IP Address to convert.</param>
-        /// <param name="subnetPrefix">Subnet prefix.</param>
+        /// <param name="prefixLength">Subnet prefix.</param>
         /// <returns>IPAddress.</returns>
-        internal static Tuple<IPAddress, byte> Network(IPAddress address, byte subnetPrefix)
+        internal static Tuple<IPAddress, byte> Network(IPAddress address, byte prefixLength)
         {
             if (address == null)
             {
@@ -342,13 +343,13 @@ namespace MediaBrowser.Common.Networking
 
             if (IsLoopback(address))
             {
-                return Tuple.Create<IPAddress, byte>(address, subnetPrefix);
+                return Tuple.Create<IPAddress, byte>(address, prefixLength);
             }
 
             byte[] addressBytes = address.GetAddressBytes();
 
-            int div = subnetPrefix / 8;
-            int mod = subnetPrefix % 8;
+            int div = prefixLength / 8;
+            int mod = prefixLength % 8;
             if (mod != 0)
             {
                 mod = 8 - mod;
@@ -361,7 +362,7 @@ namespace MediaBrowser.Common.Networking
                 addressBytes[octet] = 0;
             }
 
-            return Tuple.Create<IPAddress, byte>(new IPAddress(addressBytes), subnetPrefix);
+            return Tuple.Create<IPAddress, byte>(new IPAddress(addressBytes), prefixLength);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Mime;
+using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
@@ -78,7 +79,7 @@ namespace Emby.Server.Implementations.SocketSharp
                         ip = Request.HttpContext.Connection.RemoteIpAddress;
 
                         // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
-                        ip ??= IPAddress.Loopback;
+                        ip ??= NetworkManager.Instance.IsIP6Enabled ? IPAddress.IPv6Loopback : IPAddress.Loopback;
                     }
                 }
 

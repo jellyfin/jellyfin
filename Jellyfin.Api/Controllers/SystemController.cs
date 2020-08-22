@@ -177,7 +177,7 @@ namespace Jellyfin.Api.Controllers
             return new EndPointInfo
             {
                 IsLocal = Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress),
-                IsInNetwork = _network.IsInLocalNetwork(Request.HttpContext.Connection.RemoteIpAddress.ToString())
+                IsInNetwork = _network.IsInLocalNetwork(Request.HttpContext.Connection.RemoteIpAddress)
             };
         }
 

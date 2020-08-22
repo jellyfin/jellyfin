@@ -24,12 +24,12 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// IPv6 local link multicast address.
         /// </summary>
-        public static readonly IPAddress MulticastIPv6LL = IPAddress.Parse("ff02::C");
+        public static readonly IPAddress MulticastIPv6LinkLocal = IPAddress.Parse("ff02::C");
 
         /// <summary>
-        /// IPv6 multicast address.
+        /// IPv6 site local multicast address.
         /// </summary>
-        public static readonly IPAddress MulticastIPv6 = IPAddress.Parse("ff05::C");
+        public static readonly IPAddress MulticastIPv6SiteLocal = IPAddress.Parse("ff05::C");
 
         /// <summary>
         /// IP4Loopback address host.
@@ -58,7 +58,7 @@ namespace MediaBrowser.Common.Networking
         public IPNetAddress(IPAddress address)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            SubnetPrefix = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+            PrefixLength = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
         }
 
         /// <summary>
@@ -79,18 +79,18 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentException("This method of creation is only for IPv4 addresses.");
             }
 
-            SubnetPrefix = MaskToCidr(subnet);
+            PrefixLength = MaskToCidr(subnet);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
         /// <param name="address">IP Address.</param>
-        /// <param name="subnetPrefix">Mask as a CIDR.</param>
-        public IPNetAddress(IPAddress address, byte subnetPrefix)
+        /// <param name="prefixLength">Mask as a CIDR.</param>
+        public IPNetAddress(IPAddress address, byte prefixLength)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            SubnetPrefix = subnetPrefix;
+            PrefixLength = prefixLength;
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace MediaBrowser.Common.Networking
             {
                 if (_networkAddress == null)
                 {
-                    var value = Network(_address, SubnetPrefix);
+                    var value = Network(_address, PrefixLength);
                     _networkAddress = new IPNetAddress(value.Item1, value.Item2);
                 }
 
@@ -125,7 +125,7 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <inheritdoc/>
-        public override byte SubnetPrefix { get; set; }
+        public override byte PrefixLength { get; set; }
 
         /// <summary>
         /// Gets the subnet mask of this object.
@@ -136,7 +136,7 @@ namespace MediaBrowser.Common.Networking
             {
                 if (!_address.Equals(IPAddress.None))
                 {
-                    return CidrToMask(SubnetPrefix, _address.AddressFamily);
+                    return CidrToMask(PrefixLength, _address.AddressFamily);
                 }
 
                 return IPAddress.None;
@@ -218,7 +218,7 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentNullException(nameof(address));
             }
 
-            var altAddress = Network(address, SubnetPrefix);
+            var altAddress = Network(address, PrefixLength);
             return NetworkAddress.Address.Equals(altAddress.Item1);
         }
 
@@ -245,10 +245,10 @@ namespace MediaBrowser.Common.Networking
                 // Have the same network address, but different subnets?
                 if (netAddress.Equals(netaddrObj.NetworkAddress.Address))
                 {
-                    return NetworkAddress.SubnetPrefix <= netaddrObj.SubnetPrefix;
+                    return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
-                var altAddress = Network(netaddrObj.Address, SubnetPrefix);
+                var altAddress = Network(netaddrObj.Address, PrefixLength);
                 return netAddress.Equals(altAddress.Item1);
             }
 
@@ -262,7 +262,7 @@ namespace MediaBrowser.Common.Networking
             {
                 return Address.AddressFamily == otherObj.Address.AddressFamily &&
                     Address.Equals(otherObj.Address) &&
-                    SubnetPrefix == otherObj.SubnetPrefix;
+                    PrefixLength == otherObj.PrefixLength;
             }
 
             return false;
@@ -348,7 +348,7 @@ namespace MediaBrowser.Common.Networking
 
                 if (!Mask.Equals(IPAddress.Any))
                 {
-                    return $"{Address}/{SubnetPrefix}";
+                    return $"{Address}/{PrefixLength}";
                 }
 
                 return Address.ToString();

@@ -78,7 +78,7 @@ namespace MediaBrowser.Common.Networking
         /// Gets or sets the object's first IP's subnet prefix.
         /// The setter does nothing, but shouldn't raise an exception.
         /// </summary>
-        public override byte SubnetPrefix
+        public override byte PrefixLength
         {
             get
             {
@@ -355,10 +355,8 @@ namespace MediaBrowser.Common.Networking
             return output;
         }
 
-        /// <summary>
-        /// Removes IP6 addresses from this object.
-        /// </summary>
-        public override void RemoveIP6()
+        /// <inheritdoc/>
+        public override void Remove(AddressFamily family)
         {
             if (_addresses.Length == 0)
             {
@@ -372,7 +370,7 @@ namespace MediaBrowser.Common.Networking
                 // Filter out IP6 addresses.
                 foreach (IPAddress addr in _addresses)
                 {
-                    if (addr.AddressFamily == AddressFamily.InterNetworkV6)
+                    if (addr.AddressFamily == family)
                     {
                         continue;
                     }

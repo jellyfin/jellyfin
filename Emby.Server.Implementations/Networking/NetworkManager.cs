@@ -71,12 +71,6 @@ namespace Emby.Server.Implementations.Networking
         private NetCollection _excludedSubnets;
 
         /// <summary>
-        /// Cached list of filtered addresses comprising the LAN.
-        /// (_lanSubnets ?? _interfaceAddresses).Exclude(_excludedSubnets).
-        /// </summary>
-        private NetCollection _filteredLANSubnets;
-
-        /// <summary>
         /// List of interface addresses to bind the WS.
         /// </summary>
         private NetCollection _bindAddresses;
@@ -125,6 +119,11 @@ namespace Emby.Server.Implementations.Networking
             InitialiseRemote();
             InitialiseOverrides();
 
+            if (!IsIP6Enabled && !IsIP4Enabled)
+            {
+                throw new ApplicationException("IPv4 and IPv6 cannot both be disabled.");
+            }
+
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
@@ -160,6 +159,20 @@ namespace Emby.Server.Implementations.Networking
             private set
             {
                 _configurationManager.Configuration.EnableIPV6 = value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool IsIP4Enabled
+        {
+            get
+            {
+                return _configurationManager.Configuration.EnableIPV4;
+            }
+
+            private set
+            {
+                _configurationManager.Configuration.EnableIPV4 = value;
             }
         }
 
@@ -261,7 +274,7 @@ namespace Emby.Server.Implementations.Networking
 
             bool lanRefresh = false;
 
-            if (IsIP6Enabled != newConfig.Argument.EnableIPV6)
+            if (IsIP6Enabled != newConfig.Argument.EnableIPV6 || IsIP4Enabled != newConfig.Argument.EnableIPV4)
             {
                 // IP6 settings changed.
                 InitialiseInterfaces();
@@ -383,7 +396,7 @@ namespace Emby.Server.Implementations.Networking
                 retVal.SetSocketOption(
                     SocketOptionLevel.IPv6,
                     SocketOptionName.AddMembership,
-                    new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LL : IPNetAddress.MulticastIPv6));
+                    new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal));
             }
             else
             {
@@ -414,7 +427,7 @@ namespace Emby.Server.Implementations.Networking
             return new IPEndPoint(
                 localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
                     IPNetAddress.MulticastIPv4 : localIPAddress.IsIPv6LinkLocal ?
-                        IPNetAddress.MulticastIPv6LL : IPNetAddress.MulticastIPv6, port);
+                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
         }
 
         /// <inheritdoc/>
@@ -424,7 +437,7 @@ namespace Emby.Server.Implementations.Networking
             return new IPEndPoint(
                 addr.AddressFamily == AddressFamily.InterNetwork ?
                     IPNetAddress.MulticastIPv4 : addr.IsIPv6LinkLocal ?
-                        IPNetAddress.MulticastIPv6LL : IPNetAddress.MulticastIPv6, port);
+                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
         }
 
         /// <inheritdoc/>
@@ -465,6 +478,23 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Removes invalid addresses from an IPHost object, based upon IP settings.
+        /// </summary>
+        /// <param name="obj">IPHost object to restrict.</param>
+        public void Restrict(IPHost obj)
+        {
+            if (!IsIP4Enabled)
+            {
+                obj.Remove(AddressFamily.InterNetworkV6);
+            }
+
+            if (!IsIP6Enabled)
+            {
+                obj.Remove(AddressFamily.InterNetworkV6);
+            }
         }
 
         /// <inheritdoc/>
@@ -524,10 +554,12 @@ namespace Emby.Server.Implementations.Networking
                     }
 
                     // No bind address and no exclusions, so listen on all interfaces.
-                    NetCollection result = new NetCollection
+                    NetCollection result = new NetCollection();
+
+                    if (IsIP4Enabled)
                     {
-                        IPAddress.Any
-                    };
+                        result.Add(IPAddress.Any);
+                    }
 
                     if (IsIP6Enabled)
                     {
@@ -572,31 +604,42 @@ namespace Emby.Server.Implementations.Networking
             // Do we have a source?
             bool haveSource = !sourceAddr.Address.Equals(IPAddress.None);
 
-            if (haveSource && !IsIP6Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetworkV6)
+            if (haveSource)
             {
-                _logger.LogWarning("IPv6 disabled in JellyFin, but enabled in OS. This may affect how the interface is selected.");
+                if (!IsIP6Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    _logger.LogWarning("IPv6 is disabled in JellyFin, but enabled in the OS. This may affect how the interface is selected.");
+                }
+
+                if (!IsIP4Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    _logger.LogWarning("IPv4 is disabled in JellyFin, but enabled in the OS. This may affect how the interface is selected.");
+                }
             }
 
             bool isExternal = haveSource && !IsInLocalNetwork(sourceAddr);
 
             string bindPreference = string.Empty;
-            // Check for user override.
-            foreach (var addr in _overrideAddresses)
+            if (haveSource)
             {
-                if (addr.Key.Address.Equals(IPAddress.Broadcast))
+                // Check for user override.
+                foreach (var addr in _overrideAddresses)
                 {
-                    bindPreference = addr.Value;
-                    break;
-                }
-                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isExternal)
-                {
-                    bindPreference = addr.Value;
-                    break;
-                }
-                else if (haveSource && addr.Key.Contains(sourceAddr))
-                {
-                    bindPreference = addr.Value;
-                    break;
+                    if (addr.Key.Equals(IPAddress.Broadcast))
+                    {
+                        bindPreference = addr.Value;
+                        break;
+                    }
+                    else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && isExternal)
+                    {
+                        bindPreference = addr.Value;
+                        break;
+                    }
+                    else if (addr.Key.Contains(sourceAddr))
+                    {
+                        bindPreference = addr.Value;
+                        break;
+                    }
                 }
             }
 
@@ -609,12 +652,13 @@ namespace Emby.Server.Implementations.Networking
             }
 
             string ipresult;
-            // No preference given, so auto select the best.
+
+            // No preference given, so move on to bind addresses.
             lock (_intLock)
             {
-                NetCollection nc = _bindAddresses.Exclude(_bindExclusions);
+                var nc = _bindAddresses.Exclude(_bindExclusions).Where(p => !p.IsLoopback());
 
-                int count = nc.Count;
+                int count = nc.Count();
                 if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses.Equals(IPAddress.IPv6Any)))
                 {
                     // Ignore IPAny addresses.
@@ -623,62 +667,66 @@ namespace Emby.Server.Implementations.Networking
 
                 if (count != 0)
                 {
-                    if (haveSource)
+                    // Check to see if any of the bind interfaces are in the same subnet.
+
+                    IEnumerable<IPObject> bindResult;
+                    IPAddress? defaultGateway = null;
+
+                    if (isExternal)
                     {
-                        // Does the request originate in one of the interface subnets?
-                        // (For systems with multiple internal network cards, and multiple subnets)
-                        foreach (var intf in nc)
-                        {
-                            if (intf.Contains(sourceAddr))
-                            {
-                                ipresult = CleanIP6String(intf.Address);
-                                _logger.LogDebug("GetBindInterface: Has source, matched user defined interface on range. {0}", ipresult);
-                                return ipresult;
-                            }
-                        }
+                        // Find all external bind addresses. Store the default gateway, but check to see if there is a better match first.
+                        bindResult = nc.Where(p => !IsInLocalNetwork(p)).OrderBy(p => p.Tag);
+                        defaultGateway = bindResult.FirstOrDefault()?.Address;
+                        bindResult = bindResult.Where(p => p.Contains(sourceAddr)).OrderBy(p => p.Tag);
+                    }
+                    else
+                    {
+                        // Look for the best internal address.
+                        bindResult = nc.Where(p => IsInLocalNetwork(p) && p.Contains(sourceAddr)).OrderBy(p => p.Tag);
                     }
 
-                    // Check to see if any of the bind interfaces are in the same subnet.
-                    var ncRes = nc.Where(p => !IsInLocalNetwork(p) && !p.IsLoopback()).OrderBy(p => p.Tag);
-
-                    if (ncRes.Any())
+                    if (bindResult.Any())
                     {
-                        ipresult = CleanIP6String(ncRes.First().Address);
-                        _logger.LogDebug("GetBindInterface: Has source, select best user defined interface. {0}", ipresult);
+                        ipresult = FormatIP6String(bindResult.First().Address);
+                        _logger.LogDebug("GetBindInterface: Has source, found a match bind interface subnets. {0}", ipresult);
                         return ipresult;
                     }
 
-                    ipresult = CleanIP6String(nc[0].Address);
+                    if (isExternal && defaultGateway != null)
+                    {
+                        ipresult = FormatIP6String(defaultGateway);
+                        _logger.LogDebug("GetBindInterface: Using first user defined external interface.", ipresult);
+                        return ipresult;
+                    }
+
+                    ipresult = FormatIP6String(nc.First().Address);
                     _logger.LogDebug("GetBindInterface: Selected first user defined interface.", ipresult);
                     return ipresult;
                 }
 
                 if (isExternal)
                 {
-                    // Get the first LAN interface address that isn't a loopback.
+                    // Get the first WAN interface address that isn't a loopback.
                     var extResult = _interfaceAddresses
                         .Exclude(_bindExclusions)
-                        .Where(p => !IsInLocalNetwork(p) && !p.IsLoopback())
+                        .Where(p => !IsInLocalNetwork(p))
                         .OrderBy(p => p.Tag);
 
                     if (extResult.Any())
                     {
-                        if (haveSource)
+                        // Does the request originate in one of the interface subnets?
+                        // (For systems with multiple internal network cards, and multiple subnets)
+                        foreach (var intf in extResult)
                         {
-                            // Does the request originate in one of the interface subnets?
-                            // (For systems with multiple internal network cards, and multiple subnets)
-                            foreach (var intf in extResult)
+                            if (!IsInLocalNetwork(intf) && intf.Contains(sourceAddr))
                             {
-                                if (!IsInLocalNetwork(intf) && intf.Contains(sourceAddr))
-                                {
-                                    ipresult = CleanIP6String(intf.Address);
-                                    _logger.LogDebug("GetBindInterface: Selected best external on interface on range. {0}", ipresult);
-                                    return ipresult;
-                                }
+                                ipresult = FormatIP6String(intf.Address);
+                                _logger.LogDebug("GetBindInterface: Selected best external on interface on range. {0}", ipresult);
+                                return ipresult;
                             }
                         }
 
-                        ipresult = CleanIP6String(extResult.First().Address);
+                        ipresult = FormatIP6String(extResult.First().Address);
                         _logger.LogDebug("GetBindInterface: Selected first external interface. {0}", ipresult);
                         return ipresult;
                     }
@@ -689,7 +737,7 @@ namespace Emby.Server.Implementations.Networking
                 // Get the first LAN interface address that isn't a loopback.
                 var result = _interfaceAddresses
                     .Exclude(_bindExclusions)
-                    .Where(p => IsInLocalNetwork(p) && !p.IsLoopback())
+                    .Where(p => IsInLocalNetwork(p))
                     .OrderBy(p => p.Tag);
 
                 if (result.Any())
@@ -700,16 +748,17 @@ namespace Emby.Server.Implementations.Networking
                         // (For systems with multiple internal network cards, and multiple subnets)
                         foreach (var intf in result)
                         {
-                            if (IsInLocalNetwork(intf) && intf.Contains(sourceAddr))
+                            if (// IsInLocalNetwork(intf) &&
+                                intf.Contains(sourceAddr))
                             {
-                                ipresult = CleanIP6String(intf.Address);
+                                ipresult = FormatIP6String(intf.Address);
                                 _logger.LogDebug("GetBindInterface: Has source, matched best internal interface on range. {0}", ipresult);
                                 return ipresult;
                             }
                         }
                     }
 
-                    ipresult = CleanIP6String(result.First().Address);
+                    ipresult = FormatIP6String(result.First().Address);
                     _logger.LogDebug("GetBindInterface: Matched first internal interface. {0}", ipresult);
                     return ipresult;
                 }
@@ -761,7 +810,7 @@ namespace Emby.Server.Implementations.Networking
             lock (_intLock)
             {
                 // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-                return _filteredLANSubnets.Contains(address);
+                return _lanSubnets.Contains(address) && !_excludedSubnets.Contains(address);
             }
         }
 
@@ -772,7 +821,7 @@ namespace Emby.Server.Implementations.Networking
             {
                 lock (_intLock)
                 {
-                    return _filteredLANSubnets.Contains(ep);
+                    return _lanSubnets.Contains(ep) && !_excludedSubnets.Contains(ep);
                 }
             }
 
@@ -796,7 +845,7 @@ namespace Emby.Server.Implementations.Networking
             lock (_intLock)
             {
                 // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-                return _filteredLANSubnets.Contains(address);
+                return _lanSubnets.Contains(address) && !_excludedSubnets.Contains(address);
             }
         }
 
@@ -840,7 +889,7 @@ namespace Emby.Server.Implementations.Networking
             {
                 if (filter == null)
                 {
-                    return new NetCollection(_filteredLANSubnets);
+                    return NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
                 }
 
                 return _lanSubnets.Exclude(filter);
@@ -872,8 +921,9 @@ namespace Emby.Server.Implementations.Networking
                 // Replace interface tags with the interface IP's.
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
-                    if (Math.Abs(iface.Tag) == index
-                        && ((!IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) || IsIP6Enabled))
+                    if (Math.Abs(iface.Tag) == index &&
+                        ((iface.Address.AddressFamily == AddressFamily.InterNetwork && IsIP4Enabled) ||
+                            (iface.Address.AddressFamily == AddressFamily.InterNetworkV6 && IsIP6Enabled)))
                     {
                         result = iface;
                         return true;
@@ -903,14 +953,25 @@ namespace Emby.Server.Implementations.Networking
             }
         }
 
-        private string CleanIP6String(IPAddress address)
+        /// <summary>
+        /// Converts an IPAddress into a string.
+        /// Ipv6 addresses are returned in [ ], with their scope removed.
+        /// </summary>
+        /// <param name="address">Address to convert.</param>
+        /// <returns>URI save conversion of the address.</returns>
+        private string FormatIP6String(IPAddress address)
         {
             var str = address.ToString();
-            int i = str.IndexOf("%", StringComparison.OrdinalIgnoreCase);
-
-            if (i != -1)
+            if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                return str.Substring(0, i - 1);
+                int i = str.IndexOf("%", StringComparison.OrdinalIgnoreCase);
+
+                if (i != -1)
+                {
+                    str = str.Substring(0, i - 1);
+                }
+
+                return $"[{str}]";
             }
 
             return str;
@@ -933,7 +994,7 @@ namespace Emby.Server.Implementations.Networking
             {
                 // IPv6 is enabled so create a dual IP4/IP6 socket
                 retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, !IsIP4Enabled);
                 retVal.DualMode = true;
             }
 
@@ -981,8 +1042,9 @@ namespace Emby.Server.Implementations.Networking
                 // Replace interface tags with the interface IP's.
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
-                    if (Math.Abs(iface.Tag) == index
-                        && ((!IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) || IsIP6Enabled))
+                    if (Math.Abs(iface.Tag) == index &&
+                        ((iface.Address.AddressFamily == AddressFamily.InterNetwork && IsIP4Enabled) ||
+                            (iface.Address.AddressFamily == AddressFamily.InterNetworkV6 && IsIP6Enabled)))
                     {
                         col.Add(iface);
                     }
@@ -993,8 +1055,17 @@ namespace Emby.Server.Implementations.Networking
                 if (!IsIP6Enabled)
                 {
                     // Remove IP6 addresses from multi-homed IPHosts.
-                    obj.RemoveIP6();
+                    obj.Remove(AddressFamily.InterNetworkV6);
                     if (!obj.IsIP6())
+                    {
+                        col.Add(obj);
+                    }
+                }
+                else if (!IsIP4Enabled)
+                {
+                    // Remove IP4 addresses from multi-homed IPHosts.
+                    obj.Remove(AddressFamily.InterNetwork);
+                    if (obj.IsIP6())
                     {
                         col.Add(obj);
                     }
@@ -1142,6 +1213,8 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         private void InitialiseLAN()
         {
+            NetCollection filteredLANSubnets;
+
             lock (_intLock)
             {
                 _logger.LogDebug("Refreshing LAN information.");
@@ -1152,7 +1225,7 @@ namespace Emby.Server.Implementations.Networking
                 // Create lists from user settings.
 
                 _lanSubnets = CreateIPCollection(subnets);
-                _excludedSubnets = CreateIPCollection(subnets, true);
+                _excludedSubnets = NetCollection.AsNetworks(CreateIPCollection(subnets, true));
 
                 // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
                 _usingInterfaces = _lanSubnets.Count == 0;
@@ -1173,10 +1246,13 @@ namespace Emby.Server.Implementations.Networking
                         _lanSubnets.Add(IPNetAddress.IP6Loopback);
                     }
 
-                    _lanSubnets.Add(IPNetAddress.IP4Loopback);
+                    if (IsIP4Enabled)
+                    {
+                        _lanSubnets.Add(IPNetAddress.IP4Loopback);
+                    }
 
                     // Filtered LAN subnets are subnets of the LAN Addresses.
-                    _filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
+                    filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
                 }
                 else
                 {
@@ -1186,10 +1262,13 @@ namespace Emby.Server.Implementations.Networking
                         _lanSubnets.Add(IPNetAddress.IP6Loopback);
                     }
 
-                    _lanSubnets.Add(IPNetAddress.IP4Loopback);
+                    if (IsIP4Enabled)
+                    {
+                        _lanSubnets.Add(IPNetAddress.IP4Loopback);
+                    }
 
                     // Filtered LAN subnets are subnets of the LAN Addresses.
-                    _filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
+                    filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
                     _internalInterfaces = new NetCollection(_interfaceAddresses
@@ -1200,7 +1279,7 @@ namespace Emby.Server.Implementations.Networking
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
                 _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets);
-                _logger.LogInformation("Using LAN addresses: {0}", _filteredLANSubnets);
+                _logger.LogInformation("Using LAN addresses: {0}", filteredLANSubnets);
             }
         }
 
@@ -1242,7 +1321,7 @@ namespace Emby.Server.Implementations.Networking
                             // populate interface address list
                             foreach (UnicastIPAddressInformation info in ipProperties.UnicastAddresses)
                             {
-                                if (info.Address.AddressFamily == AddressFamily.InterNetwork)
+                                if (IsIP4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
                                     IPNetAddress nw = new IPNetAddress(info.Address, info.IPv4Mask)
                                     {
@@ -1266,7 +1345,7 @@ namespace Emby.Server.Implementations.Networking
                                 }
                                 else if (IsIP6Enabled && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
-                                    IPNetAddress nw = new IPNetAddress(info.Address)
+                                    IPNetAddress nw = new IPNetAddress(info.Address, (byte)info.PrefixLength)
                                     {
                                         // Keep the number of gateways on this interface, along with its index.
                                         Tag = ipProperties.GetIPv6Properties().Index

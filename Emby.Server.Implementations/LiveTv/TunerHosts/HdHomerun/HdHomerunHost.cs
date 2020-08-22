@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -114,6 +115,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         }
 
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
+
         private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
@@ -269,16 +271,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var uri = new Uri(GetApiUrl(info));
 
+            var ipInfo = IPHost.Parse(uri.Host);
+            _networkManager.Restrict(ipInfo);
+
             using (var manager = new HdHomerunManager())
             {
-                // Legacy HdHomeruns are IPv4 only
-                var ipInfo = IPAddress.Parse(uri.Host);
-
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
+                    // Legacy HdHomeruns are IPv4 only.
                     var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
                     var currentChannel = "none"; // @todo Get current channel and map back to Station Id
-                    var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
+                    var isAvailable = await manager.CheckTunerAvailability(ipInfo.Address, i, cancellationToken).ConfigureAwait(false);
                     var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
                     tuners.Add(new LiveTvTunerInfo
                     {
@@ -716,6 +719,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
         {
+            const int HdHomeRunPort = 65001;
+
             lock (_modelCache)
             {
                 _modelCache.Clear();
@@ -729,43 +734,58 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
             try
             {
-                using (var udpClient = _networkManager.CreateUdpBroadcastSocket(_networkManager.GetPort(Config.Configuration.HDHomerunPortRange)))
+                // Get a port number.
+                int port = _networkManager.GetPort(Config.Configuration.HDHomerunPortRange);
+
+                IPEndPoint endpoint;
+                if (_networkManager.IsIP6Enabled)
                 {
-                    await udpClient.SendToAsync(discBytes, SocketFlags.None, new IPEndPoint(IPAddress.Broadcast, 65001)).ConfigureAwait(false);
-                    var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
+                    endpoint = _networkManager.GetMulticastEndPoint(HdHomeRunPort);
+                }
+                else
+                {
+                    endpoint = new IPEndPoint(IPAddress.Broadcast, HdHomeRunPort);
+                }
 
-                    try
+                using var udpClient = _networkManager.CreateUdpBroadcastSocket(port);
+                await udpClient.SendToAsync(discBytes, SocketFlags.None, endpoint).ConfigureAwait(false);
+                var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
+
+                try
+                {
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        while (!cancellationToken.IsCancellationRequested)
+                        var result = await udpClient.ReceiveFromAsync(
+                            receiveBuffer,
+                            SocketFlags.None,
+                            new IPEndPoint(_networkManager.IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, 0))
+                            .ConfigureAwait(false);
+
+                        // Ignore excluded devices/ranges.
+                        if (!_networkManager.IsExcluded(result.RemoteEndPoint))
                         {
-                            var result = await udpClient.ReceiveFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0)).ConfigureAwait(false);
+                            continue;
+                        }
 
-                            // Ignore excluded devices/ranges.
-                            if (!_networkManager.IsExcluded(result.RemoteEndPoint))
+                        // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
+                        if (result.ReceivedBytes > 13 && receiveBuffer[1] == 3)
+                        {
+                            var deviceAddress = "http://" + ((IPEndPoint)result.RemoteEndPoint).Address.ToString();
+
+                            var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
+                            if (info != null)
                             {
-                                continue;
-                            }
-
-                            // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
-                            if (result.ReceivedBytes > 13 && receiveBuffer[1] == 3)
-                            {
-                                var deviceAddress = "http://" + ((IPEndPoint)result.RemoteEndPoint).Address.ToString();
-
-                                var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
-                                if (info != null)
-                                {
-                                    list.Add(info);
-                                }
+                                list.Add(info);
                             }
                         }
                     }
-                    catch (OperationCanceledException)
-                    {
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(receiveBuffer);
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(receiveBuffer);
                 }
             }
             catch (Exception ex)

@@ -127,7 +127,7 @@ namespace MediaBrowser.Common.Networking
                 if (i is IPNetAddress nw)
                 {
                     // Add the subnet calculated from the interface address/mask.
-                    IPNetAddress lan = new IPNetAddress(nw.NetworkAddress.Address, nw.NetworkAddress.SubnetPrefix)
+                    IPNetAddress lan = new IPNetAddress(nw.NetworkAddress.Address, nw.NetworkAddress.PrefixLength)
                     {
                         Tag = i.Tag
                     };

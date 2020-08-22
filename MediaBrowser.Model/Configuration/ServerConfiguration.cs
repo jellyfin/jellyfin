@@ -44,6 +44,12 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIPV6 { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether gets or sets IPV4 capability.
+        /// </summary>
+        /// <value>If IPv4 is enabled.</value>
+        public bool EnableIPV4 { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
         /// </summary>
         public int GatewayMonitorPeriod { get; set; }

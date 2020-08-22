@@ -567,14 +567,20 @@ namespace Emby.Dlna.Rssdp
                 // Only create the IPAny/v6Any and multicast ports once.
                 if (_sockets.Count == 0)
                 {
-                    if (!CreateUniqueSocket(IPAddress.Any, 1900))
+                    if (_networkManager.IsIP4Enabled)
                     {
-                        CreateUniqueSocket(IPAddress.Any);
+                        if (!CreateUniqueSocket(IPAddress.Any, 1900))
+                        {
+                            CreateUniqueSocket(IPAddress.Any);
+                        }
                     }
 
                     if (_networkManager.IsIP6Enabled)
                     {
-                        CreateUniqueSocket(IPAddress.IPv6Any);
+                        if (!CreateUniqueSocket(IPAddress.IPv6Any, 1900))
+                        {
+                            CreateUniqueSocket(IPAddress.IPv6Any);
+                        }
                     }
                 }
 
