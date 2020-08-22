@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Model.Channels;
 
@@ -5,6 +7,14 @@ namespace MediaBrowser.Controller.Channels
 {
     public class InternalChannelFeatures
     {
+        public InternalChannelFeatures()
+        {
+            MediaTypes = new List<ChannelMediaType>();
+            ContentTypes = new List<ChannelMediaContentType>();
+
+            DefaultSortFields = new List<ChannelItemSortField>();
+        }
+
         /// <summary>
         /// Gets or sets the media types.
         /// </summary>
@@ -48,13 +58,5 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <value><c>true</c> if [supports downloading]; otherwise, <c>false</c>.</value>
         public bool SupportsContentDownloading { get; set; }
-
-        public InternalChannelFeatures()
-        {
-            MediaTypes = new List<ChannelMediaType>();
-            ContentTypes = new List<ChannelMediaContentType>();
-
-            DefaultSortFields = new List<ChannelItemSortField>();
-        }
     }
 }

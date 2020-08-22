@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
 
@@ -29,6 +31,7 @@ namespace MediaBrowser.Controller.Security
         void Delete(AuthenticationInfo info);
 
         DeviceOptions GetDeviceOptions(string deviceId);
+
         void UpdateDeviceOptions(string deviceId, DeviceOptions options);
     }
 }

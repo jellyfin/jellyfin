@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -57,6 +59,7 @@ namespace MediaBrowser.Controller.Entities
 
         private Guid[] _childrenIds = null;
         private readonly object _childIdsLock = new object();
+
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)

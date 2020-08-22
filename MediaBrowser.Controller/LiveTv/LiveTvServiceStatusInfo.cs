@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Model.LiveTv;
 
@@ -5,6 +7,12 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvServiceStatusInfo
     {
+        public LiveTvServiceStatusInfo()
+        {
+            Tuners = new List<LiveTvTunerInfo>();
+            IsVisible = true;
+        }
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>
@@ -39,11 +47,5 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is visible; otherwise, <c>false</c>.</value>
         public bool IsVisible { get; set; }
-
-        public LiveTvServiceStatusInfo()
-        {
-            Tuners = new List<LiveTvTunerInfo>();
-            IsVisible = true;
-        }
     }
 }

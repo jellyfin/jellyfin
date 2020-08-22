@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Users;
@@ -11,7 +13,9 @@ namespace MediaBrowser.Controller.Authentication
         bool IsEnabled { get; }
 
         Task<ProviderAuthenticationResult> Authenticate(string username, string password);
+
         bool HasPassword(User user);
+
         Task ChangePassword(User user, string newPassword);
     }
 
