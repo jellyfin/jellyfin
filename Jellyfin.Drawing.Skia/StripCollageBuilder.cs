@@ -128,6 +128,14 @@ namespace Jellyfin.Drawing.Skia
                 Typeface = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright),
                 IsAntialias = true
             };
+
+            // scale down text to 90% of the width if text is larger than 95% of the width
+            var textWidth = textPaint.MeasureText(libraryName);
+            if (textWidth > width * 0.95)
+            {
+                textPaint.TextSize = 0.9f * width * textPaint.TextSize / textWidth;
+            }
+
             canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
 
             return bitmap;
