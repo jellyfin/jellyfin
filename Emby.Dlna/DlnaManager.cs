@@ -509,14 +509,14 @@ namespace Emby.Dlna
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
-        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
+        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request)
         {
             var profile = GetProfile(headers) ??
                           GetDefaultProfile();
 
             var serverId = _appHost.SystemId;
 
-            serverAddress = _appHost.GetSmartApiUrl(serverAddress);
+            var serverAddress = _appHost.GetSmartApiUrl(request);
 
             return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
         }

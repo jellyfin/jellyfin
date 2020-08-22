@@ -70,9 +70,9 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="headers">The headers.</param>
         /// <param name="serverUuId">The server uu identifier.</param>
-        /// <param name="serverAddress">The server address.</param>
+        /// <param name="request">The http request instance.</param>
         /// <returns>System.String.</returns>
-        string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress);
+        string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request);
 
         /// <summary>
         /// Gets the icon.

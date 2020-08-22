@@ -29,7 +29,7 @@ namespace Emby.Dlna.Rssdp
         private const string SsdpNotify = "NOTIFY * HTTP/1.1";
         private const string SsdpInternetGateway = "ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:";
 
-        private readonly string[] _multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" };
+        private readonly string[] _multicastAddresses = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" }; // SSDP Multicast addresses
         private readonly ILogger<SsdpServerPublisher> _logger;
         private readonly IList<SsdpRootDevice> _devices;
         private readonly IReadOnlyList<SsdpRootDevice> _readOnlyDevices;
@@ -449,9 +449,10 @@ namespace Emby.Dlna.Rssdp
 
             // Sends this message out across IP4/6 addresses depending upon settings.
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
-            int count = _networkManager.IsIP6Enabled ? 2 : _networkManager.IsIP4Enabled ? 0 : 1;
+            int begin = _networkManager.IsIP4Enabled ? 0 : 1;
+            int end = _networkManager.IsIP6Enabled ? 2 : 0;
 
-            for (int a = count - 1; a >= 0; a--)
+            for (int a = begin; a <= end; a++)
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -508,10 +509,11 @@ namespace Emby.Dlna.Rssdp
         {
             // Sends this message out across IP4/6 addresses depending upon settings.
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
-            int count = _networkManager.IsIP6Enabled ? 2 : _networkManager.IsIP4Enabled ? 0 : 1;
+            int begin = _networkManager.IsIP4Enabled ? 0 : 1;
+            int end = _networkManager.IsIP6Enabled ? 2 : 0;
 
-            for (int a = count - 1; a >= 0; a--)
-            {
+            for (int a = begin; a <= end; a++)
+             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["HOST"] = _multicastAddresses[a],

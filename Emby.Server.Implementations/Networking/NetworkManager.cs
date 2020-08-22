@@ -14,6 +14,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
@@ -153,7 +154,7 @@ namespace Emby.Server.Implementations.Networking
         {
             get
             {
-                return _configurationManager.Configuration.EnableIPV6;
+                return Socket.OSSupportsIPv6 && _configurationManager.Configuration.EnableIPV6;
             }
 
             private set
@@ -167,7 +168,7 @@ namespace Emby.Server.Implementations.Networking
         {
             get
             {
-                return _configurationManager.Configuration.EnableIPV4;
+                return Socket.OSSupportsIPv4 && _configurationManager.Configuration.EnableIPV4;
             }
 
             private set
@@ -390,13 +391,24 @@ namespace Emby.Server.Implementations.Networking
             }
 
             Socket retVal = PrepareSocket(address);
-            retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
+            try
+            {
+                if (IsIP4Enabled)
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
+                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
+                }
+            }
+            catch (SocketException)
+            {
+                // Ignore.
+            }
+
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                retVal.SetSocketOption(
-                    SocketOptionLevel.IPv6,
-                    SocketOptionName.AddMembership,
-                    new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal));
+                IPv6MulticastOption opt = new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, address.ScopeId);
+
+                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, opt);
             }
             else
             {
@@ -580,7 +592,20 @@ namespace Emby.Server.Implementations.Networking
             port = null;
             // Parse the source object in an attempt to discover where the request originated.
             IPObject sourceAddr;
-            if (source is string sourceStr && !string.IsNullOrEmpty(sourceStr))
+            if (source is HttpRequest sourceReq)
+            {
+                port = sourceReq.Host.Port;
+                if (IPHost.TryParse(sourceReq.Host.Host, out IPHost host))
+                {
+                    sourceAddr = host;
+                }
+                else
+                {
+                    // Assume it's external, as we cannot resolve the host.
+                    sourceAddr = IPHost.None;
+                }
+            }
+            else if (source is string sourceStr && !string.IsNullOrEmpty(sourceStr))
             {
                 if (IPHost.TryParse(sourceStr, out IPHost host))
                 {
@@ -1006,8 +1031,11 @@ namespace Emby.Server.Implementations.Networking
             {
                 // IPv6 is enabled so create a dual IP4/IP6 socket
                 retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, !IsIP4Enabled);
-                retVal.DualMode = true;
+                if (IsIP4Enabled)
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0);
+                    retVal.DualMode = true;
+                }
             }
 
             try
@@ -1026,13 +1054,16 @@ namespace Emby.Server.Implementations.Networking
             {
             }
 
-            try
+            if (IsIP4Enabled)
             {
-                retVal.EnableBroadcast = true;
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
-            }
-            catch (SocketException)
-            {
+                try
+                {
+                    retVal.EnableBroadcast = true;
+                    retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+                }
+                catch (SocketException)
+                {
+                }
             }
 
             return retVal;

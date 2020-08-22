@@ -322,7 +322,8 @@ namespace NetworkTesting
             _ = nm.TryParseInterface(result, out IPNetAddress resultObj);
 
             result = resultObj.Address.ToString();
-            var intf = nm.GetBindInterface(source);
+            var intf = nm.GetBindInterface(source, out int? port);
+            
             
             Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
             
@@ -379,7 +380,7 @@ namespace NetworkTesting
                 result = resultObj.Address.ToString();
             }
 
-            var intf = nm.GetBindInterface(source);
+            var intf = nm.GetBindInterface(source, out int? port);
 
             Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
         }

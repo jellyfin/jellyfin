@@ -234,11 +234,6 @@ namespace Emby.Dlna.Rssdp
                 throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            if (IsInvalid(localIPAddress, null, false, false))
-            {
-                return;
-            }
-
             // Get the correct FamilyAdddress endpoint.
             IPEndPoint endPoint = _networkManager.GetMulticastEndPoint(localIPAddress, 1900);
 
@@ -251,6 +246,7 @@ namespace Emby.Dlna.Rssdp
 
                 if (sendSockets.Count <= 0)
                 {
+                    _logger.LogError("No socket found for {0}", localIPAddress);
                     return;
                 }
             }
@@ -399,7 +395,7 @@ namespace Emby.Dlna.Rssdp
         /// <param name="matchSockets">Check the endpoint address and port against the sockets to see if it's from us.</param>
         /// <param name="sourceInternal">Was the message passed to us by Mono.NAT.</param>
         /// <returns>True if the communication is permitted.</returns>
-        private bool IsInvalid(IPAddress localIPAddress, IPEndPoint? endPoint, bool matchSockets, bool sourceInternal = false)
+        private bool IsInvalid(IPAddress localIPAddress, IPEndPoint endPoint, bool matchSockets, bool sourceInternal = false)
         {
             bool isInterfaceAddress = false;
 
@@ -577,14 +573,12 @@ namespace Emby.Dlna.Rssdp
 
                     if (_networkManager.IsIP6Enabled)
                     {
-                        if (!CreateUniqueSocket(IPAddress.IPv6Any, 1900))
-                        {
-                            CreateUniqueSocket(IPAddress.IPv6Any);
-                        }
+                        CreateUniqueSocket(IPAddress.IPv6Any, 1900);
+                        CreateUniqueSocket(IPAddress.IPv6Any);
                     }
                 }
 
-                if (_networkManager.EnableMultiSocketBinding)
+                if (_networkManager.EnableMultiSocketBinding && !_networkManager.IsIP6Enabled)
                 {
                     foreach (IPObject ip in ba)
                     {

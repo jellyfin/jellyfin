@@ -52,9 +52,10 @@ namespace Jellyfin.Api.Controllers
         {
             if (DlnaEntryPoint.Instance?.DLNAEnabled ?? false)
             {
-                var url = GetAbsoluteUri();
-                var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-                var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
+                // var url = GetAbsoluteUri();
+                // var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
+                // var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, Request.Scheme, Request.HostserverAddress);
+                var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, Request);
                 return Ok(xml);
             }
 

@@ -1130,7 +1130,7 @@ namespace Emby.Server.Implementations
                 return smart.Trim('/');
             }
 
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(smart.Trim('/'), source is HttpRequest request ? request.Scheme : null, port);
         }
 
         /// <inheritdoc/>

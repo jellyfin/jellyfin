@@ -219,9 +219,10 @@ namespace Emby.Dlna.Rssdp
         {
             // Sends this message out across IP4/6 addresses depending upon settings.
             Task[] tasks = { Task.CompletedTask, Task.CompletedTask, Task.CompletedTask };
-            int count = _networkManager.IsIP6Enabled ? 2 : _networkManager.IsIP4Enabled ? 0 : 1;
+            int begin = _networkManager.IsIP4Enabled ? 0 : 1;
+            int end = _networkManager.IsIP6Enabled ? 2 : 0;
 
-            for (int a = count - 1; a >= 0; a--)
+            for (int a = begin; a <= end; a++)
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
