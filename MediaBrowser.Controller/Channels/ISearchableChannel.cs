@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +32,7 @@ namespace MediaBrowser.Controller.Channels
     public interface ISupportsDelete
     {
         bool CanDelete(BaseItem item);
+
         Task DeleteItem(string id, CancellationToken cancellationToken);
     }
 

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +8,6 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {

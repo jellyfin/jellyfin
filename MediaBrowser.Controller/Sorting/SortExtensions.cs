@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +9,7 @@ namespace MediaBrowser.Controller.Sorting
     public static class SortExtensions
     {
         private static readonly AlphanumComparator _comparer = new AlphanumComparator();
+
         public static IEnumerable<T> OrderByString<T>(this IEnumerable<T> list, Func<T, string> getName)
         {
             return list.OrderBy(getName, _comparer);
