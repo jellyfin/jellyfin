@@ -738,6 +738,13 @@ namespace Emby.Server.Implementations.Networking
 
                     ipresult = FormatIP6String(nc.First().Address);
                     _logger.LogDebug("GetBindInterface: Selected first user defined interface.", ipresult);
+
+                    if (isExternal)
+                    {
+                        // TODO: remove this after testing.
+                        _logger.LogWarning("External request received, however, only an internal interface bind found.");
+                    }
+
                     return ipresult;
                 }
 
@@ -769,6 +776,9 @@ namespace Emby.Server.Implementations.Networking
                     }
 
                     // Have to return something, so return an internal address
+
+                    // TODO: remove this after testing.
+                    _logger.LogWarning("External request received, however, no WAN interface found.");
                 }
 
                 // Get the first LAN interface address that isn't a loopback.
@@ -801,8 +811,8 @@ namespace Emby.Server.Implementations.Networking
                 }
 
                 // There isn't any others, so we'll use the loopback.
-                ipresult = "127.0.0.1";
-                _logger.LogDebug("GetBindInterface: Default return. {0}", ipresult);
+                ipresult = IsIP6Enabled ? "::" : "127.0.0.1";
+                _logger.LogWarning("GetBindInterface: Loopback return.", ipresult);
                 return ipresult;
             }
         }
