@@ -1,5 +1,6 @@
+#pragma warning disable CS1591
+
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities
 {
@@ -28,6 +29,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="dateadded">The date the object was added.</param>
+        /// <param name="datemodified">The date the object was last modified.</param>
         /// <param name="_track0"></param>
         public TrackMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Track _track0)
         {
@@ -60,6 +63,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="dateadded">The date the object was added.</param>
+        /// <param name="datemodified">The date the object was last modified.</param>
         /// <param name="_track0"></param>
         public static TrackMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Track _track0)
         {
