@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller
@@ -81,6 +83,10 @@ namespace MediaBrowser.Controller
         /// <value>The internal metadata path.</value>
         string InternalMetadataPath { get; }
 
+        /// <summary>
+        /// Gets the virtual internal metadata path, either a custom path or the default.
+        /// </summary>
+        /// <value>The virtual internal metadata path.</value>
         string VirtualInternalMetadataPath { get; }
 
         /// <summary>

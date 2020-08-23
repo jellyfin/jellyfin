@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +14,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the subtitles.
         /// </summary>
         /// <returns>Task{Stream}.</returns>
-        Task<Stream> GetSubtitles(BaseItem item,
+        Task<Stream> GetSubtitles(
+            BaseItem item,
             string mediaSourceId,
             int subtitleStreamIndex,
             string outputFormat,
@@ -25,6 +28,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the subtitle language encoding parameter.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="language">The language.</param>
         /// <param name="protocol">The protocol.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
