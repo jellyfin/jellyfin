@@ -152,10 +152,10 @@ namespace Emby.Server.Implementations.Playlists
 
                 if (options.ItemIdList.Length > 0)
                 {
-                    AddToPlaylistInternal(playlist.Id.ToString("N", CultureInfo.InvariantCulture), options.ItemIdList, user, new DtoOptions(false)
+                    await AddToPlaylistInternal(playlist.Id, options.ItemIdList, user, new DtoOptions(false)
                     {
                         EnableImages = true
-                    });
+                    }).ConfigureAwait(false);
                 }
 
                 return new PlaylistCreationResult(playlist.Id.ToString("N", CultureInfo.InvariantCulture));
@@ -184,17 +184,17 @@ namespace Emby.Server.Implementations.Playlists
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
 
-        public void AddToPlaylist(string playlistId, ICollection<Guid> itemIds, Guid userId)
+        public Task AddToPlaylistAsync(Guid playlistId, ICollection<Guid> itemIds, Guid userId)
         {
             var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
 
-            AddToPlaylistInternal(playlistId, itemIds, user, new DtoOptions(false)
+            return AddToPlaylistInternal(playlistId, itemIds, user, new DtoOptions(false)
             {
                 EnableImages = true
             });
         }
 
-        private void AddToPlaylistInternal(string playlistId, ICollection<Guid> newItemIds, User user, DtoOptions options)
+        private async Task AddToPlaylistInternal(Guid playlistId, ICollection<Guid> newItemIds, User user, DtoOptions options)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist
@@ -238,7 +238,7 @@ namespace Emby.Server.Implementations.Playlists
 
             // Update the playlist in the repository
             playlist.LinkedChildren = newLinkedChildren;
-            playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             // Update the playlist on disk
             if (playlist.IsFile)
@@ -256,7 +256,7 @@ namespace Emby.Server.Implementations.Playlists
                 RefreshPriority.High);
         }
 
-        public void RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
+        public async Task RemoveFromPlaylistAsync(string playlistId, IEnumerable<string> entryIds)
         {
             if (!(_libraryManager.GetItemById(playlistId) is Playlist playlist))
             {
@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.Playlists
                 .Select(i => i.Item1)
                 .ToArray();
 
-            playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             if (playlist.IsFile)
             {
@@ -289,7 +289,7 @@ namespace Emby.Server.Implementations.Playlists
                 RefreshPriority.High);
         }
 
-        public void MoveItem(string playlistId, string entryId, int newIndex)
+        public async Task MoveItemAsync(string playlistId, string entryId, int newIndex)
         {
             if (!(_libraryManager.GetItemById(playlistId) is Playlist playlist))
             {
@@ -322,7 +322,7 @@ namespace Emby.Server.Implementations.Playlists
 
             playlist.LinkedChildren = newList.ToArray();
 
-            playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             if (playlist.IsFile)
             {

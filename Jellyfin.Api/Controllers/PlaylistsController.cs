@@ -83,12 +83,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpPost("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult AddToPlaylist(
-            [FromRoute] string? playlistId,
+        public async Task<ActionResult> AddToPlaylist(
+            [FromRoute] Guid playlistId,
             [FromQuery] string? ids,
             [FromQuery] Guid? userId)
         {
-            _playlistManager.AddToPlaylist(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty);
+            await _playlistManager.AddToPlaylistAsync(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -102,12 +102,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpPost("{playlistId}/Items/{itemId}/Move/{newIndex}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult MoveItem(
+        public async Task<ActionResult> MoveItem(
             [FromRoute] string? playlistId,
             [FromRoute] string? itemId,
             [FromRoute] int newIndex)
         {
-            _playlistManager.MoveItem(playlistId, itemId, newIndex);
+            await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -120,9 +120,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpDelete("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveFromPlaylist([FromRoute] string? playlistId, [FromQuery] string? entryIds)
+        public async Task<ActionResult> RemoveFromPlaylist([FromRoute] string? playlistId, [FromQuery] string? entryIds)
         {
-            _playlistManager.RemoveFromPlaylist(playlistId, RequestHelpers.Split(entryIds, ',', true));
+            await _playlistManager.RemoveFromPlaylistAsync(playlistId, RequestHelpers.Split(entryIds, ',', true)).ConfigureAwait(false);
             return NoContent();
         }
 

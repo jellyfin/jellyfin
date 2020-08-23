@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 #nullable enable
 
 using System;
@@ -127,7 +129,7 @@ namespace MediaBrowser.Controller.Sorting
         }
 
         /// <inheritdoc />
-        public int Compare(string x, string y)
+        public int Compare(string? x, string? y)
         {
             return CompareValues(x, y);
         }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -261,7 +263,7 @@ namespace MediaBrowser.Controller.LiveTv
                     list.Add(new ExternalUrl
                     {
                         Name = "Trakt",
-                        Url = string.Format("https://trakt.tv/movies/{0}", imdbId)
+                        Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/movies/{0}", imdbId)
                     });
                 }
             }

@@ -34,12 +34,12 @@ namespace Emby.Dlna.Didl
 {
     public class DidlBuilder
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private const string NsDidl = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
+        private const string NsDc = "http://purl.org/dc/elements/1.1/";
+        private const string NsUpnp = "urn:schemas-upnp-org:metadata-1-0/upnp/";
+        private const string NsDlna = "urn:schemas-dlna-org:metadata-1-0/";
 
-        private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
-        private const string NS_DC = "http://purl.org/dc/elements/1.1/";
-        private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
-        private const string NS_DLNA = "urn:schemas-dlna-org:metadata-1-0/";
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly DeviceProfile _profile;
         private readonly IImageProcessor _imageProcessor;
@@ -100,11 +100,11 @@ namespace Emby.Dlna.Didl
                 {
                     // writer.WriteStartDocument();
 
-                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
 
-                    writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
-                    writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
-                    writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+                    writer.WriteAttributeString("xmlns", "dc", null, NsDc);
+                    writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
+                    writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
                     // didl.SetAttribute("xmlns:sec", NS_SEC);
 
                     WriteXmlRootAttributes(_profile, writer);
@@ -147,7 +147,7 @@ namespace Emby.Dlna.Didl
         {
             var clientId = GetClientId(item, null);
 
-            writer.WriteStartElement(string.Empty, "item", NS_DIDL);
+            writer.WriteStartElement(string.Empty, "item", NsDidl);
 
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("id", clientId);
@@ -207,7 +207,8 @@ namespace Emby.Dlna.Didl
             var targetWidth = streamInfo.TargetWidth;
             var targetHeight = streamInfo.TargetHeight;
 
-            var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
+            var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(
+                streamInfo.Container,
                 streamInfo.TargetVideoCodec.FirstOrDefault(),
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetWidth,
@@ -279,7 +280,7 @@ namespace Emby.Dlna.Didl
             }
             else if (string.Equals(subtitleMode, "smi", StringComparison.OrdinalIgnoreCase))
             {
-                writer.WriteStartElement(string.Empty, "res", NS_DIDL);
+                writer.WriteStartElement(string.Empty, "res", NsDidl);
 
                 writer.WriteAttributeString("protocolInfo", "http-get:*:smi/caption:*");
 
@@ -288,7 +289,7 @@ namespace Emby.Dlna.Didl
             }
             else
             {
-                writer.WriteStartElement(string.Empty, "res", NS_DIDL);
+                writer.WriteStartElement(string.Empty, "res", NsDidl);
                 var protocolInfo = string.Format(
                     CultureInfo.InvariantCulture,
                     "http-get:*:text/{0}:*",
@@ -304,7 +305,7 @@ namespace Emby.Dlna.Didl
 
         private void AddVideoResource(XmlWriter writer, Filter filter, string contentFeatures, StreamInfo streamInfo)
         {
-            writer.WriteStartElement(string.Empty, "res", NS_DIDL);
+            writer.WriteStartElement(string.Empty, "res", NsDidl);
 
             var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
 
@@ -526,7 +527,7 @@ namespace Emby.Dlna.Didl
 
         private void AddAudioResource(XmlWriter writer, BaseItem audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
-            writer.WriteStartElement(string.Empty, "res", NS_DIDL);
+            writer.WriteStartElement(string.Empty, "res", NsDidl);
 
             if (streamInfo == null)
             {
@@ -583,7 +584,8 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
             }
 
-            var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
+            var mediaProfile = _profile.GetAudioMediaProfile(
+                streamInfo.Container,
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetChannels,
                 targetAudioBitrate,
@@ -596,7 +598,8 @@ namespace Emby.Dlna.Didl
                 ? MimeTypes.GetMimeType(filename)
                 : mediaProfile.MimeType;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(streamInfo.Container,
+            var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(
+                streamInfo.Container,
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetAudioBitrate,
                 targetSampleRate,
@@ -627,7 +630,7 @@ namespace Emby.Dlna.Didl
 
         public void WriteFolderElement(XmlWriter writer, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
         {
-            writer.WriteStartElement(string.Empty, "container", NS_DIDL);
+            writer.WriteStartElement(string.Empty, "container", NsDidl);
 
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("searchable", "1");
@@ -714,7 +717,7 @@ namespace Emby.Dlna.Didl
             // MediaMonkey for example won't display content without a title
             // if (filter.Contains("dc:title"))
             {
-                AddValue(writer, "dc", "title", GetDisplayName(item, itemStubType, context), NS_DC);
+                AddValue(writer, "dc", "title", GetDisplayName(item, itemStubType, context), NsDc);
             }
 
             WriteObjectClass(writer, item, itemStubType);
@@ -723,7 +726,7 @@ namespace Emby.Dlna.Didl
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NS_DC);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NsDc);
                 }
             }
 
@@ -731,13 +734,13 @@ namespace Emby.Dlna.Didl
             {
                 foreach (var genre in item.Genres)
                 {
-                    AddValue(writer, "upnp", "genre", genre, NS_UPNP);
+                    AddValue(writer, "upnp", "genre", genre, NsUpnp);
                 }
             }
 
             foreach (var studio in item.Studios)
             {
-                AddValue(writer, "upnp", "publisher", studio, NS_UPNP);
+                AddValue(writer, "upnp", "publisher", studio, NsUpnp);
             }
 
             if (!(item is Folder))
@@ -748,28 +751,29 @@ namespace Emby.Dlna.Didl
 
                     if (!string.IsNullOrWhiteSpace(desc))
                     {
-                        AddValue(writer, "dc", "description", desc, NS_DC);
+                        AddValue(writer, "dc", "description", desc, NsDc);
                     }
                 }
+
                 // if (filter.Contains("upnp:longDescription"))
-                //{
+                // {
                 //    if (!string.IsNullOrWhiteSpace(item.Overview))
                 //    {
-                //        AddValue(writer, "upnp", "longDescription", item.Overview, NS_UPNP);
+                //        AddValue(writer, "upnp", "longDescription", item.Overview, NsUpnp);
                 //    }
-                //}
+                // }
             }
 
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
                 if (filter.Contains("dc:rating"))
                 {
-                    AddValue(writer, "dc", "rating", item.OfficialRating, NS_DC);
+                    AddValue(writer, "dc", "rating", item.OfficialRating, NsDc);
                 }
 
                 if (filter.Contains("upnp:rating"))
                 {
-                    AddValue(writer, "upnp", "rating", item.OfficialRating, NS_UPNP);
+                    AddValue(writer, "upnp", "rating", item.OfficialRating, NsUpnp);
                 }
             }
 
@@ -781,7 +785,7 @@ namespace Emby.Dlna.Didl
             // More types here
             // http://oss.linn.co.uk/repos/Public/LibUpnpCil/DidlLite/UpnpAv/Test/TestDidlLite.cs
 
-            writer.WriteStartElement("upnp", "class", NS_UPNP);
+            writer.WriteStartElement("upnp", "class", NsUpnp);
 
             if (item.IsDisplayedAsFolder || stubType.HasValue)
             {
@@ -882,7 +886,7 @@ namespace Emby.Dlna.Didl
                 var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
                     ?? PersonType.Actor;
 
-                AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NS_UPNP);
+                AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NsUpnp);
             }
         }
 
@@ -896,8 +900,8 @@ namespace Emby.Dlna.Didl
             {
                 foreach (var artist in hasArtists.Artists)
                 {
-                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
-                    AddValue(writer, "dc", "creator", artist, NS_DC);
+                    AddValue(writer, "upnp", "artist", artist, NsUpnp);
+                    AddValue(writer, "dc", "creator", artist, NsDc);
 
                     // If it doesn't support album artists (musicvideo), then tag as both
                     if (hasAlbumArtists == null)
@@ -917,16 +921,16 @@ namespace Emby.Dlna.Didl
 
             if (!string.IsNullOrWhiteSpace(item.Album))
             {
-                AddValue(writer, "upnp", "album", item.Album, NS_UPNP);
+                AddValue(writer, "upnp", "album", item.Album, NsUpnp);
             }
 
             if (item.IndexNumber.HasValue)
             {
-                AddValue(writer, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
+                AddValue(writer, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(_usCulture), NsUpnp);
 
                 if (item is Episode)
                 {
-                    AddValue(writer, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
+                    AddValue(writer, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(_usCulture), NsUpnp);
                 }
             }
         }
@@ -935,7 +939,7 @@ namespace Emby.Dlna.Didl
         {
             try
             {
-                writer.WriteStartElement("upnp", "artist", NS_UPNP);
+                writer.WriteStartElement("upnp", "artist", NsUpnp);
                 writer.WriteAttributeString("role", "AlbumArtist");
 
                 writer.WriteString(name);
@@ -971,14 +975,14 @@ namespace Emby.Dlna.Didl
 
             var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
 
-            writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
-            writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
-            writer.WriteString(albumartUrlInfo.Url);
+            writer.WriteStartElement("upnp", "albumArtURI", NsUpnp);
+            writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
+            writer.WriteString(albumartUrlInfo.url);
             writer.WriteFullEndElement();
 
             // TOOD: Remove these default values
             var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
-            writer.WriteElementString("upnp", "icon", NS_UPNP, iconUrlInfo.Url);
+            writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.url);
 
             if (!_profile.EnableAlbumArtInDidl)
             {
@@ -1021,12 +1025,12 @@ namespace Emby.Dlna.Didl
 
             var albumartUrlInfo = GetImageUrl(imageInfo, maxWidth, maxHeight, format);
 
-            writer.WriteStartElement(string.Empty, "res", NS_DIDL);
+            writer.WriteStartElement(string.Empty, "res", NsDidl);
 
             // Images must have a reported size or many clients (Bubble upnp), will only use the first thumbnail
             // rather than using a larger one when available
-            var width = albumartUrlInfo.Width ?? maxWidth;
-            var height = albumartUrlInfo.Height ?? maxHeight;
+            var width = albumartUrlInfo.width ?? maxWidth;
+            var height = albumartUrlInfo.height ?? maxHeight;
 
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
@@ -1043,7 +1047,7 @@ namespace Emby.Dlna.Didl
                 "resolution",
                 string.Format(CultureInfo.InvariantCulture, "{0}x{1}", width, height));
 
-            writer.WriteString(albumartUrlInfo.Url);
+            writer.WriteString(albumartUrlInfo.url);
 
             writer.WriteFullEndElement();
         }
@@ -1139,7 +1143,6 @@ namespace Emby.Dlna.Didl
 
             if (width == 0 || height == 0)
             {
-                // _imageProcessor.GetImageSize(item, imageInfo);
                 width = null;
                 height = null;
             }
@@ -1148,18 +1151,6 @@ namespace Emby.Dlna.Didl
                 width = null;
                 height = null;
             }
-
-            // try
-            //{
-            //    var size = _imageProcessor.GetImageSize(imageInfo);
-
-            //    width = size.Width;
-            //    height = size.Height;
-            //}
-            // catch
-            //{
-
-            //}
 
             var inputFormat = (Path.GetExtension(imageInfo.Path) ?? string.Empty)
                 .TrimStart('.')
@@ -1175,30 +1166,6 @@ namespace Emby.Dlna.Didl
                 Format = inputFormat,
                 ItemImageInfo = imageInfo
             };
-        }
-
-        private class ImageDownloadInfo
-        {
-            internal Guid ItemId;
-            internal string ImageTag;
-            internal ImageType Type;
-
-            internal int? Width;
-            internal int? Height;
-
-            internal bool IsDirectStream;
-
-            internal string Format;
-
-            internal ItemImageInfo ItemImageInfo;
-        }
-
-        private class ImageUrlInfo
-        {
-            internal string Url;
-
-            internal int? Width;
-            internal int? Height;
         }
 
         public static string GetClientId(BaseItem item, StubType? stubType)
@@ -1218,7 +1185,7 @@ namespace Emby.Dlna.Didl
             return id;
         }
 
-        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
+        private (string url, int? width, int? height) GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
         {
             var url = string.Format(
                 CultureInfo.InvariantCulture,
@@ -1256,12 +1223,26 @@ namespace Emby.Dlna.Didl
             // just lie
             info.IsDirectStream = true;
 
-            return new ImageUrlInfo
-            {
-                Url = url,
-                Width = width,
-                Height = height
-            };
+            return (url, width, height);
+        }
+
+        private class ImageDownloadInfo
+        {
+            internal Guid ItemId { get; set; }
+
+            internal string ImageTag { get; set; }
+
+            internal ImageType Type { get; set; }
+
+            internal int? Width { get; set; }
+
+            internal int? Height { get; set; }
+
+            internal bool IsDirectStream { get; set; }
+
+            internal string Format { get; set; }
+
+            internal ItemImageInfo ItemImageInfo { get; set; }
         }
     }
 }

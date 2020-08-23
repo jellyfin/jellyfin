@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -32,6 +34,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="urlid"></param>
         /// <param name="name"></param>
+        /// <param name="dateadded">The date the object was added.</param>
+        /// <param name="datemodified">The date the object was last modified.</param>
         public Person(Guid urlid, string name, DateTime dateadded, DateTime datemodified)
         {
             this.UrlId = urlid;
@@ -53,6 +57,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="urlid"></param>
         /// <param name="name"></param>
+        /// <param name="dateadded">The date the object was added.</param>
+        /// <param name="datemodified">The date the object was last modified.</param>
         public static Person Create(Guid urlid, string name, DateTime dateadded, DateTime datemodified)
         {
             return new Person(urlid, name, dateadded, datemodified);

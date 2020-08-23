@@ -8,10 +8,6 @@ namespace Emby.Dlna.Service
 {
     public class BaseService : IEventManager
     {
-        protected IEventManager EventManager;
-        protected IHttpClient HttpClient;
-        protected ILogger Logger;
-
         protected BaseService(ILogger<BaseService> logger, IHttpClient httpClient)
         {
             Logger = logger;
@@ -19,6 +15,12 @@ namespace Emby.Dlna.Service
 
             EventManager = new EventManager(logger, HttpClient);
         }
+
+        protected IEventManager EventManager { get; }
+
+        protected IHttpClient HttpClient { get; }
+
+        protected ILogger Logger { get; }
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
