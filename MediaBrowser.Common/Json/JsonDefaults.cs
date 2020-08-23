@@ -24,7 +24,8 @@ namespace MediaBrowser.Common.Json
             var options = new JsonSerializerOptions
             {
                 ReadCommentHandling = JsonCommentHandling.Disallow,
-                WriteIndented = false
+                WriteIndented = false,
+                IgnoreNullValues = true
             };
 
             options.Converters.Add(new JsonGuidConverter());
