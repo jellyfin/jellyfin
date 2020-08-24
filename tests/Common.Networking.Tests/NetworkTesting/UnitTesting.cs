@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Controller;
+using Emby.Dlna.Net;
 
 namespace NetworkTesting
 {
@@ -28,7 +29,7 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>(), Mock.Of<IServerApplicationHost>());
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
             
             Assert.True(!nm.IsInLocalNetwork(value));
         }
@@ -105,7 +106,7 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>(), Mock.Of<IServerApplicationHost>());
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
             // Test included, IP6.
             NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);
@@ -227,7 +228,7 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>(), Mock.Of<IServerApplicationHost>());
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
@@ -269,7 +270,7 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>(), Mock.Of<IServerApplicationHost>());
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
 
@@ -317,7 +318,7 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>(), Mock.Of<IServerApplicationHost>());
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
             _ = nm.TryParseInterface(result, out IPNetAddress resultObj);
 
@@ -372,7 +373,7 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>(), Mock.Of<IServerApplicationHost>());
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
             if (nm.TryParseInterface(result, out IPNetAddress resultObj))
             {
@@ -405,10 +406,8 @@ namespace NetworkTesting
         [InlineData("0      - 1202020", 1, 65535)]
         public void TestRange(string rangeStr, int min, int max)
         {
-            _ = NetworkManager.TryParseRange(rangeStr, out (int min, int max) range);
-
-            Assert.True((range.min == min) && (range.max == max));
-
+            SocketServer.TryParseRange(rangeStr, out (int Min, int Max) range);
+            Assert.True((range.Min == min) && (range.Max == max));
         }
     }
 }

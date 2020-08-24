@@ -118,16 +118,16 @@ namespace Emby.Dlna
         public static DlnaManager? Instance { get; internal set; }
 
         /// <summary>
+        /// Gets the SsdpServer name used in advertisements.
+        /// </summary>
+        public static string SsdpServer => $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
+
+        /// <summary>
         /// Gets a value indicating whether uPNP is active.
         /// </summary>
         public bool IsuPnPActive => _configurationManager.Configuration.EnableUPnP &&
             _configurationManager.Configuration.EnableRemoteAccess &&
             (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
-
-        /// <summary>
-        /// Gets the SsdpServer name used in advertisements.
-        /// </summary>
-        public string SsdpServer => $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
 
         /// <summary>
         /// Gets the unqiue user agent used in ssdp communications.

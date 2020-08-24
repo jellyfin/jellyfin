@@ -27,9 +27,9 @@ namespace Emby.Dlna.Net.Parsers
             if (manager != null)
             {
                 // TODO : change SsdpServer to a GUID.
-                values[manager.NetworkChangeCount + "-NLS"] = manager.SsdpServer + manager.NetworkChangeCount;
+                values[manager.NetworkChangeCount + "-NLS"] = DlnaManager.SsdpServer + manager.NetworkChangeCount;
                 values["OPT"] = SsdpOpt + manager.NetworkChangeCount;
-                values["SERVER"] = manager.SsdpServer;
+                values["SERVER"] = DlnaManager.SsdpServer;
             }
 
             var builder = new StringBuilder();

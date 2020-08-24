@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Emby.Dlna;
 using Emby.Dlna.Configuration;
 using Emby.Dlna.Net.EventArgs;
 using Emby.Dlna.Net.Parsers;
@@ -45,6 +46,11 @@ namespace Emby.Dlna.Net
          * service doesn't steal them. While the caller can specify a local port to use, we will default to 0 which allows the
          * underlying system to auto-assign a free port.
          */
+
+        /// <summary>
+        /// Default ttl.
+        /// </summary>
+        public const int DefaultMulticastTimeToLive = 4;
 
         private readonly object _socketSynchroniser;
         private readonly HttpRequestParser _requestParser;
@@ -106,16 +112,157 @@ namespace Emby.Dlna.Net
         public static SocketServer? Instance { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether uPNP port forwarding is active.
+        /// </summary>
+        public static bool IsuPnPActive => DlnaManager.Instance != null && DlnaManager.Instance.IsuPnPActive;
+
+        /// <summary>
         /// Gets the number of times each udp packet should be sent.
         /// </summary>
         public int ResendCount { get => _udpResendCount; }
+
+        /// <summary>
+        /// Gets a value indicating whether is multi-socket binding available.
+        /// </summary>
+        public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
 
         /// <summary>
         /// Gets a value indicating whether detailed DNLA debug logging is active.
         /// </summary>
         public bool Tracing { get; private set; }
 
-        private bool IsuPnPActive => DlnaManager.Instance != null && DlnaManager.Instance.IsuPnPActive;
+         /// <summary>
+        /// Gets a value indicating whether IP6 is enabled.
+        /// </summary>
+        public bool IsIP6Enabled
+        {
+            get
+            {
+                return Socket.OSSupportsIPv6 && _configurationManager.Configuration.EnableIPV6;
+            }
+
+            private set
+            {
+                _configurationManager.Configuration.EnableIPV6 = value;
+            }
+        }
+
+         /// <summary>
+        /// Gets a value indicating whether IP4 is enabled.
+        /// </summary>
+        public bool IsIP4Enabled
+        {
+            get
+            {
+                return Socket.OSSupportsIPv4 && _configurationManager.Configuration.EnableIPV4;
+            }
+
+            private set
+            {
+                _configurationManager.Configuration.EnableIPV4 = value;
+            }
+        }
+
+        /// <summary>
+        /// Parses a string and returns a range value if possible.
+        /// </summary>
+        /// <param name="rangeStr">String to parse.</param>
+        /// <param name="range">Range value contained in rangeStr.</param>
+        /// <returns>Result of the operation.</returns>
+        public static bool TryParseRange(string rangeStr, out (int Min, int Max) range)
+        {
+            if (string.IsNullOrEmpty(rangeStr))
+            {
+                range.Min = range.Max = 0; // Random Port.
+                return false;
+            }
+
+            // Remove all white space.
+            rangeStr = Regex.Replace(rangeStr, @"\s+", string.Empty);
+
+            var i = rangeStr.IndexOf('-', StringComparison.OrdinalIgnoreCase);
+            if (i != -1)
+            {
+                int minVal = int.TryParse(rangeStr.Substring(0, i), out int min) ? min : 1;
+                int maxVal = int.TryParse(rangeStr.Substring(i + 1), out int max) ? max : 65535;
+                if (minVal < 1)
+                {
+                    minVal = 1;
+                }
+
+                if (maxVal > 65535)
+                {
+                    maxVal = 65535;
+                }
+
+                range.Max = Math.Max(minVal, maxVal);
+                range.Min = Math.Min(minVal, maxVal);
+                return true;
+            }
+
+            if (int.TryParse(rangeStr, out int start))
+            {
+                if (start < 1 || start > 65535)
+                {
+                    start = 0; // Random Port.
+                }
+
+                range.Min = range.Max = start;
+                return true;
+            }
+
+            // Random Port.
+            range.Min = range.Max = 0;
+            return false;
+        }
+
+        /// <summary>
+        /// Returns an unused UDP port number in the range specified.
+        /// </summary>
+        /// <param name="range">Upper and Lower boundary of ports to select.</param>
+        /// <returns>System.Int32.</returns>
+        public static int GetUdpPortFromRange((int Min, int Max) range)
+        {
+            var properties = IPGlobalProperties.GetIPGlobalProperties();
+
+            // Get active udp listeners.
+            var udpListenerPorts = properties.GetActiveUdpListeners()
+                        .Where(n => n.Port >= range.Min && n.Port <= range.Max)
+                        .Select(n => n.Port);
+
+            return Enumerable.Range(range.Min, range.Max)
+                .Where(i => !udpListenerPorts.Contains(i))
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets a random port number that is currently available.
+        /// </summary>
+        /// <returns>System.Int32.</returns>
+        public static int GetRandomUnusedUdpPort()
+        {
+            // Get a port from the dynamic range.
+            return GetUdpPortFromRange((49152, 65535));
+        }
+
+        /// <summary>
+        /// Returns the correct multicast address based upon the value of the address provided.
+        /// </summary>
+        /// <param name="localIPAddress">IP address to use for comparison.</param>
+        /// <param name="port">Port to use.</param>
+        /// <returns>IPEndpoint set to the port provided.</returns>
+        public static IPEndPoint GetMulticastEndPoint(IPAddress localIPAddress, int port)
+        {
+            if (localIPAddress == null)
+            {
+                throw new ArgumentNullException(nameof(localIPAddress));
+            }
+
+            return new IPEndPoint(
+                localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.MulticastIPv4 : localIPAddress.IsIPv6LinkLocal ?
+                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
+        }
 
         /// <inheritdoc/>
 #pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCount implementation causes warning.
@@ -144,6 +291,128 @@ namespace Emby.Dlna.Net
                 _oldState = IsuPnPActive;
                 // _udpResendCount = configurationManager.GetDlnaConfiguration().UDPResentCount;
             }
+        }
+
+        /// <summary>
+        /// Returns a udp port based upon Configuration.UDPPort.
+        /// </summary>
+        /// <param name="portStr">Port Range, or empty/zero for a random port.</param>
+        /// <returns>System.Int32.</returns>
+        public int GetPort(string portStr)
+        {
+            int port = 0;
+            if (TryParseRange(portStr, out (int Min, int Max) range))
+            {
+                port = GetUdpPortFromRange(range);
+            }
+
+            if (port < 0 || port > 65535)
+            {
+                _logger.LogError("UDP port in the range {0} cannot be allocated. Assigning random.", portStr);
+                port = 0;
+            }
+
+            if (port == 0)
+            {
+                port = GetRandomUnusedUdpPort();
+            }
+
+            return port;
+        }
+
+        /// <summary>
+        /// Creates an UDP Socket.
+        /// </summary>
+        /// <param name="port">UDP port to bind.</param>
+        /// <returns>A Socket.</returns>
+        public Socket CreateUdpBroadcastSocket(int port)
+        {
+            if (port < 0 || port > 65536)
+            {
+                throw new ArgumentException("Port out of range", nameof(port));
+            }
+
+            IPAddress address = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+            Socket retVal = PrepareSocket(address);
+            try
+            {
+                retVal.Bind(new IPEndPoint(address, port));
+            }
+            catch
+            {
+                retVal?.Dispose();
+                throw;
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+        /// </summary>
+        /// <param name="address">IP Address to bind.</param>
+        /// <param name="port">UDP port to bind.</param>
+        /// <returns>A Socket.</returns>
+        public Socket CreateUdpMulticastSocket(IPAddress address, int port)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (port < 0 || port > 65536)
+            {
+                throw new ArgumentException("Port out of range", nameof(port));
+            }
+
+            Socket retVal = PrepareSocket(address);
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogDebug(ex, "Error setting multicast values on socket. {0}/{1}", address, port);
+            }
+
+            if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                IPv6MulticastOption opt = new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, address.ScopeId);
+
+                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, opt);
+            }
+            else
+            {
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPNetAddress.MulticastIPv4, address));
+            }
+
+            try
+            {
+                retVal.Bind(new IPEndPoint(address, port));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to bind to {0}/{1}.", address, port);
+                retVal?.Dispose();
+                throw;
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Returns the correct multicast address based upon the IsIPEnabled.
+        /// </summary>
+        /// <param name="port">Port to use.</param>
+        /// <returns>IPEndpoint set to the port provided.</returns>
+        public IPEndPoint GetMulticastEndPoint(int port)
+        {
+            IPAddress addr = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+            return new IPEndPoint(
+                addr.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.MulticastIPv4 : addr.IsIPv6LinkLocal ?
+                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
         }
 
         /// <summary>
@@ -182,11 +451,11 @@ namespace Emby.Dlna.Net
             lock (_socketSynchroniser)
             {
                 // If IP dual mode is enabled, then IPAddress.Any and IPAddress.Any are not used internally in Socket, hence the use of _any4 and _any6.
-                if (_networkManager.IsIP4Enabled && endPoint.Address.Equals(IPAddress.Loopback))
+                if (IsIP4Enabled && endPoint.Address.Equals(IPAddress.Loopback))
                 {
                     sockets = _sockets.Where(s => EndPointEquals(s, _any4) || EndPointEquals(s, IPAddress.Loopback));
                 }
-                else if (_networkManager.IsIP6Enabled && endPoint.Address.Equals(IPAddress.IPv6Loopback))
+                else if (IsIP6Enabled && endPoint.Address.Equals(IPAddress.IPv6Loopback))
                 {
                     sockets = _sockets.Where(s => EndPointEquals(s, _any6) || EndPointEquals(s, IPAddress.IPv6Loopback));
                 }
@@ -242,7 +511,7 @@ namespace Emby.Dlna.Net
             }
 
             // Get the correct FamilyAdddress endpoint.
-            IPEndPoint endPoint = _networkManager.GetMulticastEndPoint(localIPAddress, 1900);
+            IPEndPoint endPoint = GetMulticastEndPoint(localIPAddress, 1900);
 
             List<Socket> sendSockets;
 
@@ -379,6 +648,64 @@ namespace Emby.Dlna.Net
         }
 
         /// <summary>
+        /// Creates a socket for use.
+        /// </summary>
+        /// <param name="address">Address of socket.</param>
+        /// <returns>Socket instance.</returns>
+        private Socket PrepareSocket(IPAddress address)
+        {
+            Socket retVal;
+
+            if (address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            }
+            else
+            {
+                // IPv6 is enabled so create a dual IP4/IP6 socket
+                retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+                if (IsIP4Enabled)
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0);
+                    retVal.DualMode = true;
+                }
+            }
+
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogWarning(ex, "Error setting socket as reusable. {0}", address);
+            }
+
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ExclusiveAddressUse, false);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogWarning(ex, "Error setting socket as non exclusive. {0}", address);
+            }
+
+            if (IsIP4Enabled)
+            {
+                try
+                {
+                    retVal.EnableBroadcast = true;
+                    retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+                }
+                catch (SocketException ex)
+                {
+                    _logger.LogWarning(ex, "Error enabling broadcast on socket. {0}", address);
+                }
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
         /// Compares a socket's LocalEndPoint with the ipaddress provided, taking into consideration the IP protocols enabled,
         /// and IP4 mapping.
         /// </summary>
@@ -388,12 +715,12 @@ namespace Emby.Dlna.Net
         /// <returns>True if both addresses are equal and the IP protocol conditions are met.</returns>
         private bool EndPointEquals(Socket socket, IPAddress other, bool ip4Mapping = false)
         {
-            if (!_networkManager.IsIP4Enabled && other.AddressFamily == AddressFamily.InterNetwork)
+            if (!IsIP4Enabled && other.AddressFamily == AddressFamily.InterNetwork)
             {
                 return false;
             }
 
-            if (!_networkManager.IsIP6Enabled && other.AddressFamily == AddressFamily.InterNetworkV6)
+            if (!IsIP6Enabled && other.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return false;
             }
@@ -586,7 +913,7 @@ namespace Emby.Dlna.Net
                 try
                 {
                     _logger.LogDebug("Creating socket for {0}.", localIPAddress);
-                    _sockets.Add(_networkManager.CreateUdpMulticastSocket(localIPAddress, port));
+                    _sockets.Add(CreateUdpMulticastSocket(localIPAddress, port));
                     return true;
                 }
                 catch (SocketException ex)
@@ -611,7 +938,7 @@ namespace Emby.Dlna.Net
 
             lock (_socketSynchroniser)
             {
-                if (_networkManager.EnableMultiSocketBinding && _sockets.Count > 0)
+                if (EnableMultiSocketBinding && _sockets.Count > 0)
                 {
                     // Rather than destroying all sockets and re-creating them, only destroy invalid ones.
                     List<Socket>? removeThese = null;
@@ -649,19 +976,19 @@ namespace Emby.Dlna.Net
                 // Only create the IPAny/v6Any and multicast ports once.
                 if (_sockets.Count == 0)
                 {
-                    if (_networkManager.IsIP6Enabled)
+                    if (IsIP6Enabled)
                     {
                         CreateUniqueSocket(IPAddress.IPv6Any, 1900);
                         CreateUniqueSocket(IPAddress.IPv6Loopback);
                     }
-                    else if (_networkManager.IsIP4Enabled)
+                    else if (IsIP4Enabled)
                     {
                         CreateUniqueSocket(IPAddress.Any, 1900);
                         CreateUniqueSocket(IPAddress.Loopback);
                     }
                 }
 
-                if (_networkManager.EnableMultiSocketBinding)
+                if (EnableMultiSocketBinding)
                 {
                     foreach (IPObject ip in ba)
                     {
@@ -681,7 +1008,7 @@ namespace Emby.Dlna.Net
         private IPAddress AnyIP(IPAddress? any = null)
         {
             // Interesting fact: When an ANY socket is created in dualmode - it gets given a new value that is neither IPAddress.Any nor IPAddress.IPv6Any.
-            if (_networkManager.IsIP4Enabled && _networkManager.IsIP6Enabled)
+            if (IsIP4Enabled && IsIP6Enabled)
             {
                 return IPNetAddress.DualIpAny;
             }
@@ -691,7 +1018,7 @@ namespace Emby.Dlna.Net
                 return any;
             }
 
-            if (_networkManager.IsIP6Enabled)
+            if (IsIP6Enabled)
             {
                 return IPAddress.IPv6Any;
             }
@@ -709,12 +1036,12 @@ namespace Emby.Dlna.Net
             IPEndPoint ep = (IPEndPoint)e.EndPoint;
 
             // Only process the IP address family that we are configured for.
-            if (!_networkManager.IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
+            if (!IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
             {
                 return;
             }
 
-            if (!_networkManager.IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
+            if (!IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return;
             }

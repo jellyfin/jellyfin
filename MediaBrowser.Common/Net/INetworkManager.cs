@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
@@ -29,11 +28,6 @@ namespace MediaBrowser.Common.Net
         /// Gets a value indicating whether IP4 is enabled.
         /// </summary>
         bool IsIP4Enabled { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the system supports multi-socket binding.
-        /// </summary>
-        bool EnableMultiSocketBinding { get; }
 
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
@@ -99,30 +93,10 @@ namespace MediaBrowser.Common.Net
         bool IsExcludedInterface(IPAddress address);
 
         /// <summary>
-        /// Gets a random port number that is currently available.
-        /// </summary>
-        /// <returns>System.Int32.</returns>
-        int GetRandomUnusedUdpPort();
-
-        /// <summary>
-        /// Returns a udp port based upon Configuration.UDPPort.
-        /// </summary>
-        /// <param name="portStr">Port Range, or empty/zero for a random port.</param>
-        /// <returns>System.Int32.</returns>
-        int GetPort(string portStr);
-
-        /// <summary>
-        /// Returns an unused UDP port number in the range specified.
-        /// </summary>
-        /// <param name="range">Upper and Lower boundary of ports to select.</param>
-        /// <returns>System.Int32.</returns>
-        int GetUdpPortFromRange((int min, int max) range);
-
-        /// <summary>
         /// Removes invalid addresses from an IPHost object, based upon IP settings.
         /// </summary>
-        /// <param name="obj">IPHost object to restrict.</param>
-        public void Restrict(IPHost obj);
+        /// <param name="host">IPHost object to restrict.</param>
+        public void Restrict(IPHost host);
 
         /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.
@@ -219,35 +193,5 @@ namespace MediaBrowser.Common.Net
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         NetCollection GetFilteredLANSubnets(NetCollection? filter = null);
-
-        /// <summary>
-        /// Creates an UDP Socket.
-        /// </summary>
-        /// <param name="port">UDP port to bind.</param>
-        /// <returns>A Socket.</returns>
-        Socket CreateUdpBroadcastSocket(int port);
-
-        /// <summary>
-        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
-        /// </summary>
-        /// <param name="address">IP Address to bind.</param>
-        /// <param name="port">UDP port to bind.</param>
-        /// <returns>A Socket.</returns>
-        Socket CreateUdpMulticastSocket(IPAddress address, int port);
-
-        /// <summary>
-        /// Returns the correct multicast address based upon the value of the address provided.
-        /// </summary>
-        /// <param name="localIPAddress">IP address to use for comparison.</param>
-        /// <param name="port">Port to use.</param>
-        /// <returns>IPEndpoint set to the port provided.</returns>
-        IPEndPoint GetMulticastEndPoint(IPAddress localIPAddress, int port);
-
-        /// <summary>
-        /// Returns the correct multicast address based upon the IsIPEnabled.
-        /// </summary>
-        /// <param name="port">Port to use.</param>
-        /// <returns>IPEndpoint set to the port provided.</returns>
-        IPEndPoint GetMulticastEndPoint(int port);
     }
 }

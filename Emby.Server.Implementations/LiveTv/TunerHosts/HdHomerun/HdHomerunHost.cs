@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Net;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -735,19 +736,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             try
             {
                 // Get a port number.
-                int port = _networkManager.GetPort(Config.Configuration.HDHomerunPortRange);
+                int port = SocketServer.Instance.GetPort(Config.Configuration.HDHomerunPortRange);
 
                 IPEndPoint endpoint;
                 if (_networkManager.IsIP6Enabled)
                 {
-                    endpoint = _networkManager.GetMulticastEndPoint(HdHomeRunPort);
+                    endpoint = SocketServer.Instance.GetMulticastEndPoint(HdHomeRunPort);
                 }
                 else
                 {
                     endpoint = new IPEndPoint(IPAddress.Broadcast, HdHomeRunPort);
                 }
 
-                using var udpClient = _networkManager.CreateUdpBroadcastSocket(port);
+                using var udpClient = SocketServer.Instance.CreateUdpBroadcastSocket(port);
                 await udpClient.SendToAsync(discBytes, SocketFlags.None, endpoint).ConfigureAwait(false);
                 var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 

@@ -5,9 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Networking;
+using Emby.Dlna.Net;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
@@ -58,7 +57,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
-                _udpSocket = _networkManager.CreateUdpBroadcastSocket(PortNumber);
+                _udpSocket = SocketServer.Instance?.CreateUdpBroadcastSocket(PortNumber) ?? null;
                 _ = Task.Run(async () => await BeginReceiveAsync().ConfigureAwait(false));
             }
             catch (SocketException ex)

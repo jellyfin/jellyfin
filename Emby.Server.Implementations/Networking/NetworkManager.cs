@@ -25,11 +25,6 @@ namespace Emby.Server.Implementations.Networking
     public class NetworkManager : INetworkManager, IDisposable
     {
         /// <summary>
-        /// Default ttl.
-        /// </summary>
-        public const int DefaultMulticastTimeToLive = 4;
-
-        /// <summary>
         /// Contains the description of the interface along with its index.
         /// </summary>
         private readonly SortedList<string, int> _interfaceNames;
@@ -52,7 +47,6 @@ namespace Emby.Server.Implementations.Networking
         private readonly ILogger<NetworkManager> _logger;
 
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly IServerApplicationHost _appHost;
         private readonly Dictionary<IPNetAddress, string> _overrideAddresses;
 
         /// <summary>
@@ -92,11 +86,6 @@ namespace Emby.Server.Implementations.Networking
         private bool _usingInterfaces;
 
         /// <summary>
-        /// Keeps a count of network changes.
-        /// </summary>
-        private int _changes;
-
-        /// <summary>
         /// True if this object is disposed.
         /// </summary>
         private bool _disposed;
@@ -106,13 +95,11 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         /// <param name="configurationManager">IServerConfigurationManager instance.</param>
         /// <param name="logger">Logger to use for messages.</param>
-        /// <param name="appHost">IServerApplicationHost instance.</param>
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in InitialiseLAN function. Compiler doesn't yet recognise this.
-        public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager> logger, IServerApplicationHost appHost)
+        public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
-            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
 
             _interfaceAddresses = new NetCollection(unique: false);
             _macAddresses = new List<PhysicalAddress>();
@@ -182,67 +169,9 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Gets a value indicating whether is multi-socket binding available.
-        /// </summary>
-        public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
-
-        /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
         /// </summary>
         public bool TrustAllIP6Interfaces => _configurationManager.Configuration.TrustAllIP6Interfaces;
-
-        /// <summary>
-        /// Parses a string and returns a range value if possible.
-        /// </summary>
-        /// <param name="rangeStr">String to parse.</param>
-        /// <param name="range">Range value contained in rangeStr.</param>
-        /// <returns>Result of the operation.</returns>
-        public static bool TryParseRange(string rangeStr, out (int min, int max) range)
-        {
-            if (string.IsNullOrEmpty(rangeStr))
-            {
-                range.min = range.max = 0; // Random Port.
-                return false;
-            }
-
-            // Remove all white space.
-            rangeStr = Regex.Replace(rangeStr, @"\s+", string.Empty);
-
-            var i = rangeStr.IndexOf('-', StringComparison.OrdinalIgnoreCase);
-            if (i != -1)
-            {
-                int minVal = int.TryParse(rangeStr.Substring(0, i), out int min) ? min : 1;
-                int maxVal = int.TryParse(rangeStr.Substring(i + 1), out int max) ? max : 65535;
-                if (minVal < 1)
-                {
-                    minVal = 1;
-                }
-
-                if (maxVal > 65535)
-                {
-                    maxVal = 65535;
-                }
-
-                range.max = Math.Max(minVal, maxVal);
-                range.min = Math.Min(minVal, maxVal);
-                return true;
-            }
-
-            if (int.TryParse(rangeStr, out int start))
-            {
-                if (start < 1 || start > 65535)
-                {
-                    start = 0; // Random Port.
-                }
-
-                range.min = range.max = start;
-                return true;
-            }
-
-            // Random Port.
-            range.min = range.max = 0;
-            return false;
-        }
 
         /// <inheritdoc/>
         public void Dispose()
@@ -293,147 +222,6 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public int GetUdpPortFromRange((int min, int max) range)
-        {
-            var properties = IPGlobalProperties.GetIPGlobalProperties();
-
-            // Get active udp listeners.
-            var udpListenerPorts = properties.GetActiveUdpListeners()
-                        .Where(n => n.Port >= range.min && n.Port <= range.max)
-                        .Select(n => n.Port);
-
-            return Enumerable.Range(range.min, range.max)
-                .Where(i => !udpListenerPorts.Contains(i))
-                .FirstOrDefault();
-        }
-
-        /// <inheritdoc/>
-        public int GetRandomUnusedUdpPort()
-        {
-            // Get a port from the dynamic range.
-            return GetUdpPortFromRange((49152, 65535));
-        }
-
-        /// <inheritdoc/>
-        public int GetPort(string portStr)
-        {
-            int port = 0;
-            if (TryParseRange(portStr, out (int min, int max) range))
-            {
-                port = GetUdpPortFromRange(range);
-            }
-
-            if (port < 0 || port > 65535)
-            {
-                _logger.LogError("UDP port in the range {0} cannot be allocated. Assigning random.", portStr);
-                port = 0;
-            }
-
-            if (port == 0)
-            {
-                port = GetRandomUnusedUdpPort();
-            }
-
-            return port;
-        }
-
-        /// <inheritdoc/>
-        public Socket CreateUdpBroadcastSocket(int port)
-        {
-            if (port < 0 || port > 65536)
-            {
-                throw new ArgumentException("Port out of range", nameof(port));
-            }
-
-            IPAddress address = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
-            Socket retVal = PrepareSocket(address);
-            try
-            {
-                retVal.Bind(new IPEndPoint(address, port));
-            }
-            catch
-            {
-                retVal?.Dispose();
-                throw;
-            }
-
-            return retVal;
-        }
-
-        /// <inheritdoc/>
-        public Socket CreateUdpMulticastSocket(IPAddress address, int port)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (port < 0 || port > 65536)
-            {
-                throw new ArgumentException("Port out of range", nameof(port));
-            }
-
-            Socket retVal = PrepareSocket(address);
-            try
-            {
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogDebug(ex, "Error setting multicast values on socket. {0}/{1}", address, port);
-            }
-
-            if (address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                IPv6MulticastOption opt = new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, address.ScopeId);
-
-                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, opt);
-            }
-            else
-            {
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPNetAddress.MulticastIPv4, address));
-            }
-
-            try
-            {
-                retVal.Bind(new IPEndPoint(address, port));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unable to bind to {0}/{1}.", address, port);
-                retVal?.Dispose();
-                throw;
-            }
-
-            return retVal;
-        }
-
-        /// <inheritdoc/>
-        public IPEndPoint GetMulticastEndPoint(IPAddress localIPAddress, int port)
-        {
-            if (localIPAddress == null)
-            {
-                throw new ArgumentNullException(nameof(localIPAddress));
-            }
-
-            return new IPEndPoint(
-                localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
-                    IPNetAddress.MulticastIPv4 : localIPAddress.IsIPv6LinkLocal ?
-                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
-        }
-
-        /// <inheritdoc/>
-        public IPEndPoint GetMulticastEndPoint(int port)
-        {
-            IPAddress addr = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
-            return new IPEndPoint(
-                addr.AddressFamily == AddressFamily.InterNetwork ?
-                    IPNetAddress.MulticastIPv4 : addr.IsIPv6LinkLocal ?
-                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
-        }
-
-        /// <inheritdoc/>
         public List<PhysicalAddress> GetMacAddresses()
         {
             // Populated in construction - so always has values.
@@ -476,17 +264,22 @@ namespace Emby.Server.Implementations.Networking
         /// <summary>
         /// Removes invalid addresses from an IPHost object, based upon IP settings.
         /// </summary>
-        /// <param name="obj">IPHost object to restrict.</param>
-        public void Restrict(IPHost obj)
+        /// <param name="host">IPHost object to restrict.</param>
+        public void Restrict(IPHost host)
         {
+            if (host == null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
             if (!IsIP4Enabled)
             {
-                obj.Remove(AddressFamily.InterNetworkV6);
+                host.Remove(AddressFamily.InterNetworkV6);
             }
 
             if (!IsIP6Enabled)
             {
-                obj.Remove(AddressFamily.InterNetworkV6);
+                host.Remove(AddressFamily.InterNetworkV6);
             }
         }
 
@@ -1003,64 +796,6 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return str;
-        }
-
-        /// <summary>
-        /// Creates a socket for use.
-        /// </summary>
-        /// <param name="address">Address of socket.</param>
-        /// <returns>Socket instance.</returns>
-        private Socket PrepareSocket(IPAddress address)
-        {
-            Socket retVal;
-
-            if (address.AddressFamily == AddressFamily.InterNetwork)
-            {
-                retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            }
-            else
-            {
-                // IPv6 is enabled so create a dual IP4/IP6 socket
-                retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                if (IsIP4Enabled)
-                {
-                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0);
-                    retVal.DualMode = true;
-                }
-            }
-
-            try
-            {
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogWarning(ex, "Error setting socket as reusable. {0}", address);
-            }
-
-            try
-            {
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ExclusiveAddressUse, false);
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogWarning(ex, "Error setting socket as non exclusive. {0}", address);
-            }
-
-            if (IsIP4Enabled)
-            {
-                try
-                {
-                    retVal.EnableBroadcast = true;
-                    retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
-                }
-                catch (SocketException ex)
-                {
-                    _logger.LogWarning(ex, "Error enabling broadcast on socket. {0}", address);
-                }
-            }
-
-            return retVal;
         }
 
         /// <summary>

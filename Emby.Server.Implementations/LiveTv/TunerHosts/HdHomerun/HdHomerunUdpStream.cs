@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Net;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
@@ -58,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            var localPort = _networkManager.GetRandomUnusedUdpPort();
+            var localPort = SocketServer.GetRandomUnusedUdpPort();
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 

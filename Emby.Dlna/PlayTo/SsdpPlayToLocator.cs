@@ -32,7 +32,7 @@ namespace Emby.Dlna.PlayTo
     {
         private const string SsdpSearch = "M-SEARCH * HTTP/1.1";
         private const string SsdpInternetGateway = "ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:";
-        private readonly string[] ssdpMulticastAddress = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" }; // SSDP Multicast addresses
+        private readonly string[] _ssdpMulticastAddress = { "239.255.255.250:1900", "[ff02::C]:1900", "[ff05::C]:1900" }; // SSDP Multicast addresses
 
         private readonly List<DiscoveredSsdpDevice> _devices;
         private readonly SocketServer _socketServer;
@@ -142,14 +142,6 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-        }
-
         private static DiscoveredSsdpDevice? FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
         {
             foreach (var d in devices)
@@ -177,6 +169,14 @@ namespace Emby.Dlna.PlayTo
             }
 
             return list;
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         private async void OnBroadcastTimerCallback(object state)
@@ -243,7 +243,7 @@ namespace Emby.Dlna.PlayTo
             {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["HOST"] = ssdpMulticastAddress[a] + ":1900",
+                    ["HOST"] = _ssdpMulticastAddress[a] + ":1900",
                     ["USER-AGENT"] = DlnaManager.Instance?.SsdpUserAgent ?? string.Empty,
                     ["MAN"] = "\"ssdp:discover\"",
                     ["ST"] = "ssdp:all",
@@ -254,7 +254,7 @@ namespace Emby.Dlna.PlayTo
                 IPAddress dest = a == 0 ? IPAddress.Any : IPAddress.IPv6Any;
                 if (_socketServer.Tracing)
                 {
-                    _logger.LogDebug("->M-SEARCH {0} : {1}", dest, ssdpMulticastAddress[a]);
+                    _logger.LogDebug("->M-SEARCH {0} : {1}", dest, _ssdpMulticastAddress[a]);
                 }
 
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, dest);
