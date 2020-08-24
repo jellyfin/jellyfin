@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out _))
             {
                 responseHeaders[HeaderNames.Expires] = "0";
             }
@@ -326,7 +326,8 @@ namespace Emby.Server.Implementations.HttpServer
             return GetHttpResult(request, ms, contentType, true, responseHeaders);
         }
 
-        private IHasHeaders GetCompressedResult(byte[] content,
+        private IHasHeaders GetCompressedResult(
+            byte[] content,
             string requestedCompressionType,
             IDictionary<string, string> responseHeaders,
             bool isHeadRequest,

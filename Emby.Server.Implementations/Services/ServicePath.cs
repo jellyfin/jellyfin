@@ -80,8 +80,8 @@ namespace Emby.Server.Implementations.Services
 
         public static List<string> GetFirstMatchWildCardHashKeys(string[] pathPartsForMatching)
         {
-            const string hashPrefix = WildCard + PathSeperator;
-            return GetPotentialMatchesWithPrefix(hashPrefix, pathPartsForMatching);
+            const string HashPrefix = WildCard + PathSeperator;
+            return GetPotentialMatchesWithPrefix(HashPrefix, pathPartsForMatching);
         }
 
         private static List<string> GetPotentialMatchesWithPrefix(string hashPrefix, string[] pathPartsForMatching)
@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.Services
             {
                 list.Add(hashPrefix + part);
 
-                if (part.IndexOf(ComponentSeperator) == -1)
+                if (part.IndexOf(ComponentSeperator, StringComparison.Ordinal) == -1)
                 {
                     continue;
                 }
@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.Services
                 }
 
                 if (component.IndexOf(VariablePrefix, StringComparison.OrdinalIgnoreCase) != -1
-                    && component.IndexOf(ComponentSeperator) != -1)
+                    && component.IndexOf(ComponentSeperator, StringComparison.Ordinal) != -1)
                 {
                     hasSeparators.Add(true);
                     componentsList.AddRange(component.Split(ComponentSeperator));

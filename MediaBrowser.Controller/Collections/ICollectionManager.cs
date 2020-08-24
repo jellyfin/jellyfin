@@ -1,5 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -27,24 +30,23 @@ namespace MediaBrowser.Controller.Collections
         /// Creates the collection.
         /// </summary>
         /// <param name="options">The options.</param>
-        BoxSet CreateCollection(CollectionCreationOptions options);
+        Task<BoxSet> CreateCollectionAsync(CollectionCreationOptions options);
 
         /// <summary>
         /// Adds to collection.
         /// </summary>
         /// <param name="collectionId">The collection identifier.</param>
         /// <param name="itemIds">The item ids.</param>
-        void AddToCollection(Guid collectionId, IEnumerable<string> itemIds);
+        /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
+        Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds);
 
         /// <summary>
         /// Removes from collection.
         /// </summary>
         /// <param name="collectionId">The collection identifier.</param>
         /// <param name="itemIds">The item ids.</param>
-        void RemoveFromCollection(Guid collectionId, IEnumerable<string> itemIds);
-
-        void AddToCollection(Guid collectionId, IEnumerable<Guid> itemIds);
-        void RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task RemoveFromCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds);
 
         /// <summary>
         /// Collapses the items within box sets.

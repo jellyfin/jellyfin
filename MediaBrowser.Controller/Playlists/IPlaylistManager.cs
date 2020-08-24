@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -29,7 +31,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="itemIds">The item ids.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
-        void AddToPlaylist(string playlistId, ICollection<Guid> itemIds, Guid userId);
+        Task AddToPlaylistAsync(Guid playlistId, ICollection<Guid> itemIds, Guid userId);
 
         /// <summary>
         /// Removes from playlist.
@@ -37,7 +39,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="playlistId">The playlist identifier.</param>
         /// <param name="entryIds">The entry ids.</param>
         /// <returns>Task.</returns>
-        void RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds);
+        Task RemoveFromPlaylistAsync(string playlistId, IEnumerable<string> entryIds);
 
         /// <summary>
         /// Gets the playlists folder.
@@ -53,6 +55,6 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="entryId">The entry identifier.</param>
         /// <param name="newIndex">The new index.</param>
         /// <returns>Task.</returns>
-        void MoveItem(string playlistId, string entryId, int newIndex);
+        Task MoveItemAsync(string playlistId, string entryId, int newIndex);
     }
 }

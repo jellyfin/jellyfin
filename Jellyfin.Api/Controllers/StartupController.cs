@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -64,21 +65,16 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Sets the initial startup wizard configuration.
         /// </summary>
-        /// <param name="uiCulture">The UI language culture.</param>
-        /// <param name="metadataCountryCode">The metadata country code.</param>
-        /// <param name="preferredMetadataLanguage">The preferred language for metadata.</param>
+        /// <param name="startupConfiguration">The updated startup configuration.</param>
         /// <response code="204">Configuration saved.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Configuration")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdateInitialConfiguration(
-            [FromForm] string? uiCulture,
-            [FromForm] string? metadataCountryCode,
-            [FromForm] string? preferredMetadataLanguage)
+        public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
         {
-            _config.Configuration.UICulture = uiCulture;
-            _config.Configuration.MetadataCountryCode = metadataCountryCode;
-            _config.Configuration.PreferredMetadataLanguage = preferredMetadataLanguage;
+            _config.Configuration.UICulture = startupConfiguration.UICulture;
+            _config.Configuration.MetadataCountryCode = startupConfiguration.MetadataCountryCode;
+            _config.Configuration.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage;
             _config.SaveConfiguration();
             return NoContent();
         }
@@ -86,16 +82,15 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Sets remote access and UPnP.
         /// </summary>
-        /// <param name="enableRemoteAccess">Enable remote access.</param>
-        /// <param name="enableAutomaticPortMapping">Enable UPnP.</param>
+        /// <param name="startupRemoteAccessDto">The startup remote access dto.</param>
         /// <response code="204">Configuration saved.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("RemoteAccess")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
+        public ActionResult SetRemoteAccess([FromBody, Required] StartupRemoteAccessDto startupRemoteAccessDto)
         {
-            _config.Configuration.EnableRemoteAccess = enableRemoteAccess;
-            _config.Configuration.EnableUPnP = enableAutomaticPortMapping;
+            _config.Configuration.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
+            _config.Configuration.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
             _config.SaveConfiguration();
             return NoContent();
         }
@@ -131,7 +126,7 @@ namespace Jellyfin.Api.Controllers
         /// </returns>
         [HttpPost("User")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateStartupUser([FromForm] StartupUserDto startupUserDto)
+        public async Task<ActionResult> UpdateStartupUser([FromBody] StartupUserDto startupUserDto)
         {
             var user = _userManager.Users.First();
 

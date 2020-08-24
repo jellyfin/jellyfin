@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -28,6 +30,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="dateadded">The date the object was added.</param>
+        /// <param name="datemodified">The date the object was last modified.</param>
         protected Metadata(string title, string language, DateTime dateadded, DateTime datemodified)
         {
             if (string.IsNullOrEmpty(title))
