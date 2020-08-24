@@ -41,21 +41,6 @@ namespace MediaBrowser.Common.Net
         public bool TrustAllIP6Interfaces { get; }
 
         /// <summary>
-        /// Gets a value indicating whether uPNP is active.
-        /// </summary>
-        public bool IsuPnPActive { get; }
-
-        /// <summary>
-        /// Gets the SsdpServer name used in advertisements.
-        /// </summary>
-        public string SsdpServer { get; }
-
-        /// <summary>
-        /// Gets the unqiue user agent used in ssdp communications.
-        /// </summary>
-        public string SsdpUserAgent { get; }
-
-        /// <summary>
         /// Gets returns the remote address filter.
         /// </summary>
         NetCollection RemoteAddressFilter { get; }

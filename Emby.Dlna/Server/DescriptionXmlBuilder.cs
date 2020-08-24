@@ -269,7 +269,7 @@ namespace Emby.Dlna.Server
             return SecurityElement.Escape(url);
         }
 
-        private IEnumerable<DeviceIcon> GetIcons()
+        private static IEnumerable<DeviceIcon> GetIcons()
             => new[]
             {
                 new DeviceIcon

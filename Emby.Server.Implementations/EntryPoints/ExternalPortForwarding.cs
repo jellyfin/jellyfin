@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Emby.Dlna.Main;
+using Emby.Dlna;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.EntryPoints
             if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
             {
                 Stop();
-                if (_networkManager.IsuPnPActive)
+                if (DlnaManager.Instance?.IsuPnPActive ?? false)
                 {
                     Start();
                 }
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private void Start()
         {
-            if (!_networkManager.IsuPnPActive)
+            if (DlnaManager.Instance?.IsuPnPActive ?? false)
             {
                 return;
             }

@@ -6,8 +6,9 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna;
-using Emby.Dlna.Main;
-using Emby.Dlna.PlayTo;
+using Emby.Dlna.Eventing;
+using Emby.Dlna.PlayTo.EventArgs;
+using Emby.Dlna.Server;
 using Jellyfin.Api.Attributes;
 using MediaBrowser.Controller.Dlna;
 using Microsoft.AspNetCore.Http;
@@ -33,9 +34,9 @@ namespace Jellyfin.Api.Controllers
         public DlnaServerController(IDlnaManager dlnaManager)
         {
             _dlnaManager = dlnaManager;
-            _contentDirectory = DlnaEntryPoint.Instance?.ContentDirectory;
-            _connectionManager = DlnaEntryPoint.Instance?.ConnectionManager;
-            _mediaReceiverRegistrar = DlnaEntryPoint.Instance?.MediaReceiverRegistrar;
+            _contentDirectory = DlnaManager.Instance?.ContentDirectory;
+            _connectionManager = DlnaManager.Instance?.ConnectionManager;
+            _mediaReceiverRegistrar = DlnaManager.Instance?.MediaReceiverRegistrar;
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult GetDescriptionXml([FromRoute] string serverId)
         {
-            if (DlnaEntryPoint.Instance?.DLNAEnabled ?? false)
+            if (DlnaManager.Instance?.DLNAEnabled ?? false)
             {
                 var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, Request);
                 return Ok(xml);
@@ -73,7 +74,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetContentDirectory([FromRoute] string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
             {
                 return Ok(_contentDirectory.GetServiceXml());
             }
@@ -94,7 +95,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetMediaReceiverRegistrar([FromRoute] string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _mediaReceiverRegistrar != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _mediaReceiverRegistrar != null)
             {
                 return Ok(_mediaReceiverRegistrar.GetServiceXml());
             }
@@ -115,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetConnectionManager([FromRoute] string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
             {
                 return Ok(_connectionManager.GetServiceXml());
             }
@@ -132,7 +133,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute] string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
             {
                 return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
             }
@@ -149,7 +150,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute] string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
             {
                 return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
             }
@@ -166,7 +167,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute] string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _mediaReceiverRegistrar != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _mediaReceiverRegistrar != null)
             {
                 return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
             }
@@ -186,7 +187,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _mediaReceiverRegistrar != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _mediaReceiverRegistrar != null)
             {
                 return ProcessEventRequest(_mediaReceiverRegistrar);
             }
@@ -206,7 +207,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _contentDirectory != null)
             {
                 return ProcessEventRequest(_contentDirectory);
             }
@@ -226,7 +227,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string serverId)
         {
-            if ((DlnaEntryPoint.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
+            if ((DlnaManager.Instance?.DLNAEnabled ?? false) && _connectionManager != null)
             {
                 return ProcessEventRequest(_connectionManager);
             }
@@ -245,7 +246,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult GetIconId([FromRoute] string serverId, [FromRoute] string fileName)
         {
-            if (DlnaEntryPoint.Instance?.DLNAEnabled ?? false)
+            if (DlnaManager.Instance?.DLNAEnabled ?? false)
             {
                 return GetIconInternal(fileName);
             }
@@ -262,7 +263,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult GetIcon([FromRoute] string fileName)
         {
-            if (DlnaEntryPoint.Instance?.DLNAEnabled ?? false)
+            if (DlnaManager.Instance?.DLNAEnabled ?? false)
             {
                 return GetIconInternal(fileName);
             }
@@ -287,9 +288,9 @@ namespace Jellyfin.Api.Controllers
                 using var reader = new StreamReader(requestStream, Encoding.UTF8);
                 string response = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                if (DlnaEntryPoint.Instance?.PlayToManager != null)
+                if (DlnaManager.Instance?.PlayToManager != null)
                 {
-                    await DlnaEntryPoint.Instance.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);
+                    await DlnaManager.Instance.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);
                 }
             }
             catch

@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using Emby.Dlna.ContentDirectory;
+using Emby.Dlna.Server.ContentDirectory;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;

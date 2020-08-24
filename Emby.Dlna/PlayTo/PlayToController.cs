@@ -8,7 +8,8 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
-using Emby.Dlna.Ssdp;
+using Emby.Dlna.PlayTo.Discovery;
+using Emby.Dlna.PlayTo.EventArgs;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -133,7 +134,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDeviceMediaChanged(object sender, MediaChangedEventArgs e)
+        private async void OnDeviceMediaChanged(object sender, DlnaMediaChangedEventArgs e)
         {
             if (_disposed)
             {
@@ -166,7 +167,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDevicePlaybackStopped(object sender, PlaybackStoppedEventArgs e)
+        private async void OnDevicePlaybackStopped(object sender, DlnaPlaybackStoppedEventArgs e)
         {
             if (_disposed)
             {
@@ -235,7 +236,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDevicePlaybackStart(object sender, PlaybackStartEventArgs e)
+        private async void OnDevicePlaybackStart(object sender, DlnaPlaybackStartEventArgs e)
         {
             if (_disposed)
             {
@@ -259,7 +260,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDevicePlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private async void OnDevicePlaybackProgress(object sender, DlnaPlaybackProgressEventArgs e)
         {
             if (_disposed)
             {

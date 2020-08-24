@@ -42,10 +42,17 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Initializes a new instance of the <see cref="NetCollection"/> class.
         /// </summary>
-        public NetCollection()
+        /// <param name="unique">There will be no duplicate items in this collection.</param>
+        public NetCollection(bool unique = true)
         {
             Items = new List<IPObject>();
+            Unique = unique;
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this collection contains unique items.
+        /// </summary>
+        public bool Unique { get; }
 
         /// <summary>
         /// Gets the number in this list.
@@ -158,7 +165,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="ip">Item to add.</param>
         public void Add(IPAddress ip)
         {
-            if (!Contains(ip))
+            if (!Unique || !Contains(ip))
             {
                 Items.Add(new IPNetAddress(ip, 32));
             }
@@ -170,7 +177,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="item">Item to add.</param>
         public void Add(IPObject item)
         {
-            if (!Contains(item))
+            if (!Unique || !Contains(item))
             {
                 Items.Add(item);
             }

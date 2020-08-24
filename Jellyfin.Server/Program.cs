@@ -274,11 +274,10 @@ namespace Jellyfin.Server
                 {
                     NetCollection addresses = NetworkManager.Instance.GetAllBindInterfaces();
 
-                    // if (addresses.Count > 0)
-                    // {
+                    bool flagged = false;
                     foreach (IPObject netAdd in addresses)
                     {
-                        _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd);
+                        _logger.LogInformation("Kestrel listening on {0}", netAdd);
                         options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
@@ -300,7 +299,11 @@ namespace Jellyfin.Server
                             }
                             catch (InvalidOperationException)
                             {
-                                _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                if (!flagged)
+                                {
+                                    _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                    flagged = true;
+                                }
                             }
                         }
                     }

@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.Ssdp;
+using Emby.Dlna.PlayTo.Discovery;
+using Emby.Dlna.PlayTo.EventArgs;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -268,7 +268,7 @@ namespace Emby.Dlna.PlayTo
                         GeneralCommandType.SetVolume.ToString(),
                         GeneralCommandType.SetAudioStreamIndex.ToString(),
                         GeneralCommandType.SetSubtitleStreamIndex.ToString(),
-                        GeneralCommandType.PlayMediaSource.ToString()
+                        GeneralCommandType.PlayMediaSource.ToString(),
                     },
 
                     SupportsMediaControl = true

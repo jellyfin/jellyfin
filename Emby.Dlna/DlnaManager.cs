@@ -1,614 +1,499 @@
-#pragma warning disable CS1591
-
+#pragma warning disable SA1611 // Element parameters should be documented
+#nullable enable
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
-using Emby.Dlna.Profiles;
+using Emby.Dlna.Configuration;
+using Emby.Dlna.Net;
+using Emby.Dlna.PlayTo;
+using Emby.Dlna.PlayTo.Devices;
+using Emby.Dlna.PlayTo.Discovery;
 using Emby.Dlna.Server;
+using Emby.Dlna.Server.ConnectionManager;
+using Emby.Dlna.Server.ContentDirectory;
+using Emby.Dlna.Server.MediaReceiverRegistrar;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
-using Microsoft.AspNetCore.Http;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Notifications;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna
 {
-    public class DlnaManager : IDlnaManager
+    /// <summary>
+    /// Manages all DLNA functionality.
+    /// </summary>
+    public class DlnaManager : IServerEntryPoint, IRunBeforeStartup
     {
-        private readonly IApplicationPaths _appPaths;
-        private readonly IXmlSerializer _xmlSerializer;
-        private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<DlnaManager> _logger;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
-        private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
+        private readonly ISessionManager _sessionManager;
+        private readonly IHttpClient _httpClient;
+        private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
+        private readonly IDlnaManager _dlnaManager;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly IUserDataManager _userDataManager;
+        private readonly ILocalizationManager _localization;
+        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaEncoder _mediaEncoder;
+        private readonly INetworkManager _networkManager;
+        private readonly object _syncLock = new object();
+        private readonly IUserViewManager _userViewManager;
+        private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly INotificationManager _notificationManager;
+        private SsdpServerPublisher? _publisher;
+        private SocketServer? _socketManager;
+        private IDeviceDiscovery? _deviceDiscovery;
+        private bool _isDisposed;
+        private int _changes;
 
-        private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DlnaManager"/> class.
+        /// </summary>
         public DlnaManager(
-            IXmlSerializer xmlSerializer,
-            IFileSystem fileSystem,
-            IApplicationPaths appPaths,
+            IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
-            IJsonSerializer jsonSerializer,
-            IServerApplicationHost appHost)
+            IServerApplicationHost appHost,
+            ISessionManager sessionManager,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IDlnaManager dlnaManager,
+            IImageProcessor imageProcessor,
+            IUserDataManager userDataManager,
+            ILocalizationManager localizationManager,
+            IMediaSourceManager mediaSourceManager,
+            IMediaEncoder mediaEncoder,
+            INetworkManager networkManager,
+            IUserViewManager userViewManager,
+            ITVSeriesManager tvSeriesManager,
+            INotificationManager notificationManager)
         {
-            _xmlSerializer = xmlSerializer;
-            _fileSystem = fileSystem;
-            _appPaths = appPaths;
-            _logger = loggerFactory.CreateLogger<DlnaManager>();
-            _jsonSerializer = jsonSerializer;
+            _configurationManager = config;
             _appHost = appHost;
-        }
-
-        private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
-
-        private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
-
-        public async Task InitProfilesAsync()
-        {
-            try
-            {
-                await ExtractSystemProfilesAsync().ConfigureAwait(false);
-                LoadProfiles();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error extracting DLNA profiles.");
-            }
-        }
-
-        private void LoadProfiles()
-        {
-            var list = GetProfiles(UserProfilesPath, DeviceProfileType.User)
-                .OrderBy(i => i.Name)
-                .ToList();
-
-            list.AddRange(GetProfiles(SystemProfilesPath, DeviceProfileType.System)
-                .OrderBy(i => i.Name));
-        }
-
-        public IEnumerable<DeviceProfile> GetProfiles()
-        {
-            lock (_profiles)
-            {
-                var list = _profiles.Values.ToList();
-                return list
-                    .OrderBy(i => i.Item1.Info.Type == DeviceProfileType.User ? 0 : 1)
-                    .ThenBy(i => i.Item1.Info.Name)
-                    .Select(i => i.Item2)
-                    .ToList();
-            }
-        }
-
-        public DeviceProfile GetDefaultProfile()
-        {
-            return new DefaultProfile();
-        }
-
-        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
-        {
-            if (deviceInfo == null)
-            {
-                throw new ArgumentNullException(nameof(deviceInfo));
-            }
-
-            var profile = GetProfiles()
-                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
-
-            if (profile != null)
-            {
-                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
-            }
-            else
-            {
-                LogUnmatchedProfile(deviceInfo);
-            }
-
-            return profile;
-        }
-
-        private void LogUnmatchedProfile(DeviceIdentification profile)
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.AppendFormat(CultureInfo.InvariantCulture, "DeviceDescription:{0}", profile.DeviceDescription ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "FriendlyName:{0}", profile.FriendlyName ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "Manufacturer:{0}", profile.Manufacturer ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelDescription:{0}", profile.ModelDescription ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelName:{0}", profile.ModelName ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelNumber:{0}", profile.ModelNumber ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelUrl:{0}", profile.ModelUrl ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "SerialNumber:{0}", profile.SerialNumber ?? string.Empty).AppendLine();
-
-            _logger.LogInformation(builder.ToString());
-        }
-
-        private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
-        {
-            if (!string.IsNullOrEmpty(profileInfo.DeviceDescription))
-            {
-                if (deviceInfo.DeviceDescription == null || !IsRegexMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
-            {
-                if (deviceInfo.FriendlyName == null || !IsRegexMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
-            {
-                if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
-            {
-                if (deviceInfo.ManufacturerUrl == null || !IsRegexMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
-            {
-                if (deviceInfo.ModelDescription == null || !IsRegexMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelName))
-            {
-                if (deviceInfo.ModelName == null || !IsRegexMatch(deviceInfo.ModelName, profileInfo.ModelName))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
-            {
-                if (deviceInfo.ModelNumber == null || !IsRegexMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
-            {
-                if (deviceInfo.ModelUrl == null || !IsRegexMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
-            {
-                if (deviceInfo.SerialNumber == null || !IsRegexMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private bool IsRegexMatch(string input, string pattern)
-        {
-            try
-            {
-                return Regex.IsMatch(input, pattern);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogError(ex, "Error evaluating regex pattern {Pattern}", pattern);
-                return false;
-            }
-        }
-
-        public DeviceProfile GetProfile(IHeaderDictionary headers)
-        {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
-
-            if (profile != null)
-            {
-                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
-            }
-            else
-            {
-                var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
-                _logger.LogDebug("No matching device profile found. {0}", headerString);
-            }
-
-            return profile;
-        }
-
-        private bool IsMatch(IHeaderDictionary headers, DeviceIdentification profileInfo)
-        {
-            return profileInfo.Headers.Any(i => IsMatch(headers, i));
-        }
-
-        private bool IsMatch(IHeaderDictionary headers, HttpHeaderInfo header)
-        {
-            // Handle invalid user setup
-            if (string.IsNullOrEmpty(header.Name))
-            {
-                return false;
-            }
-
-            if (headers.TryGetValue(header.Name, out StringValues value))
-            {
-                switch (header.Match)
-                {
-                    case HeaderMatchType.Equals:
-                        return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
-                    case HeaderMatchType.Substring:
-                        var isMatch = value.ToString().IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
-                        // _logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
-                        return isMatch;
-                    case HeaderMatchType.Regex:
-                        return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
-                    default:
-                        throw new ArgumentException("Unrecognized HeaderMatchType");
-                }
-            }
-
-            return false;
-        }
-
-        private IEnumerable<DeviceProfile> GetProfiles(string path, DeviceProfileType type)
-        {
-            try
-            {
-                var xmlFies = _fileSystem.GetFilePaths(path)
-                    .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                return xmlFies
-                    .Select(i => ParseProfileFile(i, type))
-                    .Where(i => i != null)
-                    .ToList();
-            }
-            catch (IOException)
-            {
-                return new List<DeviceProfile>();
-            }
-        }
-
-        private DeviceProfile ParseProfileFile(string path, DeviceProfileType type)
-        {
-            lock (_profiles)
-            {
-                if (_profiles.TryGetValue(path, out Tuple<InternalProfileInfo, DeviceProfile> profileTuple))
-                {
-                    return profileTuple.Item2;
-                }
-
-                try
-                {
-                    DeviceProfile profile;
-
-                    var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
-
-                    profile = ReserializeProfile(tempProfile);
-
-                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
-
-                    _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
-
-                    return profile;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error parsing profile file: {Path}", path);
-
-                    return null;
-                }
-            }
-        }
-
-        public DeviceProfile GetProfile(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
-            var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
-
-            return ParseProfileFile(info.Path, info.Info.Type);
-        }
-
-        private IEnumerable<InternalProfileInfo> GetProfileInfosInternal()
-        {
-            lock (_profiles)
-            {
-                var list = _profiles.Values.ToList();
-                return list
-                    .Select(i => i.Item1)
-                    .OrderBy(i => i.Info.Type == DeviceProfileType.User ? 0 : 1)
-                    .ThenBy(i => i.Info.Name);
-            }
-        }
-
-        public IEnumerable<DeviceProfileInfo> GetProfileInfos()
-        {
-            return GetProfileInfosInternal().Select(i => i.Info);
-        }
-
-        private InternalProfileInfo GetInternalProfileInfo(FileSystemMetadata file, DeviceProfileType type)
-        {
-            return new InternalProfileInfo
-            {
-                Path = file.FullName,
-
-                Info = new DeviceProfileInfo
-                {
-                    Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture),
-                    Name = _fileSystem.GetFileNameWithoutExtension(file),
-                    Type = type
-                }
-            };
-        }
-
-        private async Task ExtractSystemProfilesAsync()
-        {
-            var namespaceName = GetType().Namespace + ".Profiles.Xml.";
-
-            var systemProfilesPath = SystemProfilesPath;
-
-            foreach (var name in _assembly.GetManifestResourceNames())
-            {
-                if (!name.StartsWith(namespaceName, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var filename = Path.GetFileName(name).Substring(namespaceName.Length);
-
-                var path = Path.Combine(systemProfilesPath, filename);
-
-                using (var stream = _assembly.GetManifestResourceStream(name))
-                {
-                    var fileInfo = _fileSystem.GetFileInfo(path);
-
-                    if (!fileInfo.Exists || fileInfo.Length != stream.Length)
-                    {
-                        Directory.CreateDirectory(systemProfilesPath);
-
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
-                        {
-                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        }
-                    }
-                }
-            }
-
-            // Not necessary, but just to make it easy to find
-            Directory.CreateDirectory(UserProfilesPath);
-        }
-
-        public void DeleteProfile(string id)
-        {
-            var info = GetProfileInfosInternal().First(i => string.Equals(id, i.Info.Id, StringComparison.OrdinalIgnoreCase));
-
-            if (info.Info.Type == DeviceProfileType.System)
-            {
-                throw new ArgumentException("System profiles cannot be deleted.");
-            }
-
-            _fileSystem.DeleteFile(info.Path);
-
-            lock (_profiles)
-            {
-                _profiles.Remove(info.Path);
-            }
-        }
-
-        public void CreateProfile(DeviceProfile profile)
-        {
-            profile = ReserializeProfile(profile);
-
-            if (string.IsNullOrEmpty(profile.Name))
-            {
-                throw new ArgumentException("Profile is missing Name");
-            }
-
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
-            var path = Path.Combine(UserProfilesPath, newFilename);
-
-            SaveProfile(profile, path, DeviceProfileType.User);
-        }
-
-        public void UpdateProfile(DeviceProfile profile)
-        {
-            profile = ReserializeProfile(profile);
-
-            if (string.IsNullOrEmpty(profile.Id))
-            {
-                throw new ArgumentException("Profile is missing Id");
-            }
-
-            if (string.IsNullOrEmpty(profile.Name))
-            {
-                throw new ArgumentException("Profile is missing Name");
-            }
-
-            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
-
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
-            var path = Path.Combine(UserProfilesPath, newFilename);
-
-            if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
-                current.Info.Type != DeviceProfileType.System)
-            {
-                _fileSystem.DeleteFile(current.Path);
-            }
-
-            SaveProfile(profile, path, DeviceProfileType.User);
-        }
-
-        private void SaveProfile(DeviceProfile profile, string path, DeviceProfileType type)
-        {
-            lock (_profiles)
-            {
-                _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
-            }
-
-            SerializeToXml(profile, path);
-        }
-
-        internal void SerializeToXml(DeviceProfile profile, string path)
-        {
-            _xmlSerializer.SerializeToFile(profile, path);
+            _sessionManager = sessionManager;
+            _httpClient = httpClient;
+            _libraryManager = libraryManager;
+            _userManager = userManager;
+            _dlnaManager = dlnaManager;
+            _imageProcessor = imageProcessor;
+            _userDataManager = userDataManager;
+            _localization = localizationManager;
+            _mediaSourceManager = mediaSourceManager;
+            _mediaEncoder = mediaEncoder;
+            _networkManager = networkManager;
+            _loggerFactory = loggerFactory;
+            _localizationManager = localizationManager;
+            _userViewManager = userViewManager;
+            _tvSeriesManager = tvSeriesManager;
+            _notificationManager = notificationManager;
+
+            _logger = loggerFactory.CreateLogger<DlnaManager>();
+            _networkManager.NetworkChanged += NetworkChanged;
+
+            NetworkChange.NetworkAddressChanged += this.OnNetworkAddressChanged;
+
+            Instance = this;
         }
 
         /// <summary>
-        /// Recreates the object using serialization, to ensure it's not a subclass.
-        /// If it's a subclass it may not serlialize properly to xml (different root element tag name).
+        /// Gets the singleton instance of this object.
         /// </summary>
-        /// <param name="profile">The device profile.</param>
-        /// <returns>The reserialized device profile.</returns>
-        private DeviceProfile ReserializeProfile(DeviceProfile profile)
+        public static DlnaManager? Instance { get; internal set; }
+
+        /// <summary>
+        /// Gets a value indicating whether uPNP is active.
+        /// </summary>
+        public bool IsuPnPActive => _configurationManager.Configuration.EnableUPnP &&
+            _configurationManager.Configuration.EnableRemoteAccess &&
+            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
+
+        /// <summary>
+        /// Gets the SsdpServer name used in advertisements.
+        /// </summary>
+        public string SsdpServer => $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
+
+        /// <summary>
+        /// Gets the unqiue user agent used in ssdp communications.
+        /// </summary>
+        public string SsdpUserAgent => $"UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2 /{_appHost.SystemId}";
+
+        /// <summary>
+        /// Gets the number of times the network address has changed.
+        /// </summary>
+        public string NetworkChangeCount => _changes.ToString("d2", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Gets a value indicating whether the DLNA server is enabled.
+        /// </summary>
+        public bool DLNAEnabled => _configurationManager.GetDlnaConfiguration().EnableServer;
+
+        /// <summary>
+        /// Gets a value indicating whether DLNA PlayTo is enabled.
+        /// </summary>
+        public bool EnablePlayTo => _configurationManager.GetDlnaConfiguration().EnablePlayTo;
+
+        /// <summary>
+        /// Gets the DLNA server' ContentDirectory instance.
+        /// </summary>
+        public IContentDirectory? ContentDirectory { get; private set; }
+
+        /// <summary>
+        /// Gets the DLNA server' ConnectionManager instance.
+        /// </summary>
+        public IConnectionManager? ConnectionManager { get; private set; }
+
+        /// <summary>
+        /// Gets the DLNA server's MediaReceiverRegistrar instance.
+        /// </summary>
+        public IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
+
+        /// <summary>
+        /// Gets the PlayToManager instance.
+        /// </summary>
+        public PlayToManager? PlayToManager { get; internal set; }
+
+        /// <summary>
+        /// Executes DlnaEntryPoint's functionality.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public async Task RunAsync()
         {
-            if (profile.GetType() == typeof(DeviceProfile))
-            {
-                return profile;
-            }
+            await _dlnaManager.InitProfilesAsync().ConfigureAwait(false);
 
-            var json = _jsonSerializer.SerializeToString(profile);
+            CheckComponents();
 
-            return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
+            _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request)
-        {
-            var profile = GetProfile(headers) ??
-                          GetDefaultProfile();
-
-            var serverId = _appHost.SystemId;
-
-            var serverAddress = _appHost.GetSmartApiUrl(request);
-
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
-        }
-
-        public ImageStream GetIcon(string filename)
-        {
-            var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-                ? ImageFormat.Png
-                : ImageFormat.Jpg;
-
-            var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
-
-            return new ImageStream
-            {
-                Format = format,
-                Stream = _assembly.GetManifestResourceStream(resource)
-            };
-        }
-
-        private class InternalProfileInfo
-        {
-            internal DeviceProfileInfo Info { get; set; }
-
-            internal string Path { get; set; }
-        }
-    }
-
-    /*
-    class DlnaProfileEntryPoint : IServerEntryPoint
-    {
-        private readonly IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
-        private readonly IXmlSerializer _xmlSerializer;
-
-        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IXmlSerializer xmlSerializer)
-        {
-            _appPaths = appPaths;
-            _fileSystem = fileSystem;
-            _xmlSerializer = xmlSerializer;
-        }
-
-        public void Run()
-        {
-            DumpProfiles();
-        }
-
-        private void DumpProfiles()
-        {
-            DeviceProfile[] list = new []
-            {
-                new SamsungSmartTvProfile(),
-                new XboxOneProfile(),
-                new SonyPs3Profile(),
-                new SonyPs4Profile(),
-                new SonyBravia2010Profile(),
-                new SonyBravia2011Profile(),
-                new SonyBravia2012Profile(),
-                new SonyBravia2013Profile(),
-                new SonyBravia2014Profile(),
-                new SonyBlurayPlayer2013(),
-                new SonyBlurayPlayer2014(),
-                new SonyBlurayPlayer2015(),
-                new SonyBlurayPlayer2016(),
-                new SonyBlurayPlayerProfile(),
-                new PanasonicVieraProfile(),
-                new WdtvLiveProfile(),
-                new DenonAvrProfile(),
-                new LinksysDMA2100Profile(),
-                new LgTvProfile(),
-                new Foobar2000Profile(),
-                new SharpSmartTvProfile(),
-                new MediaMonkeyProfile(),
-                // new Windows81Profile(),
-                // new WindowsMediaCenterProfile(),
-                // new WindowsPhoneProfile(),
-                new DirectTvProfile(),
-                new DishHopperJoeyProfile(),
-                new DefaultProfile(),
-                new PopcornHourProfile(),
-                new MarantzProfile()
-            };
-
-            foreach (var item in list)
-            {
-                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
-
-                _xmlSerializer.SerializeToFile(item, path);
-            }
-        }
-
+        /// <inheritdoc/>
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-    }*/
+
+        /// <summary>
+        /// Disposes the device publisher instance.
+        /// </summary>
+        public void DisposeDevicePublisher()
+        {
+            if (_publisher != null)
+            {
+                _logger.LogInformation("Disposing SsdpDevicePublisher");
+                _publisher.Dispose();
+                _publisher = null;
+            }
+        }
+
+        /// <summary>
+        /// Disposes of unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">A Boolean value that indicates whether the method call comes from a Dispose method
+        /// or from a finalizer (its value is false).</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                DisposeDevicePublisher();
+
+                lock (_syncLock)
+                {
+                    PlayToManager?.Dispose();
+                    PlayToManager = null;
+                }
+
+                _networkManager.NetworkChanged -= NetworkChanged;
+                _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
+
+                NetworkChange.NetworkAddressChanged -= this.OnNetworkAddressChanged;
+
+                ContentDirectory = null;
+                ConnectionManager = null;
+                MediaReceiverRegistrar = null;
+                Instance = null;
+
+                // DeviceDiscovery has an event use count, and will only dispose if no longer in use.
+                _deviceDiscovery?.Dispose();
+                _deviceDiscovery = null;
+
+                // SocketManager has an event use count, and will only dispose if no longer in use.
+                _socketManager?.Dispose();
+                _socketManager = null;
+            }
+
+            _isDisposed = true;
+        }
+
+        private static string CreateUuid(string text)
+        {
+            if (!Guid.TryParse(text, out var guid))
+            {
+                guid = text.GetMD5();
+            }
+
+            return guid.ToString("N", CultureInfo.InvariantCulture);
+        }
+
+        private static void SetProperies(SsdpDevice device, string fullDeviceType)
+        {
+            var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+            var serviceParts = service.Split(':');
+
+            var deviceTypeNamespace = serviceParts[0].Replace('.', '-');
+
+            device.DeviceTypeNamespace = deviceTypeNamespace;
+            device.DeviceClass = serviceParts[1];
+            device.DeviceType = serviceParts[2];
+        }
+
+        /// <summary>
+        /// Handler for network change events.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        private void OnNetworkAddressChanged(object sender, EventArgs e)
+        {
+            _changes++;
+            if (_changes > 99)
+            {
+                _changes = 1;
+            }
+        }
+
+        /// <summary>
+        /// Triggerer every time the configuration is updated.
+        /// </summary>
+        /// <param name="sender">Configuration instance.</param>
+        /// <param name="e">Configuration that was updated.</param>
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        {
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                CheckComponents();
+
+                if (_publisher != null)
+                {
+                    _publisher.AliveMessageInterval = _configurationManager.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Triggered every time there is a network event.
+        /// </summary>
+        /// <param name="sender">NetworkManager instance.</param>
+        /// <param name="e">Event argument.</param>
+        private void NetworkChanged(object sender, EventArgs e)
+        {
+            CheckComponents();
+        }
+
+        /// <summary>
+        /// (Re)initialises the DLNA settings.
+        /// </summary>
+        private void CheckComponents()
+        {
+            lock (_syncLock)
+            {
+                var options = _configurationManager.GetDlnaConfiguration();
+
+                if (options.EnablePlayTo || options.EnableServer)
+                {
+                    // Start SSDP communication handlers.
+                    _socketManager = _socketManager = SocketServer.Instance ?? new SocketServer(_networkManager, _configurationManager, _loggerFactory);
+                }
+
+                if (options.EnableServer)
+                {
+                    if (ContentDirectory == null)
+                    {
+                        _logger.LogDebug("DLNA Server : Starting Content Directory service.");
+                        ContentDirectory = new DlnaContentDirectory(
+                            _loggerFactory.CreateLogger<DlnaContentDirectory>(),
+                            _configurationManager,
+                            _httpClient,
+                            _dlnaManager,
+                            _userDataManager,
+                            _imageProcessor,
+                            _libraryManager,
+                            _userManager,
+                            _localizationManager,
+                            _mediaSourceManager,
+                            _userViewManager,
+                            _mediaEncoder,
+                            _tvSeriesManager,
+                            _loggerFactory);
+                    }
+
+                    if (ConnectionManager == null)
+                    {
+                        _logger.LogDebug("DLNA Server : Starting Connection Manager service.");
+                        ConnectionManager = new DlnaConnectionManager(
+                            _loggerFactory.CreateLogger<DlnaConnectionManager>(),
+                            _configurationManager,
+                            _httpClient,
+                            _dlnaManager);
+                    }
+
+                    if (MediaReceiverRegistrar == null)
+                    {
+                        _logger.LogDebug("DLNA Server : Starting Media Receiver Registrar service.");
+                        MediaReceiverRegistrar = new DlnaMediaReceiverRegistrar(
+                            _loggerFactory.CreateLogger<DlnaMediaReceiverRegistrar>(),
+                            _configurationManager,
+                            _httpClient);
+                    }
+
+                    // This is true on startup and at network change.
+                    if (_publisher == null)
+                    {
+                        _logger.LogDebug("DLNA Server : Starting DLNA advertisements.");
+                        _publisher = new SsdpServerPublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds);
+                        RegisterDLNAServerEndpoints();
+                    }
+                }
+                else
+                {
+                    _logger.LogDebug("DLNA Server : Stopping all DLNA services.");
+                    DisposeDevicePublisher();
+
+                    // This object will actually only dispose if no longer in use.
+                    _deviceDiscovery?.Dispose();
+                    _deviceDiscovery = null;
+
+                    ContentDirectory = null;
+                    MediaReceiverRegistrar = null;
+                    ConnectionManager = null;
+
+                    // This object will actually only dispose if no longer in use.
+                    _socketManager?.Dispose();
+                    _socketManager = null;
+
+                    GC.Collect();
+                }
+
+                if (options.EnablePlayTo)
+                {
+                    if (_deviceDiscovery == null)
+                    {
+                        _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
+                        _deviceDiscovery = new DeviceDiscovery(_configurationManager, _loggerFactory, _networkManager, _socketManager);
+                    }
+
+                    if (PlayToManager == null)
+                    {
+                        _logger.LogDebug("DLNA PlayTo: Starting Service.");
+                        PlayToManager = new PlayToManager(
+                            _loggerFactory.CreateLogger<PlayToManager>(),
+                            _appHost,
+                            _sessionManager,
+                            _libraryManager,
+                            _userManager,
+                            _dlnaManager,
+                            _imageProcessor,
+                            _deviceDiscovery,
+                            _httpClient,
+                            _configurationManager,
+                            _userDataManager,
+                            _localization,
+                            _mediaSourceManager,
+                            _mediaEncoder,
+                            _notificationManager);
+                    }
+                }
+                else
+                {
+                    if (PlayToManager != null)
+                    {
+                        _logger.LogDebug("DLNA PlayTo: Stopping Service.");
+                        lock (_syncLock)
+                        {
+                            PlayToManager?.Dispose();
+                            PlayToManager = null;
+                        }
+
+                        GC.Collect();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Registers SSDP endpoints on the internal interfaces.
+        /// </summary>
+        private void RegisterDLNAServerEndpoints()
+        {
+            const string FullService = "urn:schemas-upnp-org:device:MediaServer:1";
+
+            var udn = CreateUuid(_appHost.SystemId);
+
+            foreach (IPObject addr in _networkManager.GetInternalBindAddresses())
+            {
+                if (addr.IsLoopback())
+                {
+                    // Don't advertise loopbacks
+                    continue;
+                }
+
+                _logger.LogInformation("Registering publisher for {0} on {1}", FullService, addr.Address);
+
+                var descriptorUri = "/dlna/" + udn + "/description.xml";
+                var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
+
+                SsdpRootDevice device = new SsdpRootDevice(
+                    TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
+                    uri, // Must point to the URL that serves your devices UPnP description document.
+                    addr,
+                    "Jellyfin",
+                    "Jellyfin",
+                    "Jellyfin Server",
+                    udn); // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
+
+                SetProperies(device, FullService);
+
+                _ = _publisher?.AddDevice(device);
+
+                var embeddedDevices = new[]
+                {
+                    "urn:schemas-upnp-org:service:ContentDirectory:1",
+                    "urn:schemas-upnp-org:service:ConnectionManager:1",
+                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1" // Windows WMDRM.
+                };
+
+                foreach (var subDevice in embeddedDevices)
+                {
+                    var embeddedDevice = new SsdpEmbeddedDevice(
+                        device.FriendlyName,
+                        device.Manufacturer,
+                        device.ModelName,
+                        udn);
+                    SetProperies(embeddedDevice, subDevice);
+                    device.AddDevice(embeddedDevice);
+                }
+            }
+        }
+    }
 }

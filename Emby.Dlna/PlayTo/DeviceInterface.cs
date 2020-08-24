@@ -34,6 +34,7 @@ namespace Emby.Dlna.PlayTo
     using System.Xml;
     using System.Xml.Linq;
     using Emby.Dlna.Common;
+    using Emby.Dlna.PlayTo.EventArgs;
     using Emby.Dlna.Server;
     using Emby.Dlna.Ssdp;
     using MediaBrowser.Common.Net;
@@ -204,22 +205,22 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Events called when playback starts.
         /// </summary>
-        public event EventHandler<PlaybackStartEventArgs>? PlaybackStart;
+        public event EventHandler<DlnaPlaybackStartEventArgs>? PlaybackStart;
 
         /// <summary>
         /// Events called during playback.
         /// </summary>
-        public event EventHandler<PlaybackProgressEventArgs>? PlaybackProgress;
+        public event EventHandler<DlnaPlaybackProgressEventArgs>? PlaybackProgress;
 
         /// <summary>
         /// Events called when playback stops.
         /// </summary>
-        public event EventHandler<PlaybackStoppedEventArgs>? PlaybackStopped;
+        public event EventHandler<DlnaPlaybackStoppedEventArgs>? PlaybackStopped;
 
         /// <summary>
         /// Events called when the media changes.
         /// </summary>
-        public event EventHandler<MediaChangedEventArgs>? MediaChanged;
+        public event EventHandler<DlnaMediaChangedEventArgs>? MediaChanged;
 
         /// <summary>
         /// Gets the device's properties.
@@ -2291,7 +2292,7 @@ namespace Emby.Dlna.PlayTo
                         if (TransportState != TransportState.STOPPED && !string.IsNullOrWhiteSpace(mediaInfo.Url))
                         {
                             _logger.LogDebug("{0} : Firing playback started event.", Properties.Name);
-                            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
+                            PlaybackStart?.Invoke(this, new DlnaPlaybackStartEventArgs
                             {
                                 MediaInfo = mediaInfo
                             });
@@ -2302,7 +2303,7 @@ namespace Emby.Dlna.PlayTo
                         if (!string.IsNullOrWhiteSpace(mediaInfo?.Url))
                         {
                             _logger.LogDebug("{0} : Firing playback progress event.", Properties.Name);
-                            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
+                            PlaybackProgress?.Invoke(this, new DlnaPlaybackProgressEventArgs
                             {
                                 MediaInfo = mediaInfo
                             });
@@ -2311,7 +2312,7 @@ namespace Emby.Dlna.PlayTo
                     else
                     {
                         _logger.LogDebug("{0} : Firing media change event.", Properties.Name);
-                        MediaChanged?.Invoke(this, new MediaChangedEventArgs
+                        MediaChanged?.Invoke(this, new DlnaMediaChangedEventArgs
                         {
                             OldMediaInfo = previousMediaInfo,
                             NewMediaInfo = mediaInfo
@@ -2321,7 +2322,7 @@ namespace Emby.Dlna.PlayTo
                 else if (previousMediaInfo != null)
                 {
                     _logger.LogDebug("{0} : Firing playback stopped event.", Properties.Name);
-                    PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
+                    PlaybackStopped?.Invoke(this, new DlnaPlaybackStoppedEventArgs
                     {
                         MediaInfo = previousMediaInfo
                     });

@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
-using Emby.Dlna.Main;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -580,7 +579,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            serviceCollection.AddSingleton<IDlnaManager, DlnaManager>();
+            serviceCollection.AddSingleton<IDlnaManager, DlnaProfileManager>();
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
@@ -1036,7 +1035,7 @@ namespace Emby.Server.Implementations
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
             // Dlna
-            yield return typeof(DlnaEntryPoint).Assembly;
+            yield return typeof(DlnaManager).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

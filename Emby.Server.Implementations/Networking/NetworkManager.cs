@@ -92,6 +92,11 @@ namespace Emby.Server.Implementations.Networking
         private bool _usingInterfaces;
 
         /// <summary>
+        /// Keeps a count of network changes.
+        /// </summary>
+        private int _changes;
+
+        /// <summary>
         /// True if this object is disposed.
         /// </summary>
         private bool _disposed;
@@ -109,11 +114,10 @@ namespace Emby.Server.Implementations.Networking
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
             _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
 
-            _interfaceAddresses = new NetCollection();
+            _interfaceAddresses = new NetCollection(unique: false);
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new SortedList<string, int>();
             _overrideAddresses = new Dictionary<IPNetAddress, string>();
-
             InitialiseInterfaces();
             InitialiseBind();
             InitialiseLAN();
@@ -186,23 +190,6 @@ namespace Emby.Server.Implementations.Networking
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
         /// </summary>
         public bool TrustAllIP6Interfaces => _configurationManager.Configuration.TrustAllIP6Interfaces;
-
-        /// <summary>
-        /// Gets a value indicating whether uPNP is active.
-        /// </summary>
-        public bool IsuPnPActive => _configurationManager.Configuration.EnableUPnP &&
-            _configurationManager.Configuration.EnableRemoteAccess &&
-            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
-
-        /// <summary>
-        /// Gets the SsdpServer name used in advertisements.
-        /// </summary>
-        public string SsdpServer => $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
-
-        /// <summary>
-        /// Gets the unqiue user agent used in ssdp communications.
-        /// </summary>
-        public string SsdpUserAgent => $"UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2 /{_appHost.SystemId}";
 
         /// <summary>
         /// Parses a string and returns a range value if possible.
@@ -325,10 +312,6 @@ namespace Emby.Server.Implementations.Networking
         {
             // Get a port from the dynamic range.
             return GetUdpPortFromRange((49152, 65535));
-
-            // var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            // using var udpClient = new UdpClient(localEndPoint);
-            // return ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
         }
 
         /// <inheritdoc/>
@@ -362,11 +345,11 @@ namespace Emby.Server.Implementations.Networking
                 throw new ArgumentException("Port out of range", nameof(port));
             }
 
-            IPAddress addr = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
-            Socket retVal = PrepareSocket(addr);
+            IPAddress address = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+            Socket retVal = PrepareSocket(address);
             try
             {
-                retVal.Bind(new IPEndPoint(addr, port));
+                retVal.Bind(new IPEndPoint(address, port));
             }
             catch
             {
@@ -393,15 +376,12 @@ namespace Emby.Server.Implementations.Networking
             Socket retVal = PrepareSocket(address);
             try
             {
-                if (IsIP4Enabled)
-                {
-                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
-                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
-                }
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
-                // Ignore.
+                _logger.LogDebug(ex, "Error setting multicast values on socket. {0}/{1}", address, port);
             }
 
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -419,8 +399,9 @@ namespace Emby.Server.Implementations.Networking
             {
                 retVal.Bind(new IPEndPoint(address, port));
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Unable to bind to {0}/{1}.", address, port);
                 retVal?.Dispose();
                 throw;
             }
@@ -969,8 +950,8 @@ namespace Emby.Server.Implementations.Networking
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (Math.Abs(iface.Tag) == index &&
-                        ((iface.Address.AddressFamily == AddressFamily.InterNetwork && IsIP4Enabled) ||
-                            (iface.Address.AddressFamily == AddressFamily.InterNetworkV6 && IsIP6Enabled)))
+                        ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) ||
+                         (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         result = iface;
                         return true;
@@ -1052,16 +1033,18 @@ namespace Emby.Server.Implementations.Networking
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
+                _logger.LogWarning(ex, "Error setting socket as reusable. {0}", address);
             }
 
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ExclusiveAddressUse, false);
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
+                _logger.LogWarning(ex, "Error setting socket as non exclusive. {0}", address);
             }
 
             if (IsIP4Enabled)
@@ -1071,8 +1054,9 @@ namespace Emby.Server.Implementations.Networking
                     retVal.EnableBroadcast = true;
                     retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
                 }
-                catch (SocketException)
+                catch (SocketException ex)
                 {
+                    _logger.LogWarning(ex, "Error enabling broadcast on socket. {0}", address);
                 }
             }
 
@@ -1096,8 +1080,8 @@ namespace Emby.Server.Implementations.Networking
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (Math.Abs(iface.Tag) == index &&
-                        ((iface.Address.AddressFamily == AddressFamily.InterNetwork && IsIP4Enabled) ||
-                            (iface.Address.AddressFamily == AddressFamily.InterNetworkV6 && IsIP6Enabled)))
+                        ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork ) ||
+                         (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         col.Add(iface);
                     }
@@ -1156,7 +1140,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Async task that waits for 2 seconds before re-initialising the settings.
+        /// Async task that waits for 2 seconds before re-initialising the settings, as typically these events fire multiple times in succession.
         /// </summary>
         /// <returns>The network change async.</returns>
         private async Task OnNetworkChangeAsync()
@@ -1266,8 +1250,6 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         private void InitialiseLAN()
         {
-            NetCollection filteredLANSubnets;
-
             lock (_intLock)
             {
                 _logger.LogDebug("Refreshing LAN information.");
@@ -1303,9 +1285,6 @@ namespace Emby.Server.Implementations.Networking
                     {
                         _lanSubnets.Add(IPNetAddress.IP4Loopback);
                     }
-
-                    // Filtered LAN subnets are subnets of the LAN Addresses.
-                    filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
                 }
                 else
                 {
@@ -1320,9 +1299,6 @@ namespace Emby.Server.Implementations.Networking
                         _lanSubnets.Add(IPNetAddress.IP4Loopback);
                     }
 
-                    // Filtered LAN subnets are subnets of the LAN Addresses.
-                    filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
-
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
                     _internalInterfaces = new NetCollection(_interfaceAddresses
                         .Where(i => IsInLocalNetwork(i) &&
@@ -1332,7 +1308,7 @@ namespace Emby.Server.Implementations.Networking
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
                 _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets);
-                _logger.LogInformation("Using LAN addresses: {0}", filteredLANSubnets);
+                _logger.LogInformation("Using LAN addresses: {0}", NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets)));
             }
         }
 
@@ -1355,8 +1331,7 @@ namespace Emby.Server.Implementations.Networking
                 try
                 {
                     IEnumerable<NetworkInterface> nics = NetworkInterface.GetAllNetworkInterfaces()
-                        .Where(x => x.OperationalStatus == OperationalStatus.Up
-                            || x.OperationalStatus == OperationalStatus.Unknown);
+                        .Where(i => !i.IsReceiveOnly && i.SupportsMulticast && i.OperationalStatus == OperationalStatus.Up);
 
                     foreach (NetworkInterface adapter in nics)
                     {

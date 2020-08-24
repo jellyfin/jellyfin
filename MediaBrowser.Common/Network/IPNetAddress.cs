@@ -42,6 +42,11 @@ namespace MediaBrowser.Common.Networking
         public static readonly IPNetAddress IP6Loopback = IPNetAddress.Parse("::1");
 
         /// <summary>
+        /// DualMode IP any address.
+        /// </summary>
+        public static readonly IPAddress DualIpAny = IPAddress.Parse("::ffff:0:0");
+
+        /// <summary>
         /// Object's IP address.
         /// </summary>
         private IPAddress _address;
@@ -116,7 +121,7 @@ namespace MediaBrowser.Common.Networking
             {
                 if (_networkAddress == null)
                 {
-                    var value = Network(_address, PrefixLength);
+                    var value = NetworkAddressOf(_address, PrefixLength);
                     _networkAddress = new IPNetAddress(value.Item1, value.Item2);
                 }
 
@@ -218,7 +223,7 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentNullException(nameof(address));
             }
 
-            var altAddress = Network(address, PrefixLength);
+            var altAddress = NetworkAddressOf(address, PrefixLength);
             return NetworkAddress.Address.Equals(altAddress.Item1);
         }
 
@@ -248,7 +253,7 @@ namespace MediaBrowser.Common.Networking
                     return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
-                var altAddress = Network(netaddrObj.Address, PrefixLength);
+                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength);
                 return netAddress.Equals(altAddress.Item1);
             }
 
@@ -336,6 +341,11 @@ namespace MediaBrowser.Common.Networking
                     return "Any IP6 Address";
                 }
 
+                if (Address.Equals(DualIpAny))
+                {
+                    return "Any IP4/IP6 Address";
+                }
+
                 if (Address.Equals(IPAddress.Broadcast))
                 {
                     return "All Addreses";
@@ -346,12 +356,7 @@ namespace MediaBrowser.Common.Networking
                     return Address.ToString();
                 }
 
-                if (!Mask.Equals(IPAddress.Any))
-                {
-                    return $"{Address}/{PrefixLength}";
-                }
-
-                return Address.ToString();
+                return $"{Address}/{PrefixLength}";
             }
 
             return string.Empty;

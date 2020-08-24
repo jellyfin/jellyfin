@@ -335,7 +335,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="address">IP Address to convert.</param>
         /// <param name="prefixLength">Subnet prefix.</param>
         /// <returns>IPAddress.</returns>
-        internal static Tuple<IPAddress, byte> Network(IPAddress address, byte prefixLength)
+        public static Tuple<IPAddress, byte> NetworkAddressOf(IPAddress address, byte prefixLength)
         {
             if (address == null)
             {
