@@ -22,11 +22,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
     public class TmdbSearch
     {
+        private const string SearchUrl = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
+        private const string SearchUrlTvWithYear = TmdbUtils.BaseTmdbApiUrl + @"3/search/tv?api_key={1}&query={0}&language={2}&first_air_date_year={3}";
+        private const string SearchUrlMovieWithYear = TmdbUtils.BaseTmdbApiUrl + @"3/search/movie?api_key={1}&query={0}&language={2}&primary_release_year={3}";
+
         private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private static readonly Regex _cleanEnclosed = new Regex(@"\p{Ps}.*\p{Pe}", RegexOptions.Compiled);
         private static readonly Regex _cleanNonWord = new Regex(@"[\W_]+", RegexOptions.Compiled);
-        private static readonly Regex _cleanStopWords = new Regex(@"\b( # Start at word boundary
+        private static readonly Regex _cleanStopWords = new Regex(
+            @"\b( # Start at word boundary
             19[0-9]{2}|20[0-9]{2}| # 1900-2099
             S[0-9]{2}| # Season
             E[0-9]{2}| # Episode
@@ -36,8 +41,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             web|hdtv|mp4|bluray|ktr|dl|single|imageset|internal|doku|dubbed|retail|xxx|flac
             ).* # Match rest of string",
             RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase);
-
-        private const string _searchURL = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
 
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
@@ -124,7 +127,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 name2 = name2.Trim();
 
                 // Search again if the new name is different
-                if (!string.Equals(name2, name) && !string.IsNullOrWhiteSpace(name2))
+                if (!string.Equals(name2, name, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(name2))
                 {
                     _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name2, year);
                     results = await GetSearchResults(name2, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
@@ -164,12 +167,32 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("name");
+                throw new ArgumentException("String can't be null or empty.", nameof(name));
             }
 
-            var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, type);
+            string url3;
+            if (year != null && string.Equals(type, "movie", StringComparison.OrdinalIgnoreCase))
+            {
+                url3 = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SearchUrlMovieWithYear,
+                    WebUtility.UrlEncode(name),
+                    TmdbUtils.ApiKey,
+                    language,
+                    year);
+            }
+            else
+            {
+                url3 = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SearchUrl,
+                    WebUtility.UrlEncode(name),
+                    TmdbUtils.ApiKey,
+                    language,
+                    type);
+            }
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
             foreach (var header in TmdbUtils.AcceptHeaders)
             {
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
@@ -207,12 +230,32 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("name");
+                throw new ArgumentException("String can't be null or empty.", nameof(name));
             }
 
-            var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, "tv");
+            string url3;
+            if (year == null)
+            {
+                url3 = string.Format(
+                CultureInfo.InvariantCulture,
+                SearchUrl,
+                WebUtility.UrlEncode(name),
+                TmdbUtils.ApiKey,
+                language,
+                "tv");
+            }
+            else
+            {
+                url3 = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SearchUrlTvWithYear,
+                    WebUtility.UrlEncode(name),
+                    TmdbUtils.ApiKey,
+                    language,
+                    year);
+            }
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
             foreach (var header in TmdbUtils.AcceptHeaders)
             {
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
@@ -227,7 +270,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return results
                 .Select(i =>
                 {
-                    var remoteResult = new RemoteSearchResult {SearchProviderName = TmdbMovieProvider.Current.Name, Name = i.Name ?? i.Original_Name, ImageUrl = string.IsNullOrWhiteSpace(i.Poster_Path) ? null : baseImageUrl + i.Poster_Path};
+                    var remoteResult = new RemoteSearchResult
+                    {
+                        SearchProviderName = TmdbMovieProvider.Current.Name,
+                        Name = i.Name ?? i.Original_Name,
+                        ImageUrl = string.IsNullOrWhiteSpace(i.Poster_Path) ? null : baseImageUrl + i.Poster_Path
+                    };
 
                     if (!string.IsNullOrWhiteSpace(i.First_Air_Date))
                     {

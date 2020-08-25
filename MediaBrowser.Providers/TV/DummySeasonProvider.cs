@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.TV
                 else if (existingSeason.IsVirtualItem)
                 {
                     existingSeason.IsVirtualItem = false;
-                    existingSeason.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken);
+                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                     seasons = null;
                 }
             }
@@ -113,7 +113,7 @@ namespace MediaBrowser.Providers.TV
                 else if (existingSeason.IsVirtualItem)
                 {
                     existingSeason.IsVirtualItem = false;
-                    existingSeason.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken);
+                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                     seasons = null;
                 }
             }

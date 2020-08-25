@@ -6,7 +6,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Music
 {
-    public static class Extensions
+    public static class AlbumInfoExtensions
     {
         public static string GetAlbumArtist(this AlbumInfo info)
         {
@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Music
                 return id;
             }
 
-            return info.AlbumArtists.FirstOrDefault();
+            return info.AlbumArtists.Count > 0 ? info.AlbumArtists[0] : default;
         }
 
         public static string GetReleaseGroupId(this AlbumInfo info)

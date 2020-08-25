@@ -44,7 +44,7 @@ namespace Emby.Dlna.ConnectionManager
                 DataType = "string",
                 SendsEvents = false,
 
-                AllowedValues = new string[]
+                AllowedValues = new[]
                 {
                     "OK",
                     "ContentFormatMismatch",
@@ -67,7 +67,7 @@ namespace Emby.Dlna.ConnectionManager
                 DataType = "string",
                 SendsEvents = false,
 
-                AllowedValues = new string[]
+                AllowedValues = new[]
                 {
                     "Output",
                     "Input"

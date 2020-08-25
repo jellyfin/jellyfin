@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
@@ -9,6 +11,8 @@ namespace MediaBrowser.Controller.Devices
 {
     public interface IDeviceManager
     {
+        event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
+
         /// <summary>
         /// Saves the capabilities.
         /// </summary>
@@ -44,7 +48,7 @@ namespace MediaBrowser.Controller.Devices
         bool CanAccessDevice(User user, string deviceId);
 
         void UpdateDeviceOptions(string deviceId, DeviceOptions options);
+
         DeviceOptions GetDeviceOptions(string deviceId);
-        event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
     }
 }

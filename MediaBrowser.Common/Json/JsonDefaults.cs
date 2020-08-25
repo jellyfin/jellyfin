@@ -24,14 +24,17 @@ namespace MediaBrowser.Common.Json
             var options = new JsonSerializerOptions
             {
                 ReadCommentHandling = JsonCommentHandling.Disallow,
-                WriteIndented = false
+                WriteIndented = false,
+                IgnoreNullValues = true
             };
 
             options.Converters.Add(new JsonGuidConverter());
             options.Converters.Add(new JsonInt32Converter());
+            options.Converters.Add(new JsonNullableInt32Converter());
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new JsonNonStringKeyDictionaryConverterFactory());
             options.Converters.Add(new JsonInt64Converter());
+            options.Converters.Add(new JsonNullableInt64Converter());
             options.Converters.Add(new JsonDoubleConverter());
 
             return options;

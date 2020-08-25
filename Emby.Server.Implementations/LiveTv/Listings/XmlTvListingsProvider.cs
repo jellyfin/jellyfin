@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     && !programInfo.IsRepeat
                     && (programInfo.EpisodeNumber ?? 0) == 0)
                 {
-                    programInfo.ShowId = programInfo.ShowId + programInfo.StartDate.Ticks.ToString(CultureInfo.InvariantCulture);
+                    programInfo.ShowId += programInfo.StartDate.Ticks.ToString(CultureInfo.InvariantCulture);
                 }
             }
             else
@@ -246,7 +246,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             // Construct an id from the channel and start date
-            programInfo.Id = string.Format("{0}_{1:O}", program.ChannelId, program.StartDate);
+            programInfo.Id = string.Format(CultureInfo.InvariantCulture, "{0}_{1:O}", program.ChannelId, program.StartDate);
 
             if (programInfo.IsMovie)
             {
@@ -296,7 +296,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 Name = c.DisplayName,
                 ImageUrl = c.Icon != null && !string.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
-
             }).ToList();
         }
     }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;

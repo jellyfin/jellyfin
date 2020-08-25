@@ -221,9 +221,8 @@ namespace Jellyfin.Api.Controllers
 
         private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)
         {
-            return service.ProcessControlRequestAsync(new ControlRequest
+            return service.ProcessControlRequestAsync(new ControlRequest(Request.Headers)
             {
-                Headers = Request.Headers,
                 InputXml = requestStream,
                 TargetServerUuId = id,
                 RequestedUrl = GetAbsoluteUri()

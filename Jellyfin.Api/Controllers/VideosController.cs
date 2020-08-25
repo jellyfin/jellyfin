@@ -161,7 +161,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteAlternateSources([FromRoute] Guid itemId)
+        public async Task<ActionResult> DeleteAlternateSources([FromRoute] Guid itemId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -180,12 +180,12 @@ namespace Jellyfin.Api.Controllers
                 link.SetPrimaryVersionId(null);
                 link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
 
-                link.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
 
             video.LinkedAlternateVersions = Array.Empty<LinkedChild>();
             video.SetPrimaryVersionId(null);
-            video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await video.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -201,7 +201,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult MergeVersions([FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> MergeVersions([FromQuery, Required] string? itemIds)
         {
             var items = RequestHelpers.Split(itemIds, ',', true)
                 .Select(i => _libraryManager.GetItemById(i))
@@ -239,7 +239,7 @@ namespace Jellyfin.Api.Controllers
             {
                 item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
 
-                item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
                 list.Add(new LinkedChild
                 {
@@ -258,12 +258,12 @@ namespace Jellyfin.Api.Controllers
                 if (item.LinkedAlternateVersions.Length > 0)
                 {
                     item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-                    item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                    await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
                 }
             }
 
             primaryVersion.LinkedAlternateVersions = list.ToArray();
-            primaryVersion.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await primaryVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
 

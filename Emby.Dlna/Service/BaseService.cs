@@ -8,31 +8,33 @@ namespace Emby.Dlna.Service
 {
     public class BaseService : IDlnaEventManager
     {
-        protected IDlnaEventManager _dlnaEventManager;
-        protected IHttpClient HttpClient;
-        protected ILogger Logger;
-
         protected BaseService(ILogger<BaseService> logger, IHttpClient httpClient)
         {
             Logger = logger;
             HttpClient = httpClient;
 
-            _dlnaEventManager = new DlnaEventManager(logger, HttpClient);
+            EventManager = new DlnaEventManager(logger, HttpClient);
         }
+
+        protected IDlnaEventManager EventManager { get; }
+
+        protected IHttpClient HttpClient { get; }
+
+        protected ILogger Logger { get; }
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
-            return _dlnaEventManager.CancelEventSubscription(subscriptionId);
+            return EventManager.CancelEventSubscription(subscriptionId);
         }
 
         public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string timeoutString, string callbackUrl)
         {
-            return _dlnaEventManager.RenewEventSubscription(subscriptionId, notificationType, timeoutString, callbackUrl);
+            return EventManager.RenewEventSubscription(subscriptionId, notificationType, timeoutString, callbackUrl);
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string timeoutString, string callbackUrl)
         {
-            return _dlnaEventManager.CreateEventSubscription(notificationType, timeoutString, callbackUrl);
+            return EventManager.CreateEventSubscription(notificationType, timeoutString, callbackUrl);
         }
     }
 }
