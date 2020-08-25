@@ -5,8 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.PlayTo.Discovery;
 using Emby.Dlna.PlayTo.EventArgs;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -32,7 +32,7 @@ namespace Emby.Dlna.PlayTo
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IDlnaProfileManager _dlnaProfileManager;
+        private readonly IDlnaManager _dlnaManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
         private readonly IHttpClient _httpClient;
@@ -54,7 +54,7 @@ namespace Emby.Dlna.PlayTo
             ISessionManager sessionManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
-            IDlnaProfileManager dlnaProfileManager,
+            IDlnaManager dlnaManager,
             IImageProcessor imageProcessor,
             IDeviceDiscovery deviceDiscovery,
             IHttpClient httpClient,
@@ -65,21 +65,21 @@ namespace Emby.Dlna.PlayTo
             IMediaEncoder mediaEncoder,
             INotificationManager notificationManager)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
-            _libraryManager = libraryManager ?? throw new ArgumentNullException(nameof(libraryManager));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _dlnaProfileManager = dlnaProfileManager ?? throw new ArgumentNullException(nameof(dlnaProfileManager));
-            _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
-            _imageProcessor = imageProcessor ?? throw new ArgumentNullException(nameof(imageProcessor));
-            _deviceDiscovery = deviceDiscovery ?? throw new ArgumentNullException(nameof(deviceDiscovery));
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _config = config ?? throw new ArgumentNullException(nameof(config));
-            _userDataManager = userDataManager ?? throw new ArgumentNullException(nameof(userDataManager));
-            _localization = localization ?? throw new ArgumentNullException(nameof(localization));
-            _mediaSourceManager = mediaSourceManager ?? throw new ArgumentNullException(nameof(mediaSourceManager));
-            _mediaEncoder = mediaEncoder ?? throw new ArgumentNullException(nameof(mediaEncoder));
-            _notificationManager = notificationManager ?? throw new ArgumentNullException(nameof(notificationManager));
+            _logger = logger;
+            _sessionManager = sessionManager;
+            _libraryManager = libraryManager;
+            _userManager = userManager;
+            _dlnaManager = dlnaManager;
+            _appHost = appHost;
+            _imageProcessor = imageProcessor;
+            _deviceDiscovery = deviceDiscovery;
+            _httpClient = httpClient;
+            _config = config;
+            _userDataManager = userDataManager;
+            _localization = localization;
+            _mediaSourceManager = mediaSourceManager;
+            _mediaEncoder = mediaEncoder;
+            _notificationManager = notificationManager;
             _devices = new List<DeviceInterface>();
 
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
@@ -234,7 +234,7 @@ namespace Emby.Dlna.PlayTo
                     _sessionManager,
                     _libraryManager,
                     _logger,
-                    _dlnaProfileManager,
+                    _dlnaManager,
                     _userManager,
                     _imageProcessor,
                     serverAddress,
@@ -251,8 +251,8 @@ namespace Emby.Dlna.PlayTo
 
                 controller.Init(device);
 
-                var profile = _dlnaProfileManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
-                              _dlnaProfileManager.GetDefaultProfile();
+                var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                              _dlnaManager.GetDefaultProfile();
 
                 _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
                 {

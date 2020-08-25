@@ -14,15 +14,15 @@ namespace Jellyfin.Api.Controllers
     [Authorize(Policy = Policies.RequiresElevation)]
     public class DlnaController : BaseJellyfinApiController
     {
-        private readonly IDlnaProfileManager _dlnaProfileManager;
+        private readonly IDlnaManager _dlnaManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DlnaController"/> class.
         /// </summary>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaProfileManager"/> interface.</param>
-        public DlnaController(IDlnaProfileManager dlnaManager)
+        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
+        public DlnaController(IDlnaManager dlnaManager)
         {
-            _dlnaProfileManager = dlnaManager;
+            _dlnaManager = dlnaManager;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<DeviceProfileInfo>> GetProfileInfos()
         {
-            return Ok(_dlnaProfileManager.GetProfileInfos());
+            return Ok(_dlnaManager.GetProfileInfos());
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<DeviceProfile> GetDefaultProfile()
         {
-            return _dlnaProfileManager.GetDefaultProfile();
+            return _dlnaManager.GetDefaultProfile();
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DeviceProfile> GetProfile([FromRoute] string profileId)
         {
-            var profile = _dlnaProfileManager.GetProfile(profileId);
+            var profile = _dlnaManager.GetProfile(profileId);
             if (profile == null)
             {
                 return NotFound();
@@ -82,13 +82,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult DeleteProfile([FromRoute] string profileId)
         {
-            var existingDeviceProfile = _dlnaProfileManager.GetProfile(profileId);
+            var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
             if (existingDeviceProfile == null)
             {
                 return NotFound();
             }
 
-            _dlnaProfileManager.DeleteProfile(profileId);
+            _dlnaManager.DeleteProfile(profileId);
             return NoContent();
         }
 
@@ -102,7 +102,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateProfile([FromBody] DeviceProfile deviceProfile)
         {
-            _dlnaProfileManager.CreateProfile(deviceProfile);
+            _dlnaManager.CreateProfile(deviceProfile);
             return NoContent();
         }
 
@@ -119,13 +119,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateProfile([FromRoute] string profileId, [FromBody] DeviceProfile deviceProfile)
         {
-            var existingDeviceProfile = _dlnaProfileManager.GetProfile(profileId);
+            var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
             if (existingDeviceProfile == null)
             {
                 return NotFound();
             }
 
-            _dlnaProfileManager.UpdateProfile(deviceProfile);
+            _dlnaManager.UpdateProfile(deviceProfile);
             return NoContent();
         }
     }

@@ -8,8 +8,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
-using Emby.Dlna.PlayTo.Discovery;
-using Emby.Dlna.PlayTo.EventArgs;
+using Emby.Dlna.Ssdp;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -38,7 +37,7 @@ namespace Emby.Dlna.PlayTo
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
-        private readonly IDlnaProfileManager _dlnaProfileManager;
+        private readonly IDlnaManager _dlnaManager;
         private readonly IUserManager _userManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
@@ -60,7 +59,7 @@ namespace Emby.Dlna.PlayTo
             ISessionManager sessionManager,
             ILibraryManager libraryManager,
             ILogger logger,
-            IDlnaProfileManager dlnaProfileManager,
+            IDlnaManager dlnaManager,
             IUserManager userManager,
             IImageProcessor imageProcessor,
             string serverAddress,
@@ -76,7 +75,7 @@ namespace Emby.Dlna.PlayTo
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _logger = logger;
-            _dlnaProfileManager = dlnaProfileManager;
+            _dlnaManager = dlnaManager;
             _userManager = userManager;
             _imageProcessor = imageProcessor;
             _serverAddress = serverAddress;
@@ -134,7 +133,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDeviceMediaChanged(object sender, DlnaMediaChangedEventArgs e)
+        private async void OnDeviceMediaChanged(object sender, MediaChangedEventArgs e)
         {
             if (_disposed)
             {
@@ -167,7 +166,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDevicePlaybackStopped(object sender, DlnaPlaybackStoppedEventArgs e)
+        private async void OnDevicePlaybackStopped(object sender, PlaybackEventArgs e)
         {
             if (_disposed)
             {
@@ -236,7 +235,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDevicePlaybackStart(object sender, DlnaPlaybackStartEventArgs e)
+        private async void OnDevicePlaybackStart(object sender, PlaybackEventArgs e)
         {
             if (_disposed)
             {
@@ -260,7 +259,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDevicePlaybackProgress(object sender, DlnaPlaybackProgressEventArgs e)
+        private async void OnDevicePlaybackProgress(object sender, PlaybackEventArgs e)
         {
             if (_disposed)
             {
@@ -378,8 +377,8 @@ namespace Emby.Dlna.PlayTo
             var deviceInfo = _device.Properties;
 
             // Checking the profile once instead of on each iteration.
-            var profile = _dlnaProfileManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
-                _dlnaProfileManager.GetDefaultProfile();
+            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
+                _dlnaManager.GetDefaultProfile();
 
             foreach (var item in items)
             {
@@ -537,8 +536,8 @@ namespace Emby.Dlna.PlayTo
             if (profile == null)
             {
                 var deviceInfo = _device.Properties;
-                profile = _dlnaProfileManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
-                        _dlnaProfileManager.GetDefaultProfile();
+                profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
+                        _dlnaManager.GetDefaultProfile();
             }
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);

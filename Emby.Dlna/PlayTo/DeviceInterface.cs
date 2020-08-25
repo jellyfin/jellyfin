@@ -30,12 +30,10 @@ namespace Emby.Dlna.PlayTo
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Web;
     using System.Xml;
     using System.Xml.Linq;
     using Emby.Dlna.Common;
     using Emby.Dlna.PlayTo.EventArgs;
-    using Emby.Dlna.Server;
     using Emby.Dlna.Ssdp;
     using MediaBrowser.Common.Net;
     using MediaBrowser.Model.Dlna;
@@ -199,28 +197,28 @@ namespace Emby.Dlna.PlayTo
             _jellyfinUrl = webUrl;
             _playToManager = playToManager;
 
-            TransportState = TransportState.NOMEDIAPRESENT;
+            TransportState = TransportState.NoMediaPresent;
         }
 
         /// <summary>
         /// Events called when playback starts.
         /// </summary>
-        public event EventHandler<DlnaPlaybackStartEventArgs>? PlaybackStart;
+        public event EventHandler<PlaybackEventArgs>? PlaybackStart;
 
         /// <summary>
         /// Events called during playback.
         /// </summary>
-        public event EventHandler<DlnaPlaybackProgressEventArgs>? PlaybackProgress;
+        public event EventHandler<PlaybackEventArgs>? PlaybackProgress;
 
         /// <summary>
         /// Events called when playback stops.
         /// </summary>
-        public event EventHandler<DlnaPlaybackStoppedEventArgs>? PlaybackStopped;
+        public event EventHandler<PlaybackEventArgs>? PlaybackStopped;
 
         /// <summary>
         /// Events called when the media changes.
         /// </summary>
-        public event EventHandler<DlnaMediaChangedEventArgs>? MediaChanged;
+        public event EventHandler<MediaChangedEventArgs>? MediaChanged;
 
         /// <summary>
         /// Gets the device's properties.
@@ -304,17 +302,17 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets a value indicating whether IsPlaying.
         /// </summary>
-        public bool IsPlaying => TransportState == TransportState.PLAYING;
+        public bool IsPlaying => TransportState == TransportState.Playing;
 
         /// <summary>
         /// Gets a value indicating whether IsPaused.
         /// </summary>
-        public bool IsPaused => TransportState == TransportState.PAUSED || TransportState == TransportState.PAUSEDPLAYBACK;
+        public bool IsPaused => TransportState == TransportState.Paused || TransportState == TransportState.PausedPlayback;
 
         /// <summary>
         /// Gets a value indicating whether IsStopped.
         /// </summary>
-        public bool IsStopped => TransportState == TransportState.STOPPED;
+        public bool IsStopped => TransportState == TransportState.Stopped;
 
         /// <summary>
         /// Gets or sets the OnDeviceUnavailable.
@@ -1128,7 +1126,7 @@ namespace Emby.Dlna.PlayTo
                                             if (success)
                                             {
                                                 // Save current progress.
-                                                TransportState = TransportState.TRANSITIONING;
+                                                TransportState = TransportState.Transitioning;
                                                 UpdateMediaInfo(null);
                                             }
                                         }
@@ -1716,11 +1714,11 @@ namespace Emby.Dlna.PlayTo
                             _logger.LogDebug("{0} : TransportState: {1}", Properties.Name, ts);
 
                             // Mustn't process our own change playback event.
-                            if (ts != TransportState && TransportState != TransportState.TRANSITIONING)
+                            if (ts != TransportState && TransportState != TransportState.Transitioning)
                             {
                                 TransportState = ts;
 
-                                if (ts == TransportState.STOPPED)
+                                if (ts == TransportState.Stopped)
                                 {
                                     _lastTransportRefresh = DateTime.UtcNow;
                                     UpdateMediaInfo(null);
@@ -1730,7 +1728,7 @@ namespace Emby.Dlna.PlayTo
                         }
 
                         // If the position isn't in this update, try to get it.
-                        if (TransportState == TransportState.PLAYING)
+                        if (TransportState == TransportState.Playing)
                         {
                             if (!reply.TryGetValue("RelativeTimePosition.val", out value))
                             {
@@ -1804,7 +1802,7 @@ namespace Emby.Dlna.PlayTo
             {
                 var transportState = await GetTransportStatus().ConfigureAwait(false);
 
-                if (transportState == TransportState.ERROR)
+                if (transportState == TransportState.Error)
                 {
                     _logger.LogError("{0} : Unable to get TransportState.", Properties.Name);
                     // Assume it's a one off.
@@ -1814,11 +1812,11 @@ namespace Emby.Dlna.PlayTo
                 {
                     TransportState = transportState;
 
-                    if (transportState != TransportState.ERROR)
+                    if (transportState != TransportState.Error)
                     {
                         // If we're not playing anything make sure we don't get data more
                         // often than neccessary to keep the Session alive.
-                        if (transportState == TransportState.STOPPED)
+                        if (transportState == TransportState.Stopped)
                         {
                             UpdateMediaInfo(null);
                             RestartTimer(Never);
@@ -1966,7 +1964,7 @@ namespace Emby.Dlna.PlayTo
                 if (result)
                 {
                     // Stop user from issuing multiple commands.
-                    TransportState = TransportState.PAUSED;
+                    TransportState = TransportState.Paused;
                     RestartTimer(Now);
                 }
             }
@@ -1983,7 +1981,7 @@ namespace Emby.Dlna.PlayTo
                 if (result)
                 {
                     // Stop user from issuing multiple commands.
-                    TransportState = TransportState.PLAYING;
+                    TransportState = TransportState.Playing;
                     RestartTimer(Now);
                 }
             }
@@ -2000,7 +1998,7 @@ namespace Emby.Dlna.PlayTo
                 if (result)
                 {
                     // Stop user from issuing multiple commands.
-                    TransportState = TransportState.STOPPED;
+                    TransportState = TransportState.Stopped;
                     RestartTimer(Now);
                 }
             }
@@ -2038,7 +2036,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             _logger.LogWarning("GetTransportInfo failed.");
-            return TransportState.ERROR;
+            return TransportState.Error;
         }
 
         private async Task<bool> SendMuteRequest(bool value)
@@ -2289,10 +2287,10 @@ namespace Emby.Dlna.PlayTo
                 {
                     if (previousMediaInfo == null)
                     {
-                        if (TransportState != TransportState.STOPPED && !string.IsNullOrWhiteSpace(mediaInfo.Url))
+                        if (TransportState != TransportState.Stopped && !string.IsNullOrWhiteSpace(mediaInfo.Url))
                         {
                             _logger.LogDebug("{0} : Firing playback started event.", Properties.Name);
-                            PlaybackStart?.Invoke(this, new DlnaPlaybackStartEventArgs
+                            PlaybackStart?.Invoke(this, new PlaybackEventArgs
                             {
                                 MediaInfo = mediaInfo
                             });
@@ -2303,7 +2301,7 @@ namespace Emby.Dlna.PlayTo
                         if (!string.IsNullOrWhiteSpace(mediaInfo?.Url))
                         {
                             _logger.LogDebug("{0} : Firing playback progress event.", Properties.Name);
-                            PlaybackProgress?.Invoke(this, new DlnaPlaybackProgressEventArgs
+                            PlaybackProgress?.Invoke(this, new PlaybackEventArgs
                             {
                                 MediaInfo = mediaInfo
                             });
@@ -2312,7 +2310,7 @@ namespace Emby.Dlna.PlayTo
                     else
                     {
                         _logger.LogDebug("{0} : Firing media change event.", Properties.Name);
-                        MediaChanged?.Invoke(this, new DlnaMediaChangedEventArgs
+                        MediaChanged?.Invoke(this, new MediaChangedEventArgs
                         {
                             OldMediaInfo = previousMediaInfo,
                             NewMediaInfo = mediaInfo
@@ -2322,7 +2320,7 @@ namespace Emby.Dlna.PlayTo
                 else if (previousMediaInfo != null)
                 {
                     _logger.LogDebug("{0} : Firing playback stopped event.", Properties.Name);
-                    PlaybackStopped?.Invoke(this, new DlnaPlaybackStoppedEventArgs
+                    PlaybackStopped?.Invoke(this, new PlaybackEventArgs
                     {
                         MediaInfo = previousMediaInfo
                     });

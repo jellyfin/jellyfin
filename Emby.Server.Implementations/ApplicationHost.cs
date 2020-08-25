@@ -505,7 +505,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(_networkManager);
 
             serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
-            serviceCollection.AddSingleton<ISocketServer, SocketServer>();
 
             serviceCollection.AddSingleton<IIsoManager, IsoManager>();
 
@@ -581,7 +580,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            serviceCollection.AddSingleton<IDlnaProfileManager, DlnaProfileManager>();
+            serviceCollection.AddSingleton<IDlnaManager, DlnaManager>();
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
@@ -1037,7 +1036,7 @@ namespace Emby.Server.Implementations
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
             // Dlna
-            yield return typeof(DlnaProfileManager).Assembly;
+            yield return typeof(DlnaManager).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

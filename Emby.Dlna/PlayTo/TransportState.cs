@@ -5,14 +5,14 @@ namespace Emby.Dlna.PlayTo
 {
     public enum TransportState
     {
-        STOPPED,
-        PLAYING,
-        TRANSITIONING,
-        PAUSEDPLAYBACK,
-        PAUSEDRECORDING,
-        RECORDING,
-        NOMEDIAPRESENT,
-        PAUSED,
-        ERROR
+        Stopped,
+        Playing,
+        Transitioning,
+        PausedPlayback,
+        PausedRecording,
+        Recording,
+        NoMediaPresent,
+        Paused,
+        Error
     }
 }

@@ -14,7 +14,7 @@ namespace Emby.Dlna.Net.EventArgs
     /// </remarks>
     public sealed class RequestReceivedEventArgs : System.EventArgs
     {
-        private byte[] _raw;
+        private readonly byte[] _raw;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestReceivedEventArgs"/> class.
