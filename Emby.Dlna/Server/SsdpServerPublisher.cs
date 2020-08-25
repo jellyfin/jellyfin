@@ -47,7 +47,7 @@ namespace Emby.Dlna.Server
         private bool _disposed;
 
         public SsdpServerPublisher(
-            SocketServer? socketServer,
+            SocketServer socketServer,
             ILoggerFactory loggerFactory,
             INetworkManager networkManager,
             int aliveMessageInterval)
@@ -561,7 +561,7 @@ namespace Emby.Dlna.Server
                 if (searchTarget.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
                 {
                     // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                    if (DlnaManager.Instance != null && DlnaManager.Instance.IsuPnPActive && !e.Simulated)
+                    if (DlnaSystemManager.Instance != null && DlnaSystemManager.Instance.IsUPnPActive && !e.Simulated)
                     {
                         // _logger.LogDebug("Passing notify message to Mono.Nat.");
                         NatUtility.ParseMessage(NatProtocol.Upnp, e.LocalIPAddress, e.Raw(), e.ReceivedFrom);

@@ -26,26 +26,17 @@ namespace Emby.Dlna.Net
     /// Provides the platform independent logic for publishing device existence and responding to search requests.
     ///
     /// Is designed to work in conjunction with ExternalPortForwarding.
+    ///
+    /// Lazy implementation. Socks will only be created at first use.
     /// </summary>
     /// <remarks>
     /// Part of this code take from RSSDP.
     /// Copyright (c) 2015 Troy Willmot.
     /// Copyright (c) 2015-2018 Luke Pulverenti.
     /// </remarks>
-    public class SocketServer : IDisposable
+    public class SocketServer : IDisposable, ISocketServer
     {
-        /* We could technically use one socket listening on port 1900 for everything. This should get both multicast (notifications)
-         * and unicast (search response) messages, however this often doesn't work under Windows because the MS SSDP service is running.
-         * If that service is running then it will steal the unicast messages and we will never see search responses.
-         * Since stopping the service would be a bad idea (might not be allowed security wise and might break other apps running on
-         * the system) the only other work around is to use two sockets.
-         *
-         * We use one socket to listen for/receive notifications and search requests.
-         * We use a second socket, bound to a different local port, to send search requests and if depending upon the state of uPNP
-         * listen for responses. The responses are sent to the local port this socket is bound to, which isn't port 1900 so the MS
-         * service doesn't steal them. While the caller can specify a local port to use, we will default to 0 which allows the
-         * underlying system to auto-assign a free port.
-         */
+        private static SocketServer? _instance;
 
         /// <summary>
         /// Default ttl.
@@ -64,6 +55,7 @@ namespace Emby.Dlna.Net
         private bool _disposed;
         private bool _oldState;
         private int _udpResendCount = 2;
+        private bool _started;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SocketServer"/> class.
@@ -86,35 +78,80 @@ namespace Emby.Dlna.Net
             _any4 = AnyIP(IPAddress.Any);
             _any6 = AnyIP(IPAddress.IPv6Any);
             Instance = this;
-            _oldState = IsuPnPActive;
+            _oldState = DlnaSystemManager.Instance.IsUPnPActive;
             Tracing = configurationManager.GetDlnaConfiguration().EnableDebugLog;
             // _udpResendCount = configurationManager.GetDlnaConfiguration().UDPResentCount;
-            CreateSockets();
-
-            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
-            _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
-            _networkManager.NetworkChanged += NetworkChanged;
         }
+
+        private event EventHandler<RequestReceivedEventArgs>? EventRequestReceived;
+
+        private event EventHandler<ResponseReceivedEventArgs>? EventResponseReceived;
 
         /// <summary>
         /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
         /// </summary>
-        public event EventHandler<RequestReceivedEventArgs>? RequestReceived;
+        public event EventHandler<RequestReceivedEventArgs>? RequestReceived
+        {
+            add
+            {
+                lock (_socketSynchroniser)
+                {
+                    EventRequestReceived += value;
+                    Start();
+                }
+            }
+
+            remove
+            {
+                lock (_socketSynchroniser)
+                {
+                    EventRequestReceived -= value;
+                    Stop();
+                }
+            }
+        }
 
         /// <summary>
         /// Raised when an HTTPU response message is received by a socket (unicast or multicast).
         /// </summary>
-        public event EventHandler<ResponseReceivedEventArgs>? ResponseReceived;
+        public event EventHandler<ResponseReceivedEventArgs>? ResponseReceived
+        {
+            add
+            {
+                lock (_socketSynchroniser)
+                {
+                    EventResponseReceived += value;
+                    Start();
+                }
+            }
+
+            remove
+            {
+                lock (_socketSynchroniser)
+                {
+                    EventResponseReceived -= value;
+                    Stop();
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the singleton instance of this object.
         /// </summary>
-        public static SocketServer? Instance { get; set; }
+        public static SocketServer Instance
+        {
+            get => GetInstance();
+
+            set
+            {
+                _instance = value;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether uPNP port forwarding is active.
         /// </summary>
-        public static bool IsuPnPActive => DlnaManager.Instance != null && DlnaManager.Instance.IsuPnPActive;
+        public static bool IsuPnPActive => DlnaSystemManager.Instance.IsUPnPActive;
 
         /// <summary>
         /// Gets the number of times each udp packet should be sent.
@@ -131,7 +168,7 @@ namespace Emby.Dlna.Net
         /// </summary>
         public bool Tracing { get; private set; }
 
-         /// <summary>
+        /// <summary>
         /// Gets a value indicating whether IP6 is enabled.
         /// </summary>
         public bool IsIP6Enabled
@@ -147,7 +184,7 @@ namespace Emby.Dlna.Net
             }
         }
 
-         /// <summary>
+        /// <summary>
         /// Gets a value indicating whether IP4 is enabled.
         /// </summary>
         public bool IsIP4Enabled
@@ -265,39 +302,6 @@ namespace Emby.Dlna.Net
         }
 
         /// <inheritdoc/>
-#pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCount implementation causes warning.
-        public void Dispose()
-        {
-            // If we still have delegates, then don't dispose as we're still in use.
-            if (RequestReceived?.GetInvocationList().Length != 0)
-            {
-                return;
-            }
-
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Triggered on a system configuration change.
-        /// </summary>
-        /// <param name="sender">Configuration object.</param>
-        /// <param name="args">Event arguments.</param>
-        public void ConfigurationUpdated(object sender, System.EventArgs args)
-        {
-            if (_oldState != IsuPnPActive)
-            {
-                CreateSockets();
-                _oldState = IsuPnPActive;
-                // _udpResendCount = configurationManager.GetDlnaConfiguration().UDPResentCount;
-            }
-        }
-
-        /// <summary>
-        /// Returns a udp port based upon Configuration.UDPPort.
-        /// </summary>
-        /// <param name="portStr">Port Range, or empty/zero for a random port.</param>
-        /// <returns>System.Int32.</returns>
         public int GetPort(string portStr)
         {
             int port = 0;
@@ -320,11 +324,7 @@ namespace Emby.Dlna.Net
             return port;
         }
 
-        /// <summary>
-        /// Creates an UDP Socket.
-        /// </summary>
-        /// <param name="port">UDP port to bind.</param>
-        /// <returns>A Socket.</returns>
+        /// <inheritdoc/>
         public Socket CreateUdpBroadcastSocket(int port)
         {
             if (port < 0 || port > 65536)
@@ -347,12 +347,7 @@ namespace Emby.Dlna.Net
             return retVal;
         }
 
-        /// <summary>
-        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
-        /// </summary>
-        /// <param name="address">IP Address to bind.</param>
-        /// <param name="port">UDP port to bind.</param>
-        /// <returns>A Socket.</returns>
+        /// <inheritdoc/>
         public Socket CreateUdpMulticastSocket(IPAddress address, int port)
         {
             if (address == null)
@@ -401,11 +396,7 @@ namespace Emby.Dlna.Net
             return retVal;
         }
 
-        /// <summary>
-        /// Returns the correct multicast address based upon the IsIPEnabled.
-        /// </summary>
-        /// <param name="port">Port to use.</param>
-        /// <returns>IPEndpoint set to the port provided.</returns>
+        /// <inheritdoc/>
         public IPEndPoint GetMulticastEndPoint(int port)
         {
             IPAddress addr = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
@@ -415,13 +406,21 @@ namespace Emby.Dlna.Net
                         IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
         }
 
-        /// <summary>
-        /// Sends a message to the SSDP multicast address and port.
-        /// </summary>
-        /// <param name="message">The mesage to send.</param>
-        /// <param name="localIPAddress">The interface ip to use.</param>
-        /// <param name="endPoint">The destination endpoint.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        /// <inheritdoc/>
+#pragma warning disable CA1063 // Implement IDisposable Correctly : UsageCount implementation causes warning.
+        public void Dispose()
+        {
+            // If we still have delegates, then don't dispose as we're still in use.
+            if (EventRequestReceived?.GetInvocationList().Length != 0 || EventResponseReceived?.GetInvocationList().Length != 0)
+            {
+                return;
+            }
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <inheritdoc/>
         public async Task SendMessageAsync(string message, IPAddress localIPAddress, IPEndPoint endPoint)
         {
             if (_disposed)
@@ -480,24 +479,13 @@ namespace Emby.Dlna.Net
             await SendFromSocketsAsync(sendSockets, message, endPoint, _udpResendCount, false).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Multicasts a message to a particular address (unicast or multicast) via all available sockets.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        /// <param name="localIPAddress">The interface ip address to use.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        /// <inheritdoc/>
         public async Task SendMulticastMessageAsync(string message, IPAddress localIPAddress)
         {
             await SendMulticastMessageAsync(message, _udpResendCount, localIPAddress).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Sends a message to the SSDP multicast address and port.
-        /// </summary>
-        /// <param name="message">The mesage to send.</param>
-        /// <param name="sendCount">The number of times to send it.</param>
-        /// <param name="localIPAddress">The interface ip to use.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        /// <inheritdoc/>
         public async Task SendMulticastMessageAsync(string message, int sendCount, IPAddress localIPAddress)
         {
             if (_disposed)
@@ -532,14 +520,7 @@ namespace Emby.Dlna.Net
             await SendFromSocketsAsync(sendSockets, message, endPoint, sendCount, true).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Processes a SSDP message.
-        /// </summary>
-        /// <param name="data">The data to process.</param>
-        /// <param name="receivedFrom">The remote endpoint.</param>
-        /// <param name="localIPAddress">The interface ip upon which it was receieved.</param>
-        /// <param name="sourceInternal">True if the data didn't arrive through JF's UDP ports.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        /// <inheritdoc/>
         public Task ProcessMessage(string data, IPEndPoint receivedFrom, IPAddress localIPAddress, bool sourceInternal)
         {
             if (receivedFrom == null)
@@ -575,7 +556,7 @@ namespace Emby.Dlna.Net
                     {
                         try
                         {
-                            ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, receivedFrom, localIPAddress, sourceInternal));
+                            EventResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, receivedFrom, localIPAddress, sourceInternal));
                         }
                         finally
                         {
@@ -598,7 +579,7 @@ namespace Emby.Dlna.Net
                                 return Task.CompletedTask;
                             }
 
-                            RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress, sourceInternal));
+                            EventRequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress, sourceInternal));
                         }
                         finally
                         {
@@ -624,26 +605,37 @@ namespace Emby.Dlna.Net
             if (disposing)
             {
                 _disposed = true;
-                Instance = null;
+                _instance = null;
 
-                _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
-                _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
-                _networkManager.NetworkChanged -= ConfigurationUpdated;
+                Stop();
+
                 NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
+            }
+        }
 
-                lock (_socketSynchroniser)
-                {
-                    Socket socket;
-                    while (_sockets.Count > 0)
-                    {
-                        socket = _sockets[0];
-                        _sockets.RemoveAt(0);
-                        _logger.LogInformation("Disposing socket {1}", socket.LocalEndPoint);
-                        socket.Dispose();
-                    }
+        private static SocketServer GetInstance()
+        {
+            if (_instance == null)
+            {
+                throw new ApplicationException("SocketServer is not initialised.");
+            }
 
-                    _sockets.Clear();
-                }
+            return _instance;
+        }
+
+        /// <summary>
+        /// Triggered on a system configuration change.
+        /// </summary>
+        /// <param name="sender">Configuration object.</param>
+        /// <param name="args">Event arguments.</param>
+        private void ConfigurationUpdated(object sender, System.EventArgs args)
+        {
+            bool lastState = _oldState;
+            _oldState = DlnaSystemManager.Instance.IsUPnPActive;
+            if (_oldState != lastState)
+            {
+                CreateSockets();
+                // _udpResendCount = configurationManager.GetDlnaConfiguration().UDPResentCount;
             }
         }
 
@@ -703,6 +695,43 @@ namespace Emby.Dlna.Net
             }
 
             return retVal;
+        }
+
+        private void Start()
+        {
+            _started = true;
+            if (!_started)
+            {
+                CreateSockets();
+
+                _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+                _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
+                _networkManager.NetworkChanged += NetworkChanged;
+            }
+        }
+
+        private void Stop()
+        {
+            if (_started)
+            {
+                _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
+                _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
+                _networkManager.NetworkChanged += NetworkChanged;
+
+                lock (_socketSynchroniser)
+                {
+                    Socket socket;
+                    while (_sockets.Count > 0)
+                    {
+                        socket = _sockets[0];
+                        _sockets.RemoveAt(0);
+                        _logger.LogInformation("Disposing socket {1}", socket.LocalEndPoint);
+                        socket.Dispose();
+                    }
+
+                    _sockets.Clear();
+                }
+            }
         }
 
         /// <summary>
@@ -830,7 +859,7 @@ namespace Emby.Dlna.Net
                     }
 
                     // Did it come from Mono.NAT?
-                    if (sourceInternal && IsuPnPActive && endPoint.Port == 1900 && _networkManager.IsGatewayInterface(endPoint.Address))
+                    if (sourceInternal && DlnaSystemManager.Instance.IsUPnPActive && endPoint.Port == 1900 && _networkManager.IsGatewayInterface(endPoint.Address))
                     {
                         return true;
                     }
@@ -1061,7 +1090,7 @@ namespace Emby.Dlna.Net
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
 
-            if (IsuPnPActive)
+            if (DlnaSystemManager.Instance.IsUPnPActive)
             {
                 NatUtility.UnknownDeviceFound += UnknownDeviceFound;
             }

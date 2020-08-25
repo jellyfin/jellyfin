@@ -32,7 +32,7 @@ namespace Emby.Dlna.PlayTo
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IDlnaManager _dlnaManager;
+        private readonly IDlnaProfileManager _dlnaProfileManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
         private readonly IHttpClient _httpClient;
@@ -54,7 +54,7 @@ namespace Emby.Dlna.PlayTo
             ISessionManager sessionManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
-            IDlnaManager dlnaManager,
+            IDlnaProfileManager dlnaProfileManager,
             IImageProcessor imageProcessor,
             IDeviceDiscovery deviceDiscovery,
             IHttpClient httpClient,
@@ -69,7 +69,7 @@ namespace Emby.Dlna.PlayTo
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
             _libraryManager = libraryManager ?? throw new ArgumentNullException(nameof(libraryManager));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _dlnaManager = dlnaManager ?? throw new ArgumentNullException(nameof(dlnaManager));
+            _dlnaProfileManager = dlnaProfileManager ?? throw new ArgumentNullException(nameof(dlnaProfileManager));
             _appHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
             _imageProcessor = imageProcessor ?? throw new ArgumentNullException(nameof(imageProcessor));
             _deviceDiscovery = deviceDiscovery ?? throw new ArgumentNullException(nameof(deviceDiscovery));
@@ -234,7 +234,7 @@ namespace Emby.Dlna.PlayTo
                     _sessionManager,
                     _libraryManager,
                     _logger,
-                    _dlnaManager,
+                    _dlnaProfileManager,
                     _userManager,
                     _imageProcessor,
                     serverAddress,
@@ -251,8 +251,8 @@ namespace Emby.Dlna.PlayTo
 
                 controller.Init(device);
 
-                var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
-                              _dlnaManager.GetDefaultProfile();
+                var profile = _dlnaProfileManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                              _dlnaProfileManager.GetDefaultProfile();
 
                 _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
                 {

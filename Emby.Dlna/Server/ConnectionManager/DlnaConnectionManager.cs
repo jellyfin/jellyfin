@@ -12,14 +12,14 @@ namespace Emby.Dlna.Server.ConnectionManager
 {
     public class DlnaConnectionManager : BaseService, IConnectionManager
     {
-        private readonly IDlnaManager _dlna;
+        private readonly IDlnaProfileManager _dlna;
         private readonly IServerConfigurationManager _configurationManager;
 
         public DlnaConnectionManager(
             ILogger logger,
             IServerConfigurationManager configurationManager,
             IHttpClient httpClient,
-            IDlnaManager dlna)
+            IDlnaProfileManager dlna)
             : base(logger, httpClient)
         {
             _dlna = dlna ?? throw new NullReferenceException(nameof(dlna));

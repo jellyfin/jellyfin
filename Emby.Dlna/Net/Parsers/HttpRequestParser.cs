@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Linq;
 using System.Net.Http;
 
 namespace Emby.Dlna.Net.Parsers

@@ -44,7 +44,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
+        /// <param name="dlnaManager">Instance of the <see cref="IDlnaProfileManager"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Initialized <see cref="TranscodingJobHelper"/>.</param>
         /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
@@ -62,7 +62,7 @@ namespace Jellyfin.Api.Helpers
             IFileSystem fileSystem,
             ISubtitleEncoder subtitleEncoder,
             IConfiguration configuration,
-            IDlnaManager dlnaManager,
+            IDlnaProfileManager dlnaManager,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             TranscodingJobType transcodingJobType,
@@ -232,14 +232,14 @@ namespace Jellyfin.Api.Helpers
         /// <param name="isStaticallyStreamed">if set to <c>true</c> [is statically streamed].</param>
         /// <param name="startTimeTicks">The start time in ticks.</param>
         /// <param name="request">The <see cref="HttpRequest"/>.</param>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
+        /// <param name="dlnaManager">Instance of the <see cref="IDlnaProfileManager"/> interface.</param>
         public static void AddDlnaHeaders(
             StreamState state,
             IHeaderDictionary responseHeaders,
             bool isStaticallyStreamed,
             long? startTimeTicks,
             HttpRequest request,
-            IDlnaManager dlnaManager)
+            IDlnaProfileManager dlnaManager)
         {
             if (!state.EnableDlnaHeaders)
             {
@@ -478,7 +478,7 @@ namespace Jellyfin.Api.Helpers
             return Path.Combine(folder, filename + ext);
         }
 
-        private static void ApplyDeviceProfileSettings(StreamState state, IDlnaManager dlnaManager, IDeviceManager deviceManager, HttpRequest request, string? deviceProfileId, bool? @static)
+        private static void ApplyDeviceProfileSettings(StreamState state, IDlnaProfileManager dlnaManager, IDeviceManager deviceManager, HttpRequest request, string? deviceProfileId, bool? @static)
         {
             var headers = request.Headers;
 

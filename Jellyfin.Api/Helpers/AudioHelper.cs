@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -23,7 +23,7 @@ namespace Jellyfin.Api.Helpers
     /// </summary>
     public class AudioHelper
     {
-        private readonly IDlnaManager _dlnaManager;
+        private readonly IDlnaProfileManager _dlnaProfileManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
@@ -41,7 +41,7 @@ namespace Jellyfin.Api.Helpers
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioHelper"/> class.
         /// </summary>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
+        /// <param name="dlnaManager">Instance of the <see cref="IDlnaProfileManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
@@ -56,7 +56,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
         public AudioHelper(
-            IDlnaManager dlnaManager,
+            IDlnaProfileManager dlnaManager,
             IAuthorizationContext authContext,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Helpers
             IHttpClientFactory httpClientFactory,
             IHttpContextAccessor httpContextAccessor)
         {
-            _dlnaManager = dlnaManager;
+            _dlnaProfileManager = dlnaManager;
             _authContext = authContext;
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -112,7 +112,7 @@ namespace Jellyfin.Api.Helpers
                     _fileSystem,
                     _subtitleEncoder,
                     _configuration,
-                    _dlnaManager,
+                    _dlnaProfileManager,
                     _deviceManager,
                     _transcodingJobHelper,
                     transcodingJobType,
@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Helpers
 
             if (streamingRequest.Static && state.DirectStreamProvider != null)
             {
-                StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
+                StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaProfileManager);
 
                 await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
                     {
@@ -136,7 +136,7 @@ namespace Jellyfin.Api.Helpers
             // Static remote stream
             if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)
             {
-                StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
+                StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaProfileManager);
 
                 var httpClient = _httpClientFactory.CreateClient();
                 return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
@@ -153,7 +153,7 @@ namespace Jellyfin.Api.Helpers
             var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
             var isTranscodeCached = outputPathExists && transcodingJob != null;
 
-            StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, streamingRequest.Static || isTranscodeCached, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
+            StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, streamingRequest.Static || isTranscodeCached, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaProfileManager);
 
             // Static stream
             if (streamingRequest.Static)

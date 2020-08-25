@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
-                _udpSocket = SocketServer.Instance?.CreateUdpBroadcastSocket(PortNumber) ?? null;
+                _udpSocket = SocketServer.Instance.CreateUdpBroadcastSocket(PortNumber);
                 _ = Task.Run(async () => await BeginReceiveAsync().ConfigureAwait(false));
             }
             catch (SocketException ex)

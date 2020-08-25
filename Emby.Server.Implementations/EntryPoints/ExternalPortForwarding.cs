@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.EntryPoints
             if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
             {
                 Stop();
-                if (DlnaManager.Instance?.IsuPnPActive ?? false)
+                if (DlnaSystemManager.Instance.IsUPnPActive)
                 {
                     Start();
                 }
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private void Start()
         {
-            if (DlnaManager.Instance?.IsuPnPActive ?? false)
+            if (DlnaSystemManager.Instance.IsUPnPActive)
             {
                 return;
             }

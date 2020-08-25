@@ -26,7 +26,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna
 {
-    public class DlnaProfileManager : IDlnaManager
+    public class DlnaProfileManager : IDlnaProfileManager
     {
         private readonly IApplicationPaths _appPaths;
         private readonly IXmlSerializer _xmlSerializer;

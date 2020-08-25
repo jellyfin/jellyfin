@@ -244,7 +244,7 @@ namespace Emby.Dlna.PlayTo
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["HOST"] = _ssdpMulticastAddress[a] + ":1900",
-                    ["USER-AGENT"] = DlnaManager.Instance?.SsdpUserAgent ?? string.Empty,
+                    ["USER-AGENT"] = DlnaSystemManager.Instance.SsdpUserAgent,
                     ["MAN"] = "\"ssdp:discover\"",
                     ["ST"] = "ssdp:all",
                     ["MX"] = mxValue.Seconds.ToString(CultureInfo.CurrentCulture),
@@ -313,7 +313,7 @@ namespace Emby.Dlna.PlayTo
                 if (notificationType.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
                 {
                     // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                    if (DlnaManager.Instance != null && DlnaManager.Instance.IsuPnPActive && !e.Simulated)
+                    if (DlnaSystemManager.Instance.IsUPnPActive && !e.Simulated)
                     {
                         // _logger.LogDebug("Passing NOTIFY message to Mono.Nat.");
                         NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw(), e.ReceivedFrom);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -34,7 +34,7 @@ namespace Jellyfin.Api.Helpers
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IDlnaManager _dlnaManager;
+        private readonly IDlnaProfileManager _dlnaProfileManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -53,7 +53,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
+        /// <param name="dlnaManager">Instance of the <see cref="IDlnaProfileManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
@@ -69,7 +69,7 @@ namespace Jellyfin.Api.Helpers
         public DynamicHlsHelper(
             ILibraryManager libraryManager,
             IUserManager userManager,
-            IDlnaManager dlnaManager,
+            IDlnaProfileManager dlnaManager,
             IAuthorizationContext authContext,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
@@ -85,7 +85,7 @@ namespace Jellyfin.Api.Helpers
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
-            _dlnaManager = dlnaManager;
+            _dlnaProfileManager = dlnaManager;
             _authContext = authContext;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
@@ -141,7 +141,7 @@ namespace Jellyfin.Api.Helpers
                     _fileSystem,
                     _subtitleEncoder,
                     _configuration,
-                    _dlnaManager,
+                    _dlnaProfileManager,
                     _deviceManager,
                     _transcodingJobHelper,
                     transcodingJobType,
