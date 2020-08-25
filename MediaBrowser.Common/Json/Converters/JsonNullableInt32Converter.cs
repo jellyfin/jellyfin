@@ -14,6 +14,11 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override int? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
             if (reader.TokenType == JsonTokenType.String)
             {
                 ReadOnlySpan<byte> span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;

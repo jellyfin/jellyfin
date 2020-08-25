@@ -168,7 +168,7 @@ namespace Jellyfin.Server.Extensions
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
-                    options.JsonSerializerOptions.IgnoreNullValues = jsonOptions.IgnoreNullValues;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
 
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)

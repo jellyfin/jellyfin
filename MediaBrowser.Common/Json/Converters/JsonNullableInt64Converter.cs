@@ -21,6 +21,11 @@ namespace MediaBrowser.Common.Json.Converters
         /// <returns>Parsed value.</returns>
         public override long? Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
             if (reader.TokenType == JsonTokenType.String)
             {
                 // try to parse number directly from bytes

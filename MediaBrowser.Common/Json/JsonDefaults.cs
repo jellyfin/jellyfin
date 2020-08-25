@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Json
             {
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 WriteIndented = false,
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
             };
 
             options.Converters.Add(new JsonGuidConverter());
