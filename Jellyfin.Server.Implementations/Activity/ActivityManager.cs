@@ -28,16 +28,6 @@ namespace Jellyfin.Server.Implementations.Activity
         public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
         /// <inheritdoc/>
-        public void Create(ActivityLog entry)
-        {
-            using var dbContext = _provider.CreateContext();
-            dbContext.ActivityLogs.Add(entry);
-            dbContext.SaveChanges();
-
-            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
-        }
-
-        /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
         {
             await using var dbContext = _provider.CreateContext();

@@ -13,8 +13,6 @@ namespace MediaBrowser.Model.Activity
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
-        void Create(ActivityLog entry);
-
         Task CreateAsync(ActivityLog entry);
 
         QueryResult<ActivityLogEntry> GetPagedResult(int? startIndex, int? limit);
