@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -70,7 +71,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                         list.Add(new RemoteImageInfo
                         {
                             ProviderName = Name,
-                            Url = string.Format("https://img.omdbapi.com/?i={0}&apikey=2c9d9507", imdbId)
+                            Url = string.Format(CultureInfo.InvariantCulture, "https://img.omdbapi.com/?i={0}&apikey=2c9d9507", imdbId)
                         });
                     }
                 }

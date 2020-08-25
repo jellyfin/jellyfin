@@ -276,7 +276,7 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
         {
-            var url = string.Format("/ws/2/release/?query=\"{0}\" AND arid:{1}",
+            var url = string.Format(CultureInfo.InvariantCulture, "/ws/2/release/?query=\"{0}\" AND arid:{1}",
                 WebUtility.UrlEncode(albumName),
                 artistId);
 

@@ -929,7 +929,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private static string NormalizeName(string value)
         {
-            return value.Replace(" ", string.Empty).Replace("-", string.Empty);
+            return value.Replace(" ", string.Empty, StringComparison.Ordinal).Replace("-", string.Empty, StringComparison.Ordinal);
         }
 
         public class ScheduleDirect

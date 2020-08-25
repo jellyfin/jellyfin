@@ -87,7 +87,7 @@ namespace Emby.Dlna.Service
                     .Append(SecurityElement.Escape(item.DataType ?? string.Empty))
                     .Append("</dataType>");
 
-                if (item.AllowedValues.Length > 0)
+                if (item.AllowedValues.Count > 0)
                 {
                     builder.Append("<allowedValueList>");
                     foreach (var allowedValue in item.AllowedValues)

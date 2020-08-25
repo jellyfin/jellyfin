@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
@@ -53,7 +55,7 @@ namespace MediaBrowser.Controller.Net
         }
 
         public bool IgnoreLegacyAuth { get; set; }
-        
+
         public bool AllowLocalOnly { get; set; }
     }
 
@@ -68,7 +70,7 @@ namespace MediaBrowser.Controller.Net
         bool AllowLocalOnly { get; }
 
         string[] GetRoles();
-        
+
         bool IgnoreLegacyAuth { get; }
     }
 }

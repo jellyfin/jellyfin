@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 
@@ -5,7 +7,7 @@ namespace MediaBrowser.Controller.Providers
 {
     public class MetadataResult<T>
     {
-        public List<LocalImageInfo> Images { get; set; }
+        public List<LocalImageInfo> Images { get; }
 
         public MetadataResult()
         {
@@ -47,35 +49,5 @@ namespace MediaBrowser.Controller.Providers
 
             People.Clear();
         }
-
-        /*public UserItemData GetOrAddUserData(string userId)
-        {
-            if (UserDataList == null)
-            {
-                UserDataList = new List<UserItemData>();
-            }
-
-            UserItemData userData = null;
-
-            foreach (var i in UserDataList)
-            {
-                if (string.Equals(userId, i.UserId.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
-                {
-                    userData = i;
-                }
-            }
-
-            if (userData == null)
-            {
-                userData = new UserItemData()
-                {
-                    UserId = new Guid(userId)
-                };
-
-                UserDataList.Add(userData);
-            }
-
-            return userData;
-        }*/
     }
 }

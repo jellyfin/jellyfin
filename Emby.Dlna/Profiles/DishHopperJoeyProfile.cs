@@ -24,7 +24,7 @@ namespace Emby.Dlna.Profiles
                     {
                          Match = HeaderMatchType.Substring,
                          Name = "User-Agent",
-                         Value ="Zip_"
+                         Value = "Zip_"
                     }
                 }
             };
@@ -81,7 +81,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.Video,
                     Codec = "h264",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -124,7 +124,7 @@ namespace Emby.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -161,7 +161,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.VideoAudio,
                     Codec = "ac3,he-aac",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -177,7 +177,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.VideoAudio,
                     Codec = "aac",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -192,7 +192,7 @@ namespace Emby.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.VideoAudio,
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         // The device does not have any audio switching capabilities
                         new ProfileCondition

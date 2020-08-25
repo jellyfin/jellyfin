@@ -746,12 +746,21 @@ namespace Emby.Server.Implementations.Channels
             // null if came from cache
             if (itemsResult != null)
             {
-                var internalItems = itemsResult.Items
-                    .Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, parentItem, cancellationToken))
-                    .ToArray();
+                var items = itemsResult.Items;
+                var itemsLen = items.Count;
+                var internalItems = new Guid[itemsLen];
+                for (int i = 0; i < itemsLen; i++)
+                {
+                    internalItems[i] = (await GetChannelItemEntityAsync(
+                        items[i],
+                        channelProvider,
+                        channel.Id,
+                        parentItem,
+                        cancellationToken).ConfigureAwait(false)).Id;
+                }
 
                 var existingIds = _libraryManager.GetItemIds(query);
-                var deadIds = existingIds.Except(internalItems.Select(i => i.Id))
+                var deadIds = existingIds.Except(internalItems)
                     .ToArray();
 
                 foreach (var deadId in deadIds)
@@ -963,7 +972,7 @@ namespace Emby.Server.Implementations.Channels
             return item;
         }
 
-        private BaseItem GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntityAsync(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
         {
             var parentFolderId = parentFolder.Id;
 
@@ -1165,7 +1174,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else if (forceUpdate)
             {
-                item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
             }
 
             if ((isNew || forceUpdate) && info.Type == ChannelItemType.Media)

@@ -54,11 +54,15 @@ namespace Emby.Dlna
             _appHost = appHost;
         }
 
+        private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
+
+        private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
+
         public async Task InitProfilesAsync()
         {
             try
             {
-                await ExtractSystemProfilesAsync();
+                await ExtractSystemProfilesAsync().ConfigureAwait(false);
                 LoadProfiles();
             }
             catch (Exception ex)
@@ -240,7 +244,7 @@ namespace Emby.Dlna
             }
             else
             {
-                var headerString = string.Join(", ", headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
+                var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
                 _logger.LogDebug("No matching device profile found. {0}", headerString);
             }
 
@@ -279,10 +283,6 @@ namespace Emby.Dlna
 
             return false;
         }
-
-        private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
-
-        private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
 
         private IEnumerable<DeviceProfile> GetProfiles(string path, DeviceProfileType type)
         {
@@ -495,8 +495,8 @@ namespace Emby.Dlna
         /// Recreates the object using serialization, to ensure it's not a subclass.
         /// If it's a subclass it may not serlialize properly to xml (different root element tag name).
         /// </summary>
-        /// <param name="profile"></param>
-        /// <returns></returns>
+        /// <param name="profile">The device profile.</param>
+        /// <returns>The reserialized device profile.</returns>
         private DeviceProfile ReserializeProfile(DeviceProfile profile)
         {
             if (profile.GetType() == typeof(DeviceProfile))
@@ -507,13 +507,6 @@ namespace Emby.Dlna
             var json = _jsonSerializer.SerializeToString(profile);
 
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
-        }
-
-        private class InternalProfileInfo
-        {
-            internal DeviceProfileInfo Info { get; set; }
-
-            internal string Path { get; set; }
         }
 
         public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
@@ -540,7 +533,15 @@ namespace Emby.Dlna
                 Stream = _assembly.GetManifestResourceStream(resource)
             };
         }
+
+        private class InternalProfileInfo
+        {
+            internal DeviceProfileInfo Info { get; set; }
+
+            internal string Path { get; set; }
+        }
     }
+
     /*
     class DlnaProfileEntryPoint : IServerEntryPoint
     {
