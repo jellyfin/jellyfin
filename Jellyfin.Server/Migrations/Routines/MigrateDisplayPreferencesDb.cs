@@ -81,6 +81,11 @@ namespace Jellyfin.Server.Migrations.Routines
                 foreach (var result in results)
                 {
                     var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToString(), _jsonOptions);
+                    if (dto == null)
+                    {
+                        continue;
+                    }
+
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
                         ? chromecastDict[version]
                         : ChromecastVersion.Stable;

@@ -127,7 +127,11 @@ namespace Jellyfin.Api.Helpers
             {
                 // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
                 // Should we move this directly into MediaSourceManager?
-                result.MediaSources = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
+                var mediaSourcesClone = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
+                if (mediaSourcesClone != null)
+                {
+                    result.MediaSources = mediaSourcesClone;
+                }
 
                 result.PlaySessionId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
