@@ -81,7 +81,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 foreach (var result in results)
                 {
                     var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToString(), _jsonOptions);
-                    if (dto is null)
+                    if (dto == null)
                     {
                         continue;
                     }
