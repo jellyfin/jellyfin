@@ -75,7 +75,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 foreach (var entry in queryResult)
                 {
                     UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.GetOptions());
-                    if (mockup is null)
+                    if (mockup == null)
                     {
                         continue;
                     }

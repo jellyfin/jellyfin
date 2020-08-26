@@ -209,7 +209,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            if (stub is null)
+            if (stub == null)
             {
                 _logger.LogError("Error processing web socket message");
                 return;
