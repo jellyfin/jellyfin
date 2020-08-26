@@ -300,7 +300,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 movie.RemoteTrailers = movieData.Trailers.Youtube.Select(i => new MediaUrl
                 {
-                    Url = string.Format("https://www.youtube.com/watch?v={0}", i.Source),
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://www.youtube.com/watch?v={0}", i.Source),
                     Name = i.Name
 
                 }).ToArray();

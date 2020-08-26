@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,6 +22,7 @@ namespace Jellyfin.Data.Entities
         /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
+        /// <param name="dateadded">The date the object was added.</param>
         protected LibraryItem(Guid urlid, DateTime dateadded)
         {
             this.UrlId = urlid;

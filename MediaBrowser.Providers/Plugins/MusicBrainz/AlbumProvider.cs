@@ -8,12 +8,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
 
         internal static MusicBrainzAlbumProvider Current;
 
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IApplicationHost _appHost;
         private readonly ILogger<MusicBrainzAlbumProvider> _logger;
 
@@ -51,11 +51,11 @@ namespace MediaBrowser.Providers.Music
         private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
 
         public MusicBrainzAlbumProvider(
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IApplicationHost appHost,
             ILogger<MusicBrainzAlbumProvider> logger)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _logger = logger;
 
@@ -123,11 +123,9 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-                using (var stream = response.Content)
-                {
-                    return GetResultsFromResponse(stream);
-                }
+                using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                return GetResultsFromResponse(stream);
             }
 
             return Enumerable.Empty<RemoteSearchResult>();
@@ -278,27 +276,23 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
         {
-            var url = string.Format("/ws/2/release/?query=\"{0}\" AND arid:{1}",
+            var url = string.Format(CultureInfo.InvariantCulture, "/ws/2/release/?query=\"{0}\" AND arid:{1}",
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
-            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-            using (var stream = response.Content)
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings
             {
-                var settings = new XmlReaderSettings()
-                {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
-                };
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
-                using (var reader = XmlReader.Create(oReader, settings))
-                {
-                    return ReleaseResult.Parse(reader).FirstOrDefault();
-                }
-            }
+            using var reader = XmlReader.Create(oReader, settings);
+            return ReleaseResult.Parse(reader).FirstOrDefault();
         }
 
         private async Task<ReleaseResult> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
@@ -309,23 +303,19 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
-            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-            using (var stream = response.Content)
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings()
             {
-                var settings = new XmlReaderSettings()
-                {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
-                };
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
-                using (var reader = XmlReader.Create(oReader, settings))
-                {
-                    return ReleaseResult.Parse(reader).FirstOrDefault();
-                }
-            }
+            using var reader = XmlReader.Create(oReader, settings);
+            return ReleaseResult.Parse(reader).FirstOrDefault();
         }
 
         private class ReleaseResult
@@ -624,30 +614,21 @@ namespace MediaBrowser.Providers.Music
         {
             var url = "/ws/2/release?release-group=" + releaseGroupId.ToString(CultureInfo.InvariantCulture);
 
-            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-            using (var stream = response.Content)
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings
             {
-                var settings = new XmlReaderSettings()
-                {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
-                };
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
-                using (var reader = XmlReader.Create(oReader, settings))
-                {
-                    var result = ReleaseResult.Parse(reader).FirstOrDefault();
+            using var reader = XmlReader.Create(oReader, settings);
+            var result = ReleaseResult.Parse(reader).FirstOrDefault();
 
-                    if (result != null)
-                    {
-                        return result.ReleaseId;
-                    }
-                }
-            }
-
-            return null;
+            return result?.ReleaseId;
         }
 
         /// <summary>
@@ -660,59 +641,57 @@ namespace MediaBrowser.Providers.Music
         {
             var url = "/ws/2/release-group/?query=reid:" + releaseEntryId.ToString(CultureInfo.InvariantCulture);
 
-            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-            using (var stream = response.Content)
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings
             {
-                var settings = new XmlReaderSettings()
-                {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
-                };
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
-                using (var reader = XmlReader.Create(oReader, settings))
-                {
-                    reader.MoveToContent();
-                    reader.Read();
+            using (var reader = XmlReader.Create(oReader, settings))
+            {
+                reader.MoveToContent();
+                reader.Read();
 
-                    // Loop through each element
-                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        switch (reader.Name)
                         {
-                            switch (reader.Name)
+                            case "release-group-list":
                             {
-                                case "release-group-list":
-                                    {
-                                        if (reader.IsEmptyElement)
-                                        {
-                                            reader.Read();
-                                            continue;
-                                        }
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
 
-                                        using (var subReader = reader.ReadSubtree())
-                                        {
-                                            return GetFirstReleaseGroupId(subReader);
-                                        }
-                                    }
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    return GetFirstReleaseGroupId(subReader);
+                                }
+                            }
 
-                                default:
-                                    {
-                                        reader.Skip();
-                                        break;
-                                    }
+                            default:
+                            {
+                                reader.Skip();
+                                break;
                             }
                         }
-                        else
-                        {
-                            reader.Read();
-                        }
                     }
-
-                    return null;
+                    else
+                    {
+                        reader.Read();
+                    }
                 }
+
+                return null;
             }
         }
 
@@ -755,23 +734,19 @@ namespace MediaBrowser.Providers.Music
         /// A number of retries shall be made in order to try and satisfy the request before
         /// giving up and returning null.
         /// </summary>
-        internal async Task<HttpResponseInfo> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
+        internal async Task<HttpResponseMessage> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
-            var options = new HttpRequestOptions
-            {
-                Url = _musicBrainzBaseUrl.TrimEnd('/') + url,
-                CancellationToken = cancellationToken,
-                // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
-                // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
-                UserAgent = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0} ( {1} )",
-                    _appHost.ApplicationUserAgent,
-                    _appHost.ApplicationUserAgentAddress),
-                BufferContent = false
-            };
+            using var options = new HttpRequestMessage(HttpMethod.Get, _musicBrainzBaseUrl.TrimEnd('/') + url);
 
-            HttpResponseInfo response;
+            // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
+            // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
+            options.Headers.UserAgent.Add(new ProductInfoHeaderValue(string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} ( {1} )",
+                _appHost.ApplicationUserAgent,
+                _appHost.ApplicationUserAgentAddress)));
+
+            HttpResponseMessage response;
             var attempts = 0u;
 
             do
@@ -790,7 +765,7 @@ namespace MediaBrowser.Providers.Music
                 _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
                 _stopWatchMusicBrainz.Restart();
 
-                response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
+                response = await _httpClientFactory.CreateClient().SendAsync(options).ConfigureAwait(false);
 
                 // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
             }
@@ -799,14 +774,14 @@ namespace MediaBrowser.Providers.Music
             // Log error if unable to query MB database due to throttling
             if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
             {
-                _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, options.Url);
+                _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, options.RequestUri);
             }
 
             return response;
         }
 
         /// <inheritdoc />
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace MediaBrowser.Common.Json.Converters
 {
     /// <summary>
-    /// Long to String JSON converter.
+    /// Parse JSON string as long.
     /// Javascript does not support 64-bit integers.
     /// </summary>
     public class JsonInt64Converter : JsonConverter<long>
@@ -43,14 +43,14 @@ namespace MediaBrowser.Common.Json.Converters
         }
 
         /// <summary>
-        /// Write long to JSON string.
+        /// Write long to JSON long.
         /// </summary>
         /// <param name="writer"><see cref="Utf8JsonWriter"/>.</param>
         /// <param name="value">Value to write.</param>
         /// <param name="options">Options.</param>
         public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString(NumberFormatInfo.InvariantInfo));
+            writer.WriteNumberValue(value);
         }
     }
 }

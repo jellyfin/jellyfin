@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,6 +33,7 @@ namespace Jellyfin.Data.Entities
         /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
+        /// <param name="dateadded">The date the object was added.</param>
         public Photo(Guid urlid, DateTime dateadded)
         {
             this.UrlId = urlid;
@@ -45,6 +48,7 @@ namespace Jellyfin.Data.Entities
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
+        /// <param name="dateadded">The date the object was added.</param>
         public static Photo Create(Guid urlid, DateTime dateadded)
         {
             return new Photo(urlid, dateadded);

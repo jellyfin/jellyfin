@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,6 +31,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="dateadded">The date the object was added.</param>
+        /// <param name="datemodified">The date the object was last modified.</param>
         /// <param name="_season0"></param>
         public SeasonMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Season _season0)
         {
@@ -61,6 +65,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="dateadded">The date the object was added.</param>
+        /// <param name="datemodified">The date the object was last modified.</param>
         /// <param name="_season0"></param>
         public static SeasonMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Season _season0)
         {

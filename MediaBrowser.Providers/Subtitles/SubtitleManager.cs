@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.Subtitles
             CancellationToken cancellationToken)
         {
             var parts = subtitleId.Split(new[] { '_' }, 2);
-            var provider = GetProvider(parts.First());
+            var provider = GetProvider(parts[0]);
 
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 

@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Plugins;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EntryPoint : IServerEntryPoint
+    public sealed class EntryPoint : IServerEntryPoint
     {
         /// <inheritdoc />
         public Task RunAsync()

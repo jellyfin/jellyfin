@@ -20,7 +20,7 @@ namespace Emby.Dlna.Profiles
 
                 Headers = new[]
                 {
-                    new HttpHeaderInfo {Name = "User-Agent", Value = "alphanetworks", Match = HeaderMatchType.Substring},
+                    new HttpHeaderInfo { Name = "User-Agent", Value = "alphanetworks", Match = HeaderMatchType.Substring },
                     new HttpHeaderInfo
                     {
                         Name = "User-Agent",
@@ -168,7 +168,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = DlnaProfileType.Photo,
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -193,7 +193,7 @@ namespace Emby.Dlna.Profiles
                     Type = CodecType.Video,
                     Codec = "h264",
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -221,7 +221,7 @@ namespace Emby.Dlna.Profiles
                     Type = CodecType.VideoAudio,
                     Codec = "aac",
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {

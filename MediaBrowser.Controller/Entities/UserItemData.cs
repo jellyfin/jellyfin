@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Text.Json.Serialization;
 
@@ -24,6 +26,7 @@ namespace MediaBrowser.Controller.Entities
         /// The _rating.
         /// </summary>
         private double? _rating;
+
         /// <summary>
         /// Gets or sets the users 0-10 rating.
         /// </summary>
@@ -75,11 +78,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if played; otherwise, <c>false</c>.</value>
         public bool Played { get; set; }
+
         /// <summary>
         /// Gets or sets the index of the audio stream.
         /// </summary>
         /// <value>The index of the audio stream.</value>
         public int? AudioStreamIndex { get; set; }
+
         /// <summary>
         /// Gets or sets the index of the subtitle stream.
         /// </summary>

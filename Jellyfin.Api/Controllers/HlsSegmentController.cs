@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
             var file = segmentId + Path.GetExtension(Request.Path);
             file = Path.Combine(_serverConfigurationManager.GetTranscodePath(), file);
 
-            return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file)!, false, this);
+            return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file)!, false, HttpContext);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Jellyfin.Api.Controllers
                 return Task.CompletedTask;
             });
 
-            return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path)!, false, this);
+            return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path)!, false, HttpContext);
         }
     }
 }

@@ -90,6 +90,9 @@ namespace Emby.Server.Implementations.Data
             _typeMapper = new TypeMapper();
             _jsonOptions = JsonDefaults.GetOptions();
 
+            // GetItem throws NotSupportedException with this enabled, so hardcode false.
+            _jsonOptions.IgnoreNullValues = false;
+
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
 
@@ -4308,7 +4311,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ProductionYear=@Years");
                 if (statement != null)
                 {
-                    statement.TryBind("@Years", query.Years[0].ToString());
+                    statement.TryBind("@Years", query.Years[0].ToString(CultureInfo.InvariantCulture));
                 }
             }
             else if (query.Years.Length > 1)
@@ -4560,13 +4563,13 @@ namespace Emby.Server.Implementations.Data
             if (query.AncestorIds.Length > 1)
             {
                 var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
+                whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
             }
 
             if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
             {
                 var inClause = "select guid from TypedBaseItems where PresentationUniqueKey=@AncestorWithPresentationUniqueKey";
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
+                whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
                 if (statement != null)
                 {
                     statement.TryBind("@AncestorWithPresentationUniqueKey", query.AncestorWithPresentationUniqueKey);
@@ -5170,7 +5173,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     insertText.Append(',');
                 }
 
-                insertText.AppendFormat("(@ItemId, @AncestorId{0}, @AncestorIdText{0})", i.ToString(CultureInfo.InvariantCulture));
+                insertText.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    "(@ItemId, @AncestorId{0}, @AncestorIdText{0})",
+                    i.ToString(CultureInfo.InvariantCulture));
             }
 
             using (var statement = PrepareStatement(db, insertText.ToString()))

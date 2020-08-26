@@ -11,10 +11,16 @@ namespace Emby.Dlna
             Headers = new Dictionary<string, string>();
         }
 
-        public IDictionary<string, string> Headers { get; set; }
+        public IDictionary<string, string> Headers { get; }
 
         public string Xml { get; set; }
 
         public bool IsSuccessful { get; set; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Xml;
+        }
     }
 }

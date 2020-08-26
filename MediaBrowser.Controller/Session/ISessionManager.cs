@@ -1,12 +1,14 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Emby.Server.Implementations.HttpServer;
-using Emby.Server.Implementations.Updates;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Emby.Server.Implementations
@@ -19,7 +18,8 @@ namespace Emby.Server.Implementations
             { HttpListenerHost.DefaultRedirectKey, "web/index.html" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
-            { PlaylistsAllowDuplicatesKey, bool.TrueString }
+            { PlaylistsAllowDuplicatesKey, bool.TrueString },
+            { BindToUnixSocketKey, bool.FalseString }
         };
     }
 }

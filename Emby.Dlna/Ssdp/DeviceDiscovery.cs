@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using Rssdp;
 using Rssdp.Infrastructure;
 
@@ -17,8 +17,16 @@ namespace Emby.Dlna.Ssdp
 
         private readonly IServerConfigurationManager _config;
 
+        private SsdpDeviceLocator _deviceLocator;
+        private ISsdpCommunicationsServer _commsServer;
+
         private int _listenerCount;
         private bool _disposed;
+
+        public DeviceDiscovery(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
 
         private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
 
@@ -48,15 +56,6 @@ namespace Emby.Dlna.Ssdp
 
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
-
-        private SsdpDeviceLocator _deviceLocator;
-
-        private ISsdpCommunicationsServer _commsServer;
-
-        public DeviceDiscovery(IServerConfigurationManager config)
-        {
-            _config = config;
-        }
 
         // Call this method from somewhere in your code to start the search.
         public void Start(ISsdpCommunicationsServer communicationsServer)

@@ -18,7 +18,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -36,13 +36,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IServerConfigurationManager config,
             IMediaSourceManager mediaSourceManager,
             ILogger<M3UTunerHost> logger,
-            IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
             INetworkManager networkManager,
-            IStreamHelper streamHelper)
-            : base(config, logger, jsonSerializer, fileSystem)
+            IStreamHelper streamHelper,
+            IMemoryCache memoryCache)
+            : base(config, logger, fileSystem, memoryCache)
         {
             _httpClient = httpClient;
             _appHost = appHost;

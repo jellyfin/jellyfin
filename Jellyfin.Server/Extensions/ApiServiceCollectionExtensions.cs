@@ -154,6 +154,7 @@ namespace Jellyfin.Server.Extensions
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
+                    opts.OutputFormatters.Add(new XmlOutputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
@@ -167,6 +168,8 @@ namespace Jellyfin.Server.Extensions
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
+                    options.JsonSerializerOptions.IgnoreNullValues = jsonOptions.IgnoreNullValues;
+
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)
                     {

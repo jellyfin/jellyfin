@@ -48,7 +48,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery, Required] Guid? userId)
+        public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
             var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
             return _deviceManager.GetDevices(deviceQuery);
