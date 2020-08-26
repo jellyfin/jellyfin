@@ -12,18 +12,8 @@
     <PackageId>Jellyfin.Data</PackageId>
     <VersionPrefix>10.7.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="../LICENSE.txt">
-      <PackagePath>LICENSE.txt</PackagePath>
-      <Pack>true</Pack>
-    </None>
-  </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
