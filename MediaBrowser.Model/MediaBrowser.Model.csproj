@@ -9,9 +9,19 @@
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Model</PackageId>
     <VersionPrefix>10.7.0</VersionPrefix>
-    <PackageLicenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../LICENSE.txt">
+      <PackagePath>LICENSE.txt</PackagePath>
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
