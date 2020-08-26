@@ -269,7 +269,7 @@ namespace Emby.Dlna.Server
             return SecurityElement.Escape(url);
         }
 
-        private IEnumerable<DeviceIcon> GetIcons()
+        private static IEnumerable<DeviceIcon> GetIcons()
             => new[]
             {
                 new DeviceIcon
@@ -329,25 +329,26 @@ namespace Emby.Dlna.Server
 
         private IEnumerable<DeviceService> GetServices()
         {
-            var list = new List<DeviceService>();
-
-            list.Add(new DeviceService
+            var list = new List<DeviceService>
             {
-                ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
-                ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
-                ScpdUrl = "contentdirectory/contentdirectory.xml",
-                ControlUrl = "contentdirectory/control",
-                EventSubUrl = "contentdirectory/events"
-            });
+                new DeviceService
+                {
+                    ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
+                    ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
+                    ScpdUrl = "contentdirectory/contentdirectory.xml",
+                    ControlUrl = "contentdirectory/control",
+                    EventSubUrl = "contentdirectory/events"
+                },
 
-            list.Add(new DeviceService
-            {
-                ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
-                ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
-                ScpdUrl = "connectionmanager/connectionmanager.xml",
-                ControlUrl = "connectionmanager/control",
-                EventSubUrl = "connectionmanager/events"
-            });
+                new DeviceService
+                {
+                    ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
+                    ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
+                    ScpdUrl = "connectionmanager/connectionmanager.xml",
+                    ControlUrl = "connectionmanager/control",
+                    EventSubUrl = "connectionmanager/events"
+                }
+            };
 
             if (_profile.EnableMSMediaReceiverRegistrar)
             {

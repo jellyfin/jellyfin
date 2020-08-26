@@ -145,7 +145,7 @@ namespace Jellyfin.Server.Extensions
                 })
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
-                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
                 })
                 .AddMvc(opts =>
                 {
@@ -155,6 +155,8 @@ namespace Jellyfin.Server.Extensions
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
+
+                    opts.InputFormatters.Add(new XmlInputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up

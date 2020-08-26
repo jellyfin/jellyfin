@@ -9,6 +9,10 @@ namespace Emby.Dlna.PlayTo
         Playing,
         Transitioning,
         PausedPlayback,
-        Paused
+        PausedRecording,
+        Recording,
+        NoMediaPresent,
+        Paused,
+        Error
     }
 }

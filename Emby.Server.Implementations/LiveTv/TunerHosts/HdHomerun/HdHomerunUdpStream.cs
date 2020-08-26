@@ -7,8 +7,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Net;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -57,19 +59,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            var localPort = _networkManager.GetRandomUnusedUdpPort();
+            var localPort = SocketServer.GetRandomUnusedUdpPort();
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
             Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
 
-            var remoteAddress = IPAddress.Parse(uri.Host);
+            var remote = IPHost.Parse(uri.Host);
+            _networkManager.Restrict(remote);
+
             IPAddress localAddress = null;
             using (var tcpClient = new TcpClient())
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(remoteAddress, HdHomerunManager.HdHomeRunPort).ConfigureAwait(false);
+                    await tcpClient.ConnectAsync(remote.Address, HdHomerunManager.HdHomeRunPort).ConfigureAwait(false);
                     localAddress = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
                     tcpClient.Close();
                 }
@@ -80,14 +84,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            var udpClient = new UdpClient(localPort, AddressFamily.InterNetwork);
+            var udpClient = new UdpClient(localPort, _networkManager.IsIP6Enabled ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork);
             var hdHomerunManager = new HdHomerunManager();
 
             try
             {
                 // send url to start streaming
                 await hdHomerunManager.StartStreaming(
-                    remoteAddress,
+                    remote.Address,
                     localAddress,
                     localPort,
                     _channelCommands,
@@ -113,7 +117,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await StartStreaming(
                 udpClient,
                 hdHomerunManager,
-                remoteAddress,
+                remote.Address,
                 taskCompletionSource,
                 LiveStreamCancellationTokenSource.Token).ConfigureAwait(false);
 

@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+	<Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+	<PropertyGroup>
+		<GitThisAssembly>false</GitThisAssembly>
+		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+
+		<MonoNatABIVersion>3.0.0.0</MonoNatABIVersion>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<BeforePack>$(BeforePack);SetPackProperties</BeforePack>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0'">$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1'">$(DefineConstants);NETSTANDARD2_1</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="GitInfo" Version="2.0.20" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\LICENSE.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+
+	<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<CoreCompileDependsOn>SetBuildVersion;$(CoreCompileDependsOn)</CoreCompileDependsOn>
+	</PropertyGroup>
+
+	<Target Name="SetBuildVersion" DependsOnTargets="GitInfo">
+		<PropertyGroup>
+			<SourceRevisionId>$(GitSha)</SourceRevisionId>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="SetAssemblyVersion" BeforeTargets="GetAssemblyVersion" Condition="'$(RestoreSuccess)' == 'true' And '$(Configuration)' == 'Release' " DependsOnTargets="GitVersion">
+		<PropertyGroup>
+			<MonoNatFileVersion>3.0.0</MonoNatFileVersion>
+			<MonoNatInformationalVersion>$(MonoNatFileVersion)-$(GitBranch)+$(GitCommit)</MonoNatInformationalVersion>
+
+			<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(MonoNatABIVersion)</AssemblyVersion>
+			<FileVersion Condition="'$(FileVersion)' == ''">$(MonoNatFileVersion)</FileVersion>
+			<InformationalVersion Condition="'$(InformationalVersion)' == ''">$(MonoNatInformationalVersion)</InformationalVersion>
+		</PropertyGroup>
+	</Target>
+
+	<!-- NuGet related properties. We need to run this as part of the 'PackDependsOn' dependencies
+			to ensure our GitInfo related properties have been calculated correctly. -->
+	<Target Name="SetPackProperties" DependsOnTargets="SetAssemblyVersion">
+		<PropertyGroup>
+			<Authors>Alan McGovern, Ben Motmans, Nicholas Terry</Authors>
+			<PackageDescription>Mono.Nat is a modern and full-featured library which supports both the UPNP (Universal Plug and Play) and NAT-PMP (Port Mapping Protocol) protocols for port forwarding.</PackageDescription>
+			<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+			<PackageProjectUrl>https://github.com/mono/Mono.Nat</PackageProjectUrl>
+			<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+			<PackageVersion>$(MonoNatFileVersion)</PackageVersion>
+			<PackageTags>upnp;natpmp;nat-pmp;port;fowarding</PackageTags>
+
+			<IncludeSource>true</IncludeSource>
+			<IncludeSymbols>true</IncludeSymbols>
+			<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+			<RepositoryType>git</RepositoryType>
+			<RepositoryBranch>$(GitBranch)</RepositoryBranch>
+			<RepositoryCommit>$(GitSha)</RepositoryCommit>
+			<RepositoryUrl>https://github.com/mono/Mono.Nat</RepositoryUrl>
+
+			<Copyright>Alan McGovern, Ben Motmans, Nicholas Terry</Copyright>
+		</PropertyGroup>
+	</Target>
+
+</Project>

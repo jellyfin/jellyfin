@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
@@ -47,6 +48,12 @@ namespace MediaBrowser.Controller.Dlna
         void DeleteProfile(string id);
 
         /// <summary>
+        /// Extracts and loads the profiles.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task InitProfilesAsync();
+
+        /// <summary>
         /// Gets the profile.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -65,9 +72,9 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="headers">The headers.</param>
         /// <param name="serverUuId">The server uu identifier.</param>
-        /// <param name="serverAddress">The server address.</param>
+        /// <param name="request">The http request instance.</param>
         /// <returns>System.String.</returns>
-        string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress);
+        string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request);
 
         /// <summary>
         /// Gets the icon.

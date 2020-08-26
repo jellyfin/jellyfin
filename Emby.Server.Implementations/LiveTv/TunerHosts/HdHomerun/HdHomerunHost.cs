@@ -1,18 +1,22 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Net;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -33,7 +37,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     {
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
-        private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
@@ -45,7 +48,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IFileSystem fileSystem,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            ISocketFactory socketFactory,
             INetworkManager networkManager,
             IStreamHelper streamHelper,
             IMemoryCache memoryCache)
@@ -53,7 +55,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             _httpClient = httpClient;
             _appHost = appHost;
-            _socketFactory = socketFactory;
             _networkManager = networkManager;
             _streamHelper = streamHelper;
         }
@@ -115,7 +116,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Path = i.URL
             }).Cast<ChannelInfo>().ToList();
         }
-
+       
         private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
@@ -273,14 +274,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             using (var manager = new HdHomerunManager())
             {
-                // Legacy HdHomeruns are IPv4 only
-                var ipInfo = IPAddress.Parse(uri.Host);
-
+                // Legacy HdHomeruns are IPv4 only.
+            	var ipInfo = IPHost.Parse(uri.Host);
+            	_networkManager.Restrict(ipInfo);
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
                     var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
                     var currentChannel = "none"; // @todo Get current channel and map back to Station Id
-                    var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
+                    var isAvailable = await manager.CheckTunerAvailability(ipInfo.Address, i, cancellationToken).ConfigureAwait(false);
                     var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
                     tuners.Add(new LiveTvTunerInfo
                     {
@@ -718,33 +719,58 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
         {
+            const int HdHomeRunPort = 65001;
+
             lock (_modelCache)
             {
                 _modelCache.Clear();
             }
 
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(discoveryDurationMs).Token, cancellationToken).Token;
+            var timeLimitedCancellation = new CancellationTokenSource(discoveryDurationMs).Token;
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(timeLimitedCancellation, cancellationToken).Token;
+
             var list = new List<TunerHostInfo>();
 
-            // Create udp broadcast discovery message
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
-            using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0))
+            try
             {
-                // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
+                // Get a port number.
+                int port = SocketServer.Instance.GetPort(Config.Configuration.HDHomerunPortRange);
+
+                IPEndPoint endpoint;
+                if (_networkManager.IsIP6Enabled)
+                {
+                    endpoint = SocketServer.Instance.GetMulticastEndPoint(HdHomeRunPort);
+                }
+                else
+                {
+                    endpoint = new IPEndPoint(IPAddress.Broadcast, HdHomeRunPort);
+                }
+
+                using var udpClient = SocketServer.Instance.CreateUdpBroadcastSocket(port);
+                await udpClient.SendToAsync(discBytes, SocketFlags.None, endpoint).ConfigureAwait(false);
+                var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
+
                 try
                 {
-                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken).ConfigureAwait(false);
-                    var receiveBuffer = new byte[8192];
-
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        var response = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
-                        var deviceIp = response.RemoteEndPoint.Address.ToString();
+                        var result = await udpClient.ReceiveFromAsync(
+                            receiveBuffer,
+                            SocketFlags.None,
+                            new IPEndPoint(_networkManager.IsIP6Enabled ? IPAddress.Any : IPAddress.IPv6Any, 0))
+                            .ConfigureAwait(false);
+
+                        // Ignore excluded devices/ranges.
+                        if (!_networkManager.IsExcluded(result.RemoteEndPoint))
+                        {
+                            continue;
+                        }
 
                         // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
-                        if (response.ReceivedBytes > 13 && response.Buffer[1] == 3)
+                        if (result.ReceivedBytes > 13 && receiveBuffer[1] == 3)
                         {
-                            var deviceAddress = "http://" + deviceIp;
+                            var deviceAddress = "http://" + ((IPEndPoint)result.RemoteEndPoint).Address.ToString();
 
                             var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
 
@@ -758,11 +784,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 catch (OperationCanceledException)
                 {
                 }
-                catch (Exception ex)
+                finally
                 {
-                    // Socket timeout indicates all messages have been received.
-                    Logger.LogError(ex, "Error while sending discovery message");
+                    ArrayPool<byte>.Shared.Return(receiveBuffer);
                 }
+            }
+            catch (Exception ex)
+            {
+                // Socket timeout indicates all messages have been received.
+                Logger.LogError(ex, "Error while sending discovery message");
             }
 
             return list;

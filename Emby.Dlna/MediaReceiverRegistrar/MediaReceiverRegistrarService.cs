@@ -24,7 +24,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new MediaReceiverRegistrarXmlBuilder().GetXml();
+            return MediaReceiverRegistrarXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />

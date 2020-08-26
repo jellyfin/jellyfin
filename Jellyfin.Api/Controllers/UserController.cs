@@ -478,7 +478,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string? enteredUsername)
         {
             var isLocal = HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress)
-                          || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString());
+                          || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress);
 
             var result = await _userManager.StartForgotPasswordProcess(enteredUsername, isLocal).ConfigureAwait(false);
 
@@ -525,7 +525,7 @@ namespace Jellyfin.Api.Controllers
 
             if (filterByNetwork)
             {
-                if (!_networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString()))
+                if (!_networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress))
                 {
                     users = users.Where(i => i.HasPermission(PermissionKind.EnableRemoteAccess));
                 }

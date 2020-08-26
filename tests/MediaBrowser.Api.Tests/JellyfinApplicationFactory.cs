@@ -3,8 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Networking;
-using Jellyfin.Drawing.Skia;
 using Jellyfin.Server;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
@@ -79,8 +77,7 @@ namespace MediaBrowser.Api.Tests
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
-                new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(loggerFactory.CreateLogger<NetworkManager>()));
+                new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths));
             _disposableComponents.Add(appHost);
             var serviceCollection = new ServiceCollection();
             appHost.Init(serviceCollection);

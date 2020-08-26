@@ -1,38 +1,48 @@
-#pragma warning disable CS1591
-
+#pragma warning disable SA1611 // Element parameters should be documented
+#nullable enable
 using System;
 using System.Globalization;
-using System.Net.Sockets;
-using System.Threading;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+using Emby.Dlna.ConnectionManager;
+using Emby.Dlna.ContentDirectory;
+using Emby.Dlna.MediaReceiverRegistrar;
+using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo;
+using Emby.Dlna.PlayTo.Devices;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using Rssdp;
-using Rssdp.Infrastructure;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
-namespace Emby.Dlna.Main
+namespace Emby.Dlna
 {
-    public sealed class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
+    /// <summary>
+    /// Manages all DLNA functionality.
+    /// </summary>
+    public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
-        private readonly IServerConfigurationManager _config;
+#pragma warning disable IDE0032 // Convert to auto: _name only needs to be calculated once. _nLS MUST stay the same until a network change.
+        private static readonly string _name = $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
+        private static string _nLS = Guid.NewGuid().ToString();
+#pragma warning restore IDO0032
+        private static DlnaEntryPoint? _instance;
+
+        private readonly object _syncLock = new object();
+        private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly ISessionManager _sessionManager;
@@ -45,17 +55,22 @@ namespace Emby.Dlna.Main
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IDeviceDiscovery _deviceDiscovery;
-        private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
-        private readonly object _syncLock = new object();
+        private readonly IUserViewManager _userViewManager;
+        private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly INotificationManager _notificationManager;
+        private readonly SocketServer _socketManager;
 
-        private PlayToManager _manager;
-        private SsdpDevicePublisher _publisher;
-        private ISsdpCommunicationsServer _communicationsServer;
+        private SsdpServerPublisher? _publisher;
+        private IDeviceDiscovery? _deviceDiscovery;
+        private bool _isDisposed;
+        private int _changes;
 
-        private bool _disposed;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DlnaEntryPoint"/> class.
+        /// </summary>
         public DlnaEntryPoint(
             IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
@@ -69,14 +84,13 @@ namespace Emby.Dlna.Main
             IUserDataManager userDataManager,
             ILocalizationManager localizationManager,
             IMediaSourceManager mediaSourceManager,
-            IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
-            ISocketFactory socketFactory,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
-            ITVSeriesManager tvSeriesManager)
+            ITVSeriesManager tvSeriesManager,
+            INotificationManager notificationManager)
         {
-            _config = config;
+            _configurationManager = config;
             _appHost = appHost;
             _sessionManager = sessionManager;
             _httpClient = httpClient;
@@ -87,241 +101,172 @@ namespace Emby.Dlna.Main
             _userDataManager = userDataManager;
             _localization = localizationManager;
             _mediaSourceManager = mediaSourceManager;
-            _deviceDiscovery = deviceDiscovery;
             _mediaEncoder = mediaEncoder;
-            _socketFactory = socketFactory;
             _networkManager = networkManager;
+            _loggerFactory = loggerFactory;
+            _localizationManager = localizationManager;
+            _userViewManager = userViewManager;
+            _tvSeriesManager = tvSeriesManager;
+            _notificationManager = notificationManager;
+
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
+            Instance = this;
+            _socketManager = new SocketServer(_networkManager, _configurationManager, loggerFactory, appHost);
 
-            ContentDirectory = new ContentDirectory.ContentDirectoryService(
-                dlnaManager,
-                userDataManager,
-                imageProcessor,
-                libraryManager,
-                config,
-                userManager,
-                loggerFactory.CreateLogger<ContentDirectory.ContentDirectoryService>(),
-                httpClient,
-                localizationManager,
-                mediaSourceManager,
-                userViewManager,
-                mediaEncoder,
-                tvSeriesManager);
-
-            ConnectionManager = new ConnectionManager.ConnectionManagerService(
-                dlnaManager,
-                config,
-                loggerFactory.CreateLogger<ConnectionManager.ConnectionManagerService>(),
-                httpClient);
-
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
-                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
-                httpClient,
-                config);
-            Current = this;
+            _networkManager.NetworkChanged += NetworkChanged;
+            NetworkChange.NetworkAddressChanged += this.OnNetworkAddressChanged;
         }
 
-        public static DlnaEntryPoint Current { get; private set; }
+        /// <summary>
+        /// Gets the GUID of this Dlna instance.
+        /// </summary>
+        public static string NetworkLocationSignature => _nLS;
 
-        public IContentDirectory ContentDirectory { get; private set; }
+        /// <summary>
+        /// Gets the singleton instance of this object.
+        /// </summary>
+        public static DlnaEntryPoint Instance
+        {
+            get
+            {
+                return GetInstance();
+            }
 
-        public IConnectionManager ConnectionManager { get; private set; }
+            internal set
+            {
+                _instance = value;
+            }
+        }
 
-        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
+        /// <summary>
+        /// Gets the SsdpServer name used in advertisements.
+        /// </summary>
+        public static string Name => _name;
 
+        /// <summary>
+        /// Gets the DLNA server' ContentDirectory instance.
+        /// </summary>
+        public static IContentDirectory? ContentDirectory { get; private set; }
+
+        /// <summary>
+        /// Gets the DLNA server' ConnectionManager instance.
+        /// </summary>
+        public static IConnectionManager? ConnectionManager { get; private set; }
+
+        /// <summary>
+        /// Gets the DLNA server's MediaReceiverRegistrar instance.
+        /// </summary>
+        public static IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
+
+        /// <summary>
+        /// Gets the PlayToManager instance.
+        /// </summary>
+        public static PlayToManager? PlayToManager { get; internal set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the DLNA server is active.
+        /// </summary>
+        public bool IsDLNAServerEnabled => _configurationManager.GetDlnaConfiguration().EnableServer;
+
+        /// <summary>
+        /// Gets a value indicating whether DLNA PlayTo is enabled.
+        /// </summary>
+        public bool IsPlayToEnabled => _configurationManager.GetDlnaConfiguration().EnablePlayTo;
+
+        /// <summary>
+        /// Gets the unqiue user agent used in ssdp communications.
+        /// </summary>
+        public string SsdpUserAgent => $"UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2 /{_appHost.SystemId}";
+
+        /// <summary>
+        /// Gets the number of times the network address has changed.
+        /// </summary>
+        public string NetworkChangeCount => _changes.ToString("d2", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Executes DlnaEntryPoint's functionality.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task RunAsync()
         {
-            await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
+            await _dlnaManager.InitProfilesAsync().ConfigureAwait(false);
 
-            await ReloadComponents().ConfigureAwait(false);
+            CheckComponents();
 
-            _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
+            _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        /// <inheritdoc/>
+        public void Dispose()
         {
-            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
-            {
-                await ReloadComponents().ConfigureAwait(false);
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private async Task ReloadComponents()
+        /// <summary>
+        /// Disposes the device publisher instance.
+        /// </summary>
+        public void DisposeDevicePublisher()
         {
-            var options = _config.GetDlnaConfiguration();
-
-            StartSsdpHandler();
-
-            if (options.EnableServer)
-            {
-                await StartDevicePublisher(options).ConfigureAwait(false);
-            }
-            else
-            {
-                DisposeDevicePublisher();
-            }
-
-            if (options.EnablePlayTo)
-            {
-                StartPlayToManager();
-            }
-            else
-            {
-                DisposePlayToManager();
-            }
-        }
-
-        private void StartSsdpHandler()
-        {
-            try
-            {
-                if (_communicationsServer == null)
-                {
-                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
-                                                   OperatingSystem.Id == OperatingSystemId.Linux;
-
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
-                    {
-                        IsShared = true
-                    };
-
-                    StartDeviceDiscovery(_communicationsServer);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting ssdp handlers");
-            }
-        }
-
-        private void LogMessage(string msg)
-        {
-            _logger.LogDebug(msg);
-        }
-
-        private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
-        {
-            try
-            {
-                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting device discovery");
-            }
-        }
-
-        private void DisposeDeviceDiscovery()
-        {
-            try
-            {
-                _logger.LogInformation("Disposing DeviceDiscovery");
-                ((DeviceDiscovery)_deviceDiscovery).Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error stopping device discovery");
-            }
-        }
-
-        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
-        {
-            if (!options.BlastAliveMessages)
-            {
-                return;
-            }
-
             if (_publisher != null)
             {
+                _logger.LogInformation("Disposing SsdpDevicePublisher");
+                _publisher.Dispose();
+                _publisher = null;
+            }
+        }
+
+        /// <summary>
+        /// Disposes of unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">A Boolean value that indicates whether the method call comes from a Dispose method
+        /// or from a finalizer (its value is false).</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
                 return;
             }
 
-            try
+            if (disposing)
             {
-                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                DisposeDevicePublisher();
+
+                lock (_syncLock)
                 {
-                    LogFunction = LogMessage,
-                    SupportPnpRootDevice = false
-                };
+                    PlayToManager?.Dispose();
+                    PlayToManager = null;
+                }
 
-                await RegisterServerEndpoints().ConfigureAwait(false);
+                _networkManager.NetworkChanged -= NetworkChanged;
+                _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
 
-                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                NetworkChange.NetworkAddressChanged -= this.OnNetworkAddressChanged;
+
+                ContentDirectory = null;
+                ConnectionManager = null;
+                MediaReceiverRegistrar = null;
+                _instance = null;
+
+                // DeviceDiscovery has an event use count, and will only dispose if no longer in use.
+                _deviceDiscovery?.Dispose();
+                _deviceDiscovery = null;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error registering endpoint");
-            }
+
+            _isDisposed = true;
         }
 
-        private async Task RegisterServerEndpoints()
+        private static DlnaEntryPoint GetInstance()
         {
-            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
-
-            var udn = CreateUuid(_appHost.SystemId);
-
-            foreach (var address in addresses)
+            if (_instance == null)
             {
-                if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    // Not supporting IPv6 right now
-                    continue;
-                }
-
-                // Limit to LAN addresses only
-                if (!_networkManager.IsAddressInSubnets(address, true, true))
-                {
-                    continue;
-                }
-
-                var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
-
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
-
-                var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
-
-                var device = new SsdpRootDevice
-                {
-                    CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
-                    Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address,
-                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
-                    FriendlyName = "Jellyfin",
-                    Manufacturer = "Jellyfin",
-                    ModelName = "Jellyfin Server",
-                    Uuid = udn
-                    // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
-                };
-
-                SetProperies(device, fullService);
-                _publisher.AddDevice(device);
-
-                var embeddedDevices = new[]
-                {
-                    "urn:schemas-upnp-org:service:ContentDirectory:1",
-                    "urn:schemas-upnp-org:service:ConnectionManager:1",
-                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
-                };
-
-                foreach (var subDevice in embeddedDevices)
-                {
-                    var embeddedDevice = new SsdpEmbeddedDevice
-                    {
-                        FriendlyName = device.FriendlyName,
-                        Manufacturer = device.Manufacturer,
-                        ModelName = device.ModelName,
-                        Uuid = udn
-                        // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
-                    };
-
-                    SetProperies(embeddedDevice, subDevice);
-                    device.AddDevice(embeddedDevice);
-                }
+                throw new ApplicationException("DlnaEntryPoint is not initialised.");
             }
+
+            return _instance;
         }
 
-        private string CreateUuid(string text)
+        private static string CreateUuid(string text)
         {
             if (!Guid.TryParse(text, out var guid))
             {
@@ -331,7 +276,7 @@ namespace Emby.Dlna.Main
             return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private void SetProperies(SsdpDevice device, string fullDeviceType)
+        private static void SetProperies(SsdpDevice device, string fullDeviceType)
         {
             var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
 
@@ -344,98 +289,221 @@ namespace Emby.Dlna.Main
             device.DeviceType = serviceParts[2];
         }
 
-        private void StartPlayToManager()
+        /// <summary>
+        /// Handler for network change events.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        private void OnNetworkAddressChanged(object sender, EventArgs e)
+        {
+            // As per UPnP Device Architecture v1.0 Annex A - IPv6 Support.
+            _nLS = Guid.NewGuid().ToString();
+            _changes++;
+            if (_changes > 99)
+            {
+                _changes = 1;
+            }
+        }
+
+        /// <summary>
+        /// Triggerer every time the configuration is updated.
+        /// </summary>
+        /// <param name="sender">Configuration instance.</param>
+        /// <param name="e">Configuration that was updated.</param>
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        {
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                CheckComponents();
+
+                if (_publisher != null)
+                {
+                    _publisher.AliveMessageInterval = _configurationManager.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Triggered every time there is a network event.
+        /// </summary>
+        /// <param name="sender">NetworkManager instance.</param>
+        /// <param name="e">Event argument.</param>
+        private void NetworkChanged(object sender, EventArgs e)
+        {
+            CheckComponents();
+        }
+
+        /// <summary>
+        /// (Re)initialises the DLNA settings.
+        /// </summary>
+        private void CheckComponents()
         {
             lock (_syncLock)
             {
-                if (_manager != null)
-                {
-                    return;
-                }
+                var options = _configurationManager.GetDlnaConfiguration();
 
-                try
+                if (options.EnableServer)
                 {
-                    _manager = new PlayToManager(
-                        _logger,
-                        _sessionManager,
-                        _libraryManager,
-                        _userManager,
-                        _dlnaManager,
-                        _appHost,
-                        _imageProcessor,
-                        _deviceDiscovery,
-                        _httpClient,
-                        _config,
-                        _userDataManager,
-                        _localization,
-                        _mediaSourceManager,
-                        _mediaEncoder);
-
-                    _manager.Start();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error starting PlayTo manager");
-                }
-            }
-        }
-
-        private void DisposePlayToManager()
-        {
-            lock (_syncLock)
-            {
-                if (_manager != null)
-                {
-                    try
+                    if (ContentDirectory == null)
                     {
-                        _logger.LogInformation("Disposing PlayToManager");
-                        _manager.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error disposing PlayTo manager");
+                        _logger.LogDebug("DLNA Server : Starting Content Directory service.");
+                        ContentDirectory = new ContentDirectoryService(
+                            _dlnaManager,
+                            _userDataManager,
+                            _imageProcessor,
+                            _libraryManager,
+                            _configurationManager,
+                            _userManager,
+                            _loggerFactory.CreateLogger<ContentDirectoryService>(),
+                            _httpClient,
+                            _localizationManager,
+                            _mediaSourceManager,
+                            _userViewManager,
+                            _mediaEncoder,
+                            _tvSeriesManager);
                     }
 
-                    _manager = null;
+                    if (ConnectionManager == null)
+                    {
+                        _logger.LogDebug("DLNA Server : Starting Connection Manager service.");
+                        ConnectionManager = new ConnectionManagerService(
+                            _dlnaManager,
+                            _configurationManager,
+                            _loggerFactory.CreateLogger<ConnectionManagerService>(),
+                            _httpClient);
+                    }
+
+                    if (MediaReceiverRegistrar == null)
+                    {
+                        _logger.LogDebug("DLNA Server : Starting Media Receiver Registrar service.");
+                        MediaReceiverRegistrar = new MediaReceiverRegistrarService(
+                            _loggerFactory.CreateLogger<MediaReceiverRegistrarService>(),
+                            _httpClient,
+                            _configurationManager);
+                    }
+
+                    // This is true on startup and at network change.
+                    if (_publisher == null)
+                    {
+                        _logger.LogDebug("DLNA Server : Starting DLNA advertisements.");
+                        _publisher = new SsdpServerPublisher(_socketManager, _loggerFactory, _networkManager, options.BlastAliveMessageIntervalSeconds);
+                        RegisterDLNAServerEndpoints();
+                    }
+                }
+                else
+                {
+                    _logger.LogDebug("DLNA Server : Stopping all DLNA services.");
+                    DisposeDevicePublisher();
+
+                    // This object will actually only dispose if no longer in use.
+                    _deviceDiscovery?.Dispose();
+                    _deviceDiscovery = null;
+
+                    ContentDirectory = null;
+                    MediaReceiverRegistrar = null;
+                    ConnectionManager = null;
+                    GC.Collect();
+                }
+
+                if (options.EnablePlayTo)
+                {
+                    if (_deviceDiscovery == null)
+                    {
+                        _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
+                        _deviceDiscovery = new DeviceDiscovery(_configurationManager, _loggerFactory, _networkManager, _socketManager);
+                    }
+
+                    if (PlayToManager == null)
+                    {
+                        _logger.LogDebug("DLNA PlayTo: Starting Service.");
+                        PlayToManager = new PlayToManager(
+                            _loggerFactory.CreateLogger<PlayToManager>(),
+                            _sessionManager,
+                            _libraryManager,
+                            _userManager,
+                            _dlnaManager,
+                            _appHost,
+                            _imageProcessor,
+                            _deviceDiscovery,
+                            _httpClient,
+                            _configurationManager,
+                            _userDataManager,
+                            _localization,
+                            _mediaSourceManager,
+                            _mediaEncoder,
+                            _notificationManager);
+                    }
+                }
+                else
+                {
+                    if (PlayToManager != null)
+                    {
+                        _logger.LogDebug("DLNA PlayTo: Stopping Service.");
+                        lock (_syncLock)
+                        {
+                            PlayToManager?.Dispose();
+                            PlayToManager = null;
+                        }
+
+                        GC.Collect();
+                    }
                 }
             }
         }
 
-        public void DisposeDevicePublisher()
+        /// <summary>
+        /// Registers SSDP endpoints on the internal interfaces.
+        /// </summary>
+        private void RegisterDLNAServerEndpoints()
         {
-            if (_publisher != null)
+            const string FullService = "urn:schemas-upnp-org:device:MediaServer:1";
+
+            var udn = CreateUuid(_appHost.SystemId);
+
+            foreach (IPObject addr in _networkManager.GetInternalBindAddresses())
             {
-                _logger.LogInformation("Disposing SsdpDevicePublisher");
-                _publisher.Dispose();
-                _publisher = null;
+                if (addr.IsLoopback())
+                {
+                    // Don't advertise loopbacks
+                    continue;
+                }
+
+                _logger.LogInformation("Registering publisher for {0} on {1}", FullService, addr.Address);
+
+                var descriptorUri = "/dlna/" + udn + "/description.xml";
+                var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
+
+                SsdpRootDevice device = new SsdpRootDevice(
+                    TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
+                    uri, // Must point to the URL that serves your devices UPnP description document.
+                    addr,
+                    "Jellyfin",
+                    "Jellyfin",
+                    "Jellyfin Server",
+                    udn); // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
+
+                SetProperies(device, FullService);
+
+                _ = _publisher?.AddDevice(device);
+
+                var embeddedDevices = new[]
+                {
+                    "urn:schemas-upnp-org:service:ContentDirectory:1",
+                    "urn:schemas-upnp-org:service:ConnectionManager:1",
+                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1" // Windows WMDRM.
+                };
+
+                foreach (var subDevice in embeddedDevices)
+                {
+                    var embeddedDevice = new SsdpEmbeddedDevice(
+                        device.FriendlyName,
+                        device.Manufacturer,
+                        device.ModelName,
+                        udn);
+                    SetProperies(embeddedDevice, subDevice);
+                    device.AddDevice(embeddedDevice);
+                }
             }
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            DisposeDevicePublisher();
-            DisposePlayToManager();
-            DisposeDeviceDiscovery();
-
-            if (_communicationsServer != null)
-            {
-                _logger.LogInformation("Disposing SsdpCommunicationsServer");
-                _communicationsServer.Dispose();
-                _communicationsServer = null;
-            }
-
-            ContentDirectory = null;
-            ConnectionManager = null;
-            MediaReceiverRegistrar = null;
-            Current = null;
-
-            _disposed = true;
         }
     }
 }

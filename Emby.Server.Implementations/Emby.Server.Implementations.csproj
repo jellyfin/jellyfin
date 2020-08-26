@@ -5,10 +5,11 @@
     <ProjectGuid>{E383961B-9356-4D5D-8233-9A1079D03055}</ProjectGuid>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup>         
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
     <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
     <ProjectReference Include="..\Jellyfin.Api\Jellyfin.Api.csproj" />
+    <ProjectReference Include="..\Jellyfin.Data\Jellyfin.Data.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
@@ -19,10 +20,10 @@
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
     <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="IPNetwork2" Version="2.5.211" />
     <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
@@ -36,7 +37,6 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.6" />
-    <PackageReference Include="Mono.Nat" Version="2.0.2" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.3.1" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.9.2" />
     <PackageReference Include="sharpcompress" Version="0.26.0" />

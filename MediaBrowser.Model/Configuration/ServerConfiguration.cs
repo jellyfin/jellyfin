@@ -34,6 +34,49 @@ namespace MediaBrowser.Model.Configuration
         public int PublicPort { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether gets or sets IPV6 capability.
+        /// </summary>
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
+        /// </summary>
+        public bool UPnPCreateHttpPortMap { get; set; }
+
+        /// <value>If IPv6 is enabled.</value>
+        public bool EnableIPV6 { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets IPV4 capability.
+        /// </summary>
+        /// <value>If IPv4 is enabled.</value>
+        public bool EnableIPV4 { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
+        /// </summary>
+        public int GatewayMonitorPeriod { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether is multi-socket binding available.
+        /// </summary>
+        public bool EnableMultiSocketBinding { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
+        /// </summary>
+        public bool TrustAllIP6Interfaces { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ports that HDHomerun uses.
+        /// </summary>
+        public string HDHomerunPortRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets PublishedServerUri to advertise for specific subnets.
+        /// </summary>
+        public string[] PublishedServerUriBySubnet { get; set; }
+
+        /// <summary>
         /// Gets or sets the public HTTPS port.
         /// </summary>
         /// <value>The public HTTPS port.</value>
@@ -231,8 +274,6 @@ namespace MediaBrowser.Model.Configuration
 
         public List<RepositoryInfo> PluginRepositories { get; set; }
 
-        public bool IgnoreVirtualInterfaces { get; set; }
-
         public bool EnableExternalContentInSuggestions { get; set; }
 
         /// <summary>
@@ -269,13 +310,20 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public ServerConfiguration()
         {
+            // Network settings
+            EnableIPV6 = false;
+            GatewayMonitorPeriod = 60;
+            TrustAllIP6Interfaces = false;
+            EnableMultiSocketBinding = true;
+            PublishedServerUriBySubnet = Array.Empty<string>();
+            HDHomerunPortRange = string.Empty;
+            UPnPCreateHttpPortMap = false;
             UninstalledPlugins = Array.Empty<string>();
             RemoteIPFilter = Array.Empty<string>();
             LocalNetworkSubnets = Array.Empty<string>();
             LocalNetworkAddresses = Array.Empty<string>();
             CodecsUsed = Array.Empty<string>();
             PathSubstitutions = Array.Empty<PathSubstitution>();
-            IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = false;
             SkipDeserializationForBasicTypes = true;
 
