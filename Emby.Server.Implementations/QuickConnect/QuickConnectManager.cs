@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 UserId = user
             });
 
-            var tokens = raw.Items.Where(x => x.AppName.StartsWith(TokenName, StringComparison.CurrentCulture));
+            var tokens = raw.Items.Where(x => x.AppName.StartsWith(TokenName, StringComparison.Ordinal));
 
             var removed = 0;
             foreach (var token in tokens)

@@ -37,6 +37,7 @@ using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
@@ -102,7 +103,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
-using Emby.Server.Implementations.QuickConnect;
 
 namespace Emby.Server.Implementations
 {
