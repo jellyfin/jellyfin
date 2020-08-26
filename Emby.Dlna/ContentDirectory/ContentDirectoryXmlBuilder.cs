@@ -103,10 +103,10 @@ namespace Emby.Dlna.ContentDirectory
                     SendsEvents = false,
 
                     AllowedValues = new[]
-                {
-                    "BrowseMetadata",
-                    "BrowseDirectChildren"
-                }
+                    {
+                        "BrowseMetadata",
+                        "BrowseDirectChildren"
+                    }
                 },
 
                 new StateVariable

@@ -44,14 +44,14 @@ namespace Emby.Dlna.ConnectionManager
                     DataType = "string",
                     SendsEvents = false,
 
-                    AllowedValues = new string[]
-                {
-                    "OK",
-                    "ContentFormatMismatch",
-                    "InsufficientBandwidth",
-                    "UnreliableChannel",
-                    "Unknown"
-                }
+                    AllowedValues = new[]
+                    {
+                        "OK",
+                        "ContentFormatMismatch",
+                        "InsufficientBandwidth",
+                        "UnreliableChannel",
+                        "Unknown"
+                    }
                 },
 
                 new StateVariable
