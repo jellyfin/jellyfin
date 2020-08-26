@@ -22,7 +22,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.6" />
-    <PackageReference Include="System.Text.Json" Version="5.0.0-preview.7.20364.11" />
   </ItemGroup>
 
 </Project>
