@@ -87,33 +87,7 @@ cat ${debian_changelog_file} >> ${debian_changelog_temp}
 # Move into place
 mv ${debian_changelog_temp} ${debian_changelog_file}
 
-# Write out a temporary Yum changelog with our new stuff prepended and some templated formatting
-fedora_spec_file="fedora/jellyfin.spec"
-fedora_changelog_temp="$( mktemp )"
-fedora_spec_temp_dir="$( mktemp -d )"
-fedora_spec_temp="${fedora_spec_temp_dir}/jellyfin.spec.tmp"
-# Make a copy of our spec file for hacking
-cp ${fedora_spec_file} ${fedora_spec_temp_dir}/
-pushd ${fedora_spec_temp_dir}
-# Split out the stuff before and after changelog
-csplit jellyfin.spec  "/^%changelog/" # produces xx00 xx01
-# Update the version in xx00
-sed -i "s/${old_version_sed}/${new_version_sed}/g" xx00
-# Remove the header from xx01
-sed -i '/^%changelog/d' xx01
-# Create new temp file with our changelog
-echo -e "%changelog
-* $( LANG=C date '+%a %b %d %Y' ) Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}" >> ${fedora_changelog_temp}
-cat xx01 >> ${fedora_changelog_temp}
-# Reassembble
-cat xx00 ${fedora_changelog_temp} > ${fedora_spec_temp}
-popd
-# Move into place
-mv ${fedora_spec_temp} ${fedora_spec_file}
-# Clean up
-rm -rf ${fedora_spec_temp_dir}
 
 # Stage the changed files for commit
-git add ${shared_version_file} ${build_file} ${debian_equivs_file} ${debian_changelog_file} ${fedora_spec_file}
+git add ${shared_version_file} ${build_file} ${debian_equivs_file} ${debian_changelog_file}
 git status

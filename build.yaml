@@ -9,8 +9,6 @@ packages:
   - ubuntu.amd64
   - ubuntu.arm64
   - ubuntu.armhf
-  - fedora.amd64
-  - centos.amd64
   - linux.amd64
   - windows.amd64
   - macos

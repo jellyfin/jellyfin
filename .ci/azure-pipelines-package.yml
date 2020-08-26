@@ -4,10 +4,6 @@ jobs:
 
   strategy:
     matrix:
-      CentOS.amd64:
-        BuildConfiguration: centos.amd64
-      Fedora.amd64:
-        BuildConfiguration: fedora.amd64
       Debian.amd64:
         BuildConfiguration: debian.amd64
       Debian.arm64:
@@ -142,7 +138,7 @@ jobs:
       sshEndpoint: repository
       runOptions: 'commands'
       commands: sudo -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)
-      
+
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
   dependsOn:
