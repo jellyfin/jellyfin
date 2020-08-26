@@ -24,7 +24,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -151,14 +150,13 @@ namespace Jellyfin.Server.Extensions
                 .AddMvc(opts =>
                 {
                     opts.UseGeneralRoutePrefix(baseUrl);
-
-                    // Allow requester to change between camelCase and PascalCase
-                    opts.RespectBrowserAcceptHeader = true;
-
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
+
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
+
+                    opts.InputFormatters.Add(new XmlInputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up

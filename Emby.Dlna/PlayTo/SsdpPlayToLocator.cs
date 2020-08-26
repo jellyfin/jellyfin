@@ -313,7 +313,7 @@ namespace Emby.Dlna.PlayTo
                 if (notificationType.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
                 {
                     // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                    if (DlnaEntryPoint.Instance.IsUPnPActive && !e.Simulated)
+                    if (SocketServer.Instance.IsUPnPActive && !e.Simulated)
                     {
                         // _logger.LogDebug("Passing NOTIFY message to Mono.Nat.");
                         NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw(), e.ReceivedFrom);
@@ -357,9 +357,9 @@ namespace Emby.Dlna.PlayTo
         {
             ThrowIfDisposed();
 
-            #pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
+#pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
             DiscoveredSsdpDevice[]? expiredDevices = null;
-            #pragma warning restore SA1011 // Closing square brackets should be spaced correctly
+#pragma warning restore SA1011 // Closing square brackets should be spaced correctly
 
             lock (_devices)
             {

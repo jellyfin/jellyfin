@@ -2,13 +2,12 @@
 
 using System;
 using System.Linq;
-using MediaBrowser.Common.Net;
 using Emby.Server.Implementations.SocketSharp;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;

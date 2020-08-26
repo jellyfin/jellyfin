@@ -865,32 +865,47 @@ namespace Emby.Dlna.PlayTo
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
             string reply = string.Empty;
+            int attempt = 0;
 
-            try
+            while (true)
             {
-                logger?.LogDebug("GetDataAsync: Communicating with {0}", url);
-                using var response = await httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
-                using var stream = response.Content;
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-                reply = await reader.ReadToEndAsync().ConfigureAwait(false);
+                try
+                {
+                    logger?.LogDebug("GetDataAsync: Communicating with {0}", url);
+                    using var response = await httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
+                    using var stream = response.Content;
+                    using var reader = new StreamReader(stream, Encoding.UTF8);
+                    reply = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                return XDocument.Parse(reply);
-            }
-            catch (XmlException)
-            {
-                logger?.LogDebug("GetDataAsync: Invalid XML returned {0}", reply);
-                throw;
-            }
-            catch (HttpRequestException ex)
-            {
-                logger?.LogDebug("GetDataAsync: Failed with {0}", ex.Message);
-                throw;
-            }
-            catch (Exception ex)
-            {
-                // Show stack trace on other errors.
-                logger?.LogDebug(ex, "GetDataAsync: Failed.");
-                throw;
+                    return XDocument.Parse(reply);
+                }
+                catch (XmlException)
+                {
+                    logger?.LogDebug("GetDataAsync: Invalid XML returned {0}", reply);
+                    if (attempt++ > 3)
+                    {
+                        throw;
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    logger?.LogDebug("GetDataAsync: Failed with {0}", ex.Message);
+                    if (attempt++ > 3)
+                    {
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Show stack trace on other errors.
+                    logger?.LogDebug(ex, "GetDataAsync: Failed.");
+                    if (attempt++ > 3)
+                    {
+                        throw;
+                    }
+                }
+
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 

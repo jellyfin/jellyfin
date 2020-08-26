@@ -40,6 +40,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
+        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
+
         public HdHomerunHost(
             IServerConfigurationManager config,
             ILogger<HdHomerunHost> logger,
@@ -114,9 +116,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Path = i.URL
             }).Cast<ChannelInfo>().ToList();
         }
-
-        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
-
+       
         private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
@@ -272,14 +272,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var uri = new Uri(GetApiUrl(info));
 
-            var ipInfo = IPHost.Parse(uri.Host);
-            _networkManager.Restrict(ipInfo);
-
             using (var manager = new HdHomerunManager())
             {
+                // Legacy HdHomeruns are IPv4 only.
+            	var ipInfo = IPHost.Parse(uri.Host);
+            	_networkManager.Restrict(ipInfo);
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
-                    // Legacy HdHomeruns are IPv4 only.
                     var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
                     var currentChannel = "none"; // @todo Get current channel and map back to Station Id
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo.Address, i, cancellationToken).ConfigureAwait(false);
@@ -774,6 +773,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             var deviceAddress = "http://" + ((IPEndPoint)result.RemoteEndPoint).Address.ToString();
 
                             var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
+
                             if (info != null)
                             {
                                 list.Add(info);

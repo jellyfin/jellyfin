@@ -35,7 +35,7 @@ namespace Emby.Dlna
     /// </summary>
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
-        #pragma warning disable IDE0032 // Convert to auto: _name only needs to be calculated once. _nLS MUST stay the same until a network change.
+#pragma warning disable IDE0032 // Convert to auto: _name only needs to be calculated once. _nLS MUST stay the same until a network change.
         private static readonly string _name = $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
         private static string _nLS = Guid.NewGuid().ToString();
 #pragma warning restore IDO0032
@@ -111,7 +111,7 @@ namespace Emby.Dlna
 
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
             Instance = this;
-            _socketManager = new SocketServer(_networkManager, _configurationManager, loggerFactory.CreateLogger<SocketServer>());
+            _socketManager = new SocketServer(_networkManager, _configurationManager, loggerFactory, appHost);
 
             _networkManager.NetworkChanged += NetworkChanged;
             NetworkChange.NetworkAddressChanged += this.OnNetworkAddressChanged;
@@ -162,13 +162,6 @@ namespace Emby.Dlna
         /// Gets the PlayToManager instance.
         /// </summary>
         public static PlayToManager? PlayToManager { get; internal set; }
-
-        /// <summary>
-        /// Gets a value indicating whether UPnP is active.
-        /// </summary>
-        public bool IsUPnPActive => _configurationManager.Configuration.EnableUPnP &&
-            _configurationManager.Configuration.EnableRemoteAccess &&
-            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _configurationManager.Configuration.UPnPCreateHttpPortMap));
 
         /// <summary>
         /// Gets a value indicating whether the DLNA server is active.
@@ -355,30 +348,29 @@ namespace Emby.Dlna
                     {
                         _logger.LogDebug("DLNA Server : Starting Content Directory service.");
                         ContentDirectory = new ContentDirectoryService(
-                            _loggerFactory.CreateLogger<ContentDirectoryService>(),
-                            _configurationManager,
-                            _httpClient,
                             _dlnaManager,
                             _userDataManager,
                             _imageProcessor,
                             _libraryManager,
+                            _configurationManager,
                             _userManager,
+                            _loggerFactory.CreateLogger<ContentDirectoryService>(),
+                            _httpClient,
                             _localizationManager,
                             _mediaSourceManager,
                             _userViewManager,
                             _mediaEncoder,
-                            _tvSeriesManager,
-                            _loggerFactory);
+                            _tvSeriesManager);
                     }
 
                     if (ConnectionManager == null)
                     {
                         _logger.LogDebug("DLNA Server : Starting Connection Manager service.");
                         ConnectionManager = new ConnectionManagerService(
-                            _loggerFactory.CreateLogger<ConnectionManagerService>(),
+                            _dlnaManager,
                             _configurationManager,
-                            _httpClient,
-                            _dlnaManager);
+                            _loggerFactory.CreateLogger<ConnectionManagerService>(),
+                            _httpClient);
                     }
 
                     if (MediaReceiverRegistrar == null)
@@ -386,8 +378,8 @@ namespace Emby.Dlna
                         _logger.LogDebug("DLNA Server : Starting Media Receiver Registrar service.");
                         MediaReceiverRegistrar = new MediaReceiverRegistrarService(
                             _loggerFactory.CreateLogger<MediaReceiverRegistrarService>(),
-                            _configurationManager,
-                            _httpClient);
+                            _httpClient,
+                            _configurationManager);
                     }
 
                     // This is true on startup and at network change.
@@ -426,11 +418,11 @@ namespace Emby.Dlna
                         _logger.LogDebug("DLNA PlayTo: Starting Service.");
                         PlayToManager = new PlayToManager(
                             _loggerFactory.CreateLogger<PlayToManager>(),
-                            _appHost,
                             _sessionManager,
                             _libraryManager,
                             _userManager,
                             _dlnaManager,
+                            _appHost,
                             _imageProcessor,
                             _deviceDiscovery,
                             _httpClient,

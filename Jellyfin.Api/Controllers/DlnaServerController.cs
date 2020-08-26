@@ -1,14 +1,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Net.Mime;
-using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna;
-using Emby.Dlna.Eventing;
 using Emby.Dlna.PlayTo.EventArgs;
-using Emby.Dlna.Server;
 using Jellyfin.Api.Attributes;
 using MediaBrowser.Controller.Dlna;
 using Microsoft.AspNetCore.Http;
@@ -269,19 +265,14 @@ namespace Jellyfin.Api.Controllers
         /// Processes device subscription events.
         /// </summary>
         /// <param name="id">Id of the device.</param>
-        /// <param name="requestStream">XML data stream.</param>
+        /// <param name="response">XML data stream.</param>
         /// <returns>Event subscription response.</returns>
-        [HttpSubscribe("Eventing/{Id}/")]
+        [HttpNotify("Eventing/{id}")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        [Produces(MediaTypeNames.Text.Xml)]
-        public async Task<ActionResult> ProcessDeviceNotifification(string id, Stream requestStream)
+        public async Task<ActionResult> ProcessDeviceNotifification([FromRoute] string id, [FromBody] string response)
         {
             try
             {
-                using var reader = new StreamReader(requestStream, Encoding.UTF8);
-                string response = await reader.ReadToEndAsync().ConfigureAwait(false);
-
                 if (DlnaEntryPoint.PlayToManager != null)
                 {
                     await DlnaEntryPoint.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);

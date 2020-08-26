@@ -1,8 +1,6 @@
 #pragma warning disable CS1591
-#nullable enable
-using System;
+
 using System.Threading.Tasks;
-using Emby.Dlna.Server;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -14,17 +12,17 @@ namespace Emby.Dlna.ConnectionManager
     public class ConnectionManagerService : BaseService, IConnectionManager
     {
         private readonly IDlnaManager _dlna;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IServerConfigurationManager _config;
 
         public ConnectionManagerService(
-            ILogger logger,
-            IServerConfigurationManager configurationManager,
-            IHttpClient httpClient,
-            IDlnaManager dlna)
+            IDlnaManager dlna,
+            IServerConfigurationManager config,
+            ILogger<ConnectionManagerService> logger,
+            IHttpClient httpClient)
             : base(logger, httpClient)
         {
-            _dlna = dlna ?? throw new NullReferenceException(nameof(dlna));
-            _configurationManager = configurationManager ?? throw new NullReferenceException(nameof(configurationManager));
+            _dlna = dlna;
+            _config = config;
         }
 
         /// <inheritdoc />
@@ -36,14 +34,10 @@ namespace Emby.Dlna.ConnectionManager
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            var profile = _dlna.GetProfile(request.Headers) ??
+                         _dlna.GetDefaultProfile();
 
-            var profile = _dlna.GetProfile(request.Headers) ?? _dlna.GetDefaultProfile();
-
-            return new ControlHandler(_configurationManager, Logger, profile).ProcessControlRequestAsync(request);
+            return new ControlHandler(_config, Logger, profile).ProcessControlRequestAsync(request);
         }
     }
 }

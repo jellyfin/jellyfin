@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -30,6 +31,7 @@ namespace Emby.Dlna.PlayTo
     {
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
+
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -39,22 +41,22 @@ namespace Emby.Dlna.PlayTo
         private readonly IServerConfigurationManager _config;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
+
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly INotificationManager _notificationManager;
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
-        private readonly List<DeviceInterface> _devices;
         private bool _disposed;
 
         public PlayToManager(
             ILogger logger,
-            IServerApplicationHost appHost,
             ISessionManager sessionManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDlnaManager dlnaManager,
+            IServerApplicationHost appHost,
             IImageProcessor imageProcessor,
             IDeviceDiscovery deviceDiscovery,
             IHttpClient httpClient,
@@ -80,7 +82,6 @@ namespace Emby.Dlna.PlayTo
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _notificationManager = notificationManager;
-            _devices = new List<DeviceInterface>();
 
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
             _deviceDiscovery.Start();
@@ -268,7 +269,7 @@ namespace Emby.Dlna.PlayTo
                         GeneralCommandType.SetVolume.ToString(),
                         GeneralCommandType.SetAudioStreamIndex.ToString(),
                         GeneralCommandType.SetSubtitleStreamIndex.ToString(),
-                        GeneralCommandType.PlayMediaSource.ToString(),
+                        GeneralCommandType.PlayMediaSource.ToString()
                     },
 
                     SupportsMediaControl = true
@@ -285,36 +286,22 @@ namespace Emby.Dlna.PlayTo
         /// <inheritdoc />
         public void Dispose()
         {
-            _logger.LogDebug("Disposed.");
-
             _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
-            _deviceDiscovery?.Dispose();
 
             try
             {
                 _disposeCancellationTokenSource.Cancel();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogDebug(ex, "Error while disposing PlayToManager");
             }
 
-            // Dispose the CreateuPnpDeviceAsync created in AddDevice.
-            foreach (var device in _devices)
-            {
-                device?.Dispose();
-            }
-
-            // Stop any active sessions and dispose of the PlayToControllers created.
-            _sessionManager.Sessions.ToList().ForEach(s =>
-                {
-                    s.StopController<PlayToController>();
-                    _sessionManager.ReportSessionEnded(s.Id);
-                });
-
+            _sessionLock.Dispose();
             _disposeCancellationTokenSource.Dispose();
 
-            _sessionLock?.Release();
             _sessionLock?.Dispose();
+            _deviceDiscovery?.Dispose();
 
             _disposed = true;
         }

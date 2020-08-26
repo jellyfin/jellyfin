@@ -3,7 +3,7 @@
 using System.IO;
 using Microsoft.AspNetCore.Http;
 
-namespace Emby.Dlna.Server
+namespace Emby.Dlna
 {
     public class ControlRequest
     {

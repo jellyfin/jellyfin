@@ -11,9 +11,9 @@ namespace Emby.Dlna.Net.EventArgs
     /// Copyright (c) 2015 Troy Willmot.
     /// Copyright (c) 2015-2018 Luke Pulverenti.
     /// </remarks>
-    public sealed class ResponseReceivedEventArgs : System.EventArgs
+    public sealed class ResponseReceivedEventArgs
     {
-         /// <summary>
+        /// <summary>
         /// Initializes a new instance of the <see cref="ResponseReceivedEventArgs"/> class.
         /// </summary>
         /// <param name="message">Response message.</param>

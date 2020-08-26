@@ -490,7 +490,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddMemoryCache();
 
             serviceCollection.AddSingleton(ConfigurationManager);
-
             serviceCollection.AddSingleton<IApplicationHost>(this);
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
@@ -504,8 +503,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(_networkManager);
 
-            serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
-
             serviceCollection.AddSingleton<IIsoManager, IsoManager>();
 
             serviceCollection.AddSingleton<ITaskManager, TaskManager>();
@@ -515,6 +512,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
             serviceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
+
+            serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
 
             serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
@@ -1036,7 +1035,7 @@ namespace Emby.Server.Implementations
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
             // Dlna
-            yield return typeof(DlnaManager).Assembly;
+            yield return typeof(DlnaEntryPoint).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

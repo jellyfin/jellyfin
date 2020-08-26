@@ -1,4 +1,4 @@
-using System.Net.Mime;
+﻿using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,9 +16,10 @@ namespace Jellyfin.Server.Formatters
         /// </summary>
         public XmlOutputFormatter()
         {
+            SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
+            SupportedMediaTypes.Add("text/xml;charset=UTF-8");
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
-            SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
         }
 
         /// <inheritdoc />

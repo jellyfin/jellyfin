@@ -1,5 +1,5 @@
 #pragma warning disable CS1591
-#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
-using Emby.Dlna.Configuration;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;
@@ -64,7 +63,7 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             DeviceProfile profile,
             string serverAddress,
-            string? accessToken,
+            string accessToken,
             IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
             User user,
@@ -103,16 +102,6 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
-            if (methodParams == null)
-            {
-                throw new ArgumentNullException(nameof(methodParams));
-            }
-
-            if (xmlWriter == null)
-            {
-                throw new ArgumentNullException(nameof(xmlWriter));
-            }
-
             const string DeviceId = "test";
 
             if (string.Equals(methodName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))
@@ -336,7 +325,6 @@ namespace Emby.Dlna.ContentDirectory
 
                         provided = childrenResult.Items.Count;
 
-                        // var dlnaOptions = _config.GetDlnaConfiguration();
                         foreach (var i in childrenResult.Items)
                         {
                             var childItem = i.Item;

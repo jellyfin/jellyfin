@@ -57,7 +57,7 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            return string.Equals(Id, obj.Id, StringComparison.InvariantCulture);
+            return string.Equals(Id, obj.Id, StringComparison.Ordinal);
         }
     }
 }

@@ -1,9 +1,8 @@
 #pragma warning disable CS1591
-#nullable enable
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Emby.Dlna.Server;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -33,38 +32,34 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IUserViewManager _userViewManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ITVSeriesManager _tvSeriesManager;
-        private readonly ILoggerFactory _loggerFactory;
 
         public ContentDirectoryService(
-            ILogger logger,
-            IServerConfigurationManager config,
-            IHttpClient httpClient,
             IDlnaManager dlna,
             IUserDataManager userDataManager,
             IImageProcessor imageProcessor,
             ILibraryManager libraryManager,
+            IServerConfigurationManager config,
             IUserManager userManager,
+            ILogger<ContentDirectoryService> logger,
+            IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
             IUserViewManager userViewManager,
             IMediaEncoder mediaEncoder,
-            ITVSeriesManager tvSeriesManager,
-            ILoggerFactory loggerFactory)
+            ITVSeriesManager tvSeriesManager)
             : base(logger, httpClient)
         {
-            // Checking due to dynamic nature of the server.
-            _dlna = dlna ?? throw new NullReferenceException(nameof(dlna));
-            _userDataManager = userDataManager ?? throw new NullReferenceException(nameof(userDataManager));
-            _imageProcessor = imageProcessor ?? throw new NullReferenceException(nameof(imageProcessor));
-            _libraryManager = libraryManager ?? throw new NullReferenceException(nameof(dlna));
-            _config = config ?? throw new NullReferenceException(nameof(config));
-            _userManager = userManager ?? throw new NullReferenceException(nameof(userManager));
-            _localization = localization ?? throw new NullReferenceException(nameof(localization));
-            _mediaSourceManager = mediaSourceManager ?? throw new NullReferenceException(nameof(mediaSourceManager));
-            _userViewManager = userViewManager ?? throw new NullReferenceException(nameof(userViewManager));
-            _mediaEncoder = mediaEncoder ?? throw new NullReferenceException(nameof(mediaEncoder));
-            _tvSeriesManager = tvSeriesManager ?? throw new NullReferenceException(nameof(tvSeriesManager));
-            _loggerFactory = loggerFactory ?? throw new NullReferenceException(nameof(loggerFactory));
+            _dlna = dlna;
+            _userDataManager = userDataManager;
+            _imageProcessor = imageProcessor;
+            _libraryManager = libraryManager;
+            _config = config;
+            _userManager = userManager;
+            _localization = localization;
+            _mediaSourceManager = mediaSourceManager;
+            _userViewManager = userViewManager;
+            _mediaEncoder = mediaEncoder;
+            _tvSeriesManager = tvSeriesManager;
         }
 
         private static int SystemUpdateId
@@ -72,6 +67,7 @@ namespace Emby.Dlna.ContentDirectory
             get
             {
                 var now = DateTime.UtcNow;
+
                 return now.Year + now.DayOfYear + now.Hour;
             }
         }
@@ -85,11 +81,6 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
             var profile = _dlna.GetProfile(request.Headers) ??
                           _dlna.GetDefaultProfile();
 
@@ -98,7 +89,7 @@ namespace Emby.Dlna.ContentDirectory
             var user = GetUser(profile);
 
             return new ControlHandler(
-                _loggerFactory.CreateLogger<ControlHandler>(),
+                Logger,
                 _libraryManager,
                 profile,
                 serverAddress,

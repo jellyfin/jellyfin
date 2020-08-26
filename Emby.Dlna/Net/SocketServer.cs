@@ -16,7 +16,9 @@ using Emby.Dlna.Net.Parsers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
@@ -29,11 +31,6 @@ namespace Emby.Dlna.Net
     ///
     /// Lazy implementation. Socks will only be created at first use.
     /// </summary>
-    /// <remarks>
-    /// Part of this code take from RSSDP.
-    /// Copyright (c) 2015 Troy Willmot.
-    /// Copyright (c) 2015-2018 Luke Pulverenti.
-    /// </remarks>
     public class SocketServer
     {
         /// <summary>
@@ -48,37 +45,43 @@ namespace Emby.Dlna.Net
         private readonly ILogger<SocketServer> _logger;
         private readonly INetworkManager _networkManager;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly IServerApplicationHost _appHost;
         private readonly List<Socket> _sockets;
-        private readonly IPAddress _any4;
-        private readonly IPAddress _any6;
+        private readonly IPAddress _anyAddressIP4;
+        private readonly IPAddress _anyAddressIP6;
+        private ServerConfiguration _serverConfiguration;
+        private DlnaOptions _options;
         private bool _oldState;
-        private int _udpResendCount = 2;
-        private bool _started;
+        private bool _running;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SocketServer"/> class.
         /// </summary>
         /// <param name="networkManager">The networkManager<see cref="INetworkManager"/>.</param>
         /// <param name="configurationManager">The system configuration.</param>
-        /// <param name="logger">The logger<see cref="ILogger"/>.</param>
+        /// <param name="loggerFactory">The logger factory instance.<see cref="ILoggerFactory"/>.</param>
+        /// <param name="appHost">The application host.</param>
         public SocketServer(
             INetworkManager networkManager,
             IServerConfigurationManager configurationManager,
-            ILogger<SocketServer> logger)
+            ILoggerFactory loggerFactory,
+            IServerApplicationHost appHost)
         {
-            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
-            _logger = logger;
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            _appHost = appHost;
+            _configurationManager = configurationManager ?? throw new NullReferenceException(nameof(configurationManager));
+            _logger = loggerFactory.CreateLogger<SocketServer>();
+            _networkManager = networkManager;
             _socketSynchroniser = new object();
             _sockets = new List<Socket>();
             _requestParser = new HttpRequestParser();
             _responseParser = new HttpResponseParser();
-            _any4 = AnyIP(IPAddress.Any);
-            _any6 = AnyIP(IPAddress.IPv6Any);
+            _serverConfiguration = configurationManager.Configuration;
+            _options = configurationManager.GetConfiguration<DlnaOptions>("dlna");
+            _anyAddressIP4 = AnyIP(IPAddress.Any);
+            _anyAddressIP6 = AnyIP(IPAddress.IPv6Any);
             Instance = this;
-            _oldState = DlnaEntryPoint.Instance.IsUPnPActive;
-            Tracing = configurationManager.GetDlnaConfiguration().EnableDebugLog;
-            // _udpResendCount = configurationManager.GetDlnaConfiguration().UDPResentCount;
+            _oldState = IsUPnPActive;
+            configurationManager.ConfigurationUpdated += OnConfigurationUpdated;
         }
 
         /// <summary>
@@ -149,22 +152,24 @@ namespace Emby.Dlna.Net
         /// <summary>
         /// Gets a value indicating whether uPNP port forwarding is active.
         /// </summary>
-        public static bool IsuPnPActive => DlnaEntryPoint.Instance.IsUPnPActive;
+        public bool IsUPnPActive => _serverConfiguration.EnableUPnP &&
+            _serverConfiguration.EnableRemoteAccess &&
+            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _serverConfiguration.UPnPCreateHttpPortMap));
 
         /// <summary>
         /// Gets the number of times each udp packet should be sent.
         /// </summary>
-        public int ResendCount { get => _udpResendCount; }
+        public int UDPSendCount { get => _options.UDPSendCount; }
 
         /// <summary>
         /// Gets a value indicating whether is multi-socket binding available.
         /// </summary>
-        public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
+        public bool EnableMultiSocketBinding => _serverConfiguration.EnableMultiSocketBinding;
 
         /// <summary>
         /// Gets a value indicating whether detailed DNLA debug logging is active.
         /// </summary>
-        public bool Tracing { get; private set; }
+        public bool Tracing => _options.EnableDebugLog;
 
         /// <summary>
         /// Gets a value indicating whether IP6 is enabled.
@@ -173,12 +178,7 @@ namespace Emby.Dlna.Net
         {
             get
             {
-                return Socket.OSSupportsIPv6 && _configurationManager.Configuration.EnableIPV6;
-            }
-
-            private set
-            {
-                _configurationManager.Configuration.EnableIPV6 = value;
+                return Socket.OSSupportsIPv6 && _serverConfiguration.EnableIPV6;
             }
         }
 
@@ -189,12 +189,7 @@ namespace Emby.Dlna.Net
         {
             get
             {
-                return Socket.OSSupportsIPv4 && _configurationManager.Configuration.EnableIPV4;
-            }
-
-            private set
-            {
-                _configurationManager.Configuration.EnableIPV4 = value;
+                return Socket.OSSupportsIPv4 && _serverConfiguration.EnableIPV4;
             }
         }
 
@@ -384,7 +379,10 @@ namespace Emby.Dlna.Net
 
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                IPv6MulticastOption opt = new IPv6MulticastOption(address.IsIPv6LinkLocal ? IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, address.ScopeId);
+                IPv6MulticastOption opt = new IPv6MulticastOption(
+                    address.IsIPv6LinkLocal ?
+                    IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal,
+                    address.ScopeId);
 
                 retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, opt);
             }
@@ -446,39 +444,14 @@ namespace Emby.Dlna.Net
             }
 
             // Calculate which sockets to send the message through.
-            IEnumerable<Socket> sockets;
-            List<Socket> sendSockets;
-
-            lock (_socketSynchroniser)
+            var sendSockets = GetSendSockets(localIPAddress);
+            if (!sendSockets.Any())
             {
-                // If IP dual mode is enabled, then IPAddress.Any and IPAddress.Any are not used internally in Socket, hence the use of _any4 and _any6.
-                if (IsIP4Enabled && endPoint.Address.Equals(IPAddress.Loopback))
-                {
-                    sockets = _sockets.Where(s => EndPointEquals(s, _any4) || EndPointEquals(s, IPAddress.Loopback));
-                }
-                else if (IsIP6Enabled && endPoint.Address.Equals(IPAddress.IPv6Loopback))
-                {
-                    sockets = _sockets.Where(s => EndPointEquals(s, _any6) || EndPointEquals(s, IPAddress.IPv6Loopback));
-                }
-                else
-                {
-                    // Send from the Any socket and the socket with the matching address
-                    sockets = _sockets.Where(s => (localIPAddress.AddressFamily == AddressFamily.InterNetwork && EndPointEquals(s, _any4)) ||
-                                                  (localIPAddress.AddressFamily == AddressFamily.InterNetworkV6 && EndPointEquals(s, _any6)) ||
-                                                  EndPointEquals(s, localIPAddress, true));
-                }
-
-                if (!sockets.Any())
-                {
-                    _logger.LogError("Unable to locate socket for {0}:{1}", localIPAddress, endPoint.Address);
-                    return;
-                }
-
-                // Make a copy so that changes can occurr in the dictionary whilst we're using this.
-                sendSockets = new List<Socket>(sockets);
+                _logger.LogError("Unable to locate socket for {0}:{1}", localIPAddress, endPoint.Address);
+                return;
             }
 
-            await SendFromSocketsAsync(sendSockets, message, endPoint, _udpResendCount, false).ConfigureAwait(false);
+            await SendFromSocketsAsync(sendSockets, message, endPoint, _options.UDPSendCount, false).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -489,7 +462,7 @@ namespace Emby.Dlna.Net
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task SendMulticastMessageAsync(string message, IPAddress localIPAddress)
         {
-            await SendMulticastMessageAsync(message, _udpResendCount, localIPAddress).ConfigureAwait(false);
+            await SendMulticastMessageAsync(message, _options.UDPSendCount, localIPAddress).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -506,25 +479,16 @@ namespace Emby.Dlna.Net
                 throw new ArgumentNullException(nameof(localIPAddress));
             }
 
-            // Get the correct FamilyAdddress endpoint.
-            IPEndPoint endPoint = GetMulticastEndPoint(localIPAddress, 1900);
+            var sendSockets = GetSendSockets(localIPAddress);
 
-            List<Socket> sendSockets;
-
-            lock (_socketSynchroniser)
+            if (sendSockets.Count <= 0)
             {
-                sendSockets = new List<Socket>(_sockets
-                    .Where(s => (localIPAddress.AddressFamily == AddressFamily.InterNetwork && EndPointEquals(s, _any4)) ||
-                                (localIPAddress.AddressFamily == AddressFamily.InterNetworkV6 && EndPointEquals(s, _any6)) ||
-                                EndPointEquals(s, localIPAddress, true)));
-
-                if (sendSockets.Count <= 0)
-                {
-                    _logger.LogError("No socket found for {0}", localIPAddress);
-                    return;
-                }
+                _logger.LogError("No socket found for {0}", localIPAddress);
+                return;
             }
 
+            // Get the correct FamilyAdddress endpoint.
+            IPEndPoint endPoint = GetMulticastEndPoint(localIPAddress, 1900);
             await SendFromSocketsAsync(sendSockets, message, endPoint, sendCount, true).ConfigureAwait(false);
         }
 
@@ -559,53 +523,56 @@ namespace Emby.Dlna.Net
             }
 
             // _logger.LogDebug("Processing inbound SSDP from {0}.", endPoint.Address);
-            try
-            {
-                // Responses start with the HTTP version, prefixed with HTTP/ while requests start with a method which can
-                // vary and might be one we haven't seen/don't know. We'll check if this message is a request or a response
-                // by checking for the HTTP/ prefix on the start of the message.
-                if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
-                {
-                    HttpResponseMessage? responseMessage = _responseParser.Parse(data);
-                    if (responseMessage != null)
-                    {
-                        try
-                        {
-                            EventResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(responseMessage, receivedFrom, localIPAddress, sourceInternal));
-                        }
-                        finally
-                        {
-                            responseMessage?.Dispose();
-                        }
-                    }
-                }
-                else
-                {
-                    HttpRequestMessage? requestMessage = _requestParser.Parse(data);
-                    if (requestMessage != null)
-                    {
-                        try
-                        {
-                            // SSDP specification says only * is currently used but other uri's might be implemented in the future
-                            // and should be ignored unless understood.
-                            // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
-                            if (requestMessage.RequestUri.ToString() != "*")
-                            {
-                                return Task.CompletedTask;
-                            }
 
-                            EventRequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, requestMessage, receivedFrom, localIPAddress, sourceInternal));
-                        }
-                        finally
-                        {
-                            requestMessage?.Dispose();
-                        }
-                    }
+            // Responses start with the HTTP version, prefixed with HTTP/ while requests start with a method which can
+            // vary and might be one we haven't seen/don't know. We'll check if this message is a request or a response
+            // by checking for the HTTP/ prefix on the start of the message.
+            if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
+            {
+                HttpResponseMessage msg;
+                if (EventResponseReceived == null)
+                {
+                    // If no events then don't bother processing.
+                    return Task.CompletedTask;
+                }
+
+                try
+                {
+                    msg = _responseParser.Parse(data);
+                    EventResponseReceived.Invoke(this, new ResponseReceivedEventArgs(msg, receivedFrom, localIPAddress, sourceInternal));
+                }
+                catch (ArgumentException)
+                {
+                    // Ignore invalid packets.
                 }
             }
-            catch (ArgumentException)
+            else
             {
-                // Ignore invalid packets.
+                HttpRequestMessage msg;
+                if (EventRequestReceived == null)
+                {
+                    // If no events then don't bother processing.
+                    return Task.CompletedTask;
+                }
+
+                try
+                {
+                    msg = _requestParser.Parse(data);
+
+                    // SSDP specification says only * is currently used but other uri's might be implemented in the future
+                    // and should be ignored unless understood.
+                    // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
+                    if (msg.RequestUri.ToString() != "*")
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    EventRequestReceived.Invoke(this, new RequestReceivedEventArgs(data, msg, receivedFrom, localIPAddress, sourceInternal));
+                }
+                catch (ArgumentException)
+                {
+                    // Ignore invalid packets.
+                }
             }
 
             return Task.CompletedTask;
@@ -621,6 +588,50 @@ namespace Emby.Dlna.Net
             return _instance;
         }
 
+        private void OnConfigurationUpdated(object sender, System.EventArgs e)
+        {
+            _serverConfiguration = _configurationManager.Configuration;
+            _options = _configurationManager.GetConfiguration<DlnaOptions>("dlna");
+        }
+
+        private List<Socket> GetSendSockets(IPAddress localIPAddress)
+        {
+            // If IP dual mode is enabled, then IPAddress.Any and IPAddress.
+            // Any are not used internally in Socket, hence the use of _anyAddressIP4 and _anyAddressIP6.
+            lock (_socketSynchroniser)
+            {
+                IEnumerable<Socket> sockets;
+
+                if (IsIP4Enabled)
+                {
+                    if (IsIP6Enabled)
+                    {
+                        // Send from IP4 or IP6 sockets where they are ANY socket and the socket with the matching address.
+                        sockets = _sockets.Where(s =>
+                                        (localIPAddress.AddressFamily == AddressFamily.InterNetwork && EndPointEquals(s, _anyAddressIP4)) ||
+                                        (localIPAddress.AddressFamily == AddressFamily.InterNetworkV6 && EndPointEquals(s, _anyAddressIP6)) ||
+                                        EndPointEquals(s, localIPAddress, true));
+                    }
+                    else
+                    {
+                        // Send from IP4 sockets where they are ANY socket and the socket with the matching address.
+                        sockets = _sockets.Where(s =>
+                                        (localIPAddress.AddressFamily == AddressFamily.InterNetwork && EndPointEquals(s, _anyAddressIP4)) ||
+                                        EndPointEquals(s, localIPAddress, true));
+                    }
+                }
+                else
+                {
+                    // Send from IP6 sockets where they are ANY socket and the socket with the matching address.
+                    sockets = _sockets.Where(s =>
+                                    (localIPAddress.AddressFamily == AddressFamily.InterNetworkV6 && EndPointEquals(s, _anyAddressIP6)) ||
+                                    EndPointEquals(s, localIPAddress, true));
+                }
+
+                return new List<Socket>(sockets);
+            }
+        }
+
         /// <summary>
         /// Triggered on a system configuration change.
         /// </summary>
@@ -629,11 +640,11 @@ namespace Emby.Dlna.Net
         private void ConfigurationUpdated(object sender, System.EventArgs args)
         {
             bool lastState = _oldState;
-            _oldState = DlnaEntryPoint.Instance.IsUPnPActive;
+            _oldState = IsUPnPActive;
             if (_oldState != lastState)
             {
                 CreateSockets();
-                // _udpResendCount = configurationManager.GetDlnaConfiguration().UDPResentCount;
+                // _udpResendCount = UDPResentCount;
             }
         }
 
@@ -697,20 +708,20 @@ namespace Emby.Dlna.Net
 
         private void Start()
         {
-            if (!_started)
+            if (!_running)
             {
                 CreateSockets();
 
                 _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
                 _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
                 _networkManager.NetworkChanged += NetworkChanged;
-                _started = true;
+                _running = true;
             }
         }
 
         private void Stop()
         {
-            if (_started)
+            if (_running)
             {
                 _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
                 _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
@@ -730,6 +741,8 @@ namespace Emby.Dlna.Net
 
                     _sockets.Clear();
                 }
+
+                _running = false;
             }
         }
 
@@ -797,7 +810,7 @@ namespace Emby.Dlna.Net
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                Tracing = _configurationManager.GetDlnaConfiguration().EnableDebugLog;
+                _options = _configurationManager.GetConfiguration<DlnaOptions>("dlna");
             }
         }
 
@@ -858,7 +871,7 @@ namespace Emby.Dlna.Net
                     }
 
                     // Did it come from Mono.NAT?
-                    if (sourceInternal && DlnaEntryPoint.Instance.IsUPnPActive && endPoint.Port == 1900 && _networkManager.IsGatewayInterface(endPoint.Address))
+                    if (sourceInternal && IsUPnPActive && endPoint.Port == 1900 && _networkManager.IsGatewayInterface(endPoint.Address))
                     {
                         return true;
                     }
@@ -901,7 +914,7 @@ namespace Emby.Dlna.Net
                         scopes.Add(addr.ScopeId);
                     }
 
-                    if (Tracing)
+                    if (_options.EnableDebugLog)
                     {
                         _logger.LogDebug("{0}->{1}:{2}", addr, destination.Address, message);
                     }
@@ -977,7 +990,7 @@ namespace Emby.Dlna.Net
                         {
                             // If not an IPAny/v6Any and socket doesn't exist any more, then dispose of it.
                             IPAddress addr = ((IPEndPoint)socket.LocalEndPoint).Address;
-                            if (!addr.Equals(_any4) && !addr.Equals(_any6) && !ba.Exists(addr))
+                            if (!addr.Equals(_anyAddressIP4) && !addr.Equals(_anyAddressIP6) && !ba.Exists(addr))
                             {
                                 if (removeThese == null)
                                 {
@@ -1084,7 +1097,7 @@ namespace Emby.Dlna.Net
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task StartListening()
         {
-            if (DlnaEntryPoint.Instance.IsUPnPActive)
+            if (IsUPnPActive)
             {
                 NatUtility.UnknownDeviceFound += UnknownDeviceFound;
             }
@@ -1128,7 +1141,7 @@ namespace Emby.Dlna.Net
             try
             {
                 var endPoint = socket.LocalEndPoint;
-                while (_started)
+                while (true)
                 {
                     try
                     {
@@ -1139,7 +1152,7 @@ namespace Emby.Dlna.Net
                             remote = (IPEndPoint)result.RemoteEndPoint;
                             buffer = Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes);
 
-                            if (Tracing)
+                            if (_options.EnableDebugLog)
                             {
                                 _logger.LogDebug("{0}->{1}:{2}", remote.Address, listeningOn.Address, buffer);
                             }

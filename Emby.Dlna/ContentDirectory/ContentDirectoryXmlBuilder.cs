@@ -1,5 +1,5 @@
 #pragma warning disable CS1591
-#nullable enable
+
 using System.Collections.Generic;
 using Emby.Dlna.Common;
 using Emby.Dlna.Service;
@@ -10,7 +10,9 @@ namespace Emby.Dlna.ContentDirectory
     {
         public static string GetXml()
         {
-            return ServiceXmlBuilder.GetXml(ServiceActionListBuilder.GetActions(), GetStateVariables());
+            return ServiceXmlBuilder.GetXml(
+                ServiceActionListBuilder.GetActions(),
+                GetStateVariables());
         }
 
         private static IEnumerable<StateVariable> GetStateVariables()
@@ -100,7 +102,7 @@ namespace Emby.Dlna.ContentDirectory
                     DataType = "string",
                     SendsEvents = false,
 
-                    AllowedValues = new string[]
+                    AllowedValues = new[]
                 {
                     "BrowseMetadata",
                     "BrowseDirectChildren"

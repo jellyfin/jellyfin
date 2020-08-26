@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.SyncPlay
         public DateTime LastActivity { get; set; }
 
         /// <summary>
-        /// Gets the partictys.
+        /// Gets the participants.
         /// </summary>
         /// <value>The participants, or members of the group.</value>
         public Dictionary<string, GroupMember> Participants { get; } =

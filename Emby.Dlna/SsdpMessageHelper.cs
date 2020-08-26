@@ -46,7 +46,7 @@ namespace Emby.Dlna
             return builder.ToString();
         }
 
-                /// <summary>
+        /// <summary>
         /// Returns a Header from the collection.
         /// </summary>
         /// <param name="headerName">Name to look for.</param>

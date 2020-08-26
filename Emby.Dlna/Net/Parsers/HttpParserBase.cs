@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,8 +9,7 @@ using System.Net.Http.Headers;
 namespace Emby.Dlna.Net.Parsers
 {
     /// <summary>
-    /// A base class for the <see cref="HttpResponseParser"/> and <see cref="HttpRequestParser"/> classes.
-    /// Not intended for direct use.
+    /// A base class for the <see cref="HttpResponseParser"/> and <see cref="HttpRequestParser"/> classes. Not intended for direct use.
     /// </summary>
     /// <typeparam name="T">Type of HttpParserBase.</typeparam>
     /// <remarks>
@@ -32,31 +30,21 @@ namespace Emby.Dlna.Net.Parsers
         private readonly char[] _separatorCharacters = new char[] { ',', ';' };
 
         /// <summary>
-        /// Parses the <paramref name="data"/> provided into either a <see cref="HttpRequestMessage"/> or
-        /// <see cref="HttpResponseMessage"/> object.
+        /// Parses the <paramref name="data"/> provided into either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
         /// </summary>
         /// <param name="data">A string containing the HTTP message to parse.</param>
-        /// <returns>Either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/>
-        /// object containing the parsed data.</returns>
+        /// <returns>Either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object containing the parsed data.</returns>
         public abstract T Parse(string data);
 
         /// <summary>
-        /// Parses a string containing either an HTTP request or response into a <see cref="HttpRequestMessage"/>
-        /// or <see cref="HttpResponseMessage"/> object.
+        /// Parses a string containing either an HTTP request or response into a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
         /// </summary>
-        /// <param name="message">A <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/>
-        /// object representing the parsed message.</param>
-        /// <param name="headers">A reference to the <see cref="HttpHeaders"/> collection for the
-        /// <paramref name="message"/> object.</param>
+        /// <param name="message">A <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object representing the parsed message.</param>
+        /// <param name="headers">A reference to the <see cref="System.Net.Http.Headers.HttpHeaders"/> collection for the <paramref name="message"/> object.</param>
         /// <param name="data">A string containing the data to be parsed.</param>
-        /// [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
-        protected virtual void Parse(T message, HttpHeaders headers, string data)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
+        protected virtual void Parse(T message, System.Net.Http.Headers.HttpHeaders headers, string data)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
             if (data == null)
             {
                 throw new ArgumentNullException(nameof(data));
@@ -82,17 +70,14 @@ namespace Emby.Dlna.Net.Parsers
         }
 
         /// <summary>
-        /// Used to parse the first line of an HTTP request or response and assign the values to the
-        /// appropriate properties on the <paramref name="message"/>.
+        /// Used to parse the first line of an HTTP request or response and assign the values to the appropriate properties on the <paramref name="message"/>.
         /// </summary>
         /// <param name="data">The first line of the HTTP message to be parsed.</param>
-        /// <param name="message">Either a <see cref="HttpResponseMessage"/> or <see cref="HttpRequestMessage"/>
-        /// to assign the parsed values to.</param>
+        /// <param name="message">Either a <see cref="HttpResponseMessage"/> or <see cref="HttpRequestMessage"/> to assign the parsed values to.</param>
         protected abstract void ParseStatusLine(string data, T message);
 
         /// <summary>
-        /// Returns a boolean indicating whether the specified HTTP header name represents a content header (true)
-        /// or a message header (false).
+        /// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
         /// </summary>
         /// <param name="headerName">A string containing the name of the header to return the type of.</param>
         /// <returns>Result of the operation.</returns>
@@ -102,8 +87,7 @@ namespace Emby.Dlna.Net.Parsers
         }
 
         /// <summary>
-        /// Parses the HTTP version text from an HTTP request or response status line and returns a
-        /// <see cref="Version"/> object representing the parsed values.
+        /// Parses the HTTP version text from an HTTP request or response status line and returns a <see cref="Version"/> object representing the parsed values.
         /// </summary>
         /// <param name="versionData">A string containing the HTTP version, from the message status line.</param>
         /// <returns>A <see cref="Version"/> object containing the parsed version data.</returns>
@@ -121,39 +105,6 @@ namespace Emby.Dlna.Net.Parsers
             }
 
             return Version.Parse(versionData.Substring(versionSeparatorIndex + 1));
-        }
-
-        private static string CombineQuotedSegments(string[] segments, ref int segmentIndex, string segment)
-        {
-            var trimmedSegment = segment.Trim();
-            for (int index = segmentIndex; index < segments.Length; index++)
-            {
-                if (trimmedSegment == "\"\"" ||
-                    (
-                        trimmedSegment.EndsWith("\"", StringComparison.OrdinalIgnoreCase)
-                        && !trimmedSegment.EndsWith("\"\"", StringComparison.OrdinalIgnoreCase)
-                        && !trimmedSegment.EndsWith("\\\"", StringComparison.OrdinalIgnoreCase))
-                    )
-                {
-                    segmentIndex = index;
-                    return trimmedSegment[1..^1];
-                }
-
-                if (index + 1 < segments.Length)
-                {
-                    trimmedSegment += "," + segments[index + 1].TrimEnd();
-                }
-            }
-
-            segmentIndex = segments.Length;
-            if (trimmedSegment.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && trimmedSegment.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-            {
-                return trimmedSegment[1..^1];
-            }
-            else
-            {
-                return trimmedSegment;
-            }
         }
 
         /// <summary>
@@ -260,6 +211,39 @@ namespace Emby.Dlna.Net.Parsers
             }
 
             return values;
+        }
+
+        private static string CombineQuotedSegments(string[] segments, ref int segmentIndex, string segment)
+        {
+            var trimmedSegment = segment.Trim();
+            for (int index = segmentIndex; index < segments.Length; index++)
+            {
+                if (trimmedSegment == "\"\"" ||
+                    (
+                        trimmedSegment.EndsWith("\"", StringComparison.OrdinalIgnoreCase)
+                        && !trimmedSegment.EndsWith("\"\"", StringComparison.OrdinalIgnoreCase)
+                        && !trimmedSegment.EndsWith("\\\"", StringComparison.OrdinalIgnoreCase))
+                    )
+                {
+                    segmentIndex = index;
+                    return trimmedSegment[1..^1];
+                }
+
+                if (index + 1 < segments.Length)
+                {
+                    trimmedSegment += "," + segments[index + 1].TrimEnd();
+                }
+            }
+
+            segmentIndex = segments.Length;
+            if (trimmedSegment.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && trimmedSegment.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
+                return trimmedSegment[1..^1];
+            }
+            else
+            {
+                return trimmedSegment;
+            }
         }
     }
 }

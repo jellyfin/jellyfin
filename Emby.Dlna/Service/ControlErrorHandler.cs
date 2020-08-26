@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Emby.Dlna.Didl;
-using Emby.Dlna.Server;
 
 namespace Emby.Dlna.Service
 {

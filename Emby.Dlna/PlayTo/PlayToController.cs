@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Ssdp;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -45,13 +46,15 @@ namespace Emby.Dlna.PlayTo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _config;
         private readonly IMediaEncoder _mediaEncoder;
+
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
         private readonly string _accessToken;
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
-        private int _currentPlaylistIndex = -1;
         private DeviceInterface _device;
+        private int _currentPlaylistIndex = -1;
+
         private bool _disposed;
 
         public PlayToController(
@@ -749,51 +752,42 @@ namespace Emby.Dlna.PlayTo
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
                     case GeneralCommandType.SetAudioStreamIndex:
+                        if (command.Arguments.TryGetValue("Index", out string index))
                         {
-                            if (command.Arguments.TryGetValue("Index", out string arg))
+                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
-                                {
-                                    return SetAudioStreamIndex(val);
-                                }
-
-                                throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                                return SetAudioStreamIndex(val);
                             }
 
-                            throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
+                            throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
                         }
 
+                        throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
                     case GeneralCommandType.SetSubtitleStreamIndex:
+                        if (command.Arguments.TryGetValue("Index", out index))
                         {
-                            if (command.Arguments.TryGetValue("Index", out string arg))
+                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
-                                {
-                                    return SetSubtitleStreamIndex(val);
-                                }
-
-                                throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                                return SetSubtitleStreamIndex(val);
                             }
 
-                            throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
+                            throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
                         }
 
+                        throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
                     case GeneralCommandType.SetVolume:
+                        if (command.Arguments.TryGetValue("Volume", out string vol))
                         {
-                            if (command.Arguments.TryGetValue("Volume", out string arg))
+                            if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var volume))
-                                {
-                                    _device.Volume = volume;
-                                    return Task.CompletedTask;
-                                }
-
-                                throw new ArgumentException("Unsupported volume value supplied.");
+                                _device.Volume = volume;
+                                return Task.CompletedTask;
                             }
 
-                            throw new ArgumentException("Volume argument cannot be null");
+                            throw new ArgumentException("Unsupported volume value supplied.");
                         }
 
+                        throw new ArgumentException("Volume argument cannot be null");
                     default:
                         return Task.CompletedTask;
                 }

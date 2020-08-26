@@ -1,4 +1,6 @@
+#pragma warning disable CS1591
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -58,6 +60,13 @@ namespace Emby.Server.Implementations.EntryPoints
             _configIdentifier = GetConfigIdentifier();
             Mono.Nat.Logging.Logger.Factory = GetLogger;
         }
+
+         /// <summary>
+        /// Gets a value indicating whether uPNP port forwarding is active.
+        /// </summary>
+        public bool IsUPnPActive => _config.Configuration.EnableUPnP &&
+            _config.Configuration.EnableRemoteAccess &&
+            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _config.Configuration.UPnPCreateHttpPortMap));
 
         /// <inheritdoc />
         public Task RunAsync()
@@ -137,7 +146,7 @@ namespace Emby.Server.Implementations.EntryPoints
             if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
             {
                 Stop();
-                if (DlnaEntryPoint.Instance.IsUPnPActive)
+                if (IsUPnPActive)
                 {
                     Start();
                 }
@@ -155,7 +164,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private void Start()
         {
-            if (!DlnaEntryPoint.Instance.IsUPnPActive)
+            if (!IsUPnPActive)
             {
                 return;
             }

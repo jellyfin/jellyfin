@@ -17,19 +17,21 @@ namespace Emby.Dlna.Ssdp
     public sealed class DeviceDiscovery : IDeviceDiscovery, IDisposable
     {
         private readonly object _syncLock = new object();
+
+        private readonly IServerConfigurationManager _config;
+
         private readonly INetworkManager _networkManager;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IServerConfigurationManager _config;
         private readonly SocketServer _socketServer;
         private SsdpPlayToLocator? _deviceLocator;
         private bool _disposed;
 
-        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, SocketServer? socketServer)
+        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, SocketServer socketServer)
         {
-            _config = config ?? throw new ArgumentNullException(nameof(config));
-            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
-            _socketServer = socketServer ?? throw new ArgumentNullException(nameof(socketServer));
+            _config = config;
+            _loggerFactory = loggerFactory;
+            _networkManager = networkManager;
+            _socketServer = socketServer;
         }
 
         /// <inheritdoc />
@@ -85,9 +87,7 @@ namespace Emby.Dlna.Ssdp
         {
             var originalHeaders = e.DiscoveredDevice.Headers;
 
-            var headerDict = originalHeaders == null
-                ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>()
-                : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
+            var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
 
             var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
 
@@ -106,9 +106,7 @@ namespace Emby.Dlna.Ssdp
         {
             var originalHeaders = e.DiscoveredDevice.Headers;
 
-            var headerDict = originalHeaders == null
-                ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>()
-                : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
+            var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
 
             var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
 

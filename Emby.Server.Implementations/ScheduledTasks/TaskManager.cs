@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
@@ -20,7 +19,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
     public class TaskManager : ITaskManager
     {
         public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
-
         public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 
         /// <summary>

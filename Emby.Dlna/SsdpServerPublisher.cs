@@ -172,10 +172,10 @@ namespace Emby.Dlna
                 _rebroadcastAliveNotificationsTimer?.Dispose();
                 _rebroadcastAliveNotificationsTimer = null;
 
-                _socketServer.RequestReceived -= RequestReceived;
-
                 var tasks = Devices.ToList().Select(RemoveDevice).ToArray();
                 Task.WaitAll(tasks);
+
+                _socketServer.RequestReceived -= RequestReceived;
             }
         }
 
@@ -274,14 +274,14 @@ namespace Emby.Dlna
                 else if (searchTarget.Trim().StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
                 {
                     devices = (from device in Flatten<SsdpDevice>(_devices)
-                                where string.Equals(device.Uuid, searchTarget.Substring(5), StringComparison.OrdinalIgnoreCase)
-                                select device).ToArray();
+                               where string.Equals(device.Uuid, searchTarget.Substring(5), StringComparison.OrdinalIgnoreCase)
+                               select device).ToArray();
                 }
                 else if (searchTarget.StartsWith("urn:", StringComparison.OrdinalIgnoreCase))
                 {
                     devices = (from device in Flatten<SsdpDevice>(_devices)
-                                where string.Equals(device.FullDeviceType, searchTarget, StringComparison.OrdinalIgnoreCase)
-                                select device).ToArray();
+                               where string.Equals(device.FullDeviceType, searchTarget, StringComparison.OrdinalIgnoreCase)
+                               select device).ToArray();
                 }
             }
 
@@ -525,7 +525,7 @@ namespace Emby.Dlna
             int end = _networkManager.IsIP6Enabled ? 2 : 0;
 
             for (int a = begin; a <= end; a++)
-             {
+            {
                 var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["HOST"] = _ssdpMulticastAddress[a],
@@ -543,7 +543,7 @@ namespace Emby.Dlna
                     _logger.LogDebug("->NOTIFY ssdp:byebye {0} : {1}", addr, _ssdpMulticastAddress[a]);
                 }
 
-                var sendCount = _disposed ? 1 : _socketServer.ResendCount;
+                var sendCount = _disposed ? 1 : _socketServer.UDPSendCount;
                 tasks[a] = _socketServer.SendMulticastMessageAsync(message, sendCount, addr);
             }
 
@@ -561,7 +561,7 @@ namespace Emby.Dlna
                 if (searchTarget.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
                 {
                     // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                    if (DlnaEntryPoint.Instance != null && DlnaEntryPoint.Instance.IsUPnPActive && !e.Simulated)
+                    if (SocketServer.Instance.IsUPnPActive && !e.Simulated)
                     {
                         // _logger.LogDebug("Passing notify message to Mono.Nat.");
                         NatUtility.ParseMessage(NatProtocol.Upnp, e.LocalIPAddress, e.Raw(), e.ReceivedFrom);

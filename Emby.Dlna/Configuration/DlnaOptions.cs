@@ -52,5 +52,10 @@ namespace Emby.Dlna.Configuration
         /// Gets or sets the default user account that the dlna server uses.
         /// </summary>
         public string? DefaultUserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of times SSDP UDP messages are sent.
+        /// </summary>
+        public int UDPSendCount { get; set; } = 2;
     }
 }

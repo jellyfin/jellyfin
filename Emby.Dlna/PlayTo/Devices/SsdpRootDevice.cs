@@ -60,9 +60,9 @@ namespace Emby.Dlna.PlayTo.Devices
         /// </summary>
         public IPObject NetAddress { get; set; }
 
-       /// <summary>
-       /// Gets the Address used to check if the received message from same interface with this device/tree.
-       /// </summary>
+        /// <summary>
+        /// Gets the Address used to check if the received message from same interface with this device/tree.
+        /// </summary>
         public IPAddress Address { get => NetAddress.Address; }
 
         /// <summary>

@@ -42,7 +42,6 @@ namespace Emby.Dlna.PlayTo
             set => _baseUrl = value;
         }
 
-        // TODO: Remove as not used.
         public DeviceIcon Icon { get; set; }
 
         public List<DeviceService> Services => _services;

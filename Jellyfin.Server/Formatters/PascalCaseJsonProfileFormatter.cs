@@ -1,5 +1,3 @@
-using System.Net.Mime;
-using System.Text;
 using MediaBrowser.Common.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;

@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.Networking
             var result = await ping.SendPingAsync(gwAddress, 2000).ConfigureAwait(false);
             return result.Status == IPStatus.Success;
         }
-        
+
         private void ConfigChanged(object sender, EventArgs args)
         {
             lock (_gwLock)

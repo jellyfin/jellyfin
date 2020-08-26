@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System.Threading.Tasks;
-using Emby.Dlna.Server;
 
 namespace Emby.Dlna
 {

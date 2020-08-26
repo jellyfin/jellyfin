@@ -1,5 +1,6 @@
 #nullable disable
 #pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
@@ -22,11 +23,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableUPnP { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
-        /// </summary>
-        public bool UPnPCreateHttpPortMap { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
         /// </summary>
         public bool EnableMetrics { get; set; }
@@ -40,6 +36,12 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether gets or sets IPV6 capability.
         /// </summary>
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
+        /// </summary>
+        public bool UPnPCreateHttpPortMap { get; set; }
+
         /// <value>If IPv6 is enabled.</value>
         public bool EnableIPV6 { get; set; }
 
@@ -63,6 +65,16 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
         /// </summary>
         public bool TrustAllIP6Interfaces { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ports that HDHomerun uses.
+        /// </summary>
+        public string HDHomerunPortRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets PublishedServerUri to advertise for specific subnets.
+        /// </summary>
+        public string[] PublishedServerUriBySubnet { get; set; }
 
         /// <summary>
         /// Gets or sets the public HTTPS port.
@@ -113,8 +125,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableRemoteAccess { get; set; }
 
-        public bool CollectionsUpgraded { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
         /// </summary>
@@ -144,19 +154,19 @@ namespace MediaBrowser.Model.Configuration
         public string MetadataCountryCode { get; set; }
 
         /// <summary>
-        /// Characters to be replaced with a ' ' in strings to create a sort name
+        /// Characters to be replaced with a ' ' in strings to create a sort name.
         /// </summary>
         /// <value>The sort replace characters.</value>
         public string[] SortReplaceCharacters { get; set; }
 
         /// <summary>
-        /// Characters to be removed from strings to create a sort name
+        /// Characters to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove characters.</value>
         public string[] SortRemoveCharacters { get; set; }
 
         /// <summary>
-        /// Words to be removed from strings to create a sort name
+        /// Words to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove words.</value>
         public string[] SortRemoveWords { get; set; }
@@ -260,13 +270,6 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] LocalNetworkAddresses { get; set; }
 
-        public string HDHomerunPortRange { get; set; }
-
-        /// <summary>
-        /// Gets or sets PublishedServerUri to advertise for specific subnets.
-        /// </summary>
-        public string[] PublishedServerUriBySubnet { get; set; }
-
         public string[] CodecsUsed { get; set; }
 
         public List<RepositoryInfo> PluginRepositories { get; set; }
@@ -312,39 +315,48 @@ namespace MediaBrowser.Model.Configuration
             GatewayMonitorPeriod = 60;
             TrustAllIP6Interfaces = false;
             EnableMultiSocketBinding = true;
-            LocalNetworkSubnets = Array.Empty<string>();
-            LocalNetworkAddresses = Array.Empty<string>();
             PublishedServerUriBySubnet = Array.Empty<string>();
             HDHomerunPortRange = string.Empty;
-            EnableUPnP = false;
             UPnPCreateHttpPortMap = false;
-            PublicPort = DefaultHttpPort;
-            PublicHttpsPort = DefaultHttpsPort;
-            HttpServerPortNumber = DefaultHttpPort;
-            HttpsPortNumber = DefaultHttpsPort;
-            EnableHttps = false;
-            EnableRemoteAccess = true;
-
             UninstalledPlugins = Array.Empty<string>();
             RemoteIPFilter = Array.Empty<string>();
+            LocalNetworkSubnets = Array.Empty<string>();
+            LocalNetworkAddresses = Array.Empty<string>();
             CodecsUsed = Array.Empty<string>();
             PathSubstitutions = Array.Empty<PathSubstitution>();
             EnableSimpleArtistDetection = false;
             SkipDeserializationForBasicTypes = true;
+
             PluginRepositories = new List<RepositoryInfo>();
+
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
+
             ImageSavingConvention = ImageSavingConvention.Compatible;
+            PublicPort = DefaultHttpPort;
+            PublicHttpsPort = DefaultHttpsPort;
+            HttpServerPortNumber = DefaultHttpPort;
+            HttpsPortNumber = DefaultHttpsPort;
             EnableMetrics = false;
+            EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
+            EnableNormalizedItemByNameIds = true;
+            DisableLiveTvChannelUserDataName = true;
+            EnableNewOmdbSupport = true;
+
             AutoRunWebApp = true;
+            EnableRemoteAccess = true;
+
+            EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
 
             // 5 minutes
             MinResumeDurationSeconds = 300;
+
             LibraryMonitorDelay = 60;
+
             ContentTypes = Array.Empty<NameValuePair>();
 
             PreferredMetadataLanguage = "en";
