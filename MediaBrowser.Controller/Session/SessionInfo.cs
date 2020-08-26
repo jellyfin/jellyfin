@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Session
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
 
-
+        private readonly object _controllerLock = new object();
         private readonly object _progressLock = new object();
         private Timer _progressTimer;
         private PlaybackProgressInfo _lastProgressInfo;
@@ -155,18 +155,21 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                var controllers = SessionControllers;
-                foreach (var controller in controllers)
+                lock (_controllerLock)
                 {
-                    if (controller.IsSessionActive)
+                    var controllers = SessionControllers;
+                    foreach (var controller in controllers)
                     {
-                        return true;
+                        if (controller.IsSessionActive)
+                        {
+                            return true;
+                        }
                     }
-                }
 
-                if (controllers.Length > 0)
-                {
-                    return false;
+                    if (controllers.Length > 0)
+                    {
+                        return false;
+                    }
                 }
 
                 return true;
@@ -182,12 +185,15 @@ namespace MediaBrowser.Controller.Session
                     return false;
                 }
 
-                var controllers = SessionControllers;
-                foreach (var controller in controllers)
+                lock (_controllerLock)
                 {
-                    if (controller.SupportsMediaControl)
+                    var controllers = SessionControllers;
+                    foreach (var controller in controllers)
                     {
-                        return true;
+                        if (controller.SupportsMediaControl)
+                        {
+                            return true;
+                        }
                     }
                 }
 
@@ -204,12 +210,15 @@ namespace MediaBrowser.Controller.Session
                     return false;
                 }
 
-                var controllers = SessionControllers;
-                foreach (var controller in controllers)
+                lock (_controllerLock)
                 {
-                    if (controller.SupportsMediaControl)
+                    var controllers = SessionControllers;
+                    foreach (var controller in controllers)
                     {
-                        return true;
+                        if (controller.SupportsMediaControl)
+                        {
+                            return true;
+                        }
                     }
                 }
 
@@ -236,28 +245,35 @@ namespace MediaBrowser.Controller.Session
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {
-            var controllers = SessionControllers.ToList();
-            foreach (var controller in controllers)
+            lock (_controllerLock)
             {
-                if (controller is T)
+                var controllers = SessionControllers.ToList();
+                foreach (var controller in controllers)
                 {
-                    return new Tuple<ISessionController, bool>(controller, false);
+                    if (controller is T)
+                    {
+                        return new Tuple<ISessionController, bool>(controller, false);
+                    }
                 }
+
+                var newController = factory(this);
+                _logger.LogDebug("Creating new {0}", newController.GetType().Name);
+                controllers.Add(newController);
+
+                SessionControllers = controllers.ToArray();
+
+                return new Tuple<ISessionController, bool>(newController, true);
             }
-
-            var newController = factory(this);
-            _logger.LogDebug("Creating new {0}", newController.GetType().Name);
-            controllers.Add(newController);
-
-            SessionControllers = controllers.ToArray();
-            return new Tuple<ISessionController, bool>(newController, true);
         }
 
         public void AddController(ISessionController controller)
         {
-            var controllers = SessionControllers.ToList();
-            controllers.Add(controller);
-            SessionControllers = controllers.ToArray();
+            lock (_controllerLock)
+            {
+                var controllers = SessionControllers.ToList();
+                controllers.Add(controller);
+                SessionControllers = controllers.ToArray();
+            }
         }
 
         public bool ContainsUser(Guid userId)
@@ -360,6 +376,28 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
+        /// <summary>
+        /// Stops and diposes of controllers of type T.
+        /// </summary>
+        /// <typeparam name="T">Type of controller to dispose.</typeparam>
+        public void StopController<T>()
+        {
+            lock (_controllerLock)
+            {
+                var controllers = SessionControllers.ToList();
+
+                foreach (var controller in controllers.OfType<T>())
+                {
+                    _logger.LogDebug("Disposing session controller.");
+                    ((IDisposable)controller).Dispose();
+                }
+
+                controllers.RemoveAll(c => c is T);
+
+                SessionControllers = controllers.ToArray();
+            }
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -367,15 +405,18 @@ namespace MediaBrowser.Controller.Session
 
             StopAutomaticProgress();
 
-            var controllers = SessionControllers.ToList();
-            SessionControllers = Array.Empty<ISessionController>();
-
-            foreach (var controller in controllers)
+            lock (_controllerLock)
             {
-                if (controller is IDisposable disposable)
+                var controllers = SessionControllers.ToList();
+                SessionControllers = Array.Empty<ISessionController>();
+
+                foreach (var controller in controllers)
                 {
-                    _logger.LogDebug("Disposing session controller {0}", disposable.GetType().Name);
-                    disposable.Dispose();
+                    if (controller is IDisposable disposable)
+                    {
+                        _logger.LogDebug("Disposing session controller {0}", disposable.GetType().Name);
+                        disposable.Dispose();
+                    }
                 }
             }
         }

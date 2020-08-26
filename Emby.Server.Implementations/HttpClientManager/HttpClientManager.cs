@@ -320,14 +320,16 @@ namespace Emby.Server.Implementations.HttpClientManager
                 return;
             }
 
+            string msg = string.Empty;
             if (options.LogErrorResponseBody)
             {
-                string msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 _logger.LogError("HTTP request failed with message: {Message}", msg);
             }
 
             throw new HttpException(response.ReasonPhrase)
             {
+                ResponseText = msg,
                 StatusCode = response.StatusCode
             };
         }

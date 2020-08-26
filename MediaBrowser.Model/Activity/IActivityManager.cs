@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Activity

@@ -1,6 +1,6 @@
 #nullable disable
 using System;
-using Jellyfin.Data.Events;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Model.Tasks
 {

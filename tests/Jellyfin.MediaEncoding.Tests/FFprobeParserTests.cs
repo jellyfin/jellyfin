@@ -1,7 +1,6 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
 using MediaBrowser.MediaEncoding.Probing;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace Jellyfin.MediaEncoding.Tests
             var path = Path.Join("Test Data", fileName);
             using (var stream = File.OpenRead(path))
             {
-                await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+                await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(stream).ConfigureAwait(false);
             }
         }
     }

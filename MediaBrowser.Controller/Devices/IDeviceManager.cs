@@ -2,8 +2,8 @@
 
 using System;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 

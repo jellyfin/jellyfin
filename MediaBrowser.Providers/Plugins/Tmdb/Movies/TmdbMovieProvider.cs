@@ -382,7 +382,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// </summary>
         internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message)
         {
-            message.Headers.UserAgent.ParseAdd(_appHost.ApplicationUserAgent);
+            message.Headers.UserAgent.Add(new ProductInfoHeaderValue(_appHost.ApplicationUserAgent));
             return _httpClientFactory.CreateClient().SendAsync(message);
         }
 

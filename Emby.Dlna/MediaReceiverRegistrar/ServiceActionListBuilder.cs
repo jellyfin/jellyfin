@@ -5,9 +5,9 @@ using Emby.Dlna.Common;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
-    public class ServiceActionListBuilder
+    public static class ServiceActionListBuilder
     {
-        public IEnumerable<ServiceAction> GetActions()
+        public static IEnumerable<ServiceAction> GetActions()
         {
             return new[]
             {
@@ -103,7 +103,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
-        private ServiceAction GetGetAuthorizationDeniedUpdateID()
+        private static ServiceAction GetGetAuthorizationDeniedUpdateID()
         {
             var action = new ServiceAction
             {
@@ -119,7 +119,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
-        private ServiceAction GetGetValidationRevokedUpdateID()
+        private static ServiceAction GetGetValidationRevokedUpdateID()
         {
             var action = new ServiceAction
             {
@@ -135,7 +135,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
-        private ServiceAction GetGetAuthorizationGrantedUpdateID()
+        private static ServiceAction GetGetAuthorizationGrantedUpdateID()
         {
             var action = new ServiceAction
             {

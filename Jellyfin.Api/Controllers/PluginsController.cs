@@ -120,14 +120,10 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var configuration = (BasePluginConfiguration?)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType, _serializerOptions)
+            var configuration = (BasePluginConfiguration)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType, _serializerOptions)
                 .ConfigureAwait(false);
 
-            if (configuration != null)
-            {
-                plugin.UpdateConfiguration(configuration);
-            }
-
+            plugin.UpdateConfiguration(configuration);
             return NoContent();
         }
 

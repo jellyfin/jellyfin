@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Mime;
+using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
@@ -45,7 +46,13 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string RawUrl => Request.GetEncodedPathAndQuery();
 
-        public string AbsoluteUri => Request.GetDisplayUrl().TrimEnd('/');
+        public string AbsoluteUri
+        {
+            get
+            {
+                return Request.GetDisplayUrl().TrimEnd('/');
+            }
+        }
 
         public string RemoteIp
         {
@@ -56,18 +63,17 @@ namespace Emby.Server.Implementations.SocketSharp
                     return _remoteIp;
                 }
 
-                IPAddress ip;
 
                 // "Real" remote ip might be in X-Forwarded-For of X-Real-Ip
                 // (if the server is behind a reverse proxy for example)
-                if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XForwardedFor), out ip))
+                if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XForwardedFor), out var ip))
                 {
                     if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XRealIP), out ip))
                     {
                         ip = Request.HttpContext.Connection.RemoteIpAddress;
 
                         // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
-                        ip ??= IPAddress.Loopback;
+                        ip ??= NetworkManager.Instance.IsIP6Enabled ? IPAddress.IPv6Loopback : IPAddress.Loopback;
                     }
                 }
 
@@ -77,13 +83,11 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string[] AcceptTypes => Request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
 
-        public Dictionary<string, object> Items => _items ?? (_items = new Dictionary<string, object>());
+        public Dictionary<string, object> Items => _items ??= new Dictionary<string, object>();
 
         public string ResponseContentType
         {
-            get =>
-                _responseContentType
-                ?? (_responseContentType = GetResponseContentType(Request));
+            get => _responseContentType ??= GetResponseContentType(Request);
             set => _responseContentType = value;
         }
 

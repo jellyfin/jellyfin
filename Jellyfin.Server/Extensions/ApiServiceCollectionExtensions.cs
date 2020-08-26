@@ -145,7 +145,7 @@ namespace Jellyfin.Server.Extensions
                 })
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
-                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
                 })
                 .AddMvc(opts =>
                 {
@@ -155,6 +155,8 @@ namespace Jellyfin.Server.Extensions
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
+
+                    opts.InputFormatters.Add(new XmlInputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
@@ -168,8 +170,7 @@ namespace Jellyfin.Server.Extensions
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
-                    options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
-                    options.JsonSerializerOptions.NumberHandling = jsonOptions.NumberHandling;
+                    options.JsonSerializerOptions.IgnoreNullValues = jsonOptions.IgnoreNullValues;
 
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)

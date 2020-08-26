@@ -74,12 +74,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 foreach (var entry in queryResult)
                 {
-                    UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.GetOptions());
-                    if (mockup == null)
-                    {
-                        continue;
-                    }
-
+                    UserMockup mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.GetOptions());
                     var userDataDir = Path.Combine(_paths.UserConfigurationDirectoryPath, mockup.Name);
 
                     var config = File.Exists(Path.Combine(userDataDir, "config.xml"))

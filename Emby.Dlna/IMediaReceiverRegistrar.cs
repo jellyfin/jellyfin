@@ -2,7 +2,7 @@
 
 namespace Emby.Dlna
 {
-    public interface IMediaReceiverRegistrar : IDlnaEventManager, IUpnpService
+    public interface IMediaReceiverRegistrar : IEventManager, IUpnpService
     {
     }
 }

@@ -28,7 +28,7 @@ namespace Emby.Dlna.ConnectionManager
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new ConnectionManagerXmlBuilder().GetXml();
+            return ConnectionManagerXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />

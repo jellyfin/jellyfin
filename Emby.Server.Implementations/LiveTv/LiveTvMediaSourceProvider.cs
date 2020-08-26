@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
@@ -76,7 +77,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             var list = sources.ToList();
-            var serverUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var serverUrl = _appHost.GetSmartApiUrl(string.Empty);
 
             foreach (var source in list)
             {

@@ -12,13 +12,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.SocketSharp;
-using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
@@ -289,42 +290,41 @@ namespace Emby.Server.Implementations.HttpServer
             return url;
         }
 
-        private static string NormalizeConfiguredLocalAddress(string address)
-        {
-            var add = address.AsSpan().Trim('/');
-            int index = add.IndexOf('/');
-            if (index != -1)
-            {
-                add = add.Slice(index + 1);
-            }
-
-            return add.TrimStart('/').ToString();
-        }
-
+        /// <summary>
+        /// Validate that if the host is an internal address, it is in the defined LAN addresses.
+        /// </summary>
+        /// <param name="host">Hostname to check.</param>
+        /// <returns>Returns true if host is a private address and is part of the defined LAN network.</returns>
         private bool ValidateHost(string host)
         {
-            var hosts = _config
-                .Configuration
-                .LocalNetworkAddresses
-                .Select(NormalizeConfiguredLocalAddress)
-                .ToList();
-
-            if (hosts.Count == 0)
+            NetCollection nc = _networkManager.GetFilteredLANSubnets();
+            if (nc.Count == 0)
             {
-                return true;
+                return true; // All Local LAN addresses are valid.
             }
 
-            host ??= string.Empty;
-
-            if (_networkManager.IsInPrivateAddressSpace(host))
+            if (IPHost.TryParse(host, out IPHost h))
             {
-                hosts.Add("localhost");
-                hosts.Add("127.0.0.1");
+                if (!h.HasAddress)
+                {
+                    // TODO: If we don't agree with the below. Remove this "If statement".
+                    // Host is not an IP address.
+                    // Can we make Assumption is that host names are not local.
+                    // Could attempt resolve, but do we want to do this on each request?
+                    return true;
+                }
 
-                return hosts.Any(i => host.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1);
+                // Only check private address ranges.
+                if (!_networkManager.IsInLocalNetwork(h))
+                {
+                    return true;
+                }
+
+                // Check to see if our host string is part of the internal network.
+                return nc.Contains(h);
             }
 
-            return true;
+            return true; // Not Local LAN.
         }
 
         private bool ValidateRequest(string remoteIp, bool isLocal)
@@ -334,28 +334,36 @@ namespace Emby.Server.Implementations.HttpServer
                 return true;
             }
 
-            if (_config.Configuration.EnableRemoteAccess)
+            if (IPNetAddress.TryParse(remoteIp, out IPNetAddress remoteIPObj))
             {
-                var addressFilter = _config.Configuration.RemoteIPFilter.Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-
-                if (addressFilter.Length > 0 && !_networkManager.IsInLocalNetwork(remoteIp))
+                if (_config.Configuration.EnableRemoteAccess)
                 {
-                    if (_config.Configuration.IsRemoteIPFilterBlacklist)
+                    // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                    // If left blank, all remote addresses will be allowed.
+                    NetCollection remoteAddressFilter = _networkManager.RemoteAddressFilter;
+
+                    if (remoteAddressFilter.Count > 0 && !_networkManager.IsInLocalNetwork(remoteIPObj))
                     {
-                        return !_networkManager.IsAddressInSubnets(remoteIp, addressFilter);
+                         // remoteAddressFilter is a whitelist or blacklist.
+                         if (_config.Configuration.IsRemoteIPFilterBlacklist)
+                         {
+                            return !remoteAddressFilter.Contains(remoteIPObj);
+                         }
+                         else
+                         {
+                            return remoteAddressFilter.Contains(remoteIPObj);
+                         }
                     }
-                    else
-                    {
-                        return _networkManager.IsAddressInSubnets(remoteIp, addressFilter);
-                    }
+                }
+                else
+                {
+                    return _networkManager.IsInLocalNetwork(remoteIPObj);
                 }
             }
             else
             {
-                if (!_networkManager.IsInLocalNetwork(remoteIp))
-                {
-                    return false;
-                }
+                _logger.LogError("ValidateRequest: Unable to parse remoteIp: {0}", remoteIp);
+                return false;
             }
 
             return true;
@@ -563,6 +571,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             try
             {
+                if (_networkManager.IsExcludedInterface(context.Connection.RemoteIpAddress))
+                {
+                    _logger.LogInformation("Filtering WS {IP} request. Arrived on an excluded interface.", context.Connection.RemoteIpAddress);
+                    context.Response.StatusCode = 401;
+                    return;
+                }
+
                 _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);
 
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);

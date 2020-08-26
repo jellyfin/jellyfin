@@ -8,9 +8,8 @@
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Model</PackageId>
-    <VersionPrefix>10.7.0</VersionPrefix>
+    <PackageLicenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,7 +25,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.6" />
     <PackageReference Include="System.Globalization" Version="4.3.0" />
-    <PackageReference Include="System.Text.Json" Version="5.0.0-preview.8.20407.11" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +39,7 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Jellyfin.Data\Jellyfin.Data.csproj" />
   </ItemGroup>

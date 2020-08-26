@@ -62,7 +62,7 @@ namespace Emby.Dlna.ContentDirectory
             _tvSeriesManager = tvSeriesManager;
         }
 
-        private int SystemUpdateId
+        private static int SystemUpdateId
         {
             get
             {
@@ -75,7 +75,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new ContentDirectoryXmlBuilder().GetXml();
+            return ContentDirectoryXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />

@@ -1,13 +1,16 @@
 #pragma warning disable CS1591
-
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Jellyfin.Data.Events;
+using Emby.Dlna.Net;
+using Emby.Dlna.PlayTo;
+using Emby.Dlna.PlayTo.EventArgs;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
-using Rssdp;
-using Rssdp.Infrastructure;
+using MediaBrowser.Model.Events;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Ssdp
 {
@@ -17,83 +20,72 @@ namespace Emby.Dlna.Ssdp
 
         private readonly IServerConfigurationManager _config;
 
-        private SsdpDeviceLocator _deviceLocator;
-        private ISsdpCommunicationsServer _commsServer;
-
-        private int _listenerCount;
+        private readonly INetworkManager _networkManager;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly SocketServer _socketServer;
+        private SsdpPlayToLocator? _deviceLocator;
         private bool _disposed;
 
-        public DeviceDiscovery(IServerConfigurationManager config)
+        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, SocketServer socketServer)
         {
             _config = config;
-        }
-
-        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
-
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
-        {
-            add
-            {
-                lock (_syncLock)
-                {
-                    _listenerCount++;
-                    DeviceDiscoveredInternal += value;
-                }
-
-                StartInternal();
-            }
-
-            remove
-            {
-                lock (_syncLock)
-                {
-                    _listenerCount--;
-                    DeviceDiscoveredInternal -= value;
-                }
-            }
+            _loggerFactory = loggerFactory;
+            _networkManager = networkManager;
+            _socketServer = socketServer;
         }
 
         /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscovered;
 
-        // Call this method from somewhere in your code to start the search.
-        public void Start(ISsdpCommunicationsServer communicationsServer)
-        {
-            _commsServer = communicationsServer;
+        /// <inheritdoc />
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
 
-            StartInternal();
-        }
-
-        private void StartInternal()
+        /// <summary>
+        /// Starts a device scan.
+        /// </summary>
+        public void Start()
         {
             lock (_syncLock)
             {
-                if (_listenerCount > 0 && _deviceLocator == null)
+                if (_deviceLocator == null)
                 {
-                    _deviceLocator = new SsdpDeviceLocator(_commsServer);
-
-                    // (Optional) Set the filter so we only see notifications for devices we care about
-                    // (can be any search target value i.e device type, uuid value etc - any value that appears in the
-                    // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
-                    // _DeviceLocator.NotificationFilter = "upnp:rootdevice";
-
-                    // Connect our event handler so we process devices as they are found
-                    _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
-                    _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
-
-                    var dueTime = TimeSpan.FromSeconds(5);
                     var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
 
-                    _deviceLocator.RestartBroadcastTimer(dueTime, interval);
+                    _deviceLocator = new SsdpPlayToLocator(_socketServer, _loggerFactory.CreateLogger<SsdpPlayToLocator>(), _networkManager);
+                    _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
+                    _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
+                    _deviceLocator.Start(TimeSpan.FromSeconds(5), interval);
                 }
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (_deviceLocator != null)
+            {
+                _deviceLocator.DeviceAvailable -= OnDeviceLocatorDeviceAvailable;
+                _deviceLocator.DeviceUnavailable -= OnDeviceLocatorDeviceUnavailable;
+            }
+
+            // If we still have delegates, then don't dispose as we're still in use.
+            if (DeviceDiscovered != null && DeviceDiscovered.GetInvocationList().Length != 0)
+            {
+                return;
+            }
+
+            if (!_disposed)
+            {
+                _disposed = true;
+                _deviceLocator?.Dispose();
+                _deviceLocator = null;
             }
         }
 
         // Process each found device in the event handler
         private void OnDeviceLocatorDeviceAvailable(object sender, DeviceAvailableEventArgs e)
         {
-            var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
+            var originalHeaders = e.DiscoveredDevice.Headers;
 
             var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
 
@@ -107,12 +99,12 @@ namespace Emby.Dlna.Ssdp
                     LocalIpAddress = e.LocalIpAddress
                 });
 
-            DeviceDiscoveredInternal?.Invoke(this, args);
+            DeviceDiscovered?.Invoke(this, args);
         }
 
         private void OnDeviceLocatorDeviceUnavailable(object sender, DeviceUnavailableEventArgs e)
         {
-            var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
+            var originalHeaders = e.DiscoveredDevice.Headers;
 
             var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
 
@@ -126,20 +118,6 @@ namespace Emby.Dlna.Ssdp
                 });
 
             DeviceLeft?.Invoke(this, args);
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
-                if (_deviceLocator != null)
-                {
-                    _deviceLocator.Dispose();
-                    _deviceLocator = null;
-                }
-            }
         }
     }
 }
