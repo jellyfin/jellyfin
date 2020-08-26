@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
@@ -54,6 +55,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
+        // MediaEncoder is registered as a Singleton
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
+
         private List<string> _encoders = new List<string>();
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
@@ -75,6 +79,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _localization = localization;
             _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
+            _jsonSerializerOptions = JsonDefaults.GetOptions();
         }
 
         private EncodingHelper EncodingHelper => _encodingHelperFactory.Value;
@@ -414,6 +419,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     result = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(
                                         process.StandardOutput.BaseStream,
+                                        _jsonSerializerOptions,
                                         cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch

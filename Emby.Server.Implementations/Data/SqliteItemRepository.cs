@@ -100,9 +100,6 @@ namespace Emby.Server.Implementations.Data
             _typeMapper = new TypeMapper();
             _jsonOptions = JsonDefaults.GetOptions();
 
-            // GetItem throws NotSupportedException with this enabled, so hardcode false.
-            _jsonOptions.IgnoreNullValues = false;
-
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
 

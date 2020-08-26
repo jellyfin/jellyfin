@@ -25,17 +25,12 @@ namespace MediaBrowser.Common.Json
             {
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 WriteIndented = false,
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
             };
 
             options.Converters.Add(new JsonGuidConverter());
-            options.Converters.Add(new JsonInt32Converter());
-            options.Converters.Add(new JsonNullableInt32Converter());
             options.Converters.Add(new JsonStringEnumConverter());
-            options.Converters.Add(new JsonNonStringKeyDictionaryConverterFactory());
-            options.Converters.Add(new JsonInt64Converter());
-            options.Converters.Add(new JsonNullableInt64Converter());
-            options.Converters.Add(new JsonDoubleConverter());
 
             return options;
         }

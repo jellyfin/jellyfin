@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Eventing
 {
-    public class EventManager : IEventManager
+    public class DlnaEventManager : IDlnaEventManager
     {
         private readonly ConcurrentDictionary<string, EventSubscription> _subscriptions =
             new ConcurrentDictionary<string, EventSubscription>(StringComparer.OrdinalIgnoreCase);
@@ -24,7 +24,7 @@ namespace Emby.Dlna.Eventing
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public EventManager(ILogger logger, IHttpClient httpClient)
+        public DlnaEventManager(ILogger logger, IHttpClient httpClient)
         {
             _httpClient = httpClient;
             _logger = logger;

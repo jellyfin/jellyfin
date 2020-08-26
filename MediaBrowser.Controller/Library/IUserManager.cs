@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Library
@@ -20,26 +20,6 @@ namespace MediaBrowser.Controller.Library
         /// Occurs when a user is updated.
         /// </summary>
         event EventHandler<GenericEventArgs<User>> OnUserUpdated;
-
-        /// <summary>
-        /// Occurs when a user is created.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserCreated;
-
-        /// <summary>
-        /// Occurs when a user is deleted.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserDeleted;
-
-        /// <summary>
-        /// Occurs when a user's password is changed.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserPasswordChanged;
-
-        /// <summary>
-        /// Occurs when a user is locked out.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
 
         /// <summary>
         /// Gets the users.
