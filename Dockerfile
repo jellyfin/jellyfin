@@ -16,7 +16,7 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 # see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
 RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
