@@ -8,7 +8,7 @@
 
 Name:           jellyfin
 Version:        10.6.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
 URL:            https://jellyfin.org
@@ -73,6 +73,9 @@ EOF
 %{__install} -D -m 0600 %{SOURCE13} %{buildroot}%{_sysconfdir}/sudoers.d/jellyfin-sudoers
 %{__install} -D -m 0755 %{SOURCE14} %{buildroot}%{_libexecdir}/jellyfin/restart.sh
 %{__install} -D -m 0644 %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
+
+%files
+# empty as this is just a meta-package
 
 %files server
 %attr(755,root,root) %{_bindir}/jellyfin
