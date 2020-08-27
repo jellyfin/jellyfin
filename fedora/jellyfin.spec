@@ -8,7 +8,7 @@
 
 Name:           jellyfin
 Version:        10.6.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
 URL:            https://jellyfin.org
