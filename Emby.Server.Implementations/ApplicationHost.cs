@@ -157,11 +157,6 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Occurs when [has pending restart changed].
-        /// </summary>
-        public event EventHandler HasPendingRestartChanged;
-
-        /// <summary>
         /// Gets a value indicating whether this instance has changes that require the entire application to restart.
         /// </summary>
         /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
@@ -977,7 +972,7 @@ namespace Emby.Server.Implementations
 
             if (changed)
             {
-                EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
+                _eventManager.Publish(new PendingRestartEventArgs());
             }
         }
 

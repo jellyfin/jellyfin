@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
 {
@@ -11,11 +10,6 @@ namespace MediaBrowser.Common
     /// </summary>
     public interface IApplicationHost
     {
-        /// <summary>
-        /// Occurs when [has pending restart changed].
-        /// </summary>
-        event EventHandler HasPendingRestartChanged;
-
         /// <summary>
         /// Gets the name.
         /// </summary>

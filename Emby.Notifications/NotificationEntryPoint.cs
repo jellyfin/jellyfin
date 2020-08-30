@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
@@ -30,7 +29,6 @@ namespace Emby.Notifications
         private readonly ILocalizationManager _localization;
         private readonly INotificationManager _notificationManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IServerApplicationHost _appHost;
         private readonly IConfigurationManager _config;
 
         private readonly object _libraryChangedSyncLock = new object();
@@ -50,7 +48,6 @@ namespace Emby.Notifications
         /// <param name="localization">The localization manager.</param>
         /// <param name="notificationManager">The notification manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
         public NotificationEntryPoint(
             ILogger<NotificationEntryPoint> logger,
@@ -58,7 +55,6 @@ namespace Emby.Notifications
             ILocalizationManager localization,
             INotificationManager notificationManager,
             ILibraryManager libraryManager,
-            IServerApplicationHost appHost,
             IConfigurationManager config)
         {
             _logger = logger;
@@ -66,7 +62,6 @@ namespace Emby.Notifications
             _localization = localization;
             _notificationManager = notificationManager;
             _libraryManager = libraryManager;
-            _appHost = appHost;
             _config = config;
 
             _coreNotificationTypes = new CoreNotificationTypes(localization).GetNotificationTypes().Select(i => i.Type).ToArray();
@@ -76,26 +71,9 @@ namespace Emby.Notifications
         public Task RunAsync()
         {
             _libraryManager.ItemAdded += OnLibraryManagerItemAdded;
-            _appHost.HasPendingRestartChanged += OnAppHostHasPendingRestartChanged;
             _activityManager.EntryCreated += OnActivityManagerEntryCreated;
 
             return Task.CompletedTask;
-        }
-
-        private async void OnAppHostHasPendingRestartChanged(object sender, EventArgs e)
-        {
-            var type = NotificationType.ServerRestartRequired.ToString();
-
-            var notification = new NotificationRequest
-            {
-                NotificationType = type,
-                Name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("ServerNameNeedsToBeRestarted"),
-                    _appHost.Name)
-            };
-
-            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         private async void OnActivityManagerEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
@@ -301,7 +279,6 @@ namespace Emby.Notifications
             _libraryUpdateTimer = null;
 
             _libraryManager.ItemAdded -= OnLibraryManagerItemAdded;
-            _appHost.HasPendingRestartChanged -= OnAppHostHasPendingRestartChanged;
             _activityManager.EntryCreated -= OnActivityManagerEntryCreated;
 
             _disposed = true;

@@ -46,6 +46,7 @@ namespace Jellyfin.Server.Implementations.Events
 
             // System consumers
             collection.AddScoped<IEventConsumer<PendingRestartEventArgs>, PendingRestartNotifier>();
+            collection.AddScoped<IEventConsumer<PendingRestartEventArgs>, PendingRestartNotifier2>();
             collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedLogger>();
             collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedNotifier>();
             collection.AddScoped<IEventConsumer<UpdateAvailableEventArgs>, UpdateAvailableNotifier>();
