@@ -12,6 +12,7 @@ using Emby.Naming.Audio;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Naming.Video;
+using Emby.Server.Implementations.Events.ConsumerArgs;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
@@ -26,6 +27,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -75,6 +77,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
         private readonly IImageProcessor _imageProcessor;
+        private readonly IEventManager _eventManager;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -112,6 +115,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="memoryCache">The memory cache.</param>
+        /// <param name="eventManager">The event manager.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILogger<LibraryManager> logger,
@@ -126,7 +130,8 @@ namespace Emby.Server.Implementations.Library
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IEventManager eventManager)
         {
             _appHost = appHost;
             _logger = logger;
@@ -142,6 +147,7 @@ namespace Emby.Server.Implementations.Library
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
             _memoryCache = memoryCache;
+            _eventManager = eventManager;
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
@@ -1817,30 +1823,21 @@ namespace Emby.Server.Implementations.Library
                 RegisterItem(item);
             }
 
-            if (ItemAdded != null)
+            foreach (var item in itemsList)
             {
-                foreach (var item in itemsList)
+                // With the live tv guide this just creates too much noise
+                if (item.SourceType != SourceType.Library)
                 {
-                    // With the live tv guide this just creates too much noise
-                    if (item.SourceType != SourceType.Library)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    try
-                    {
-                        ItemAdded(
-                            this,
-                            new ItemChangeEventArgs
-                            {
-                                Item = item,
-                                Parent = parent ?? item.GetParent()
-                            });
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error in ItemAdded event handler");
-                    }
+                try
+                {
+                    _eventManager.Publish(new BaseItemAddedEventArgs(item));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error in ItemAdded event handler");
                 }
             }
         }

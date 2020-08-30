@@ -26,15 +26,9 @@ namespace Emby.Notifications
     {
         private readonly ILogger<NotificationEntryPoint> _logger;
         private readonly IActivityManager _activityManager;
-        private readonly ILocalizationManager _localization;
         private readonly INotificationManager _notificationManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IConfigurationManager _config;
-
-        private readonly object _libraryChangedSyncLock = new object();
-        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
-
-        private Timer? _libraryUpdateTimer;
 
         private string[] _coreNotificationTypes;
 
@@ -59,7 +53,6 @@ namespace Emby.Notifications
         {
             _logger = logger;
             _activityManager = activityManager;
-            _localization = localization;
             _notificationManager = notificationManager;
             _libraryManager = libraryManager;
             _config = config;
@@ -70,7 +63,6 @@ namespace Emby.Notifications
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _libraryManager.ItemAdded += OnLibraryManagerItemAdded;
             _activityManager.EntryCreated += OnActivityManagerEntryCreated;
 
             return Task.CompletedTask;
@@ -109,138 +101,6 @@ namespace Emby.Notifications
             return _config.GetConfiguration<NotificationOptions>("notifications");
         }
 
-        private void OnLibraryManagerItemAdded(object sender, ItemChangeEventArgs e)
-        {
-            if (!FilterItem(e.Item))
-            {
-                return;
-            }
-
-            lock (_libraryChangedSyncLock)
-            {
-                if (_libraryUpdateTimer == null)
-                {
-                    _libraryUpdateTimer = new Timer(
-                        LibraryUpdateTimerCallback,
-                        null,
-                        5000,
-                        Timeout.Infinite);
-                }
-                else
-                {
-                    _libraryUpdateTimer.Change(5000, Timeout.Infinite);
-                }
-
-                _itemsAdded.Add(e.Item);
-            }
-        }
-
-        private bool FilterItem(BaseItem item)
-        {
-            if (item.IsFolder)
-            {
-                return false;
-            }
-
-            if (!item.HasPathProtocol)
-            {
-                return false;
-            }
-
-            if (item is IItemByName)
-            {
-                return false;
-            }
-
-            return item.SourceType == SourceType.Library;
-        }
-
-        private async void LibraryUpdateTimerCallback(object state)
-        {
-            List<BaseItem> items;
-
-            lock (_libraryChangedSyncLock)
-            {
-                items = _itemsAdded.ToList();
-                _itemsAdded.Clear();
-                _libraryUpdateTimer!.Dispose(); // Shouldn't be null as it just set off this callback
-                _libraryUpdateTimer = null;
-            }
-
-            items = items.Take(10).ToList();
-
-            foreach (var item in items)
-            {
-                var notification = new NotificationRequest
-                {
-                    NotificationType = NotificationType.NewLibraryContent.ToString(),
-                    Name = string.Format(
-                        CultureInfo.InvariantCulture,
-                        _localization.GetLocalizedString("ValueHasBeenAddedToLibrary"),
-                        GetItemName(item)),
-                    Description = item.Overview
-                };
-
-                await SendNotification(notification, item).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// Creates a human readable name for the item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>A human readable name for the item.</returns>
-        public static string GetItemName(BaseItem item)
-        {
-            var name = item.Name;
-            if (item is Episode episode)
-            {
-                if (episode.IndexNumber.HasValue)
-                {
-                    name = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Ep{0} - {1}",
-                        episode.IndexNumber.Value,
-                        name);
-                }
-
-                if (episode.ParentIndexNumber.HasValue)
-                {
-                    name = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "S{0}, {1}",
-                        episode.ParentIndexNumber.Value,
-                        name);
-                }
-            }
-
-            if (item is IHasSeries hasSeries)
-            {
-                name = hasSeries.SeriesName + " - " + name;
-            }
-
-            if (item is IHasAlbumArtist hasAlbumArtist)
-            {
-                var artists = hasAlbumArtist.AlbumArtists;
-
-                if (artists.Count > 0)
-                {
-                    name = artists[0] + " - " + name;
-                }
-            }
-            else if (item is IHasArtist hasArtist)
-            {
-                var artists = hasArtist.Artists;
-
-                if (artists.Count > 0)
-                {
-                    name = artists[0] + " - " + name;
-                }
-            }
-
-            return name;
-        }
-
         private async Task SendNotification(NotificationRequest notification, BaseItem? relatedItem)
         {
             try
@@ -273,15 +133,9 @@ namespace Emby.Notifications
 
             if (disposing)
             {
-                _libraryUpdateTimer?.Dispose();
+                _activityManager.EntryCreated -= OnActivityManagerEntryCreated;
+                _disposed = true;
             }
-
-            _libraryUpdateTimer = null;
-
-            _libraryManager.ItemAdded -= OnLibraryManagerItemAdded;
-            _activityManager.EntryCreated -= OnActivityManagerEntryCreated;
-
-            _disposed = true;
         }
     }
 }

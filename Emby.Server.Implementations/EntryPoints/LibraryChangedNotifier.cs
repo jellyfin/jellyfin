@@ -67,7 +67,6 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public Task RunAsync()
         {
-            _libraryManager.ItemAdded += OnLibraryItemAdded;
             _libraryManager.ItemUpdated += OnLibraryItemUpdated;
             _libraryManager.ItemRemoved += OnLibraryItemRemoved;
 
@@ -169,42 +168,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Handles the ItemAdded event of the libraryManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        private void OnLibraryItemAdded(object sender, ItemChangeEventArgs e)
-        {
-            if (!FilterItem(e.Item))
-            {
-                return;
-            }
-
-            lock (_libraryChangedSyncLock)
-            {
-                if (LibraryUpdateTimer == null)
-                {
-                    LibraryUpdateTimer = new Timer(
-                        LibraryUpdateTimerCallback,
-                        null,
-                        LibraryUpdateDuration,
-                        Timeout.Infinite);
-                }
-                else
-                {
-                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
-                }
-
-                if (e.Item.GetParent() is Folder parent)
-                {
-                    _foldersAddedTo.Add(parent);
-                }
-
-                _itemsAdded.Add(e.Item);
-            }
         }
 
         /// <summary>
@@ -475,7 +438,6 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer = null;
                 }
 
-                _libraryManager.ItemAdded -= OnLibraryItemAdded;
                 _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
                 _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
 

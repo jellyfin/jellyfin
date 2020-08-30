@@ -1,4 +1,7 @@
-﻿using Jellyfin.Data.Events;
+﻿using Emby.Server.Implementations.Events;
+using Emby.Server.Implementations.Events.ConsumerArgs;
+using Emby.Server.Implementations.Events.Consumers;
+using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.System;
 using Jellyfin.Data.Events.Users;
 using Jellyfin.Server.Implementations.Events.Consumers.Library;
@@ -31,7 +34,11 @@ namespace Jellyfin.Server.Implementations.Events
         /// <param name="collection">The service collection.</param>
         public static void AddEventServices(this IServiceCollection collection)
         {
+            // Notification Queues
+            collection.AddSingleton<BaseItemAddedNotifierQueue>();
+
             // Library consumers
+            collection.AddScoped<IEventConsumer<BaseItemAddedEventArgs>, BaseItemAddedNotifier>();
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
             // Security consumers
