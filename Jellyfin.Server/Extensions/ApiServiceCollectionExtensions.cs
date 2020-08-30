@@ -135,13 +135,17 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="baseUrl">The base url for the API.</param>
+        /// <param name="corsHosts">The configured cors hosts.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl)
+        public static IMvcBuilder AddJellyfinApi(
+            this IServiceCollection serviceCollection,
+            string baseUrl,
+            string[] corsHosts)
         {
             return serviceCollection
                 .AddCors(options =>
                 {
-                    options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
+                    options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, new ServerCorsPolicy(corsHosts).Policy);
                 })
                 .Configure<ForwardedHeadersOptions>(options =>
                 {

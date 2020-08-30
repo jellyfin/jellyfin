@@ -38,7 +38,9 @@ namespace Jellyfin.Server
         {
             services.AddResponseCompression();
             services.AddHttpContextAccessor();
-            services.AddJellyfinApi(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'));
+            services.AddJellyfinApi(
+                _serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'),
+                _serverConfigurationManager.Configuration.CorsHosts);
 
             services.AddJellyfinApiSwagger();
 
@@ -78,11 +80,11 @@ namespace Jellyfin.Server
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
-            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
+            app.UseMiddleware<DynamicCorsMiddleware>(ServerCorsPolicy.DefaultPolicyName);
             app.UseAuthorization();
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
-                // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+                // Must be registered after any middleware that could change HTTP response codes or the data will be bad
                 app.UseHttpMetrics();
             }
 
