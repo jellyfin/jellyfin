@@ -16,8 +16,6 @@ namespace MediaBrowser.Controller
     /// </summary>
     public interface IServerApplicationHost : IApplicationHost
     {
-        event EventHandler HasUpdateAvailableChanged;
-
         IServiceProvider ServiceProvider { get; }
 
         bool CanLaunchWebBrowser { get; }

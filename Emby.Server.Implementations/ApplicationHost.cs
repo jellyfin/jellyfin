@@ -46,6 +46,7 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Data.Events.System;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -62,6 +63,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -123,6 +125,7 @@ namespace Emby.Server.Implementations
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
         private IHttpClient _httpClient;
+        private IEventManager _eventManager;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -653,6 +656,7 @@ namespace Emby.Server.Implementations
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
             _httpClient = Resolve<IHttpClient>();
+            _eventManager = Resolve<IEventManager>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -1362,8 +1366,6 @@ namespace Emby.Server.Implementations
 
         protected abstract void ShutdownInternal();
 
-        public event EventHandler HasUpdateAvailableChanged;
-
         private bool _hasUpdateAvailable;
 
         public bool HasUpdateAvailable
@@ -1377,7 +1379,7 @@ namespace Emby.Server.Implementations
 
                 if (fireEvent)
                 {
-                    HasUpdateAvailableChanged?.Invoke(this, EventArgs.Empty);
+                    _eventManager.Publish(new UpdateAvailableEventArgs());
                 }
             }
         }
