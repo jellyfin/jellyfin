@@ -52,12 +52,10 @@ namespace Jellyfin.Server.Middleware
                     && string.Equals(headerValue, "*", StringComparison.Ordinal))
                 {
                     context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = context.Request.Host.Value;
-                    _logger.LogDebug("Overwriting CORS response header: {HeaderName}: {HeaderValue}", HeaderNames.AccessControlAllowOrigin, context.Request.Host.Value);
 
-                    if (!context.Response.Headers.ContainsKey(HeaderNames.AccessControlAllowCredentials))
-                    {
-                        context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
-                    }
+                    // Always allow credentials.
+                    context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
+                    _logger.LogDebug("Overwriting CORS response header: {HeaderName}: {HeaderValue}", HeaderNames.AccessControlAllowOrigin, context.Request.Host.Value);
                 }
             }
 
