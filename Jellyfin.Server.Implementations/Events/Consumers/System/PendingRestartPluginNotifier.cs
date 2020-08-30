@@ -13,19 +13,19 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
     /// <summary>
     /// Notifies users when there is a pending restart.
     /// </summary>
-    public class PendingRestartNotifier2 : IEventConsumer<PendingRestartEventArgs>
+    public class PendingRestartPluginNotifier : IEventConsumer<PendingRestartEventArgs>
     {
         private readonly IServerApplicationHost _applicationHost;
         private readonly INotificationManager _notificationManager;
         private readonly ILocalizationManager _localizationManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PendingRestartNotifier2"/> class.
+        /// Initializes a new instance of the <see cref="PendingRestartPluginNotifier"/> class.
         /// </summary>
         /// <param name="applicationHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
         /// <param name="notificationManager">Instance of the <see cref="INotificationManager"/> interface.</param>
         /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
-        public PendingRestartNotifier2(
+        public PendingRestartPluginNotifier(
             IServerApplicationHost applicationHost,
             INotificationManager notificationManager,
             ILocalizationManager localizationManager)
