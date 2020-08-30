@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
 
@@ -14,18 +15,18 @@ namespace Jellyfin.Server.Implementations.Activity
     public class ActivityManager : IActivityManager
     {
         private readonly JellyfinDbProvider _provider;
+        private readonly IEventManager _eventManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityManager"/> class.
         /// </summary>
         /// <param name="provider">The Jellyfin database provider.</param>
-        public ActivityManager(JellyfinDbProvider provider)
+        /// <param name="eventManager">Instance of the <see cref="IEventManager"/> interface.</param>
+        public ActivityManager(JellyfinDbProvider provider, IEventManager eventManager)
         {
             _provider = provider;
+            _eventManager = eventManager;
         }
-
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
@@ -35,7 +36,7 @@ namespace Jellyfin.Server.Implementations.Activity
             dbContext.ActivityLogs.Add(entry);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
-            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
+            await _eventManager.PublishAsync(new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry))).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

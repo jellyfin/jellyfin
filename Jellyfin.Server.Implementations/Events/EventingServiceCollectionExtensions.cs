@@ -83,6 +83,7 @@ namespace Jellyfin.Server.Implementations.Events
 
             // Activity log consumers
             collection.AddScoped<IEventConsumer<ActivityManagerEntryCreatedEventArgs>, ActivityManagerEntryCreatedPluginNotifier>();
+            collection.AddScoped<IEventConsumer<ActivityManagerEntryCreatedEventArgs>, ActivityLogWebSocketListener>();
         }
     }
 }

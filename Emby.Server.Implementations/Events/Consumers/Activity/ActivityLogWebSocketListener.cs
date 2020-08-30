@@ -1,32 +1,27 @@
 using System;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
+using Emby.Server.Implementations.Events.ConsumerArgs;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Api.WebSocketListeners
+namespace Emby.Server.Implementations.Events.Consumers.Activity
 {
     /// <summary>
     /// Class SessionInfoWebSocketListener.
     /// </summary>
-    public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>
+    public class ActivityLogWebSocketListener
+        : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>,
+            IEventConsumer<ActivityManagerEntryCreatedEventArgs>
     {
-        /// <summary>
-        /// The _kernel.
-        /// </summary>
-        private readonly IActivityManager _activityManager;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLogWebSocketListener"/> class.
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger{ActivityLogWebSocketListener}"/> interface.</param>
-        /// <param name="activityManager">Instance of the <see cref="IActivityManager"/> interface.</param>
-        public ActivityLogWebSocketListener(ILogger<ActivityLogWebSocketListener> logger, IActivityManager activityManager)
+        public ActivityLogWebSocketListener(ILogger<ActivityLogWebSocketListener> logger)
             : base(logger)
         {
-            _activityManager = activityManager;
-            _activityManager.EntryCreated += OnEntryCreated;
         }
 
         /// <summary>
@@ -35,6 +30,13 @@ namespace Jellyfin.Api.WebSocketListeners
         /// <value>The name.</value>
         protected override string Name => "ActivityLogEntry";
 
+        /// <inheritdoc />
+        public Task OnEvent(ActivityManagerEntryCreatedEventArgs eventArgs)
+        {
+            SendData(true);
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Gets the data to send.
         /// </summary>
@@ -42,19 +44,6 @@ namespace Jellyfin.Api.WebSocketListeners
         protected override Task<ActivityLogEntry[]> GetDataToSend()
         {
             return Task.FromResult(Array.Empty<ActivityLogEntry>());
-        }
-
-        /// <inheritdoc />
-        protected override void Dispose(bool dispose)
-        {
-            _activityManager.EntryCreated -= OnEntryCreated;
-
-            base.Dispose(dispose);
-        }
-
-        private void OnEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
-        {
-            SendData(true);
         }
     }
 }
