@@ -1,120 +1,52 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Track : LibraryItem
+    /// <summary>
+    /// An entity representing a track.
+    /// </summary>
+    public class Track : LibraryItem, IHasReleases
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Track"/> class.
         /// </summary>
-        protected Track()
+        /// <param name="album">The album.</param>
+        public Track(MusicAlbum album)
         {
-            // NOTE: This class has one-to-one associations with LibraryRoot, LibraryItem and CollectionItem.
-            // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
+            if (album == null)
+            {
+                throw new ArgumentNullException(nameof(album));
+            }
+
+            album.Tracks.Add(this);
 
             Releases = new HashSet<Release>();
             TrackMetadata = new HashSet<TrackMetadata>();
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Initializes a new instance of the <see cref="Track"/> class.
         /// </summary>
-        public static Track CreateTrackUnsafe()
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
+        protected Track()
         {
-            return new Track();
         }
 
         /// <summary>
-        /// Public constructor with required data.
+        /// Gets or sets the track number.
         /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="_musicalbum0"></param>
-        public Track(Guid urlid, DateTime dateadded, MusicAlbum _musicalbum0)
-        {
-            // NOTE: This class has one-to-one associations with LibraryRoot, LibraryItem and CollectionItem.
-            // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
+        public int? TrackNumber { get; set; }
 
-            this.UrlId = urlid;
-
-            if (_musicalbum0 == null)
-            {
-                throw new ArgumentNullException(nameof(_musicalbum0));
-            }
-
-            _musicalbum0.Tracks.Add(this);
-
-            this.Releases = new HashSet<Release>();
-            this.TrackMetadata = new HashSet<TrackMetadata>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="_musicalbum0"></param>
-        public static Track Create(Guid urlid, DateTime dateadded, MusicAlbum _musicalbum0)
-        {
-            return new Track(urlid, dateadded, _musicalbum0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for TrackNumber.
-        /// </summary>
-        protected int? _TrackNumber;
-        /// <summary>
-        /// When provided in a partial class, allows value of TrackNumber to be changed before setting.
-        /// </summary>
-        partial void SetTrackNumber(int? oldValue, ref int? newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of TrackNumber to be changed before returning.
-        /// </summary>
-        partial void GetTrackNumber(ref int? result);
-
-        public int? TrackNumber
-        {
-            get
-            {
-                int? value = _TrackNumber;
-                GetTrackNumber(ref value);
-                return _TrackNumber = value;
-            }
-
-            set
-            {
-                int? oldValue = _TrackNumber;
-                SetTrackNumber(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _TrackNumber = value;
-                }
-            }
-        }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        [ForeignKey("Release_Releases_Id")]
+        /// <inheritdoc />
         public virtual ICollection<Release> Releases { get; protected set; }
 
-        [ForeignKey("TrackMetadata_TrackMetadata_Id")]
+        /// <summary>
+        /// Gets or sets a collection containing the track metadata.
+        /// </summary>
         public virtual ICollection<TrackMetadata> TrackMetadata { get; protected set; }
     }
 }
-

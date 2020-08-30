@@ -1,156 +1,94 @@
-#pragma warning disable CS1591
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class CollectionItem
+    /// <summary>
+    /// An entity representing a collection item.
+    /// </summary>
+    public class CollectionItem : IHasConcurrencyToken
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CollectionItem"/> class.
+        /// </summary>
+        /// <param name="collection">The collection.</param>
+        /// <param name="previous">The previous item.</param>
+        /// <param name="next">The next item.</param>
+        public CollectionItem(Collection collection, CollectionItem previous, CollectionItem next)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            collection.Items.Add(this);
+
+            if (next != null)
+            {
+                Next = next;
+                next.Previous = this;
+            }
+
+            if (previous != null)
+            {
+                Previous = previous;
+                previous.Next = this;
+            }
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="CollectionItem"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected CollectionItem()
         {
-            // NOTE: This class has one-to-one associations with CollectionItem.
-            // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets the id.
         /// </summary>
-        public static CollectionItem CreateCollectionItemUnsafe()
-        {
-            return new CollectionItem();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="_collection0"></param>
-        /// <param name="_collectionitem1"></param>
-        /// <param name="_collectionitem2"></param>
-        public CollectionItem(Collection _collection0, CollectionItem _collectionitem1, CollectionItem _collectionitem2)
-        {
-            // NOTE: This class has one-to-one associations with CollectionItem.
-            // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
-
-            if (_collection0 == null)
-            {
-                throw new ArgumentNullException(nameof(_collection0));
-            }
-
-            _collection0.CollectionItem.Add(this);
-
-            if (_collectionitem1 == null)
-            {
-                throw new ArgumentNullException(nameof(_collectionitem1));
-            }
-
-            _collectionitem1.Next = this;
-
-            if (_collectionitem2 == null)
-            {
-                throw new ArgumentNullException(nameof(_collectionitem2));
-            }
-
-            _collectionitem2.Previous = this;
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="_collection0"></param>
-        /// <param name="_collectionitem1"></param>
-        /// <param name="_collectionitem2"></param>
-        public static CollectionItem Create(Collection _collection0, CollectionItem _collectionitem1, CollectionItem _collectionitem2)
-        {
-            return new CollectionItem(_collection0, _collectionitem1, _collectionitem2);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for Id.
-        /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
+        public int Id { get; set; }
 
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets the library item.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public virtual LibraryItem LibraryItem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the next item in the collection.
+        /// </summary>
+        /// <remarks>
+        /// TODO check if this properly updated dependant and has the proper principal relationship
+        /// </remarks>
+        public virtual CollectionItem Next { get; set; }
+
+        /// <summary>
+        /// Gets or sets the previous item in the collection.
+        /// </summary>
+        /// <remarks>
+        /// TODO check if this properly updated dependant and has the proper principal relationship
+        /// </remarks>
+        public virtual CollectionItem Previous { get; set; }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Required.
-        /// </summary>
-        [ForeignKey("LibraryItem_Id")]
-        public virtual LibraryItem LibraryItem { get; set; }
-
-        /// <remarks>
-        /// TODO check if this properly updated dependant and has the proper principal relationship
-        /// </remarks>
-        [ForeignKey("CollectionItem_Next_Id")]
-        public virtual CollectionItem Next { get; set; }
-
-        /// <remarks>
-        /// TODO check if this properly updated dependant and has the proper principal relationship
-        /// </remarks>
-        [ForeignKey("CollectionItem_Previous_Id")]
-        public virtual CollectionItem Previous { get; set; }
     }
 }
-

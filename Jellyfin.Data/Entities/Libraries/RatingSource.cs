@@ -1,239 +1,92 @@
-#pragma warning disable CS1591
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
     /// <summary>
     /// This is the entity to store review ratings, not age ratings.
     /// </summary>
-    public partial class RatingSource
+    public class RatingSource : IHasConcurrencyToken
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RatingSource"/> class.
+        /// </summary>
+        /// <param name="minimumValue">The minimum value.</param>
+        /// <param name="maximumValue">The maximum value.</param>
+        /// <param name="rating">The rating.</param>
+        public RatingSource(double minimumValue, double maximumValue, Rating rating)
+        {
+            MinimumValue = minimumValue;
+            MaximumValue = maximumValue;
+
+            if (rating == null)
+            {
+                throw new ArgumentNullException(nameof(rating));
+            }
+
+            rating.RatingType = this;
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="RatingSource"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected RatingSource()
         {
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets the id.
         /// </summary>
-        public static RatingSource CreateRatingSourceUnsafe()
-        {
-            return new RatingSource();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="maximumvalue"></param>
-        /// <param name="minimumvalue"></param>
-        /// <param name="_rating0"></param>
-        public RatingSource(double maximumvalue, double minimumvalue, Rating _rating0)
-        {
-            this.MaximumValue = maximumvalue;
-
-            this.MinimumValue = minimumvalue;
-
-            if (_rating0 == null)
-            {
-                throw new ArgumentNullException(nameof(_rating0));
-            }
-
-            _rating0.RatingType = this;
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="maximumvalue"></param>
-        /// <param name="minimumvalue"></param>
-        /// <param name="_rating0"></param>
-        public static RatingSource Create(double maximumvalue, double minimumvalue, Rating _rating0)
-        {
-            return new RatingSource(maximumvalue, minimumvalue, _rating0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for Id.
-        /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for Name.
+        /// Gets or sets the name.
         /// </summary>
-        protected string _Name;
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before setting.
-        /// </summary>
-        partial void SetName(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before returning.
-        /// </summary>
-        partial void GetName(ref string result);
-
-        /// <summary>
-        /// Max length = 1024
-        /// </summary>
+        /// <remarks>
+        /// Max length = 1024.
+        /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name
-        {
-            get
-            {
-                string value = _Name;
-                GetName(ref value);
-                return _Name = value;
-            }
-
-            set
-            {
-                string oldValue = _Name;
-                SetName(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Name = value;
-                }
-            }
-        }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Backing field for MaximumValue.
+        /// Gets or sets the minimum value.
         /// </summary>
-        protected double _MaximumValue;
-        /// <summary>
-        /// When provided in a partial class, allows value of MaximumValue to be changed before setting.
-        /// </summary>
-        partial void SetMaximumValue(double oldValue, ref double newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of MaximumValue to be changed before returning.
-        /// </summary>
-        partial void GetMaximumValue(ref double result);
-
-        /// <summary>
+        /// <remarks>
         /// Required.
-        /// </summary>
-        [Required]
-        public double MaximumValue
-        {
-            get
-            {
-                double value = _MaximumValue;
-                GetMaximumValue(ref value);
-                return _MaximumValue = value;
-            }
-
-            set
-            {
-                double oldValue = _MaximumValue;
-                SetMaximumValue(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _MaximumValue = value;
-                }
-            }
-        }
+        /// </remarks>
+        public double MinimumValue { get; set; }
 
         /// <summary>
-        /// Backing field for MinimumValue.
+        /// Gets or sets the maximum value.
         /// </summary>
-        protected double _MinimumValue;
-        /// <summary>
-        /// When provided in a partial class, allows value of MinimumValue to be changed before setting.
-        /// </summary>
-        partial void SetMinimumValue(double oldValue, ref double newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of MinimumValue to be changed before returning.
-        /// </summary>
-        partial void GetMinimumValue(ref double result);
-
-        /// <summary>
+        /// <remarks>
         /// Required.
-        /// </summary>
-        [Required]
-        public double MinimumValue
-        {
-            get
-            {
-                double value = _MinimumValue;
-                GetMinimumValue(ref value);
-                return _MinimumValue = value;
-            }
+        /// </remarks>
+        public double MaximumValue { get; set; }
 
-            set
-            {
-                double oldValue = _MinimumValue;
-                SetMinimumValue(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _MinimumValue = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets the metadata source.
+        /// </summary>
+        public virtual MetadataProviderId Source { get; set; }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-        [ForeignKey("MetadataProviderId_Source_Id")]
-        public virtual MetadataProviderId Source { get; set; }
     }
 }
-

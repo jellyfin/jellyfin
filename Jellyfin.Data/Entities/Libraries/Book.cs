@@ -1,72 +1,28 @@
-#pragma warning disable CS1591
-
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Book : LibraryItem
+    /// <summary>
+    /// An entity representing a book.
+    /// </summary>
+    public class Book : LibraryItem, IHasReleases
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Book"/> class.
         /// </summary>
-        protected Book()
+        public Book()
         {
             BookMetadata = new HashSet<BookMetadata>();
             Releases = new HashSet<Release>();
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets a collection containing the metadata for this book.
         /// </summary>
-        public static Book CreateBookUnsafe()
-        {
-            return new Book();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public Book(Guid urlid, DateTime dateadded)
-        {
-            this.UrlId = urlid;
-
-            this.BookMetadata = new HashSet<BookMetadata>();
-            this.Releases = new HashSet<Release>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public static Book Create(Guid urlid, DateTime dateadded)
-        {
-            return new Book(urlid, dateadded);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        [ForeignKey("BookMetadata_BookMetadata_Id")]
         public virtual ICollection<BookMetadata> BookMetadata { get; protected set; }
 
-        [ForeignKey("Release_Releases_Id")]
+        /// <inheritdoc />
         public virtual ICollection<Release> Releases { get; protected set; }
     }
 }
-

@@ -1,159 +1,67 @@
-#pragma warning disable CS1591
-
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Company
+    /// <summary>
+    /// An entity representing a company.
+    /// </summary>
+    public class Company : IHasCompanies, IHasConcurrencyToken
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Company"/> class.
+        /// </summary>
+        /// <param name="owner">The owner of this company.</param>
+        public Company(IHasCompanies owner)
+        {
+            owner?.Companies.Add(this);
+
+            CompanyMetadata = new HashSet<CompanyMetadata>();
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Company"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected Company()
         {
-            CompanyMetadata = new HashSet<CompanyMetadata>();
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets the id.
         /// </summary>
-        public static Company CreateCompanyUnsafe()
-        {
-            return new Company();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="_moviemetadata0"></param>
-        /// <param name="_seriesmetadata1"></param>
-        /// <param name="_musicalbummetadata2"></param>
-        /// <param name="_bookmetadata3"></param>
-        /// <param name="_company4"></param>
-        public Company(MovieMetadata _moviemetadata0, SeriesMetadata _seriesmetadata1, MusicAlbumMetadata _musicalbummetadata2, BookMetadata _bookmetadata3, Company _company4)
-        {
-            if (_moviemetadata0 == null)
-            {
-                throw new ArgumentNullException(nameof(_moviemetadata0));
-            }
-
-            _moviemetadata0.Studios.Add(this);
-
-            if (_seriesmetadata1 == null)
-            {
-                throw new ArgumentNullException(nameof(_seriesmetadata1));
-            }
-
-            _seriesmetadata1.Networks.Add(this);
-
-            if (_musicalbummetadata2 == null)
-            {
-                throw new ArgumentNullException(nameof(_musicalbummetadata2));
-            }
-
-            _musicalbummetadata2.Labels.Add(this);
-
-            if (_bookmetadata3 == null)
-            {
-                throw new ArgumentNullException(nameof(_bookmetadata3));
-            }
-
-            _bookmetadata3.Publishers.Add(this);
-
-            if (_company4 == null)
-            {
-                throw new ArgumentNullException(nameof(_company4));
-            }
-
-            _company4.Parent = this;
-
-            this.CompanyMetadata = new HashSet<CompanyMetadata>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="_moviemetadata0"></param>
-        /// <param name="_seriesmetadata1"></param>
-        /// <param name="_musicalbummetadata2"></param>
-        /// <param name="_bookmetadata3"></param>
-        /// <param name="_company4"></param>
-        public static Company Create(MovieMetadata _moviemetadata0, SeriesMetadata _seriesmetadata1, MusicAlbumMetadata _musicalbummetadata2, BookMetadata _bookmetadata3, Company _company4)
-        {
-            return new Company(_moviemetadata0, _seriesmetadata1, _musicalbummetadata2, _bookmetadata3, _company4);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for Id.
-        /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
+        public int Id { get; protected set; }
 
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection containing the metadata.
+        /// </summary>
+        public virtual ICollection<CompanyMetadata> CompanyMetadata { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing this company's child companies.
+        /// </summary>
+        public virtual ICollection<Company> ChildCompanies { get; protected set; }
+
+        /// <inheritdoc />
+        [NotMapped]
+        public ICollection<Company> Companies => ChildCompanies;
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-        [ForeignKey("CompanyMetadata_CompanyMetadata_Id")]
-        public virtual ICollection<CompanyMetadata> CompanyMetadata { get; protected set; }
-        [ForeignKey("Company_Parent_Id")]
-        public virtual Company Parent { get; set; }
     }
 }
-

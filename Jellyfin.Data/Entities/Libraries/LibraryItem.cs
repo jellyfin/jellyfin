@@ -1,175 +1,63 @@
-#pragma warning disable CS1591
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public abstract partial class LibraryItem
+    /// <summary>
+    /// An entity representing a library item.
+    /// </summary>
+    public abstract class LibraryItem : IHasConcurrencyToken
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LibraryItem"/> class.
+        /// </summary>
+        /// <param name="library">The library of this item.</param>
+        protected LibraryItem(Library library)
+        {
+            DateAdded = DateTime.UtcNow;
+            Library = library;
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to being abstract.
+        /// Initializes a new instance of the <see cref="LibraryItem"/> class.
         /// </summary>
         protected LibraryItem()
         {
-            Init();
         }
 
         /// <summary>
-        /// Public constructor with required data.
+        /// Gets or sets the id.
         /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        protected LibraryItem(Guid urlid, DateTime dateadded)
-        {
-            this.UrlId = urlid;
-
-
-            Init();
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for Id.
-        /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for UrlId.
+        /// Gets or sets the date this library item was added.
         /// </summary>
-        internal Guid _UrlId;
-        /// <summary>
-        /// When provided in a partial class, allows value of UrlId to be changed before setting.
-        /// </summary>
-        partial void SetUrlId(Guid oldValue, ref Guid newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of UrlId to be changed before returning.
-        /// </summary>
-        partial void GetUrlId(ref Guid result);
+        public DateTime DateAdded { get; protected set; }
 
-        /// <summary>
-        /// Indexed, Required
-        /// This is whats gets displayed in the Urls and API requests. This could also be a string.
-        /// </summary>
-        [Required]
-        public Guid UrlId
-        {
-            get
-            {
-                Guid value = _UrlId;
-                GetUrlId(ref value);
-                return _UrlId = value;
-            }
-
-            set
-            {
-                Guid oldValue = _UrlId;
-                SetUrlId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _UrlId = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Backing field for DateAdded.
-        /// </summary>
-        protected DateTime _DateAdded;
-        /// <summary>
-        /// When provided in a partial class, allows value of DateAdded to be changed before setting.
-        /// </summary>
-        partial void SetDateAdded(DateTime oldValue, ref DateTime newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of DateAdded to be changed before returning.
-        /// </summary>
-        partial void GetDateAdded(ref DateTime result);
-
-        /// <summary>
-        /// Required.
-        /// </summary>
-        [Required]
-        public DateTime DateAdded
-        {
-            get
-            {
-                DateTime value = _DateAdded;
-                GetDateAdded(ref value);
-                return _DateAdded = value;
-            }
-
-            internal set
-            {
-                DateTime oldValue = _DateAdded;
-                SetDateAdded(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _DateAdded = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the library of this item.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        [Required]
+        public virtual Library Library { get; set; }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Required.
-        /// </summary>
-        [ForeignKey("LibraryRoot_Id")]
-        public virtual LibraryRoot LibraryRoot { get; set; }
     }
 }
-

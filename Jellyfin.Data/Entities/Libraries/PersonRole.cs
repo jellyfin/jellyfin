@@ -1,217 +1,98 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class PersonRole
+    /// <summary>
+    /// An entity representing a person's role in media.
+    /// </summary>
+    public class PersonRole : IHasArtwork, IHasConcurrencyToken
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="PersonRole"/> class.
         /// </summary>
-        protected PersonRole()
+        /// <param name="type">The role type.</param>
+        /// <param name="metadata">The metadata.</param>
+        public PersonRole(PersonRoleType type, Metadata metadata)
         {
-            // NOTE: This class has one-to-one associations with PersonRole.
-            // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
+            Type = type;
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            metadata.PersonRoles.Add(this);
 
             Sources = new HashSet<MetadataProviderId>();
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Initializes a new instance of the <see cref="PersonRole"/> class.
         /// </summary>
-        public static PersonRole CreatePersonRoleUnsafe()
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
+        protected PersonRole()
         {
-            return new PersonRole();
         }
 
         /// <summary>
-        /// Public constructor with required data.
+        /// Gets or sets the id.
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="_metadata0"></param>
-        public PersonRole(Enums.PersonRoleType type, Metadata _metadata0)
-        {
-            // NOTE: This class has one-to-one associations with PersonRole.
-            // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
-
-            this.Type = type;
-
-            if (_metadata0 == null)
-            {
-                throw new ArgumentNullException(nameof(_metadata0));
-            }
-
-            _metadata0.PersonRoles.Add(this);
-
-            this.Sources = new HashSet<MetadataProviderId>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="_metadata0"></param>
-        public static PersonRole Create(Enums.PersonRoleType type, Metadata _metadata0)
-        {
-            return new PersonRole(type, _metadata0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for Id.
-        /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for Role.
+        /// Gets or sets the name of the person's role.
         /// </summary>
-        protected string _Role;
-        /// <summary>
-        /// When provided in a partial class, allows value of Role to be changed before setting.
-        /// </summary>
-        partial void SetRole(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Role to be changed before returning.
-        /// </summary>
-        partial void GetRole(ref string result);
-
-        /// <summary>
-        /// Max length = 1024
-        /// </summary>
+        /// <remarks>
+        /// Max length = 1024.
+        /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Role
-        {
-            get
-            {
-                string value = _Role;
-                GetRole(ref value);
-                return _Role = value;
-            }
-
-            set
-            {
-                string oldValue = _Role;
-                SetRole(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Role = value;
-                }
-            }
-        }
+        public string Role { get; set; }
 
         /// <summary>
-        /// Backing field for Type.
+        /// Gets or sets the person's role type.
         /// </summary>
-        protected Enums.PersonRoleType _Type;
-        /// <summary>
-        /// When provided in a partial class, allows value of Type to be changed before setting.
-        /// </summary>
-        partial void SetType(Enums.PersonRoleType oldValue, ref Enums.PersonRoleType newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Type to be changed before returning.
-        /// </summary>
-        partial void GetType(ref Enums.PersonRoleType result);
-
-        /// <summary>
+        /// <remarks>
         /// Required.
-        /// </summary>
-        [Required]
-        public Enums.PersonRoleType Type
-        {
-            get
-            {
-                Enums.PersonRoleType value = _Type;
-                GetType(ref value);
-                return _Type = value;
-            }
+        /// </remarks>
+        public PersonRoleType Type { get; set; }
 
-            set
-            {
-                Enums.PersonRoleType oldValue = _Type;
-                SetType(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Type = value;
-                }
-            }
-        }
+        /// <inheritdoc />
+        [ConcurrencyCheck]
+        public uint RowVersion { get; protected set; }
 
         /// <summary>
-        /// Required, ConcurrenyToken.
+        /// Gets or sets the person.
         /// </summary>
-        [ConcurrencyCheck]
+        /// <remarks>
+        /// Required.
+        /// </remarks>
         [Required]
-        public uint RowVersion { get; set; }
+        public virtual Person Person { get; set; }
 
+        /// <inheritdoc />
+        public virtual ICollection<Artwork> Artwork { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the metadata sources for this person role.
+        /// </summary>
+        public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Required.
-        /// </summary>
-        [ForeignKey("Person_Id")]
-
-        public virtual Person Person { get; set; }
-
-        [ForeignKey("Artwork_Artwork_Id")]
-        public virtual Artwork Artwork { get; set; }
-
-        [ForeignKey("MetadataProviderId_Sources_Id")]
-        public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
     }
 }
-

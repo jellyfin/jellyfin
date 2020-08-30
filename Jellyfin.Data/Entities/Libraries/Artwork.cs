@@ -1,210 +1,81 @@
-#pragma warning disable CS1591
-
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Artwork
+    /// <summary>
+    /// An entity representing artwork.
+    /// </summary>
+    public class Artwork : IHasConcurrencyToken
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Artwork"/> class.
         /// </summary>
-        protected Artwork()
-        {
-            Init();
-        }
-
-        /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static Artwork CreateArtworkUnsafe()
-        {
-            return new Artwork();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="kind"></param>
-        /// <param name="_metadata0"></param>
-        /// <param name="_personrole1"></param>
-        public Artwork(string path, Enums.ArtKind kind, Metadata _metadata0, PersonRole _personrole1)
+        /// <param name="path">The path.</param>
+        /// <param name="kind">The kind of art.</param>
+        /// <param name="owner">The owner.</param>
+        public Artwork(string path, ArtKind kind, IHasArtwork owner)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            this.Path = path;
+            Path = path;
+            Kind = kind;
 
-            this.Kind = kind;
-
-            if (_metadata0 == null)
-            {
-                throw new ArgumentNullException(nameof(_metadata0));
-            }
-
-            _metadata0.Artwork.Add(this);
-
-            if (_personrole1 == null)
-            {
-                throw new ArgumentNullException(nameof(_personrole1));
-            }
-
-            _personrole1.Artwork = this;
-
-            Init();
+            owner?.Artwork.Add(this);
         }
 
         /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
+        /// Initializes a new instance of the <see cref="Artwork"/> class.
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="kind"></param>
-        /// <param name="_metadata0"></param>
-        /// <param name="_personrole1"></param>
-        public static Artwork Create(string path, Enums.ArtKind kind, Metadata _metadata0, PersonRole _personrole1)
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
+        protected Artwork()
         {
-            return new Artwork(path, kind, _metadata0, _personrole1);
         }
 
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
         /// <summary>
-        /// Backing field for Id.
+        /// Gets or sets the id.
         /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        /// </remarks>
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for Path.
+        /// Gets or sets the path.
         /// </summary>
-        protected string _Path;
-        /// <summary>
-        /// When provided in a partial class, allows value of Path to be changed before setting.
-        /// </summary>
-        partial void SetPath(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Path to be changed before returning.
-        /// </summary>
-        partial void GetPath(ref string result);
-
-        /// <summary>
-        /// Required, Max length = 65535
-        /// </summary>
+        /// <remarks>
+        /// Required, Max length = 65535.
+        /// </remarks>
         [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Path
-        {
-            get
-            {
-                string value = _Path;
-                GetPath(ref value);
-                return _Path = value;
-            }
-
-            set
-            {
-                string oldValue = _Path;
-                SetPath(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Path = value;
-                }
-            }
-        }
+        public string Path { get; set; }
 
         /// <summary>
-        /// Backing field for Kind.
+        /// Gets or sets the kind of artwork.
         /// </summary>
-        internal Enums.ArtKind _Kind;
-        /// <summary>
-        /// When provided in a partial class, allows value of Kind to be changed before setting.
-        /// </summary>
-        partial void SetKind(Enums.ArtKind oldValue, ref Enums.ArtKind newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Kind to be changed before returning.
-        /// </summary>
-        partial void GetKind(ref Enums.ArtKind result);
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public ArtKind Kind { get; set; }
 
-        /// <summary>
-        /// Indexed, Required.
-        /// </summary>
-        [Required]
-        public Enums.ArtKind Kind
-        {
-            get
-            {
-                Enums.ArtKind value = _Kind;
-                GetKind(ref value);
-                return _Kind = value;
-            }
-
-            set
-            {
-                Enums.ArtKind oldValue = _Kind;
-                SetKind(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Kind = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
     }
 }
-

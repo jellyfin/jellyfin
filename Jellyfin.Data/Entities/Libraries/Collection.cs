@@ -1,123 +1,55 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Collection
+    /// <summary>
+    /// An entity representing a collection.
+    /// </summary>
+    public class Collection : IHasConcurrencyToken
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor.
+        /// Initializes a new instance of the <see cref="Collection"/> class.
         /// </summary>
         public Collection()
         {
-            CollectionItem = new LinkedList<CollectionItem>();
-
-            Init();
+            Items = new HashSet<CollectionItem>();
         }
 
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
         /// <summary>
-        /// Backing field for Id.
+        /// Gets or sets the id.
         /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for Name.
+        /// Gets or sets the name.
         /// </summary>
-        protected string _Name;
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before setting.
-        /// </summary>
-        partial void SetName(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before returning.
-        /// </summary>
-        partial void GetName(ref string result);
-
-        /// <summary>
-        /// Max length = 1024
-        /// </summary>
+        /// <remarks>
+        /// Max length = 1024.
+        /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name
-        {
-            get
-            {
-                string value = _Name;
-                GetName(ref value);
-                return _Name = value;
-            }
+        public string Name { get; set; }
 
-            set
-            {
-                string oldValue = _Name;
-                SetName(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Name = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection containing this collection's items.
+        /// </summary>
+        public virtual ICollection<CollectionItem> Items { get; protected set; }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-        [ForeignKey("CollectionItem_CollectionItem_Id")]
-        public virtual ICollection<CollectionItem> CollectionItem { get; protected set; }
     }
 }
-

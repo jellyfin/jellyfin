@@ -1,155 +1,67 @@
-#pragma warning disable CS1591
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class MediaFileStream
+    /// <summary>
+    /// An entity representing a stream in a media file.
+    /// </summary>
+    public class MediaFileStream : IHasConcurrencyToken
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MediaFileStream"/> class.
+        /// </summary>
+        /// <param name="streamNumber">The number of this stream.</param>
+        /// <param name="mediaFile">The media file.</param>
+        public MediaFileStream(int streamNumber, MediaFile mediaFile)
+        {
+            StreamNumber = streamNumber;
+
+            if (mediaFile == null)
+            {
+                throw new ArgumentNullException(nameof(mediaFile));
+            }
+
+            mediaFile.MediaFileStreams.Add(this);
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="MediaFileStream"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected MediaFileStream()
         {
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets the id.
         /// </summary>
-        public static MediaFileStream CreateMediaFileStreamUnsafe()
-        {
-            return new MediaFileStream();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="streamnumber"></param>
-        /// <param name="_mediafile0"></param>
-        public MediaFileStream(int streamnumber, MediaFile _mediafile0)
-        {
-            this.StreamNumber = streamnumber;
-
-            if (_mediafile0 == null)
-            {
-                throw new ArgumentNullException(nameof(_mediafile0));
-            }
-
-            _mediafile0.MediaFileStreams.Add(this);
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="streamnumber"></param>
-        /// <param name="_mediafile0"></param>
-        public static MediaFileStream Create(int streamnumber, MediaFile _mediafile0)
-        {
-            return new MediaFileStream(streamnumber, _mediafile0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for Id.
-        /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for StreamNumber.
+        /// Gets or sets the stream number.
         /// </summary>
-        protected int _StreamNumber;
-        /// <summary>
-        /// When provided in a partial class, allows value of StreamNumber to be changed before setting.
-        /// </summary>
-        partial void SetStreamNumber(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of StreamNumber to be changed before returning.
-        /// </summary>
-        partial void GetStreamNumber(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Required.
-        /// </summary>
-        [Required]
-        public int StreamNumber
-        {
-            get
-            {
-                int value = _StreamNumber;
-                GetStreamNumber(ref value);
-                return _StreamNumber = value;
-            }
+        /// </remarks>
+        public int StreamNumber { get; set; }
 
-            set
-            {
-                int oldValue = _StreamNumber;
-                SetStreamNumber(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _StreamNumber = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
     }
 }
-

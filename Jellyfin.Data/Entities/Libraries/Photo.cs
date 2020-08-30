@@ -1,71 +1,28 @@
-#pragma warning disable CS1591
-
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Photo : LibraryItem
+    /// <summary>
+    /// An entity representing a photo.
+    /// </summary>
+    public class Photo : LibraryItem, IHasReleases
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Photo"/> class.
         /// </summary>
-        protected Photo()
+        public Photo()
         {
             PhotoMetadata = new HashSet<PhotoMetadata>();
             Releases = new HashSet<Release>();
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets a collection containing the photo metadata.
         /// </summary>
-        public static Photo CreatePhotoUnsafe()
-        {
-            return new Photo();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public Photo(Guid urlid, DateTime dateadded)
-        {
-            this.UrlId = urlid;
-
-            this.PhotoMetadata = new HashSet<PhotoMetadata>();
-            this.Releases = new HashSet<Release>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public static Photo Create(Guid urlid, DateTime dateadded)
-        {
-            return new Photo(urlid, dateadded);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-        [ForeignKey("PhotoMetadata_PhotoMetadata_Id")]
         public virtual ICollection<PhotoMetadata> PhotoMetadata { get; protected set; }
 
-        [ForeignKey("Release_Releases_Id")]
+        /// <inheritdoc />
         public virtual ICollection<Release> Releases { get; protected set; }
     }
 }
-

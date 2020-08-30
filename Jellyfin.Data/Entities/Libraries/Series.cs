@@ -1,165 +1,46 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Series : LibraryItem
+    /// <summary>
+    /// An entity representing a a series.
+    /// </summary>
+    public class Series : LibraryItem
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Series"/> class.
         /// </summary>
-        protected Series()
+        public Series()
         {
-            SeriesMetadata = new HashSet<SeriesMetadata>();
+            DateAdded = DateTime.UtcNow;
             Seasons = new HashSet<Season>();
-
-            Init();
+            SeriesMetadata = new HashSet<SeriesMetadata>();
         }
 
         /// <summary>
-        /// Public constructor with required data.
+        /// Gets or sets the days of week.
         /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public Series(Guid urlid, DateTime dateadded)
-        {
-            this.UrlId = urlid;
-
-            this.SeriesMetadata = new HashSet<SeriesMetadata>();
-            this.Seasons = new HashSet<Season>();
-
-            Init();
-        }
+        public DayOfWeek? AirsDayOfWeek { get; set; }
 
         /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
+        /// Gets or sets the time the show airs, ignore the date portion.
         /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public static Series Create(Guid urlid, DateTime dateadded)
-        {
-            return new Series(urlid, dateadded);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
+        public DateTimeOffset? AirsTime { get; set; }
 
         /// <summary>
-        /// Backing field for AirsDayOfWeek.
+        /// Gets or sets the date the series first aired.
         /// </summary>
-        protected DayOfWeek? _AirsDayOfWeek;
-        /// <summary>
-        /// When provided in a partial class, allows value of AirsDayOfWeek to be changed before setting.
-        /// </summary>
-        partial void SetAirsDayOfWeek(DayOfWeek? oldValue, ref DayOfWeek? newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of AirsDayOfWeek to be changed before returning.
-        /// </summary>
-        partial void GetAirsDayOfWeek(ref DayOfWeek? result);
-
-        public DayOfWeek? AirsDayOfWeek
-        {
-            get
-            {
-                DayOfWeek? value = _AirsDayOfWeek;
-                GetAirsDayOfWeek(ref value);
-                return _AirsDayOfWeek = value;
-            }
-
-            set
-            {
-                DayOfWeek? oldValue = _AirsDayOfWeek;
-                SetAirsDayOfWeek(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _AirsDayOfWeek = value;
-                }
-            }
-        }
+        public DateTime? FirstAired { get; set; }
 
         /// <summary>
-        /// Backing field for AirsTime.
+        /// Gets or sets a collection containing the series metadata.
         /// </summary>
-        protected DateTimeOffset? _AirsTime;
-        /// <summary>
-        /// When provided in a partial class, allows value of AirsTime to be changed before setting.
-        /// </summary>
-        partial void SetAirsTime(DateTimeOffset? oldValue, ref DateTimeOffset? newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of AirsTime to be changed before returning.
-        /// </summary>
-        partial void GetAirsTime(ref DateTimeOffset? result);
-
-        /// <summary>
-        /// The time the show airs, ignore the date portion.
-        /// </summary>
-        public DateTimeOffset? AirsTime
-        {
-            get
-            {
-                DateTimeOffset? value = _AirsTime;
-                GetAirsTime(ref value);
-                return _AirsTime = value;
-            }
-
-            set
-            {
-                DateTimeOffset? oldValue = _AirsTime;
-                SetAirsTime(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _AirsTime = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Backing field for FirstAired.
-        /// </summary>
-        protected DateTimeOffset? _FirstAired;
-        /// <summary>
-        /// When provided in a partial class, allows value of FirstAired to be changed before setting.
-        /// </summary>
-        partial void SetFirstAired(DateTimeOffset? oldValue, ref DateTimeOffset? newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of FirstAired to be changed before returning.
-        /// </summary>
-        partial void GetFirstAired(ref DateTimeOffset? result);
-
-        public DateTimeOffset? FirstAired
-        {
-            get
-            {
-                DateTimeOffset? value = _FirstAired;
-                GetFirstAired(ref value);
-                return _FirstAired = value;
-            }
-
-            set
-            {
-                DateTimeOffset? oldValue = _FirstAired;
-                SetFirstAired(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _FirstAired = value;
-                }
-            }
-        }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-        [ForeignKey("SeriesMetadata_SeriesMetadata_Id")]
         public virtual ICollection<SeriesMetadata> SeriesMetadata { get; protected set; }
 
-        [ForeignKey("Season_Seasons_Id")]
+        /// <summary>
+        /// Gets or sets a collection containing the seasons.
+        /// </summary>
         public virtual ICollection<Season> Seasons { get; protected set; }
     }
 }
-

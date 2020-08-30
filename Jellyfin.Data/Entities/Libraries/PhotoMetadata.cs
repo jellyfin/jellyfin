@@ -1,83 +1,36 @@
-#pragma warning disable CS1591
-
 using System;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class PhotoMetadata : Metadata
+    /// <summary>
+    /// An entity that holds metadata for a photo.
+    /// </summary>
+    public class PhotoMetadata : Metadata
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhotoMetadata"/> class.
+        /// </summary>
+        /// <param name="title">The title or name of the photo.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="photo">The photo.</param>
+        public PhotoMetadata(string title, string language, Photo photo) : base(title, language)
+        {
+            if (photo == null)
+            {
+                throw new ArgumentNullException(nameof(photo));
+            }
+
+            photo.PhotoMetadata.Add(this);
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="PhotoMetadata"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected PhotoMetadata()
         {
-            Init();
         }
-
-        /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static PhotoMetadata CreatePhotoMetadataUnsafe()
-        {
-            return new PhotoMetadata();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="title">The title or name of the object.</param>
-        /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="datemodified">The date the object was last modified.</param>
-        /// <param name="_photo0"></param>
-        public PhotoMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Photo _photo0)
-        {
-            if (string.IsNullOrEmpty(title))
-            {
-                throw new ArgumentNullException(nameof(title));
-            }
-
-            this.Title = title;
-
-            if (string.IsNullOrEmpty(language))
-            {
-                throw new ArgumentNullException(nameof(language));
-            }
-
-            this.Language = language;
-
-            if (_photo0 == null)
-            {
-                throw new ArgumentNullException(nameof(_photo0));
-            }
-
-            _photo0.PhotoMetadata.Add(this);
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="title">The title or name of the object.</param>
-        /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="datemodified">The date the object was last modified.</param>
-        /// <param name="_photo0"></param>
-        public static PhotoMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Photo _photo0)
-        {
-            return new PhotoMetadata(title, language, dateadded, datemodified, _photo0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
     }
 }
-

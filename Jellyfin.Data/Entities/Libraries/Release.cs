@@ -1,219 +1,84 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Release
+    /// <summary>
+    /// An entity representing a release for a library item, eg. Director's cut vs. standard.
+    /// </summary>
+    public class Release : IHasConcurrencyToken
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Release"/> class.
         /// </summary>
-        protected Release()
-        {
-            MediaFiles = new HashSet<MediaFile>();
-            Chapters = new HashSet<Chapter>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static Release CreateReleaseUnsafe()
-        {
-            return new Release();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_movie0"></param>
-        /// <param name="_episode1"></param>
-        /// <param name="_track2"></param>
-        /// <param name="_customitem3"></param>
-        /// <param name="_book4"></param>
-        /// <param name="_photo5"></param>
-        public Release(string name, Movie _movie0, Episode _episode1, Track _track2, CustomItem _customitem3, Book _book4, Photo _photo5)
+        /// <param name="name">The name of this release.</param>
+        /// <param name="owner">The owner of this release.</param>
+        public Release(string name, IHasReleases owner)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            this.Name = name;
+            Name = name;
 
-            if (_movie0 == null)
-            {
-                throw new ArgumentNullException(nameof(_movie0));
-            }
+            owner?.Releases.Add(this);
 
-            _movie0.Releases.Add(this);
-
-            if (_episode1 == null)
-            {
-                throw new ArgumentNullException(nameof(_episode1));
-            }
-
-            _episode1.Releases.Add(this);
-
-            if (_track2 == null)
-            {
-                throw new ArgumentNullException(nameof(_track2));
-            }
-
-            _track2.Releases.Add(this);
-
-            if (_customitem3 == null)
-            {
-                throw new ArgumentNullException(nameof(_customitem3));
-            }
-
-            _customitem3.Releases.Add(this);
-
-            if (_book4 == null)
-            {
-                throw new ArgumentNullException(nameof(_book4));
-            }
-
-            _book4.Releases.Add(this);
-
-            if (_photo5 == null)
-            {
-                throw new ArgumentNullException(nameof(_photo5));
-            }
-
-            _photo5.Releases.Add(this);
-
-            this.MediaFiles = new HashSet<MediaFile>();
-            this.Chapters = new HashSet<Chapter>();
-
-            Init();
+            MediaFiles = new HashSet<MediaFile>();
+            Chapters = new HashSet<Chapter>();
         }
 
         /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
+        /// Initializes a new instance of the <see cref="Release"/> class.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_movie0"></param>
-        /// <param name="_episode1"></param>
-        /// <param name="_track2"></param>
-        /// <param name="_customitem3"></param>
-        /// <param name="_book4"></param>
-        /// <param name="_photo5"></param>
-        public static Release Create(string name, Movie _movie0, Episode _episode1, Track _track2, CustomItem _customitem3, Book _book4, Photo _photo5)
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
+        protected Release()
         {
-            return new Release(name, _movie0, _episode1, _track2, _customitem3, _book4, _photo5);
         }
 
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
         /// <summary>
-        /// Backing field for Id.
+        /// Gets or sets the id.
         /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for Name.
+        /// Gets or sets the name.
         /// </summary>
-        protected string _Name;
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before setting.
-        /// </summary>
-        partial void SetName(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before returning.
-        /// </summary>
-        partial void GetName(ref string result);
-
-        /// <summary>
-        /// Required, Max length = 1024
-        /// </summary>
+        /// <remarks>
+        /// Required, Max length = 1024.
+        /// </remarks>
         [Required]
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name
-        {
-            get
-            {
-                string value = _Name;
-                GetName(ref value);
-                return _Name = value;
-            }
+        public string Name { get; set; }
 
-            set
-            {
-                string oldValue = _Name;
-                SetName(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Name = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection containing the media files for this release.
+        /// </summary>
+        public virtual ICollection<MediaFile> MediaFiles { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the chapters for this release.
+        /// </summary>
+        public virtual ICollection<Chapter> Chapters { get; protected set; }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-        [ForeignKey("MediaFile_MediaFiles_Id")]
-        public virtual ICollection<MediaFile> MediaFiles { get; protected set; }
-
-        [ForeignKey("Chapter_Chapters_Id")]
-        public virtual ICollection<Chapter> Chapters { get; protected set; }
     }
 }
-

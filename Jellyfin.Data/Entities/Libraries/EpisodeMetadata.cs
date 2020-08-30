@@ -1,198 +1,67 @@
-#pragma warning disable CS1591
-
 using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class EpisodeMetadata : Metadata
+    /// <summary>
+    /// An entity containing metadata for an <see cref="Episode"/>.
+    /// </summary>
+    public class EpisodeMetadata : Metadata
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeMetadata"/> class.
+        /// </summary>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="episode">The episode.</param>
+        public EpisodeMetadata(string title, string language, Episode episode) : base(title, language)
+        {
+            if (episode == null)
+            {
+                throw new ArgumentNullException(nameof(episode));
+            }
+
+            episode.EpisodeMetadata.Add(this);
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="EpisodeMetadata"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected EpisodeMetadata()
         {
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets the outline.
         /// </summary>
-        public static EpisodeMetadata CreateEpisodeMetadataUnsafe()
-        {
-            return new EpisodeMetadata();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="title">The title or name of the object.</param>
-        /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="datemodified">The date the object was last modified.</param>
-        /// <param name="_episode0"></param>
-        public EpisodeMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Episode _episode0)
-        {
-            if (string.IsNullOrEmpty(title))
-            {
-                throw new ArgumentNullException(nameof(title));
-            }
-
-            this.Title = title;
-
-            if (string.IsNullOrEmpty(language))
-            {
-                throw new ArgumentNullException(nameof(language));
-            }
-
-            this.Language = language;
-
-            if (_episode0 == null)
-            {
-                throw new ArgumentNullException(nameof(_episode0));
-            }
-
-            _episode0.EpisodeMetadata.Add(this);
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="title">The title or name of the object.</param>
-        /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="datemodified">The date the object was last modified.</param>
-        /// <param name="_episode0"></param>
-        public static EpisodeMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Episode _episode0)
-        {
-            return new EpisodeMetadata(title, language, dateadded, datemodified, _episode0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Backing field for Outline.
-        /// </summary>
-        protected string _Outline;
-        /// <summary>
-        /// When provided in a partial class, allows value of Outline to be changed before setting.
-        /// </summary>
-        partial void SetOutline(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Outline to be changed before returning.
-        /// </summary>
-        partial void GetOutline(ref string result);
-
-        /// <summary>
-        /// Max length = 1024
-        /// </summary>
+        /// <remarks>
+        /// Max length = 1024.
+        /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Outline
-        {
-            get
-            {
-                string value = _Outline;
-                GetOutline(ref value);
-                return _Outline = value;
-            }
-
-            set
-            {
-                string oldValue = _Outline;
-                SetOutline(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Outline = value;
-                }
-            }
-        }
+        public string Outline { get; set; }
 
         /// <summary>
-        /// Backing field for Plot.
+        /// Gets or sets the plot.
         /// </summary>
-        protected string _Plot;
-        /// <summary>
-        /// When provided in a partial class, allows value of Plot to be changed before setting.
-        /// </summary>
-        partial void SetPlot(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Plot to be changed before returning.
-        /// </summary>
-        partial void GetPlot(ref string result);
-
-        /// <summary>
-        /// Max length = 65535
-        /// </summary>
+        /// <remarks>
+        /// Max length = 65535.
+        /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Plot
-        {
-            get
-            {
-                string value = _Plot;
-                GetPlot(ref value);
-                return _Plot = value;
-            }
-
-            set
-            {
-                string oldValue = _Plot;
-                SetPlot(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Plot = value;
-                }
-            }
-        }
+        public string Plot { get; set; }
 
         /// <summary>
-        /// Backing field for Tagline.
+        /// Gets or sets the tagline.
         /// </summary>
-        protected string _Tagline;
-        /// <summary>
-        /// When provided in a partial class, allows value of Tagline to be changed before setting.
-        /// </summary>
-        partial void SetTagline(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Tagline to be changed before returning.
-        /// </summary>
-        partial void GetTagline(ref string result);
-
-        /// <summary>
-        /// Max length = 1024
-        /// </summary>
+        /// <remarks>
+        /// Max length = 1024.
+        /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Tagline
-        {
-            get
-            {
-                string value = _Tagline;
-                GetTagline(ref value);
-                return _Tagline = value;
-            }
-
-            set
-            {
-                string oldValue = _Tagline;
-                SetTagline(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Tagline = value;
-                }
-            }
-        }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
+        public string Tagline { get; set; }
     }
 }
-

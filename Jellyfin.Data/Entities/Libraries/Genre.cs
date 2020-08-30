@@ -1,162 +1,75 @@
-#pragma warning disable CS1591
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class Genre
+    /// <summary>
+    /// An entity representing a genre.
+    /// </summary>
+    public class Genre : IHasConcurrencyToken
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Genre"/> class.
         /// </summary>
-        protected Genre()
-        {
-            Init();
-        }
-
-        /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static Genre CreateGenreUnsafe()
-        {
-            return new Genre();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_metadata0"></param>
-        public Genre(string name, Metadata _metadata0)
+        /// <param name="name">The name.</param>
+        /// <param name="metadata">The metadata.</param>
+        public Genre(string name, Metadata metadata)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            this.Name = name;
+            Name = name;
 
-            if (_metadata0 == null)
+            if (metadata == null)
             {
-                throw new ArgumentNullException(nameof(_metadata0));
+                throw new ArgumentNullException(nameof(metadata));
             }
 
-            _metadata0.Genres.Add(this);
-
-            Init();
+            metadata.Genres.Add(this);
         }
 
         /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
+        /// Initializes a new instance of the <see cref="Genre"/> class.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_metadata0"></param>
-        public static Genre Create(string name, Metadata _metadata0)
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
+        protected Genre()
         {
-            return new Genre(name, _metadata0);
         }
 
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
         /// <summary>
-        /// Backing field for Id.
+        /// Gets or sets the id.
         /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for Name.
+        /// Gets or sets the name.
         /// </summary>
-        internal string _Name;
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before setting.
-        /// </summary>
-        partial void SetName(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Name to be changed before returning.
-        /// </summary>
-        partial void GetName(ref string result);
-
-        /// <summary>
-        /// Indexed, Required, Max length = 255
-        /// </summary>
+        /// <remarks>
+        /// Indexed, Required, Max length = 255.
+        /// </remarks>
         [Required]
         [MaxLength(255)]
         [StringLength(255)]
-        public string Name
-        {
-            get
-            {
-                string value = _Name;
-                GetName(ref value);
-                return _Name = value;
-            }
+        public string Name { get; set; }
 
-            set
-            {
-                string oldValue = _Name;
-                SetName(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Name = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; protected set; }
 
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
     }
 }
-

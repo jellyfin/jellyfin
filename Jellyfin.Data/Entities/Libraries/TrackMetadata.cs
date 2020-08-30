@@ -1,83 +1,36 @@
-#pragma warning disable CS1591
-
 using System;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class TrackMetadata : Metadata
+    /// <summary>
+    /// An entity holding metadata for a track.
+    /// </summary>
+    public class TrackMetadata : Metadata
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrackMetadata"/> class.
+        /// </summary>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
+        /// <param name="track">The track.</param>
+        public TrackMetadata(string title, string language, Track track) : base(title, language)
+        {
+            if (track == null)
+            {
+                throw new ArgumentNullException(nameof(track));
+            }
+
+            track.TrackMetadata.Add(this);
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="TrackMetadata"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected TrackMetadata()
         {
-            Init();
         }
-
-        /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static TrackMetadata CreateTrackMetadataUnsafe()
-        {
-            return new TrackMetadata();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="title">The title or name of the object.</param>
-        /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="datemodified">The date the object was last modified.</param>
-        /// <param name="_track0"></param>
-        public TrackMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Track _track0)
-        {
-            if (string.IsNullOrEmpty(title))
-            {
-                throw new ArgumentNullException(nameof(title));
-            }
-
-            this.Title = title;
-
-            if (string.IsNullOrEmpty(language))
-            {
-                throw new ArgumentNullException(nameof(language));
-            }
-
-            this.Language = language;
-
-            if (_track0 == null)
-            {
-                throw new ArgumentNullException(nameof(_track0));
-            }
-
-            _track0.TrackMetadata.Add(this);
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="title">The title or name of the object.</param>
-        /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        /// <param name="datemodified">The date the object was last modified.</param>
-        /// <param name="_track0"></param>
-        public static TrackMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Track _track0)
-        {
-            return new TrackMetadata(title, language, dateadded, datemodified, _track0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
     }
 }
-

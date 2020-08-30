@@ -1,71 +1,29 @@
-#pragma warning disable CS1591
-
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class MusicAlbum : LibraryItem
+    /// <summary>
+    /// An entity representing a music album.
+    /// </summary>
+    public class MusicAlbum : LibraryItem
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="MusicAlbum"/> class.
         /// </summary>
-        protected MusicAlbum()
+        public MusicAlbum()
         {
             MusicAlbumMetadata = new HashSet<MusicAlbumMetadata>();
             Tracks = new HashSet<Track>();
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets a collection containing the album metadata.
         /// </summary>
-        public static MusicAlbum CreateMusicAlbumUnsafe()
-        {
-            return new MusicAlbum();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public MusicAlbum(Guid urlid, DateTime dateadded)
-        {
-            this.UrlId = urlid;
-
-            this.MusicAlbumMetadata = new HashSet<MusicAlbumMetadata>();
-            this.Tracks = new HashSet<Track>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
-        /// <param name="dateadded">The date the object was added.</param>
-        public static MusicAlbum Create(Guid urlid, DateTime dateadded)
-        {
-            return new MusicAlbum(urlid, dateadded);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-        [ForeignKey("MusicAlbumMetadata_MusicAlbumMetadata_Id")]
         public virtual ICollection<MusicAlbumMetadata> MusicAlbumMetadata { get; protected set; }
 
-        [ForeignKey("Track_Tracks_Id")]
+        /// <summary>
+        /// Gets or sets a collection containing the tracks.
+        /// </summary>
         public virtual ICollection<Track> Tracks { get; protected set; }
     }
 }
-

@@ -1,212 +1,94 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
-    public partial class MediaFile
+    /// <summary>
+    /// An entity representing a file on disk.
+    /// </summary>
+    public class MediaFile : IHasConcurrencyToken
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="MediaFile"/> class.
         /// </summary>
-        protected MediaFile()
-        {
-            MediaFileStreams = new HashSet<MediaFileStream>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static MediaFile CreateMediaFileUnsafe()
-        {
-            return new MediaFile();
-        }
-
-        /// <summary>
-        /// Public constructor with required data.
-        /// </summary>
-        /// <param name="path">Relative to the LibraryRoot.</param>
-        /// <param name="kind"></param>
-        /// <param name="_release0"></param>
-        public MediaFile(string path, Enums.MediaFileKind kind, Release _release0)
+        /// <param name="path">The path relative to the LibraryRoot.</param>
+        /// <param name="kind">The file kind.</param>
+        /// <param name="release">The release.</param>
+        public MediaFile(string path, MediaFileKind kind, Release release)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            this.Path = path;
+            Path = path;
+            Kind = kind;
 
-            this.Kind = kind;
-
-            if (_release0 == null)
+            if (release == null)
             {
-                throw new ArgumentNullException(nameof(_release0));
+                throw new ArgumentNullException(nameof(release));
             }
 
-            _release0.MediaFiles.Add(this);
+            release.MediaFiles.Add(this);
 
-            this.MediaFileStreams = new HashSet<MediaFileStream>();
-
-            Init();
+            MediaFileStreams = new HashSet<MediaFileStream>();
         }
 
         /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
+        /// Initializes a new instance of the <see cref="MediaFile"/> class.
         /// </summary>
-        /// <param name="path">Relative to the LibraryRoot.</param>
-        /// <param name="kind"></param>
-        /// <param name="_release0"></param>
-        public static MediaFile Create(string path, Enums.MediaFileKind kind, Release _release0)
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
+        protected MediaFile()
         {
-            return new MediaFile(path, kind, _release0);
         }
 
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
         /// <summary>
-        /// Backing field for Id.
+        /// Gets or sets the id.
         /// </summary>
-        internal int _Id;
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before setting.
-        /// </summary>
-        partial void SetId(int oldValue, ref int newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Id to be changed before returning.
-        /// </summary>
-        partial void GetId(ref int result);
-
-        /// <summary>
+        /// <remarks>
         /// Identity, Indexed, Required.
-        /// </summary>
-        [Key]
-        [Required]
+        /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id
-        {
-            get
-            {
-                int value = _Id;
-                GetId(ref value);
-                return _Id = value;
-            }
-
-            protected set
-            {
-                int oldValue = _Id;
-                SetId(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Id = value;
-                }
-            }
-        }
+        public int Id { get; protected set; }
 
         /// <summary>
-        /// Backing field for Path.
+        /// Gets or sets the path relative to the library root.
         /// </summary>
-        protected string _Path;
-        /// <summary>
-        /// When provided in a partial class, allows value of Path to be changed before setting.
-        /// </summary>
-        partial void SetPath(string oldValue, ref string newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Path to be changed before returning.
-        /// </summary>
-        partial void GetPath(ref string result);
-
-        /// <summary>
-        /// Required, Max length = 65535
-        /// Relative to the LibraryRoot.
-        /// </summary>
+        /// <remarks>
+        /// Required, Max length = 65535.
+        /// </remarks>
         [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Path
-        {
-            get
-            {
-                string value = _Path;
-                GetPath(ref value);
-                return _Path = value;
-            }
-
-            set
-            {
-                string oldValue = _Path;
-                SetPath(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Path = value;
-                }
-            }
-        }
+        public string Path { get; set; }
 
         /// <summary>
-        /// Backing field for Kind.
+        /// Gets or sets the kind of media file.
         /// </summary>
-        protected Enums.MediaFileKind _Kind;
-        /// <summary>
-        /// When provided in a partial class, allows value of Kind to be changed before setting.
-        /// </summary>
-        partial void SetKind(Enums.MediaFileKind oldValue, ref Enums.MediaFileKind newValue);
-        /// <summary>
-        /// When provided in a partial class, allows value of Kind to be changed before returning.
-        /// </summary>
-        partial void GetKind(ref Enums.MediaFileKind result);
-
-        /// <summary>
+        /// <remarks>
         /// Required.
-        /// </summary>
-        [Required]
-        public Enums.MediaFileKind Kind
-        {
-            get
-            {
-                Enums.MediaFileKind value = _Kind;
-                GetKind(ref value);
-                return _Kind = value;
-            }
+        /// </remarks>
+        public MediaFileKind Kind { get; set; }
 
-            set
-            {
-                Enums.MediaFileKind oldValue = _Kind;
-                SetKind(oldValue, ref value);
-                if (oldValue != value)
-                {
-                    _Kind = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Required, ConcurrenyToken.
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection containing the streams in this file.
+        /// </summary>
+        public virtual ICollection<MediaFileStream> MediaFileStreams { get; protected set; }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        [ForeignKey("MediaFileStream_MediaFileStreams_Id")]
-        public virtual ICollection<MediaFileStream> MediaFileStreams { get; protected set; }
     }
 }
-
