@@ -266,7 +266,9 @@ namespace Jellyfin.Api.Controllers
 
             bool isInEnabledFolder = user!.GetPreference(PreferenceKind.EnabledFolders).Any(i => new Guid(i) == item.Id)
                                      // Assume all folders inside an EnabledChannel are enabled
-                                     || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.Id);
+                                     || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.Id)
+                                     // Assume all items inside an EnabledChannel are enabled
+                                     || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.ChannelId);
 
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
