@@ -1,5 +1,6 @@
 ﻿using Emby.Server.Implementations.Events;
 using Emby.Server.Implementations.Events.ConsumerArgs;
+using Emby.Server.Implementations.Events.Consumers.Activity;
 using Emby.Server.Implementations.Events.Consumers.Library;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.System;
@@ -38,7 +39,6 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddSingleton<BaseItemAddedNotifierQueue>();
 
             // Library consumers
-            collection.AddScoped<IEventConsumer<BaseItemAddedEventArgs>, BaseItemAddedNotifier>();
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
             // Security consumers
@@ -76,6 +76,13 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<UserLockedOutEventArgs>, UserLockedOutLogger>();
             collection.AddScoped<IEventConsumer<UserPasswordChangedEventArgs>, UserPasswordChangedLogger>();
             collection.AddScoped<IEventConsumer<UserUpdatedEventArgs>, UserUpdatedNotifier>();
+
+            /*-- Emby.Server.Implementations --*/
+            // Library consumers
+            collection.AddScoped<IEventConsumer<BaseItemAddedEventArgs>, BaseItemAddedNotifier>();
+
+            // Activity log consumers
+            collection.AddScoped<IEventConsumer<ActivityManagerEntryCreatedEventArgs>, ActivityManagerEntryCreatedPluginNotifier>();
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Jellyfin.Data.Events;
+﻿using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Entities;
 
 namespace Emby.Server.Implementations.Events.ConsumerArgs
