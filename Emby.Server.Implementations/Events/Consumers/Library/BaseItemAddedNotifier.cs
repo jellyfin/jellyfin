@@ -3,7 +3,7 @@ using Emby.Server.Implementations.Events.ConsumerArgs;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Events;
 
-namespace Emby.Server.Implementations.Events.Consumers
+namespace Emby.Server.Implementations.Events.Consumers.Library
 {
     /// <summary>
     /// Adds base item to notification queue when item is added to library.

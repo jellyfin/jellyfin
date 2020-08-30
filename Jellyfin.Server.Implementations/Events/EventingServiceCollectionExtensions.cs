@@ -1,6 +1,6 @@
 ﻿using Emby.Server.Implementations.Events;
 using Emby.Server.Implementations.Events.ConsumerArgs;
-using Emby.Server.Implementations.Events.Consumers;
+using Emby.Server.Implementations.Events.Consumers.Library;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.System;
 using Jellyfin.Data.Events.Users;
