@@ -2,7 +2,7 @@
 
 namespace Emby.Dlna
 {
-    public interface IEventManager
+    public interface IDlnaEventManager
     {
         /// <summary>
         /// Cancels the event subscription.

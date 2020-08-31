@@ -74,6 +74,9 @@ EOF
 %{__install} -D -m 0755 %{SOURCE14} %{buildroot}%{_libexecdir}/jellyfin/restart.sh
 %{__install} -D -m 0644 %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
 
+%files
+# empty as this is just a meta-package
+
 %files server
 %attr(755,root,root) %{_bindir}/jellyfin
 %{_libdir}/jellyfin/*.json

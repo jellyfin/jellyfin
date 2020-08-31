@@ -154,13 +154,15 @@ namespace Jellyfin.Server
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
             PerformStaticInitialization();
+            var serviceCollection = new ServiceCollection();
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
+                serviceCollection);
 
             try
             {
@@ -178,8 +180,7 @@ namespace Jellyfin.Server
                     }
                 }
 
-                ServiceCollection serviceCollection = new ServiceCollection();
-                appHost.Init(serviceCollection);
+                appHost.Init();
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 

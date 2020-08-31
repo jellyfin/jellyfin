@@ -6,17 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
 {
-    public class BaseService : IEventManager
+    public class BaseService : IDlnaEventManager
     {
         protected BaseService(ILogger<BaseService> logger, IHttpClient httpClient)
         {
             Logger = logger;
             HttpClient = httpClient;
 
-            EventManager = new EventManager(logger, HttpClient);
+            EventManager = new DlnaEventManager(logger, HttpClient);
         }
 
-        protected IEventManager EventManager { get; }
+        protected IDlnaEventManager EventManager { get; }
 
         protected IHttpClient HttpClient { get; }
 

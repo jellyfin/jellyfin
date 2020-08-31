@@ -133,7 +133,6 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The bits_per_raw_sample.</value>
         [JsonPropertyName("bits_per_raw_sample")]
-        [JsonConverter(typeof(JsonInt32Converter))]
         public int BitsPerRawSample { get; set; }
 
         /// <summary>
