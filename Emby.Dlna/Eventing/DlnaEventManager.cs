@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -20,13 +21,13 @@ namespace Emby.Dlna.Eventing
             new ConcurrentDictionary<string, EventSubscription>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public DlnaEventManager(ILogger logger, IHttpClient httpClient)
+        public DlnaEventManager(ILogger logger, IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
 
@@ -167,24 +168,17 @@ namespace Emby.Dlna.Eventing
 
             builder.Append("</e:propertyset>");
 
-            var options = new HttpRequestOptions
-            {
-                RequestContent = builder.ToString(),
-                RequestContentType = "text/xml",
-                Url = subscription.CallbackUrl,
-                BufferContent = false
-            };
-
-            options.RequestHeaders.Add("NT", subscription.NotificationType);
-            options.RequestHeaders.Add("NTS", "upnp:propchange");
-            options.RequestHeaders.Add("SID", subscription.Id);
-            options.RequestHeaders.Add("SEQ", subscription.TriggerCount.ToString(_usCulture));
+            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"),  subscription.CallbackUrl);
+            options.Content = new StringContent(builder.ToString(), Encoding.UTF8, MediaTypeNames.Text.Xml);
+            options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
+            options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");
+            options.Headers.TryAddWithoutValidation("SID", subscription.Id);
+            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(_usCulture));
 
             try
             {
-                using (await _httpClient.SendAsync(options, new HttpMethod("NOTIFY")).ConfigureAwait(false))
-                {
-                }
+                await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(options).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
