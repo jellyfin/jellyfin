@@ -49,6 +49,7 @@ using Jellyfin.Api.Helpers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -123,7 +124,7 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
-        private IHttpClient _httpClient;
+        private IHttpClientFactory _httpClientFactory;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -653,7 +654,7 @@ namespace Emby.Server.Implementations
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
-            _httpClient = Resolve<IHttpClient>();
+            _httpClientFactory = Resolve<IHttpClientFactory>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -1298,25 +1299,17 @@ namespace Emby.Server.Implementations
 
             try
             {
-                using (var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        Url = apiUrl,
-                        LogErrorResponseBody = false,
-                        BufferContent = false,
-                        CancellationToken = cancellationToken
-                    }, HttpMethod.Post).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(response.Content))
-                    {
-                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
+                using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-                        _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
-                        Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
-                        return valid;
-                    }
-                }
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                var result = await System.Text.Json.JsonSerializer.DeserializeAsync<string>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
+
+                _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
+                Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
+                return valid;
             }
             catch (OperationCanceledException)
             {
