@@ -523,8 +523,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TvdbClientManager>();
 
-            ServiceCollection.AddSingleton<IHttpClient, HttpClientManager.HttpClientManager>();
-
             ServiceCollection.AddSingleton(_networkManager);
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
