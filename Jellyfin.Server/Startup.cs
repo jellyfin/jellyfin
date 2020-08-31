@@ -63,7 +63,7 @@ namespace Jellyfin.Server
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString));
-                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(_applicationHost.ApplicationUserAgentAddress));
+                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_applicationHost.ApplicationUserAgentAddress})"));
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
         }
