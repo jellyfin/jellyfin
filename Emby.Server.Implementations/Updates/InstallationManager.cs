@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         private readonly ILogger<InstallationManager> _logger;
         private readonly IApplicationPaths _appPaths;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Updates
             ILogger<InstallationManager> logger,
             IApplicationHost appHost,
             IApplicationPaths appPaths,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Updates
             _logger = logger;
             _applicationHost = appHost;
             _appPaths = appPaths;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _jsonSerializer = jsonSerializer;
             _config = config;
             _fileSystem = fileSystem;
@@ -116,26 +116,18 @@ namespace Emby.Server.Implementations.Updates
         {
             try
             {
-                using (var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        Url = manifest,
-                        CancellationToken = cancellationToken,
-                        CacheMode = CacheMode.Unconditional,
-                        CacheLength = TimeSpan.FromMinutes(3)
-                    },
-                    HttpMethod.Get).ConfigureAwait(false))
-                using (Stream stream = response.Content)
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .GetAsync(manifest, cancellationToken).ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+                try
                 {
-                    try
-                    {
-                        return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(stream).ConfigureAwait(false);
-                    }
-                    catch (SerializationException ex)
-                    {
-                        _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
-                        return Array.Empty<PackageInfo>();
-                    }
+                    return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(stream).ConfigureAwait(false);
+                }
+                catch (SerializationException ex)
+                {
+                    _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
+                    return Array.Empty<PackageInfo>();
                 }
             }
             catch (UriFormatException ex)
@@ -360,41 +352,33 @@ namespace Emby.Server.Implementations.Updates
             // Always override the passed-in target (which is a file) and figure it out again
             string targetDir = Path.Combine(_appPaths.PluginsPath, package.Name);
 
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(package.SourceUrl, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
-            using (var res = await _httpClient.SendAsync(
-                new HttpRequestOptions
-                {
-                    Url = package.SourceUrl,
-                    CancellationToken = cancellationToken,
-                    // We need it to be buffered for setting the position
-                    BufferContent = true
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = res.Content)
-            using (var md5 = MD5.Create())
+            using var md5 = MD5.Create();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var hash = Hex.Encode(md5.ComputeHash(stream));
+            if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var hash = Hex.Encode(md5.ComputeHash(stream));
-                if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogError(
-                        "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
-                        package.Name,
-                        package.Checksum,
-                        hash);
-                    throw new InvalidDataException("The checksum of the received data doesn't match.");
-                }
-
-                if (Directory.Exists(targetDir))
-                {
-                    Directory.Delete(targetDir, true);
-                }
-
-                stream.Position = 0;
-                _zipClient.ExtractAllFromZip(stream, targetDir, true);
+                _logger.LogError(
+                    "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
+                    package.Name,
+                    package.Checksum,
+                    hash);
+                throw new InvalidDataException("The checksum of the received data doesn't match.");
             }
+
+            if (Directory.Exists(targetDir))
+            {
+                Directory.Delete(targetDir, true);
+            }
+
+            stream.Position = 0;
+            _zipClient.ExtractAllFromZip(stream, targetDir, true);
 
 #pragma warning restore CA5351
         }
