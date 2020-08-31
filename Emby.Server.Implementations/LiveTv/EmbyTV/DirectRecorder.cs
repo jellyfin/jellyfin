@@ -70,18 +70,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read))
-            {
-                onStarted();
+            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read);
 
-                _logger.LogInformation("Copying recording stream to file {0}", targetFile);
+            onStarted();
 
-                // The media source if infinite so we need to handle stopping ourselves
-                var durationToken = new CancellationTokenSource(duration);
-                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
-                await _streamHelper.CopyUntilCancelled(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), output, 81920, cancellationToken).ConfigureAwait(false);
-            }
+            // The media source if infinite so we need to handle stopping ourselves
+            var durationToken = new CancellationTokenSource(duration);
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+
+            await _streamHelper.CopyUntilCancelled(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), output, 81920, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
