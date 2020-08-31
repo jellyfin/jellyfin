@@ -53,16 +53,17 @@ namespace Jellyfin.Server
 
             services.AddJellyfinApiAuthorization();
 
+            var productHeader = new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString);
             services
                 .AddHttpClient(NamedClient.Default, c =>
                 {
-                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString));
+                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
 
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
-                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString));
+                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_applicationHost.ApplicationUserAgentAddress})"));
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
