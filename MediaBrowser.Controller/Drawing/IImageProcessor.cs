@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -75,7 +76,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options);
+        Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
         /// Gets the supported image output formats.
