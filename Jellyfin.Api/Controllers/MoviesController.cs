@@ -10,6 +10,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
@@ -181,7 +182,7 @@ namespace Jellyfin.Api.Controllers
             DtoOptions dtoOptions,
             RecommendationType type)
         {
-            var itemTypes = new List<string> { nameof(MediaBrowser.Controller.Entities.Movies.Movie) };
+            var itemTypes = new List<string> { nameof(Movie) };
             if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
             {
                 itemTypes.Add(nameof(Trailer));

@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Data.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Data.Entities
@@ -10,7 +11,7 @@ namespace Jellyfin.Data.Entities
     /// <summary>
     /// An entity referencing an activity log entry.
     /// </summary>
-    public partial class ActivityLog : ISavingChanges
+    public partial class ActivityLog : IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLog"/> class.
