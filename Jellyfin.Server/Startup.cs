@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel;
+using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -21,14 +23,17 @@ namespace Jellyfin.Server
     public class Startup
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IApplicationHost _applicationHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        public Startup(IServerConfigurationManager serverConfigurationManager)
+        /// <param name="applicationHost">The application host.</param>
+        public Startup(IServerConfigurationManager serverConfigurationManager, IApplicationHost applicationHost)
         {
             _serverConfigurationManager = serverConfigurationManager;
+            _applicationHost = applicationHost;
         }
 
         /// <summary>
@@ -49,10 +54,18 @@ namespace Jellyfin.Server
             services.AddJellyfinApiAuthorization();
 
             services
-                .AddTransient<UserAgentDelegatingHandler>()
-                .AddHttpClient<DefaultHttpClient>()
-                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler())
-                .AddHttpMessageHandler<UserAgentDelegatingHandler>();
+                .AddHttpClient(NamedClient.Default, c =>
+                {
+                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString));
+                })
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+
+            services.AddHttpClient(NamedClient.MusicBrainz, c =>
+                {
+                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString));
+                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(_applicationHost.ApplicationUserAgentAddress));
+                })
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
         }
 
         /// <summary>
