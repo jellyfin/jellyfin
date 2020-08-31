@@ -1281,9 +1281,9 @@ namespace Jellyfin.Api.Controllers
                 Response.Headers.Add(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", new CultureInfo("en-US", false)));
 
                 // if the image was not modified since "ifModifiedSinceHeader"-header, return a HTTP status code 304 not modified
-                if (!(dateImageModified > ifModifiedSinceHeader))
+                if (!(dateImageModified > ifModifiedSinceHeader) && cacheDuration.HasValue)
                 {
-                    if (ifModifiedSinceHeader.Add(cacheDuration!.Value) < DateTime.UtcNow)
+                    if (ifModifiedSinceHeader.Add(cacheDuration.Value) < DateTime.UtcNow)
                     {
                         Response.StatusCode = StatusCodes.Status304NotModified;
                         return new ContentResult();
