@@ -80,7 +80,7 @@ namespace Jellyfin.Server
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
-            app.UseMiddleware<DynamicCorsMiddleware>(ServerCorsPolicy.DefaultPolicyName);
+            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
             app.UseAuthorization();
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
