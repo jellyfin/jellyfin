@@ -221,7 +221,7 @@ namespace Jellyfin.Api.Controllers
             await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
 

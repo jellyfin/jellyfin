@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +23,9 @@ namespace MediaBrowser.Controller.Net
         object GetResult(string content, string contentType, IDictionary<string, string> responseHeaders = null);
 
         object GetResult(IRequest requestContext, byte[] content, string contentType, IDictionary<string, string> responseHeaders = null);
+
         object GetResult(IRequest requestContext, Stream content, string contentType, IDictionary<string, string> responseHeaders = null);
+
         object GetResult(IRequest requestContext, string content, string contentType, IDictionary<string, string> responseHeaders = null);
 
         object GetRedirectResult(string url);

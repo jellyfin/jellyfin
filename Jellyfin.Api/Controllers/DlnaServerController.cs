@@ -221,16 +221,15 @@ namespace Jellyfin.Api.Controllers
 
         private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)
         {
-            return service.ProcessControlRequestAsync(new ControlRequest
+            return service.ProcessControlRequestAsync(new ControlRequest(Request.Headers)
             {
-                Headers = Request.Headers,
                 InputXml = requestStream,
                 TargetServerUuId = id,
                 RequestedUrl = GetAbsoluteUri()
             });
         }
 
-        private EventSubscriptionResponse ProcessEventRequest(IEventManager eventManager)
+        private EventSubscriptionResponse ProcessEventRequest(IDlnaEventManager dlnaEventManager)
         {
             var subscriptionId = Request.Headers["SID"];
             if (string.Equals(Request.Method, "subscribe", StringComparison.OrdinalIgnoreCase))
@@ -241,17 +240,17 @@ namespace Jellyfin.Api.Controllers
 
                 if (string.IsNullOrEmpty(notificationType))
                 {
-                    return eventManager.RenewEventSubscription(
+                    return dlnaEventManager.RenewEventSubscription(
                         subscriptionId,
                         notificationType,
                         timeoutString,
                         callback);
                 }
 
-                return eventManager.CreateEventSubscription(notificationType, timeoutString, callback);
+                return dlnaEventManager.CreateEventSubscription(notificationType, timeoutString, callback);
             }
 
-            return eventManager.CancelEventSubscription(subscriptionId);
+            return dlnaEventManager.CancelEventSubscription(subscriptionId);
         }
     }
 }

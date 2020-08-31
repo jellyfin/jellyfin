@@ -10,18 +10,20 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
+using Jellyfin.Data.Events.Users;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -34,6 +36,7 @@ namespace Jellyfin.Server.Implementations.Users
     public class UserManager : IUserManager
     {
         private readonly JellyfinDbProvider _dbProvider;
+        private readonly IEventManager _eventManager;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
@@ -49,6 +52,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
+        /// <param name="eventManager">The event manager.</param>
         /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
@@ -56,6 +60,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="logger">The logger.</param>
         public UserManager(
             JellyfinDbProvider dbProvider,
+            IEventManager eventManager,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
@@ -63,6 +68,7 @@ namespace Jellyfin.Server.Implementations.Users
             ILogger<UserManager> logger)
         {
             _dbProvider = dbProvider;
+            _eventManager = eventManager;
             _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
             _appHost = appHost;
@@ -78,19 +84,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserPasswordChanged;
-
-        /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
-
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserCreated;
-
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserDeleted;
-
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserLockedOut;
 
         /// <inheritdoc/>
         public IEnumerable<User> Users
@@ -234,7 +228,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Users.Add(newUser);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
-            OnUserCreated?.Invoke(this, new GenericEventArgs<User>(newUser));
+            await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
 
             return newUser;
         }
@@ -293,7 +287,8 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             dbContext.SaveChanges();
-            OnUserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
+
+            _eventManager.Publish(new UserDeletedEventArgs(user));
         }
 
         /// <inheritdoc/>
@@ -319,7 +314,7 @@ namespace Jellyfin.Server.Implementations.Users
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
 
-            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
+            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -338,7 +333,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.EasyPassword = newPasswordSha1;
             UpdateUser(user);
 
-            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
+            _eventManager.Publish(new UserPasswordChangedEventArgs(user));
         }
 
         /// <inheritdoc/>
@@ -407,13 +402,13 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
-                    EnabledChannels = user.GetPreference(PreferenceKind.EnabledChannels),
+                    EnabledChannels = user.GetPreference(PreferenceKind.EnabledChannels)?.Select(Guid.Parse).ToArray(),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
-                    EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders),
+                    EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders)?.Select(Guid.Parse).ToArray(),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
                     SyncPlayAccess = user.SyncPlayAccess,
-                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels),
-                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders),
+                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels)?.Select(Guid.Parse).ToArray(),
+                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders)?.Select(Guid.Parse).ToArray(),
                     BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems).Select(Enum.Parse<UnratedItem>).ToArray()
                 }
             };
@@ -740,9 +735,9 @@ namespace Jellyfin.Server.Implementations.Users
                 PreferenceKind.BlockUnratedItems,
                 policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
+            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
+            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
@@ -901,7 +896,7 @@ namespace Jellyfin.Server.Implementations.Users
             if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
             {
                 user.SetPermission(PermissionKind.IsDisabled, true);
-                OnUserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
+                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
                 _logger.LogWarning(
                     "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
                     user.Username,

@@ -2,8 +2,8 @@
 
 using System;
 using System.Linq;
-using Jellyfin.Data;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations
@@ -130,7 +130,7 @@ namespace Jellyfin.Server.Implementations
             foreach (var saveEntity in ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Modified)
                 .Select(entry => entry.Entity)
-                .OfType<ISavingChanges>())
+                .OfType<IHasConcurrencyToken>())
             {
                 saveEntity.OnSavingChanges();
             }

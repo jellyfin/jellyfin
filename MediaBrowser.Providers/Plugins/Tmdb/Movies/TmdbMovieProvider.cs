@@ -30,6 +30,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
     /// </summary>
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
+        private const string TmdbConfigUrl = TmdbUtils.BaseTmdbApiUrl + "3/configuration?api_key={0}";
+        private const string GetMovieInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
+
         internal static TmdbMovieProvider Current { get; private set; }
 
         private readonly IJsonSerializer _jsonSerializer;
@@ -156,9 +159,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(stream).ConfigureAwait(false);
             return _tmdbSettings;
         }
-
-        private const string TmdbConfigUrl = TmdbUtils.BaseTmdbApiUrl + "3/configuration?api_key={0}";
-        private const string GetMovieInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
 
         /// <summary>
         /// Gets the movie data path.
@@ -334,7 +334,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var mainResponse = await GetMovieDbResponse(requestMessage);
+            using var mainResponse = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
             if (mainResponse.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
@@ -367,7 +367,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
                 }
 
-                using var langResponse = await GetMovieDbResponse(langRequestMessage);
+                using var langResponse = await GetMovieDbResponse(langRequestMessage).ConfigureAwait(false);
 
                 await using var langStream = await langResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 var langResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(stream).ConfigureAwait(false);
@@ -380,10 +380,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
-        internal async Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message)
+        internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message)
         {
-            message.Headers.UserAgent.Add(new ProductInfoHeaderValue(_appHost.ApplicationUserAgent));
-            return await _httpClientFactory.CreateClient().SendAsync(message);
+            message.Headers.UserAgent.ParseAdd(_appHost.ApplicationUserAgent);
+            return _httpClientFactory.CreateClient().SendAsync(message);
         }
 
         /// <inheritdoc />

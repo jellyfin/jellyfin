@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Model.Events;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Activity
@@ -12,8 +12,6 @@ namespace MediaBrowser.Model.Activity
     public interface IActivityManager
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
-
-        void Create(ActivityLog entry);
 
         Task CreateAsync(ActivityLog entry);
 

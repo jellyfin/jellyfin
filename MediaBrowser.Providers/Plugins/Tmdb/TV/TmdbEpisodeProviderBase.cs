@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var path = TmdbSeriesProvider.GetSeriesDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
-            var filename = string.Format("season-{0}-episode-{1}-{2}.json",
+            var filename = string.Format(CultureInfo.InvariantCulture, "season-{0}-episode-{1}-{2}.json",
                 seasonNumber.ToString(CultureInfo.InvariantCulture),
                 episodeNumber.ToString(CultureInfo.InvariantCulture),
                 preferredLanguage);
@@ -116,7 +116,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (!string.IsNullOrEmpty(language))
             {
-                url += string.Format("&language={0}", language);
+                url += string.Format(CultureInfo.InvariantCulture, "&language={0}", language);
             }
 
             var includeImageLanguageParam = TmdbMovieProvider.GetImageLanguagesParam(language);

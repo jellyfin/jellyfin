@@ -1,7 +1,7 @@
 {
     "Albums": "Album",
     "AuthenticationSucceededWithUserName": "{0} berhasil diautentikasi",
-    "AppDeviceValues": "Aplikasi: {0}, Alat: {1}",
+    "AppDeviceValues": "Aplikasi : {0}, Alat : {1}",
     "LabelRunningTimeValue": "Waktu berjalan: {0}",
     "MessageApplicationUpdatedTo": "Jellyfin Server sudah diperbarui ke {0}",
     "MessageApplicationUpdated": "Jellyfin Server sudah diperbarui",
@@ -22,7 +22,7 @@
     "HeaderContinueWatching": "Lanjutkan Menonton",
     "HeaderCameraUploads": "Unggahan Kamera",
     "HeaderAlbumArtists": "Album Artis",
-    "Genres": "Genre",
+    "Genres": "Aliran",
     "Folders": "Folder",
     "Favorites": "Favorit",
     "Collections": "Koleksi",

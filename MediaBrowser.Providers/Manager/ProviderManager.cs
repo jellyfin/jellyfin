@@ -10,6 +10,7 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -23,7 +24,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
@@ -210,10 +210,10 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task SaveImage(User user, Stream source, string mimeType, string path)
+        public Task SaveImage(Stream source, string mimeType, string path)
         {
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
-                .SaveImage(user, source, path);
+                .SaveImage(source, path);
         }
 
         /// <inheritdoc/>
@@ -563,7 +563,7 @@ namespace MediaBrowser.Providers.Manager
             var pluginList = summary.Plugins.ToList();
 
             AddMetadataPlugins(pluginList, dummy, libraryOptions, options);
-            AddImagePlugins(pluginList, dummy, imageProviders);
+            AddImagePlugins(pluginList, imageProviders);
 
             var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
 
@@ -594,14 +594,14 @@ namespace MediaBrowser.Providers.Manager
             var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true).ToList();
 
             // Locals
-            list.AddRange(providers.Where(i => (i is ILocalMetadataProvider)).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => i is ILocalMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
             // Fetchers
-            list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => i is IRemoteMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataFetcher
@@ -615,11 +615,10 @@ namespace MediaBrowser.Providers.Manager
             }));
         }
 
-        private void AddImagePlugins<T>(List<MetadataPlugin> list, T item, List<IImageProvider> imageProviders)
-            where T : BaseItem
+        private void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
         {
             // Locals
-            list.AddRange(imageProviders.Where(i => (i is ILocalImageProvider)).Select(i => new MetadataPlugin
+            list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalImageProvider
@@ -1166,12 +1165,32 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void Dispose()
         {
-            _disposed = true;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!_disposeCancellationTokenSource.IsCancellationRequested)
             {
                 _disposeCancellationTokenSource.Cancel();
             }
+
+            if (disposing)
+            {
+                _disposeCancellationTokenSource.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

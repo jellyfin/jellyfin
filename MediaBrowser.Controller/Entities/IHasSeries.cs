@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Controller.Entities
@@ -10,12 +12,15 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The name of the series.</value>
         string SeriesName { get; set; }
 
-        string FindSeriesName();
-        string FindSeriesSortName();
         Guid SeriesId { get; set; }
 
-        Guid FindSeriesId();
         string SeriesPresentationUniqueKey { get; set; }
+
+        string FindSeriesName();
+
+        string FindSeriesSortName();
+
+        Guid FindSeriesId();
 
         string FindSeriesPresentationUniqueKey();
     }
