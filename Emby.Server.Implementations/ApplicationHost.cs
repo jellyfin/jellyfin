@@ -275,6 +275,10 @@ namespace Emby.Server.Implementations
                 Password = ServerConfigurationManager.Configuration.CertificatePassword
             };
             Certificate = GetCertificate(CertificateInfo);
+
+            ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
+            ApplicationVersionString = ApplicationVersion.ToString(3);
+            ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
         }
 
         public string ExpandVirtualPath(string path)
@@ -304,16 +308,16 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public Version ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version;
+        public Version ApplicationVersion { get; }
 
         /// <inheritdoc />
-        public string ApplicationVersionString { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
+        public string ApplicationVersionString { get; }
 
         /// <summary>
         /// Gets the current application user agent.
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersionString;
+        public string ApplicationUserAgent { get; }
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -1403,7 +1407,7 @@ namespace Emby.Server.Implementations
 
             foreach (var assembly in assemblies)
             {
-                Logger.LogDebug("Found API endpoints in plugin {name}", assembly.FullName);
+                Logger.LogDebug("Found API endpoints in plugin {Name}", assembly.FullName);
                 yield return assembly;
             }
         }
