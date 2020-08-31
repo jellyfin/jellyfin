@@ -3,9 +3,9 @@
 namespace Jellyfin.Api.Models.LibraryStructureDto
 {
     /// <summary>
-    /// Library options dto.
+    /// Add virtual folder dto.
     /// </summary>
-    public class LibraryOptionsDto
+    public class AddVirtualFolderDto
     {
         /// <summary>
         /// Gets or sets library options.
