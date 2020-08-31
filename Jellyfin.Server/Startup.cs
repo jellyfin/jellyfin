@@ -1,13 +1,14 @@
 using System;
 using System.ComponentModel;
+using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +52,21 @@ namespace Jellyfin.Server
             services.AddCustomAuthentication();
 
             services.AddJellyfinApiAuthorization();
-            services.AddHttpClient();
+
+            var productHeader = new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString);
+            services
+                .AddHttpClient(NamedClient.Default, c =>
+                {
+                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                })
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+
+            services.AddHttpClient(NamedClient.MusicBrainz, c =>
+                {
+                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_applicationHost.ApplicationUserAgentAddress})"));
+                })
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
         }
 
         /// <summary>
