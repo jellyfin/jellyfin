@@ -1395,9 +1395,8 @@ namespace Emby.Server.Implementations
             foreach (var assembly in assemblies)
             {
                 Logger.LogDebug("Found API endpoints in plugin {name}", assembly.FullName);
+                yield return assembly;
             }
-
-            return assemblies;
         }
 
         public virtual void LaunchUrl(string url)
