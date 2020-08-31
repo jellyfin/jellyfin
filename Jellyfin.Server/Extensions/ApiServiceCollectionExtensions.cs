@@ -136,9 +136,9 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="baseUrl">The base url for the API.</param>
-        /// <param name="applicationHost">The application host.</param>
+        /// <param name="pluginAssemblies">An IEnumberable containing all plugin assemblies with API controllers.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl, IApplicationHost applicationHost)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl, IEnumerable<Assembly> pluginAssemblies)
         {
             IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors(options =>
@@ -179,7 +179,7 @@ namespace Jellyfin.Server.Extensions
                     options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
                 });
 
-            foreach (Assembly pluginAssembly in applicationHost.GetApiPluginAssemblies())
+            foreach (Assembly pluginAssembly in pluginAssemblies)
             {
                 mvcBuilder.AddApplicationPart(pluginAssembly);
             }

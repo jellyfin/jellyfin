@@ -1387,15 +1387,17 @@ namespace Emby.Server.Implementations
 
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {
-            var types = _allConcreteTypes
+            var assemblies = _allConcreteTypes
                 .Where(i => typeof(ControllerBase).IsAssignableFrom(i))
+                .Select(i => i.Assembly)
                 .Distinct();
 
-            foreach (var type in types)
+            foreach (var assembly in assemblies)
             {
-                Logger.LogDebug("Found API endpoints in plugin {name}", type.Assembly.FullName);
-                yield return type.Assembly;
+                Logger.LogDebug("Found API endpoints in plugin {name}", assembly.FullName);
             }
+
+            return assemblies;
         }
 
         public virtual void LaunchUrl(string url)

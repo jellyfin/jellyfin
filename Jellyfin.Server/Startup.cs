@@ -41,7 +41,7 @@ namespace Jellyfin.Server
         {
             services.AddResponseCompression();
             services.AddHttpContextAccessor();
-            services.AddJellyfinApi(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'), _applicationHost);
+            services.AddJellyfinApi(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'), _applicationHost.GetApiPluginAssemblies());
 
             services.AddJellyfinApiSwagger();
 
