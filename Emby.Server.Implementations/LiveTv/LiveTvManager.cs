@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -24,7 +25,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
@@ -422,7 +422,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
         }
 
-        private LiveTvChannel GetChannel(ChannelInfo channelInfo, string serviceName, BaseItem parentFolder, CancellationToken cancellationToken)
+        private async Task<LiveTvChannel> GetChannelAsync(ChannelInfo channelInfo, string serviceName, BaseItem parentFolder, CancellationToken cancellationToken)
         {
             var parentFolderId = parentFolder.Id;
             var isNew = false;
@@ -512,7 +512,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
             else if (forceUpdate)
             {
-                _libraryManager.UpdateItem(item, parentFolder, ItemUpdateType.MetadataImport, cancellationToken);
+                await _libraryManager.UpdateItemAsync(item, parentFolder, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
             return item;
@@ -1129,7 +1129,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 try
                 {
-                    var item = GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken);
+                    var item = await GetChannelAsync(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken).ConfigureAwait(false);
 
                     list.Add(item);
                 }
@@ -1146,7 +1146,7 @@ namespace Emby.Server.Implementations.LiveTv
                 double percent = numComplete;
                 percent /= allChannelsList.Count;
 
-                progress.Report(5 * percent + 10);
+                progress.Report((5 * percent) + 10);
             }
 
             progress.Report(15);
@@ -1221,7 +1221,11 @@ namespace Emby.Server.Implementations.LiveTv
 
                     if (updatedPrograms.Count > 0)
                     {
-                        _libraryManager.UpdateItems(updatedPrograms, currentChannel, ItemUpdateType.MetadataImport, cancellationToken);
+                        await _libraryManager.UpdateItemsAsync(
+                            updatedPrograms,
+                            currentChannel,
+                            ItemUpdateType.MetadataImport,
+                            cancellationToken).ConfigureAwait(false);
                     }
 
                     currentChannel.IsMovie = isMovie;
@@ -1234,7 +1238,7 @@ namespace Emby.Server.Implementations.LiveTv
                         currentChannel.AddTag("Kids");
                     }
 
-                    currentChannel.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                    await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                     await currentChannel.RefreshMetadata(
                         new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                         {

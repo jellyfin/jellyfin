@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -63,6 +65,7 @@ namespace MediaBrowser.Controller.Library
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="isFolder"><c>true</c> is the path is a directory; otherwise <c>false</c>.</param>
         /// <returns>BaseItem.</returns>
         BaseItem FindByPath(string path, bool? isFolder);
 
@@ -72,6 +75,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <returns>Task{Artist}.</returns>
         MusicArtist GetArtist(string name);
+
         MusicArtist GetArtist(string name, DtoOptions options);
         /// <summary>
         /// Gets a Studio.
@@ -124,7 +128,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         void QueueLibraryScan();
 
-        void UpdateImages(BaseItem item, bool forceUpdate = false);
+        Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
         /// Gets the default view.
@@ -179,6 +183,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
+
         IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy);
 
         /// <summary>
@@ -200,9 +205,16 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Updates the item.
         /// </summary>
-        void UpdateItems(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
+        Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
-        void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
+        /// <summary>
+        /// Updates the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parent">The parent item.</param>
+        /// <param name="updateReason">The update reason.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the item.
@@ -317,7 +329,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(string name,
+        UserView GetNamedView(
+            string name,
             string viewType,
             string sortName);
 
@@ -329,7 +342,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="uniqueId">The unique identifier.</param>
-        UserView GetNamedView(string name,
+        UserView GetNamedView(
+            string name,
             Guid parentId,
             string viewType,
             string sortName,
@@ -341,7 +355,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetShadowView(BaseItem parent,
+        UserView GetShadowView(
+            BaseItem parent,
           string viewType,
           string sortName);
 
@@ -393,7 +408,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>IEnumerable&lt;Trailer&gt;.</returns>
-        IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemMetadata> fileSystemChildren,
+        IEnumerable<Video> FindTrailers(
+            BaseItem owner,
+            List<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService);
 
         /// <summary>
@@ -403,7 +420,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>IEnumerable&lt;Video&gt;.</returns>
-        IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren,
+        IEnumerable<Video> FindExtras(
+            BaseItem owner,
+            List<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService);
 
         /// <summary>
@@ -522,16 +541,25 @@ namespace MediaBrowser.Controller.Library
         Guid GetMusicGenreId(string name);
 
         Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
+
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
+
         void AddMediaPath(string virtualFolderName, MediaPathInfo path);
+
         void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
+
         void RemoveMediaPath(string virtualFolderName, string path);
 
         QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         int GetCount(InternalItemsQuery query);

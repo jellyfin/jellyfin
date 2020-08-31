@@ -69,5 +69,8 @@
     "AppDeviceValues": "App: {0}, อุปกรณ์: {1}",
     "Albums": "อัลบั้ม",
     "ScheduledTaskStartedWithName": "{0} เริ่มต้น",
-    "ScheduledTaskFailedWithName": "{0} ล้มเหลว"
+    "ScheduledTaskFailedWithName": "{0} ล้มเหลว",
+    "Songs": "เพลง",
+    "Shows": "แสดง",
+    "ServerNameNeedsToBeRestarted": "{0} ต้องการรีสตาร์ท"
 }

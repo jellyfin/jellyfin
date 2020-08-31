@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -1390,7 +1392,7 @@ namespace MediaBrowser.Controller.Entities
                         new List<FileSystemMetadata>();
 
                     var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
-                    LibraryManager.UpdateImages(this); // ensure all image properties in DB are fresh
+                    await LibraryManager.UpdateImagesAsync(this).ConfigureAwait(false); // ensure all image properties in DB are fresh
 
                     if (ownedItemsChanged)
                     {
@@ -2279,7 +2281,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
-        public void DeleteImage(ImageType type, int index)
+        public async Task DeleteImageAsync(ImageType type, int index)
         {
             var info = GetImageInfo(type, index);
 
@@ -2297,7 +2299,7 @@ namespace MediaBrowser.Controller.Entities
                 FileSystem.DeleteFile(info.Path);
             }
 
-            UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void RemoveImage(ItemImageInfo image)
@@ -2310,10 +2312,8 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = ImageInfos.Except(deletedImages).ToArray();
         }
 
-        public virtual void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
-        {
-            LibraryManager.UpdateItem(this, GetParent(), updateReason, cancellationToken);
-        }
+        public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
+         => LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken);
 
         /// <summary>
         /// Validates that images within the item are still on the filesystem.
@@ -2558,7 +2558,7 @@ namespace MediaBrowser.Controller.Entities
             return type == ImageType.Backdrop || type == ImageType.Screenshot || type == ImageType.Chapter;
         }
 
-        public void SwapImages(ImageType type, int index1, int index2)
+        public Task SwapImagesAsync(ImageType type, int index1, int index2)
         {
             if (!AllowsMultipleImages(type))
             {
@@ -2571,13 +2571,13 @@ namespace MediaBrowser.Controller.Entities
             if (info1 == null || info2 == null)
             {
                 // Nothing to do
-                return;
+                return Task.CompletedTask;
             }
 
             if (!info1.IsLocalFile || !info2.IsLocalFile)
             {
                 // TODO: Not supported  yet
-                return;
+                return Task.CompletedTask;
             }
 
             var path1 = info1.Path;
@@ -2594,7 +2594,7 @@ namespace MediaBrowser.Controller.Entities
             info2.Width = 0;
             info2.Height = 0;
 
-            UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         public virtual bool IsPlayed(User user)

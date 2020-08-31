@@ -147,19 +147,42 @@ jobs:
   displayName: 'Publish NuGet packages'
   dependsOn:
   - BuildPackage
-  condition: and(succeeded('BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+  condition: succeeded('BuildPackage')
 
   pool:
     vmImage: 'ubuntu-latest'
 
   steps:
-  - task: NuGetCommand@2
+  - task: DotNetCoreCLI@2
+    displayName: 'Build Stable Nuget packages'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
     inputs:
       command: 'pack'
-      packagesToPack: Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj
-      packDestination: '$(Build.ArtifactStagingDirectory)'
+      packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj'
+      versioningScheme: 'off'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build Unstable Nuget packages'
+    inputs:
+      command: 'custom'
+      projects: |
+        Jellyfin.Data/Jellyfin.Data.csproj
+        MediaBrowser.Common/MediaBrowser.Common.csproj
+        MediaBrowser.Controller/MediaBrowser.Controller.csproj
+        MediaBrowser.Model/MediaBrowser.Model.csproj
+        Emby.Naming/Emby.Naming.csproj
+      custom: 'pack'
+      arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Nuget packages'
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: Jellyfin Nuget Packages
 
   - task: NuGetCommand@2
+    displayName: 'Push Nuget packages to feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
     inputs:
       command: 'push'
       packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'

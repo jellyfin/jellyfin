@@ -269,9 +269,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("LiveStreams/Close")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CloseLiveStream([FromQuery, Required] string? liveStreamId)
+        public async Task<ActionResult> CloseLiveStream([FromQuery, Required] string? liveStreamId)
         {
-            _mediaSourceManager.CloseLiveStream(liveStreamId).GetAwaiter().GetResult();
+            await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
             return NoContent();
         }
 
