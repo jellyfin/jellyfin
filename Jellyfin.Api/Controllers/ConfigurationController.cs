@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
 using MediaBrowser.Common.Json;
@@ -73,7 +75,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Configuration.</returns>
         [HttpGet("Configuration/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<object> GetNamedConfiguration([FromRoute, Required] string key)
+        [ProducesFile(MediaTypeNames.Application.Json)]
+        public ActionResult<object> GetNamedConfiguration([FromRoute] string? key)
         {
             return _configurationManager.GetConfiguration(key);
         }

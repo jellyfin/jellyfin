@@ -8,6 +8,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -104,7 +105,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult GetFile([FromRoute, Required] Guid itemId)
+        [ProducesFile("video/*", "audio/*")]
+        public ActionResult GetFile([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -144,7 +146,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeSongs(
-            [FromRoute, Required] Guid itemId,
+            [FromRoute] Guid itemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
@@ -210,7 +212,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeVideos(
-            [FromRoute, Required] Guid itemId,
+            [FromRoute] Guid itemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
@@ -275,7 +277,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<AllThemeMediaResult> GetThemeMedia(
-            [FromRoute, Required] Guid itemId,
+            [FromRoute] Guid itemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
@@ -438,7 +440,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
+        public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute] Guid itemId, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -555,7 +557,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Library/Movies/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedMovies([FromQuery] string? tmdbId, [FromQuery] string? imdbId)
+        public ActionResult PostUpdatedMovies([FromRoute] string? tmdbId, [FromRoute] string? imdbId)
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -618,7 +620,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.Download)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
+        [ProducesFile("video/*", "audio/*")]
+        public async Task<ActionResult> GetDownload([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -687,7 +690,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
-            [FromRoute, Required] Guid itemId,
+            [FromRoute] Guid itemId,
             [FromQuery] string? excludeArtistIds,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,

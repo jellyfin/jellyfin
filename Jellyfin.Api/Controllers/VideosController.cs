@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -165,7 +166,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success, or a <see cref="NotFoundResult"/> if the video doesn't exist.</returns>
         [HttpDelete("{itemId}/AlternateSources")]
         [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
         {
@@ -335,6 +336,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("{itemId}/{stream=stream}.{container?}", Name = "HeadVideoStream_2")]
         [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesVideoFile]
         public async Task<ActionResult> GetVideoStream(
             [FromRoute, Required] Guid itemId,
             [FromRoute] string? container,

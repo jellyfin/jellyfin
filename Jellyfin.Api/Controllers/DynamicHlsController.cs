@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
@@ -166,6 +167,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/master.m3u8")]
         [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
             [FromRoute, Required] Guid itemId,
             [FromRoute] string? container,
@@ -333,6 +335,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Audio/{itemId}/master.m3u8")]
         [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
             [FromRoute] string? container,
@@ -498,6 +501,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Videos/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
             [FromRoute, Required] Guid itemId,
             [FromRoute] string? container,
@@ -663,6 +667,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Audio/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
             [FromRoute] string? container,
@@ -830,6 +835,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesVideoFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsVideoSegment(
             [FromRoute, Required] Guid itemId,
@@ -999,6 +1005,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesAudioFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsAudioSegment(
             [FromRoute, Required] Guid itemId,
