@@ -10,7 +10,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity containing metadata for a book.
     /// </summary>
-    public class BookMetadata : Metadata, IHasCompanies
+    public class BookMetadata : ItemMetadata, IHasCompanies
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BookMetadata"/> class.

@@ -6,7 +6,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity containing metadata for an <see cref="Episode"/>.
     /// </summary>
-    public class EpisodeMetadata : Metadata
+    public class EpisodeMetadata : ItemMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EpisodeMetadata"/> class.

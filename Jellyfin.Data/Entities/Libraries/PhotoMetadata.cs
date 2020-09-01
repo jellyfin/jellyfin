@@ -5,7 +5,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity that holds metadata for a photo.
     /// </summary>
-    public class PhotoMetadata : Metadata
+    public class PhotoMetadata : ItemMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoMetadata"/> class.

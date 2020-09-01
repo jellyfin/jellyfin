@@ -10,7 +10,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity holding the metadata for a movie.
     /// </summary>
-    public class MovieMetadata : Metadata, IHasCompanies
+    public class MovieMetadata : ItemMetadata, IHasCompanies
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieMetadata"/> class.

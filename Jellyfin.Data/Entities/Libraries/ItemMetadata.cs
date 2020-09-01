@@ -11,14 +11,14 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An abstract class that holds metadata.
     /// </summary>
-    public abstract class Metadata : IHasArtwork, IHasConcurrencyToken
+    public abstract class ItemMetadata : IHasArtwork, IHasConcurrencyToken
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Metadata"/> class.
+        /// Initializes a new instance of the <see cref="ItemMetadata"/> class.
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
-        protected Metadata(string title, string language)
+        protected ItemMetadata(string title, string language)
         {
             if (string.IsNullOrEmpty(title))
             {
@@ -43,12 +43,12 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Metadata"/> class.
+        /// Initializes a new instance of the <see cref="ItemMetadata"/> class.
         /// </summary>
         /// <remarks>
         /// Default constructor. Protected due to being abstract.
         /// </remarks>
-        protected Metadata()
+        protected ItemMetadata()
         {
         }
 
