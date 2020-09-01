@@ -10,31 +10,32 @@ namespace MediaBrowser.Common.Json.Converters
     /// </summary>
     public class JsonNullableInt32Converter : JsonConverter<int?>
     {
+        private readonly JsonConverter<int?> _baseJsonConverter;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonNullableInt32Converter"/> class.
+        /// </summary>
+        /// <param name="baseJsonConverter">The base json converter.</param>
+        public JsonNullableInt32Converter(JsonConverter<int?> baseJsonConverter)
+        {
+            _baseJsonConverter = baseJsonConverter;
+        }
+
         /// <inheritdoc />
         public override int? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            switch (reader.TokenType)
+            if (reader.TokenType == JsonTokenType.String && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty))
             {
-                case JsonTokenType.String when (reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty:
-                case JsonTokenType.Null:
-                    return null;
-                default:
-                    // fallback to default handling
-                    return reader.GetInt32();
+                return null;
             }
+
+            return _baseJsonConverter.Read(ref reader, typeToConvert, options);
         }
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, int? value, JsonSerializerOptions options)
         {
-            if (value is null)
-            {
-                writer.WriteNullValue();
-            }
-            else
-            {
-                writer.WriteNumberValue(value.Value);
-            }
+            _baseJsonConverter.Write(writer, value, options);
         }
     }
 }

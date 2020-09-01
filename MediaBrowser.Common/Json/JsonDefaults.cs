@@ -29,10 +29,14 @@ namespace MediaBrowser.Common.Json
                 NumberHandling = JsonNumberHandling.AllowReadingFromString
             };
 
+            // Get built-in converters for fallback converting.
+            var baseNullableInt32Converter = (JsonConverter<int?>)options.GetConverter(typeof(int?));
+            var baseNullableInt64Converter = (JsonConverter<long?>)options.GetConverter(typeof(long?));
+
             options.Converters.Add(new JsonGuidConverter());
             options.Converters.Add(new JsonStringEnumConverter());
-            options.Converters.Add(new JsonNullableInt32Converter());
-            options.Converters.Add(new JsonNullableInt64Converter());
+            options.Converters.Add(new JsonNullableInt32Converter(baseNullableInt32Converter));
+            options.Converters.Add(new JsonNullableInt64Converter(baseNullableInt64Converter));
 
             return options;
         }
