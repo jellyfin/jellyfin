@@ -1354,7 +1354,7 @@ namespace Jellyfin.Api.Controllers
                 segmentFormat = "mpegts";
             }
 
-            var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize >= 128 && encodingOptions.MaxMuxingQueueSize <= int.MaxValue
+            var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize >= 128
                 ? encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
                 : "128";
 
