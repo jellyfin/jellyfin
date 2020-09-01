@@ -69,11 +69,11 @@ namespace Jellyfin.Api.Controllers
         /// Validates path.
         /// </summary>
         /// <param name="validatePathDto">Validate request object.</param>
-        /// <response code="200">Path validated.</response>
+        /// <response code="204">Path validated.</response>
         /// <response code="404">Path not found.</response>
         /// <returns>Validation status.</returns>
         [HttpPost("ValidatePath")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult ValidatePath([FromBody, Required] ValidatePathDto validatePathDto)
         {
@@ -118,7 +118,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
