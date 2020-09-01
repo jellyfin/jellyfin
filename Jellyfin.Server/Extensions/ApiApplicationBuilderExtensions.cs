@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.OpenApi.Models;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -22,6 +24,7 @@ namespace Jellyfin.Server.Extensions
             // specifying the Swagger JSON endpoint.
 
             var baseUrl = serverConfigurationManager.Configuration.BaseUrl.Trim('/');
+            var apiDocBaseUrl = serverConfigurationManager.Configuration.BaseUrl;
             if (!string.IsNullOrEmpty(baseUrl))
             {
                 baseUrl += '/';
@@ -32,6 +35,25 @@ namespace Jellyfin.Server.Extensions
                 {
                     // Custom path requires {documentName}, SwaggerDoc documentName is 'api-docs'
                     c.RouteTemplate = $"/{baseUrl}{{documentName}}/openapi.json";
+                    c.PreSerializeFilters.Add((swagger, httpReq) =>
+                    {
+                        swagger.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{apiDocBaseUrl}" } };
+
+                        // BaseUrl is empty, ignore
+                        if (apiDocBaseUrl.Length != 0)
+                        {
+                            // Update all relative paths to remove baseUrl.
+                            var updatedPaths = new OpenApiPaths();
+                            foreach (var (key, value) in swagger.Paths)
+                            {
+                                var relativePath = key;
+                                relativePath = relativePath.Remove(0, apiDocBaseUrl.Length);
+                                updatedPaths.Add(relativePath, value);
+                            }
+
+                            swagger.Paths = updatedPaths;
+                        }
+                    });
                 })
                 .UseSwaggerUI(c =>
                 {
