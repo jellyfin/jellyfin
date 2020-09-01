@@ -2,13 +2,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a preference attached to a user or group.
     /// </summary>
-    public class Preference : ISavingChanges
+    public class Preference : IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Preference"/> class.
