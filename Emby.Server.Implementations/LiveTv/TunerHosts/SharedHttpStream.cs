@@ -55,19 +55,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var typeName = GetType().Name;
             Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);
 
-            var httpRequestOptions = new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = CancellationToken.None,
-                BufferContent = false,
-                DecompressionMethod = CompressionMethods.None
-            };
-
-            foreach (var header in mediaSource.RequiredHttpHeaders)
-            {
-                httpRequestOptions.RequestHeaders[header.Key] = header.Value;
-            }
-
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
                 .ConfigureAwait(false);
