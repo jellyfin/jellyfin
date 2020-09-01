@@ -785,10 +785,16 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 var station = allStations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
                 if (station == null)
                 {
-                    station = new ScheduleDirect.Station {stationID = map.stationID};
+                    station = new ScheduleDirect.Station { stationID = map.stationID };
                 }
 
-                var channelInfo = new ChannelInfo {Id = station.stationID, CallSign = station.callsign, Number = channelNumber, Name = string.IsNullOrWhiteSpace(station.name) ? channelNumber : station.name};
+                var channelInfo = new ChannelInfo
+                {
+                    Id = station.stationID,
+                    CallSign = station.callsign,
+                    Number = channelNumber,
+                    Name = string.IsNullOrWhiteSpace(station.name) ? channelNumber : station.name
+                };
 
                 if (station.logo != null)
                 {

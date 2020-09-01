@@ -128,17 +128,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 try
                 {
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
-                    using (response)
-                    await using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                    await using (var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
-                    {
-                        await StreamHelper.CopyToAsync(
-                            stream,
-                            fileStream,
-                            IODefaults.CopyToBufferSize,
-                            () => Resolve(openTaskCompletionSource),
-                            cancellationToken).ConfigureAwait(false);
-                    }
+                    using var message = response;
+                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    await StreamHelper.CopyToAsync(
+                        stream,
+                        fileStream,
+                        IODefaults.CopyToBufferSize,
+                        () => Resolve(openTaskCompletionSource),
+                        cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException ex)
                 {
