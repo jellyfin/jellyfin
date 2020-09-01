@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
@@ -54,6 +55,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.mp3", Name = "GetHlsAudioSegmentLegacyMp3")]
         [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.aac", Name = "GetHlsAudioSegmentLegacyAac")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesAudioFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsAudioSegmentLegacy([FromRoute] string itemId, [FromRoute] string segmentId)
         {
@@ -74,6 +76,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/hls/{playlistId}/stream.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsPlaylistLegacy([FromRoute] string itemId, [FromRoute] string playlistId)
         {
@@ -112,6 +115,7 @@ namespace Jellyfin.Api.Controllers
         // [Authenticated]
         [HttpGet("Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesVideoFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsVideoSegmentLegacy(
             [FromRoute] string itemId,

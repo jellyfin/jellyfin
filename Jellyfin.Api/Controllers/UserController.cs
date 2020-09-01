@@ -125,7 +125,7 @@ namespace Jellyfin.Api.Controllers
         /// Deletes a user.
         /// </summary>
         /// <param name="userId">The user id.</param>
-        /// <response code="200">User deleted.</response>
+        /// <response code="204">User deleted.</response>
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="NotFoundResult"/> if the user was not found.</returns>
         [HttpDelete("{userId}")]
@@ -255,7 +255,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="request">The <see cref="UpdateUserPassword"/> request.</param>
-        /// <response code="200">Password successfully reset.</response>
+        /// <response code="204">Password successfully reset.</response>
         /// <response code="403">User is not allowed to update the password.</response>
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
@@ -313,7 +313,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="request">The <see cref="UpdateUserEasyPassword"/> request.</param>
-        /// <response code="200">Password successfully reset.</response>
+        /// <response code="204">Password successfully reset.</response>
         /// <response code="403">User is not allowed to update the password.</response>
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>

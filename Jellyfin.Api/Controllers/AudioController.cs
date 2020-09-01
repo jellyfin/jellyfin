@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
@@ -88,6 +89,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("{itemId}/stream.{container}", Name = "HeadAudioStreamByContainer")]
         [HttpHead("{itemId}/stream", Name = "HeadAudioStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesAudioFile]
         public async Task<ActionResult> GetAudioStream(
             [FromRoute] Guid itemId,
             [FromRoute] string? container,

@@ -16,6 +16,7 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
 using Jellyfin.Server.Models;
 using MediaBrowser.Common;
@@ -249,6 +250,8 @@ namespace Jellyfin.Server.Extensions
 
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
+
+                c.OperationFilter<FileResponseFilter>();
             });
         }
 

@@ -9,6 +9,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -162,6 +163,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Application.Octet)]
+        [ProducesFile("text/*")]
         public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string? id)
         {
             var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
@@ -185,6 +187,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
         [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks?}/Stream.{format}", Name = "GetSubtitle_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile("text/*")]
         public async Task<ActionResult> GetSubtitle(
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string? mediaSourceId,
@@ -251,6 +254,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetSubtitlePlaylist(
             [FromRoute] Guid itemId,

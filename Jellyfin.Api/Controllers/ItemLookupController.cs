@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -18,6 +19,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -248,6 +250,8 @@ namespace Jellyfin.Api.Controllers
         /// The task result contains an <see cref="FileStreamResult"/> containing the images file stream.
         /// </returns>
         [HttpGet("Items/RemoteSearch/Image")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetRemoteSearchImage(
             [FromQuery, Required] string imageUrl,
             [FromQuery, Required] string providerName)
@@ -274,10 +278,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             await DownloadImage(providerName, imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
-
-            // Read the pointer file again
-            await using var fileStream = System.IO.File.OpenRead(pointerCachePath);
-            return new FileStreamResult(fileStream, MediaTypeNames.Application.Octet);
+            return PhysicalFile(pointerCachePath, MimeTypes.GetMimeType(pointerCachePath));
         }
 
         /// <summary>
@@ -293,6 +294,7 @@ namespace Jellyfin.Api.Controllers
         /// </returns>
         [HttpPost("Items/RemoteSearch/Apply/{id}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ApplySearchCriteria(
             [FromRoute] Guid itemId,
             [FromBody, Required] RemoteSearchResult searchResult,

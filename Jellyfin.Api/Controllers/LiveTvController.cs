@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -1067,6 +1068,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("ListingProviders/SchedulesDirect/Countries")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile(MediaTypeNames.Application.Json)]
         public async Task<ActionResult> GetSchedulesDirectCountries()
         {
             var client = _httpClientFactory.CreateClient();
@@ -1175,6 +1177,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("LiveRecordings/{recordingId}/stream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesVideoFile]
         public async Task<ActionResult> GetLiveRecordingFile([FromRoute] string recordingId)
         {
             var path = _liveTvManager.GetEmbyTvActiveRecordingPath(recordingId);
@@ -1205,6 +1208,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("LiveStreamFiles/{streamId}/stream.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesVideoFile]
         public async Task<ActionResult> GetLiveStreamFile([FromRoute] string streamId, [FromRoute] string container)
         {
             var liveStreamInfo = await _mediaSourceManager.GetDirectStreamProviderByUniqueId(streamId, CancellationToken.None).ConfigureAwait(false);

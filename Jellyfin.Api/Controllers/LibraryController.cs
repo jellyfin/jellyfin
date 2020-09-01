@@ -8,6 +8,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -104,6 +105,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesFile("video/*", "audio/*")]
         public ActionResult GetFile([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -618,6 +620,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.Download)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesFile("video/*", "audio/*")]
         public async Task<ActionResult> GetDownload([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
