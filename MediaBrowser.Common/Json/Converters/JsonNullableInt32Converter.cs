@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Buffers;
-using System.Buffers.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,29 +13,15 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override int? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.String)
+            switch (reader.TokenType)
             {
-                ReadOnlySpan<byte> span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                if (Utf8Parser.TryParse(span, out int number, out int bytesConsumed) && span.Length == bytesConsumed)
-                {
-                    return number;
-                }
-
-                var stringValue = reader.GetString().AsSpan();
-
-                // value is null or empty, just return null.
-                if (stringValue.IsEmpty)
-                {
+                case JsonTokenType.String when (reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty:
+                case JsonTokenType.Null:
                     return null;
-                }
-
-                if (int.TryParse(stringValue, out number))
-                {
-                    return number;
-                }
+                default:
+                    // fallback to default handling
+                    return reader.GetInt32();
             }
-
-            return reader.GetInt32();
         }
 
         /// <inheritdoc />

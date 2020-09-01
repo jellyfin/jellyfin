@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Buffers;
-using System.Buffers.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -22,32 +20,15 @@ namespace MediaBrowser.Common.Json.Converters
         /// <returns>Parsed value.</returns>
         public override long? Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.String)
+            switch (reader.TokenType)
             {
-                // try to parse number directly from bytes
-                var span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                if (Utf8Parser.TryParse(span, out long number, out var bytesConsumed) && span.Length == bytesConsumed)
-                {
-                    return number;
-                }
-
-                var stringValue = reader.GetString().AsSpan();
-
-                // value is null or empty, just return null.
-                if (stringValue.IsEmpty)
-                {
+                case JsonTokenType.String when (reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty:
+                case JsonTokenType.Null:
                     return null;
-                }
-
-                // try to parse from a string if the above failed, this covers cases with other escaped/UTF characters
-                if (long.TryParse(stringValue, out number))
-                {
-                    return number;
-                }
+                default:
+                    // fallback to default handling
+                    return reader.GetInt64();
             }
-
-            // fallback to default handling
-            return reader.GetInt64();
         }
 
         /// <summary>
