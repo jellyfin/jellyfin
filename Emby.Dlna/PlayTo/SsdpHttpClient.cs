@@ -84,7 +84,7 @@ namespace Emby.Dlna.PlayTo
             options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(_usCulture));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .SendAsync(options)
+                .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
         }
 
@@ -93,7 +93,7 @@ namespace Emby.Dlna.PlayTo
             using var options = new HttpRequestMessage(HttpMethod.Get, url);
             options.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(USERAGENT));
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             using var reader = new StreamReader(stream, Encoding.UTF8);
             return XDocument.Parse(
@@ -126,7 +126,7 @@ namespace Emby.Dlna.PlayTo
 
             options.Content = new StringContent(postData, Encoding.UTF8, MediaTypeNames.Text.Xml);
 
-            return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
     }
 }

@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(url, CancellationToken.None)
+                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
                 .ConfigureAwait(false);
 
             var extension = "ts";

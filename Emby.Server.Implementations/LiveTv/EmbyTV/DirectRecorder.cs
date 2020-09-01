@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(mediaSource.Path, cancellationToken).ConfigureAwait(false);
+                .GetAsync(mediaSource.Path, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Opened recording stream from tuner provider");
 
