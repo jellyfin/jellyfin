@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -155,6 +156,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetRemoteImage([FromQuery, Required] string imageUrl)
         {
             var urlHash = imageUrl.GetMD5();
@@ -192,7 +194,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var contentType = MimeTypes.GetMimeType(contentPath);
-            return File(System.IO.File.OpenRead(contentPath), contentType);
+            return PhysicalFile(contentPath, contentType);
         }
 
         /// <summary>
