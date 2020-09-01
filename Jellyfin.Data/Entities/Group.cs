@@ -31,7 +31,6 @@ namespace Jellyfin.Data.Entities
             Id = Guid.NewGuid();
 
             Permissions = new HashSet<Permission>();
-            ProviderMappings = new HashSet<ProviderMapping>();
             Preferences = new HashSet<Preference>();
 
             Init();
@@ -92,9 +91,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Permission_GroupPermissions_Id")]
         public virtual ICollection<Permission> Permissions { get; protected set; }
-
-        [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
 
         [ForeignKey("Preference_Preferences_Id")]
         public virtual ICollection<Preference> Preferences { get; protected set; }
