@@ -1,12 +1,13 @@
-﻿#pragma warning disable CS1591
-
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
+    /// <summary>
+    /// An entity that represents a user's display preferences for a specific item.
+    /// </summary>
     public class ItemDisplayPreferences
     {
         /// <summary>
