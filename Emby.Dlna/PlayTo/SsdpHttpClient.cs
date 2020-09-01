@@ -77,7 +77,7 @@ namespace Emby.Dlna.PlayTo
             int timeOut = 3600)
         {
             using var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
-            options.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(USERAGENT));
+            options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("HOST", ip + ":" + port.ToString(_usCulture));
             options.Headers.TryAddWithoutValidation("CALLBACK", "<" + localIp + ":" + eventport.ToString(_usCulture) + ">");
             options.Headers.TryAddWithoutValidation("NT", "upnp:event");
@@ -91,7 +91,7 @@ namespace Emby.Dlna.PlayTo
         public async Task<XDocument> GetDataAsync(string url, CancellationToken cancellationToken)
         {
             using var options = new HttpRequestMessage(HttpMethod.Get, url);
-            options.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(USERAGENT));
+            options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -114,7 +114,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             using var options = new HttpRequestMessage(HttpMethod.Post, url);
-            options.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(USERAGENT));
+            options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("SOAPACTION", soapAction);
             options.Headers.TryAddWithoutValidation("Pragma", "no-cache");
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
