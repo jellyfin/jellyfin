@@ -5,25 +5,28 @@ using System.Text.Json.Serialization;
 namespace MediaBrowser.Common.Json.Converters
 {
     /// <summary>
-    /// Converts a nullable int64 object or value to/from JSON.
+    /// Converts a nullable struct or value to/from JSON.
     /// Required - some clients send an empty string.
     /// </summary>
-    public class JsonNullableInt64Converter : JsonConverter<long?>
+    /// <typeparam name="T">The struct type.</typeparam>
+    public class JsonNullableStructConverter<T> : JsonConverter<T?>
+        where T : struct
     {
-        private readonly JsonConverter<long?> _baseJsonConverter;
+        private readonly JsonConverter<T?> _baseJsonConverter;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonNullableInt64Converter"/> class.
+        /// Initializes a new instance of the <see cref="JsonNullableStructConverter{T}"/> class.
         /// </summary>
         /// <param name="baseJsonConverter">The base json converter.</param>
-        public JsonNullableInt64Converter(JsonConverter<long?> baseJsonConverter)
+        public JsonNullableStructConverter(JsonConverter<T?> baseJsonConverter)
         {
             _baseJsonConverter = baseJsonConverter;
         }
 
         /// <inheritdoc />
-        public override long? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            // Handle empty string.
             if (reader.TokenType == JsonTokenType.String && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty))
             {
                 return null;
@@ -33,7 +36,7 @@ namespace MediaBrowser.Common.Json.Converters
         }
 
         /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, long? value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
         {
             _baseJsonConverter.Write(writer, value, options);
         }
