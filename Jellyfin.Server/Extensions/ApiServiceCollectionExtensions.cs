@@ -135,14 +135,16 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="baseUrl">The base url for the API.</param>
-        /// <param name="corsHosts">The configured cors hosts.</param>
+        /// <param name="pluginAssemblies">An IEnumberable containing all plugin assemblies with API controllers.</param>
+        /// /// <param name="corsHosts">The configured cors hosts.</param>
         /// <returns>The MVC builder.</returns>
         public static IMvcBuilder AddJellyfinApi(
             this IServiceCollection serviceCollection,
             string baseUrl,
+            IEnumerable<Assembly> pluginAssemblies,
             string[] corsHosts)
         {
-            return serviceCollection
+            IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors(options =>
                 {
                     options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, new ServerCorsPolicy(corsHosts).Policy);
@@ -183,8 +185,14 @@ namespace Jellyfin.Server.Extensions
 
                     // From JsonDefaults.PascalCase
                     options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
-                })
-                .AddControllersAsServices();
+                });
+
+            foreach (Assembly pluginAssembly in pluginAssemblies)
+            {
+                mvcBuilder.AddApplicationPart(pluginAssembly);
+            }
+
+            return mvcBuilder.AddControllersAsServices();
         }
 
         /// <summary>
@@ -201,7 +209,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     Type = SecuritySchemeType.ApiKey,
                     In = ParameterLocation.Header,
-                    Name = "X-Emby-Token",
+                    Name = "X-Emby-Authorization",
                     Description = "API key header parameter"
                 });
 

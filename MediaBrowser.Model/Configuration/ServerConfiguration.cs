@@ -78,6 +78,11 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
         public bool IsPortAuthorized { get; set; }
 
+        /// <summary>
+        /// Gets or sets if quick connect is available for use on this server.
+        /// </summary>
+        public bool QuickConnectAvailable { get; set; }
+
         public bool AutoRunWebApp { get; set; }
 
         public bool EnableRemoteAccess { get; set; }
@@ -304,6 +309,7 @@ namespace MediaBrowser.Model.Configuration
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
+            QuickConnectAvailable = false;
 
             EnableUPnP = false;
             MinResumePct = 5;
