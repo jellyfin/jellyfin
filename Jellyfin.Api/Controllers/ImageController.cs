@@ -431,6 +431,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}", Name = "HeadItemImage2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetItemImage2(
             [FromRoute] Guid itemId,
             [FromRoute] ImageType imageType,

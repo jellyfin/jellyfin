@@ -214,7 +214,7 @@ namespace Jellyfin.Api.Controllers
             {
                 return Redirect("index.html?start=wizard#!/wizardstart.html");
             }
-            
+
             return PhysicalFile(_resourceFileManager.GetResourcePath(basePath, path), MimeTypes.GetMimeType(path));
         }
 
