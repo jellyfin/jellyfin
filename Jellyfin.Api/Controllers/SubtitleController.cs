@@ -214,8 +214,7 @@ namespace Jellyfin.Api.Controllers
                 var subtitleStream = mediaSource.MediaStreams
                     .First(i => i.Type == MediaStreamType.Subtitle && i.Index == index);
 
-                FileStream stream = new FileStream(subtitleStream.Path, FileMode.Open, FileAccess.Read);
-                return File(stream, MimeTypes.GetMimeType(subtitleStream.Path));
+                return PhysicalFile(subtitleStream.Path, MimeTypes.GetMimeType(subtitleStream.Path));
             }
 
             if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)

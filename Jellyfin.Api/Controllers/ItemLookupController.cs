@@ -264,8 +264,7 @@ namespace Jellyfin.Api.Controllers
                 var contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
                 if (System.IO.File.Exists(contentPath))
                 {
-                    await using var fileStreamExisting = System.IO.File.OpenRead(pointerCachePath);
-                    return new FileStreamResult(fileStreamExisting, MediaTypeNames.Application.Octet);
+                    return PhysicalFile(contentPath, MimeTypes.GetMimeType(contentPath));
                 }
             }
             catch (FileNotFoundException)
@@ -278,7 +277,8 @@ namespace Jellyfin.Api.Controllers
             }
 
             await DownloadImage(providerName, imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
-            return PhysicalFile(pointerCachePath, MimeTypes.GetMimeType(pointerCachePath));
+            var updatedContentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
+            return PhysicalFile(updatedContentPath, MimeTypes.GetMimeType(updatedContentPath));
         }
 
         /// <summary>
