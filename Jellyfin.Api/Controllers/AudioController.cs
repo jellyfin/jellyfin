@@ -1,93 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace Jellyfin.Api.Controllers
 {
     /// <summary>
     /// The audio controller.
     /// </summary>
-    // TODO: In order to autheneticate this in the future, Dlna playback will require updating
+    // TODO: In order to authenticate this in the future, Dlna playback will require updating
     public class AudioController : BaseJellyfinApiController
     {
-        private readonly IDlnaManager _dlnaManager;
-        private readonly IAuthorizationContext _authContext;
-        private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IServerConfigurationManager _serverConfigurationManager;
-        private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
-        private readonly IDeviceManager _deviceManager;
-        private readonly TranscodingJobHelper _transcodingJobHelper;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly AudioHelper _audioHelper;
 
         private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioController"/> class.
         /// </summary>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
-        /// <param name="userManger">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
-        /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
-        /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
-        /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
-        public AudioController(
-            IDlnaManager dlnaManager,
-            IUserManager userManger,
-            IAuthorizationContext authorizationContext,
-            ILibraryManager libraryManager,
-            IMediaSourceManager mediaSourceManager,
-            IServerConfigurationManager serverConfigurationManager,
-            IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
-            IDeviceManager deviceManager,
-            TranscodingJobHelper transcodingJobHelper,
-            IHttpClientFactory httpClientFactory)
+        /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
+        public AudioController(AudioHelper audioHelper)
         {
-            _dlnaManager = dlnaManager;
-            _authContext = authorizationContext;
-            _userManager = userManger;
-            _libraryManager = libraryManager;
-            _mediaSourceManager = mediaSourceManager;
-            _serverConfigurationManager = serverConfigurationManager;
-            _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
-            _deviceManager = deviceManager;
-            _transcodingJobHelper = transcodingJobHelper;
-            _httpClientFactory = httpClientFactory;
+            _audioHelper = audioHelper;
         }
 
         /// <summary>
@@ -144,9 +83,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("{itemId}/{stream=stream}.{container?}", Name = "GetAudioStreamByContainer")]
+        [HttpGet("{itemId}/stream.{container}", Name = "GetAudioStreamByContainer")]
         [HttpGet("{itemId}/stream", Name = "GetAudioStream")]
-        [HttpHead("{itemId}/{stream=stream}.{container?}", Name = "HeadAudioStreamByContainer")]
+        [HttpHead("{itemId}/stream.{container}", Name = "HeadAudioStreamByContainer")]
         [HttpHead("{itemId}/stream", Name = "HeadAudioStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAudioStream(
@@ -200,10 +139,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string>? streamOptions)
         {
-            bool isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-
-            var cancellationTokenSource = new CancellationTokenSource();
-
             StreamingRequestDto streamingRequest = new StreamingRequestDto
             {
                 Id = itemId,
@@ -257,97 +192,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            using var state = await StreamingHelpers.GetStreamingState(
-                    streamingRequest,
-                    Request,
-                    _authContext,
-                    _mediaSourceManager,
-                    _userManager,
-                    _libraryManager,
-                    _serverConfigurationManager,
-                    _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
-                    _dlnaManager,
-                    _deviceManager,
-                    _transcodingJobHelper,
-                    _transcodingJobType,
-                    cancellationTokenSource.Token)
-                .ConfigureAwait(false);
-
-            if (@static.HasValue && @static.Value && state.DirectStreamProvider != null)
-            {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
-
-                await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
-                    {
-                        AllowEndOfFile = false
-                    }.WriteToAsync(Response.Body, CancellationToken.None)
-                    .ConfigureAwait(false);
-
-                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return File(Response.Body, MimeTypes.GetMimeType("file.ts")!);
-            }
-
-            // Static remote stream
-            if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
-            {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
-
-                var httpClient = _httpClientFactory.CreateClient();
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, httpClient).ConfigureAwait(false);
-            }
-
-            if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
-            {
-                return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
-            }
-
-            var outputPath = state.OutputFilePath;
-            var outputPathExists = System.IO.File.Exists(outputPath);
-
-            var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
-            var isTranscodeCached = outputPathExists && transcodingJob != null;
-
-            StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, startTimeTicks, Request, _dlnaManager);
-
-            // Static stream
-            if (@static.HasValue && @static.Value)
-            {
-                var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
-
-                if (state.MediaSource.IsInfiniteStream)
-                {
-                    await new ProgressiveFileCopier(state.MediaPath, null, _transcodingJobHelper, CancellationToken.None)
-                        {
-                            AllowEndOfFile = false
-                        }.WriteToAsync(Response.Body, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-                    return File(Response.Body, contentType);
-                }
-
-                return FileStreamResponseHelpers.GetStaticFileResult(
-                    state.MediaPath,
-                    contentType,
-                    isHeadRequest,
-                    this);
-            }
-
-            // Need to start ffmpeg (because media can't be returned directly)
-            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-            var encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
-            var ffmpegCommandLineArguments = encodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
-            return await FileStreamResponseHelpers.GetTranscodedFile(
-                state,
-                isHeadRequest,
-                this,
-                _transcodingJobHelper,
-                ffmpegCommandLineArguments,
-                Request,
-                _transcodingJobType,
-                cancellationTokenSource).ConfigureAwait(false);
+            return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);
         }
     }
 }

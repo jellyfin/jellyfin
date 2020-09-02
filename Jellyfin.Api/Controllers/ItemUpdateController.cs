@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -67,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateItem([FromRoute] Guid itemId, [FromBody, Required] BaseItemDto request)
+        public async Task<ActionResult> UpdateItem([FromRoute] Guid itemId, [FromBody, Required] BaseItemDto request)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -101,7 +102,7 @@ namespace Jellyfin.Api.Controllers
 
             item.OnMetadataChanged();
 
-            item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             if (isLockedChanged && item.IsFolder)
             {
@@ -110,7 +111,7 @@ namespace Jellyfin.Api.Controllers
                 foreach (var child in folder.GetRecursiveChildren())
                 {
                     child.IsLocked = newLockData;
-                    child.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                    await child.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
                 }
             }
 

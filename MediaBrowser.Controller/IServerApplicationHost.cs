@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -16,13 +18,7 @@ namespace MediaBrowser.Controller
     {
         event EventHandler HasUpdateAvailableChanged;
 
-        /// <summary>
-        /// Gets the system info.
-        /// </summary>
-        /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
-
-        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
+        IServiceProvider ServiceProvider { get; }
 
         bool CanLaunchWebBrowser { get; }
 
@@ -54,6 +50,14 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The name of the friendly.</value>
         string FriendlyName { get; }
+
+        /// <summary>
+        /// Gets the system info.
+        /// </summary>
+        /// <returns>SystemInfo.</returns>
+        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+
+        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request

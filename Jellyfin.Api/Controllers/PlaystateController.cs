@@ -94,7 +94,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Item marked as unplayed.</response>
         /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-        [HttpDelete("Users/{userId}/PlayedItem/{itemId}")]
+        [HttpDelete("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {

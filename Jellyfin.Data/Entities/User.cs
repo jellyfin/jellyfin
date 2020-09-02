@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -6,13 +8,14 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a user.
     /// </summary>
-    public partial class User : IHasPermissions, ISavingChanges
+    public partial class User : IHasPermissions, IHasConcurrencyToken
     {
         /// <summary>
         /// The values being delimited here are Guids, so commas work as they do not appear in Guids.

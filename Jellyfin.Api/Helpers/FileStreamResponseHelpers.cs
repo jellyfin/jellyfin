@@ -22,14 +22,14 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="state">The current <see cref="StreamState"/>.</param>
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
-        /// <param name="controller">The <see cref="ControllerBase"/> managing the response.</param>
         /// <param name="httpClient">The <see cref="HttpClient"/> making the remote request.</param>
+        /// <param name="httpContext">The current http context.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the API response.</returns>
         public static async Task<ActionResult> GetStaticRemoteStreamResult(
             StreamState state,
             bool isHeadRequest,
-            ControllerBase controller,
-            HttpClient httpClient)
+            HttpClient httpClient,
+            HttpContext httpContext)
         {
             if (state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent))
             {
@@ -40,14 +40,14 @@ namespace Jellyfin.Api.Helpers
             var response = await httpClient.GetAsync(state.MediaPath).ConfigureAwait(false);
             var contentType = response.Content.Headers.ContentType.ToString();
 
-            controller.Response.Headers[HeaderNames.AcceptRanges] = "none";
+            httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
             if (isHeadRequest)
             {
-                return controller.File(Array.Empty<byte>(), contentType);
+                return new FileContentResult(Array.Empty<byte>(), contentType);
             }
 
-            return controller.File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), contentType);
+            return new FileStreamResult(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), contentType);
         }
 
         /// <summary>
@@ -56,23 +56,23 @@ namespace Jellyfin.Api.Helpers
         /// <param name="path">The path to the file.</param>
         /// <param name="contentType">The content type of the file.</param>
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
-        /// <param name="controller">The <see cref="ControllerBase"/> managing the response.</param>
+        /// <param name="httpContext">The current http context.</param>
         /// <returns>An <see cref="ActionResult"/> the file.</returns>
         public static ActionResult GetStaticFileResult(
             string path,
             string contentType,
             bool isHeadRequest,
-            ControllerBase controller)
+            HttpContext httpContext)
         {
-            controller.Response.ContentType = contentType;
+            httpContext.Response.ContentType = contentType;
 
             // if the request is a head request, return a NoContent result with the same headers as it would with a GET request
             if (isHeadRequest)
             {
-                return controller.NoContent();
+                return new NoContentResult();
             }
 
-            return controller.PhysicalFile(path, contentType);
+            return new PhysicalFileResult(path, contentType);
         }
 
         /// <summary>
@@ -80,34 +80,32 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="state">The current <see cref="StreamState"/>.</param>
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
-        /// <param name="controller">The <see cref="ControllerBase"/> managing the response.</param>
+        /// <param name="httpContext">The current http context.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
         /// <param name="ffmpegCommandLineArguments">The command line arguments to start ffmpeg.</param>
-        /// <param name="request">The <see cref="HttpRequest"/> starting the transcoding.</param>
         /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
         /// <param name="cancellationTokenSource">The <see cref="CancellationTokenSource"/>.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the transcoded file.</returns>
         public static async Task<ActionResult> GetTranscodedFile(
             StreamState state,
             bool isHeadRequest,
-            ControllerBase controller,
+            HttpContext httpContext,
             TranscodingJobHelper transcodingJobHelper,
             string ffmpegCommandLineArguments,
-            HttpRequest request,
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource)
         {
             // Use the command line args with a dummy playlist path
             var outputPath = state.OutputFilePath;
 
-            controller.Response.Headers[HeaderNames.AcceptRanges] = "none";
+            httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
             var contentType = state.GetMimeType(outputPath);
 
             // Headers only
             if (isHeadRequest)
             {
-                return controller.File(Array.Empty<byte>(), contentType);
+                return new FileContentResult(Array.Empty<byte>(), contentType);
             }
 
             var transcodingLock = transcodingJobHelper.GetTranscodingLock(outputPath);
@@ -117,7 +115,7 @@ namespace Jellyfin.Api.Helpers
                 TranscodingJobDto? job;
                 if (!File.Exists(outputPath))
                 {
-                    job = await transcodingJobHelper.StartFfMpeg(state, outputPath, ffmpegCommandLineArguments, request, transcodingJobType, cancellationTokenSource).ConfigureAwait(false);
+                    job = await transcodingJobHelper.StartFfMpeg(state, outputPath, ffmpegCommandLineArguments, httpContext.Request, transcodingJobType, cancellationTokenSource).ConfigureAwait(false);
                 }
                 else
                 {
@@ -128,7 +126,7 @@ namespace Jellyfin.Api.Helpers
                 var memoryStream = new MemoryStream();
                 await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
                 memoryStream.Position = 0;
-                return controller.File(memoryStream, contentType);
+                return new FileStreamResult(memoryStream, contentType);
             }
             finally
             {

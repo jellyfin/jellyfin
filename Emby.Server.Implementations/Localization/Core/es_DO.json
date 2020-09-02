@@ -17,5 +17,8 @@
     "Genres": "Géneros",
     "Folders": "Carpetas",
     "Favorites": "Favoritos",
-    "FailedLoginAttemptWithUserName": "Intento de inicio de sesión fallido de {0}"
+    "FailedLoginAttemptWithUserName": "Intento de inicio de sesión fallido de {0}",
+    "HeaderFavoriteSongs": "Canciones Favoritas",
+    "HeaderFavoriteEpisodes": "Episodios Favoritos",
+    "HeaderFavoriteArtists": "Artistas Favoritos"
 }

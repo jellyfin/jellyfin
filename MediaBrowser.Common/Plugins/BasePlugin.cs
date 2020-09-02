@@ -6,6 +6,7 @@ using System.Reflection;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -78,6 +79,16 @@ namespace MediaBrowser.Common.Plugins
         /// Called just before the plugin is uninstalled from the server.
         /// </summary>
         public virtual void OnUninstalling()
+        {
+        }
+
+        /// <inheritdoc />
+        public virtual void RegisterServices(IServiceCollection serviceCollection)
+        {
+        }
+
+        /// <inheritdoc />
+        public virtual void UnregisterServices(IServiceCollection serviceCollection)
         {
         }
 

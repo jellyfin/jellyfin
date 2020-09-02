@@ -80,11 +80,11 @@ namespace MediaBrowser.Model.Users
 
         public bool EnableAllDevices { get; set; }
 
-        public string[] EnabledChannels { get; set; }
+        public Guid[] EnabledChannels { get; set; }
 
         public bool EnableAllChannels { get; set; }
 
-        public string[] EnabledFolders { get; set; }
+        public Guid[] EnabledFolders { get; set; }
 
         public bool EnableAllFolders { get; set; }
 
@@ -94,9 +94,9 @@ namespace MediaBrowser.Model.Users
 
         public bool EnablePublicSharing { get; set; }
 
-        public string[] BlockedMediaFolders { get; set; }
+        public Guid[] BlockedMediaFolders { get; set; }
 
-        public string[] BlockedChannels { get; set; }
+        public Guid[] BlockedChannels { get; set; }
 
         public int RemoteClientBitrateLimit { get; set; }
 
@@ -145,10 +145,10 @@ namespace MediaBrowser.Model.Users
             LoginAttemptsBeforeLockout = -1;
 
             EnableAllChannels = true;
-            EnabledChannels = Array.Empty<string>();
+            EnabledChannels = Array.Empty<Guid>();
 
             EnableAllFolders = true;
-            EnabledFolders = Array.Empty<string>();
+            EnabledFolders = Array.Empty<Guid>();
 
             EnabledDevices = Array.Empty<string>();
             EnableAllDevices = true;
