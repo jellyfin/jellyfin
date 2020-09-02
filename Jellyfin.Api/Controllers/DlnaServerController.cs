@@ -238,6 +238,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Icon stream.</returns>
         [HttpGet("{serverId}/icons/{fileName}")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesImageFile]
         [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult GetIconId([FromRoute] string serverId, [FromRoute] string fileName)
         {
@@ -255,6 +257,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fileName">The icon filename.</param>
         /// <returns>Icon stream.</returns>
         [HttpGet("icons/{fileName}")]
+        [ProducesImageFile]
         [Produces(MediaTypeNames.Text.Xml)]
         public ActionResult GetIcon([FromRoute] string fileName)
         {
