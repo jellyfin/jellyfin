@@ -15,6 +15,12 @@ namespace MediaBrowser.Controller.Providers
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        public string Path { get; set; }
+
+        /// <summary>
         /// Gets or sets the metadata language.
         /// </summary>
         /// <value>The metadata language.</value>
