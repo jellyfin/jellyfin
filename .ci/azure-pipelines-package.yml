@@ -138,14 +138,14 @@ jobs:
       commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
 
   - task: SSH@0
-    displayName: 'Update Stable Repository'    
+    displayName: 'Update Stable Repository'
     continueOnError: true
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
       commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
-      
+
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
   dependsOn:
@@ -175,7 +175,7 @@ jobs:
         MediaBrowser.Model/MediaBrowser.Model.csproj
         Emby.Naming/Emby.Naming.csproj
       custom: 'pack'
-      arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory)'
+      arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory) -p:Stability=Unstable'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Nuget packages'
@@ -183,10 +183,32 @@ jobs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
       artifactName: Jellyfin Nuget Packages
 
+  - task: NuGetAuthenticate@0
+    displayName: 'Authenticate to stable Nuget feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    inputs:
+      nuGetServiceConnections: 'NugetOrg'
+
   - task: NuGetCommand@2
-    displayName: 'Push Nuget packages to feed'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    displayName: 'Push Nuget packages to stable feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       command: 'push'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
-      includeNugetOrg: 'true'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;$(Build.ArtifactStagingDirectory)/**/*.snupkg'
+      nuGetFeedType: 'external'
+      publishFeedCredentials: 'NugetOrg'
+      allowPackageConflicts: true # This ignores an error if the version already exists
+
+  - task: NuGetAuthenticate@0
+    displayName: 'Authenticate to unstable Nuget feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+
+  - task: NuGetCommand@2
+    displayName: 'Push Nuget packages to unstable feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg' # No symbols since Azure Artifact does not support it
+      nuGetFeedType: 'internal'
+      publishVstsFeed: '7cce6c46-d610-45e3-9fb7-65a6bfd1b671/a5746b79-f369-42db-93ff-59cd066f9327'
+      allowPackageConflicts: true # This ignores an error if the version already exists
