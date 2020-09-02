@@ -114,8 +114,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            using var fileStream = new FileStream(item.Path, FileMode.Open, FileAccess.Read);
-            return File(fileStream, MimeTypes.GetMimeType(item.Path));
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path));
         }
 
         /// <summary>
