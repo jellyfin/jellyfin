@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Extensions
         public static string RemoteIp(this HttpRequest request)
         {
             var cachedRemoteIp = request.HttpContext.Items["RemoteIp"].ToString();
-            if (string.IsNullOrEmpty(cachedRemoteIp))
+            if (!string.IsNullOrEmpty(cachedRemoteIp))
             {
                 return cachedRemoteIp;
             }
