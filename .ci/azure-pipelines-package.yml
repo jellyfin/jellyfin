@@ -116,8 +116,9 @@ jobs:
         $(JellyfinVersion)-$(BuildConfiguration)
 
 - job: CollectArtifacts
-  timeoutInMinutes: 10
+  timeoutInMinutes: 20
   displayName: 'Collect Artifacts'
+  continueOnError: true
   dependsOn:
   - BuildPackage
   - BuildDocker
@@ -129,19 +130,21 @@ jobs:
   steps:
   - task: SSH@0
     displayName: 'Update Unstable Repository'
+    continueOnError: true
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable
+      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
 
   - task: SSH@0
-    displayName: 'Update Stable Repository'
+    displayName: 'Update Stable Repository'    
+    continueOnError: true
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)
+      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
       
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
