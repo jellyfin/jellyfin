@@ -41,7 +41,6 @@ using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
-using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
@@ -90,7 +89,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
@@ -544,8 +542,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IZipClient, ZipClient>();
 
-            ServiceCollection.AddSingleton<IHttpResultFactory, HttpResultFactory>();
-
             ServiceCollection.AddSingleton<IServerApplicationHost>(this);
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
 
@@ -581,7 +577,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
-            ServiceCollection.AddSingleton<ServiceController>();
             ServiceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
             ServiceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
@@ -757,7 +752,6 @@ namespace Emby.Server.Implementations
             CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
-            AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
         }
 
         /// <summary>
@@ -777,7 +771,7 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            _httpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            _httpServer.Init(GetExports<IWebSocketListener>(), GetUrlPrefixes());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
@@ -26,7 +25,7 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listener, IEnumerable<string> urlPrefixes);
+        void Init(IEnumerable<IWebSocketListener> listener, IEnumerable<string> urlPrefixes);
 
         /// <summary>
         /// If set, all requests will respond with this message.
@@ -43,8 +42,8 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Get the default CORS headers.
         /// </summary>
-        /// <param name="req"></param>
-        /// <returns></returns>
-        IDictionary<string, string> GetDefaultCorsHeaders(IRequest req);
+        /// <param name="httpContext">The HTTP context of the current request.</param>
+        /// <returns>The default CORS headers for the context.</returns>
+        IDictionary<string, string> GetDefaultCorsHeaders(HttpContext httpContext);
     }
 }

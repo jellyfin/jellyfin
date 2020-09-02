@@ -7,11 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Services;
-using Emby.Server.Implementations.SocketSharp;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -20,8 +17,6 @@ using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
@@ -29,7 +24,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using ServiceStack.Text.Jsv;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -46,13 +40,9 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly IServerApplicationHost _appHost;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly IXmlSerializer _xmlSerializer;
-        private readonly Func<Type, Func<string, object>> _funcParseFn;
         private readonly string _defaultRedirectPath;
         private readonly string _baseUrlPrefix;
 
-        private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly IHostEnvironment _hostEnvironment;
 
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
@@ -64,10 +54,7 @@ namespace Emby.Server.Implementations.HttpServer
             IServerConfigurationManager config,
             IConfiguration configuration,
             INetworkManager networkManager,
-            IJsonSerializer jsonSerializer,
-            IXmlSerializer xmlSerializer,
             ILocalizationManager localizationManager,
-            ServiceController serviceController,
             IHostEnvironment hostEnvironment,
             ILoggerFactory loggerFactory)
         {
@@ -77,101 +64,20 @@ namespace Emby.Server.Implementations.HttpServer
             _defaultRedirectPath = configuration[DefaultRedirectKey];
             _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
-            _jsonSerializer = jsonSerializer;
-            _xmlSerializer = xmlSerializer;
-            ServiceController = serviceController;
             _hostEnvironment = hostEnvironment;
             _loggerFactory = loggerFactory;
 
-            _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
-
             Instance = this;
-            ResponseFilters = Array.Empty<Action<IRequest, HttpResponse, object>>();
             GlobalResponse = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         }
 
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
-
-        public Action<IRequest, HttpResponse, object>[] ResponseFilters { get; set; }
 
         public static HttpListenerHost Instance { get; protected set; }
 
         public string[] UrlPrefixes { get; private set; }
 
         public string GlobalResponse { get; set; }
-
-        public ServiceController ServiceController { get; }
-
-        public object CreateInstance(Type type)
-        {
-            return _appHost.CreateInstance(type);
-        }
-
-        private static string NormalizeUrlPath(string path)
-        {
-            if (path.Length > 0 && path[0] == '/')
-            {
-                // If the path begins with a leading slash, just return it as-is
-                return path;
-            }
-            else
-            {
-                // If the path does not begin with a leading slash, append one for consistency
-                return "/" + path;
-            }
-        }
-
-        /// <summary>
-        /// Applies the request filters. Returns whether or not the request has been handled
-        /// and no more processing should be done.
-        /// </summary>
-        /// <returns></returns>
-        public void ApplyRequestFilters(IRequest req, HttpResponse res, object requestDto)
-        {
-            // Exec all RequestFilter attributes with Priority < 0
-            var attributes = GetRequestFilterAttributes(requestDto.GetType());
-
-            int count = attributes.Count;
-            int i = 0;
-            for (; i < count && attributes[i].Priority < 0; i++)
-            {
-                var attribute = attributes[i];
-                attribute.RequestFilter(req, res, requestDto);
-            }
-
-            // Exec remaining RequestFilter attributes with Priority >= 0
-            for (; i < count && attributes[i].Priority >= 0; i++)
-            {
-                var attribute = attributes[i];
-                attribute.RequestFilter(req, res, requestDto);
-            }
-        }
-
-        public Type GetServiceTypeByRequest(Type requestType)
-        {
-            _serviceOperationsMap.TryGetValue(requestType, out var serviceType);
-            return serviceType;
-        }
-
-        public void AddServiceInfo(Type serviceType, Type requestType)
-        {
-            _serviceOperationsMap[requestType] = serviceType;
-        }
-
-        private List<IHasRequestFilter> GetRequestFilterAttributes(Type requestDtoType)
-        {
-            var attributes = requestDtoType.GetCustomAttributes(true).OfType<IHasRequestFilter>().ToList();
-
-            var serviceType = GetServiceTypeByRequest(requestDtoType);
-            if (serviceType != null)
-            {
-                attributes.AddRange(serviceType.GetCustomAttributes(true).OfType<IHasRequestFilter>());
-            }
-
-            attributes.Sort((x, y) => x.Priority - y.Priority);
-
-            return attributes;
-        }
 
         private static Exception GetActualException(Exception ex)
         {
@@ -210,7 +116,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, int statusCode, string urlToLog, bool ignoreStackTrace)
+        private async Task ErrorHandler(Exception ex, HttpContext httpContext, int statusCode, string urlToLog, bool ignoreStackTrace)
         {
             if (ignoreStackTrace)
             {
@@ -221,7 +127,7 @@ namespace Emby.Server.Implementations.HttpServer
                 _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
             }
 
-            var httpRes = httpReq.Response;
+            var httpRes = httpContext.Response;
 
             if (httpRes.HasStarted)
             {
@@ -395,24 +301,22 @@ namespace Emby.Server.Implementations.HttpServer
                 return WebSocketRequestHandler(context);
             }
 
-            var request = context.Request;
-            var response = context.Response;
-            var localPath = context.Request.Path.ToString();
-
-            var req = new WebSocketSharpRequest(request, response, request.Path);
-            return RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted);
+            return RequestHandler(context, context.RequestAborted);
         }
 
         /// <summary>
         /// Overridable method that can be used to implement a custom handler.
         /// </summary>
-        private async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
+        private async Task RequestHandler(HttpContext httpContext, CancellationToken cancellationToken)
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            var httpRes = httpReq.Response;
+            var httpRes = httpContext.Response;
+            var host = httpContext.Request.Host.ToString();
+            var localPath = httpContext.Request.Path.ToString();
+            var urlString = httpContext.Request.GetDisplayUrl();
             string urlToLog = GetUrlToLog(urlString);
-            string remoteIp = httpReq.RemoteIp;
+            string remoteIp = httpContext.Request.RemoteIp();
 
             try
             {
@@ -432,7 +336,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (!ValidateRequest(remoteIp, httpReq.IsLocal))
+                if (!ValidateRequest(remoteIp, httpContext.Request.IsLocal()))
                 {
                     httpRes.StatusCode = 403;
                     httpRes.ContentType = "text/plain";
@@ -440,16 +344,16 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (!ValidateSsl(httpReq.RemoteIp, urlString))
+                if (!ValidateSsl(httpContext.Request.RemoteIp(), urlString))
                 {
-                    RedirectToSecureUrl(httpReq, httpRes, urlString);
+                    RedirectToSecureUrl(httpRes, urlString);
                     return;
                 }
 
-                if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(httpContext.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
-                    foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
+                    foreach (var (key, value) in GetDefaultCorsHeaders(httpContext))
                     {
                         httpRes.Headers.Add(key, value);
                     }
@@ -483,15 +387,7 @@ namespace Emby.Server.Implementations.HttpServer
                     }
                 }
 
-                var handler = GetServiceHandler(httpReq);
-                if (handler != null)
-                {
-                    await handler.ProcessRequestAsync(this, httpReq, httpRes, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw new FileNotFoundException();
-                }
+                throw new FileNotFoundException();
             }
             catch (Exception requestEx)
             {
@@ -500,7 +396,7 @@ namespace Emby.Server.Implementations.HttpServer
                     var requestInnerEx = GetActualException(requestEx);
                     var statusCode = GetStatusCode(requestInnerEx);
 
-                    foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
+                    foreach (var (key, value) in GetDefaultCorsHeaders(httpContext))
                     {
                         if (!httpRes.Headers.ContainsKey(key))
                         {
@@ -525,7 +421,7 @@ namespace Emby.Server.Implementations.HttpServer
                         throw;
                     }
 
-                    await ErrorHandler(requestInnerEx, httpReq, statusCode, urlToLog, ignoreStackTrace).ConfigureAwait(false);
+                    await ErrorHandler(requestInnerEx, httpContext, statusCode, urlToLog, ignoreStackTrace).ConfigureAwait(false);
                 }
                 catch (Exception handlerException)
                 {
@@ -591,17 +487,13 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        /// <summary>
-        /// Get the default CORS headers.
-        /// </summary>
-        /// <param name="req"></param>
-        /// <returns></returns>
-        public IDictionary<string, string> GetDefaultCorsHeaders(IRequest req)
+        /// <inheritdoc />
+        public IDictionary<string, string> GetDefaultCorsHeaders(HttpContext httpContext)
         {
-            var origin = req.Headers["Origin"];
+            var origin = httpContext.Request.Headers["Origin"];
             if (origin == StringValues.Empty)
             {
-                origin = req.Headers["Host"];
+                origin = httpContext.Request.Headers["Host"];
                 if (origin == StringValues.Empty)
                 {
                     origin = "*";
@@ -616,23 +508,7 @@ namespace Emby.Server.Implementations.HttpServer
             return headers;
         }
 
-        // Entry point for HttpListener
-        public ServiceHandler GetServiceHandler(IHttpRequest httpReq)
-        {
-            var pathInfo = httpReq.PathInfo;
-
-            pathInfo = ServiceHandler.GetSanitizedPathInfo(pathInfo, out string contentType);
-            var restPath = ServiceController.GetRestPathForRequest(httpReq.HttpMethod, pathInfo);
-            if (restPath != null)
-            {
-                return new ServiceHandler(restPath, contentType);
-            }
-
-            _logger.LogError("Could not find handler for {PathInfo}", pathInfo);
-            return null;
-        }
-
-        private void RedirectToSecureUrl(IHttpRequest httpReq, HttpResponse httpRes, string url)
+        private void RedirectToSecureUrl(HttpResponse httpRes, string url)
         {
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
@@ -650,95 +526,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the rest handlers.
         /// </summary>
-        /// <param name="serviceTypes">The service types to register with the <see cref="ServiceController"/>.</param>
         /// <param name="listeners">The web socket listeners.</param>
         /// <param name="urlPrefixes">The URL prefixes. See <see cref="UrlPrefixes"/>.</param>
-        public void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
+        public void Init(IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
         {
             _webSocketListeners = listeners.ToArray();
             UrlPrefixes = urlPrefixes.ToArray();
-
-            ServiceController.Init(this, serviceTypes);
-
-            ResponseFilters = new Action<IRequest, HttpResponse, object>[]
-            {
-                new ResponseFilter(this, _logger).FilterResponse
-            };
-        }
-
-        public RouteAttribute[] GetRouteAttributes(Type requestType)
-        {
-            var routes = requestType.GetTypeInfo().GetCustomAttributes<RouteAttribute>(true).ToList();
-            var clone = routes.ToList();
-
-            foreach (var route in clone)
-            {
-                routes.Add(new RouteAttribute(NormalizeCustomRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
-
-                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
-
-                routes.Add(new RouteAttribute(NormalizeMediaBrowserRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
-            }
-
-            return routes.ToArray();
-        }
-
-        public Func<string, object> GetParseFn(Type propertyType)
-        {
-            return _funcParseFn(propertyType);
-        }
-
-        public void SerializeToJson(object o, Stream stream)
-        {
-            _jsonSerializer.SerializeToStream(o, stream);
-        }
-
-        public void SerializeToXml(object o, Stream stream)
-        {
-            _xmlSerializer.SerializeToStream(o, stream);
-        }
-
-        public Task<object> DeserializeXml(Type type, Stream stream)
-        {
-            return Task.FromResult(_xmlSerializer.DeserializeFromStream(type, stream));
-        }
-
-        public Task<object> DeserializeJson(Type type, Stream stream)
-        {
-            return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
-        }
-
-        private string NormalizeEmbyRoutePath(string path)
-        {
-            _logger.LogDebug("Normalizing /emby route");
-            return _baseUrlPrefix + "/emby" + NormalizeUrlPath(path);
-        }
-
-        private string NormalizeMediaBrowserRoutePath(string path)
-        {
-            _logger.LogDebug("Normalizing /mediabrowser route");
-            return _baseUrlPrefix + "/mediabrowser" + NormalizeUrlPath(path);
-        }
-
-        private string NormalizeCustomRoutePath(string path)
-        {
-            _logger.LogDebug("Normalizing custom route {0}", path);
-            return _baseUrlPrefix + NormalizeUrlPath(path);
         }
 
         /// <summary>
