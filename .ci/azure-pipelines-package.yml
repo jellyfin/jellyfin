@@ -42,7 +42,7 @@ jobs:
 
   - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="no" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
     displayName: 'Run Dockerfile (stable)'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
   - task: PublishPipelineArtifact@1
     displayName: 'Publish Release'
@@ -87,7 +87,7 @@ jobs:
   steps:
   - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
     displayName: Set release version (stable)
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
   - task: Docker@2
     displayName: 'Push Unstable Image'
@@ -104,7 +104,7 @@ jobs:
 
   - task: Docker@2
     displayName: 'Push Stable Image'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       repository: 'jellyfin/jellyfin-server'
       command: buildAndPush
@@ -140,7 +140,7 @@ jobs:
   - task: SSH@0
     displayName: 'Update Stable Repository'
     continueOnError: true
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
@@ -158,7 +158,7 @@ jobs:
   steps:
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       command: 'pack'
       packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj'

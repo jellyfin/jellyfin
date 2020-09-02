@@ -21,7 +21,7 @@ trigger:
       - 'v*'
 
 jobs:
-- ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
+- ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
   - template: azure-pipelines-main.yml
     parameters:
       LinuxImage: 'ubuntu-latest'
