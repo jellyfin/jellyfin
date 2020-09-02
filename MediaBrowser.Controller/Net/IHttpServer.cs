@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Get the default CORS headers.
         /// </summary>
-        /// <param name="req">The HTTP context of the current request.</param>
+        /// <param name="httpContext">The HTTP context of the current request.</param>
         /// <returns>The default CORS headers for the context.</returns>
         IDictionary<string, string> GetDefaultCorsHeaders(HttpContext httpContext);
     }

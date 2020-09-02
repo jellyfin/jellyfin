@@ -23,11 +23,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _userManager = userManager;
         }
 
-        public AuthorizationInfo GetAuthorizationInfo(object requestContext)
-        {
-            return GetAuthorizationInfo((HttpContext)requestContext);
-        }
-
         public AuthorizationInfo GetAuthorizationInfo(HttpContext requestContext)
         {
             if (requestContext.Request.HttpContext.Items.TryGetValue("AuthorizationInfo", out var cached))

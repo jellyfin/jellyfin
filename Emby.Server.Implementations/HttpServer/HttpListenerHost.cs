@@ -79,20 +79,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        private static string NormalizeUrlPath(string path)
-        {
-            if (path.Length > 0 && path[0] == '/')
-            {
-                // If the path begins with a leading slash, just return it as-is
-                return path;
-            }
-            else
-            {
-                // If the path does not begin with a leading slash, append one for consistency
-                return "/" + path;
-            }
-        }
-
         private static Exception GetActualException(Exception ex)
         {
             if (ex is AggregateException agg)
