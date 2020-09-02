@@ -487,11 +487,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        /// <summary>
-        /// Get the default CORS headers.
-        /// </summary>
-        /// <param name="req"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public IDictionary<string, string> GetDefaultCorsHeaders(HttpContext httpContext)
         {
             var origin = httpContext.Request.Headers["Origin"];
