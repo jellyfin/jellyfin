@@ -28,7 +28,7 @@ namespace MediaBrowser.Common.Extensions
         /// <returns>The remote caller IP address.</returns>
         public static string RemoteIp(this HttpRequest request)
         {
-            var cachedRemoteIp = request.HttpContext.Items["RemoteIp"].ToString();
+            var cachedRemoteIp = request.HttpContext.Items["RemoteIp"]?.ToString();
             if (!string.IsNullOrEmpty(cachedRemoteIp))
             {
                 return cachedRemoteIp;

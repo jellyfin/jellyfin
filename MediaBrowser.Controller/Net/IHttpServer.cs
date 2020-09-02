@@ -35,9 +35,10 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// The HTTP request handler.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        Task RequestHandler(HttpContext context);
+        /// <param name="context">The current HTTP context.</param>
+        /// <param name="next">The next middleware in the ASP.NET pipeline.</param>
+        /// <returns>The task.</returns>
+        Task RequestHandler(HttpContext context, Func<Task> next);
 
         /// <summary>
         /// Get the default CORS headers.

@@ -501,7 +501,7 @@ namespace Emby.Server.Implementations
         }
 
         public Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
-            => _httpServer.RequestHandler(context);
+            => _httpServer.RequestHandler(context, next);
 
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
