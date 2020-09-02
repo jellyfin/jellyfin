@@ -9,9 +9,12 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
 
@@ -44,7 +47,7 @@ namespace Jellyfin.Server
         {
             services.AddResponseCompression();
             services.AddHttpContextAccessor();
-            services.AddJellyfinApi(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'), _applicationHost.GetApiPluginAssemblies());
+            services.AddJellyfinApi(_applicationHost.GetApiPluginAssemblies());
 
             services.AddJellyfinApiSwagger();
 
@@ -75,10 +78,12 @@ namespace Jellyfin.Server
         /// <param name="app">The application builder.</param>
         /// <param name="env">The webhost environment.</param>
         /// <param name="serverApplicationHost">The server application host.</param>
+        /// <param name="appConfig">The application config.</param>
         public void Configure(
             IApplicationBuilder app,
             IWebHostEnvironment env,
-            IServerApplicationHost serverApplicationHost)
+            IServerApplicationHost serverApplicationHost,
+            IConfiguration appConfig)
         {
             if (env.IsDevelopment())
             {
@@ -95,6 +100,16 @@ namespace Jellyfin.Server
 
             // TODO app.UseMiddleware<WebSocketMiddleware>();
 
+            app.UsePathBase(_serverConfigurationManager.Configuration.BaseUrl);
+            if (appConfig.HostWebClient())
+            {
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                    RequestPath = "/web"
+                });
+            }
+
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
@@ -102,7 +117,7 @@ namespace Jellyfin.Server
             app.UseAuthorization();
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
-                // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+                // Must be registered after any middleware that could change HTTP response codes or the data will be bad
                 app.UseHttpMetrics();
             }
 
