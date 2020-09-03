@@ -890,7 +890,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error writing to channel cache file: {path}", path);
+                _logger.LogError(ex, "Error writing to channel cache file: {Path}", path);
             }
         }
 

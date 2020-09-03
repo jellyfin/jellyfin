@@ -948,7 +948,7 @@ namespace Emby.Dlna.Didl
             }
             catch (XmlException ex)
             {
-                _logger.LogError(ex, "Error adding xml value: {value}", name);
+                _logger.LogError(ex, "Error adding xml value: {Value}", name);
             }
         }
 
@@ -960,7 +960,7 @@ namespace Emby.Dlna.Didl
             }
             catch (XmlException ex)
             {
-                _logger.LogError(ex, "Error adding xml value: {value}", value);
+                _logger.LogError(ex, "Error adding xml value: {Value}", value);
             }
         }
 
