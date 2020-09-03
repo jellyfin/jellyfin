@@ -53,9 +53,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(
-                _serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'),
-                _serverApplicationHost.GetApiPluginAssemblies());
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies());
 
             services.AddJellyfinApiSwagger();
 
