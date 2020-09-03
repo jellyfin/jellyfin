@@ -18,7 +18,7 @@ namespace Jellyfin.Server.Formatters
             SupportedMediaTypes.Clear();
             // Add application/json for default formatter
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json));
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json; profile=\"PascalCase\""));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse(JsonDefaults.PascalCaseMediaType));
         }
     }
 }
