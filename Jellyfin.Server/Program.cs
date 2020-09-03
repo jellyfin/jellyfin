@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
 using Jellyfin.Api.Controllers;
@@ -28,6 +27,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
+using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -594,7 +594,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "api-docs/swagger";
+                inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
             }
 
             return config

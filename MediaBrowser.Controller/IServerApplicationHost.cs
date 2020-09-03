@@ -20,6 +20,8 @@ namespace MediaBrowser.Controller
 
         IServiceProvider ServiceProvider { get; }
 
+        bool CoreStartupHasCompleted { get; }
+
         bool CanLaunchWebBrowser { get; }
 
         /// <summary>
@@ -117,8 +119,7 @@ namespace MediaBrowser.Controller
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
-        string ReverseVirtualPath(string path);
 
-        Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
+        string ReverseVirtualPath(string path);
     }
 }

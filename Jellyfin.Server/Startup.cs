@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -26,17 +26,19 @@ namespace Jellyfin.Server
     public class Startup
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
-        private readonly IApplicationHost _applicationHost;
+        private readonly IServerApplicationHost _serverApplicationHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        /// <param name="applicationHost">The application host.</param>
-        public Startup(IServerConfigurationManager serverConfigurationManager, IApplicationHost applicationHost)
+        /// <param name="serverApplicationHost">The server application host.</param>
+        public Startup(
+            IServerConfigurationManager serverConfigurationManager,
+            IServerApplicationHost serverApplicationHost)
         {
             _serverConfigurationManager = serverConfigurationManager;
-            _applicationHost = applicationHost;
+            _serverApplicationHost = serverApplicationHost;
         }
 
         /// <summary>
@@ -47,7 +49,13 @@ namespace Jellyfin.Server
         {
             services.AddResponseCompression();
             services.AddHttpContextAccessor();
-            services.AddJellyfinApi(_applicationHost.GetApiPluginAssemblies());
+            services.AddHttpsRedirection(options =>
+            {
+                options.HttpsPort = _serverApplicationHost.HttpsPort;
+            });
+            services.AddJellyfinApi(
+                _serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'),
+                _serverApplicationHost.GetApiPluginAssemblies());
 
             services.AddJellyfinApiSwagger();
 
@@ -56,7 +64,9 @@ namespace Jellyfin.Server
 
             services.AddJellyfinApiAuthorization();
 
-            var productHeader = new ProductInfoHeaderValue(_applicationHost.Name.Replace(' ', '-'), _applicationHost.ApplicationVersionString);
+            var productHeader = new ProductInfoHeaderValue(
+                _serverApplicationHost.Name.Replace(' ', '-'),
+                _serverApplicationHost.ApplicationVersionString);
             services
                 .AddHttpClient(NamedClient.Default, c =>
                 {
@@ -67,9 +77,12 @@ namespace Jellyfin.Server
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
-                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_applicationHost.ApplicationUserAgentAddress})"));
+                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+
+            services.AddHealthChecks()
+                .AddCheck<JellyfinDbHealthCheck>("JellyfinDb");
         }
 
         /// <summary>
@@ -98,8 +111,15 @@ namespace Jellyfin.Server
 
             app.UseResponseCompression();
 
-            // TODO app.UseMiddleware<WebSocketMiddleware>();
+            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
 
+            if (_serverConfigurationManager.Configuration.RequireHttps
+                && _serverApplicationHost.ListenWithHttps)
+            {
+                app.UseHttpsRedirection();
+            }
+
+            app.UseStaticFiles();
             app.UsePathBase(_serverConfigurationManager.Configuration.BaseUrl);
             if (appConfig.HostWebClient())
             {
@@ -113,13 +133,18 @@ namespace Jellyfin.Server
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
-            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
             app.UseAuthorization();
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
                 // Must be registered after any middleware that could change HTTP response codes or the data will be bad
                 app.UseHttpMetrics();
             }
+
+            app.UseLanFiltering();
+            app.UseIpBasedAccessValidation();
+            app.UseBaseUrlRedirection();
+            app.UseWebSocketHandler();
+            app.UseServerStartupMessage();
 
             app.UseEndpoints(endpoints =>
             {
@@ -128,9 +153,9 @@ namespace Jellyfin.Server
                 {
                     endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
                 }
-            });
 
-            app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);
+                endpoints.MapHealthChecks(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/health");
+            });
 
             // Add type descriptor for legacy datetime parsing.
             TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));
