@@ -123,6 +123,7 @@ namespace Jellyfin.Server
             app.UseCorsOptionsResponse();
             app.UseBaseUrlRedirection();
             app.UseWebSocketHandler();
+            app.UseServerStartupMessage();
 
             app.UseEndpoints(endpoints =>
             {
@@ -132,8 +133,6 @@ namespace Jellyfin.Server
                     endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
                 }
             });
-
-            app.UseServerStartupMessage();
 
             // Add type descriptor for legacy datetime parsing.
             TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));

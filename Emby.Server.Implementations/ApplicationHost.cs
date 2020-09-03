@@ -132,6 +132,8 @@ namespace Emby.Server.Implementations
         /// </summary>
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
 
+        public bool CoreStartupHasCompleted { get; private set; }
+
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -446,7 +448,7 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
-
+            CoreStartupHasCompleted = true;
             stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);

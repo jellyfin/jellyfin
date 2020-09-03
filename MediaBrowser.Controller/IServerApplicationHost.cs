@@ -20,6 +20,8 @@ namespace MediaBrowser.Controller
 
         IServiceProvider ServiceProvider { get; }
 
+        bool CoreStartupHasCompleted { get; }
+
         bool CanLaunchWebBrowser { get; }
 
         /// <summary>
