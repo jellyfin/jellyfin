@@ -82,6 +82,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Dlna media receiver registrar xml.</returns>
+        [HttpGet("{serverId}/MediaReceiverRegistrar")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar", Name = "GetMediaReceiverRegistrar_2")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml", Name = "GetMediaReceiverRegistrar_3")]
         [ProducesResponseType(StatusCodes.Status200OK)]
