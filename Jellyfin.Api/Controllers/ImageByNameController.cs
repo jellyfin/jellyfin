@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -65,6 +66,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public ActionResult GetGeneralImage([FromRoute, Required] string? name, [FromRoute, Required] string? type)
         {
             var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
@@ -110,6 +112,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public ActionResult GetRatingImage(
             [FromRoute, Required] string? theme,
             [FromRoute, Required] string? name)
@@ -143,6 +146,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public ActionResult GetMediaInfoImage(
             [FromRoute, Required] string? theme,
             [FromRoute, Required] string? name)
