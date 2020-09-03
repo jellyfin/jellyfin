@@ -117,8 +117,7 @@ namespace MediaBrowser.Controller
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
-        string ReverseVirtualPath(string path);
 
-        Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
+        string ReverseVirtualPath(string path);
     }
 }

@@ -84,11 +84,9 @@ namespace Jellyfin.Server
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <param name="env">The webhost environment.</param>
-        /// <param name="serverApplicationHost">The server application host.</param>
         public void Configure(
             IApplicationBuilder app,
-            IWebHostEnvironment env,
-            IServerApplicationHost serverApplicationHost)
+            IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -120,7 +118,11 @@ namespace Jellyfin.Server
                 app.UseHttpMetrics();
             }
 
-            app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);
+            app.UseLanFiltering();
+            app.UseIpBasedAccessValidation();
+            app.UseCorsOptionsResponse();
+            app.UseBaseUrlRedirection();
+            app.UseWebSocketHandler();
 
             app.UseEndpoints(endpoints =>
             {
@@ -130,6 +132,8 @@ namespace Jellyfin.Server
                     endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
                 }
             });
+
+            app.UseServerStartupMessage();
 
             // Add type descriptor for legacy datetime parsing.
             TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));
