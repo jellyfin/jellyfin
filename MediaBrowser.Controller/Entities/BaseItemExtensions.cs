@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;

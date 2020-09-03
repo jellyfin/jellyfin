@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using MediaBrowser.Model.Drawing;
@@ -11,6 +13,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value>The stream.</value>
         public Stream Stream { get; set; }
+
         /// <summary>
         /// Gets or sets the format.
         /// </summary>

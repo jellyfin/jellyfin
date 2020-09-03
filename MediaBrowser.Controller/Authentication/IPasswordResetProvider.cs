@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -12,6 +14,7 @@ namespace MediaBrowser.Controller.Authentication
         bool IsEnabled { get; }
 
         Task<ForgotPasswordResult> StartForgotPasswordProcess(User user, bool isInNetwork);
+
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
     }
 

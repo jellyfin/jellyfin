@@ -60,8 +60,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Dlna content directory returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the dlna content directory xml.</returns>
-        [HttpGet("{serverId}/ContentDirectory/ContentDirectory")]
-        [HttpGet("{serverId}/ContentDirectory/ContentDirectory.xml", Name = "GetContentDirectory_2")]
+        [HttpGet("{serverId}/ContentDirectory")]
+        [HttpGet("{serverId}/ContentDirectory.xml", Name = "GetContentDirectory_2")]
         [Produces(XMLContentType)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
@@ -75,8 +75,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Dlna media receiver registrar xml.</returns>
-        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar")]
-        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml", Name = "GetMediaReceiverRegistrar_2")]
+        [HttpGet("{serverId}/MediaReceiverRegistrar")]
+        [HttpGet("{serverId}/MediaReceiverRegistrar.xml", Name = "GetMediaReceiverRegistrar_2")]
         [Produces(XMLContentType)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
@@ -90,8 +90,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Dlna media receiver registrar xml.</returns>
-        [HttpGet("{serverId}/ConnectionManager/ConnectionManager")]
-        [HttpGet("{serverId}/ConnectionManager/ConnectionManager.xml", Name = "GetConnectionManager_2")]
+        [HttpGet("{serverId}/ConnectionManager")]
+        [HttpGet("{serverId}/ConnectionManager.xml", Name = "GetConnectionManager_2")]
         [Produces(XMLContentType)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
@@ -221,16 +221,15 @@ namespace Jellyfin.Api.Controllers
 
         private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)
         {
-            return service.ProcessControlRequestAsync(new ControlRequest
+            return service.ProcessControlRequestAsync(new ControlRequest(Request.Headers)
             {
-                Headers = Request.Headers,
                 InputXml = requestStream,
                 TargetServerUuId = id,
                 RequestedUrl = GetAbsoluteUri()
             });
         }
 
-        private EventSubscriptionResponse ProcessEventRequest(IEventManager eventManager)
+        private EventSubscriptionResponse ProcessEventRequest(IDlnaEventManager dlnaEventManager)
         {
             var subscriptionId = Request.Headers["SID"];
             if (string.Equals(Request.Method, "subscribe", StringComparison.OrdinalIgnoreCase))
@@ -241,17 +240,17 @@ namespace Jellyfin.Api.Controllers
 
                 if (string.IsNullOrEmpty(notificationType))
                 {
-                    return eventManager.RenewEventSubscription(
+                    return dlnaEventManager.RenewEventSubscription(
                         subscriptionId,
                         notificationType,
                         timeoutString,
                         callback);
                 }
 
-                return eventManager.CreateEventSubscription(notificationType, timeoutString, callback);
+                return dlnaEventManager.CreateEventSubscription(notificationType, timeoutString, callback);
             }
 
-            return eventManager.CancelEventSubscription(subscriptionId);
+            return dlnaEventManager.CancelEventSubscription(subscriptionId);
         }
     }
 }

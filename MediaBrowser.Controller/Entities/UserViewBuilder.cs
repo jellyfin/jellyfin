@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +10,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
@@ -672,9 +673,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var isPlaceHolder = false;
 
-                var hasPlaceHolder = item as ISupportsPlaceHolders;
-
-                if (hasPlaceHolder != null)
+                if (item is ISupportsPlaceHolders hasPlaceHolder)
                 {
                     isPlaceHolder = hasPlaceHolder.IsPlaceHolder;
                 }
@@ -689,13 +688,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasSpecialFeature.Value;
 
-                var movie = item as IHasSpecialFeatures;
-
-                if (movie != null)
+                if (item is IHasSpecialFeatures movie)
                 {
                     var ok = filterValue
-                        ? movie.SpecialFeatureIds.Length > 0
-                        : movie.SpecialFeatureIds.Length == 0;
+                        ? movie.SpecialFeatureIds.Count > 0
+                        : movie.SpecialFeatureIds.Count == 0;
 
                     if (!ok)
                     {

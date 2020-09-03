@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
