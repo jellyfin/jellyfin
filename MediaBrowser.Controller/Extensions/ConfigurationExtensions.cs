@@ -9,6 +9,12 @@ namespace MediaBrowser.Controller.Extensions
     public static class ConfigurationExtensions
     {
         /// <summary>
+        /// The key for a setting that specifies the default redirect path
+        /// to use for requests where the URL base prefix is invalid or missing..
+        /// </summary>
+        public const string DefaultRedirectKey = "DefaultRedirectPath";
+
+        /// <summary>
         /// The key for a setting that indicates whether the application should host web client content.
         /// </summary>
         public const string HostWebClientKey = "hostwebclient";
