@@ -11,6 +11,8 @@ namespace MediaBrowser.Model.Configuration
 
         public double DownMixAudioBoost { get; set; }
 
+        public int MaxMuxingQueueSize { get; set; }
+
         public bool EnableThrottling { get; set; }
 
         public int ThrottleDelaySeconds { get; set; }
@@ -50,6 +52,7 @@ namespace MediaBrowser.Model.Configuration
         public EncodingOptions()
         {
             DownMixAudioBoost = 2;
+            MaxMuxingQueueSize = 2048;
             EnableThrottling = false;
             ThrottleDelaySeconds = 180;
             EncodingThreadCount = -1;
