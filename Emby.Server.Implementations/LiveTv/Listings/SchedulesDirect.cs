@@ -671,7 +671,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             using var options = new HttpRequestMessage(HttpMethod.Put, ApiUrl + "/lineups/" + info.ListingsId);
             options.Headers.TryAddWithoutValidation("token", token);
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
