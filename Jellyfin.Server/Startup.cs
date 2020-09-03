@@ -112,6 +112,7 @@ namespace Jellyfin.Server
                 app.UseHttpsRedirection();
             }
 
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
