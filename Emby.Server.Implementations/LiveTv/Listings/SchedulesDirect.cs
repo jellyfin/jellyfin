@@ -607,12 +607,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             HttpRequestMessage options,
             bool enableRetry,
             ListingsProviderInfo providerInfo,
-            CancellationToken cancellationToken,
-            HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
+            CancellationToken cancellationToken)
         {
             try
             {
-                return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
+                return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, cancellationToken).ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
@@ -671,7 +670,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             using var options = new HttpRequestMessage(HttpMethod.Put, ApiUrl + "/lineups/" + info.ListingsId);
             options.Headers.TryAddWithoutValidation("token", token);
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -695,7 +694,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             try
             {
-                using var httpResponse = await Send(options, false, null, cancellationToken, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                using var httpResponse = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
                 await using var stream = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 using var response = httpResponse.Content;
                 var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Lineups>(stream).ConfigureAwait(false);
