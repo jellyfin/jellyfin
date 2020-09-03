@@ -139,16 +139,17 @@ namespace Jellyfin.Server
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
-                if (_serverConfigurationManager.Configuration.EnableMetrics)
-                {
-                    // Must be registered after any middleware that could change HTTP response codes or the data will be bad
-                    mainApp.UseHttpMetrics();
-                }
 
                 mainApp.UseLanFiltering();
                 mainApp.UseIpBasedAccessValidation();
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();
+
+                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                {
+                    // Must be registered after any middleware that could change HTTP response codes or the data will be bad
+                    mainApp.UseHttpMetrics();
+                }
 
                 mainApp.UseEndpoints(endpoints =>
                 {
