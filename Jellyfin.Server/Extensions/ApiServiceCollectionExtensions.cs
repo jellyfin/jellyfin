@@ -18,6 +18,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
 using Jellyfin.Server.Models;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -135,10 +136,11 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="baseUrl">The base url for the API.</param>
+        /// <param name="pluginAssemblies">An IEnumberable containing all plugin assemblies with API controllers.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl, IEnumerable<Assembly> pluginAssemblies)
         {
-            return serviceCollection
+            IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors(options =>
                 {
                     options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
@@ -172,6 +174,9 @@ namespace Jellyfin.Server.Extensions
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
+                    options.JsonSerializerOptions.NumberHandling = jsonOptions.NumberHandling;
+
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)
                     {
@@ -180,8 +185,14 @@ namespace Jellyfin.Server.Extensions
 
                     // From JsonDefaults.PascalCase
                     options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
-                })
-                .AddControllersAsServices();
+                });
+
+            foreach (Assembly pluginAssembly in pluginAssemblies)
+            {
+                mvcBuilder.AddApplicationPart(pluginAssembly);
+            }
+
+            return mvcBuilder.AddControllersAsServices();
         }
 
         /// <summary>
@@ -198,7 +209,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     Type = SecuritySchemeType.ApiKey,
                     In = ParameterLocation.Header,
-                    Name = "X-Emby-Token",
+                    Name = "X-Emby-Authorization",
                     Description = "API key header parameter"
                 });
 

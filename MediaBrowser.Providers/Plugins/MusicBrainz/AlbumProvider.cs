@@ -740,11 +740,11 @@ namespace MediaBrowser.Providers.Music
 
             // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
             // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
-            options.Headers.UserAgent.Add(new ProductInfoHeaderValue(string.Format(
+            options.Headers.UserAgent.ParseAdd(string.Format(
                 CultureInfo.InvariantCulture,
                 "{0} ( {1} )",
                 _appHost.ApplicationUserAgent,
-                _appHost.ApplicationUserAgentAddress)));
+                _appHost.ApplicationUserAgentAddress));
 
             HttpResponseMessage response;
             var attempts = 0u;

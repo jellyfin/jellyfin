@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using Rssdp;
 using Rssdp.Infrastructure;
 

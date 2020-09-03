@@ -233,7 +233,7 @@ namespace Jellyfin.Api.Controllers
                     .First();
             }
 
-            var list = primaryVersion.LinkedAlternateVersions.ToList();
+            var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
 
             foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
@@ -241,17 +241,20 @@ namespace Jellyfin.Api.Controllers
 
                 await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-                list.Add(new LinkedChild
+                if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Path = item.Path,
-                    ItemId = item.Id
-                });
+                    alternateVersionsOfPrimary.Add(new LinkedChild
+                    {
+                        Path = item.Path,
+                        ItemId = item.Id
+                    });
+                }
 
                 foreach (var linkedItem in item.LinkedAlternateVersions)
                 {
-                    if (!list.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
+                    if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
                     {
-                        list.Add(linkedItem);
+                        alternateVersionsOfPrimary.Add(linkedItem);
                     }
                 }
 
@@ -262,7 +265,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            primaryVersion.LinkedAlternateVersions = list.ToArray();
+            primaryVersion.LinkedAlternateVersions = alternateVersionsOfPrimary.ToArray();
             await primaryVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }

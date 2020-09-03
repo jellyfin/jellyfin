@@ -228,7 +228,7 @@ namespace Jellyfin.Api.Controllers
             });
         }
 
-        private EventSubscriptionResponse ProcessEventRequest(IEventManager eventManager)
+        private EventSubscriptionResponse ProcessEventRequest(IDlnaEventManager dlnaEventManager)
         {
             var subscriptionId = Request.Headers["SID"];
             if (string.Equals(Request.Method, "subscribe", StringComparison.OrdinalIgnoreCase))
@@ -239,17 +239,17 @@ namespace Jellyfin.Api.Controllers
 
                 if (string.IsNullOrEmpty(notificationType))
                 {
-                    return eventManager.RenewEventSubscription(
+                    return dlnaEventManager.RenewEventSubscription(
                         subscriptionId,
                         notificationType,
                         timeoutString,
                         callback);
                 }
 
-                return eventManager.CreateEventSubscription(notificationType, timeoutString, callback);
+                return dlnaEventManager.CreateEventSubscription(notificationType, timeoutString, callback);
             }
 
-            return eventManager.CancelEventSubscription(subscriptionId);
+            return dlnaEventManager.CancelEventSubscription(subscriptionId);
         }
     }
 }
