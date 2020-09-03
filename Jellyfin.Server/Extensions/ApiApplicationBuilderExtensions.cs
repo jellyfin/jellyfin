@@ -69,16 +69,6 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Adds CORS OPTIONS request handling to the application pipeline.
-        /// </summary>
-        /// <param name="appBuilder">The application builder.</param>
-        /// <returns>The updated application builder.</returns>
-        public static IApplicationBuilder UseCorsOptionsResponse(this IApplicationBuilder appBuilder)
-        {
-            return appBuilder.UseMiddleware<CorsOptionsResponseMiddleware>();
-        }
-
-        /// <summary>
         /// Adds base url redirection to the application pipeline.
         /// </summary>
         /// <param name="appBuilder">The application builder.</param>

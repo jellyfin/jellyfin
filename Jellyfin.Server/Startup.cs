@@ -101,6 +101,8 @@ namespace Jellyfin.Server
 
             app.UseResponseCompression();
 
+            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
+
             if (_serverConfigurationManager.Configuration.RequireHttps
                 && _serverApplicationHost.ListenWithHttps)
             {
@@ -110,7 +112,6 @@ namespace Jellyfin.Server
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
-            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
             app.UseAuthorization();
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
@@ -120,7 +121,6 @@ namespace Jellyfin.Server
 
             app.UseLanFiltering();
             app.UseIpBasedAccessValidation();
-            app.UseCorsOptionsResponse();
             app.UseBaseUrlRedirection();
             app.UseWebSocketHandler();
             app.UseServerStartupMessage();
