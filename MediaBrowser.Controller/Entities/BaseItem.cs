@@ -2633,6 +2633,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return new T
             {
+                Path = Path,
                 MetadataCountryCode = GetPreferredMetadataCountryCode(),
                 MetadataLanguage = GetPreferredMetadataLanguage(),
                 Name = GetNameForMetadataLookup(),
