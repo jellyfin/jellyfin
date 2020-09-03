@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
@@ -11,6 +13,12 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        public string Path { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata language.

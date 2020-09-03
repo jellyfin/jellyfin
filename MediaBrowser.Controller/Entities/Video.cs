@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -495,9 +497,10 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public override async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            base.UpdateToRepository(updateReason, cancellationToken);
+            await base.UpdateToRepositoryAsync(updateReason, cancellationToken).ConfigureAwait(false);
 
             var localAlternates = GetLocalAlternateVersionIds()
                 .Select(i => LibraryManager.GetItemById(i))
@@ -514,7 +517,7 @@ namespace MediaBrowser.Controller.Entities
                 item.Genres = Genres;
                 item.ProviderIds = ProviderIds;
 
-                item.UpdateToRepository(ItemUpdateType.MetadataDownload, cancellationToken);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
             }
         }
 

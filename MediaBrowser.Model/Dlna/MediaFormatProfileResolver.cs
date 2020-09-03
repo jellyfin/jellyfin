@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.MediaInfo;
 
@@ -142,26 +143,26 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (timestampType == TransportStreamTimestamp.None)
                     {
-                        return new MediaFormatProfile[] { ValueOf(string.Format("AVC_TS_HP_{0}D_MPEG1_L2_ISO", resolution)) };
+                        return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "AVC_TS_HP_{0}D_MPEG1_L2_ISO", resolution)) };
                     }
 
-                    return new MediaFormatProfile[] { ValueOf(string.Format("AVC_TS_HP_{0}D_MPEG1_L2_T", resolution)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "AVC_TS_HP_{0}D_MPEG1_L2_T", resolution)) };
                 }
 
                 if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MediaFormatProfile[] { ValueOf(string.Format("AVC_TS_MP_{0}D_AAC_MULT5{1}", resolution, suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "AVC_TS_MP_{0}D_AAC_MULT5{1}", resolution, suffix)) };
                 }
 
                 if (string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MediaFormatProfile[] { ValueOf(string.Format("AVC_TS_MP_{0}D_MPEG1_L3{1}", resolution, suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "AVC_TS_MP_{0}D_MPEG1_L3{1}", resolution, suffix)) };
                 }
 
                 if (string.IsNullOrEmpty(audioCodec) ||
                     string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MediaFormatProfile[] { ValueOf(string.Format("AVC_TS_MP_{0}D_AC3{1}", resolution, suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "AVC_TS_MP_{0}D_AC3{1}", resolution, suffix)) };
                 }
             }
             else if (string.Equals(videoCodec, "vc1", StringComparison.OrdinalIgnoreCase))
@@ -180,29 +181,29 @@ namespace MediaBrowser.Model.Dlna
                 {
                     suffix = string.Equals(suffix, "_ISO", StringComparison.OrdinalIgnoreCase) ? suffix : "_T";
 
-                    return new MediaFormatProfile[] { ValueOf(string.Format("VC1_TS_HD_DTS{0}", suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "VC1_TS_HD_DTS{0}", suffix)) };
                 }
             }
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MediaFormatProfile[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_AAC{0}", suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "MPEG4_P2_TS_ASP_AAC{0}", suffix)) };
                 }
 
                 if (string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MediaFormatProfile[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG1_L3{0}", suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "MPEG4_P2_TS_ASP_MPEG1_L3{0}", suffix)) };
                 }
 
                 if (string.Equals(audioCodec, "mp2", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MediaFormatProfile[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG2_L2{0}", suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "MPEG4_P2_TS_ASP_MPEG2_L2{0}", suffix)) };
                 }
 
                 if (string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MediaFormatProfile[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_AC3{0}", suffix)) };
+                    return new MediaFormatProfile[] { ValueOf(string.Format(CultureInfo.InvariantCulture, "MPEG4_P2_TS_ASP_AC3{0}", suffix)) };
                 }
             }
 

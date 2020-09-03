@@ -42,6 +42,7 @@ namespace MediaBrowser.Controller.Plugins
         /// The plugin configuration.
         /// </summary>
         PluginConfiguration,
+
         /// <summary>
         /// The none.
         /// </summary>

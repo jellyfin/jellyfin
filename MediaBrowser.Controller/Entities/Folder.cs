@@ -350,12 +350,12 @@ namespace MediaBrowser.Controller.Entities
 
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
-                            currentChild.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                            await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {
                             // metadata is up-to-date; make sure DB has correct images dimensions and hash
-                            LibraryManager.UpdateImages(currentChild);
+                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
                         }
 
                         continue;

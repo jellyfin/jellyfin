@@ -1,9 +1,9 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Providers;
@@ -13,11 +13,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Trailers
 {
     public class TmdbTrailerProvider : IHasOrder, IRemoteMetadataProvider<Trailer, TrailerInfo>
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public TmdbTrailerProvider(IHttpClient httpClient)
+        public TmdbTrailerProvider(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
         }
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
@@ -34,13 +34,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Trailers
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
         }
     }
 }

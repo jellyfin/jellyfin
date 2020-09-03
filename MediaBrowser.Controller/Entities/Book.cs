@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -49,11 +51,13 @@ namespace MediaBrowser.Controller.Entities
             return SeriesId;
         }
 
+        /// <inheritdoc />
         public override bool CanDownload()
         {
             return IsFileProtocol;
         }
 
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Book;

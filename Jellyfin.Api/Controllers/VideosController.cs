@@ -161,7 +161,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteAlternateSources([FromRoute] Guid itemId)
+        public async Task<ActionResult> DeleteAlternateSources([FromRoute] Guid itemId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -180,12 +180,12 @@ namespace Jellyfin.Api.Controllers
                 link.SetPrimaryVersionId(null);
                 link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
 
-                link.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
 
             video.LinkedAlternateVersions = Array.Empty<LinkedChild>();
             video.SetPrimaryVersionId(null);
-            video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await video.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -201,7 +201,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult MergeVersions([FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> MergeVersions([FromQuery, Required] string? itemIds)
         {
             var items = RequestHelpers.Split(itemIds, ',', true)
                 .Select(i => _libraryManager.GetItemById(i))
@@ -233,37 +233,40 @@ namespace Jellyfin.Api.Controllers
                     .First();
             }
 
-            var list = primaryVersion.LinkedAlternateVersions.ToList();
+            var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
 
             foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
                 item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
 
-                item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-                list.Add(new LinkedChild
+                if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Path = item.Path,
-                    ItemId = item.Id
-                });
+                    alternateVersionsOfPrimary.Add(new LinkedChild
+                    {
+                        Path = item.Path,
+                        ItemId = item.Id
+                    });
+                }
 
                 foreach (var linkedItem in item.LinkedAlternateVersions)
                 {
-                    if (!list.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
+                    if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
                     {
-                        list.Add(linkedItem);
+                        alternateVersionsOfPrimary.Add(linkedItem);
                     }
                 }
 
                 if (item.LinkedAlternateVersions.Length > 0)
                 {
                     item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-                    item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                    await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
                 }
             }
 
-            primaryVersion.LinkedAlternateVersions = list.ToArray();
-            primaryVersion.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            primaryVersion.LinkedAlternateVersions = alternateVersionsOfPrimary.ToArray();
+            await primaryVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -470,8 +473,8 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                using var httpClient = _httpClientFactory.CreateClient();
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, httpClient).ConfigureAwait(false);
+                var httpClient = _httpClientFactory.CreateClient();
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, HttpContext).ConfigureAwait(false);
             }
 
             if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
@@ -507,7 +510,7 @@ namespace Jellyfin.Api.Controllers
                     state.MediaPath,
                     contentType,
                     isHeadRequest,
-                    this);
+                    HttpContext);
             }
 
             // Need to start ffmpeg (because media can't be returned directly)
@@ -517,10 +520,9 @@ namespace Jellyfin.Api.Controllers
             return await FileStreamResponseHelpers.GetTranscodedFile(
                 state,
                 isHeadRequest,
-                this,
+                HttpContext,
                 _transcodingJobHelper,
                 ffmpegCommandLineArguments,
-                Request,
                 _transcodingJobType,
                 cancellationTokenSource).ConfigureAwait(false);
         }

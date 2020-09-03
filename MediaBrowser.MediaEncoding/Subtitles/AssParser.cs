@@ -86,9 +86,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private void RemoteNativeFormatting(SubtitleTrackEvent p)
         {
-            int indexOfBegin = p.Text.IndexOf('{');
+            int indexOfBegin = p.Text.IndexOf('{', StringComparison.Ordinal);
             string pre = string.Empty;
-            while (indexOfBegin >= 0 && p.Text.IndexOf('}') > indexOfBegin)
+            while (indexOfBegin >= 0 && p.Text.IndexOf('}', StringComparison.Ordinal) > indexOfBegin)
             {
                 string s = p.Text.Substring(indexOfBegin);
                 if (s.StartsWith("{\\an1}", StringComparison.Ordinal) ||
@@ -116,10 +116,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     pre = s.Substring(0, 5) + "}";
                 }
 
-                int indexOfEnd = p.Text.IndexOf('}');
+                int indexOfEnd = p.Text.IndexOf('}', StringComparison.Ordinal);
                 p.Text = p.Text.Remove(indexOfBegin, (indexOfEnd - indexOfBegin) + 1);
 
-                indexOfBegin = p.Text.IndexOf('{');
+                indexOfBegin = p.Text.IndexOf('{', StringComparison.Ordinal);
             }
 
             p.Text = pre + p.Text;

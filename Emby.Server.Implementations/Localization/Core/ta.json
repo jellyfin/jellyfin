@@ -98,7 +98,7 @@
     "Albums": "ஆல்பங்கள்",
     "NewVersionIsAvailable": "ஜெல்லிஃபின் சேவையகத்தின் புதிய பதிப்பு பதிவிறக்கத்திற்கு கிடைக்கிறது.",
     "MessageNamedServerConfigurationUpdatedWithValue": "சேவையக உள்ளமைவு பிரிவு {0 புதுப்பிக்கப்பட்டது",
-    "TaskCleanCacheDescription": "கணினிக்கு இனி தேவைப்படாத தற்காலிக கோப்புகளை நீக்கு",
+    "TaskCleanCacheDescription": "கணினிக்கு இனி தேவைப்படாத தற்காலிக கோப்புகளை நீக்கு.",
     "UserOfflineFromDevice": "{0} இலிருந்து {1} துண்டிக்கப்பட்டுள்ளது",
     "SubtitleDownloadFailureFromForItem": "வசன வரிகள் {0 } இலிருந்து {1} க்கு பதிவிறக்கத் தவறிவிட்டன",
     "TaskDownloadMissingSubtitlesDescription": "மெட்டாடேட்டா உள்ளமைவின் அடிப்படையில் வசன வரிகள் காணாமல் போனதற்கு இணையத்தைத் தேடுகிறது.",
@@ -111,5 +111,7 @@
     "TaskRefreshChapterImagesDescription": "அத்தியாயங்களைக் கொண்ட வீடியோக்களுக்கான சிறு உருவங்களை உருவாக்குகிறது.",
     "ValueHasBeenAddedToLibrary": "உங்கள் மீடியா நூலகத்தில் {0} சேர்க்கப்பட்டது",
     "UserOnlineFromDevice": "{1} இருந்து {0} ஆன்லைன்",
-    "HomeVideos": "முகப்பு வீடியோக்கள்"
+    "HomeVideos": "முகப்பு வீடியோக்கள்",
+    "UserStoppedPlayingItemWithValues": "{2} இல் {1} முடித்துவிட்டது",
+    "UserStartedPlayingItemWithValues": "{0} {2}இல் {1} ஐ இயக்குகிறது"
 }

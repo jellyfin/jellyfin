@@ -179,7 +179,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            WebSocketMessage<object> stub;
+            WebSocketMessage<object>? stub;
             try
             {
 
@@ -206,6 +206,12 @@ namespace Emby.Server.Implementations.HttpServer
                 // Tell the PipeReader how much of the buffer we have consumed
                 reader.AdvanceTo(buffer.End);
                 _logger.LogError(ex, "Error processing web socket message");
+                return;
+            }
+
+            if (stub == null)
+            {
+                _logger.LogError("Error processing web socket message");
                 return;
             }
 

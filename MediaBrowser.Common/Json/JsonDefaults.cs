@@ -24,15 +24,19 @@ namespace MediaBrowser.Common.Json
             var options = new JsonSerializerOptions
             {
                 ReadCommentHandling = JsonCommentHandling.Disallow,
-                WriteIndented = false
+                WriteIndented = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
             };
 
+            // Get built-in converters for fallback converting.
+            var baseNullableInt32Converter = (JsonConverter<int?>)options.GetConverter(typeof(int?));
+            var baseNullableInt64Converter = (JsonConverter<long?>)options.GetConverter(typeof(long?));
+
             options.Converters.Add(new JsonGuidConverter());
-            options.Converters.Add(new JsonInt32Converter());
             options.Converters.Add(new JsonStringEnumConverter());
-            options.Converters.Add(new JsonNonStringKeyDictionaryConverterFactory());
-            options.Converters.Add(new JsonInt64Converter());
-            options.Converters.Add(new JsonDoubleConverter());
+            options.Converters.Add(new JsonNullableStructConverter<int>(baseNullableInt32Converter));
+            options.Converters.Add(new JsonNullableStructConverter<long>(baseNullableInt64Converter));
 
             return options;
         }

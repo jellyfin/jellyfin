@@ -139,7 +139,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = DlnaProfileType.Photo,
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {

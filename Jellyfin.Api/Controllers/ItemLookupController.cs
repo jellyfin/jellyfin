@@ -331,12 +331,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Task.</returns>
         private async Task DownloadImage(string providerName, string url, Guid urlHash, string pointerCachePath)
         {
-            var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
-            var ext = result.ContentType.Split('/').Last();
+            using var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
+            var ext = result.Content.Headers.ContentType.MediaType.Split('/')[^1];
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-            await using (var stream = result.Content)
+            using (var stream = result.Content)
             {
                 await using var fileStream = new FileStream(
                     fullCachePath,

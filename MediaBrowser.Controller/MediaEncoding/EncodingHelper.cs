@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -675,7 +677,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             //     }
             // }
 
-            // fallbackFontParam = string.Format(":force_style='FontName=Droid Sans Fallback':fontsdir='{0}'", _mediaEncoder.EscapeSubtitleFilterPath(_fileSystem.GetDirectoryName(fallbackFontPath)));
+            // fallbackFontParam = string.Format(CultureInfo.InvariantCulture, ":force_style='FontName=Droid Sans Fallback':fontsdir='{0}'", _mediaEncoder.EscapeSubtitleFilterPath(_fileSystem.GetDirectoryName(fallbackFontPath)));
 
             if (state.SubtitleStream.IsExternal)
             {
@@ -880,7 +882,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profileScore = Math.Min(profileScore, 2);
 
                 // http://www.webmproject.org/docs/encoder-parameters/
-                param += string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
+                param += string.Format(CultureInfo.InvariantCulture, "-speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
                     profileScore.ToString(_usCulture),
                     crf,
                     qmin,
@@ -904,7 +906,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var framerate = GetFramerateParam(state);
             if (framerate.HasValue)
             {
-                param += string.Format(" -r {0}", framerate.Value.ToString(_usCulture));
+                param += string.Format(CultureInfo.InvariantCulture, " -r {0}", framerate.Value.ToString(_usCulture));
             }
 
             var targetVideoCodec = state.ActualOutputVideoCodec;
@@ -1484,7 +1486,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (time > 0)
             {
-                return string.Format("-ss {0}", _mediaEncoder.GetTimeParameter(time));
+                return string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(time));
             }
 
             return string.Empty;
