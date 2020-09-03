@@ -39,12 +39,14 @@ namespace Jellyfin.Server.Extensions
                     c.DocumentTitle = "Jellyfin API";
                     c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
                     c.RoutePrefix = $"{baseUrl}api-docs/swagger";
+                    c.InjectStylesheet($"/{baseUrl}api-docs/swagger/custom.css");
                 })
                 .UseReDoc(c =>
                 {
                     c.DocumentTitle = "Jellyfin API";
                     c.SpecUrl($"/{baseUrl}api-docs/openapi.json");
                     c.RoutePrefix = $"{baseUrl}api-docs/redoc";
+                    c.InjectStylesheet($"/{baseUrl}api-docs/redoc/custom.css");
                 });
         }
 
