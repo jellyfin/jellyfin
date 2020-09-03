@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -77,6 +77,9 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+
+            services.AddHealthChecks()
+                .AddCheck<JellyfinDbHealthCheck>("JellyfinDb");
         }
 
         /// <summary>
@@ -132,6 +135,8 @@ namespace Jellyfin.Server
                 {
                     endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
                 }
+
+                endpoints.MapHealthChecks(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/health");
             });
 
             // Add type descriptor for legacy datetime parsing.
