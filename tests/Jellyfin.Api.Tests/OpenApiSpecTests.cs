@@ -6,7 +6,7 @@ using MediaBrowser.Model.Branding;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MediaBrowser.Api.Tests
+namespace Jellyfin.Api.Tests
 {
     public sealed class OpenApiSpecTests : IClassFixture<JellyfinApplicationFactory>
     {

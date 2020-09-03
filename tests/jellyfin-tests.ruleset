@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Rules for MediaBrowser.Api.Tests" Description="Code analysis rules for MediaBrowser.Api.Tests.csproj" ToolsVersion="14.0">
+<RuleSet Name="Rules for Jellyfin.Api.Tests" Description="Code analysis rules for Jellyfin.Api.Tests.csproj" ToolsVersion="14.0">
 
   <!-- Include the solution default RuleSet. The rules in this file will override the defaults. -->
   <Include Path="../jellyfin.ruleset" Action="Default" />
@@ -17,6 +17,6 @@
     <!-- CA2007: Consider calling ConfigureAwait on the awaited task -->
     <Rule Id="CA2007" Action="None" />
     <!-- CA2234: Pass system uri objects instead of strings -->
-    <Rule Id="CA2234" Action="Info" />      
+    <Rule Id="CA2234" Action="Info" />
   </Rules>
 </RuleSet>
