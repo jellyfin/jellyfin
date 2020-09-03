@@ -496,7 +496,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var path = GetSeriesDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
-            var filename = string.Format("series-{0}.json", preferredLanguage ?? string.Empty);
+            var filename = string.Format(CultureInfo.InvariantCulture, "series-{0}.json", preferredLanguage ?? string.Empty);
 
             return Path.Combine(path, filename);
         }

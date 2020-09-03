@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -76,7 +77,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
                     var episodeResult =
                         await _tvdbClientManager
-                            .GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), language, cancellationToken)
+                            .GetEpisodesAsync(Convert.ToInt32(episodeTvdbId, CultureInfo.InvariantCulture), language, cancellationToken)
                             .ConfigureAwait(false);
 
                     var image = GetImageInfo(episodeResult.Data);
@@ -103,8 +104,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             return new RemoteImageInfo
             {
-                Width = Convert.ToInt32(episode.ThumbWidth),
-                Height = Convert.ToInt32(episode.ThumbHeight),
+                Width = Convert.ToInt32(episode.ThumbWidth, CultureInfo.InvariantCulture),
+                Height = Convert.ToInt32(episode.ThumbHeight, CultureInfo.InvariantCulture),
                 ProviderName = Name,
                 Url = TvdbUtils.BannerUrl + episode.Filename,
                 Type = ImageType.Primary

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -5,12 +7,12 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
@@ -72,7 +74,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Task.</returns>
         Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
 
-        Task SaveImage(User user, Stream source, string mimeType, string path);
+        Task SaveImage(Stream source, string mimeType, string path);
 
         /// <summary>
         /// Adds the metadata providers.

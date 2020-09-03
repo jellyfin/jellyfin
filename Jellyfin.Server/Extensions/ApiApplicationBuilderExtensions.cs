@@ -1,3 +1,4 @@
+using Jellyfin.Server.Middleware;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 
@@ -47,6 +48,56 @@ namespace Jellyfin.Server.Extensions
                     c.RoutePrefix = $"{baseUrl}api-docs/redoc";
                     c.InjectStylesheet($"/{baseUrl}api-docs/redoc/custom.css");
                 });
+        }
+
+        /// <summary>
+        /// Adds IP based access validation to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseIpBasedAccessValidation(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<IpBasedAccessValidationMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds LAN based access filtering to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseLanFiltering(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<LanFilteringMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds base url redirection to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseBaseUrlRedirection(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<BaseUrlRedirectionMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds a custom message during server startup to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseServerStartupMessage(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<ServerStartupMessageMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds a WebSocket request handler to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseWebSocketHandler(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<WebSocketHandlerMiddleware>();
         }
     }
 }

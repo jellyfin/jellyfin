@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public async Task SaveImage(User user, Stream source, string path)
+        public async Task SaveImage(Stream source, string path)
         {
             await SaveImageToLocation(source, path, path, CancellationToken.None).ConfigureAwait(false);
         }
@@ -355,7 +355,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (string.IsNullOrWhiteSpace(extension))
             {
-                throw new ArgumentException(string.Format("Unable to determine image file extension from mime type {0}", mimeType));
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Unable to determine image file extension from mime type {0}", mimeType));
             }
 
             if (type == ImageType.Thumb && saveLocally)

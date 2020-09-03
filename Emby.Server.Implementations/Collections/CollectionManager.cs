@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        public BoxSet CreateCollection(CollectionCreationOptions options)
+        public async Task<BoxSet> CreateCollectionAsync(CollectionCreationOptions options)
         {
             var name = options.Name;
 
@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.Collections
             // This could cause it to get re-resolved as a plain folder
             var folderName = _fileSystem.GetValidFilename(name) + " [boxset]";
 
-            var parentFolder = GetCollectionsFolder(true).GetAwaiter().GetResult();
+            var parentFolder = await GetCollectionsFolder(true).ConfigureAwait(false);
 
             if (parentFolder == null)
             {
@@ -169,12 +169,16 @@ namespace Emby.Server.Implementations.Collections
 
                 if (options.ItemIdList.Length > 0)
                 {
-                    AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                    {
-                        // The initial adding of items is going to create a local metadata file
-                        // This will cause internet metadata to be skipped as a result
-                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh
-                    });
+                    await AddToCollectionAsync(
+                        collection.Id,
+                        options.ItemIdList.Select(x => new Guid(x)),
+                        false,
+                        new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                        {
+                            // The initial adding of items is going to create a local metadata file
+                            // This will cause internet metadata to be skipped as a result
+                            MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                        }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -197,18 +201,10 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        public void AddToCollection(Guid collectionId, IEnumerable<string> ids)
-        {
-            AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(new DirectoryService(_fileSystem)));
-        }
+        public Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> ids)
+            => AddToCollectionAsync(collectionId, ids, true, new MetadataRefreshOptions(new DirectoryService(_fileSystem)));
 
-        /// <inheritdoc />
-        public void AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
-        {
-            AddToCollection(collectionId, ids.Select(i => i.ToString("N", CultureInfo.InvariantCulture)), true, new MetadataRefreshOptions(new DirectoryService(_fileSystem)));
-        }
-
-        private void AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
+        private async Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
             if (collection == null)
@@ -224,15 +220,14 @@ namespace Emby.Server.Implementations.Collections
 
             foreach (var id in ids)
             {
-                var guidId = new Guid(id);
-                var item = _libraryManager.GetItemById(guidId);
+                var item = _libraryManager.GetItemById(id);
 
                 if (item == null)
                 {
                     throw new ArgumentException("No item exists with the supplied Id");
                 }
 
-                if (!currentLinkedChildrenIds.Contains(guidId))
+                if (!currentLinkedChildrenIds.Contains(id))
                 {
                     itemList.Add(item);
 
@@ -249,7 +244,7 @@ namespace Emby.Server.Implementations.Collections
 
                 collection.UpdateRatingToItems(linkedChildrenList);
 
-                collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
                 refreshOptions.ForceSave = true;
                 _providerManager.QueueRefresh(collection.Id, refreshOptions, RefreshPriority.High);
@@ -266,13 +261,7 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        public void RemoveFromCollection(Guid collectionId, IEnumerable<string> itemIds)
-        {
-            RemoveFromCollection(collectionId, itemIds.Select(i => new Guid(i)));
-        }
-
-        /// <inheritdoc />
-        public void RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
+        public async Task RemoveFromCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -309,7 +298,7 @@ namespace Emby.Server.Implementations.Collections
                 collection.LinkedChildren = collection.LinkedChildren.Except(list).ToArray();
             }
 
-            collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             _providerManager.QueueRefresh(
                 collection.Id,
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem))

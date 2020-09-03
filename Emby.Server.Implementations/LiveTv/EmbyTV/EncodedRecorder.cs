@@ -230,7 +230,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (filters.Count > 0)
             {
-                output += string.Format(" -vf \"{0}\"", string.Join(",", filters.ToArray()));
+                output += string.Format(CultureInfo.InvariantCulture, " -vf \"{0}\"", string.Join(",", filters.ToArray()));
             }
 
             return output;

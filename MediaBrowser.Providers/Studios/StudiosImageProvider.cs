@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -100,7 +101,7 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetUrl(string image, string filename)
         {
-            return string.Format("https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
+            return string.Format(CultureInfo.InvariantCulture, "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
         }
 
         private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
