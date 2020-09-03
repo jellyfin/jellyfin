@@ -37,10 +37,10 @@ using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
-using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
@@ -71,6 +71,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -88,7 +89,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
@@ -96,11 +96,12 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
+using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
 {
@@ -121,13 +122,17 @@ namespace Emby.Server.Implementations
 
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
-        private IHttpServer _httpServer;
+        private IWebSocketManager _webSocketManager;
         private IHttpClient _httpClient;
+
+        private string[] _urlPrefixes;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
+
+        public bool CoreStartupHasCompleted { get; private set; }
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -443,8 +448,7 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
-            _httpServer.GlobalResponse = null;
-
+            CoreStartupHasCompleted = true;
             stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
@@ -499,9 +503,6 @@ namespace Emby.Server.Implementations
             RegisterServices();
         }
 
-        public Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
-            => _httpServer.RequestHandler(context);
-
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
@@ -541,8 +542,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IZipClient, ZipClient>();
 
-            ServiceCollection.AddSingleton<IHttpResultFactory, HttpResultFactory>();
-
             ServiceCollection.AddSingleton<IServerApplicationHost>(this);
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
 
@@ -578,8 +577,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
-            ServiceCollection.AddSingleton<ServiceController>();
-            ServiceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
+            ServiceCollection.AddSingleton<IWebSocketManager, WebSocketManager>();
 
             ServiceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
 
@@ -626,6 +624,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<ISessionContext, SessionContext>();
 
             ServiceCollection.AddSingleton<IAuthService, AuthService>();
+            ServiceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
             ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
 
@@ -651,7 +650,7 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
-            _httpServer = Resolve<IHttpServer>();
+            _webSocketManager = Resolve<IWebSocketManager>();
             _httpClient = Resolve<IHttpClient>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
@@ -753,7 +752,6 @@ namespace Emby.Server.Implementations
             CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
-            AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
         }
 
         /// <summary>
@@ -773,7 +771,8 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            _httpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            _urlPrefixes = GetUrlPrefixes().ToArray();
+            _webSocketManager.Init(GetExports<IWebSocketListener>());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -939,7 +938,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            if (!_httpServer.UrlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
+            if (!_urlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
             {
                 requiresRestart = true;
             }
@@ -1391,6 +1390,20 @@ namespace Emby.Server.Implementations
             var list = _plugins.ToList();
             list.Remove(plugin);
             _plugins = list.ToArray();
+        }
+
+        public IEnumerable<Assembly> GetApiPluginAssemblies()
+        {
+            var assemblies = _allConcreteTypes
+                .Where(i => typeof(ControllerBase).IsAssignableFrom(i))
+                .Select(i => i.Assembly)
+                .Distinct();
+
+            foreach (var assembly in assemblies)
+            {
+                Logger.LogDebug("Found API endpoints in plugin {name}", assembly.FullName);
+                yield return assembly;
+            }
         }
 
         public virtual void LaunchUrl(string url)
