@@ -1299,7 +1299,7 @@ namespace Emby.Server.Implementations
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .SendAsync(request, cancellationToken).ConfigureAwait(false);
+                    .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
                 await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 var result = await System.Text.Json.JsonSerializer.DeserializeAsync<string>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
