@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Data.OleDb;
 using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
