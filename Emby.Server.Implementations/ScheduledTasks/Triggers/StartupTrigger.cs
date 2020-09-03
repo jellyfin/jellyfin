@@ -12,6 +12,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class StartupTrigger : ITaskTrigger
     {
+        /// <summary>
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
         public int DelayMs { get; set; }
 
         /// <summary>
@@ -49,19 +54,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
-        public event EventHandler<EventArgs> Triggered;
-
-        /// <summary>
         /// Called when [triggered].
         /// </summary>
         private void OnTriggered()
         {
-            if (Triggered != null)
-            {
-                Triggered(this, EventArgs.Empty);
-            }
+            Triggered?.Invoke(this, EventArgs.Empty);
         }
     }
 }

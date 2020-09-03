@@ -73,25 +73,6 @@ namespace Emby.Server.Implementations.Dto
             _livetvManagerFactory = livetvManagerFactory;
         }
 
-        /// <summary>
-        /// Converts a BaseItem to a DTOBaseItem.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="fields">The fields.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="owner">The owner.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
-        /// <exception cref="ArgumentNullException">item</exception>
-        public BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null)
-        {
-            var options = new DtoOptions
-            {
-                Fields = fields
-            };
-
-            return GetBaseItemDto(item, options, user, owner);
-        }
-
         /// <inheritdoc />
         public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
@@ -216,7 +197,7 @@ namespace Emby.Server.Implementations.Dto
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {itemName}", item.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {ItemName}", item.Name);
                 }
             }
 
@@ -443,17 +424,6 @@ namespace Emby.Server.Implementations.Dto
             return folder.GetChildCount(user);
         }
 
-        /// <summary>
-        /// Gets client-side Id of a server-side BaseItem.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">item</exception>
-        public string GetDtoId(BaseItem item)
-        {
-            return item.Id.ToString("N", CultureInfo.InvariantCulture);
-        }
-
         private static void SetBookProperties(BaseItemDto dto, Book item)
         {
             dto.SeriesName = item.SeriesName;
@@ -484,6 +454,11 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
+        private string GetDtoId(BaseItem item)
+        {
+            return item.Id.ToString("N", CultureInfo.InvariantCulture);
+        }
+
         private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)
         {
             if (!string.IsNullOrEmpty(item.Album))
@@ -511,19 +486,6 @@ namespace Emby.Server.Implementations.Dto
                 .Select(p => GetImageCacheTag(item, p))
                 .Where(i => i != null)
                 .ToArray();
-        }
-
-        private string GetImageCacheTag(BaseItem item, ImageType type)
-        {
-            try
-            {
-                return _imageProcessor.GetImageCacheTag(item, type);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting {type} image info", type);
-                return null;
-            }
         }
 
         private string GetImageCacheTag(BaseItem item, ItemImageInfo image)

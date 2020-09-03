@@ -133,7 +133,6 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The bits_per_raw_sample.</value>
         [JsonPropertyName("bits_per_raw_sample")]
-        [JsonConverter(typeof(JsonInt32Converter))]
         public int BitsPerRawSample { get; set; }
 
         /// <summary>
@@ -269,6 +268,10 @@ namespace MediaBrowser.MediaEncoding.Probing
         [JsonPropertyName("loro_surmixlev")]
         public string LoroSurmixlev { get; set; }
 
+        /// <summary>
+        /// Gets or sets the field_order.
+        /// </summary>
+        /// <value>The field_order.</value>
         [JsonPropertyName("field_order")]
         public string FieldOrder { get; set; }
 

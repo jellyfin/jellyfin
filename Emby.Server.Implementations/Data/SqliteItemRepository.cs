@@ -978,7 +978,10 @@ namespace Emby.Server.Implementations.Data
                     continue;
                 }
 
-                str.Append($"{i.Key}={i.Value}|");
+                str.Append(i.Key)
+                    .Append('=')
+                    .Append(i.Value)
+                    .Append('|');
             }
 
             if (str.Length == 0)
@@ -1032,8 +1035,8 @@ namespace Emby.Server.Implementations.Data
                     continue;
                 }
 
-                str.Append(ToValueString(i))
-                    .Append('|');
+                AppendItemImageInfo(str, i);
+                str.Append('|');
             }
 
             str.Length -= 1; // Remove last |
@@ -1067,26 +1070,26 @@ namespace Emby.Server.Implementations.Data
             item.ImageInfos = list.ToArray();
         }
 
-        public string ToValueString(ItemImageInfo image)
+        public void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)
         {
-            const string Delimeter = "*";
+            const char Delimiter = '*';
 
             var path = image.Path ?? string.Empty;
             var hash = image.BlurHash ?? string.Empty;
 
-            return GetPathToSave(path) +
-                   Delimeter +
-                   image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
-                   Delimeter +
-                   image.Type +
-                   Delimeter +
-                   image.Width.ToString(CultureInfo.InvariantCulture) +
-                   Delimeter +
-                   image.Height.ToString(CultureInfo.InvariantCulture) +
-                   Delimeter +
-                   // Replace delimiters with other characters.
-                   // This can be removed when we migrate to a proper DB.
-                   hash.Replace('*', '/').Replace('|', '\\');
+            bldr.Append(GetPathToSave(path))
+                .Append(Delimiter)
+                .Append(image.DateModified.Ticks)
+                .Append(Delimiter)
+                .Append(image.Type)
+                .Append(Delimiter)
+                .Append(image.Width)
+                .Append(Delimiter)
+                .Append(image.Height)
+                .Append(Delimiter)
+                // Replace delimiters with other characters.
+                // This can be removed when we migrate to a proper DB.
+                .Append(hash.Replace('*', '/').Replace('|', '\\'));
         }
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
@@ -4305,7 +4308,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ProductionYear=@Years");
                 if (statement != null)
                 {
-                    statement.TryBind("@Years", query.Years[0].ToString());
+                    statement.TryBind("@Years", query.Years[0].ToString(CultureInfo.InvariantCulture));
                 }
             }
             else if (query.Years.Length > 1)
@@ -4557,13 +4560,13 @@ namespace Emby.Server.Implementations.Data
             if (query.AncestorIds.Length > 1)
             {
                 var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
+                whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
             }
 
             if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
             {
                 var inClause = "select guid from TypedBaseItems where PresentationUniqueKey=@AncestorWithPresentationUniqueKey";
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
+                whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
                 if (statement != null)
                 {
                     statement.TryBind("@AncestorWithPresentationUniqueKey", query.AncestorWithPresentationUniqueKey);
@@ -5167,7 +5170,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     insertText.Append(',');
                 }
 
-                insertText.AppendFormat("(@ItemId, @AncestorId{0}, @AncestorIdText{0})", i.ToString(CultureInfo.InvariantCulture));
+                insertText.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    "(@ItemId, @AncestorId{0}, @AncestorIdText{0})",
+                    i.ToString(CultureInfo.InvariantCulture));
             }
 
             using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -5659,10 +5665,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             const int Limit = 100;
             var startIndex = 0;
 
+            const string StartInsertText = "insert into ItemValues (ItemId, Type, Value, CleanValue) values ";
+            var insertText = new StringBuilder(StartInsertText);
             while (startIndex < values.Count)
             {
-                var insertText = new StringBuilder("insert into ItemValues (ItemId, Type, Value, CleanValue) values ");
-
                 var endIndex = Math.Min(values.Count, startIndex + Limit);
 
                 for (var i = startIndex; i < endIndex; i++)
@@ -5704,6 +5710,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 }
 
                 startIndex += Limit;
+                insertText.Length = StartInsertText.Length;
             }
         }
 
@@ -5741,10 +5748,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             var startIndex = 0;
             var listIndex = 0;
 
+            const string StartInsertText = "insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values ";
+            var insertText = new StringBuilder(StartInsertText);
             while (startIndex < people.Count)
             {
-                var insertText = new StringBuilder("insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values ");
-
                 var endIndex = Math.Min(people.Count, startIndex + Limit);
                 for (var i = startIndex; i < endIndex; i++)
                 {
@@ -5778,6 +5785,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 }
 
                 startIndex += Limit;
+                insertText.Length = StartInsertText.Length;
             }
         }
 
@@ -5893,10 +5901,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             const int Limit = 10;
             var startIndex = 0;
 
+            var insertText = new StringBuilder(_mediaStreamSaveColumnsInsertQuery);
             while (startIndex < streams.Count)
             {
-                var insertText = new StringBuilder(_mediaStreamSaveColumnsInsertQuery);
-
                 var endIndex = Math.Min(streams.Count, startIndex + Limit);
 
                 for (var i = startIndex; i < endIndex; i++)
@@ -5979,6 +5986,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 }
 
                 startIndex += Limit;
+                insertText.Length = _mediaStreamSaveColumnsInsertQuery.Length;
             }
         }
 
@@ -6230,10 +6238,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             const int InsertAtOnce = 10;
 
+            var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
             for (var startIndex = 0; startIndex < attachments.Count; startIndex += InsertAtOnce)
             {
-                var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
-
                 var endIndex = Math.Min(attachments.Count, startIndex + InsertAtOnce);
 
                 for (var i = startIndex; i < endIndex; i++)
@@ -6279,6 +6286,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     statement.Reset();
                     statement.MoveNext();
                 }
+
+                insertText.Length = _mediaAttachmentInsertPrefix.Length;
             }
         }
 

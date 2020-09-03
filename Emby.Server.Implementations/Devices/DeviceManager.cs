@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Devices;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Devices
 
             lock (_capabilitiesSyncLock)
             {
-                _memoryCache.CreateEntry(deviceId).SetValue(capabilities);
+                _memoryCache.Set(deviceId, capabilities);
                 _json.SerializeToFile(capabilities, path);
             }
         }

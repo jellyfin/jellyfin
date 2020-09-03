@@ -124,13 +124,16 @@ namespace MediaBrowser.Providers.Manager
             var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, false);
 
             // If there are more than one output paths, the stream will need to be seekable
-            var memoryStream = new MemoryStream();
-            using (source)
+            if (paths.Length > 1 && !source.CanSeek)
             {
-                await source.CopyToAsync(memoryStream).ConfigureAwait(false);
-            }
+                var memoryStream = new MemoryStream();
+                await using (source.ConfigureAwait(false))
+                {
+                    await source.CopyToAsync(memoryStream).ConfigureAwait(false);
+                }
 
-            source = memoryStream;
+                source = memoryStream;
+            }
 
             var currentImage = GetCurrentImage(item, type, index);
             var currentImageIsLocalFile = currentImage != null && currentImage.IsLocalFile;
@@ -138,22 +141,23 @@ namespace MediaBrowser.Providers.Manager
 
             var savedPaths = new List<string>();
 
-            await using (source)
+            await using (source.ConfigureAwait(false))
             {
-                var currentPathIndex = 0;
-
-                foreach (var path in paths)
+                for (int i = 0; i < paths.Length; i++)
                 {
-                    source.Position = 0;
+                    if (i != 0)
+                    {
+                        source.Position = 0;
+                    }
+
                     string retryPath = null;
                     if (paths.Length == retryPaths.Length)
                     {
-                        retryPath = retryPaths[currentPathIndex];
+                        retryPath = retryPaths[i];
                     }
 
-                    var savedPath = await SaveImageToLocation(source, path, retryPath, cancellationToken).ConfigureAwait(false);
+                    var savedPath = await SaveImageToLocation(source, paths[i], retryPath, cancellationToken).ConfigureAwait(false);
                     savedPaths.Add(savedPath);
-                    currentPathIndex++;
                 }
             }
 
@@ -183,7 +187,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public async Task SaveImage(User user, Stream source, string path)
+        public async Task SaveImage(Stream source, string path)
         {
             await SaveImageToLocation(source, path, path, CancellationToken.None).ConfigureAwait(false);
         }
@@ -224,7 +228,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            source.Position = 0;
             await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
             return retryPath;
         }
@@ -253,7 +256,7 @@ namespace MediaBrowser.Providers.Manager
 
                 await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 {
-                    await source.CopyToAsync(fs, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (_config.Configuration.SaveMetadataHidden)
@@ -352,7 +355,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (string.IsNullOrWhiteSpace(extension))
             {
-                throw new ArgumentException(string.Format("Unable to determine image file extension from mime type {0}", mimeType));
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Unable to determine image file extension from mime type {0}", mimeType));
             }
 
             if (type == ImageType.Thumb && saveLocally)

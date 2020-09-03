@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.Tests
 
             // Assert
             response.EnsureSuccessStatusCode();
-            Assert.Equal("text/css", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("text/css; charset=utf-8", response.Content.Headers.ContentType.ToString());
         }
     }
 }

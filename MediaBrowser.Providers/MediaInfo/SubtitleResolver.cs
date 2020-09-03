@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {

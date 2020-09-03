@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -694,7 +696,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             //     }
             // }
 
-            // fallbackFontParam = string.Format(":force_style='FontName=Droid Sans Fallback':fontsdir='{0}'", _mediaEncoder.EscapeSubtitleFilterPath(_fileSystem.GetDirectoryName(fallbackFontPath)));
+            // fallbackFontParam = string.Format(CultureInfo.InvariantCulture, ":force_style='FontName=Droid Sans Fallback':fontsdir='{0}'", _mediaEncoder.EscapeSubtitleFilterPath(_fileSystem.GetDirectoryName(fallbackFontPath)));
 
             if (state.SubtitleStream.IsExternal)
             {
@@ -899,7 +901,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profileScore = Math.Min(profileScore, 2);
 
                 // http://www.webmproject.org/docs/encoder-parameters/
-                param += string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
+                param += string.Format(CultureInfo.InvariantCulture, "-speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
                     profileScore.ToString(_usCulture),
                     crf,
                     qmin,
@@ -923,7 +925,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var framerate = GetFramerateParam(state);
             if (framerate.HasValue)
             {
-                param += string.Format(" -r {0}", framerate.Value.ToString(_usCulture));
+                param += string.Format(CultureInfo.InvariantCulture, " -r {0}", framerate.Value.ToString(_usCulture));
             }
 
             var targetVideoCodec = state.ActualOutputVideoCodec;
@@ -1371,6 +1373,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             return null;
         }
 
+        public int? GetAudioBitrateParam(int? audioBitRate, MediaStream audioStream)
+        {
+            if (audioBitRate.HasValue)
+            {
+                // Don't encode any higher than this
+                return Math.Min(384000, audioBitRate.Value);
+            }
+
+            return null;
+        }
+
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions, bool isHls)
         {
             var channels = state.OutputAudioChannels;
@@ -1514,7 +1527,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (time > 0)
             {
-                return string.Format("-ss {0}", _mediaEncoder.GetTimeParameter(time));
+                return string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(time));
             }
 
             return string.Empty;
@@ -2101,6 +2114,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
+            // If double rate deinterlacing is enabled and the input framerate is 30fps or below, otherwise the output framerate will be too high for many devices
+            var doubleRateDeinterlace = options.DeinterlaceDoubleRate && (videoStream?.RealFrameRate ?? 60) <= 30;
+
             // Currently only with the use of NVENC decoder can we get a decent performance.
             // Currently only the HEVC/H265 format is supported.
             // NVIDIA Pascal and Turing or higher are recommended.
@@ -2190,35 +2206,38 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (isVaapiH264Encoder)
                 {
-                    filters.Add(string.Format(CultureInfo.InvariantCulture, "deinterlace_vaapi"));
+                    filters.Add(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "deinterlace_vaapi=rate={0}",
+                            doubleRateDeinterlace ? "field" : "frame"));
                 }
             }
 
             // Add software deinterlace filter before scaling filter
-            if (state.DeInterlace("h264", true)
-                || state.DeInterlace("avc", true)
-                || state.DeInterlace("h265", true)
-                || state.DeInterlace("hevc", true))
+            if ((state.DeInterlace("h264", true)
+                 || state.DeInterlace("avc", true)
+                 || state.DeInterlace("h265", true)
+                 || state.DeInterlace("hevc", true))
+                && !isVaapiH264Encoder
+                && !isQsvH264Encoder
+                && !isNvdecH264Decoder)
             {
-                string deintParam;
-                var inputFramerate = videoStream?.RealFrameRate;
-
-                // If it is already 60fps then it will create an output framerate that is much too high for roku and others to handle
-                if (string.Equals(options.DeinterlaceMethod, "yadif_bob", StringComparison.OrdinalIgnoreCase) && (inputFramerate ?? 60) <= 30)
+                if (string.Equals(options.DeinterlaceMethod, "bwdif", StringComparison.OrdinalIgnoreCase))
                 {
-                    deintParam = "yadif=1:-1:0";
+                    filters.Add(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "bwdif={0}:-1:0",
+                            doubleRateDeinterlace ? "1" : "0"));
                 }
                 else
                 {
-                    deintParam = "yadif=0:-1:0";
-                }
-
-                if (!string.IsNullOrEmpty(deintParam))
-                {
-                    if (!isVaapiH264Encoder && !isQsvH264Encoder && !isNvdecH264Decoder)
-                    {
-                        filters.Add(deintParam);
-                    }
+                    filters.Add(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "yadif={0}:-1:0",
+                            doubleRateDeinterlace ? "1" : "0"));
                 }
             }
 
@@ -2451,6 +2470,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         if (state.DeInterlace("h264", true))
                         {
                             inputModifier += " -deint 1";
+
+                            if (!encodingOptions.DeinterlaceDoubleRate || (videoStream?.RealFrameRate ?? 60) > 30)
+                            {
+                                inputModifier += " -drop_second_field 1";
+                            }
                         }
                     }
                 }

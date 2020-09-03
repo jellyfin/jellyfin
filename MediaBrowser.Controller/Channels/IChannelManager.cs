@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -31,6 +33,7 @@ namespace MediaBrowser.Controller.Channels
         ChannelFeatures[] GetAllChannelFeatures();
 
         bool EnableMediaSourceDisplay(BaseItem item);
+
         bool CanDelete(BaseItem item);
 
         Task DeleteItem(BaseItem item);

@@ -7,7 +7,6 @@ using System.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
@@ -24,14 +23,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _userManager = userManager;
         }
 
-        public AuthorizationInfo GetAuthorizationInfo(object requestContext)
+        public AuthorizationInfo GetAuthorizationInfo(HttpContext requestContext)
         {
-            return GetAuthorizationInfo((IRequest)requestContext);
-        }
-
-        public AuthorizationInfo GetAuthorizationInfo(IRequest requestContext)
-        {
-            if (requestContext.Items.TryGetValue("AuthorizationInfo", out var cached))
+            if (requestContext.Request.HttpContext.Items.TryGetValue("AuthorizationInfo", out var cached))
             {
                 return (AuthorizationInfo)cached;
             }
@@ -52,18 +46,18 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private AuthorizationInfo GetAuthorization(IRequest httpReq)
+        private AuthorizationInfo GetAuthorization(HttpContext httpReq)
         {
             var auth = GetAuthorizationDictionary(httpReq);
             var (authInfo, originalAuthInfo) =
-                GetAuthorizationInfoFromDictionary(auth, httpReq.Headers, httpReq.QueryString);
+                GetAuthorizationInfoFromDictionary(auth, httpReq.Request.Headers, httpReq.Request.Query);
 
             if (originalAuthInfo != null)
             {
-                httpReq.Items["OriginalAuthenticationInfo"] = originalAuthInfo;
+                httpReq.Request.HttpContext.Items["OriginalAuthenticationInfo"] = originalAuthInfo;
             }
 
-            httpReq.Items["AuthorizationInfo"] = authInfo;
+            httpReq.Request.HttpContext.Items["AuthorizationInfo"] = authInfo;
             return authInfo;
         }
 
@@ -97,6 +91,12 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 token = headers["X-MediaBrowser-Token"];
             }
 
+            if (string.IsNullOrEmpty(token))
+            {
+                token = queryString["ApiKey"];
+            }
+
+            // TODO deprecate this query parameter.
             if (string.IsNullOrEmpty(token))
             {
                 token = queryString["api_key"];
@@ -197,13 +197,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
+        private Dictionary<string, string> GetAuthorizationDictionary(HttpContext httpReq)
         {
-            var auth = httpReq.Headers["X-Emby-Authorization"];
+            var auth = httpReq.Request.Headers["X-Emby-Authorization"];
 
             if (string.IsNullOrEmpty(auth))
             {
-                auth = httpReq.Headers[HeaderNames.Authorization];
+                auth = httpReq.Request.Headers[HeaderNames.Authorization];
             }
 
             return GetAuthorization(auth);
@@ -276,12 +276,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         private static string NormalizeValue(string value)
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
-
-            return WebUtility.HtmlEncode(value);
+            return string.IsNullOrEmpty(value) ? value : WebUtility.HtmlEncode(value);
         }
     }
 }

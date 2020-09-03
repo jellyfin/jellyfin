@@ -239,7 +239,7 @@ namespace MediaBrowser.Model.Entities
 
                         if (!string.IsNullOrEmpty(Title))
                         {
-                           var result = new StringBuilder(Title);
+                            var result = new StringBuilder(Title);
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
@@ -252,7 +252,7 @@ namespace MediaBrowser.Model.Entities
                             return result.ToString();
                         }
 
-                        return string.Join(" - ", attributes.ToArray());
+                        return string.Join(" - ", attributes);
                     }
 
                     default:

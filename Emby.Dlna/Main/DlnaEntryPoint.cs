@@ -30,7 +30,7 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
-    public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
+    public sealed class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<DlnaEntryPoint> _logger;
@@ -54,13 +54,7 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
 
-        internal IContentDirectory ContentDirectory { get; private set; }
-
-        internal IConnectionManager ConnectionManager { get; private set; }
-
-        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
-
-        public static DlnaEntryPoint Current;
+        private bool _disposed;
 
         public DlnaEntryPoint(
             IServerConfigurationManager config,
@@ -99,14 +93,14 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
-            ContentDirectory = new ContentDirectory.ContentDirectory(
+            ContentDirectory = new ContentDirectory.ContentDirectoryService(
                 dlnaManager,
                 userDataManager,
                 imageProcessor,
                 libraryManager,
                 config,
                 userManager,
-                loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
+                loggerFactory.CreateLogger<ContentDirectory.ContentDirectoryService>(),
                 httpClient,
                 localizationManager,
                 mediaSourceManager,
@@ -114,18 +108,26 @@ namespace Emby.Dlna.Main
                 mediaEncoder,
                 tvSeriesManager);
 
-            ConnectionManager = new ConnectionManager.ConnectionManager(
+            ConnectionManager = new ConnectionManager.ConnectionManagerService(
                 dlnaManager,
                 config,
-                loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
+                loggerFactory.CreateLogger<ConnectionManager.ConnectionManagerService>(),
                 httpClient);
 
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
-                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
+            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
+                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
                 httpClient,
                 config);
             Current = this;
         }
+
+        public static DlnaEntryPoint Current { get; private set; }
+
+        public IContentDirectory ContentDirectory { get; private set; }
+
+        public IConnectionManager ConnectionManager { get; private set; }
+
+        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public async Task RunAsync()
         {
@@ -399,8 +401,24 @@ namespace Emby.Dlna.Main
             }
         }
 
+        public void DisposeDevicePublisher()
+        {
+            if (_publisher != null)
+            {
+                _logger.LogInformation("Disposing SsdpDevicePublisher");
+                _publisher.Dispose();
+                _publisher = null;
+            }
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             DisposeDevicePublisher();
             DisposePlayToManager();
             DisposeDeviceDiscovery();
@@ -416,16 +434,8 @@ namespace Emby.Dlna.Main
             ConnectionManager = null;
             MediaReceiverRegistrar = null;
             Current = null;
-        }
 
-        public void DisposeDevicePublisher()
-        {
-            if (_publisher != null)
-            {
-                _logger.LogInformation("Disposing SsdpDevicePublisher");
-                _publisher.Dispose();
-                _publisher = null;
-            }
+            _disposed = true;
         }
     }
 }

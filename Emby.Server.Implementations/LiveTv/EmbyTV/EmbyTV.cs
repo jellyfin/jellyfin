@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -29,7 +30,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
@@ -604,11 +604,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return Task.CompletedTask;
         }
 
-        public Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
         public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -806,11 +801,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             return null;
-        }
-
-        public IEnumerable<ActiveRecordingInfo> GetAllActiveRecordings()
-        {
-            return _activeRecordings.Values.Where(i => i.Timer.Status == RecordingStatus.InProgress && !i.CancellationTokenSource.IsCancellationRequested);
         }
 
         public ActiveRecordingInfo GetActiveRecordingInfo(string path)
@@ -1013,16 +1003,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             throw new Exception("Tuner not found.");
-        }
-
-        private MediaSourceInfo CloneMediaSource(MediaSourceInfo mediaSource, bool enableStreamSharing)
-        {
-            var json = _jsonSerializer.SerializeToString(mediaSource);
-            mediaSource = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
-
-            mediaSource.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + "_" + mediaSource.Id;
-
-            return mediaSource;
         }
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
@@ -1654,7 +1634,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _config);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer);
             }
 
             return new DirectRecorder(_logger, _httpClient, _streamHelper);

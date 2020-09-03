@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -17,7 +15,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -25,19 +22,17 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
-        private readonly IApplicationPaths _appPaths;
-        private readonly IJsonSerializer _json;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        public FFProbeAudioInfo(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IApplicationPaths appPaths, IJsonSerializer json, ILibraryManager libraryManager)
+        public FFProbeAudioInfo(
+            IMediaSourceManager mediaSourceManager,
+            IMediaEncoder mediaEncoder,
+            IItemRepository itemRepo,
+            ILibraryManager libraryManager)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
-            _appPaths = appPaths;
-            _json = json;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
         }

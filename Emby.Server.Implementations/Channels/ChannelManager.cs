@@ -426,7 +426,7 @@ namespace Emby.Server.Implementations.Channels
             var mediaInfo = await channel.GetChannelItemMediaInfo(id, cancellationToken)
                    .ConfigureAwait(false);
             var list = mediaInfo.ToList();
-            _memoryCache.CreateEntry(id).SetValue(list).SetAbsoluteExpiration(DateTimeOffset.UtcNow.AddMinutes(5));
+            _memoryCache.Set(id, list, DateTimeOffset.UtcNow.AddMinutes(5));
 
             return list;
         }
@@ -746,12 +746,21 @@ namespace Emby.Server.Implementations.Channels
             // null if came from cache
             if (itemsResult != null)
             {
-                var internalItems = itemsResult.Items
-                    .Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, parentItem, cancellationToken))
-                    .ToArray();
+                var items = itemsResult.Items;
+                var itemsLen = items.Count;
+                var internalItems = new Guid[itemsLen];
+                for (int i = 0; i < itemsLen; i++)
+                {
+                    internalItems[i] = (await GetChannelItemEntityAsync(
+                        items[i],
+                        channelProvider,
+                        channel.Id,
+                        parentItem,
+                        cancellationToken).ConfigureAwait(false)).Id;
+                }
 
                 var existingIds = _libraryManager.GetItemIds(query);
-                var deadIds = existingIds.Except(internalItems.Select(i => i.Id))
+                var deadIds = existingIds.Except(internalItems)
                     .ToArray();
 
                 foreach (var deadId in deadIds)
@@ -881,7 +890,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error writing to channel cache file: {path}", path);
+                _logger.LogError(ex, "Error writing to channel cache file: {Path}", path);
             }
         }
 
@@ -963,7 +972,7 @@ namespace Emby.Server.Implementations.Channels
             return item;
         }
 
-        private BaseItem GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntityAsync(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
         {
             var parentFolderId = parentFolder.Id;
 
@@ -1165,7 +1174,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else if (forceUpdate)
             {
-                item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
             }
 
             if ((isNew || forceUpdate) && info.Type == ChannelItemType.Media)

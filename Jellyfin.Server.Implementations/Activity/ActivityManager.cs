@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 
 namespace Jellyfin.Server.Implementations.Activity
@@ -28,20 +28,11 @@ namespace Jellyfin.Server.Implementations.Activity
         public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
         /// <inheritdoc/>
-        public void Create(ActivityLog entry)
-        {
-            using var dbContext = _provider.CreateContext();
-            dbContext.ActivityLogs.Add(entry);
-            dbContext.SaveChanges();
-
-            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
-        }
-
-        /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
         {
-            using var dbContext = _provider.CreateContext();
-            await dbContext.ActivityLogs.AddAsync(entry);
+            await using var dbContext = _provider.CreateContext();
+
+            dbContext.ActivityLogs.Add(entry);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));

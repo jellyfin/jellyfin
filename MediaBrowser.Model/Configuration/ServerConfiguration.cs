@@ -78,6 +78,11 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
         public bool IsPortAuthorized { get; set; }
 
+        /// <summary>
+        /// Gets or sets if quick connect is available for use on this server.
+        /// </summary>
+        public bool QuickConnectAvailable { get; set; }
+
         public bool AutoRunWebApp { get; set; }
 
         public bool EnableRemoteAccess { get; set; }
@@ -255,6 +260,16 @@ namespace MediaBrowser.Model.Configuration
         public string[] UninstalledPlugins { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether slow server responses should be logged as a warning.
+        /// </summary>
+        public bool EnableSlowResponseWarning { get; set; }
+
+        /// <summary>
+        /// Gets or sets the threshold for the slow response time warning in ms.
+        /// </summary>
+        public long SlowResponseThresholdMs { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -289,6 +304,7 @@ namespace MediaBrowser.Model.Configuration
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
+            QuickConnectAvailable = false;
 
             EnableUPnP = false;
             MinResumePct = 5;
@@ -359,6 +375,9 @@ namespace MediaBrowser.Model.Configuration
                     DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
+
+            EnableSlowResponseWarning = true;
+            SlowResponseThresholdMs = 500;
         }
     }
 

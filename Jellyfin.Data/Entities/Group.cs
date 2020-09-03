@@ -1,16 +1,19 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a group.
     /// </summary>
-    public partial class Group : IHasPermissions, ISavingChanges
+    public partial class Group : IHasPermissions, IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Group"/> class.

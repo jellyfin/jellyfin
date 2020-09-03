@@ -11,6 +11,8 @@ namespace MediaBrowser.Model.Configuration
 
         public double DownMixAudioBoost { get; set; }
 
+        public int MaxMuxingQueueSize { get; set; }
+
         public bool EnableThrottling { get; set; }
 
         public int ThrottleDelaySeconds { get; set; }
@@ -51,6 +53,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string EncoderPreset { get; set; }
 
+        public bool DeinterlaceDoubleRate { get; set; }
+
         public string DeinterlaceMethod { get; set; }
 
         public bool EnableDecodingColorDepth10Hevc { get; set; }
@@ -66,6 +70,7 @@ namespace MediaBrowser.Model.Configuration
         public EncodingOptions()
         {
             DownMixAudioBoost = 2;
+            MaxMuxingQueueSize = 2048;
             EnableThrottling = false;
             ThrottleDelaySeconds = 180;
             EncodingThreadCount = -1;
@@ -84,6 +89,7 @@ namespace MediaBrowser.Model.Configuration
             TonemappingParam = 0;
             H264Crf = 23;
             H265Crf = 28;
+            DeinterlaceDoubleRate = false;
             DeinterlaceMethod = "yadif";
             EnableDecodingColorDepth10Hevc = true;
             EnableDecodingColorDepth10Vp9 = true;

@@ -11,6 +11,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class IntervalTrigger : ITaskTrigger
     {
+        private DateTime _lastStartDate;
+
+        /// <summary>
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
         /// <summary>
         /// Gets or sets the interval.
         /// </summary>
@@ -27,8 +34,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <value>The timer.</value>
         private Timer Timer { get; set; }
-
-        private DateTime _lastStartDate;
 
         /// <summary>
         /// Stars waiting for the trigger action.
@@ -87,11 +92,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 Timer.Dispose();
             }
         }
-
-        /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
-        public event EventHandler<EventArgs> Triggered;
 
         /// <summary>
         /// Called when [triggered].

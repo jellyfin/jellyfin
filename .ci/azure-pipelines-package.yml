@@ -42,7 +42,7 @@ jobs:
 
   - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="no" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
     displayName: 'Run Dockerfile (stable)'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
   - task: PublishPipelineArtifact@1
     displayName: 'Publish Release'
@@ -87,7 +87,7 @@ jobs:
   steps:
   - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
     displayName: Set release version (stable)
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
   - task: Docker@2
     displayName: 'Push Unstable Image'
@@ -104,7 +104,7 @@ jobs:
 
   - task: Docker@2
     displayName: 'Push Stable Image'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       repository: 'jellyfin/jellyfin-server'
       command: buildAndPush
@@ -116,7 +116,9 @@ jobs:
         $(JellyfinVersion)-$(BuildConfiguration)
 
 - job: CollectArtifacts
+  timeoutInMinutes: 20
   displayName: 'Collect Artifacts'
+  continueOnError: true
   dependsOn:
   - BuildPackage
   - BuildDocker
@@ -128,44 +130,85 @@ jobs:
   steps:
   - task: SSH@0
     displayName: 'Update Unstable Repository'
+    continueOnError: true
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
       sshEndpoint: repository
-      runOptions: 'inline'
-      inline: |
-        sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable
-        rm $0
-        exit
+      runOptions: 'commands'
+      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
 
   - task: SSH@0
     displayName: 'Update Stable Repository'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    continueOnError: true
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       sshEndpoint: repository
-      runOptions: 'inline'
-      inline: |
-        sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)
-        rm $0
-        exit
+      runOptions: 'commands'
+      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
   dependsOn:
   - BuildPackage
-  condition: and(succeeded('BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-  
+  condition: succeeded('BuildPackage')
+
   pool:
     vmImage: 'ubuntu-latest'
 
   steps:
-  - task: NuGetCommand@2
+  - task: DotNetCoreCLI@2
+    displayName: 'Build Stable Nuget packages'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       command: 'pack'
-      packagesToPack: Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj
-      packDestination: '$(Build.ArtifactStagingDirectory)'
+      packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj'
+      versioningScheme: 'off'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build Unstable Nuget packages'
+    inputs:
+      command: 'custom'
+      projects: |
+        Jellyfin.Data/Jellyfin.Data.csproj
+        MediaBrowser.Common/MediaBrowser.Common.csproj
+        MediaBrowser.Controller/MediaBrowser.Controller.csproj
+        MediaBrowser.Model/MediaBrowser.Model.csproj
+        Emby.Naming/Emby.Naming.csproj
+      custom: 'pack'
+      arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory) -p:Stability=Unstable'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Nuget packages'
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: Jellyfin Nuget Packages
+
+  - task: NuGetAuthenticate@0
+    displayName: 'Authenticate to stable Nuget feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    inputs:
+      nuGetServiceConnections: 'NugetOrg'
 
   - task: NuGetCommand@2
+    displayName: 'Push Nuget packages to stable feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       command: 'push'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
-      includeNugetOrg: 'true'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;$(Build.ArtifactStagingDirectory)/**/*.snupkg'
+      nuGetFeedType: 'external'
+      publishFeedCredentials: 'NugetOrg'
+      allowPackageConflicts: true # This ignores an error if the version already exists
+
+  - task: NuGetAuthenticate@0
+    displayName: 'Authenticate to unstable Nuget feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+
+  - task: NuGetCommand@2
+    displayName: 'Push Nuget packages to unstable feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg' # No symbols since Azure Artifact does not support it
+      nuGetFeedType: 'internal'
+      publishVstsFeed: '7cce6c46-d610-45e3-9fb7-65a6bfd1b671/a5746b79-f369-42db-93ff-59cd066f9327'
+      allowPackageConflicts: true # This ignores an error if the version already exists

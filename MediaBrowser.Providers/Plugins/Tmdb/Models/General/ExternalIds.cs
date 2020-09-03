@@ -10,8 +10,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.General
 
         public string Freebase_Mid { get; set; }
 
-        public int Tvdb_Id { get; set; }
+        public int? Tvdb_Id { get; set; }
 
-        public int Tvrage_Id { get; set; }
+        public int? Tvrage_Id { get; set; }
     }
 }

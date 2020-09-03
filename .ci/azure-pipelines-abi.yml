@@ -12,10 +12,12 @@ parameters:
 jobs:
   - job: CompatibilityCheck
     displayName: Compatibility Check
+    dependsOn: Build
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
+
     pool:
       vmImage: "${{ parameters.LinuxImage }}"
-    # only execute for pull requests
-    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
+
     strategy:
       matrix:
         ${{ each Package in parameters.Packages }}:
@@ -23,7 +25,7 @@ jobs:
             NugetPackageName: ${{ Package.value.NugetPackageName }}
             AssemblyFileName: ${{ Package.value.AssemblyFileName }}
       maxParallel: 2
-    dependsOn: Build
+
     steps:
       - checkout: none
 
@@ -34,32 +36,32 @@ jobs:
           version: ${{ parameters.DotNetSdkVersion }}
 
       - task: DotNetCoreCLI@2
-        displayName: 'Install ABI CompatibilityChecker tool'
+        displayName: 'Install ABI CompatibilityChecker Tool'
         inputs:
           command: custom
           custom: tool
           arguments: 'update compatibilitychecker -g'
 
       - task: DownloadPipelineArtifact@2
-        displayName: "Download New Assembly Build Artifact"
+        displayName: 'Download New Assembly Build Artifact'
         inputs:
-          source: "current"
+          source: 'current'
           artifact: "$(NugetPackageName)"
           path: "$(System.ArtifactsDirectory)/new-artifacts"
           runVersion: "latest"
 
       - task: CopyFiles@2
-        displayName: "Copy New Assembly Build Artifact"
+        displayName: 'Copy New Assembly Build Artifact'
         inputs:
           sourceFolder: $(System.ArtifactsDirectory)/new-artifacts
-          contents: "**/*.dll"
+          contents: '**/*.dll'
           targetFolder: $(System.ArtifactsDirectory)/new-release
           cleanTargetFolder: true
           overWrite: true
           flattenFolders: true
 
       - task: DownloadPipelineArtifact@2
-        displayName: "Download Reference Assembly Build Artifact"
+        displayName: 'Download Reference Assembly Build Artifact'
         inputs:
           source: "specific"
           artifact: "$(NugetPackageName)"
@@ -70,16 +72,15 @@ jobs:
           runBranch: "refs/heads/$(System.PullRequest.TargetBranch)"
 
       - task: CopyFiles@2
-        displayName: "Copy Reference Assembly Build Artifact"
+        displayName: 'Copy Reference Assembly Build Artifact'
         inputs:
           sourceFolder: $(System.ArtifactsDirectory)/current-artifacts
-          contents: "**/*.dll"
+          contents: '**/*.dll'
           targetFolder: $(System.ArtifactsDirectory)/current-release
           cleanTargetFolder: true
           overWrite: true
           flattenFolders: true
 
-      # The `--warnings-only` switch will swallow the return code and not emit any errors.
       - task: DotNetCoreCLI@2
         displayName: 'Execute ABI Compatibility Check Tool'
         inputs:
