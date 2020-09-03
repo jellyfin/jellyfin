@@ -1,13 +1,16 @@
+#pragma warning disable CS1591
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing whether the associated user has a specific permission.
     /// </summary>
-    public partial class Permission : ISavingChanges
+    public partial class Permission : IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Permission"/> class.

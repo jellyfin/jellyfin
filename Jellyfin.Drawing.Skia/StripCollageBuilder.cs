@@ -115,7 +115,7 @@ namespace Jellyfin.Drawing.Skia
 
                 // resize to the same aspect as the original
                 int iWidth = Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
-                using var resizedImage = SkiaEncoder.ResizeImage(bitmap, new SKImageInfo(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace));
+                using var resizedImage = SkiaEncoder.ResizeImage(currentBitmap, new SKImageInfo(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace));
 
                 // crop image
                 int ix = Math.Abs((iWidth - iSlice) / 2);
@@ -177,7 +177,7 @@ namespace Jellyfin.Drawing.Skia
 
                     // Scale image. The FromBitmap creates a copy
                     var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
-                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(bitmap, imageInfo));
+                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(currentBitmap, imageInfo));
 
                     // draw this image into the strip at the next position
                     var xPos = x * cellWidth;

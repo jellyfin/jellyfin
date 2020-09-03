@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
@@ -35,8 +36,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
-using Movie = Jellyfin.Data.Entities.Movie;
-using MusicAlbum = Jellyfin.Data.Entities.MusicAlbum;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -619,7 +618,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.Download)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult GetDownload([FromRoute] Guid itemId)
+        public async Task<ActionResult> GetDownload([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -648,7 +647,7 @@ namespace Jellyfin.Api.Controllers
 
             if (user != null)
             {
-                LogDownload(item, user, auth);
+                await LogDownloadAsync(item, user, auth).ConfigureAwait(false);
             }
 
             var path = item.Path;
@@ -861,17 +860,17 @@ namespace Jellyfin.Api.Controllers
                 : item;
         }
 
-        private void LogDownload(BaseItem item, User user, AuthorizationInfo auth)
+        private async Task LogDownloadAsync(BaseItem item, User user, AuthorizationInfo auth)
         {
             try
             {
-                _activityManager.Create(new ActivityLog(
+                await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                     "UserDownloadingContent",
                     auth.UserId)
                 {
                     ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
-                });
+                }).ConfigureAwait(false);
             }
             catch
             {

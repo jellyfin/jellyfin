@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly IProviderManager _providerManager;
         private readonly IServerApplicationPaths _applicationPaths;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
@@ -38,17 +38,17 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
-        /// <param name="httpClient">Instance of the <see cref="IHttpClient"/> interface.</param>
+        /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public RemoteImageController(
             IProviderManager providerManager,
             IServerApplicationPaths applicationPaths,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager)
         {
             _providerManager = providerManager;
             _applicationPaths = applicationPaths;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
         }
 
@@ -221,7 +221,7 @@ namespace Jellyfin.Api.Controllers
             await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -244,22 +244,14 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Task.</returns>
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
-            using var result = await _httpClient.GetResponse(new HttpRequestOptions
-            {
-                Url = url,
-                BufferContent = false
-            }).ConfigureAwait(false);
-            var ext = result.ContentType.Split('/').Last();
-
+            var httpClient = _httpClientFactory.CreateClient();
+            using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+            var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-            await using (var stream = result.Content)
-            {
-                await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
-                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-            }
-
+            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
             await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath, CancellationToken.None)
                 .ConfigureAwait(false);

@@ -13,7 +13,6 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -22,7 +21,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
@@ -53,9 +51,9 @@ namespace Jellyfin.Api.Controllers
         private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
-        private readonly INetworkManager _networkManager;
         private readonly ILogger<DynamicHlsController> _logger;
         private readonly EncodingHelper _encodingHelper;
+        private readonly DynamicHlsHelper _dynamicHlsHelper;
 
         private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Hls;
 
@@ -74,8 +72,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
-        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsController}"/> interface.</param>
+        /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
         public DynamicHlsController(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -89,8 +87,8 @@ namespace Jellyfin.Api.Controllers
             IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            INetworkManager networkManager,
-            ILogger<DynamicHlsController> logger)
+            ILogger<DynamicHlsController> logger,
+            DynamicHlsHelper dynamicHlsHelper)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -104,8 +102,8 @@ namespace Jellyfin.Api.Controllers
             _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
-            _networkManager = networkManager;
             _logger = logger;
+            _dynamicHlsHelper = dynamicHlsHelper;
 
             _encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
         }
@@ -220,8 +218,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Dictionary<string, string> streamOptions,
             [FromQuery] bool enableAdaptiveBitrateStreaming = true)
         {
-            var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-            var cancellationTokenSource = new CancellationTokenSource();
             var streamingRequest = new HlsVideoRequestDto
             {
                 Id = itemId,
@@ -276,8 +272,7 @@ namespace Jellyfin.Api.Controllers
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await GetMasterPlaylistInternal(streamingRequest, isHeadRequest, enableAdaptiveBitrateStreaming, cancellationTokenSource)
-                .ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -390,8 +385,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Dictionary<string, string> streamOptions,
             [FromQuery] bool enableAdaptiveBitrateStreaming = true)
         {
-            var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-            var cancellationTokenSource = new CancellationTokenSource();
             var streamingRequest = new HlsAudioRequestDto
             {
                 Id = itemId,
@@ -446,8 +439,7 @@ namespace Jellyfin.Api.Controllers
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await GetMasterPlaylistInternal(streamingRequest, isHeadRequest, enableAdaptiveBitrateStreaming, cancellationTokenSource)
-                .ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1118,106 +1110,6 @@ namespace Jellyfin.Api.Controllers
                 .ConfigureAwait(false);
         }
 
-        private async Task<ActionResult> GetMasterPlaylistInternal(
-            StreamingRequestDto streamingRequest,
-            bool isHeadRequest,
-            bool enableAdaptiveBitrateStreaming,
-            CancellationTokenSource cancellationTokenSource)
-        {
-            using var state = await StreamingHelpers.GetStreamingState(
-                    streamingRequest,
-                    Request,
-                    _authContext,
-                    _mediaSourceManager,
-                    _userManager,
-                    _libraryManager,
-                    _serverConfigurationManager,
-                    _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
-                    _dlnaManager,
-                    _deviceManager,
-                    _transcodingJobHelper,
-                    _transcodingJobType,
-                    cancellationTokenSource.Token)
-                .ConfigureAwait(false);
-
-            Response.Headers.Add(HeaderNames.Expires, "0");
-            if (isHeadRequest)
-            {
-                return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
-            }
-
-            var totalBitrate = state.OutputAudioBitrate ?? 0 + state.OutputVideoBitrate ?? 0;
-
-            var builder = new StringBuilder();
-
-            builder.AppendLine("#EXTM3U");
-
-            var isLiveStream = state.IsSegmentedLiveStream;
-
-            var queryString = Request.QueryString.ToString();
-
-            // from universal audio service
-            if (queryString.IndexOf("SegmentContainer", StringComparison.OrdinalIgnoreCase) == -1 && !string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
-            {
-                queryString += "&SegmentContainer=" + state.Request.SegmentContainer;
-            }
-
-            // from universal audio service
-            if (!string.IsNullOrWhiteSpace(state.Request.TranscodeReasons) && queryString.IndexOf("TranscodeReasons=", StringComparison.OrdinalIgnoreCase) == -1)
-            {
-                queryString += "&TranscodeReasons=" + state.Request.TranscodeReasons;
-            }
-
-            // Main stream
-            var playlistUrl = isLiveStream ? "live.m3u8" : "main.m3u8";
-
-            playlistUrl += queryString;
-
-            var subtitleStreams = state.MediaSource
-                .MediaStreams
-                .Where(i => i.IsTextSubtitleStream)
-                .ToList();
-
-            var subtitleGroup = subtitleStreams.Count > 0 && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Hls || state.VideoRequest!.EnableSubtitlesInManifest)
-                ? "subs"
-                : null;
-
-            // If we're burning in subtitles then don't add additional subs to the manifest
-            if (state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
-            {
-                subtitleGroup = null;
-            }
-
-            if (!string.IsNullOrWhiteSpace(subtitleGroup))
-            {
-                AddSubtitles(state, subtitleStreams, builder);
-            }
-
-            AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
-
-            if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming))
-            {
-                var requestedVideoBitrate = state.VideoRequest == null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
-
-                // By default, vary by just 200k
-                var variation = GetBitrateVariation(totalBitrate);
-
-                var newBitrate = totalBitrate - variation;
-                var variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
-                AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
-
-                variation *= 2;
-                newBitrate = totalBitrate - variation;
-                variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
-                AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
-            }
-
-            return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
-        }
-
         private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, string name, CancellationTokenSource cancellationTokenSource)
         {
             using var state = await StreamingHelpers.GetStreamingState(
@@ -1411,325 +1303,6 @@ namespace Jellyfin.Api.Controllers
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
         }
 
-        private void AddSubtitles(StreamState state, IEnumerable<MediaStream> subtitles, StringBuilder builder)
-        {
-            var selectedIndex = state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Hls ? (int?)null : state.SubtitleStream.Index;
-            const string Format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
-
-            foreach (var stream in subtitles)
-            {
-                var name = stream.DisplayTitle;
-
-                var isDefault = selectedIndex.HasValue && selectedIndex.Value == stream.Index;
-                var isForced = stream.IsForced;
-
-                var url = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&api_key={3}",
-                    state.Request.MediaSourceId,
-                    stream.Index.ToString(CultureInfo.InvariantCulture),
-                    30.ToString(CultureInfo.InvariantCulture),
-                    ClaimHelpers.GetToken(Request.HttpContext.User));
-
-                var line = string.Format(
-                    CultureInfo.InvariantCulture,
-                    Format,
-                    name,
-                    isDefault ? "YES" : "NO",
-                    isForced ? "YES" : "NO",
-                    url,
-                    stream.Language ?? "Unknown");
-
-                builder.AppendLine(line);
-            }
-        }
-
-        private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)
-        {
-            builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
-                .Append(bitrate.ToString(CultureInfo.InvariantCulture))
-                .Append(",AVERAGE-BANDWIDTH=")
-                .Append(bitrate.ToString(CultureInfo.InvariantCulture));
-
-            AppendPlaylistCodecsField(builder, state);
-
-            AppendPlaylistResolutionField(builder, state);
-
-            AppendPlaylistFramerateField(builder, state);
-
-            if (!string.IsNullOrWhiteSpace(subtitleGroup))
-            {
-                builder.Append(",SUBTITLES=\"")
-                    .Append(subtitleGroup)
-                    .Append('"');
-            }
-
-            builder.Append(Environment.NewLine);
-            builder.AppendLine(url);
-        }
-
-        /// <summary>
-        /// Appends a CODECS field containing formatted strings of
-        /// the active streams output video and audio codecs.
-        /// </summary>
-        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
-        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
-        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
-        /// <param name="builder">StringBuilder to append the field to.</param>
-        /// <param name="state">StreamState of the current stream.</param>
-        private void AppendPlaylistCodecsField(StringBuilder builder, StreamState state)
-        {
-            // Video
-            string videoCodecs = string.Empty;
-            int? videoCodecLevel = GetOutputVideoCodecLevel(state);
-            if (!string.IsNullOrEmpty(state.ActualOutputVideoCodec) && videoCodecLevel.HasValue)
-            {
-                videoCodecs = GetPlaylistVideoCodecs(state, state.ActualOutputVideoCodec, videoCodecLevel.Value);
-            }
-
-            // Audio
-            string audioCodecs = string.Empty;
-            if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))
-            {
-                audioCodecs = GetPlaylistAudioCodecs(state);
-            }
-
-            StringBuilder codecs = new StringBuilder();
-
-            codecs.Append(videoCodecs)
-                .Append(',')
-                .Append(audioCodecs);
-
-            if (codecs.Length > 1)
-            {
-                builder.Append(",CODECS=\"")
-                    .Append(codecs)
-                    .Append('"');
-            }
-        }
-
-        /// <summary>
-        /// Appends a RESOLUTION field containing the resolution of the output stream.
-        /// </summary>
-        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
-        /// <param name="builder">StringBuilder to append the field to.</param>
-        /// <param name="state">StreamState of the current stream.</param>
-        private void AppendPlaylistResolutionField(StringBuilder builder, StreamState state)
-        {
-            if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
-            {
-                builder.Append(",RESOLUTION=")
-                    .Append(state.OutputWidth.GetValueOrDefault())
-                    .Append('x')
-                    .Append(state.OutputHeight.GetValueOrDefault());
-            }
-        }
-
-        /// <summary>
-        /// Appends a FRAME-RATE field containing the framerate of the output stream.
-        /// </summary>
-        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
-        /// <param name="builder">StringBuilder to append the field to.</param>
-        /// <param name="state">StreamState of the current stream.</param>
-        private void AppendPlaylistFramerateField(StringBuilder builder, StreamState state)
-        {
-            double? framerate = null;
-            if (state.TargetFramerate.HasValue)
-            {
-                framerate = Math.Round(state.TargetFramerate.GetValueOrDefault(), 3);
-            }
-            else if (state.VideoStream?.RealFrameRate != null)
-            {
-                framerate = Math.Round(state.VideoStream.RealFrameRate.GetValueOrDefault(), 3);
-            }
-
-            if (framerate.HasValue)
-            {
-                builder.Append(",FRAME-RATE=")
-                    .Append(framerate.Value);
-            }
-        }
-
-        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming)
-        {
-            // Within the local network this will likely do more harm than good.
-            var ip = RequestHelpers.NormalizeIp(Request.HttpContext.Connection.RemoteIpAddress).ToString();
-            if (_networkManager.IsInLocalNetwork(ip))
-            {
-                return false;
-            }
-
-            if (!enableAdaptiveBitrateStreaming)
-            {
-                return false;
-            }
-
-            if (isLiveStream || string.IsNullOrWhiteSpace(state.MediaPath))
-            {
-                // Opening live streams is so slow it's not even worth it
-                return false;
-            }
-
-            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
-            {
-                return false;
-            }
-
-            if (EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
-            {
-                return false;
-            }
-
-            if (!state.IsOutputVideo)
-            {
-                return false;
-            }
-
-            // Having problems in android
-            return false;
-            // return state.VideoRequest.VideoBitRate.HasValue;
-        }
-
-        /// <summary>
-        /// Get the H.26X level of the output video stream.
-        /// </summary>
-        /// <param name="state">StreamState of the current stream.</param>
-        /// <returns>H.26X level of the output video stream.</returns>
-        private int? GetOutputVideoCodecLevel(StreamState state)
-        {
-            string? levelString;
-            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
-                && state.VideoStream.Level.HasValue)
-            {
-                levelString = state.VideoStream?.Level.ToString();
-            }
-            else
-            {
-                levelString = state.GetRequestedLevel(state.ActualOutputVideoCodec);
-            }
-
-            if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
-            {
-                return parsedLevel;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets a formatted string of the output audio codec, for use in the CODECS field.
-        /// </summary>
-        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
-        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
-        /// <param name="state">StreamState of the current stream.</param>
-        /// <returns>Formatted audio codec string.</returns>
-        private string GetPlaylistAudioCodecs(StreamState state)
-        {
-            if (string.Equals(state.ActualOutputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
-            {
-                string? profile = state.GetRequestedProfiles("aac").FirstOrDefault();
-                return HlsCodecStringHelpers.GetAACString(profile);
-            }
-
-            if (string.Equals(state.ActualOutputAudioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
-            {
-                return HlsCodecStringHelpers.GetMP3String();
-            }
-
-            if (string.Equals(state.ActualOutputAudioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
-            {
-                return HlsCodecStringHelpers.GetAC3String();
-            }
-
-            if (string.Equals(state.ActualOutputAudioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
-            {
-                return HlsCodecStringHelpers.GetEAC3String();
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets a formatted string of the output video codec, for use in the CODECS field.
-        /// </summary>
-        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
-        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
-        /// <param name="state">StreamState of the current stream.</param>
-        /// <param name="codec">Video codec.</param>
-        /// <param name="level">Video level.</param>
-        /// <returns>Formatted video codec string.</returns>
-        private string GetPlaylistVideoCodecs(StreamState state, string codec, int level)
-        {
-            if (level == 0)
-            {
-                // This is 0 when there's no requested H.26X level in the device profile
-                // and the source is not encoded in H.26X
-                _logger.LogError("Got invalid H.26X level when building CODECS field for HLS master playlist");
-                return string.Empty;
-            }
-
-            if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
-            {
-                string profile = state.GetRequestedProfiles("h264").FirstOrDefault();
-                return HlsCodecStringHelpers.GetH264String(profile, level);
-            }
-
-            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
-            {
-                string profile = state.GetRequestedProfiles("h265").FirstOrDefault();
-
-                return HlsCodecStringHelpers.GetH265String(profile, level);
-            }
-
-            return string.Empty;
-        }
-
-        private int GetBitrateVariation(int bitrate)
-        {
-            // By default, vary by just 50k
-            var variation = 50000;
-
-            if (bitrate >= 10000000)
-            {
-                variation = 2000000;
-            }
-            else if (bitrate >= 5000000)
-            {
-                variation = 1500000;
-            }
-            else if (bitrate >= 3000000)
-            {
-                variation = 1000000;
-            }
-            else if (bitrate >= 2000000)
-            {
-                variation = 500000;
-            }
-            else if (bitrate >= 1000000)
-            {
-                variation = 300000;
-            }
-            else if (bitrate >= 600000)
-            {
-                variation = 200000;
-            }
-            else if (bitrate >= 400000)
-            {
-                variation = 100000;
-            }
-
-            return variation;
-        }
-
-        private string ReplaceBitrate(string url, int oldValue, int newValue)
-        {
-            return url.Replace(
-                "videobitrate=" + oldValue.ToString(CultureInfo.InvariantCulture),
-                "videobitrate=" + newValue.ToString(CultureInfo.InvariantCulture),
-                StringComparison.OrdinalIgnoreCase);
-        }
-
         private double[] GetSegmentLengths(StreamState state)
         {
             var result = new List<double>();
@@ -1781,15 +1354,20 @@ namespace Jellyfin.Api.Controllers
                 segmentFormat = "mpegts";
             }
 
+            var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize > 128
+                ? encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
+                : "128";
+
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -f hls -max_delay 5000000 -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -individual_header_trailer 0 -hls_segment_type {8} -start_number {9} -hls_segment_filename \"{10}\" -hls_playlist_type vod -hls_list_size 0 -y \"{11}\"",
                 inputModifier,
                 _encodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
                 mapArgs,
                 GetVideoArguments(state, encodingOptions, startNumber),
                 GetAudioArguments(state, encodingOptions),
+                maxMuxingQueueSize,
                 state.SegmentLength.ToString(CultureInfo.InvariantCulture),
                 segmentFormat,
                 startNumberParam,
@@ -2084,7 +1662,7 @@ namespace Jellyfin.Api.Controllers
                 return Task.CompletedTask;
             });
 
-            return FileStreamResponseHelpers.GetStaticFileResult(segmentPath, MimeTypes.GetMimeType(segmentPath)!, false, this);
+            return FileStreamResponseHelpers.GetStaticFileResult(segmentPath, MimeTypes.GetMimeType(segmentPath)!, false, HttpContext);
         }
 
         private long GetEndPositionTicks(StreamState state, int requestedIndex)

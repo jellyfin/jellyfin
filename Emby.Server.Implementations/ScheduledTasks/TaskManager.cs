@@ -5,8 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -207,6 +207,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

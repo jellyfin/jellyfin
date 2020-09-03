@@ -4,9 +4,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -20,8 +24,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
@@ -41,7 +45,7 @@ namespace MediaBrowser.Providers.Manager
     {
         private readonly object _refreshQueueLock = new object();
         private readonly ILogger<ProviderManager> _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
@@ -63,7 +67,7 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager"/> class.
         /// </summary>
-        /// <param name="httpClient">The Http client.</param>
+        /// <param name="httpClientFactory">The Http client factory.</param>
         /// <param name="subtitleManager">The subtitle manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="libraryMonitor">The library monitor.</param>
@@ -72,7 +76,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="libraryManager">The library manager.</param>
         public ProviderManager(
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
             IServerConfigurationManager configurationManager,
             ILibraryMonitor libraryMonitor,
@@ -82,7 +86,7 @@ namespace MediaBrowser.Providers.Manager
             ILibraryManager libraryManager)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _configurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
@@ -152,24 +156,38 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            using var response = await _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                BufferContent = false
-            }).ConfigureAwait(false);
+            var httpClient = _httpClientFactory.CreateClient();
+            using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+
+            var contentType = response.Content.Headers.ContentType.MediaType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
-            if (string.IsNullOrEmpty(response.ContentType))
+            if (string.IsNullOrEmpty(contentType))
             {
                 if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    response.ContentType = "image/png";
+                    contentType = "image/png";
                 }
             }
 
-            await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken).ConfigureAwait(false);
+            // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
+            if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new HttpException("Invalid image received.")
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await SaveImage(
+                item,
+                stream,
+                contentType,
+                type,
+                imageIndex,
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -192,10 +210,10 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task SaveImage(User user, Stream source, string mimeType, string path)
+        public Task SaveImage(Stream source, string mimeType, string path)
         {
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
-                .SaveImage(user, source, path);
+                .SaveImage(source, path);
         }
 
         /// <inheritdoc/>
@@ -545,7 +563,7 @@ namespace MediaBrowser.Providers.Manager
             var pluginList = summary.Plugins.ToList();
 
             AddMetadataPlugins(pluginList, dummy, libraryOptions, options);
-            AddImagePlugins(pluginList, dummy, imageProviders);
+            AddImagePlugins(pluginList, imageProviders);
 
             var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
 
@@ -576,14 +594,14 @@ namespace MediaBrowser.Providers.Manager
             var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true).ToList();
 
             // Locals
-            list.AddRange(providers.Where(i => (i is ILocalMetadataProvider)).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => i is ILocalMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
             // Fetchers
-            list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => i is IRemoteMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataFetcher
@@ -597,11 +615,10 @@ namespace MediaBrowser.Providers.Manager
             }));
         }
 
-        private void AddImagePlugins<T>(List<MetadataPlugin> list, T item, List<IImageProvider> imageProviders)
-            where T : BaseItem
+        private void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
         {
             // Locals
-            list.AddRange(imageProviders.Where(i => (i is ILocalImageProvider)).Select(i => new MetadataPlugin
+            list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalImageProvider
@@ -876,7 +893,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
         {
             var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
 
@@ -1148,12 +1165,32 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void Dispose()
         {
-            _disposed = true;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!_disposeCancellationTokenSource.IsCancellationRequested)
             {
                 _disposeCancellationTokenSource.Cancel();
             }
+
+            if (disposing)
+            {
+                _disposeCancellationTokenSource.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

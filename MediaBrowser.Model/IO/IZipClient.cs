@@ -26,6 +26,7 @@ namespace MediaBrowser.Model.IO
         void ExtractAll(Stream source, string targetPath, bool overwriteExistingFiles);
 
         void ExtractAllFromGz(Stream source, string targetPath, bool overwriteExistingFiles);
+
         void ExtractFirstFileFromGz(Stream source, string targetPath, string defaultFileName);
 
         /// <summary>

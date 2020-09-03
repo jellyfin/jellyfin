@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
 using Jellyfin.Api.Controllers;
@@ -28,6 +27,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
+using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -154,13 +154,15 @@ namespace Jellyfin.Server
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
             PerformStaticInitialization();
+            var serviceCollection = new ServiceCollection();
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
+                serviceCollection);
 
             try
             {
@@ -178,8 +180,7 @@ namespace Jellyfin.Server
                     }
                 }
 
-                ServiceCollection serviceCollection = new ServiceCollection();
-                appHost.Init(serviceCollection);
+                appHost.Init();
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
@@ -344,11 +345,24 @@ namespace Jellyfin.Server
                         }
                     }
 
-                    // Bind to unix socket (only on OSX and Linux)
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    // Bind to unix socket (only on macOS and Linux)
+                    if (startupConfig.UseUnixSocket() && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        // TODO: allow configuration of socket path
-                        var socketPath = $"{appPaths.DataPath}/socket.sock";
+                        var socketPath = startupConfig.GetUnixSocketPath();
+                        if (string.IsNullOrEmpty(socketPath))
+                        {
+                            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+                            if (xdgRuntimeDir == null)
+                            {
+                                // Fall back to config dir
+                                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, "socket.sock");
+                            }
+                            else
+                            {
+                                socketPath = Path.Join(xdgRuntimeDir, "jellyfin-socket");
+                            }
+                        }
+
                         // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
                         if (File.Exists(socketPath))
                         {
@@ -580,7 +594,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "api-docs/swagger";
+                inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
             }
 
             return config

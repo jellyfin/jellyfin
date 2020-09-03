@@ -16,18 +16,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.6" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.7" />
     <PackageReference Include="OptimizedPriorityQueue" Version="4.2.0" />
     <PackageReference Include="PlaylistsNET" Version="1.1.2" />
-    <PackageReference Include="TvDbSharper" Version="3.2.0" />
+    <PackageReference Include="TvDbSharper" Version="3.2.1" />
   </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'" >true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

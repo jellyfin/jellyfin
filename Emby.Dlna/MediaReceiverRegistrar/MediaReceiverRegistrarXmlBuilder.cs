@@ -10,7 +10,8 @@ namespace Emby.Dlna.MediaReceiverRegistrar
     {
         public string GetXml()
         {
-            return new ServiceXmlBuilder().GetXml(new ServiceActionListBuilder().GetActions(),
+            return new ServiceXmlBuilder().GetXml(
+                new ServiceActionListBuilder().GetActions(),
                 GetStateVariables());
         }
 

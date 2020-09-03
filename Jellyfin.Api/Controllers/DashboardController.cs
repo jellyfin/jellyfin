@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -202,10 +203,11 @@ namespace Jellyfin.Api.Controllers
             var path = resourceName;
             var basePath = WebClientUiPath;
 
+            var requestPathAndQuery = Request.GetEncodedPathAndQuery();
             // Bounce them to the startup wizard if it hasn't been completed yet
             if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted
-                && !Request.Path.Value.Contains("wizard", StringComparison.OrdinalIgnoreCase)
-                && Request.Path.Value.Contains("index", StringComparison.OrdinalIgnoreCase))
+                && !requestPathAndQuery.Contains("wizard", StringComparison.OrdinalIgnoreCase)
+                && requestPathAndQuery.Contains("index", StringComparison.OrdinalIgnoreCase))
             {
                 return Redirect("index.html?start=wizard#!/wizardstart.html");
             }

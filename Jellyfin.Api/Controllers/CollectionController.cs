@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -51,7 +52,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="CollectionCreationOptions"/> with information about the new collection.</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<CollectionCreationResult> CreateCollection(
+        public async Task<ActionResult<CollectionCreationResult>> CreateCollection(
             [FromQuery] string? name,
             [FromQuery] string? ids,
             [FromQuery] Guid? parentId,
@@ -59,14 +60,14 @@ namespace Jellyfin.Api.Controllers
         {
             var userId = _authContext.GetAuthorizationInfo(Request).UserId;
 
-            var item = _collectionManager.CreateCollection(new CollectionCreationOptions
+            var item = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
             {
                 IsLocked = isLocked,
                 Name = name,
                 ParentId = parentId,
                 ItemIdList = RequestHelpers.Split(ids, ',', true),
                 UserIds = new[] { userId }
-            });
+            }).ConfigureAwait(false);
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 
@@ -87,9 +88,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult AddToCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> AddToCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
         {
-            _collectionManager.AddToCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
+            await _collectionManager.AddToCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(true);
             return NoContent();
         }
 
@@ -102,9 +103,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpDelete("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
         {
-            _collectionManager.RemoveFromCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
+            await _collectionManager.RemoveFromCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(false);
             return NoContent();
         }
     }
