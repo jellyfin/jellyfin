@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Formatters
         public CamelCaseJsonProfileFormatter() : base(JsonDefaults.GetCamelCaseOptions())
         {
             SupportedMediaTypes.Clear();
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json; profile=\"CamelCase\""));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse(JsonDefaults.CamelCaseMediaType));
         }
     }
 }
