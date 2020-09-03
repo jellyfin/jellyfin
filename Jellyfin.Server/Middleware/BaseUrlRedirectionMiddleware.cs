@@ -44,11 +44,7 @@ namespace Jellyfin.Server.Middleware
             var localPath = httpContext.Request.Path.ToString();
             var baseUrlPrefix = serverConfigurationManager.Configuration.BaseUrl;
 
-            if (string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrEmpty(localPath)
-                || !localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            if (!localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 // Always redirect back to the default path if the base prefix is invalid or missing
                 _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
