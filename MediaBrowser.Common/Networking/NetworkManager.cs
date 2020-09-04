@@ -7,10 +7,8 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -51,7 +49,7 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Holds the bind address overrides.
         /// </summary>
-        private readonly Dictionary<IPNetAddress, string> _overrideAddresses;
+        private readonly Dictionary<IPNetAddress, string> _overrideUrls;
 
         /// <summary>
         /// Used to stop "event-racing conditions".
@@ -108,7 +106,7 @@ namespace MediaBrowser.Common.Networking
             _interfaceAddresses = new NetCollection(unique: false);
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new SortedList<string, int>();
-            _overrideAddresses = new Dictionary<IPNetAddress, string>();
+            _overrideUrls = new Dictionary<IPNetAddress, string>();
 
             UpdateSettings();
             if (!IsIP6Enabled && !IsIP4Enabled)
@@ -217,6 +215,25 @@ namespace MediaBrowser.Common.Networking
         public bool IsExcluded(IPAddress ip)
         {
             return _excludedSubnets.Contains(ip);
+        }
+
+        /// <summary>
+        /// Adds an override url.
+        /// </summary>
+        /// <param name="address">IP address to match.</param>
+        /// <param name="url">Corresponding url.</param>
+        public void AddOverrideUrl(IPNetAddress address, string url)
+        {
+            _overrideUrls[address] = url;
+        }
+
+        /// <summary>
+        /// Removes an override url.
+        /// </summary>
+        /// <param name="address">IP address to match.</param>
+        public void DeleteOverrrideUrl(IPNetAddress address)
+        {
+            _overrideUrls.Remove(address);
         }
 
         /// <inheritdoc/>
@@ -392,7 +409,7 @@ namespace MediaBrowser.Common.Networking
             if (haveSource)
             {
                 // Check for user override.
-                foreach (var addr in _overrideAddresses)
+                foreach (var addr in _overrideUrls)
                 {
                     if (addr.Key.Equals(IPAddress.Broadcast))
                     {
@@ -625,7 +642,7 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentNullException(nameof(address));
             }
 
-             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
+            // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
             if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return true;
@@ -752,7 +769,7 @@ namespace MediaBrowser.Common.Networking
             return _instance;
         }
 
-        private void ConfigurationUpdated(object? sender, EventArgs args )
+        private void ConfigurationUpdated(object? sender, EventArgs args)
         {
             UpdateSettings();
         }
@@ -813,7 +830,7 @@ namespace MediaBrowser.Common.Networking
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (Math.Abs(iface.Tag) == index &&
-                        ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork ) ||
+                        ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) ||
                          (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         col.Add(iface);
@@ -922,7 +939,7 @@ namespace MediaBrowser.Common.Networking
             {
                 lock (_intLock)
                 {
-                    _overrideAddresses.Clear();
+                    _overrideUrls.Clear();
                 }
 
                 return;
@@ -930,7 +947,7 @@ namespace MediaBrowser.Common.Networking
 
             lock (_intLock)
             {
-                _overrideAddresses.Clear();
+                _overrideUrls.Clear();
 
                 foreach (var entry in overrides)
                 {
@@ -944,15 +961,15 @@ namespace MediaBrowser.Common.Networking
                         var replacement = parts[1].Trim();
                         if (string.Equals(parts[0], "remaining", StringComparison.OrdinalIgnoreCase))
                         {
-                            _overrideAddresses[new IPNetAddress(IPAddress.Broadcast)] = replacement;
+                            _overrideUrls[new IPNetAddress(IPAddress.Broadcast)] = replacement;
                         }
                         else if (string.Equals(parts[0], "external", StringComparison.OrdinalIgnoreCase))
                         {
-                            _overrideAddresses[new IPNetAddress(IPAddress.Any)] = replacement;
+                            _overrideUrls[new IPNetAddress(IPAddress.Any)] = replacement;
                         }
                         else if (TryParseInterface(parts[0], out IPNetAddress address))
                         {
-                            _overrideAddresses[address] = replacement;
+                            _overrideUrls[address] = replacement;
                         }
                         else
                         {

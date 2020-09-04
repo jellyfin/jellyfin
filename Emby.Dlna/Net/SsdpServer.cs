@@ -161,7 +161,7 @@ namespace Emby.Dlna.Net
             foreach (var entry in _senders.Keys)
             {
                 var addr = (IPAddress)entry;
-                if (((advertising != null) && (addr.AddressFamily != advertising.AddressFamily)) || (addr.ScopeId == 0))
+                if (((advertising != null) && (addr.AddressFamily != advertising.AddressFamily)) || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
                 {
                     continue;
                 }
@@ -260,14 +260,14 @@ namespace Emby.Dlna.Net
                            config.EnableRemoteAccess &&
                            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && config.UPnPCreateHttpPortMap));
 
-            if (IsUPnPActive)
-            {
-                NatUtility.UnknownDeviceFound += UnknownDeviceFound;
-            }
-            else
-            {
-                NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
-            }
+            // if (IsUPnPActive)
+            // {
+            //     NatUtility.UnknownDeviceFound += UnknownDeviceFound;
+            // }
+            // else
+            // {
+            //     NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
+            // }
         }
 
         private static string PrettyPrint(SsdpMessage m)
@@ -489,10 +489,10 @@ namespace Emby.Dlna.Net
                 NetManager.NetworkChanged += NetworkChanged;
                 Logger.LogDebug("EnableMultiSocketBinding : {0}", EnableMultiSocketBinding);
 
-                if (IsUPnPActive)
-                {
-                    NatUtility.UnknownDeviceFound += UnknownDeviceFound;
-                }
+                // if (IsUPnPActive)
+                // {
+                //    NatUtility.UnknownDeviceFound += UnknownDeviceFound;
+                // }
 
                 foreach (IPObject ip in _interfaces)
                 {
@@ -519,7 +519,7 @@ namespace Emby.Dlna.Net
         {
             if (_running)
             {
-                NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
+                // NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
                 NetManager.NetworkChanged -= NetworkChanged;
                 _listeners.Clear();
                 _senders.Clear();
@@ -541,51 +541,51 @@ namespace Emby.Dlna.Net
             }
         }
 
-        /// <summary>
-        /// Enables the SSDP injection of devices found by Mono.Nat.
-        /// </summary>
-        /// <param name="sender">Mono.Nat instance.</param>
-        /// <param name="e">Information Mono received, but doesn't use.</param>
-        private void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
-        {
-            if (!_running || Disposed)
-            {
-                return;
-            }
-
-            IPEndPoint ep = (IPEndPoint)e.EndPoint;
-            IPAddress remote = ep.Address;
-
-            // Only process the IP address family that we are configured for.
-            if (!IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
-            {
-                return;
-            }
-
-            if (!IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                return;
-            }
-
-            if (NetManager.IsExcluded(remote))
-            {
-                return;
-            }
-
-            if (!NetManager.IsInLocalNetwork(remote) && NetManager.IsValidInterfaceAddress(remote))
-            {
-                Logger.LogDebug("FILTERED: Sending to non-LAN address: {0}.", remote);
-                return;
-            }
-
-            if (_senders[ep.Address] != null)
-            {
-                Logger.LogDebug("FILTERED: Sending to Self: {0} -> {0}/{1}. uPnP?", e.Address, remote, ep.Port);
-                return;
-            }
-
-            // _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
-            ProcessMessage(UdpProcess.CreateIsolated(e.Address), e.Data, ep);
-        }
+        // /// <summary>
+        // /// Enables the SSDP injection of devices found by Mono.Nat. 2.0.3
+        // /// </summary>
+        // /// <param name="sender">Mono.Nat instance.</param>
+        // /// <param name="e">Information Mono received, but doesn't use.</param>
+        // private void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
+        // {
+        //    if (!_running || Disposed)
+        //    {
+        //        return;
+        //    }
+        //
+        //    IPEndPoint ep = (IPEndPoint)e.EndPoint;
+        //    IPAddress remote = ep.Address;
+        //
+        //    // Only process the IP address family that we are configured for.
+        //    if (!IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
+        //    {
+        //        return;
+        //    }
+        //
+        //    if (!IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
+        //    {
+        //        return;
+        //    }
+        //
+        //    if (NetManager.IsExcluded(remote))
+        //    {
+        //        return;
+        //    }
+        //
+        //    if (!NetManager.IsInLocalNetwork(remote) && NetManager.IsValidInterfaceAddress(remote))
+        //    {
+        //        Logger.LogDebug("FILTERED: Sending to non-LAN address: {0}.", remote);
+        //        return;
+        //    }
+        //
+        //    if (_senders[ep.Address] != null)
+        //    {
+        //        Logger.LogDebug("FILTERED: Sending to Self: {0} -> {0}/{1}. uPnP?", e.Address, remote, ep.Port);
+        //        return;
+        //    }
+        //
+        //    // _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
+        //    ProcessMessage(UdpProcess.CreateIsolated(e.Address), e.Data, ep);
+        // }
     }
 }

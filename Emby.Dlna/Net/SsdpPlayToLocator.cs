@@ -259,7 +259,7 @@ namespace Emby.Dlna.Net
 
         private void ProcessNotificationMessage(object sender, SsdpEventArgs e)
         {
-            const string SsdpInternetGateway = "ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:";
+            // const string SsdpInternetGateway = "ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:";
 
             if (!_listening || _disposed)
             {
@@ -277,18 +277,18 @@ namespace Emby.Dlna.Net
             var notificationType = e.Message["NTS"];
             if (device.DescriptionLocation != null)
             {
-                if (notificationType.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
-                {
+                // if (notificationType.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
+                // {
                     // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                    if (_ssdpServer.IsUPnPActive && !e.Internal)
-                    {
+                    // if (_ssdpServer.IsUPnPActive && !e.Internal)
+                    // {
                         // _logger.LogDebug("Passing NOTIFY message to Mono.Nat.");
-                        NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw(), e.ReceivedFrom);
-                        return;
-                    }
+                        // NatUtility.ParseMessage(NatProtocol.Upnp, localIpAddress, e.Raw(), e.ReceivedFrom);
+                        // return;
+                    // }
 
-                    return;
-                }
+                    // return;
+                // }
 
                 if (string.Equals(notificationType, "ssdp:alive", StringComparison.OrdinalIgnoreCase))
                 {

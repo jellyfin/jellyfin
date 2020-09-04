@@ -89,8 +89,7 @@ namespace Emby.Dlna.Main
             INetworkManager networkManager,
             IUserViewManager userViewManager,
             ITVSeriesManager tvSeriesManager,
-            INotificationManager notificationManager,
-            ISsdpServer sddpServer)
+            INotificationManager notificationManager)
         {
             _configurationManager = config;
             _appHost = appHost;
@@ -111,8 +110,9 @@ namespace Emby.Dlna.Main
             _tvSeriesManager = tvSeriesManager;
             _notificationManager = notificationManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-            _ssdpServer = sddpServer;
+            _ssdpServer = new SsdpServer(_networkManager, config, loggerFactory.CreateLogger<SsdpServer>(), appHost);
             Instance = this;
+
             _networkManager.NetworkChanged += NetworkChanged;
             NetworkChange.NetworkAddressChanged += this.OnNetworkAddressChanged;
         }

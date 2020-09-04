@@ -44,7 +44,6 @@ using Jellyfin.Api.Helpers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Common.Plugins;
@@ -80,11 +79,9 @@ using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
@@ -511,7 +508,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<TvdbClientManager>();
 
             ServiceCollection.AddSingleton(_networkManager);
-            ServiceCollection.AddSingleton<ISsdpServer, SsdpServer>();
             ServiceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();

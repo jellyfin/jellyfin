@@ -13,7 +13,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
-using NATLogger = Mono.Nat.Logging.ILogger;
+// using NATLogger = Mono.Nat.Logging.ILogger;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _gatewayMonitor = gwMonitor ?? throw new NullReferenceException(nameof(gwMonitor));
             _devices = new List<INatDevice>();
             _configIdentifier = GetConfigIdentifier();
-            Mono.Nat.Logging.Logger.Factory = GetLogger;
+            // Mono.Nat.Logging.Logger.Factory = GetLogger;
         }
 
          /// <summary>
@@ -103,15 +103,15 @@ namespace Emby.Server.Implementations.EntryPoints
             _disposed = true;
         }
 
-        /// <summary>
-        /// Creates a logging instance for Mono.NAT.
-        /// </summary>
-        /// <param name="name">Name of instance.</param>
-        /// <returns>ILogger implementation.</returns>
-        private NATLogger GetLogger(string name)
-        {
-            return new LoggingInterface(_loggerFactory.CreateLogger(name));
-        }
+        // /// <summary>
+        // /// Creates a logging instance for Mono.NAT.
+        // /// </summary>
+        // /// <param name="name">Name of instance.</param>
+        // /// <returns>ILogger implementation.</returns>
+        // private NATLogger GetLogger(string name)
+        // {
+        //     return new LoggingInterface(_loggerFactory.CreateLogger(name));
+        // }
 
         /// <summary>
         /// Converts the uPNP settings to a string.
@@ -413,9 +413,9 @@ namespace Emby.Server.Implementations.EntryPoints
         }
 
         /// <summary>
-        /// Interface class that transpose Mono.NAT logs into our logging system.
+        /// Interface class that transpose Mono.NAT 2.0.3 logs into our logging system.
         /// </summary>
-        private class LoggingInterface : NATLogger
+        private class LoggingInterface // : NATLogger
         {
             private readonly ILogger _logger;
 

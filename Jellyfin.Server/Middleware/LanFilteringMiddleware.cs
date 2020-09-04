@@ -38,7 +38,7 @@ namespace Jellyfin.Server.Middleware
             {
                 if (h.HasAddress)
                 {
-                    if (networkManager.IsInLocalNetwork(h))
+                    if (!networkManager.IsInLocalNetwork(h))
                     {
                         return;
                     }
@@ -48,6 +48,7 @@ namespace Jellyfin.Server.Middleware
                     // Host is not an IP address.
                     // Can we make Assumption is that host names are not local.
                     // Could attempt resolve, but do we want to do this on each request?
+                    return;
                 }
             }
 

@@ -51,35 +51,31 @@ namespace Jellyfin.Server.Middleware
 
                     if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIPObj))
                     {
-                         // remoteAddressFilter is a whitelist or blacklist.
-                         bool contained = remoteAddressFilter.Contains(remoteIPObj);
-                         if (serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
-                         {
-                            if (!contained)
-                            {
-                                return;
-                            }
-                         }
-                         else
-                         {
-                            if (contained)
-                            {
-                                return;
-                            }
-                         }
+                        // remoteAddressFilter is a whitelist or blacklist.
+                        bool isListed = remoteAddressFilter.Contains(remoteIPObj);
+                        if (!serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
+                        {
+                            // Black list, so flip over.
+                            isListed = !isListed;
+                        }
+
+                        if (!isListed)
+                        {
+                            // If your name isn't on the list, you arn't coming in.
+                            return;
+                        }
                     }
                 }
-                else
+                else if (!networkManager.IsInLocalNetwork(remoteIPObj))
                 {
-                    if (networkManager.IsInLocalNetwork(remoteIPObj))
-                    {
-                        return;
-                    }
+                    // Remote not enabled. So everyone should be LAN.
+                    return;
                 }
             }
             else
             {
-                // _logger.LogError("Unable to parse remoteIp: {0}", remoteIp);
+                // Unable to parse remoteIp
+                return;
             }
 
             await _next(httpContext).ConfigureAwait(false);
