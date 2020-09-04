@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Emby.Drawing;
 using Emby.Server.Implementations;
@@ -15,6 +16,7 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -64,12 +66,8 @@ namespace Jellyfin.Server
                 Logger.LogWarning($"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
             }
 
-            // TODO: Set up scoping and use AddDbContextPool,
-            // can't register as Transient since tracking transient in GC is funky
-            // serviceCollection.AddDbContext<JellyfinDb>(
-            //     options => options
-            //         .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
-            //     ServiceLifetime.Transient);
+            ServiceCollection.AddDbContextPool<JellyfinDb>(
+                 options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
 
             ServiceCollection.AddEventServices();
             ServiceCollection.AddSingleton<IEventManager, EventManager>();
