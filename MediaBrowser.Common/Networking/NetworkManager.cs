@@ -429,7 +429,7 @@ namespace MediaBrowser.Common.Networking
                 }
             }
 
-            // _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
+            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
 
             if (!string.IsNullOrEmpty(bindPreference))
             {
