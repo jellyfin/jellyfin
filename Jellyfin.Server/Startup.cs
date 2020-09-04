@@ -124,7 +124,6 @@ namespace Jellyfin.Server
                     mainApp.UseHttpsRedirection();
                 }
 
-                mainApp.UsePathBase(_serverConfigurationManager.Configuration.BaseUrl);
                 mainApp.UseStaticFiles();
                 if (appConfig.HostWebClient())
                 {
