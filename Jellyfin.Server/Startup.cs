@@ -9,9 +9,12 @@ using Jellyfin.Server.Models;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
 
@@ -50,9 +53,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(
-                _serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'),
-                _serverApplicationHost.GetApiPluginAssemblies());
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies());
 
             services.AddJellyfinApiSwagger();
 
@@ -87,57 +88,78 @@ namespace Jellyfin.Server
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <param name="env">The webhost environment.</param>
+        /// <param name="appConfig">The application config.</param>
         public void Configure(
             IApplicationBuilder app,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IConfiguration appConfig)
         {
-            if (env.IsDevelopment())
+            // Only add base url redirection if a base url is set.
+            if (!string.IsNullOrEmpty(_serverConfigurationManager.Configuration.BaseUrl))
             {
-                app.UseDeveloperExceptionPage();
+                app.UseBaseUrlRedirection();
             }
 
-            app.UseMiddleware<ExceptionMiddleware>();
-
-            app.UseMiddleware<ResponseTimeMiddleware>();
-
-            app.UseWebSockets();
-
-            app.UseResponseCompression();
-
-            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
-
-            if (_serverConfigurationManager.Configuration.RequireHttps
-                && _serverApplicationHost.ListenWithHttps)
+            // Wrap rest of configuration so everything only listens on BaseUrl.
+            app.Map(_serverConfigurationManager.Configuration.BaseUrl, mainApp =>
             {
-                app.UseHttpsRedirection();
-            }
-
-            app.UseStaticFiles();
-            app.UseAuthentication();
-            app.UseJellyfinApiSwagger(_serverConfigurationManager);
-            app.UseRouting();
-            app.UseAuthorization();
-            if (_serverConfigurationManager.Configuration.EnableMetrics)
-            {
-                // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
-                app.UseHttpMetrics();
-            }
-
-            app.UseLanFiltering();
-            app.UseIpBasedAccessValidation();
-            app.UseBaseUrlRedirection();
-            app.UseWebSocketHandler();
-            app.UseServerStartupMessage();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                if (env.IsDevelopment())
                 {
-                    endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
+                    mainApp.UseDeveloperExceptionPage();
                 }
 
-                endpoints.MapHealthChecks(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/health");
+                mainApp.UseMiddleware<ExceptionMiddleware>();
+
+                mainApp.UseMiddleware<ResponseTimeMiddleware>();
+
+                mainApp.UseWebSockets();
+
+                mainApp.UseResponseCompression();
+
+                mainApp.UseCors(ServerCorsPolicy.DefaultPolicyName);
+
+                if (_serverConfigurationManager.Configuration.RequireHttps
+                    && _serverApplicationHost.ListenWithHttps)
+                {
+                    mainApp.UseHttpsRedirection();
+                }
+
+                mainApp.UseStaticFiles();
+                if (appConfig.HostWebClient())
+                {
+                    mainApp.UseStaticFiles(new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        RequestPath = "/web"
+                    });
+                }
+
+                mainApp.UseAuthentication();
+                mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseRouting();
+                mainApp.UseAuthorization();
+
+                mainApp.UseLanFiltering();
+                mainApp.UseIpBasedAccessValidation();
+                mainApp.UseWebSocketHandler();
+                mainApp.UseServerStartupMessage();
+
+                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                {
+                    // Must be registered after any middleware that could change HTTP response codes or the data will be bad
+                    mainApp.UseHttpMetrics();
+                }
+
+                mainApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    if (_serverConfigurationManager.Configuration.EnableMetrics)
+                    {
+                        endpoints.MapMetrics("/metrics");
+                    }
+
+                    endpoints.MapHealthChecks("/health");
+                });
             });
 
             // Add type descriptor for legacy datetime parsing.

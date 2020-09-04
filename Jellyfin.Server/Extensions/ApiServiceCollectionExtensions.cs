@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
@@ -18,7 +17,6 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
 using Jellyfin.Server.Models;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -135,10 +133,9 @@ namespace Jellyfin.Server.Extensions
         /// Extension method for adding the jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
-        /// <param name="baseUrl">The base url for the API.</param>
-        /// <param name="pluginAssemblies">An IEnumberable containing all plugin assemblies with API controllers.</param>
+        /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl, IEnumerable<Assembly> pluginAssemblies)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies)
         {
             IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors(options =>
@@ -151,8 +148,6 @@ namespace Jellyfin.Server.Extensions
                 })
                 .AddMvc(opts =>
                 {
-                    opts.UseGeneralRoutePrefix(baseUrl);
-
                     // Allow requester to change between camelCase and PascalCase
                     opts.RespectBrowserAcceptHeader = true;
 
