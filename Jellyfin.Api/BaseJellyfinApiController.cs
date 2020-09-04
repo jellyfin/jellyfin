@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using MediaBrowser.Common.Json;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api
@@ -8,7 +9,10 @@ namespace Jellyfin.Api
     /// </summary>
     [ApiController]
     [Route("[controller]")]
-    [Produces(MediaTypeNames.Application.Json)]
+    [Produces(
+        MediaTypeNames.Application.Json,
+        JsonDefaults.CamelCaseMediaType,
+        JsonDefaults.PascalCaseMediaType)]
     public class BaseJellyfinApiController : ControllerBase
     {
     }
