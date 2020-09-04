@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             await _streamHelper.CopyUntilCancelled(
                 await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
                 output,
-                81920,
+                IODefaults.CopyToBufferSize,
                 cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
