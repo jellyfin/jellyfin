@@ -58,8 +58,8 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Dlna content directory returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the dlna content directory xml.</returns>
         [HttpGet("{serverId}/ContentDirectory")]
-        [HttpGet("{serverId}/ContentDirectory/ContentDirectory")]
-        [HttpGet("{serverId}/ContentDirectory/ContentDirectory.xml", Name = "GetContentDirectory_2")]
+        [HttpGet("{serverId}/ContentDirectory/ContentDirectory", Name = "GetContentDirectory_2")]
+        [HttpGet("{serverId}/ContentDirectory/ContentDirectory.xml", Name = "GetContentDirectory_3")]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
@@ -79,8 +79,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/MediaReceiverRegistrar")]
-        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar")]
-        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml", Name = "GetMediaReceiverRegistrar_2")]
+        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar", Name = "GetMediaReceiverRegistrar_2")]
+        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml", Name = "GetMediaReceiverRegistrar_3")]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
@@ -100,8 +100,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverId">Server UUID.</param>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/ConnectionManager")]
-        [HttpGet("{serverId}/ConnectionManager/ConnectionManager")]
-        [HttpGet("{serverId}/ConnectionManager/ConnectionManager.xml", Name = "GetConnectionManager_2")]
+        [HttpGet("{serverId}/ConnectionManager/ConnectionManager", Name = "GetConnectionManager_2")]
+        [HttpGet("{serverId}/ConnectionManager/ConnectionManager.xml", Name = "GetConnectionManager_3")]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
