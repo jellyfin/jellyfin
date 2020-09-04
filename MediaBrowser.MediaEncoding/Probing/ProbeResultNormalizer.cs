@@ -714,6 +714,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.RefFrames = streamInfo.Refs;
                 }
 
+                if (!string.IsNullOrEmpty(streamInfo.ColorRange))
+                {
+                    stream.ColorRange = streamInfo.ColorRange;
+                }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorSpace))
+                {
+                    stream.ColorSpace = streamInfo.ColorSpace;
+                }
+
                 if (!string.IsNullOrEmpty(streamInfo.ColorTransfer))
                 {
                     stream.ColorTransfer = streamInfo.ColorTransfer;
