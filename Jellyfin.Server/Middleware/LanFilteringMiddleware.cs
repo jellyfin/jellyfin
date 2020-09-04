@@ -29,8 +29,9 @@ namespace Jellyfin.Server.Middleware
         /// </summary>
         /// <param name="httpContext">The current HTTP context.</param>
         /// <param name="networkManager">The network manager.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <returns>The async task.</returns>
-        public async Task Invoke(HttpContext httpContext, INetworkManager networkManager)
+        public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
             var currentHost = httpContext.Request.Host.ToString() ?? string.Empty;
 
@@ -48,7 +49,10 @@ namespace Jellyfin.Server.Middleware
                     // Host is not an IP address.
                     // Can we make Assumption is that host names are not local.
                     // Could attempt resolve, but do we want to do this on each request?
-                    return;
+                    if (!serverConfigurationManager.Configuration.EnableRemoteAccess)
+                    {
+                        return;
+                    }
                 }
             }
 
