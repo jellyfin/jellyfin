@@ -52,10 +52,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
                 // The media source is infinite so we need to handle stopping ourselves
-                var durationToken = new CancellationTokenSource(duration);
-                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                using var durationToken = new CancellationTokenSource(duration);
+                using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-                await directStreamProvider.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+                await directStreamProvider.CopyToAsync(output, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
@@ -72,7 +72,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 UserAgent = "Emby/3.0",
 
                 // Shouldn't matter but may cause issues
-                DecompressionMethod = CompressionMethods.None
+                DecompressionMethod = CompressionMethods.None,
+                CancellationToken = cancellationToken
             };
 
             using (var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false))
@@ -88,10 +89,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
                     // The media source if infinite so we need to handle stopping ourselves
-                    var durationToken = new CancellationTokenSource(duration);
-                    cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                    using var durationToken = new CancellationTokenSource(duration);
+                    using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-                    await _streamHelper.CopyUntilCancelled(response.Content, output, 81920, cancellationToken).ConfigureAwait(false);
+                    await _streamHelper.CopyUntilCancelled(
+                        response.Content,
+                        output,
+                        IODefaults.CopyToBufferSize,
+                        cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
 

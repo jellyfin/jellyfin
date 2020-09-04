@@ -78,6 +78,7 @@
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
  - [oddstr13](https://github.com/oddstr13)
+ - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
  - [Phlogi](https://github.com/Phlogi)
  - [pjeanjean](https://github.com/pjeanjean)

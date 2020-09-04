@@ -201,9 +201,9 @@ namespace MediaBrowser.Model.IO
         IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false);
 
         void SetHidden(string path, bool isHidden);
-        void SetReadOnly(string path, bool readOnly);
+
         void SetAttributes(string path, bool isHidden, bool readOnly);
+
         List<FileSystemMetadata> GetDrives();
-        void SetExecutable(string path);
     }
 }

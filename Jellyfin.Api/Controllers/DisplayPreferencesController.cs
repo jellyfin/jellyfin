@@ -153,7 +153,6 @@ namespace Jellyfin.Api.Controllers
             {
                 var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Parse(key.Substring("landing-".Length)), existingDisplayPreferences.Client);
                 itemPreferences.ViewType = Enum.Parse<ViewType>(displayPreferences.ViewType);
-                _displayPreferencesManager.SaveChanges(itemPreferences);
             }
 
             var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Empty, existingDisplayPreferences.Client);
@@ -167,8 +166,7 @@ namespace Jellyfin.Api.Controllers
                 itemPrefs.ViewType = viewType;
             }
 
-            _displayPreferencesManager.SaveChanges(existingDisplayPreferences);
-            _displayPreferencesManager.SaveChanges(itemPrefs);
+            _displayPreferencesManager.SaveChanges();
 
             return NoContent();
         }
