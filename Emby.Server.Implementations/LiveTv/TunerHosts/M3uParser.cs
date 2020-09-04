@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,13 +20,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public class M3uParser
     {
         private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
 
-        public M3uParser(ILogger logger, IHttpClient httpClient, IServerApplicationHost appHost)
+        public M3uParser(ILogger logger, IHttpClientFactory httpClientFactory, IServerApplicationHost appHost)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _appHost = appHost;
         }
 
@@ -51,13 +52,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return _httpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    // Some data providers will require a user agent
-                    UserAgent = _appHost.ApplicationUserAgent
-                });
+                return _httpClientFactory.CreateClient(NamedClient.Default)
+                    .GetStreamAsync(url);
             }
 
             return Task.FromResult((Stream)File.OpenRead(url));

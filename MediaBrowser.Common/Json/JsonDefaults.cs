@@ -10,6 +10,16 @@ namespace MediaBrowser.Common.Json
     public static class JsonDefaults
     {
         /// <summary>
+        /// Pascal case json profile media type.
+        /// </summary>
+        public const string PascalCaseMediaType = "application/json; profile=\"PascalCase\"";
+
+        /// <summary>
+        /// Camel case json profile media type.
+        /// </summary>
+        public const string CamelCaseMediaType = "application/json; profile=\"CamelCase\"";
+
+        /// <summary>
         /// Gets the default <see cref="JsonSerializerOptions" /> options.
         /// </summary>
         /// <remarks>

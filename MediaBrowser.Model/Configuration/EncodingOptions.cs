@@ -31,6 +31,22 @@ namespace MediaBrowser.Model.Configuration
 
         public string VaapiDevice { get; set; }
 
+        public string OpenclDevice { get; set; }
+
+        public bool EnableTonemapping { get; set; }
+
+        public string TonemappingAlgorithm { get; set; }
+
+        public string TonemappingRange { get; set; }
+
+        public double TonemappingDesat { get; set; }
+
+        public double TonemappingThreshold { get; set; }
+
+        public double TonemappingPeak { get; set; }
+
+        public double TonemappingParam { get; set; }
+
         public int H264Crf { get; set; }
 
         public int H265Crf { get; set; }
@@ -58,8 +74,19 @@ namespace MediaBrowser.Model.Configuration
             EnableThrottling = false;
             ThrottleDelaySeconds = 180;
             EncodingThreadCount = -1;
-            // This is a DRM device that is almost guaranteed to be there on every intel platform, plus it's the default one in ffmpeg if you don't specify anything
+            // This is a DRM device that is almost guaranteed to be there on every intel platform,
+            // plus it's the default one in ffmpeg if you don't specify anything
             VaapiDevice = "/dev/dri/renderD128";
+            // This is the OpenCL device that is used for tonemapping.
+            // The left side of the dot is the platform number, and the right side is the device number on the platform.
+            OpenclDevice = "0.0";
+            EnableTonemapping = false;
+            TonemappingAlgorithm = "reinhard";
+            TonemappingRange = "auto";
+            TonemappingDesat = 0;
+            TonemappingThreshold = 0.8;
+            TonemappingPeak = 0;
+            TonemappingParam = 0;
             H264Crf = 23;
             H265Crf = 28;
             DeinterlaceDoubleRate = false;

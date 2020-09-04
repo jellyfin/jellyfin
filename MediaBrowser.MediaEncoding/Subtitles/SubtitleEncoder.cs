@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
@@ -54,7 +55,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -750,24 +751,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        private Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)
+        private async Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)
         {
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                    var opts = new HttpRequestOptions()
-                    {
-                        Url = path,
-                        CancellationToken = cancellationToken,
-
-                        // Needed for seeking
-                        BufferContent = true
-                    };
-
-                    return _httpClient.Get(opts);
+                {
+                    using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetAsync(path, cancellationToken)
+                        .ConfigureAwait(false);
+                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                }
 
                 case MediaProtocol.File:
-                    return Task.FromResult<Stream>(File.OpenRead(path));
+                    return File.OpenRead(path);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol));
             }

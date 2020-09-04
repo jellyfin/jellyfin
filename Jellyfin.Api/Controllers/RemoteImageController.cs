@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -246,7 +247,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Task.</returns>
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
             var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);

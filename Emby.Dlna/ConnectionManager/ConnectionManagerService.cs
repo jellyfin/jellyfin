@@ -1,8 +1,8 @@
 #pragma warning disable CS1591
 
+using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using Microsoft.Extensions.Logging;
@@ -18,8 +18,8 @@ namespace Emby.Dlna.ConnectionManager
             IDlnaManager dlna,
             IServerConfigurationManager config,
             ILogger<ConnectionManagerService> logger,
-            IHttpClient httpClient)
-            : base(logger, httpClient)
+            IHttpClientFactory httpClientFactory)
+            : base(logger, httpClientFactory)
         {
             _dlna = dlna;
             _config = config;
