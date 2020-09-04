@@ -2,46 +2,33 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Security;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
+using Emby.Dlna.PlayTo.EventArgs;
 using Emby.Dlna.Ssdp;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Notifications;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Xml;
-    using System.Xml.Linq;
-    using Emby.Dlna.Common;
-    using Emby.Dlna.PlayTo.EventArgs;
-    using Emby.Dlna.Ssdp;
-    using MediaBrowser.Common.Configuration;
-    using MediaBrowser.Common.Net;
-    using MediaBrowser.Model.Dlna;
-    using MediaBrowser.Model.Net;
-    using MediaBrowser.Model.Notifications;
-    using Microsoft.Extensions.Logging;
-
     using XMLProperties = System.Collections.Generic.Dictionary<string, string>;
 
     /// <summary>
@@ -202,6 +189,7 @@ namespace Emby.Dlna.PlayTo
             _config = config;
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
             TransportState = TransportState.NoMediaPresent;
+            Tracing = _config.GetDlnaConfiguration().EnablePlayToTracing;
         }
 
         /// <summary>
@@ -862,6 +850,19 @@ namespace Emby.Dlna.PlayTo
             };
         }
 
+        private static string PrettyPrint(HttpHeaders m)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var l in m)
+            {
+                sb.Append(l.Key);
+                sb.Append(": ");
+                sb.AppendLine(l.Value.FirstOrDefault());
+            }
+
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Gets service information from the DLNA clients.
         /// </summary>
@@ -874,6 +875,7 @@ namespace Emby.Dlna.PlayTo
             using var options = new HttpRequestMessage(HttpMethod.Get, url);
             options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
+            options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
             string reply = string.Empty;
             int attempt = 0;
 
@@ -882,6 +884,11 @@ namespace Emby.Dlna.PlayTo
                 try
                 {
                     logger.LogDebug("GetDataAsync: Communicating with {0}", url);
+
+                    if (Tracing)
+                    {
+                        logger.LogDebug("-> {0} Headers: {1}", url, PrettyPrint(options.Headers));
+                    }
 
                     using var response = await httpClientFactory
                         .CreateClient(NamedClient.Default)
@@ -1237,11 +1244,11 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Sends a command to the DLNA device.
         /// </summary>
-        /// <param name="baseUrl">baseUrl to use..</param>
+        /// <param name="baseUrl">baseUrl to use.</param>
         /// <param name="service">Service to use.<see cref="DeviceService"/>.</param>
-        /// <param name="command">Command to send..</param>
+        /// <param name="command">Command to send.</param>
         /// <param name="postData">Information to post..</param>
-        /// <param name="header">Headers to include..</param>
+        /// <param name="header">Headers to include.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The <see cref="Task"/>.</returns>
         private async Task<XMLProperties?> SendCommandAsync(
@@ -1268,7 +1275,7 @@ namespace Emby.Dlna.PlayTo
                 options.Headers.TryAddWithoutValidation("SOAPAction", $"\"{service.ServiceType}#{command}\"");
                 options.Headers.TryAddWithoutValidation("Pragma", "no-cache");
                 options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
-
+                options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
                 if (!string.IsNullOrEmpty(header))
                 {
                     options.Headers.TryAddWithoutValidation("contentFeatures.dlna.org", header);
@@ -1278,7 +1285,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (Tracing)
                 {
-                    _logger.LogDebug("{0}:-> {1}\r\nHeader\r\n{2}\r\nData\r\n{3}", Properties.Name, url, options.Headers, postData);
+                    _logger.LogDebug("{0}:-> {1}\r\nHeader\r\n{2}\r\nData\r\n{3}", Properties.Name, url, PrettyPrint(options.Headers), postData);
                 }
 
                 stopWatch.Start();
@@ -1500,21 +1507,28 @@ namespace Emby.Dlna.PlayTo
             try
             {
                 string url = NormalizeUrl(Properties.BaseUrl, renderService.ScpdUrl);
-                if (Tracing)
-                {
-                    _logger.LogDebug("{0}:-> {1}", Properties.Name, url);
-                }
-
                 using var options = new HttpRequestMessage(HttpMethod.Get, url);
                 options.Headers.UserAgent.ParseAdd(USERAGENT);
                 options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
+                options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
 
-                using var response = await _httpClientFactory
-                    .CreateClient(NamedClient.Default)
-                    .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, default).ConfigureAwait(false);
+                if (Tracing)
+                {
+                    _logger.LogDebug("{0}:-> {1} Headers: {2}", Properties.Name, url, PrettyPrint(options.Headers));
+                }
 
-                using var reader = new StreamReader(await response.Content.ReadAsStringAsync().ConfigureAwait(false), Encoding.UTF8);
-                xmlstring = await reader.ReadToEndAsync().ConfigureAwait(false);
+                CancellationTokenSource cts = new CancellationTokenSource();
+                cts.CancelAfter(2000);
+
+                using var client = _httpClientFactory.CreateClient(NamedClient.Default);
+                var response = await client.SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogDebug("{0}:<- Error:{1} : {2}", Properties.Name, response.StatusCode, response.ReasonPhrase);
+                    return;
+                }
+
+                xmlstring = Encoding.UTF8.GetString(await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false));
 
                 if (Tracing)
                 {
@@ -1549,7 +1563,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (XmlException)
             {
-                _logger.LogError("{0}: Badly formed description document received XML", Properties.Name);
+                _logger.LogError("{0}: Badly formed description document received XML: {1}", Properties.Name, xmlstring);
             }
             catch (HttpRequestException ex)
             {
@@ -1580,6 +1594,7 @@ namespace Emby.Dlna.PlayTo
                 var url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl);
                 var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
                 options.Headers.UserAgent.ParseAdd(USERAGENT);
+                options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
 
                 // Renewal or subscription?
                 if (string.IsNullOrEmpty(sid))
@@ -1608,7 +1623,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (Tracing)
                 {
-                    _logger.LogDebug("->{0} : {1}", url, options.Headers.ToString());
+                    _logger.LogDebug("->{0} : Headers: {1}", url, PrettyPrint(options.Headers));
                 }
 
                 try
@@ -1616,7 +1631,7 @@ namespace Emby.Dlna.PlayTo
                     using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                         .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
                         .ConfigureAwait(false);
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    if (response.IsSuccessStatusCode)
                     {
                         if (!_subscribed)
                         {
@@ -1705,6 +1720,12 @@ namespace Emby.Dlna.PlayTo
                 var options = new HttpRequestMessage(new HttpMethod("UNSUBSCRIBE"), url);
                 options.Headers.UserAgent.ParseAdd(USERAGENT);
                 options.Headers.TryAddWithoutValidation("SID", "uuid: {sid}");
+                options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
+
+                if (Tracing)
+                {
+                    _logger.LogDebug("-> {0} : Headers : {1}", url, PrettyPrint(options.Headers));
+                }
 
                 try
                 {
@@ -1712,7 +1733,7 @@ namespace Emby.Dlna.PlayTo
                         .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
                         .ConfigureAwait(false);
 
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    if (response.IsSuccessStatusCode)
                     {
                         _logger.LogDebug("{0}: UNSUBSCRIBE succeeded.", Properties.Name);
                         return true;
