@@ -1,10 +1,16 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Udp;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
-using Microsoft.Extensions.Configuration;
+using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -19,44 +25,48 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         public const int PortNumber = 7359;
 
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        private readonly ILogger<UdpServerEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
-        private readonly IConfiguration _config;
+        private readonly IServerConfigurationManager _config;
+        private readonly ILogger<UdpServerEntryPoint> _logger;
+        private List<UdpProcess>? _udpProcess;
+        private bool _disposed;
 
         /// <summary>
-        /// The UDP server.
+        /// Initializes a new instance of the <see cref="UdpServerEntryPoint"/> class.
         /// </summary>
-        private UdpServer _udpServer;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private bool _disposed = false;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
-        /// </summary>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="appHost">Application Host instance.</param>
+        /// <param name="configurationManager">IServerConfigurationManager instance.</param>
         public UdpServerEntryPoint(
             ILogger<UdpServerEntryPoint> logger,
             IServerApplicationHost appHost,
-            IConfiguration configuration)
+            IServerConfigurationManager configurationManager)
         {
-            _logger = logger;
-            _appHost = appHost;
-            _config = configuration;
+            _logger = logger ?? throw new NullReferenceException(nameof(logger));
+            _appHost = appHost ?? throw new NullReferenceException(nameof(appHost));
+            _config = configurationManager;
         }
 
         /// <inheritdoc />
         public Task RunAsync()
         {
-            try
+            if (_config.Configuration.AutoDiscovery)
             {
-                _udpServer = new UdpServer(_logger, _appHost, _config);
-                _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogWarning(ex, "Unable to start AutoDiscovery listener on UDP port {PortNumber}", PortNumber);
+                _udpProcess = UdpServer.CreateMulticastClients(
+                    PortNumber,
+                    ProcessMessage,
+                    _logger,
+                    restrictedToLAN: false,
+                    enableTracing: _config.Configuration.AutoDiscoveryTracing);
+
+                if (_udpProcess.Count == 0)
+                {
+                    _logger.LogWarning("Unable to start AutoDiscovery listener on UDP port {PortNumber}", PortNumber);
+                }
+                else
+                {
+                    _logger.LogDebug("Starting auto discovery.");
+                }
             }
 
             return Task.CompletedTask;
@@ -70,13 +80,40 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            _cancellationTokenSource.Cancel();
-            _udpServer.Dispose();
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = null;
-            _udpServer = null;
-
             _disposed = true;
+            _udpProcess?.Clear();
+            _udpProcess = null;
+            GC.SuppressFinalize(this);
+        }
+
+        private async Task ProcessMessage(UdpProcess client, string data, IPEndPoint receivedFrom)
+        {
+            if (data.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+            {
+                var response = new ServerDiscoveryInfo
+                {
+                    Address = _appHost.GetSmartApiUrl(receivedFrom.Address),
+                    Id = _appHost.SystemId,
+                    Name = _appHost.FriendlyName
+                };
+                string reply = JsonSerializer.Serialize(response);
+
+                try
+                {
+                    await UdpServer.SendUnicast(client, reply, receivedFrom).ConfigureAwait(false);
+                }
+                catch (SocketException ex)
+                {
+                    _logger.LogError(ex, "Error sending response to {0}->{1}", client.LocalEndPoint.Address, receivedFrom.Address);
+                }
+
+                // TODO: this code does nothing. It calls a blank function.
+                var parts = data.Split('|');
+                if (parts.Length > 1)
+                {
+                    _appHost.EnableLoopback(parts[1]);
+                }
+            }
         }
     }
 }

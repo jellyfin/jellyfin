@@ -7,9 +7,9 @@ using Emby.Dlna.Common;
 
 namespace Emby.Dlna.Service
 {
-    public class ServiceXmlBuilder
+    public static class ServiceXmlBuilder
     {
-        public string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
+        public static string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
         {
             var builder = new StringBuilder();
 

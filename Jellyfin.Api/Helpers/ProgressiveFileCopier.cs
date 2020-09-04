@@ -130,34 +130,10 @@ namespace Jellyfin.Api.Helpers
         private async Task<int> CopyToInternalAsync(Stream source, Stream destination, bool readAsync, CancellationToken cancellationToken)
         {
             var array = ArrayPool<byte>.Shared.Rent(IODefaults.CopyToBufferSize);
-            int bytesRead;
-            int totalBytesRead = 0;
-
-            if (readAsync)
+            try
             {
-                bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                bytesRead = source.Read(array, 0, array.Length);
-            }
-
-            while (bytesRead != 0)
-            {
-                var bytesToWrite = bytesRead;
-
-                if (bytesToWrite > 0)
-                {
-                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
-
-                    _bytesWritten += bytesRead;
-                    totalBytesRead += bytesRead;
-
-                    if (_job != null)
-                    {
-                        _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
-                    }
-                }
+                int bytesRead;
+                int totalBytesRead = 0;
 
                 if (readAsync)
                 {
@@ -167,9 +143,40 @@ namespace Jellyfin.Api.Helpers
                 {
                     bytesRead = source.Read(array, 0, array.Length);
                 }
-            }
 
-            return totalBytesRead;
+                while (bytesRead != 0)
+                {
+                    var bytesToWrite = bytesRead;
+
+                    if (bytesToWrite > 0)
+                    {
+                        await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
+
+                        _bytesWritten += bytesRead;
+                        totalBytesRead += bytesRead;
+
+                        if (_job != null)
+                        {
+                            _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
+                        }
+                    }
+
+                    if (readAsync)
+                    {
+                        bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        bytesRead = source.Read(array, 0, array.Length);
+                    }
+                }
+
+                return totalBytesRead;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(array);
+            }
         }
     }
 }

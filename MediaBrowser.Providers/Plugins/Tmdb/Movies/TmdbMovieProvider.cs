@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -383,7 +384,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message)
         {
             message.Headers.UserAgent.ParseAdd(_appHost.ApplicationUserAgent);
-            return _httpClientFactory.CreateClient().SendAsync(message);
+            return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(message);
         }
 
         /// <inheritdoc />
@@ -392,7 +393,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

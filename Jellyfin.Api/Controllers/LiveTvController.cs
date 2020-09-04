@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -16,6 +16,7 @@ using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -1069,7 +1070,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSchedulesDirectCountries()
         {
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient(NamedClient.Default);
             // https://json.schedulesdirect.org/20141201/available/countries
             // Can't dispose the response as it's required up the call chain.
             var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")

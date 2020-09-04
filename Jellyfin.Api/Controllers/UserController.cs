@@ -217,6 +217,40 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
+        /// Authenticates a user with quick connect.
+        /// </summary>
+        /// <param name="request">The <see cref="QuickConnectDto"/> request.</param>
+        /// <response code="200">User authenticated.</response>
+        /// <response code="400">Missing token.</response>
+        /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
+        [HttpPost("AuthenticateWithQuickConnect")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<AuthenticationResult>> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
+        {
+            var auth = _authContext.GetAuthorizationInfo(Request);
+
+            try
+            {
+                var authRequest = new AuthenticationRequest
+                {
+                    App = auth.Client,
+                    AppVersion = auth.Version,
+                    DeviceId = auth.DeviceId,
+                    DeviceName = auth.Device,
+                };
+
+                return await _sessionManager.AuthenticateQuickConnect(
+                    authRequest,
+                    request.Token).ConfigureAwait(false);
+            }
+            catch (SecurityException e)
+            {
+                // rethrow adding IP address to message
+                throw new SecurityException($"[{HttpContext.Connection.RemoteIpAddress}] {e.Message}", e);
+            }
+        }
+
+        /// <summary>
         /// Updates a user's password.
         /// </summary>
         /// <param name="userId">The user id.</param>
@@ -478,7 +512,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string? enteredUsername)
         {
             var isLocal = HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress)
-                          || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString());
+                          || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress);
 
             var result = await _userManager.StartForgotPasswordProcess(enteredUsername, isLocal).ConfigureAwait(false);
 
@@ -525,7 +559,7 @@ namespace Jellyfin.Api.Controllers
 
             if (filterByNetwork)
             {
-                if (!_networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString()))
+                if (!_networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress))
                 {
                     users = users.Where(i => i.HasPermission(PermissionKind.EnableRemoteAccess));
                 }

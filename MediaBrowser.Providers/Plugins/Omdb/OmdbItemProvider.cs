@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -129,7 +130,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var url = OmdbProvider.GetOmdbUrl(urlQuery);
 
-            using var response = await OmdbProvider.GetOmdbResponse(_httpClientFactory.CreateClient(), url, cancellationToken).ConfigureAwait(false);
+            using var response = await OmdbProvider.GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var resultList = new List<SearchResult>();
 
@@ -274,7 +275,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
         class SearchResult

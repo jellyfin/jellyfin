@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -122,7 +123,7 @@ namespace MediaBrowser.Providers.Studios
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             return httpClient.GetAsync(url, cancellationToken);
         }
 
@@ -140,7 +141,7 @@ namespace MediaBrowser.Providers.Studios
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {
-                var httpClient = _httpClientFactory.CreateClient();
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
                 await using var response = await httpClient.GetStreamAsync(url).ConfigureAwait(false);

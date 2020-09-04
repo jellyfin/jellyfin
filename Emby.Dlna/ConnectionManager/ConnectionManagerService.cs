@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
@@ -18,8 +19,8 @@ namespace Emby.Dlna.ConnectionManager
             IDlnaManager dlna,
             IServerConfigurationManager config,
             ILogger<ConnectionManagerService> logger,
-            IHttpClient httpClient)
-            : base(logger, httpClient)
+            IHttpClientFactory httpClientFactory)
+            : base(logger, httpClientFactory)
         {
             _dlna = dlna;
             _config = config;
@@ -28,7 +29,7 @@ namespace Emby.Dlna.ConnectionManager
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new ConnectionManagerXmlBuilder().GetXml();
+            return ConnectionManagerXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />

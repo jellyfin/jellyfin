@@ -1,14 +1,11 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -17,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
-using Emby.Dlna.Ssdp;
+using Emby.Dlna.Net;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -29,18 +26,16 @@ using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
-using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
-using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
@@ -49,7 +44,9 @@ using Jellyfin.Api.Helpers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
@@ -71,6 +68,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -88,7 +86,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
@@ -97,10 +94,12 @@ using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
+using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
 {
@@ -115,19 +114,22 @@ namespace Emby.Server.Implementations
         private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
         private readonly IFileSystem _fileSystemManager;
-        private readonly INetworkManager _networkManager;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
 
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
-        private IHttpServer _httpServer;
-        private IHttpClient _httpClient;
+        private IHttpClientFactory _httpClientFactory;
+        private IWebSocketManager _webSocketManager;
+
+        private string[] _urlPrefixes;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
+
+        public bool CoreStartupHasCompleted { get; private set; }
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -183,6 +185,11 @@ namespace Emby.Server.Implementations
         public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
+        /// Gets the NetworkManager object.
+        /// </summary>
+        private readonly INetworkManager _networkManager;
+
+        /// <summary>
         /// Gets the logger factory.
         /// </summary>
         protected ILoggerFactory LoggerFactory { get; }
@@ -205,7 +212,7 @@ namespace Emby.Server.Implementations
         private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
 
         /// <summary>
-        /// Gets the configuration manager.
+        /// Gets or sets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
         protected IConfigurationManager ConfigurationManager { get; set; }
@@ -239,20 +246,18 @@ namespace Emby.Server.Implementations
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            INetworkManager networkManager,
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
             ServiceCollection = serviceCollection;
-
-            _networkManager = networkManager;
-            networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
 
             ApplicationPaths = applicationPaths;
             LoggerFactory = loggerFactory;
             _fileSystemManager = fileSystem;
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+
+            _networkManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
@@ -265,8 +270,6 @@ namespace Emby.Server.Implementations
             }
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
-
-            _networkManager.NetworkChanged += OnNetworkChanged;
 
             CertificateInfo = new CertificateInfo
             {
@@ -290,16 +293,6 @@ namespace Emby.Server.Implementations
 
             return path.Replace(appPaths.DataPath, appPaths.VirtualDataPath, StringComparison.OrdinalIgnoreCase)
                 .Replace(appPaths.InternalMetadataPath, appPaths.VirtualInternalMetadataPath, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private string[] GetConfiguredLocalSubnets()
-        {
-            return ServerConfigurationManager.Configuration.LocalNetworkSubnets;
-        }
-
-        private void OnNetworkChanged(object sender, EventArgs e)
-        {
-            _validAddressResults.Clear();
         }
 
         /// <inheritdoc />
@@ -382,7 +375,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Resolves this instance.
         /// </summary>
-        /// <typeparam name="T">The type</typeparam>
+        /// <typeparam name="T">The type.</typeparam>
         /// <returns>``0.</returns>
         public T Resolve<T>() => ServiceProvider.GetService<T>();
 
@@ -443,8 +436,7 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
-            _httpServer.GlobalResponse = null;
-
+            CoreStartupHasCompleted = true;
             stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
@@ -499,9 +491,6 @@ namespace Emby.Server.Implementations
             RegisterServices();
         }
 
-        public Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
-            => _httpServer.RequestHandler(context);
-
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
@@ -521,9 +510,9 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TvdbClientManager>();
 
-            ServiceCollection.AddSingleton<IHttpClient, HttpClientManager.HttpClientManager>();
-
             ServiceCollection.AddSingleton(_networkManager);
+            ServiceCollection.AddSingleton<ISsdpServer, SsdpServer>();
+            ServiceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
 
@@ -535,13 +524,9 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
 
-            ServiceCollection.AddSingleton<ISocketFactory, SocketFactory>();
-
             ServiceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
             ServiceCollection.AddSingleton<IZipClient, ZipClient>();
-
-            ServiceCollection.AddSingleton<IHttpResultFactory, HttpResultFactory>();
 
             ServiceCollection.AddSingleton<IServerApplicationHost>(this);
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
@@ -578,8 +563,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
-            ServiceCollection.AddSingleton<ServiceController>();
-            ServiceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
+            ServiceCollection.AddSingleton<IWebSocketManager, WebSocketManager>();
 
             ServiceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
 
@@ -616,8 +600,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<INotificationManager, NotificationManager>();
 
-            ServiceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
-
             ServiceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
             ServiceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
@@ -626,6 +608,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<ISessionContext, SessionContext>();
 
             ServiceCollection.AddSingleton<IAuthService, AuthService>();
+            ServiceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
             ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
 
@@ -651,8 +634,8 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
-            _httpServer = Resolve<IHttpServer>();
-            _httpClient = Resolve<IHttpClient>();
+            _httpClientFactory = Resolve<IHttpClientFactory>();
+            _webSocketManager = Resolve<IWebSocketManager>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -753,7 +736,6 @@ namespace Emby.Server.Implementations
             CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
-            AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
         }
 
         /// <summary>
@@ -773,7 +755,8 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            _httpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            _urlPrefixes = GetUrlPrefixes().ToArray();
+            _webSocketManager.Init(GetExports<IWebSocketListener>());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -939,7 +922,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            if (!_httpServer.UrlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
+            if (!_urlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
             {
                 requiresRestart = true;
             }
@@ -1083,13 +1066,10 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the system status.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
+        public SystemInfo GetSystemInfo(string source)
         {
-            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var transcodingTempPath = ConfigurationManager.GetTranscodePath();
-
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
@@ -1109,9 +1089,9 @@ namespace Emby.Server.Implementations
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 HasUpdateAvailable = HasUpdateAvailable,
-                TranscodingTempPath = transcodingTempPath,
+                TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
-                LocalAddress = localAddress,
+                LocalAddress = GetSmartApiUrl(source),
                 SupportsLibraryMonitor = true,
                 EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
@@ -1124,10 +1104,8 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
+        public PublicSystemInfo GetPublicSystemInfo(string source)
         {
-            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-
             return new PublicSystemInfo
             {
                 Version = ApplicationVersionString,
@@ -1135,7 +1113,7 @@ namespace Emby.Server.Implementations
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = localAddress
+                LocalAddress = GetSmartApiUrl(source)
             };
         }
 
@@ -1143,192 +1121,49 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
         /// <inheritdoc/>
-        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
+        public string GetSmartApiUrl(object source)
         {
-            try
+            // Published server ends with a /
+            if (_startupOptions.PublishedServerUrl != null)
             {
-                // Return the first matched address, if found, or the first known local address
-                var addresses = await GetLocalIpAddressesInternal(false, 1, cancellationToken).ConfigureAwait(false);
-                if (addresses.Count == 0)
-                {
-                    return null;
-                }
-
-                return GetLocalApiUrl(addresses[0]);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error getting local Ip address information");
+                // Published server ends with a '/', so we need to remove it.
+                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
             }
 
-            return null;
-        }
+            string smart = _networkManager.GetBindInterface(source, out int? port);
 
-        /// <summary>
-        /// Removes the scope id from IPv6 addresses.
-        /// </summary>
-        /// <param name="address">The IPv6 address.</param>
-        /// <returns>The IPv6 address without the scope id.</returns>
-        private ReadOnlySpan<char> RemoveScopeId(ReadOnlySpan<char> address)
-        {
-            var index = address.IndexOf('%');
-            if (index == -1)
+            // If the smartAPI doesn't start with http then treat it as a host or ip.
+            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return address;
+                return smart.Trim('/');
             }
 
-            return address.Slice(0, index);
-        }
-
-        /// <inheritdoc />
-        public string GetLocalApiUrl(IPAddress ipAddress)
-        {
-            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                var str = RemoveScopeId(ipAddress.ToString());
-                Span<char> span = new char[str.Length + 2];
-                span[0] = '[';
-                str.CopyTo(span.Slice(1));
-                span[^1] = ']';
-
-                return GetLocalApiUrl(span);
-            }
-
-            return GetLocalApiUrl(ipAddress.ToString());
+            return GetLocalApiUrl(smart.Trim('/'), source is HttpRequest request ? request.Scheme : null, port);
         }
 
         /// <inheritdoc/>
         public string GetLoopbackHttpApiUrl()
         {
+            if (NetworkManager.IsIP6Enabled)
+            {
+                return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
+            }
+
             return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
         }
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(ReadOnlySpan<char> host, string scheme = null, int? port = null)
+        public string GetLocalApiUrl(string host, string scheme = null, int? port = null)
         {
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
             return new UriBuilder
             {
                 Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
-                Host = host.ToString(),
+                Host = host,
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
                 Path = ServerConfigurationManager.Configuration.BaseUrl
             }.ToString().TrimEnd('/');
-        }
-
-        public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
-        {
-            return GetLocalIpAddressesInternal(true, 0, cancellationToken);
-        }
-
-        private async Task<List<IPAddress>> GetLocalIpAddressesInternal(bool allowLoopback, int limit, CancellationToken cancellationToken)
-        {
-            var addresses = ServerConfigurationManager
-                .Configuration
-                .LocalNetworkAddresses
-                .Select(x => NormalizeConfiguredLocalAddress(x))
-                .Where(i => i != null)
-                .ToList();
-
-            if (addresses.Count == 0)
-            {
-                addresses.AddRange(_networkManager.GetLocalIpAddresses());
-            }
-
-            var resultList = new List<IPAddress>();
-
-            foreach (var address in addresses)
-            {
-                if (!allowLoopback)
-                {
-                    if (address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback))
-                    {
-                        continue;
-                    }
-                }
-
-                if (await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false))
-                {
-                    resultList.Add(address);
-
-                    if (limit > 0 && resultList.Count >= limit)
-                    {
-                        return resultList;
-                    }
-                }
-            }
-
-            return resultList;
-        }
-
-        public IPAddress NormalizeConfiguredLocalAddress(ReadOnlySpan<char> address)
-        {
-            var index = address.Trim('/').IndexOf('/');
-            if (index != -1)
-            {
-                address = address.Slice(index + 1);
-            }
-
-            if (IPAddress.TryParse(address.Trim('/'), out IPAddress result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-
-        private async Task<bool> IsLocalIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
-        {
-            if (address.Equals(IPAddress.Loopback)
-                || address.Equals(IPAddress.IPv6Loopback))
-            {
-                return true;
-            }
-
-            var apiUrl = GetLocalApiUrl(address) + "/system/ping";
-
-            if (_validAddressResults.TryGetValue(apiUrl, out var cachedResult))
-            {
-                return cachedResult;
-            }
-
-            try
-            {
-                using (var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        Url = apiUrl,
-                        LogErrorResponseBody = false,
-                        BufferContent = false,
-                        CancellationToken = cancellationToken
-                    }, HttpMethod.Post).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(response.Content))
-                    {
-                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
-
-                        _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
-                        Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
-                        return valid;
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, "Cancelled");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug(ex, "Ping test result to {0}. Success: {1}", apiUrl, false);
-
-                _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
-                return false;
-            }
         }
 
         public string FriendlyName =>
@@ -1391,6 +1226,20 @@ namespace Emby.Server.Implementations
             var list = _plugins.ToList();
             list.Remove(plugin);
             _plugins = list.ToArray();
+        }
+
+        public IEnumerable<Assembly> GetApiPluginAssemblies()
+        {
+            var assemblies = _allConcreteTypes
+                .Where(i => typeof(ControllerBase).IsAssignableFrom(i))
+                .Select(i => i.Assembly)
+                .Distinct();
+
+            foreach (var assembly in assemblies)
+            {
+                Logger.LogDebug("Found API endpoints in plugin {name}", assembly.FullName);
+                yield return assembly;
+            }
         }
 
         public virtual void LaunchUrl(string url)

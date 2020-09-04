@@ -360,6 +360,25 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
+        /// <summary>
+        /// Stops and diposes of controllers of type T.
+        /// </summary>
+        /// <typeparam name="T">Type of controller to dispose.</typeparam>
+        public void StopController<T>()
+        {
+            var controllers = SessionControllers.ToList();
+
+            foreach (var controller in controllers.OfType<T>())
+            {
+                _logger.LogDebug("Disposing session controller.");
+                ((IDisposable)controller).Dispose();
+            }
+
+            controllers.RemoveAll(c => c is T);
+
+            SessionControllers = controllers.ToArray();
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {

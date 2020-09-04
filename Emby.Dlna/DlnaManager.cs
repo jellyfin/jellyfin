@@ -14,6 +14,7 @@ using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
@@ -34,6 +35,7 @@ namespace Emby.Dlna
         private readonly ILogger<DlnaManager> _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
+        private readonly IServerConfigurationManager _configurationManager;
         private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
@@ -44,7 +46,8 @@ namespace Emby.Dlna
             IApplicationPaths appPaths,
             ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer,
-            IServerApplicationHost appHost)
+            IServerApplicationHost appHost,
+            IServerConfigurationManager configurationManager)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
@@ -52,6 +55,7 @@ namespace Emby.Dlna
             _logger = loggerFactory.CreateLogger<DlnaManager>();
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
+            _configurationManager = configurationManager;
         }
 
         private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
@@ -115,6 +119,40 @@ namespace Emby.Dlna
             }
             else
             {
+                if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
+                {
+                    profile = new DefaultProfile();
+                    profile.Name = deviceInfo.FriendlyName;
+                    profile.Identification = new DeviceIdentification
+                    {
+                        FriendlyName = deviceInfo.FriendlyName,
+                        Manufacturer = deviceInfo.Manufacturer,
+                        DeviceDescription = deviceInfo.DeviceDescription
+                    };
+                    profile.Manufacturer = deviceInfo.Manufacturer;
+                    profile.FriendlyName = deviceInfo.FriendlyName;
+                    profile.ModelNumber = deviceInfo.ModelNumber;
+                    profile.ModelName = deviceInfo.ModelName;
+                    profile.ModelUrl = deviceInfo.ModelUrl;
+                    profile.ModelDescription = deviceInfo.ModelDescription;
+                    profile.ManufacturerUrl = deviceInfo.ManufacturerUrl;
+                    profile.SerialNumber = deviceInfo.SerialNumber;
+
+                    try
+                    {
+                        CreateProfile(profile);
+                        return profile;
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error saving default profile for {0}.", deviceInfo.FriendlyName);
+                    }
+                }
+
                 LogUnmatchedProfile(deviceInfo);
             }
 
@@ -244,6 +282,46 @@ namespace Emby.Dlna
             }
             else
             {
+                if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
+                {
+                    if (headers.TryGetValue("User-Agent", out StringValues value) && value.Count > 0)
+                    {
+                        string userAgent = value[0];
+                        profile = new DefaultProfile();
+                        profile.Name = userAgent;
+                        profile.Identification = new DeviceIdentification
+                        {
+                            FriendlyName = userAgent,
+                            Headers = new[]
+                            {
+                                new HttpHeaderInfo()
+                                {
+                                    Match = HeaderMatchType.Equals,
+                                    Name = "User-Agent",
+                                    Value = userAgent
+                                }
+                            }
+                        };
+
+                        profile.Manufacturer = userAgent.Split(' ')[0];
+                        profile.FriendlyName = userAgent;
+                        profile.ModelName = userAgent;
+                        try
+                        {
+                            CreateProfile(profile);
+                            return profile;
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.LogError(ex.Message);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error saving default profile for {0}.", userAgent);
+                        }
+                    }
+                }
+
                 var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
                 _logger.LogDebug("No matching device profile found. {0}", headerString);
             }
@@ -509,14 +587,16 @@ namespace Emby.Dlna
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
-        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
+        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request)
         {
-            var profile = GetProfile(headers) ??
+            var profile = // GetProfile(headers) ??
                           GetDefaultProfile();
 
             var serverId = _appHost.SystemId;
 
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
+            var serverAddress = _appHost.GetSmartApiUrl(request);
+
+            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId, _configurationManager.Configuration.ServerName).GetXml();
         }
 
         public ImageStream GetIcon(string filename)

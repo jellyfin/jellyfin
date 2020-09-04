@@ -189,21 +189,21 @@ namespace Emby.Dlna.ContentDirectory
                 CancellationToken.None);
         }
 
-        private void HandleGetSearchCapabilities(XmlWriter xmlWriter)
+        private static void HandleGetSearchCapabilities(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString(
                 "SearchCaps",
                 "res@resolution,res@size,res@duration,dc:title,dc:creator,upnp:actor,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:class,@id,@refID,@protocolInfo,upnp:author,dc:description,pv:avKeywords");
         }
 
-        private void HandleGetSortCapabilities(XmlWriter xmlWriter)
+        private static void HandleGetSortCapabilities(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString(
                 "SortCaps",
                 "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating");
         }
 
-        private void HandleGetSortExtensionCapabilities(XmlWriter xmlWriter)
+        private static void HandleGetSortExtensionCapabilities(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString(
                 "SortExtensionCaps",
@@ -215,15 +215,15 @@ namespace Emby.Dlna.ContentDirectory
             xmlWriter.WriteElementString("Id", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
-        private void HandleGetFeatureList(XmlWriter xmlWriter)
+        private static void HandleGetFeatureList(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString("FeatureList", WriteFeatureListXml());
         }
 
-        private void HandleXGetFeatureList(XmlWriter xmlWriter)
+        private static void HandleXGetFeatureList(XmlWriter xmlWriter)
             => HandleGetFeatureList(xmlWriter);
 
-        private string WriteFeatureListXml()
+        private static string WriteFeatureListXml()
         {
             // TODO: clean this up
             var builder = new StringBuilder();
@@ -242,9 +242,9 @@ namespace Emby.Dlna.ContentDirectory
             return builder.ToString();
         }
 
-        public string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
+        public static string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
         {
-            if (sparams.TryGetValue(key, out string val))
+            if (sparams != null && sparams.TryGetValue(key, out string val))
             {
                 return val;
             }
@@ -313,7 +313,6 @@ namespace Emby.Dlna.ContentDirectory
                         }
                         else
                         {
-                            var dlnaOptions = _config.GetDlnaConfiguration();
                             _didlBuilder.WriteItemElement(writer, item, _user, null, null, deviceId, filter);
                         }
 
@@ -326,7 +325,6 @@ namespace Emby.Dlna.ContentDirectory
 
                         provided = childrenResult.Items.Count;
 
-                        var dlnaOptions = _config.GetDlnaConfiguration();
                         foreach (var i in childrenResult.Items)
                         {
                             var childItem = i.Item;
@@ -442,7 +440,7 @@ namespace Emby.Dlna.ContentDirectory
             xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
-        private QueryResult<BaseItem> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
+        private static QueryResult<BaseItem> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
             var folder = (Folder)item;
 
@@ -494,7 +492,7 @@ namespace Emby.Dlna.ContentDirectory
             });
         }
 
-        private DtoOptions GetDtoOptions()
+        private static DtoOptions GetDtoOptions()
         {
             return new DtoOptions(true);
         }
@@ -643,57 +641,58 @@ namespace Emby.Dlna.ContentDirectory
                 return GetMusicGenres(item, user, query);
             }
 
-            var list = new List<ServerItem>();
-
-            list.Add(new ServerItem(item)
+            var list = new List<ServerItem>
             {
-                StubType = StubType.Latest
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Latest
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Playlists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Playlists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Albums
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Albums
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.AlbumArtists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.AlbumArtists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Artists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Artists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Songs
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Songs
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Genres
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Genres
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteArtists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteArtists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteAlbums
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteAlbums
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteSongs
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteSongs
+                }
+            };
 
             return new QueryResult<ServerItem>
             {
@@ -840,42 +839,43 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenres(item, user, query);
             }
 
-            var list = new List<ServerItem>();
-
-            list.Add(new ServerItem(item)
+            var list = new List<ServerItem>
             {
-                StubType = StubType.ContinueWatching
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.ContinueWatching
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.NextUp
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.NextUp
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Latest
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Latest
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Series
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Series
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteSeries
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteSeries
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteEpisodes
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteEpisodes
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Genres
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Genres
+                }
+            };
 
             return new QueryResult<ServerItem>
             {
@@ -1272,7 +1272,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> ToResult(BaseItem[] result)
+        private static QueryResult<ServerItem> ToResult(BaseItem[] result)
         {
             var serverItems = result
                 .Select(i => new ServerItem(i))
@@ -1285,7 +1285,7 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
-        private QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
+        private static QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
         {
             var serverItems = result
                 .Items
@@ -1299,7 +1299,7 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
-        private void SetSorting(InternalItemsQuery query, SortCriteria sort, bool isPreSorted)
+        private static void SetSorting(InternalItemsQuery query, SortCriteria sort, bool isPreSorted)
         {
             if (isPreSorted)
             {
@@ -1311,7 +1311,7 @@ namespace Emby.Dlna.ContentDirectory
             }
         }
 
-        private QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)
+        private static QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)
         {
             result.Items = result.Items.Skip(startIndex ?? 0).Take(limit ?? int.MaxValue).ToArray();
 

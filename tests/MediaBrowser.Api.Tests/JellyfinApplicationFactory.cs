@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Networking;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server;
 using MediaBrowser.Common;
@@ -81,7 +80,6 @@ namespace MediaBrowser.Api.Tests
                 loggerFactory,
                 commandLineOpts,
                 new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(loggerFactory.CreateLogger<NetworkManager>()),
                 serviceCollection);
             _disposableComponents.Add(appHost);
             appHost.Init();

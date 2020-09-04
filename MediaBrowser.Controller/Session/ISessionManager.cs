@@ -267,6 +267,14 @@ namespace MediaBrowser.Controller.Session
         Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
 
         /// <summary>
+        /// Authenticates a new session with quick connect.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="token">Quick connect access token.</param>
+        /// <returns>Task{SessionInfo}.</returns>
+        Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token);
+
+        /// <summary>
         /// Creates the new session.
         /// </summary>
         /// <param name="request">The request.</param>

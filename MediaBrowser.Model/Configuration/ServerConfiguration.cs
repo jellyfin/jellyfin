@@ -34,10 +34,65 @@ namespace MediaBrowser.Model.Configuration
         public int PublicPort { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
+        /// </summary>
+        public bool UPnPCreateHttpPortMap { get; set; }
+
+        /// <summary>
+        /// Gets or sets client udp port range.
+        /// </summary>
+        public string UDPPortRange { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets IPV6 capability.
+        /// </summary>
+        public bool EnableIPV6 { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets IPV4 capability.
+        /// </summary>
+        public bool EnableIPV4 { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
+        /// </summary>
+        public int GatewayMonitorPeriod { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether is multi-socket binding available.
+        /// </summary>
+        public bool EnableMultiSocketBinding { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
+        /// </summary>
+        public bool TrustAllIP6Interfaces { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ports that HDHomerun uses.
+        /// </summary>
+        public string HDHomerunPortRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets PublishedServerUri to advertise for specific subnets.
+        /// </summary>
+        public string[] PublishedServerUriBySubnet { get; set; }
+
+        /// <summary>
         /// Gets or sets the public HTTPS port.
         /// </summary>
         /// <value>The public HTTPS port.</value>
         public int PublicHttpsPort { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets Autodiscovery tracing.
+        /// </summary>
+        public bool AutoDiscoveryTracing { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Autodiscovery is enabled.
+        /// </summary>
+        public bool AutoDiscovery { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP server port number.
@@ -77,6 +132,11 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
         public bool IsPortAuthorized { get; set; }
+
+        /// <summary>
+        /// Gets or sets if quick connect is available for use on this server.
+        /// </summary>
+        public bool QuickConnectAvailable { get; set; }
 
         public bool AutoRunWebApp { get; set; }
 
@@ -269,6 +329,15 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public ServerConfiguration()
         {
+            // Network settings
+            AutoDiscovery = true;
+            EnableIPV6 = false;
+            GatewayMonitorPeriod = 60;
+            TrustAllIP6Interfaces = false;
+            EnableMultiSocketBinding = true;
+            PublishedServerUriBySubnet = Array.Empty<string>();
+            HDHomerunPortRange = string.Empty;
+            UPnPCreateHttpPortMap = false;
             UninstalledPlugins = Array.Empty<string>();
             RemoteIPFilter = Array.Empty<string>();
             LocalNetworkSubnets = Array.Empty<string>();
@@ -299,6 +368,7 @@ namespace MediaBrowser.Model.Configuration
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
+            QuickConnectAvailable = false;
 
             EnableUPnP = false;
             MinResumePct = 5;
