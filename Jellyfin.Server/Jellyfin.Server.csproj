@@ -65,10 +65,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="wwwroot\api-docs\redoc\custom.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="wwwroot\api-docs\swagger\custom.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="wwwroot\api-docs\redoc\custom.css">
+    <None Update="wwwroot\api-docs\banner-dark.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
