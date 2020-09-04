@@ -1,8 +1,8 @@
 #pragma warning disable CS1591
 
+using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -14,9 +14,9 @@ namespace Emby.Dlna.MediaReceiverRegistrar
 
         public MediaReceiverRegistrarService(
             ILogger<MediaReceiverRegistrarService> logger,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config)
-            : base(logger, httpClient)
+            : base(logger, httpClientFactory)
         {
             _config = config;
         }

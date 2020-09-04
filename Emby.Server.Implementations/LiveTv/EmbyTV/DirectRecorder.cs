@@ -16,13 +16,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     public class DirectRecorder : IRecorder
     {
         private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IStreamHelper _streamHelper;
 
-        public DirectRecorder(ILogger logger, IHttpClient httpClient, IStreamHelper streamHelper)
+        public DirectRecorder(ILogger logger, IHttpClientFactory httpClientFactory, IStreamHelper streamHelper)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _streamHelper = streamHelper;
         }
 
@@ -63,42 +63,28 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            var httpRequestOptions = new HttpRequestOptions
-            {
-                Url = mediaSource.Path,
-                BufferContent = false,
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(mediaSource.Path, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-                // Some remote urls will expect a user agent to be supplied
-                UserAgent = "Emby/3.0",
+            _logger.LogInformation("Opened recording stream from tuner provider");
 
-                // Shouldn't matter but may cause issues
-                DecompressionMethod = CompressionMethods.None,
-                CancellationToken = cancellationToken
-            };
+            Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            using (var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false))
-            {
-                _logger.LogInformation("Opened recording stream from tuner provider");
+            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
+            onStarted();
 
-                using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read))
-                {
-                    onStarted();
+            _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
-                    _logger.LogInformation("Copying recording stream to file {0}", targetFile);
+            // The media source if infinite so we need to handle stopping ourselves
+            var durationToken = new CancellationTokenSource(duration);
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-                    // The media source if infinite so we need to handle stopping ourselves
-                    using var durationToken = new CancellationTokenSource(duration);
-                    using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
-
-                    await _streamHelper.CopyUntilCancelled(
-                        response.Content,
-                        output,
-                        IODefaults.CopyToBufferSize,
-                        cancellationTokenSource.Token).ConfigureAwait(false);
-                }
-            }
+            await _streamHelper.CopyUntilCancelled(
+                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                output,
+                IODefaults.CopyToBufferSize,
+                cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
