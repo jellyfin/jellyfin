@@ -607,6 +607,11 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentNullException(nameof(address));
             }
 
+            if (address.Equals(IPAddress.None))
+            {
+                return false;
+            }
+
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
             if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
             {

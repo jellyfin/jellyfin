@@ -51,7 +51,11 @@ namespace Jellyfin.Server.Middleware
                     // Could attempt resolve, but do we want to do this on each request?
                     if (!serverConfigurationManager.Configuration.EnableRemoteAccess)
                     {
-                        return;
+                        // This will cause a dns resolve on the hostname.
+                        if (!networkManager.IsInLocalNetwork(h))
+                        {
+                            return;
+                        }
                     }
                 }
             }
