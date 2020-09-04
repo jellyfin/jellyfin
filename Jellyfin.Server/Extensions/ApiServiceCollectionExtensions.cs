@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
@@ -18,7 +17,6 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
 using Jellyfin.Server.Models;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -150,6 +148,9 @@ namespace Jellyfin.Server.Extensions
                 })
                 .AddMvc(opts =>
                 {
+                    // Allow requester to change between camelCase and PascalCase
+                    opts.RespectBrowserAcceptHeader = true;
+
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
 

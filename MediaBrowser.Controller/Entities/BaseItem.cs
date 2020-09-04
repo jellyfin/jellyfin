@@ -60,8 +60,6 @@ namespace MediaBrowser.Controller.Entities
 
         protected BaseItem()
         {
-            ThemeSongIds = Array.Empty<Guid>();
-            ThemeVideoIds = Array.Empty<Guid>();
             Tags = Array.Empty<string>();
             Genres = Array.Empty<string>();
             Studios = Array.Empty<string>();
@@ -100,12 +98,52 @@ namespace MediaBrowser.Controller.Entities
         };
 
         [JsonIgnore]
-        public Guid[] ThemeSongIds { get; set; }
+        public Guid[] ThemeSongIds
+        {
+            get
+            {
+                if (_themeSongIds == null)
+                {
+                    _themeSongIds = GetExtras()
+                        .Where(extra => extra.ExtraType == Model.Entities.ExtraType.ThemeSong)
+                        .Select(song => song.Id)
+                        .ToArray();
+                }
+
+                return _themeSongIds;
+            }
+
+            private set
+            {
+                _themeSongIds = value;
+            }
+        }
+
         [JsonIgnore]
-        public Guid[] ThemeVideoIds { get; set; }
+        public Guid[] ThemeVideoIds
+        {
+            get
+            {
+                if (_themeVideoIds == null)
+                {
+                    _themeVideoIds = GetExtras()
+                        .Where(extra => extra.ExtraType == Model.Entities.ExtraType.ThemeVideo)
+                        .Select(song => song.Id)
+                        .ToArray();
+                }
+
+                return _themeVideoIds;
+            }
+
+            private set
+            {
+                _themeVideoIds = value;
+            }
+        }
 
         [JsonIgnore]
         public string PreferredMetadataCountryCode { get; set; }
+
         [JsonIgnore]
         public string PreferredMetadataLanguage { get; set; }
 
@@ -635,6 +673,9 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private string _sortName;
+        private Guid[] _themeSongIds;
+        private Guid[] _themeVideoIds;
+
         /// <summary>
         /// Gets the name of the sort.
         /// </summary>
@@ -1582,7 +1623,8 @@ namespace MediaBrowser.Controller.Entities
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            item.ThemeVideoIds = newThemeVideoIds;
+            // They are expected to be sorted by SortName
+            item.ThemeVideoIds = newThemeVideos.OrderBy(i => i.SortName).Select(i => i.Id).ToArray();
 
             return themeVideosChanged;
         }
@@ -1619,7 +1661,8 @@ namespace MediaBrowser.Controller.Entities
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            item.ThemeSongIds = newThemeSongIds;
+            // They are expected to be sorted by SortName
+            item.ThemeSongIds = newThemeSongs.OrderBy(i => i.SortName).Select(i => i.Id).ToArray();
 
             return themeSongsChanged;
         }
@@ -2910,12 +2953,12 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetThemeSongs()
         {
-            return ThemeVideoIds.Select(LibraryManager.GetItemById).Where(i => i.ExtraType.Equals(Model.Entities.ExtraType.ThemeSong)).OrderBy(i => i.SortName);
+            return ThemeSongIds.Select(LibraryManager.GetItemById);
         }
 
         public IEnumerable<BaseItem> GetThemeVideos()
         {
-            return ThemeVideoIds.Select(LibraryManager.GetItemById).Where(i => i.ExtraType.Equals(Model.Entities.ExtraType.ThemeVideo)).OrderBy(i => i.SortName);
+            return ThemeVideoIds.Select(LibraryManager.GetItemById);
         }
 
         /// <summary>

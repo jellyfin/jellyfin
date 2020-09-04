@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
-using Jellyfin.Server.HealthChecks;
+using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
 using MediaBrowser.Common.Net;
@@ -80,7 +80,7 @@ namespace Jellyfin.Server
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
 
             services.AddHealthChecks()
-                .AddCheck<JellyfinDbHealthCheck>("JellyfinDb");
+                .AddDbContextCheck<JellyfinDb>();
         }
 
         /// <summary>
