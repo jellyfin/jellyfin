@@ -52,10 +52,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
                 // The media source is infinite so we need to handle stopping ourselves
-                var durationToken = new CancellationTokenSource(duration);
-                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                using var durationToken = new CancellationTokenSource(duration);
+                using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-                await directStreamProvider.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+                await directStreamProvider.CopyToAsync(output, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
@@ -80,7 +80,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var durationToken = new CancellationTokenSource(duration);
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-            await _streamHelper.CopyUntilCancelled(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), output, 81920, cancellationToken).ConfigureAwait(false);
+            await _streamHelper.CopyUntilCancelled(
+                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                output,
+                81920,
+                cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }

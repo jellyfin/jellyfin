@@ -32,9 +32,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             _httpClientFactory = httpClientFactory;
         }
 
+        public static string ProviderName => TmdbUtils.ProviderName;
+
+        /// <inheritdoc />
         public string Name => ProviderName;
 
-        public static string ProviderName => TmdbUtils.ProviderName;
+        /// <inheritdoc />
+        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {
@@ -125,8 +129,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         {
             return profile.Iso_639_1?.ToString();
         }
-
-        public int Order => 0;
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {

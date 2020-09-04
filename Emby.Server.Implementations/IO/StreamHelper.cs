@@ -11,8 +11,6 @@ namespace Emby.Server.Implementations.IO
 {
     public class StreamHelper : IStreamHelper
     {
-        private const int StreamCopyToBufferSize = 81920;
-
         public async Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action onStarted, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
@@ -83,37 +81,9 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        public async Task<int> CopyToAsync(Stream source, Stream destination, CancellationToken cancellationToken)
-        {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(StreamCopyToBufferSize);
-            try
-            {
-                int totalBytesRead = 0;
-
-                int bytesRead;
-                while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
-                {
-                    var bytesToWrite = bytesRead;
-
-                    if (bytesToWrite > 0)
-                    {
-                        await destination.WriteAsync(buffer, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
-
-                        totalBytesRead += bytesRead;
-                    }
-                }
-
-                return totalBytesRead;
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
-        }
-
         public async Task CopyToAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(StreamCopyToBufferSize);
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(IODefaults.CopyToBufferSize);
             try
             {
                 int bytesRead;

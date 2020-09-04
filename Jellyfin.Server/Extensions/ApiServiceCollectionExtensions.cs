@@ -152,6 +152,10 @@ namespace Jellyfin.Server.Extensions
                 .AddMvc(opts =>
                 {
                     opts.UseGeneralRoutePrefix(baseUrl);
+
+                    // Allow requester to change between camelCase and PascalCase
+                    opts.RespectBrowserAcceptHeader = true;
+
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
 
