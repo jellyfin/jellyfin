@@ -161,6 +161,8 @@ namespace Jellyfin.Server.Extensions
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
+
+                    opts.InputFormatters.Add(new XmlInputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up

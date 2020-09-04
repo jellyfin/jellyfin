@@ -317,6 +317,11 @@ namespace Emby.Dlna.PlayTo
         protected TransportState TransportState { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether trace information should be redirected to the logs.
+        /// </summary>
+        private static bool Tracing { get; set; }
+
+        /// <summary>
         /// Gets or sets the AvCommands.
         /// </summary>
         private TransportCommands? AvCommands { get; set; }
@@ -325,11 +330,6 @@ namespace Emby.Dlna.PlayTo
         /// Gets or sets the RendererCommands.
         /// </summary>
         private TransportCommands? RendererCommands { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether trace information should be redirected to the logs.
-        /// </summary>
-        private static bool Tracing { get; set; }
 
         /// <summary>
         /// The CreateuPnpDeviceAsync.
@@ -893,17 +893,19 @@ namespace Emby.Dlna.PlayTo
                     using var response = await httpClientFactory
                         .CreateClient(NamedClient.Default)
                         .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, default).ConfigureAwait(false);
-
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                    using var reader = new StreamReader(stream, Encoding.UTF8);
-                    reply = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    if (Tracing)
+                    if (response.IsSuccessStatusCode)
                     {
-                        logger.LogDebug("<- {0}\r\n{1}", url, reply);
-                    }
+                        await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                        using var reader = new StreamReader(stream, Encoding.UTF8);
+                        reply = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                    return XDocument.Parse(reply);
+                        if (Tracing)
+                        {
+                            logger.LogDebug("<- {0}\r\n{1}", url, reply);
+                        }
+
+                        return XDocument.Parse(reply);
+                    }
                 }
                 catch (XmlException)
                 {
@@ -1249,15 +1251,13 @@ namespace Emby.Dlna.PlayTo
         /// <param name="command">Command to send.</param>
         /// <param name="postData">Information to post..</param>
         /// <param name="header">Headers to include.</param>
-        /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The <see cref="Task"/>.</returns>
         private async Task<XMLProperties?> SendCommandAsync(
             string baseUrl,
             DeviceService service,
             string command,
             string postData,
-            string? header = null,
-            CancellationToken cancellationToken = default)
+            string? header = null)
         {
             if (_disposed)
             {
@@ -1265,34 +1265,44 @@ namespace Emby.Dlna.PlayTo
             }
 
             var url = NormalizeUrl(baseUrl, service.ControlUrl);
-            var stopWatch = new Stopwatch();
-            string xmlResponse = string.Empty;
 
+            using var options = new HttpRequestMessage(HttpMethod.Post, url);
+            options.Headers.UserAgent.ParseAdd(USERAGENT);
+            options.Headers.TryAddWithoutValidation("SOAPAction", $"\"{service.ServiceType}#{command}\"");
+            options.Headers.TryAddWithoutValidation("Pragma", "no-cache");
+            options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
+            options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
+            if (!string.IsNullOrEmpty(header))
+            {
+                options.Headers.TryAddWithoutValidation("contentFeatures.dlna.org", header);
+            }
+
+            options.Content = new StringContent(postData, Encoding.UTF8, MediaTypeNames.Text.Xml);
+
+            if (Tracing)
+            {
+                _logger.LogDebug("{0}:-> {1}\r\nHeader\r\n{2}\r\nData\r\n{3}", Properties.Name, url, PrettyPrint(options.Headers), postData);
+            }
+
+            string xmlResponse = string.Empty;
+            XMLProperties? results = null;
+            var stopWatch = new Stopwatch();
+            CancellationTokenSource cts = new CancellationTokenSource();
             try
             {
-                using var options = new HttpRequestMessage(HttpMethod.Post, url);
-                options.Headers.UserAgent.ParseAdd(USERAGENT);
-                options.Headers.TryAddWithoutValidation("SOAPAction", $"\"{service.ServiceType}#{command}\"");
-                options.Headers.TryAddWithoutValidation("Pragma", "no-cache");
-                options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
-                options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
-                if (!string.IsNullOrEmpty(header))
-                {
-                    options.Headers.TryAddWithoutValidation("contentFeatures.dlna.org", header);
-                }
-
-                options.Content = new StringContent(postData, Encoding.UTF8, MediaTypeNames.Text.Xml);
-
-                if (Tracing)
-                {
-                    _logger.LogDebug("{0}:-> {1}\r\nHeader\r\n{2}\r\nData\r\n{3}", Properties.Name, url, PrettyPrint(options.Headers), postData);
-                }
-
+                cts.CancelAfter(2000);
                 stopWatch.Start();
+
                 var response = await _httpClientFactory
                     .CreateClient(NamedClient.Default)
-                    .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                     .ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogDebug("{0}:<- Error:{1} : {2}", Properties.Name, response.StatusCode, response.ReasonPhrase);
+                    return null;
+                }
 
                 // Get the response.
                 var buffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
@@ -1304,49 +1314,7 @@ namespace Emby.Dlna.PlayTo
                 }
 
                 // Some devices don't return valid xml - so we need to loosly parse it.
-                XMLUtilities.ParseXML(xmlResponse, out XMLProperties results);
-                stopWatch.Stop();
-
-                // Calculate just under half of the round trip time so we can make the position slide more accurate.
-                _transportOffset = stopWatch.Elapsed.Divide(1.8);
-
-                return results;
-            }
-            catch (HttpException ex)
-            {
-                stopWatch.Stop();
-
-                if (!string.IsNullOrEmpty(ex.ResponseText))
-                {
-                    if (Tracing)
-                    {
-                        _logger.LogDebug("{0}:<- {1}\r\n{2}", Properties.Name, url, ex.ResponseText);
-                    }
-
-                    string msg = string.Empty;
-                    XMLUtilities.ParseXML(ex.ResponseText, out XMLProperties prop);
-                    if (!prop.TryGetValue("errorDescription", out msg))
-                    {
-                        prop.TryGetValue("faultstring", out msg);
-                    }
-
-                    if (msg != null)
-                    {
-                        // Send the user notification, so they don't just sit clicking!
-                        await NotifyUser(Properties.Name + ": " + msg).ConfigureAwait(false);
-                        _logger.LogError("{0}: SendCommandAsync failed. Device returned '{1}'.", Properties.Name, msg);
-                    }
-                    else
-                    {
-                        _logger.LogError("{0}: SendCommandAsync failed. Unable to parse error. \r\n", Properties.Name, ex.ResponseText);
-                    }
-                }
-                else
-                {
-                    _logger.LogError("{0}: SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.Message.ToString(_usCulture), url);
-                }
-
-                return null;
+                XMLUtilities.ParseXML(xmlResponse, out results);
             }
             catch (HttpRequestException ex)
             {
@@ -1360,6 +1328,15 @@ namespace Emby.Dlna.PlayTo
                 _logger.LogError("{0}: SendCommandAsync responded with invalid XML. \r\n{1} ", Properties.Name, xmlResponse);
                 return null;
             }
+            finally
+            {
+                cts.Dispose();
+                stopWatch.Stop();
+                // Calculate just under half of the round trip time so we can make the position slide more accurate.
+                _transportOffset = stopWatch.Elapsed.Divide(1.8);
+            }
+
+            return results;
         }
 
         /// <summary>
@@ -1467,7 +1444,7 @@ namespace Emby.Dlna.PlayTo
             string actionCommand,
             object? name = null,
             string? commandParameter = null,
-            Dictionary<string, string>? dictionary = null,
+            XMLProperties? dictionary = null,
             string? header = null)
         {
             if (_disposed)
@@ -1481,7 +1458,20 @@ namespace Emby.Dlna.PlayTo
                 return true;
             }
 
-            _logger.LogWarning("{0}: Sending {1} Failed!", Properties.Name, actionCommand);
+            string fault = string.Empty;
+            string errorCode = string.Empty;
+            string errorDescription = string.Empty;
+            if (result != null)
+            {
+                result.TryGetValue("faultstring", out fault);
+                result.TryGetValue("errorCode", out errorCode);
+                result.TryGetValue("errorDescription", out errorDescription);
+            }
+
+            string msg = $"{Properties.Name} : Cmd : {actionCommand}. Fault: {fault}. Code: {errorCode}. {errorDescription}";
+            await NotifyUser(msg).ConfigureAwait(false);
+            _logger.LogError(msg);
+
             if (Tracing)
             {
                 _logger.LogDebug("{0}: Response was: {1}", Properties.Name, result);
@@ -1503,6 +1493,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             string xmlstring = string.Empty;
+            CancellationTokenSource cts = new CancellationTokenSource();
 
             try
             {
@@ -1514,12 +1505,10 @@ namespace Emby.Dlna.PlayTo
 
                 if (Tracing)
                 {
-                    _logger.LogDebug("{0}:-> {1} Headers: {2}", Properties.Name, url, PrettyPrint(options.Headers));
+                    _logger.LogDebug("{0}:-> {1}\r\nHeaders: {2}", Properties.Name, url, PrettyPrint(options.Headers));
                 }
 
-                CancellationTokenSource cts = new CancellationTokenSource();
                 cts.CancelAfter(2000);
-
                 using var client = _httpClientFactory.CreateClient(NamedClient.Default);
                 var response = await client.SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -1532,7 +1521,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (Tracing)
                 {
-                    _logger.LogDebug("{0}:<- {1}", Properties.Name, xmlstring);
+                    _logger.LogDebug("{0}:<-\r\n{1}", Properties.Name, xmlstring);
                 }
 
                 var dlnaDescripton = new XmlDocument();
@@ -1574,6 +1563,10 @@ namespace Emby.Dlna.PlayTo
 
                 _logger.LogError("{0}: Unable to retrieve ssdp description.", Properties.Name);
             }
+            finally
+            {
+                cts.Dispose();
+            }
         }
 
         /// <summary>
@@ -1592,7 +1585,7 @@ namespace Emby.Dlna.PlayTo
             if (service.EventSubUrl != null)
             {
                 var url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl);
-                var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
+                using var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
                 options.Headers.UserAgent.ParseAdd(USERAGENT);
                 options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
 
@@ -1623,7 +1616,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (Tracing)
                 {
-                    _logger.LogDebug("->{0} : Headers: {1}", url, PrettyPrint(options.Headers));
+                    _logger.LogDebug("->{0}:\r\nHeaders: {1}", url, PrettyPrint(options.Headers));
                 }
 
                 try
@@ -1631,16 +1624,17 @@ namespace Emby.Dlna.PlayTo
                     using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                         .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
                         .ConfigureAwait(false);
-                    if (response.IsSuccessStatusCode)
+                    if (!response.IsSuccessStatusCode)
                     {
-                        if (!_subscribed)
-                        {
-                            return response.Headers.GetValues("SID").FirstOrDefault();
-                        }
+                        _logger.LogDebug("{0}:<- Error:{1} : {2}", Properties.Name, response.StatusCode, response.ReasonPhrase);
+                        return string.Empty;
                     }
-                    else
+
+                    _logger.LogDebug("{0}: SUBSCRIBE successful.", Properties.Name);
+
+                    if (!_subscribed)
                     {
-                        _logger.LogDebug("{0}: SUBSCRIBE failed: {1}", Properties.Name, response.Content);
+                        return response.Headers.GetValues("SID").FirstOrDefault();
                     }
                 }
                 catch (HttpException ex)
@@ -1717,20 +1711,23 @@ namespace Emby.Dlna.PlayTo
             if (service != null && (service.EventSubUrl != null || string.IsNullOrEmpty(sid)))
             {
                 var url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl ?? string.Empty);
-                var options = new HttpRequestMessage(new HttpMethod("UNSUBSCRIBE"), url);
+                using var options = new HttpRequestMessage(new HttpMethod("UNSUBSCRIBE"), url);
                 options.Headers.UserAgent.ParseAdd(USERAGENT);
                 options.Headers.TryAddWithoutValidation("SID", "uuid: {sid}");
                 options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
 
                 if (Tracing)
                 {
-                    _logger.LogDebug("-> {0} : Headers : {1}", url, PrettyPrint(options.Headers));
+                    _logger.LogDebug("-> {0}:\r\nHeaders : {1}", url, PrettyPrint(options.Headers));
                 }
 
+                CancellationTokenSource cts = new CancellationTokenSource();
                 try
                 {
+                    cts.CancelAfter(2000);
+
                     using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
+                        .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                         .ConfigureAwait(false);
 
                     if (response.IsSuccessStatusCode)
@@ -1746,6 +1743,10 @@ namespace Emby.Dlna.PlayTo
                 catch (HttpException ex)
                 {
                     _logger.LogError(ex, "{0}: UNSUBSCRIBE failed.", Properties.Name);
+                }
+                finally
+                {
+                    cts.Dispose();
                 }
             }
 
@@ -1825,7 +1826,7 @@ namespace Emby.Dlna.PlayTo
                         if (reply.TryGetValue("TransportState.val", out value)
                             && Enum.TryParse(value, true, out TransportState ts))
                         {
-                            _logger.LogDebug("{0} : TransportState: {1}", Properties.Name, ts);
+                            _logger.LogDebug("{0}: TransportState: {1}", Properties.Name, ts);
 
                             // Mustn't process our own change playback event.
                             if (ts != TransportState && TransportState != TransportState.Transitioning)
@@ -1846,7 +1847,7 @@ namespace Emby.Dlna.PlayTo
                         {
                             if (!reply.TryGetValue("RelativeTimePosition.val", out value))
                             {
-                                _logger.LogDebug("{0} : Updating position as not included.", Properties.Name);
+                                _logger.LogDebug("{0}: Updating position as not included.", Properties.Name);
                                 // Try and get the latest position update
                                 await GetPositionRequest().ConfigureAwait(false);
                             }
@@ -1895,7 +1896,7 @@ namespace Emby.Dlna.PlayTo
                 catch (HttpException ex)
                 {
                     _logger.LogError("{0}: Unable to parse event response.", Properties.Name);
-                    _logger.LogDebug(ex, "{0}: Received: ", Properties.Name, args.Response);
+                    _logger.LogDebug(ex, "{0}: Received:\r\n", Properties.Name, args.Response);
                 }
             }
         }
@@ -1904,7 +1905,7 @@ namespace Emby.Dlna.PlayTo
         /// Timer Callback function that polls the DLNA status.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        private async void TimerCallback(object sender)
+        private async void TimerCallback(object? sender)
         {
             if (_disposed)
             {
@@ -2055,7 +2056,7 @@ namespace Emby.Dlna.PlayTo
                     return true;
                 }
 
-                _logger.LogWarning("{0} : GetVolume Failed.", Properties.Name);
+                _logger.LogWarning("{0}: GetVolume Failed.", Properties.Name);
             }
             catch (ObjectDisposedException)
             {
@@ -2063,7 +2064,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (FormatException)
             {
-                _logger.LogError("{0} : Error parsing GetVolume {1}.", Properties.Name, volume);
+                _logger.LogError("{0}: Error parsing GetVolume {1}.", Properties.Name, volume);
             }
 
             return false;
@@ -2202,11 +2203,11 @@ namespace Emby.Dlna.PlayTo
             if (!string.IsNullOrEmpty(settings.Url))
             {
                 _logger.LogDebug(
-                    "{0} : {1} - SetAvTransport Uri: {2} DlnaHeaders: {3}",
+                    "{0}:\r\nSetAvTransport Uri: {1}\r\nDlnaHeaders: {2}\r\n{3}",
                     Properties.Name,
-                    settings.Metadata,
                     settings.Url,
-                    settings.Headers);
+                    settings.Headers,
+                    settings.Metadata);
 
                 var dictionary = new Dictionary<string, string>
                 {
@@ -2296,7 +2297,7 @@ namespace Emby.Dlna.PlayTo
             }
             else
             {
-                _logger.LogWarning("{0} : GetMediaInfo failed.", Properties.Name);
+                _logger.LogWarning("{0}: GetMediaInfo failed.", Properties.Name);
             }
 
             return null;
@@ -2403,7 +2404,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         if (TransportState != TransportState.Stopped && !string.IsNullOrWhiteSpace(mediaInfo.Url))
                         {
-                            _logger.LogDebug("{0} : Firing playback started event.", Properties.Name);
+                            _logger.LogDebug("{0}: Firing playback started event.", Properties.Name);
                             PlaybackStart?.Invoke(this, new PlaybackEventArgs
                             {
                                 MediaInfo = mediaInfo
@@ -2414,7 +2415,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         if (!string.IsNullOrWhiteSpace(mediaInfo?.Url))
                         {
-                            _logger.LogDebug("{0} : Firing playback progress event.", Properties.Name);
+                            _logger.LogDebug("{0}: Firing playback progress event.", Properties.Name);
                             PlaybackProgress?.Invoke(this, new PlaybackEventArgs
                             {
                                 MediaInfo = mediaInfo
@@ -2423,7 +2424,7 @@ namespace Emby.Dlna.PlayTo
                     }
                     else
                     {
-                        _logger.LogDebug("{0} : Firing media change event.", Properties.Name);
+                        _logger.LogDebug("{0}: Firing media change event.", Properties.Name);
                         MediaChanged?.Invoke(this, new MediaChangedEventArgs
                         {
                             OldMediaInfo = previousMediaInfo,
@@ -2433,7 +2434,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 else if (previousMediaInfo != null)
                 {
-                    _logger.LogDebug("{0} : Firing playback stopped event.", Properties.Name);
+                    _logger.LogDebug("{0}: Firing playback stopped event.", Properties.Name);
                     PlaybackStopped?.Invoke(this, new PlaybackEventArgs
                     {
                         MediaInfo = previousMediaInfo
@@ -2444,7 +2445,7 @@ namespace Emby.Dlna.PlayTo
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                _logger.LogError(ex, "{0} : UpdateMediaInfo errored.", Properties.Name);
+                _logger.LogError(ex, "{0}: UpdateMediaInfo errored.", Properties.Name);
             }
         }
 

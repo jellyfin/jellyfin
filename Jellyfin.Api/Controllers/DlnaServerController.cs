@@ -270,7 +270,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Event subscription response.</returns>
         [HttpNotify("Eventing/{id}")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
-        public async Task<ActionResult> ProcessDeviceNotifification([FromRoute] string id, [FromBody] string response)
+        public async Task<ActionResult> ProcessDeviceNotification([FromRoute] string id, [FromBody] string response)
         {
             try
             {

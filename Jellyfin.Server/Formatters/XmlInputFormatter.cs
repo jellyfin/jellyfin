@@ -15,15 +15,12 @@ namespace Jellyfin.Server.Formatters
     /// </summary>
     public class XmlInputFormatter : TextInputFormatter
     {
-        private const string Utf8XML = "text/xml;charset=UTF-8";
-
         /// <summary>
         /// Initializes a new instance of the <see cref="XmlInputFormatter"/> class.
         /// </summary>
         public XmlInputFormatter()
         {
             SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
-            SupportedMediaTypes.Add(Utf8XML);
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
         }
@@ -39,8 +36,7 @@ namespace Jellyfin.Server.Formatters
             }
 
             var contentType = context.HttpContext.Request.ContentType;
-            return string.Equals(contentType, MediaTypeNames.Text.Xml, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(contentType, Utf8XML, StringComparison.OrdinalIgnoreCase);
+            return contentType.StartsWith(MediaTypeNames.Text.Xml, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -51,8 +47,7 @@ namespace Jellyfin.Server.Formatters
             var request = context.HttpContext.Request;
             var contentType = context.HttpContext.Request.ContentType;
 
-            if (string.Equals(contentType, MediaTypeNames.Text.Xml, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(contentType, Utf8XML, StringComparison.OrdinalIgnoreCase))
+            if (contentType.StartsWith(MediaTypeNames.Text.Xml, StringComparison.OrdinalIgnoreCase))
             {
                 using (var reader = new StreamReader(request.Body))
                 {

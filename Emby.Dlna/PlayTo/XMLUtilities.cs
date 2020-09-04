@@ -1,3 +1,4 @@
+#nullable enable
 #pragma warning disable IDE0059 // Unnecessary assignment of a value : Left in to aid in debugging.
 
 using System;

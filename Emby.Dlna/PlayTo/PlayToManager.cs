@@ -128,6 +128,30 @@ namespace Emby.Dlna.PlayTo
             GC.SuppressFinalize(this);
         }
 
+        private static string GetUuid(string usn)
+        {
+            var found = false;
+            var index = usn.IndexOf("uuid:", StringComparison.OrdinalIgnoreCase);
+            if (index != -1)
+            {
+                usn = usn.Substring(index);
+                found = true;
+            }
+
+            index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
+            if (index != -1)
+            {
+                usn = usn.Substring(0, index);
+            }
+
+            if (found)
+            {
+                return usn;
+            }
+
+            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        }
+
         private async Task Dispose(bool disposing)
         {
             if (!_disposed)
@@ -185,30 +209,6 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private static string GetUuid(string usn)
-        {
-            var found = false;
-            var index = usn.IndexOf("uuid:", StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
-            {
-                usn = usn.Substring(index);
-                found = true;
-            }
-
-            index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
-            {
-                usn = usn.Substring(0, index);
-            }
-
-            if (found)
-            {
-                return usn;
-            }
-
-            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-        }
-
         private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             if (_disposed)
@@ -233,7 +233,7 @@ namespace Emby.Dlna.PlayTo
             // It has to report that it's a media renderer
             if (!usn.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase) && !nt.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device {1} {2}.", location, usn, nt);
+                // _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device {1} {2}.", location, usn, nt);
                 return;
             }
 
