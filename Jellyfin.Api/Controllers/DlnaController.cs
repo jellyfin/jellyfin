@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Dlna;
