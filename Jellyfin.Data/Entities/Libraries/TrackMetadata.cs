@@ -5,7 +5,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity holding metadata for a track.
     /// </summary>
-    public class TrackMetadata : Metadata
+    public class TrackMetadata : ItemMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TrackMetadata"/> class.

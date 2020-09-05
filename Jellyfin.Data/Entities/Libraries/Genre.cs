@@ -14,8 +14,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="Genre"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="metadata">The metadata.</param>
-        public Genre(string name, Metadata metadata)
+        /// <param name="itemMetadata">The metadata.</param>
+        public Genre(string name, ItemMetadata itemMetadata)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -24,12 +24,12 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Name = name;
 
-            if (metadata == null)
+            if (itemMetadata == null)
             {
-                throw new ArgumentNullException(nameof(metadata));
+                throw new ArgumentNullException(nameof(itemMetadata));
             }
 
-            metadata.Genres.Add(this);
+            itemMetadata.Genres.Add(this);
         }
 
         /// <summary>
