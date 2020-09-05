@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -765,7 +766,7 @@ namespace MediaBrowser.Providers.Music
                 _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
                 _stopWatchMusicBrainz.Restart();
 
-                response = await _httpClientFactory.CreateClient().SendAsync(options).ConfigureAwait(false);
+                response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options).ConfigureAwait(false);
 
                 // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
             }

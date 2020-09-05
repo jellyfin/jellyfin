@@ -398,30 +398,6 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        public virtual void SetReadOnly(string path, bool isReadOnly)
-        {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
-            {
-                return;
-            }
-
-            var info = GetExtendedFileSystemInfo(path);
-
-            if (info.Exists && info.IsReadOnly != isReadOnly)
-            {
-                if (isReadOnly)
-                {
-                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.ReadOnly);
-                }
-                else
-                {
-                    var attributes = File.GetAttributes(path);
-                    attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
-                    File.SetAttributes(path, attributes);
-                }
-            }
-        }
-
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
             if (OperatingSystem.Id != OperatingSystemId.Windows)
@@ -705,14 +681,6 @@ namespace Emby.Server.Implementations.IO
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             return Directory.EnumerateFileSystemEntries(path, "*", searchOption);
-        }
-
-        public virtual void SetExecutable(string path)
-        {
-            if (OperatingSystem.Id == OperatingSystemId.Darwin)
-            {
-                RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
-            }
         }
 
         private static void RunProcess(string path, string args, string workingDirectory)

@@ -73,7 +73,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Gets or sets the next item in the collection.
         /// </summary>
         /// <remarks>
-        /// TODO check if this properly updated dependant and has the proper principal relationship
+        /// TODO check if this properly updated dependant and has the proper principal relationship.
         /// </remarks>
         public virtual CollectionItem Next { get; set; }
 
@@ -81,7 +81,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Gets or sets the previous item in the collection.
         /// </summary>
         /// <remarks>
-        /// TODO check if this properly updated dependant and has the proper principal relationship
+        /// TODO check if this properly updated dependant and has the proper principal relationship.
         /// </remarks>
         public virtual CollectionItem Previous { get; set; }
 

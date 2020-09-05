@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -32,7 +33,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
     {
         const string DataFileName = "info.json";
 
-        internal static TmdbPersonProvider Current { get; private set; }
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
@@ -54,6 +55,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             _logger = logger;
             Current = this;
         }
+
+        internal static TmdbPersonProvider Current { get; private set; }
 
         public string Name => TmdbUtils.ProviderName;
 
@@ -95,7 +98,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return new List<RemoteSearchResult>();
             }
 
-            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), TmdbUtils.ApiKey);
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                TmdbUtils.BaseTmdbApiUrl + @"3/search/person?api_key={1}&query={0}",
+                WebUtility.UrlEncode(searchInfo.Name),
+                TmdbUtils.ApiKey);
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
             foreach (var header in TmdbUtils.AcceptHeaders)
@@ -200,8 +207,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             return result;
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Gets the TMDB id.
         /// </summary>
@@ -226,7 +231,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return;
             }
 
-            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", TmdbUtils.ApiKey, id);
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                TmdbUtils.BaseTmdbApiUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids",
+                TmdbUtils.ApiKey,
+                id);
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
             foreach (var header in TmdbUtils.AcceptHeaders)
@@ -259,7 +268,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

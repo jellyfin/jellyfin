@@ -1421,6 +1421,24 @@ namespace Emby.Server.Implementations.Session
             return AuthenticateNewSessionInternal(request, false);
         }
 
+        public Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token)
+        {
+            var result = _authRepo.Get(new AuthenticationInfoQuery()
+            {
+                AccessToken = token,
+                DeviceId = _appHost.SystemId,
+                Limit = 1
+            });
+
+            if (result.TotalRecordCount == 0)
+            {
+                throw new SecurityException("Unknown quick connect token");
+            }
+
+            request.UserId = result.Items[0].UserId;
+            return AuthenticateNewSessionInternal(request, false);
+        }
+
         private async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
         {
             CheckDisposed();

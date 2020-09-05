@@ -1353,7 +1353,7 @@ namespace Emby.Dlna.ContentDirectory
                 };
             }
 
-            Logger.LogError("Error parsing item Id: {id}. Returning user root folder.", id);
+            Logger.LogError("Error parsing item Id: {Id}. Returning user root folder.", id);
 
             return new ServerItem(_libraryManager.GetUserRootFolder());
         }

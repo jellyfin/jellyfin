@@ -1,3 +1,5 @@
+#pragma warning disable CA2227
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +11,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity representing series metadata.
     /// </summary>
-    public class SeriesMetadata : Metadata, IHasCompanies
+    public class SeriesMetadata : ItemMetadata, IHasCompanies
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesMetadata"/> class.

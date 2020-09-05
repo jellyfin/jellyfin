@@ -35,15 +35,8 @@ namespace MediaBrowser.Controller
         IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client);
 
         /// <summary>
-        /// Saves changes to the provided display preferences.
+        /// Saves changes made to the database.
         /// </summary>
-        /// <param name="preferences">The display preferences to save.</param>
-        void SaveChanges(DisplayPreferences preferences);
-
-        /// <summary>
-        /// Saves changes to the provided item display preferences.
-        /// </summary>
-        /// <param name="preferences">The item display preferences to save.</param>
-        void SaveChanges(ItemDisplayPreferences preferences);
+        void SaveChanges();
     }
 }

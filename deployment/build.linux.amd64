@@ -16,7 +16,7 @@ else
 fi
 
 # Build archives
-dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime linux-x64 --output dist/jellyfin-server_${version}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
+dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime linux-x64 --output dist/jellyfin-server_${version}/ "-p:DebugSymbols=false;DebugType=none;UseAppHost=true"
 tar -czf jellyfin-server_${version}_linux-amd64.tar.gz -C dist jellyfin-server_${version}
 rm -rf dist/jellyfin-server_${version}
 

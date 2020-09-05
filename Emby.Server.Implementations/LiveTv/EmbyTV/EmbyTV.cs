@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger<EmbyTV> _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _jsonSerializer;
 
@@ -81,7 +82,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IMediaSourceManager mediaSourceManager,
             ILogger<EmbyTV> logger,
             IJsonSerializer jsonSerializer,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
             ILiveTvManager liveTvManager,
             IFileSystem fileSystem,
@@ -94,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             _appHost = appHost;
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _config = config;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
@@ -604,11 +605,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return Task.CompletedTask;
         }
 
-        public Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
         public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -806,11 +802,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             return null;
-        }
-
-        public IEnumerable<ActiveRecordingInfo> GetAllActiveRecordings()
-        {
-            return _activeRecordings.Values.Where(i => i.Timer.Status == RecordingStatus.InProgress && !i.CancellationTokenSource.IsCancellationRequested);
         }
 
         public ActiveRecordingInfo GetActiveRecordingInfo(string path)
@@ -1013,16 +1004,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             throw new Exception("Tuner not found.");
-        }
-
-        private MediaSourceInfo CloneMediaSource(MediaSourceInfo mediaSource, bool enableStreamSharing)
-        {
-            var json = _jsonSerializer.SerializeToString(mediaSource);
-            mediaSource = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
-
-            mediaSource.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + "_" + mediaSource.Id;
-
-            return mediaSource;
         }
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
@@ -1654,10 +1635,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _config);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer);
             }
 
-            return new DirectRecorder(_logger, _httpClient, _streamHelper);
+            return new DirectRecorder(_logger, _httpClientFactory, _streamHelper);
         }
 
         private void OnSuccessfulRecording(TimerInfo timer, string path)

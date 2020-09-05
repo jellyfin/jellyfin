@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
     public class HdHomerunHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IServerConfigurationManager config,
             ILogger<HdHomerunHost> logger,
             IFileSystem fileSystem,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
             INetworkManager networkManager,
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IMemoryCache memoryCache)
             : base(config, logger, fileSystem, memoryCache)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
@@ -71,15 +71,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
-            var options = new HttpRequestOptions
-            {
-                Url = model.LineupURL,
-                CancellationToken = cancellationToken,
-                BufferContent = false
-            };
-
-            using var response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
-            await using var stream = response.Content;
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(model.LineupURL, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var lineup = await JsonSerializer.DeserializeAsync<List<Channels>>(stream, cancellationToken: cancellationToken)
                 .ConfigureAwait(false) ?? new List<Channels>();
 
@@ -133,14 +126,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
-                using var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions
-                {
-                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
-                    CancellationToken = cancellationToken,
-                    BufferContent = false
-                }, HttpMethod.Get).ConfigureAwait(false);
-                await using var stream = response.Content;
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
@@ -183,48 +172,41 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
-            using (var response = await _httpClient.SendAsync(
-                new HttpRequestOptions()
-                {
-                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)),
-                    CancellationToken = cancellationToken,
-                    BufferContent = false
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = response.Content)
-            using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var sr = new StreamReader(stream, System.Text.Encoding.UTF8);
+            var tuners = new List<LiveTvTunerInfo>();
+            while (!sr.EndOfStream)
             {
-                var tuners = new List<LiveTvTunerInfo>();
-                while (!sr.EndOfStream)
+                string line = StripXML(sr.ReadLine());
+                if (line.Contains("Channel", StringComparison.Ordinal))
                 {
-                    string line = StripXML(sr.ReadLine());
-                    if (line.Contains("Channel", StringComparison.Ordinal))
+                    LiveTvTunerStatus status;
+                    var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
+                    var name = line.Substring(0, index - 1);
+                    var currentChannel = line.Substring(index + 7);
+                    if (currentChannel != "none")
                     {
-                        LiveTvTunerStatus status;
-                        var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
-                        var name = line.Substring(0, index - 1);
-                        var currentChannel = line.Substring(index + 7);
-                        if (currentChannel != "none")
-                        {
-                            status = LiveTvTunerStatus.LiveTv;
-                        }
-                        else
-                        {
-                            status = LiveTvTunerStatus.Available;
-                        }
-
-                        tuners.Add(new LiveTvTunerInfo
-                        {
-                            Name = name,
-                            SourceType = string.IsNullOrWhiteSpace(model.ModelNumber) ? Name : model.ModelNumber,
-                            ProgramName = currentChannel,
-                            Status = status
-                        });
+                        status = LiveTvTunerStatus.LiveTv;
                     }
-                }
+                    else
+                    {
+                        status = LiveTvTunerStatus.Available;
+                    }
 
-                return tuners;
+                    tuners.Add(new LiveTvTunerInfo
+                    {
+                        Name = name,
+                        SourceType = string.IsNullOrWhiteSpace(model.ModelNumber) ? Name : model.ModelNumber,
+                        ProgramName = currentChannel,
+                        Status = status
+                    });
+                }
             }
+
+            return tuners;
         }
 
         private static string StripXML(string source)
@@ -634,7 +616,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     info,
                     streamId,
                     FileSystem,
-                    _httpClient,
+                    _httpClientFactory,
                     Logger,
                     Config,
                     _appHost,

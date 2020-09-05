@@ -62,6 +62,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
         public bool? HasImage { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is favorite.
         /// </summary>
