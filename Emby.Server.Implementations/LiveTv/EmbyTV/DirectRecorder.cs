@@ -80,7 +80,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var durationToken = new CancellationTokenSource(duration);
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-            await _streamHelper.CopyUntilCancelled(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), output, 81920, cancellationToken).ConfigureAwait(false);
+            await _streamHelper.CopyUntilCancelled(
+                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                output,
+                IODefaults.CopyToBufferSize,
+                cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }

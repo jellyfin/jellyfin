@@ -26,13 +26,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 {
     public class SchedulesDirect : IListingsProvider
     {
+        private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
+
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
         private readonly IApplicationHost _appHost;
-
-        private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             while (start <= end)
             {
-                dates.Add(start.ToString("yyyy-MM-dd"));
+                dates.Add(start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 start = start.AddDays(1);
             }
 
@@ -352,13 +352,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (!string.IsNullOrWhiteSpace(details.originalAirDate))
             {
-                info.OriginalAirDate = DateTime.Parse(details.originalAirDate);
+                info.OriginalAirDate = DateTime.Parse(details.originalAirDate, CultureInfo.InvariantCulture);
                 info.ProductionYear = info.OriginalAirDate.Value.Year;
             }
 
             if (details.movie != null)
             {
-                if (!string.IsNullOrEmpty(details.movie.year) && int.TryParse(details.movie.year, out int year))
+                if (!string.IsNullOrEmpty(details.movie.year)
+                    && int.TryParse(details.movie.year, out int year))
                 {
                     info.ProductionYear = year;
                 }
@@ -557,7 +558,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return null;
             }
 
-            NameValuePair savedToken = null;
+            NameValuePair savedToken;
             if (!_tokens.TryGetValue(username, out savedToken))
             {
                 savedToken = new NameValuePair();

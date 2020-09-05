@@ -154,6 +154,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 item.IndexNumber = Convert.ToInt32(episode.DvdEpisodeNumber ?? episode.AiredEpisodeNumber);
                 item.ParentIndexNumber = episode.DvdSeason ?? episode.AiredSeason;
             }
+            else if (string.Equals(id.SeriesDisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase))
+            {
+                if (episode.AbsoluteNumber.GetValueOrDefault() != 0)
+                {
+                    item.IndexNumber = episode.AbsoluteNumber;
+                }
+            }
             else if (episode.AiredEpisodeNumber.HasValue)
             {
                 item.IndexNumber = episode.AiredEpisodeNumber;

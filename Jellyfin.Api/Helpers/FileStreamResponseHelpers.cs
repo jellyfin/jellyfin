@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Helpers
                 return new NoContentResult();
             }
 
-            return new PhysicalFileResult(path, contentType);
+            return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
         }
 
         /// <summary>

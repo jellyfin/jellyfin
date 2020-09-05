@@ -249,12 +249,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDashboardResponseCaching { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a custom path to serve the dashboard from.
-        /// </summary>
-        /// <value>The dashboard source path, or null if the default path should be used.</value>
-        public string DashboardSourcePath { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
         /// <value>The image saving convention.</value>

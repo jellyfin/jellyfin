@@ -57,6 +57,7 @@
  - [Larvitar](https://github.com/Larvitar)
  - [LeoVerto](https://github.com/LeoVerto)
  - [Liggy](https://github.com/Liggy)
+ - [lmaonator](https://github.com/lmaonator)
  - [LogicalPhallacy](https://github.com/LogicalPhallacy)
  - [loli10K](https://github.com/loli10K)
  - [lostmypillow](https://github.com/lostmypillow)

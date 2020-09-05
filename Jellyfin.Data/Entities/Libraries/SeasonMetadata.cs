@@ -6,7 +6,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity that holds metadata for seasons.
     /// </summary>
-    public class SeasonMetadata : Metadata
+    public class SeasonMetadata : ItemMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonMetadata"/> class.

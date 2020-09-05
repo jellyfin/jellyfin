@@ -3,7 +3,6 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using Microsoft.Extensions.Logging;
