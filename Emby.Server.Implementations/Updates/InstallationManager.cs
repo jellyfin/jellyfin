@@ -10,12 +10,15 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -34,6 +37,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         private readonly ILogger<InstallationManager> _logger;
         private readonly IApplicationPaths _appPaths;
+        private readonly IEventManager _eventManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerConfigurationManager _config;
@@ -63,50 +67,26 @@ namespace Emby.Server.Implementations.Updates
             ILogger<InstallationManager> logger,
             IApplicationHost appHost,
             IApplicationPaths appPaths,
+            IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             IZipClient zipClient)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             _currentInstallations = new List<(InstallationInfo, CancellationTokenSource)>();
             _completedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
 
             _logger = logger;
             _applicationHost = appHost;
             _appPaths = appPaths;
+            _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
             _jsonSerializer = jsonSerializer;
             _config = config;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
         }
-
-        /// <inheritdoc />
-        public event EventHandler<InstallationInfo> PackageInstalling;
-
-        /// <inheritdoc />
-        public event EventHandler<InstallationInfo> PackageInstallationCompleted;
-
-        /// <inheritdoc />
-        public event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
-
-        /// <inheritdoc />
-        public event EventHandler<InstallationInfo> PackageInstallationCancelled;
-
-        /// <inheritdoc />
-        public event EventHandler<IPlugin> PluginUninstalled;
-
-        /// <inheritdoc />
-        public event EventHandler<InstallationInfo> PluginUpdated;
-
-        /// <inheritdoc />
-        public event EventHandler<InstallationInfo> PluginInstalled;
 
         /// <inheritdoc />
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
@@ -256,11 +236,11 @@ namespace Emby.Server.Implementations.Updates
 
             var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
 
-            PackageInstalling?.Invoke(this, package);
+            await _eventManager.PublishAsync(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
 
             try
             {
-                await InstallPackageInternal(package, linkedToken).ConfigureAwait(false);
+                var isUpdate = await InstallPackageInternal(package, linkedToken).ConfigureAwait(false);
 
                 lock (_currentInstallationsLock)
                 {
@@ -268,8 +248,11 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 _completedInstallationsInternal.Add(package);
+                await _eventManager.PublishAsync(isUpdate
+                    ? (GenericEventArgs<InstallationInfo>)new PluginUpdatedEventArgs(package)
+                    : new PluginInstalledEventArgs(package)).ConfigureAwait(false);
 
-                PackageInstallationCompleted?.Invoke(this, package);
+                _applicationHost.NotifyPendingRestart();
             }
             catch (OperationCanceledException)
             {
@@ -280,7 +263,7 @@ namespace Emby.Server.Implementations.Updates
 
                 _logger.LogInformation("Package installation cancelled: {0} {1}", package.Name, package.Version);
 
-                PackageInstallationCancelled?.Invoke(this, package);
+                await _eventManager.PublishAsync(new PluginInstallationCancelledEventArgs(package)).ConfigureAwait(false);
 
                 throw;
             }
@@ -293,11 +276,11 @@ namespace Emby.Server.Implementations.Updates
                     _currentInstallations.Remove(tuple);
                 }
 
-                PackageInstallationFailed?.Invoke(this, new InstallationFailedEventArgs
+                await _eventManager.PublishAsync(new InstallationFailedEventArgs
                 {
                     InstallationInfo = package,
                     Exception = ex
-                });
+                }).ConfigureAwait(false);
 
                 throw;
             }
@@ -314,7 +297,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="package">The package.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
-        private async Task InstallPackageInternal(InstallationInfo package, CancellationToken cancellationToken)
+        private async Task<bool> InstallPackageInternal(InstallationInfo package, CancellationToken cancellationToken)
         {
             // Set last update time if we were installed before
             IPlugin plugin = _applicationHost.Plugins.FirstOrDefault(p => p.Id == package.Guid)
@@ -324,20 +307,9 @@ namespace Emby.Server.Implementations.Updates
             await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
 
             // Do plugin-specific processing
-            if (plugin == null)
-            {
-                _logger.LogInformation("New plugin installed: {0} {1}", package.Name, package.Version);
+            _logger.LogInformation(plugin == null ? "New plugin installed: {0} {1}" : "Plugin updated: {0} {1}", package.Name, package.Version);
 
-                PluginInstalled?.Invoke(this, package);
-            }
-            else
-            {
-                _logger.LogInformation("Plugin updated: {0} {1}", package.Name, package.Version);
-
-                PluginUpdated?.Invoke(this, package);
-            }
-
-            _applicationHost.NotifyPendingRestart();
+            return plugin != null;
         }
 
         private async Task PerformPackageInstallation(InstallationInfo package, CancellationToken cancellationToken)
@@ -438,7 +410,7 @@ namespace Emby.Server.Implementations.Updates
                 _config.SaveConfiguration();
             }
 
-            PluginUninstalled?.Invoke(this, plugin);
+            _eventManager.Publish(new PluginUninstalledEventArgs(plugin));
 
             _applicationHost.NotifyPendingRestart();
         }
