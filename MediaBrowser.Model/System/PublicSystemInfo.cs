@@ -39,5 +39,11 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether startup is completed.
+        /// </summary>
+        /// <value>The startup completion status.</value>
+        public bool StartupCompleted { get; set; }
     }
 }

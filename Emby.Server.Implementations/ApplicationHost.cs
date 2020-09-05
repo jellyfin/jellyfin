@@ -1137,7 +1137,8 @@ namespace Emby.Server.Implementations
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = localAddress
+                LocalAddress = localAddress,
+                StartupCompleted = CoreStartupHasCompleted
             };
         }
 
