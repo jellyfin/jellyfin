@@ -125,7 +125,7 @@ namespace MediaBrowser.Model.Net
             { ".wmv", "video/x-ms-wmv" },
 
             // Type audio
-            { ".aac", "audio/mp4" },
+            { ".aac", "audio/aac" },
             { ".ac3", "audio/ac3" },
             { ".ape", "audio/x-ape" },
             { ".dsf", "audio/dsf" },

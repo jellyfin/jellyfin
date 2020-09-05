@@ -14,8 +14,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="MetadataProviderId"/> class.
         /// </summary>
         /// <param name="providerId">The provider id.</param>
-        /// <param name="metadata">The metadata entity.</param>
-        public MetadataProviderId(string providerId, Metadata metadata)
+        /// <param name="itemMetadata">The metadata entity.</param>
+        public MetadataProviderId(string providerId, ItemMetadata itemMetadata)
         {
             if (string.IsNullOrEmpty(providerId))
             {
@@ -24,12 +24,12 @@ namespace Jellyfin.Data.Entities.Libraries
 
             ProviderId = providerId;
 
-            if (metadata == null)
+            if (itemMetadata == null)
             {
-                throw new ArgumentNullException(nameof(metadata));
+                throw new ArgumentNullException(nameof(itemMetadata));
             }
 
-            metadata.Sources.Add(this);
+            itemMetadata.Sources.Add(this);
         }
 
         /// <summary>

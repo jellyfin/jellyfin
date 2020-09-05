@@ -5,7 +5,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity containing metadata for a custom item.
     /// </summary>
-    public class CustomItemMetadata : Metadata
+    public class CustomItemMetadata : ItemMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomItemMetadata"/> class.

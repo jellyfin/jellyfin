@@ -1,3 +1,5 @@
+#pragma warning disable CA2227
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -16,17 +18,17 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="PersonRole"/> class.
         /// </summary>
         /// <param name="type">The role type.</param>
-        /// <param name="metadata">The metadata.</param>
-        public PersonRole(PersonRoleType type, Metadata metadata)
+        /// <param name="itemMetadata">The metadata.</param>
+        public PersonRole(PersonRoleType type, ItemMetadata itemMetadata)
         {
             Type = type;
 
-            if (metadata == null)
+            if (itemMetadata == null)
             {
-                throw new ArgumentNullException(nameof(metadata));
+                throw new ArgumentNullException(nameof(itemMetadata));
             }
 
-            metadata.PersonRoles.Add(this);
+            itemMetadata.PersonRoles.Add(this);
 
             Sources = new HashSet<MetadataProviderId>();
         }

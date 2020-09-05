@@ -14,22 +14,21 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public class DisplayPreferencesManager : IDisplayPreferencesManager
     {
-        private readonly JellyfinDbProvider _dbProvider;
+        private readonly JellyfinDb _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesManager"/> class.
         /// </summary>
-        /// <param name="dbProvider">The Jellyfin db provider.</param>
-        public DisplayPreferencesManager(JellyfinDbProvider dbProvider)
+        /// <param name="dbContext">The database context.</param>
+        public DisplayPreferencesManager(JellyfinDb dbContext)
         {
-            _dbProvider = dbProvider;
+            _dbContext = dbContext;
         }
 
         /// <inheritdoc />
         public DisplayPreferences GetDisplayPreferences(Guid userId, string client)
         {
-            using var dbContext = _dbProvider.CreateContext();
-            var prefs = dbContext.DisplayPreferences
+            var prefs = _dbContext.DisplayPreferences
                 .Include(pref => pref.HomeSections)
                 .FirstOrDefault(pref =>
                     pref.UserId == userId && string.Equals(pref.Client, client));
@@ -37,7 +36,7 @@ namespace Jellyfin.Server.Implementations.Users
             if (prefs == null)
             {
                 prefs = new DisplayPreferences(userId, client);
-                dbContext.DisplayPreferences.Add(prefs);
+                _dbContext.DisplayPreferences.Add(prefs);
             }
 
             return prefs;
@@ -46,14 +45,13 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public ItemDisplayPreferences GetItemDisplayPreferences(Guid userId, Guid itemId, string client)
         {
-            using var dbContext = _dbProvider.CreateContext();
-            var prefs = dbContext.ItemDisplayPreferences
+            var prefs = _dbContext.ItemDisplayPreferences
                 .FirstOrDefault(pref => pref.UserId == userId && pref.ItemId == itemId && string.Equals(pref.Client, client));
 
             if (prefs == null)
             {
                 prefs = new ItemDisplayPreferences(userId, Guid.Empty, client);
-                dbContext.ItemDisplayPreferences.Add(prefs);
+                _dbContext.ItemDisplayPreferences.Add(prefs);
             }
 
             return prefs;
@@ -62,27 +60,15 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client)
         {
-            using var dbContext = _dbProvider.CreateContext();
-
-            return dbContext.ItemDisplayPreferences
+            return _dbContext.ItemDisplayPreferences
                 .Where(prefs => prefs.UserId == userId && prefs.ItemId != Guid.Empty && string.Equals(prefs.Client, client))
                 .ToList();
         }
 
         /// <inheritdoc />
-        public void SaveChanges(DisplayPreferences preferences)
+        public void SaveChanges()
         {
-            using var dbContext = _dbProvider.CreateContext();
-            dbContext.Update(preferences);
-            dbContext.SaveChanges();
-        }
-
-        /// <inheritdoc />
-        public void SaveChanges(ItemDisplayPreferences preferences)
-        {
-            using var dbContext = _dbProvider.CreateContext();
-            dbContext.Update(preferences);
-            dbContext.SaveChanges();
+            _dbContext.SaveChanges();
         }
     }
 }
