@@ -218,14 +218,6 @@ namespace Emby.Dlna
 
         private bool IsMatch(PlayToDeviceInfo deviceInfo, DeviceIdentification profileInfo)
         {
-            if (!string.IsNullOrEmpty(profileInfo.DeviceDescription))
-            {
-                if (deviceInfo.DeviceDescription == null || !IsRegexOrSubstringMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
-                {
-                    return false;
-                }
-            }
-
             if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
                 if (deviceInfo.Name == null || !IsRegexOrSubstringMatch(deviceInfo.Name, profileInfo.FriendlyName))
