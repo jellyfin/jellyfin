@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -23,13 +24,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
     public class TmdbImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
 
-        public TmdbImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem)
+        public TmdbImageProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
         }
 
@@ -202,13 +203,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

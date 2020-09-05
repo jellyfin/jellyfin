@@ -1,5 +1,7 @@
 using System;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Browser
@@ -24,7 +26,7 @@ namespace Emby.Server.Implementations.Browser
         /// <param name="appHost">The app host.</param>
         public static void OpenSwaggerPage(IServerApplicationHost appHost)
         {
-            TryOpenUrl(appHost, "/swagger/index.html");
+            TryOpenUrl(appHost, "/api-docs/swagger");
         }
 
         /// <summary>

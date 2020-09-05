@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -20,15 +21,15 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class TvdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<TvdbPersonImageProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger<TvdbPersonImageProvider> logger, TvdbClientManager tvdbClientManager)
+        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClientFactory httpClientFactory, ILogger<TvdbPersonImageProvider> logger, TvdbClientManager tvdbClientManager)
         {
             _libraryManager = libraryManager;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _tvdbClientManager = tvdbClientManager;
         }
@@ -104,13 +105,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         }
 
         /// <inheritdoc />
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

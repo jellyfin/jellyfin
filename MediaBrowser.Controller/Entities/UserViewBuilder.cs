@@ -1,8 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -22,7 +25,7 @@ namespace MediaBrowser.Controller.Entities
     {
         private readonly IUserViewManager _userViewManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger<UserViewBuilder> _logger;
+        private readonly ILogger<BaseItem> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly IServerConfigurationManager _config;
@@ -30,7 +33,7 @@ namespace MediaBrowser.Controller.Entities
         public UserViewBuilder(
             IUserViewManager userViewManager,
             ILibraryManager libraryManager,
-            ILogger<UserViewBuilder> logger,
+            ILogger<BaseItem> logger,
             IUserDataManager userDataManager,
             ITVSeriesManager tvSeriesManager,
             IServerConfigurationManager config)
@@ -670,9 +673,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var isPlaceHolder = false;
 
-                var hasPlaceHolder = item as ISupportsPlaceHolders;
-
-                if (hasPlaceHolder != null)
+                if (item is ISupportsPlaceHolders hasPlaceHolder)
                 {
                     isPlaceHolder = hasPlaceHolder.IsPlaceHolder;
                 }
@@ -687,13 +688,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasSpecialFeature.Value;
 
-                var movie = item as IHasSpecialFeatures;
-
-                if (movie != null)
+                if (item is IHasSpecialFeatures movie)
                 {
                     var ok = filterValue
-                        ? movie.SpecialFeatureIds.Length > 0
-                        : movie.SpecialFeatureIds.Length == 0;
+                        ? movie.SpecialFeatureIds.Count > 0
+                        : movie.SpecialFeatureIds.Count == 0;
 
                     if (!ok)
                     {

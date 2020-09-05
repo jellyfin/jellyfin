@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -20,11 +21,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 {
     public class TmdbBoxSetImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public TmdbBoxSetImageProvider(IHttpClient httpClient)
+        public TmdbBoxSetImageProvider(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
         }
 
         public string Name => ProviderName;
@@ -153,13 +154,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

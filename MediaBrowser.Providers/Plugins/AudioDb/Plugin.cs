@@ -19,6 +19,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         public override string Description => "Get artist and album metadata or images from AudioDB.";
 
+        // TODO remove when plugin removed from server.
+        public override string ConfigurationFileName => "Jellyfin.Plugin.AudioDb.xml";
+
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
         {

@@ -80,10 +80,6 @@ namespace Jellyfin.Server
         public string? RestartArgs { get; set; }
 
         /// <inheritdoc />
-        [Option("plugin-manifest-url", Required = false, HelpText = "A custom URL for the plugin repository JSON manifest")]
-        public string? PluginManifestUrl { get; set; }
-
-        /// <inheritdoc />
         [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
         public Uri? PublishedServerUrl { get; set; }
 
@@ -95,11 +91,6 @@ namespace Jellyfin.Server
         {
             var config = new Dictionary<string, string>();
 
-            if (PluginManifestUrl != null)
-            {
-                config.Add(InstallationManager.PluginManifestUrlKey, PluginManifestUrl);
-            }
-
             if (NoWebClient)
             {
                 config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
@@ -108,6 +99,11 @@ namespace Jellyfin.Server
             if (PublishedServerUrl != null)
             {
                 config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.ToString());
+            }
+
+            if (FFmpegPath != null)
+            {
+                config.Add(ConfigurationExtensions.FfmpegPathKey, FFmpegPath);
             }
 
             return config;

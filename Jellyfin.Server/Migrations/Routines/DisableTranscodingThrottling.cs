@@ -26,6 +26,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "DisableTranscodingThrottling";
 
         /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
+
+        /// <inheritdoc/>
         public void Perform()
         {
             // Set EnableThrottling to false since it wasn't used before and may introduce issues

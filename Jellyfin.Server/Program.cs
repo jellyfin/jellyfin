@@ -11,12 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
+using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.WebDashboard.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +27,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
+using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -154,20 +154,22 @@ namespace Jellyfin.Server
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
             PerformStaticInitialization();
+            var serviceCollection = new ServiceCollection();
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
+                serviceCollection);
 
             try
             {
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string webContentPath = DashboardService.GetDashboardUIPath(startupConfig, appHost.ServerConfigurationManager);
+                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(
@@ -178,8 +180,7 @@ namespace Jellyfin.Server
                     }
                 }
 
-                ServiceCollection serviceCollection = new ServiceCollection();
-                appHost.Init(serviceCollection);
+                appHost.Init();
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
@@ -274,10 +275,10 @@ namespace Jellyfin.Server
                     var addresses = appHost.ServerConfigurationManager
                         .Configuration
                         .LocalNetworkAddresses
-                        .Select(appHost.NormalizeConfiguredLocalAddress)
+                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
                         .Where(i => i != null)
                         .ToHashSet();
-                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
+                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
                     {
                         if (!addresses.Contains(IPAddress.Loopback))
                         {
@@ -342,6 +343,34 @@ namespace Jellyfin.Server
                                 _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                             }
                         }
+                    }
+
+                    // Bind to unix socket (only on macOS and Linux)
+                    if (startupConfig.UseUnixSocket() && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        var socketPath = startupConfig.GetUnixSocketPath();
+                        if (string.IsNullOrEmpty(socketPath))
+                        {
+                            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+                            if (xdgRuntimeDir == null)
+                            {
+                                // Fall back to config dir
+                                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, "socket.sock");
+                            }
+                            else
+                            {
+                                socketPath = Path.Join(xdgRuntimeDir, "jellyfin-socket");
+                            }
+                        }
+
+                        // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
+                        if (File.Exists(socketPath))
+                        {
+                            File.Delete(socketPath);
+                        }
+
+                        options.ListenUnixSocket(socketPath);
+                        _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
                     }
                 })
                 .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
@@ -565,7 +594,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
+                inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
             }
 
             return config

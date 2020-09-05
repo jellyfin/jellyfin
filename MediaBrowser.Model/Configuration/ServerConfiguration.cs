@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -76,11 +78,14 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
         public bool IsPortAuthorized { get; set; }
 
+        /// <summary>
+        /// Gets or sets if quick connect is available for use on this server.
+        /// </summary>
+        public bool QuickConnectAvailable { get; set; }
+
         public bool AutoRunWebApp { get; set; }
 
         public bool EnableRemoteAccess { get; set; }
-
-        public bool CollectionsUpgraded { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
@@ -162,12 +167,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDashboardResponseCaching { get; set; }
 
         /// <summary>
-        /// Gets or sets a custom path to serve the dashboard from.
-        /// </summary>
-        /// <value>The dashboard source path, or null if the default path should be used.</value>
-        public string DashboardSourcePath { get; set; }
-
-        /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
         /// <value>The image saving convention.</value>
@@ -229,6 +228,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; }
 
+        public List<RepositoryInfo> PluginRepositories { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
 
         public bool EnableExternalContentInSuggestions { get; set; }
@@ -253,6 +254,16 @@ namespace MediaBrowser.Model.Configuration
         public string[] UninstalledPlugins { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether slow server responses should be logged as a warning.
+        /// </summary>
+        public bool EnableSlowResponseWarning { get; set; }
+
+        /// <summary>
+        /// Gets or sets the threshold for the slow response time warning in ms.
+        /// </summary>
+        public long SlowResponseThresholdMs { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -265,6 +276,9 @@ namespace MediaBrowser.Model.Configuration
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = false;
+            SkipDeserializationForBasicTypes = true;
+
+            PluginRepositories = new List<RepositoryInfo>();
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -278,9 +292,13 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
+            EnableNormalizedItemByNameIds = true;
+            DisableLiveTvChannelUserDataName = true;
+            EnableNewOmdbSupport = true;
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
+            QuickConnectAvailable = false;
 
             EnableUPnP = false;
             MinResumePct = 5;
@@ -351,6 +369,9 @@ namespace MediaBrowser.Model.Configuration
                     DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
+
+            EnableSlowResponseWarning = true;
+            SlowResponseThresholdMs = 500;
         }
     }
 

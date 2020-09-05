@@ -144,7 +144,7 @@ namespace MediaBrowser.Model.Dlna
 
         public Dictionary<string, string> StreamOptions { get; private set; }
 
-        public string MediaSourceId => MediaSource == null ? null : MediaSource.Id;
+        public string MediaSourceId => MediaSource?.Id;
 
         public bool IsDirectStream =>
             PlayMethod == PlayMethod.DirectStream ||
@@ -191,7 +191,7 @@ namespace MediaBrowser.Model.Dlna
 
                 var encodedValue = pair.Value.Replace(" ", "%20");
 
-                list.Add(string.Format("{0}={1}", pair.Name, encodedValue));
+                list.Add(string.Format(CultureInfo.InvariantCulture, "{0}={1}", pair.Name, encodedValue));
             }
 
             string queryString = string.Join("&", list.ToArray());
@@ -214,18 +214,18 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
                 {
-                    return string.Format("{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
+                    return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
                 }
 
-                return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
+                return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
             }
 
             if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                return string.Format("{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
+                return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
             }
 
-            return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
+            return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
         }
 
         private static List<NameValuePair> BuildParams(StreamInfo item, string accessToken)
@@ -457,7 +457,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (MediaSource.Protocol == MediaProtocol.File || !string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) || !stream.IsExternal)
                 {
-                    info.Url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
+                    info.Url = string.Format(CultureInfo.InvariantCulture, "{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
                         baseUrl,
                         ItemId,
                         MediaSourceId,
@@ -813,18 +813,18 @@ namespace MediaBrowser.Model.Dlna
             {
                 var stream = TargetAudioStream;
 
-                string inputCodec = stream == null ? null : stream.Codec;
+                string inputCodec = stream?.Codec;
 
                 if (IsDirectStream)
                 {
-                    return string.IsNullOrEmpty(inputCodec) ? new string[] { } : new[] { inputCodec };
+                    return string.IsNullOrEmpty(inputCodec) ? Array.Empty<string>() : new[] { inputCodec };
                 }
 
                 foreach (string codec in AudioCodecs)
                 {
                     if (string.Equals(codec, inputCodec, StringComparison.OrdinalIgnoreCase))
                     {
-                        return string.IsNullOrEmpty(codec) ? new string[] { } : new[] { codec };
+                        return string.IsNullOrEmpty(codec) ? Array.Empty<string>() : new[] { codec };
                     }
                 }
 
@@ -838,18 +838,18 @@ namespace MediaBrowser.Model.Dlna
             {
                 var stream = TargetVideoStream;
 
-                string inputCodec = stream == null ? null : stream.Codec;
+                string inputCodec = stream?.Codec;
 
                 if (IsDirectStream)
                 {
-                    return string.IsNullOrEmpty(inputCodec) ? new string[] { } : new[] { inputCodec };
+                    return string.IsNullOrEmpty(inputCodec) ? Array.Empty<string>() : new[] { inputCodec };
                 }
 
                 foreach (string codec in VideoCodecs)
                 {
                     if (string.Equals(codec, inputCodec, StringComparison.OrdinalIgnoreCase))
                     {
-                        return string.IsNullOrEmpty(codec) ? new string[] { } : new[] { codec };
+                        return string.IsNullOrEmpty(codec) ? Array.Empty<string>() : new[] { codec };
                     }
                 }
 

@@ -1,8 +1,9 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Linq;
-using Jellyfin.Data;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations
@@ -27,7 +28,11 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
 
+        public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
+
         public virtual DbSet<ImageInfo> ImageInfos { get; set; }
+
+        public virtual DbSet<ItemDisplayPreferences> ItemDisplayPreferences { get; set; }
 
         public virtual DbSet<Permission> Permissions { get; set; }
 
@@ -125,12 +130,24 @@ namespace Jellyfin.Server.Implementations
             foreach (var saveEntity in ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Modified)
                 .Select(entry => entry.Entity)
-                .OfType<ISavingChanges>())
+                .OfType<IHasConcurrencyToken>())
             {
                 saveEntity.OnSavingChanges();
             }
 
             return base.SaveChanges();
+        }
+
+        /// <inheritdoc/>
+        public override void Dispose()
+        {
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                entry.State = EntityState.Detached;
+            }
+
+            GC.SuppressFinalize(this);
+            base.Dispose();
         }
 
         /// <inheritdoc />

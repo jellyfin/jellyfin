@@ -117,23 +117,20 @@ namespace Emby.Server.Implementations.TV
                 limit = limit.Value + 10;
             }
 
-            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
-                SeriesPresentationUniqueKey = presentationUniqueKey,
-                Limit = limit,
-                DtoOptions = new DtoOptions
-                {
-                    Fields = new ItemFields[]
+            var items = _libraryManager
+                .GetItemList(
+                    new InternalItemsQuery(user)
                     {
-                        ItemFields.SeriesPresentationUniqueKey
-                    },
-                    EnableImages = false
-                },
-                GroupBySeriesPresentationUniqueKey = true
-
-            }, parentsFolders.ToList()).Cast<Episode>().Select(GetUniqueSeriesKey);
+                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
+                        SeriesPresentationUniqueKey = presentationUniqueKey,
+                        Limit = limit,
+                        DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
+                        GroupBySeriesPresentationUniqueKey = true
+                    }, parentsFolders.ToList())
+                .Cast<Episode>()
+                .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
+                .Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);

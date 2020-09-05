@@ -353,7 +353,7 @@ namespace Rssdp.Infrastructure
             {
                 return;
             }
-
+            
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
             {

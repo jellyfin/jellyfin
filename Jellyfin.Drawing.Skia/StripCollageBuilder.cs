@@ -69,12 +69,10 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="height">The desired height of the collage.</param>
         public void BuildSquareCollage(string[] paths, string outputPath, int width, int height)
         {
-            using (var bitmap = BuildSquareCollageBitmap(paths, width, height))
-            using (var outputStream = new SKFileWStream(outputPath))
-            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
-            {
-                pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
-            }
+            using var bitmap = BuildSquareCollageBitmap(paths, width, height);
+            using var outputStream = new SKFileWStream(outputPath);
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels());
+            pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
 
         /// <summary>
@@ -86,56 +84,44 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="height">The desired height of the collage.</param>
         public void BuildThumbCollage(string[] paths, string outputPath, int width, int height)
         {
-            using (var bitmap = BuildThumbCollageBitmap(paths, width, height))
-            using (var outputStream = new SKFileWStream(outputPath))
-            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
-            {
-                pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
-            }
+            using var bitmap = BuildThumbCollageBitmap(paths, width, height);
+            using var outputStream = new SKFileWStream(outputPath);
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels());
+            pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
 
         private SKBitmap BuildThumbCollageBitmap(string[] paths, int width, int height)
         {
             var bitmap = new SKBitmap(width, height);
 
-            using (var canvas = new SKCanvas(bitmap))
+            using var canvas = new SKCanvas(bitmap);
+            canvas.Clear(SKColors.Black);
+
+            // number of images used in the thumbnail
+            var iCount = 3;
+
+            // determine sizes for each image that will composited into the final image
+            var iSlice = Convert.ToInt32(width / iCount);
+            int iHeight = Convert.ToInt32(height * 1.00);
+            int imageIndex = 0;
+            for (int i = 0; i < iCount; i++)
             {
-                canvas.Clear(SKColors.Black);
-
-                // number of images used in the thumbnail
-                var iCount = 3;
-
-                // determine sizes for each image that will composited into the final image
-                var iSlice = Convert.ToInt32(width / iCount);
-                int iHeight = Convert.ToInt32(height * 1.00);
-                int imageIndex = 0;
-                for (int i = 0; i < iCount; i++)
+                using var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex);
+                imageIndex = newIndex;
+                if (currentBitmap == null)
                 {
-                    using (var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex))
-                    {
-                        imageIndex = newIndex;
-                        if (currentBitmap == null)
-                        {
-                            continue;
-                        }
-
-                        // resize to the same aspect as the original
-                        int iWidth = Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
-                        using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
-                        {
-                            currentBitmap.ScalePixels(resizeBitmap, SKFilterQuality.High);
-
-                            // crop image
-                            int ix = Math.Abs((iWidth - iSlice) / 2);
-                            using (var image = SKImage.FromBitmap(resizeBitmap))
-                            using (var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight)))
-                            {
-                                // draw image onto canvas
-                                canvas.DrawImage(subset ?? image, iSlice * i, 0);
-                            }
-                        }
-                    }
+                    continue;
                 }
+
+                // resize to the same aspect as the original
+                int iWidth = Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
+                using var resizedImage = SkiaEncoder.ResizeImage(currentBitmap, new SKImageInfo(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace));
+
+                // crop image
+                int ix = Math.Abs((iWidth - iSlice) / 2);
+                using var subset = resizedImage.Subset(SKRectI.Create(ix, 0, iSlice, iHeight));
+                // draw image onto canvas
+                canvas.DrawImage(subset ?? resizedImage, iSlice * i, 0);
             }
 
             return bitmap;
@@ -176,33 +162,27 @@ namespace Jellyfin.Drawing.Skia
             var cellWidth = width / 2;
             var cellHeight = height / 2;
 
-            using (var canvas = new SKCanvas(bitmap))
+            using var canvas = new SKCanvas(bitmap);
+            for (var x = 0; x < 2; x++)
             {
-                for (var x = 0; x < 2; x++)
+                for (var y = 0; y < 2; y++)
                 {
-                    for (var y = 0; y < 2; y++)
+                    using var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex);
+                    imageIndex = newIndex;
+
+                    if (currentBitmap == null)
                     {
-                        using (var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex))
-                        {
-                            imageIndex = newIndex;
-
-                            if (currentBitmap == null)
-                            {
-                                continue;
-                            }
-
-                            using (var resizedBitmap = new SKBitmap(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
-                            {
-                                // scale image
-                                currentBitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
-
-                                // draw this image into the strip at the next position
-                                var xPos = x * cellWidth;
-                                var yPos = y * cellHeight;
-                                canvas.DrawBitmap(resizedBitmap, xPos, yPos);
-                            }
-                        }
+                        continue;
                     }
+
+                    // Scale image. The FromBitmap creates a copy
+                    var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
+                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(currentBitmap, imageInfo));
+
+                    // draw this image into the strip at the next position
+                    var xPos = x * cellWidth;
+                    var yPos = y * cellHeight;
+                    canvas.DrawBitmap(resizedBitmap, xPos, yPos);
                 }
             }
 

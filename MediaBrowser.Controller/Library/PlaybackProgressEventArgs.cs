@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Entities;
@@ -12,6 +14,11 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public class PlaybackProgressEventArgs : EventArgs
     {
+        public PlaybackProgressEventArgs()
+        {
+            Users = new List<User>();
+        }
+
         public List<User> Users { get; set; }
 
         public long? PlaybackPositionTicks { get; set; }
@@ -35,10 +42,5 @@ namespace MediaBrowser.Controller.Library
         public string PlaySessionId { get; set; }
 
         public SessionInfo Session { get; set; }
-
-        public PlaybackProgressEventArgs()
-        {
-            Users = new List<User>();
-        }
     }
 }

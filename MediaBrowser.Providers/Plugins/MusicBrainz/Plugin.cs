@@ -23,6 +23,9 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
         public const long DefaultRateLimit = 2000u;
 
+        // TODO remove when plugin removed from server.
+        public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";
+
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
         {

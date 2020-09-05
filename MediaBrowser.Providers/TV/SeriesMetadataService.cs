@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.TV
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error in DummySeasonProvider");
+                Logger.LogError(ex, "Error in DummySeasonProvider for {ItemPath}", item.Path);
             }
         }
 

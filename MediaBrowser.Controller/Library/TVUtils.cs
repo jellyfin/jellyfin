@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Library
                     };
                 }
 
-                return new DayOfWeek[] { };
+                return Array.Empty<DayOfWeek>();
             }
 
             return null;

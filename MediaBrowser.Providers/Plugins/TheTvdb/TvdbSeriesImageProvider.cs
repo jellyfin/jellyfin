@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -20,13 +21,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class TvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<TvdbSeriesImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbSeriesImageProvider(IHttpClient httpClient, ILogger<TvdbSeriesImageProvider> logger, TvdbClientManager tvdbClientManager)
+        public TvdbSeriesImageProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbSeriesImageProvider> logger, TvdbClientManager tvdbClientManager)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _tvdbClientManager = tvdbClientManager;
         }
@@ -59,9 +60,10 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
-            var keyTypes = new[] { KeyType.Poster, KeyType.Series, KeyType.Fanart };
             var tvdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tvdb));
-            foreach (KeyType keyType in keyTypes)
+            var allowedKeyTypes = _tvdbClientManager.GetImageKeyTypesForSeriesAsync(tvdbId, language, cancellationToken)
+                .ConfigureAwait(false);
+            await foreach (KeyType keyType in allowedKeyTypes)
             {
                 var imageQuery = new ImagesQuery
                 {
@@ -143,13 +145,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

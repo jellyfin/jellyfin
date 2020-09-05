@@ -34,17 +34,5 @@ namespace Jellyfin.Server.Implementations.Users
         {
             return Task.CompletedTask;
         }
-
-        /// <inheritdoc />
-        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
-        {
-            // Nothing here
-        }
-
-        /// <inheritdoc />
-        public string GetEasyPasswordHash(User user)
-        {
-            return string.Empty;
-        }
     }
 }

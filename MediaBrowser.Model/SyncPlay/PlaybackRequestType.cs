@@ -23,16 +23,16 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// A user is signaling that playback is buffering.
         /// </summary>
-        Buffering = 3,
+        Buffer = 3,
 
         /// <summary>
         /// A user is signaling that playback resumed.
         /// </summary>
-        BufferingDone = 4,
+        Ready = 4,
 
         /// <summary>
         /// A user is reporting its ping.
         /// </summary>
-        UpdatePing = 5
+        Ping = 5
     }
 }

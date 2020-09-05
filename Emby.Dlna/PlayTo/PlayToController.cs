@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -18,7 +19,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
@@ -31,7 +31,6 @@ namespace Emby.Dlna.PlayTo
     {
         private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
 
-        private Device _device;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
@@ -50,6 +49,7 @@ namespace Emby.Dlna.PlayTo
         private readonly string _accessToken;
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
+        private Device _device;
         private int _currentPlaylistIndex;
 
         private bool _disposed;
@@ -372,8 +372,13 @@ namespace Emby.Dlna.PlayTo
 
             if (!command.ControllingUserId.Equals(Guid.Empty))
             {
-                _sessionManager.LogSessionActivity(_session.Client, _session.ApplicationVersion, _session.DeviceId,
-                       _session.DeviceName, _session.RemoteEndPoint, user);
+                _sessionManager.LogSessionActivity(
+                    _session.Client,
+                    _session.ApplicationVersion,
+                    _session.DeviceId,
+                    _session.DeviceName,
+                    _session.RemoteEndPoint,
+                    user);
             }
 
             return PlayItems(playlist, cancellationToken);
@@ -498,42 +503,44 @@ namespace Emby.Dlna.PlayTo
             if (streamInfo.MediaType == DlnaProfileType.Audio)
             {
                 return new ContentFeatureBuilder(profile)
-                    .BuildAudioHeader(streamInfo.Container,
-                    streamInfo.TargetAudioCodec.FirstOrDefault(),
-                    streamInfo.TargetAudioBitrate,
-                    streamInfo.TargetAudioSampleRate,
-                    streamInfo.TargetAudioChannels,
-                    streamInfo.TargetAudioBitDepth,
-                    streamInfo.IsDirectStream,
-                    streamInfo.RunTimeTicks ?? 0,
-                    streamInfo.TranscodeSeekInfo);
+                    .BuildAudioHeader(
+                        streamInfo.Container,
+                        streamInfo.TargetAudioCodec.FirstOrDefault(),
+                        streamInfo.TargetAudioBitrate,
+                        streamInfo.TargetAudioSampleRate,
+                        streamInfo.TargetAudioChannels,
+                        streamInfo.TargetAudioBitDepth,
+                        streamInfo.IsDirectStream,
+                        streamInfo.RunTimeTicks ?? 0,
+                        streamInfo.TranscodeSeekInfo);
             }
 
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
                 var list = new ContentFeatureBuilder(profile)
-                    .BuildVideoHeader(streamInfo.Container,
-                    streamInfo.TargetVideoCodec.FirstOrDefault(),
-                    streamInfo.TargetAudioCodec.FirstOrDefault(),
-                    streamInfo.TargetWidth,
-                    streamInfo.TargetHeight,
-                    streamInfo.TargetVideoBitDepth,
-                    streamInfo.TargetVideoBitrate,
-                    streamInfo.TargetTimestamp,
-                    streamInfo.IsDirectStream,
-                    streamInfo.RunTimeTicks ?? 0,
-                    streamInfo.TargetVideoProfile,
-                    streamInfo.TargetVideoLevel,
-                    streamInfo.TargetFramerate ?? 0,
-                    streamInfo.TargetPacketLength,
-                    streamInfo.TranscodeSeekInfo,
-                    streamInfo.IsTargetAnamorphic,
-                    streamInfo.IsTargetInterlaced,
-                    streamInfo.TargetRefFrames,
-                    streamInfo.TargetVideoStreamCount,
-                    streamInfo.TargetAudioStreamCount,
-                    streamInfo.TargetVideoCodecTag,
-                    streamInfo.IsTargetAVC);
+                    .BuildVideoHeader(
+                        streamInfo.Container,
+                        streamInfo.TargetVideoCodec.FirstOrDefault(),
+                        streamInfo.TargetAudioCodec.FirstOrDefault(),
+                        streamInfo.TargetWidth,
+                        streamInfo.TargetHeight,
+                        streamInfo.TargetVideoBitDepth,
+                        streamInfo.TargetVideoBitrate,
+                        streamInfo.TargetTimestamp,
+                        streamInfo.IsDirectStream,
+                        streamInfo.RunTimeTicks ?? 0,
+                        streamInfo.TargetVideoProfile,
+                        streamInfo.TargetVideoLevel,
+                        streamInfo.TargetFramerate ?? 0,
+                        streamInfo.TargetPacketLength,
+                        streamInfo.TranscodeSeekInfo,
+                        streamInfo.IsTargetAnamorphic,
+                        streamInfo.IsTargetInterlaced,
+                        streamInfo.TargetRefFrames,
+                        streamInfo.TargetVideoStreamCount,
+                        streamInfo.TargetAudioStreamCount,
+                        streamInfo.TargetVideoCodecTag,
+                        streamInfo.IsTargetAVC);
 
                 return list.Count == 0 ? null : list[0];
             }
@@ -633,6 +640,10 @@ namespace Emby.Dlna.PlayTo
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -673,48 +684,41 @@ namespace Emby.Dlna.PlayTo
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute(cancellationToken);
                     case GeneralCommandType.SetAudioStreamIndex:
+                        if (command.Arguments.TryGetValue("Index", out string index))
                         {
-                            if (command.Arguments.TryGetValue("Index", out string arg))
+                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
-                                {
-                                    return SetAudioStreamIndex(val);
-                                }
-
-                                throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                                return SetAudioStreamIndex(val);
                             }
 
-                            throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
+                            throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
                         }
+
+                        throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
                     case GeneralCommandType.SetSubtitleStreamIndex:
+                        if (command.Arguments.TryGetValue("Index", out index))
                         {
-                            if (command.Arguments.TryGetValue("Index", out string arg))
+                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
-                                {
-                                    return SetSubtitleStreamIndex(val);
-                                }
-
-                                throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                                return SetSubtitleStreamIndex(val);
                             }
 
-                            throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
+                            throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
                         }
+
+                        throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
                     case GeneralCommandType.SetVolume:
+                        if (command.Arguments.TryGetValue("Volume", out string vol))
                         {
-                            if (command.Arguments.TryGetValue("Volume", out string arg))
+                            if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
                             {
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var volume))
-                                {
-                                    return _device.SetVolume(volume, cancellationToken);
-                                }
-
-                                throw new ArgumentException("Unsupported volume value supplied.");
+                                return _device.SetVolume(volume, cancellationToken);
                             }
 
-                            throw new ArgumentException("Volume argument cannot be null");
+                            throw new ArgumentException("Unsupported volume value supplied.");
                         }
 
+                        throw new ArgumentException("Volume argument cannot be null");
                     default:
                         return Task.CompletedTask;
                 }
@@ -778,7 +782,7 @@ namespace Emby.Dlna.PlayTo
             const int maxWait = 15000000;
             const int interval = 500;
             var currentWait = 0;
-            while (_device.TransportState != TRANSPORTSTATE.PLAYING && currentWait < maxWait)
+            while (_device.TransportState != TransportState.Playing && currentWait < maxWait)
             {
                 await Task.Delay(interval).ConfigureAwait(false);
                 currentWait += interval;
@@ -787,8 +791,67 @@ namespace Emby.Dlna.PlayTo
             await _device.Seek(TimeSpan.FromTicks(positionTicks), cancellationToken).ConfigureAwait(false);
         }
 
+        private static int? GetIntValue(IReadOnlyDictionary<string, string> values, string name)
+        {
+            var value = values.GetValueOrDefault(name);
+
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
+        private static long GetLongValue(IReadOnlyDictionary<string, string> values, string name)
+        {
+            var value = values.GetValueOrDefault(name);
+
+            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+
+            return 0;
+        }
+
+        /// <inheritdoc />
+        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
+            if (_device == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendPlayCommand(data as PlayRequest, cancellationToken);
+            }
+
+            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
+            }
+
+            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
+            {
+                return SendGeneralCommand(data as GeneralCommand, cancellationToken);
+            }
+
+            // Not supported or needed right now
+            return Task.CompletedTask;
+        }
+
         private class StreamParams
         {
+            private MediaSourceInfo mediaSource;
+            private IMediaSourceManager _mediaSourceManager;
+
             public Guid ItemId { get; set; }
 
             public bool IsDirectStream { get; set; }
@@ -809,15 +872,11 @@ namespace Emby.Dlna.PlayTo
 
             public BaseItem Item { get; set; }
 
-            private MediaSourceInfo MediaSource;
-
-            private IMediaSourceManager _mediaSourceManager;
-
             public async Task<MediaSourceInfo> GetMediaSource(CancellationToken cancellationToken)
             {
-                if (MediaSource != null)
+                if (mediaSource != null)
                 {
-                    return MediaSource;
+                    return mediaSource;
                 }
 
                 var hasMediaSources = Item as IHasMediaSources;
@@ -827,9 +886,9 @@ namespace Emby.Dlna.PlayTo
                     return null;
                 }
 
-                MediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
 
-                return MediaSource;
+                return mediaSource;
             }
 
             private static Guid GetItemId(string url)
@@ -900,62 +959,6 @@ namespace Emby.Dlna.PlayTo
 
                 return request;
             }
-        }
-
-        private static int? GetIntValue(IReadOnlyDictionary<string, string> values, string name)
-        {
-            var value = values.GetValueOrDefault(name);
-
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private static long GetLongValue(IReadOnlyDictionary<string, string> values, string name)
-        {
-            var value = values.GetValueOrDefault(name);
-
-            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
-            {
-                return result;
-            }
-
-            return 0;
-        }
-
-        /// <inheritdoc />
-        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
-
-            if (_device == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
-            {
-                return SendPlayCommand(data as PlayRequest, cancellationToken);
-            }
-
-            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
-            {
-                return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
-            }
-
-            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
-            {
-                return SendGeneralCommand(data as GeneralCommand, cancellationToken);
-            }
-
-            // Not supported or needed right now
-            return Task.CompletedTask;
         }
     }
 }

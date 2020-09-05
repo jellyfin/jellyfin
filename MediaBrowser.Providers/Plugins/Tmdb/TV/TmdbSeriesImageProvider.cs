@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -23,13 +24,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     public class TmdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
 
-        public TmdbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem)
+        public TmdbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
         }
 
@@ -180,13 +181,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         // After tvdb and fanart
         public int Order => 2;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

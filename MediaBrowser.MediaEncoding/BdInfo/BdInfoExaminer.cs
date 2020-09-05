@@ -15,6 +15,10 @@ namespace MediaBrowser.MediaEncoding.BdInfo
     {
         private readonly IFileSystem _fileSystem;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BdInfoExaminer" /> class.
+        /// </summary>
+        /// <param name="fileSystem">The filesystem.</param>
         public BdInfoExaminer(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
@@ -41,7 +45,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             var outputStream = new BlurayDiscInfo
             {
-                MediaStreams = new MediaStream[] { }
+                MediaStreams = Array.Empty<MediaStream>()
             };
 
             if (playlist == null)

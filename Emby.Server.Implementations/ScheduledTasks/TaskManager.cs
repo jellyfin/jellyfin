@@ -5,9 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -37,7 +36,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationPaths _applicationPaths;
         private readonly ILogger<TaskManager> _logger;
-        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
@@ -45,17 +43,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="fileSystem">The filesystem manager.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
             IJsonSerializer jsonSerializer,
-            ILogger<TaskManager> logger,
-            IFileSystem fileSystem)
+            ILogger<TaskManager> logger)
         {
             _applicationPaths = applicationPaths;
             _jsonSerializer = jsonSerializer;
             _logger = logger;
-            _fileSystem = fileSystem;
 
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
         }
@@ -212,6 +207,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

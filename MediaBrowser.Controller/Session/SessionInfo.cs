@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -109,6 +111,12 @@ namespace MediaBrowser.Controller.Session
         public string DeviceName { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the device.
+        /// </summary>
+        /// <value>The type of the device.</value>
+        public string DeviceType { get; set; }
+
+        /// <summary>
         /// Gets or sets the now playing item.
         /// </summary>
         /// <value>The now playing item.</value>
@@ -215,7 +223,16 @@ namespace MediaBrowser.Controller.Session
 
         public string PlaylistItemId { get; set; }
 
+        public string ServerId { get; set; }
+
         public string UserPrimaryImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the supported commands.
+        /// </summary>
+        /// <value>The supported commands.</value>
+        public string[] SupportedCommands
+            => Capabilities == null ? Array.Empty<string>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {

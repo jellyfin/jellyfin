@@ -6,6 +6,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -31,28 +33,30 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
     {
         const string DataFileName = "info.json";
 
-        internal static TmdbPersonProvider Current { get; private set; }
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<TmdbPersonProvider> _logger;
 
         public TmdbPersonProvider(
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             IJsonSerializer jsonSerializer,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILogger<TmdbPersonProvider> logger)
         {
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             Current = this;
         }
+
+        internal static TmdbPersonProvider Current { get; private set; }
 
         public string Name => TmdbUtils.ProviderName;
 
@@ -94,24 +98,25 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return new List<RemoteSearchResult>();
             }
 
-            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), TmdbUtils.ApiKey);
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                TmdbUtils.BaseTmdbApiUrl + @"3/search/person?api_key={1}&query={0}",
+                WebUtility.UrlEncode(searchInfo.Name),
+                TmdbUtils.ApiKey);
 
-            using (var response = await TmdbMovieProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            foreach (var header in TmdbUtils.AcceptHeaders)
             {
-                Url = url,
-                CancellationToken = cancellationToken,
-                AcceptHeader = TmdbUtils.AcceptHeader
-
-            }).ConfigureAwait(false))
-            {
-                using (var json = response.Content)
-                {
-                    var result = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSearchResult<PersonSearchResult>>(json).ConfigureAwait(false) ??
-                                 new TmdbSearchResult<PersonSearchResult>();
-
-                    return result.Results.Select(i => GetSearchResult(i, tmdbImageUrl));
-                }
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
+
+            var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+            var result2 = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSearchResult<PersonSearchResult>>(stream).ConfigureAwait(false)
+                         ?? new TmdbSearchResult<PersonSearchResult>();
+
+            return result2.Results.Select(i => GetSearchResult(i, tmdbImageUrl));
         }
 
         private RemoteSearchResult GetSearchResult(PersonSearchResult i, string baseImageUrl)
@@ -202,8 +207,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             return result;
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Gets the TMDB id.
         /// </summary>
@@ -228,32 +231,29 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return;
             }
 
-            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", TmdbUtils.ApiKey, id);
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                TmdbUtils.BaseTmdbApiUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids",
+                TmdbUtils.ApiKey,
+                id);
 
-            using (var response = await TmdbMovieProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            foreach (var header in TmdbUtils.AcceptHeaders)
             {
-                Url = url,
-                CancellationToken = cancellationToken,
-                AcceptHeader = TmdbUtils.AcceptHeader
-            }).ConfigureAwait(false))
-            {
-                using (var json = response.Content)
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
-
-                    using (var fs = new FileStream(dataFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
-                    {
-                        await json.CopyToAsync(fs).ConfigureAwait(false);
-                    }
-                }
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
+
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            await using var fs = new FileStream(dataFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            await response.Content.CopyToAsync(fs).ConfigureAwait(false);
         }
 
         private static string GetPersonDataPath(IApplicationPaths appPaths, string tmdbId)
         {
-            var letter = tmdbId.GetMD5().ToString().Substring(0, 1);
+            var letter = tmdbId.GetMD5().ToString().AsSpan().Slice(0, 1);
 
-            return Path.Combine(GetPersonsDataPath(appPaths), letter, tmdbId);
+            return Path.Join(GetPersonsDataPath(appPaths), letter, tmdbId);
         }
 
         internal static string GetPersonDataFilePath(IApplicationPaths appPaths, string tmdbId)
@@ -266,13 +266,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             return Path.Combine(appPaths.CachePath, "tmdb-people");
         }
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

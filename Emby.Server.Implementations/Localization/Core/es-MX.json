@@ -31,7 +31,7 @@
     "ItemAddedWithName": "{0} fue agregado a la biblioteca",
     "ItemRemovedWithName": "{0} fue removido de la biblioteca",
     "LabelIpAddressValue": "Dirección IP: {0}",
-    "LabelRunningTimeValue": "Duración: {0}",
+    "LabelRunningTimeValue": "Tiempo de reproducción: {0}",
     "Latest": "Recientes",
     "MessageApplicationUpdated": "El servidor Jellyfin ha sido actualizado",
     "MessageApplicationUpdatedTo": "El servidor Jellyfin ha sido actualizado a {0}",

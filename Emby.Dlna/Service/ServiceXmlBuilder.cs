@@ -1,9 +1,9 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Security;
 using System.Text;
 using Emby.Dlna.Common;
-using Emby.Dlna.Server;
 
 namespace Emby.Dlna.Service
 {
@@ -37,7 +37,9 @@ namespace Emby.Dlna.Service
             {
                 builder.Append("<action>");
 
-                builder.Append("<name>" + DescriptionXmlBuilder.Escape(item.Name ?? string.Empty) + "</name>");
+                builder.Append("<name>")
+                    .Append(SecurityElement.Escape(item.Name ?? string.Empty))
+                    .Append("</name>");
 
                 builder.Append("<argumentList>");
 
@@ -45,9 +47,15 @@ namespace Emby.Dlna.Service
                 {
                     builder.Append("<argument>");
 
-                    builder.Append("<name>" + DescriptionXmlBuilder.Escape(argument.Name ?? string.Empty) + "</name>");
-                    builder.Append("<direction>" + DescriptionXmlBuilder.Escape(argument.Direction ?? string.Empty) + "</direction>");
-                    builder.Append("<relatedStateVariable>" + DescriptionXmlBuilder.Escape(argument.RelatedStateVariable ?? string.Empty) + "</relatedStateVariable>");
+                    builder.Append("<name>")
+                        .Append(SecurityElement.Escape(argument.Name ?? string.Empty))
+                        .Append("</name>");
+                    builder.Append("<direction>")
+                        .Append(SecurityElement.Escape(argument.Direction ?? string.Empty))
+                        .Append("</direction>");
+                    builder.Append("<relatedStateVariable>")
+                        .Append(SecurityElement.Escape(argument.RelatedStateVariable ?? string.Empty))
+                        .Append("</relatedStateVariable>");
 
                     builder.Append("</argument>");
                 }
@@ -68,17 +76,25 @@ namespace Emby.Dlna.Service
             {
                 var sendEvents = item.SendsEvents ? "yes" : "no";
 
-                builder.Append("<stateVariable sendEvents=\"" + sendEvents + "\">");
+                builder.Append("<stateVariable sendEvents=\"")
+                    .Append(sendEvents)
+                    .Append("\">");
 
-                builder.Append("<name>" + DescriptionXmlBuilder.Escape(item.Name ?? string.Empty) + "</name>");
-                builder.Append("<dataType>" + DescriptionXmlBuilder.Escape(item.DataType ?? string.Empty) + "</dataType>");
+                builder.Append("<name>")
+                    .Append(SecurityElement.Escape(item.Name ?? string.Empty))
+                    .Append("</name>");
+                builder.Append("<dataType>")
+                    .Append(SecurityElement.Escape(item.DataType ?? string.Empty))
+                    .Append("</dataType>");
 
-                if (item.AllowedValues.Length > 0)
+                if (item.AllowedValues.Count > 0)
                 {
                     builder.Append("<allowedValueList>");
                     foreach (var allowedValue in item.AllowedValues)
                     {
-                        builder.Append("<allowedValue>" + DescriptionXmlBuilder.Escape(allowedValue) + "</allowedValue>");
+                        builder.Append("<allowedValue>")
+                            .Append(SecurityElement.Escape(allowedValue))
+                            .Append("</allowedValue>");
                     }
 
                     builder.Append("</allowedValueList>");

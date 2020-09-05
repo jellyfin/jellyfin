@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -22,8 +23,7 @@ namespace Jellyfin.Server.Implementations.Users
     {
         private const string BaseResetFileName = "passwordreset";
 
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly IUserManager _userManager;
+        private readonly IApplicationHost _appHost;
 
         private readonly string _passwordResetFileBase;
         private readonly string _passwordResetFileBaseDir;
@@ -32,17 +32,13 @@ namespace Jellyfin.Server.Implementations.Users
         /// Initializes a new instance of the <see cref="DefaultPasswordResetProvider"/> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="jsonSerializer">The JSON serializer.</param>
-        /// <param name="userManager">The user manager.</param>
-        public DefaultPasswordResetProvider(
-            IServerConfigurationManager configurationManager,
-            IJsonSerializer jsonSerializer,
-            IUserManager userManager)
+        /// <param name="appHost">The application host.</param>
+        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
-            _jsonSerializer = jsonSerializer;
-            _userManager = userManager;
+            _appHost = appHost;
+            // TODO: Remove the circular dependency on UserManager
         }
 
         /// <inheritdoc />
@@ -54,13 +50,14 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
+            var userManager = _appHost.Resolve<IUserManager>();
             var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
                 SerializablePasswordReset spr;
                 await using (var str = File.OpenRead(resetFile))
                 {
-                    spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
+                    spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
                 }
 
                 if (spr.ExpirationDate < DateTime.UtcNow)
@@ -72,10 +69,10 @@ namespace Jellyfin.Server.Implementations.Users
                     pin.Replace("-", string.Empty, StringComparison.Ordinal),
                     StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var resetUser = _userManager.GetUserByName(spr.UserName)
+                    var resetUser = userManager.GetUserByName(spr.UserName)
                         ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
 
-                    await _userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
+                    await userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
                     usersReset.Add(resetUser.Username);
                     File.Delete(resetFile);
                 }
@@ -116,12 +113,11 @@ namespace Jellyfin.Server.Implementations.Users
 
             await using (FileStream fileStream = File.OpenWrite(filePath))
             {
-                _jsonSerializer.SerializeToStream(spr, fileStream);
+                await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
                 await fileStream.FlushAsync().ConfigureAwait(false);
             }
 
             user.EasyPassword = pin;
-            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
             return new ForgotPasswordResult
             {

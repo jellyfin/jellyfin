@@ -222,8 +222,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             if (index != -1)
             {
-                var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/').Split('-')[0];
-                if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                var tmdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
+                index = tmdbId.IndexOf('-');
+                if (index != -1)
+                {
+                    tmdbId = tmdbId.Slice(0, index);
+                }
+
+                if (!tmdbId.IsEmpty
+                    && !tmdbId.IsWhiteSpace()
+                    && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                 {
                     item.SetProviderId(MetadataProvider.Tmdb, value.ToString(UsCulture));
                 }
@@ -237,8 +245,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 if (index != -1)
                 {
-                    var tvdbId = xml.Substring(index + srch.Length).TrimEnd('/');
-                    if (!string.IsNullOrWhiteSpace(tvdbId) && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                    var tvdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
+                    if (!tvdbId.IsEmpty
+                        && !tvdbId.IsWhiteSpace()
+                        && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                     {
                         item.SetProviderId(MetadataProvider.Tvdb, value.ToString(UsCulture));
                     }
@@ -442,8 +452,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasAspectRatio = item as IHasAspectRatio;
-                        if (!string.IsNullOrWhiteSpace(val) && hasAspectRatio != null)
+                        if (!string.IsNullOrWhiteSpace(val)
+                            && item is IHasAspectRatio hasAspectRatio)
                         {
                             hasAspectRatio.AspectRatio = val;
                         }

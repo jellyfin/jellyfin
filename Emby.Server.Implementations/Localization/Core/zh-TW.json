@@ -92,7 +92,7 @@
     "HeaderRecordingGroups": "錄製組",
     "Inherit": "繼承",
     "SubtitleDownloadFailureFromForItem": "無法為 {1} 從 {0} 下載字幕",
-    "TaskDownloadMissingSubtitlesDescription": "在網路上透過描述資料搜尋遺失的字幕。",
+    "TaskDownloadMissingSubtitlesDescription": "在網路上透過中繼資料搜尋遺失的字幕。",
     "TaskDownloadMissingSubtitles": "下載遺失的字幕",
     "TaskRefreshChannels": "重新整理頻道",
     "TaskUpdatePlugins": "更新插件",

@@ -101,7 +101,17 @@
     "TaskCleanLogsDescription": "Deletar arquivos de log que existe a mais de {0} dias.",
     "TaskCleanLogs": "Limpar diretório de log",
     "TaskRefreshLibrary": "Escanear biblioteca de mídias",
-    "TaskRefreshChapterImagesDescription": "Criar miniaturas para videos que tem capítulos.",
-    "TaskCleanCacheDescription": "Deletar arquivos de cache que não são mais usados pelo sistema.",
-    "TasksChannelsCategory": "Canais de Internet"
+    "TaskRefreshChapterImagesDescription": "Cria miniaturas para vídeos que têm capítulos.",
+    "TaskCleanCacheDescription": "Apaga ficheiros em cache que já não são usados pelo sistema.",
+    "TasksChannelsCategory": "Canais de Internet",
+    "TaskRefreshChapterImages": "Extrair Imagens do Capítulo",
+    "TaskDownloadMissingSubtitlesDescription": "Pesquisa na Internet as legendas em falta com base na configuração de metadados.",
+    "TaskDownloadMissingSubtitles": "Download das legendas em falta",
+    "TaskRefreshChannelsDescription": "Atualiza as informações do canal da Internet.",
+    "TaskCleanTranscodeDescription": "Apagar os ficheiros com mais de um dia, de Transcode.",
+    "TaskCleanTranscode": "Limpar o diretório de Transcode",
+    "TaskUpdatePluginsDescription": "Download e instala as atualizações para plug-ins configurados para atualização automática.",
+    "TaskRefreshPeopleDescription": "Atualiza os metadados para atores e diretores na tua biblioteca de media.",
+    "TaskRefreshPeople": "Atualizar pessoas",
+    "TaskRefreshLibraryDescription": "Pesquisa a tua biblioteca de media por novos ficheiros e atualiza os metadados."
 }

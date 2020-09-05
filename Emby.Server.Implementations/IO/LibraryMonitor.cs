@@ -6,12 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.IO;
-using Emby.Server.Implementations.Library;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
@@ -37,6 +36,8 @@ namespace Emby.Server.Implementations.IO
         /// A dynamic list of paths that should be ignored.  Added to during our own file system modifications.
         /// </summary>
         private readonly ConcurrentDictionary<string, string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        private bool _disposed = false;
 
         /// <summary>
         /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
@@ -87,7 +88,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in ReportFileSystemChanged for {path}", path);
+                    _logger.LogError(ex, "Error in ReportFileSystemChanged for {Path}", path);
                 }
             }
         }
@@ -492,8 +493,6 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private bool _disposed = false;
-
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -520,26 +519,6 @@ namespace Emby.Server.Implementations.IO
             }
 
             _disposed = true;
-        }
-    }
-
-    public class LibraryMonitorStartup : IServerEntryPoint
-    {
-        private readonly ILibraryMonitor _monitor;
-
-        public LibraryMonitorStartup(ILibraryMonitor monitor)
-        {
-            _monitor = monitor;
-        }
-
-        public Task RunAsync()
-        {
-            _monitor.Start();
-            return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

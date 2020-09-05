@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -18,7 +19,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Plugins.Tmdb.Models.Movies;
@@ -31,10 +31,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
     /// </summary>
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
+        private const string TmdbConfigUrl = TmdbUtils.BaseTmdbApiUrl + "3/configuration?api_key={0}";
+        private const string GetMovieInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
+
         internal static TmdbMovieProvider Current { get; private set; }
 
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<TmdbMovieProvider> _logger;
@@ -45,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public TmdbMovieProvider(
             IJsonSerializer jsonSerializer,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             ILogger<TmdbMovieProvider> logger,
@@ -53,7 +56,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             IApplicationHost appHost)
         {
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _logger = logger;
@@ -146,24 +149,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 return _tmdbSettings;
             }
 
-            using (HttpResponseInfo response = await GetMovieDbResponse(new HttpRequestOptions
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, string.Format(CultureInfo.InvariantCulture, TmdbConfigUrl, TmdbUtils.ApiKey));
+            foreach (var header in TmdbUtils.AcceptHeaders)
             {
-                Url = string.Format(TmdbConfigUrl, TmdbUtils.ApiKey),
-                CancellationToken = cancellationToken,
-                AcceptHeader = TmdbUtils.AcceptHeader
-            }).ConfigureAwait(false))
-            {
-                using (Stream json = response.Content)
-                {
-                    _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(json).ConfigureAwait(false);
-
-                    return _tmdbSettings;
-                }
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
-        }
 
-        private const string TmdbConfigUrl = TmdbUtils.BaseTmdbApiUrl + "3/configuration?api_key={0}";
-        private const string GetMovieInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
+            using var response = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(stream).ConfigureAwait(false);
+            return _tmdbSettings;
+        }
 
         /// <summary>
         /// Gets the movie data path.
@@ -245,7 +241,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 preferredLanguage = "alllang";
             }
 
-            var filename = string.Format("all-{0}.json", preferredLanguage);
+            var filename = string.Format(CultureInfo.InvariantCulture, "all-{0}.json", preferredLanguage);
 
             return Path.Combine(path, filename);
         }
@@ -276,7 +272,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 languages.Add("en");
             }
 
-            return string.Join(",", languages.ToArray());
+            return string.Join(",", languages);
         }
 
         public static string NormalizeLanguage(string language)
@@ -321,51 +317,32 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <returns>Task{CompleteMovieData}.</returns>
         internal async Task<MovieResult> FetchMainResult(string id, bool isTmdbId, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetMovieInfo3, id, TmdbUtils.ApiKey);
+            var url = string.Format(CultureInfo.InvariantCulture, GetMovieInfo3, id, TmdbUtils.ApiKey);
 
             if (!string.IsNullOrEmpty(language))
             {
-                url += string.Format("&language={0}", NormalizeLanguage(language));
+                url += string.Format(CultureInfo.InvariantCulture, "&language={0}", NormalizeLanguage(language));
 
                 // Get images in english and with no language
                 url += "&include_image_language=" + GetImageLanguagesParam(language);
             }
 
-            MovieResult mainResult;
-
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Cache if not using a tmdbId because we won't have the tmdb cache directory structure. So use the lower level cache.
-            var cacheMode = isTmdbId ? CacheMode.None : CacheMode.Unconditional;
-            var cacheLength = TimeSpan.FromDays(3);
-
-            try
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            foreach (var header in TmdbUtils.AcceptHeaders)
             {
-                using (var response = await GetMovieDbResponse(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = TmdbUtils.AcceptHeader,
-                    CacheMode = cacheMode,
-                    CacheLength = cacheLength
-                }).ConfigureAwait(false))
-                {
-                    using (var json = response.Content)
-                    {
-                        mainResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(json).ConfigureAwait(false);
-                    }
-                }
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
-            catch (HttpException ex)
-            {
-                // Return null so that callers know there is no metadata for this id
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
-                {
-                    return null;
-                }
 
-                throw;
+            using var mainResponse = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            if (mainResponse.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
             }
+
+            await using var stream = await mainResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var mainResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(stream).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -377,7 +354,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 _logger.LogInformation("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
-                url = string.Format(GetMovieInfo3, id, TmdbUtils.ApiKey) + "&language=en";
+                url = string.Format(CultureInfo.InvariantCulture, GetMovieInfo3, id, TmdbUtils.ApiKey) + "&language=en";
 
                 if (!string.IsNullOrEmpty(language))
                 {
@@ -385,64 +362,38 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     url += "&include_image_language=" + GetImageLanguagesParam(language);
                 }
 
-                using (var response = await GetMovieDbResponse(new HttpRequestOptions
+                using var langRequestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                foreach (var header in TmdbUtils.AcceptHeaders)
                 {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = TmdbUtils.AcceptHeader,
-                    CacheMode = cacheMode,
-                    CacheLength = cacheLength
-                }).ConfigureAwait(false))
-                {
-                    using (var json = response.Content)
-                    {
-                        var englishResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(json).ConfigureAwait(false);
-
-                        mainResult.Overview = englishResult.Overview;
-                    }
+                    langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
                 }
+
+                using var langResponse = await GetMovieDbResponse(langRequestMessage).ConfigureAwait(false);
+
+                await using var langStream = await langResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                var langResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(stream).ConfigureAwait(false);
+                mainResult.Overview = langResult.Overview;
             }
 
             return mainResult;
         }
 
-        private static long _lastRequestTicks;
-        // The limit is 40 requests per 10 seconds
-        private const int RequestIntervalMs = 300;
-
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
-        internal async Task<HttpResponseInfo> GetMovieDbResponse(HttpRequestOptions options)
+        internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message)
         {
-            var delayTicks = (RequestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
-            var delayMs = Math.Min(delayTicks / 10000, RequestIntervalMs);
-
-            if (delayMs > 0)
-            {
-                _logger.LogDebug("Throttling Tmdb by {0} ms", delayMs);
-                await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
-            }
-
-            _lastRequestTicks = DateTime.UtcNow.Ticks;
-
-            options.BufferContent = true;
-            options.UserAgent = _appHost.ApplicationUserAgent;
-
-            return await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
+            message.Headers.UserAgent.ParseAdd(_appHost.ApplicationUserAgent);
+            return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(message);
         }
 
         /// <inheritdoc />
         public int Order => 1;
 
         /// <inheritdoc />
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

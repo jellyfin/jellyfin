@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -25,15 +26,15 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     {
         internal static TvdbSeriesProvider Current { get; private set; }
 
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<TvdbSeriesProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbSeriesProvider(IHttpClient httpClient, ILogger<TvdbSeriesProvider> logger, ILibraryManager libraryManager, ILocalizationManager localizationManager, TvdbClientManager tvdbClientManager)
+        public TvdbSeriesProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbSeriesProvider> logger, ILibraryManager libraryManager, ILocalizationManager localizationManager, TvdbClientManager tvdbClientManager)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
@@ -247,9 +248,14 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 {
                     Name = tvdbTitles.FirstOrDefault(),
                     ProductionYear = firstAired.Year,
-                    SearchProviderName = Name,
-                    ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
+                    SearchProviderName = Name
                 };
+
+                if (!string.IsNullOrEmpty(seriesSearchResult.Banner))
+                {
+                    // Results from their Search endpoints already include the /banners/ part in the url, because reasons...
+                    remoteSearchResult.ImageUrl = TvdbUtils.TvdbImageBaseUrl + seriesSearchResult.Banner;
+                }
 
                 try
                 {
@@ -365,9 +371,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Type = PersonType.Actor,
                     Name = (actor.Name ?? string.Empty).Trim(),
                     Role = actor.Role,
-                    ImageUrl = TvdbUtils.BannerUrl + actor.Image,
                     SortOrder = actor.SortOrder
                 };
+
+                if (!string.IsNullOrEmpty(actor.Image))
+                {
+                    personInfo.ImageUrl = TvdbUtils.BannerUrl + actor.Image;
+                }
 
                 if (!string.IsNullOrWhiteSpace(personInfo.Name))
                 {
@@ -399,14 +409,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                BufferContent = false
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

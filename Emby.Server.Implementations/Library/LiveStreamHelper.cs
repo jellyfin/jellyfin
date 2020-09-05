@@ -23,9 +23,8 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger _logger;
-
-        private IJsonSerializer _json;
-        private IApplicationPaths _appPaths;
+        private readonly IJsonSerializer _json;
+        private readonly IApplicationPaths _appPaths;
 
         public LiveStreamHelper(IMediaEncoder mediaEncoder, ILogger logger, IJsonSerializer json, IApplicationPaths appPaths)
         {
@@ -72,13 +71,14 @@ namespace Emby.Server.Implementations.Library
 
                 mediaSource.AnalyzeDurationMs = 3000;
 
-                mediaInfo = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                {
-                    MediaSource = mediaSource,
-                    MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
-                    ExtractChapters = false
-
-                }, cancellationToken).ConfigureAwait(false);
+                mediaInfo = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaSource = mediaSource,
+                        MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                        ExtractChapters = false
+                    },
+                    cancellationToken).ConfigureAwait(false);
 
                 if (cacheFilePath != null)
                 {
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.RunTimeTicks = null;
             }
 
-            var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio);
+            var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             if (audioStream == null || audioStream.Index == -1)
             {
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.DefaultAudioStreamIndex = audioStream.Index;
             }
 
-            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
+            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
             if (videoStream != null)
             {
                 if (!videoStream.BitRate.HasValue)

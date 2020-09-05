@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -22,12 +23,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     public class TmdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public TmdbSeasonImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public TmdbSeasonImageProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory)
         {
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
         }
 
         public int Order => 1;
@@ -36,13 +37,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public static string ProviderName => TmdbUtils.ProviderName;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)

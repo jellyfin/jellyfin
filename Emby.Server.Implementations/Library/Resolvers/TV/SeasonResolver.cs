@@ -1,6 +1,5 @@
 using System.Globalization;
 using Emby.Naming.TV;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
@@ -13,7 +12,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// </summary>
     public class SeasonResolver : FolderResolver<Season>
     {
-        private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly ILogger<SeasonResolver> _logger;
@@ -21,17 +19,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
         /// </summary>
-        /// <param name="config">The config.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="localization">The localization.</param>
         /// <param name="logger">The logger.</param>
         public SeasonResolver(
-            IServerConfigurationManager config,
             ILibraryManager libraryManager,
             ILocalizationManager localization,
             ILogger<SeasonResolver> logger)
         {
-            _config = config;
             _libraryManager = libraryManager;
             _localization = localization;
             _logger = logger;

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -17,6 +18,8 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -24,7 +27,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
@@ -40,25 +42,16 @@ namespace Emby.Server.Implementations.Session
     /// </summary>
     public class SessionManager : ISessionManager, IDisposable
     {
-        /// <summary>
-        /// The user data repository.
-        /// </summary>
         private readonly IUserDataManager _userDataManager;
-
-        /// <summary>
-        /// The logger.
-        /// </summary>
         private readonly ILogger<SessionManager> _logger;
-
+        private readonly IEventManager _eventManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IMusicManager _musicManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
         private readonly IMediaSourceManager _mediaSourceManager;
-
         private readonly IServerApplicationHost _appHost;
-
         private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
 
@@ -75,6 +68,7 @@ namespace Emby.Server.Implementations.Session
 
         public SessionManager(
             ILogger<SessionManager> logger,
+            IEventManager eventManager,
             IUserDataManager userDataManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -87,6 +81,7 @@ namespace Emby.Server.Implementations.Session
             IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
+            _eventManager = eventManager;
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -209,6 +204,8 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
+            _eventManager.Publish(new SessionStartedEventArgs(info));
+
             EventHelper.QueueEventIfNotNull(
                 SessionStarted,
                 this,
@@ -229,6 +226,8 @@ namespace Emby.Server.Implementations.Session
                     SessionInfo = info
                 },
                 _logger);
+
+            _eventManager.Publish(new SessionEndedEventArgs(info));
 
             info.Dispose();
         }
@@ -296,7 +295,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (DbUpdateConcurrencyException e)
                     {
-                        _logger.LogWarning(e, "Error updating user's last activity date.");
+                        _logger.LogDebug(e, "Error updating user's last activity date.");
                     }
                 }
             }
@@ -502,7 +501,8 @@ namespace Emby.Server.Implementations.Session
                 Client = appName,
                 DeviceId = deviceId,
                 ApplicationVersion = appVersion,
-                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture),
+                ServerId = _appHost.SystemId
             };
 
             var username = user?.Username;
@@ -666,22 +666,26 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
+            var eventArgs = new PlaybackProgressEventArgs
+            {
+                Item = libraryItem,
+                Users = users,
+                MediaSourceId = info.MediaSourceId,
+                MediaInfo = info.Item,
+                DeviceName = session.DeviceName,
+                ClientName = session.Client,
+                DeviceId = session.DeviceId,
+                Session = session
+            };
+
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+
             // Nothing to save here
             // Fire events to inform plugins
             EventHelper.QueueEventIfNotNull(
                 PlaybackStart,
                 this,
-                new PlaybackProgressEventArgs
-                {
-                    Item = libraryItem,
-                    Users = users,
-                    MediaSourceId = info.MediaSourceId,
-                    MediaInfo = info.Item,
-                    DeviceName = session.DeviceName,
-                    ClientName = session.Client,
-                    DeviceId = session.DeviceId,
-                    Session = session
-                },
+                eventArgs,
                 _logger);
 
             StartIdleCheckTimer();
@@ -749,23 +753,25 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            PlaybackProgress?.Invoke(
-                this,
-                new PlaybackProgressEventArgs
-                {
-                    Item = libraryItem,
-                    Users = users,
-                    PlaybackPositionTicks = session.PlayState.PositionTicks,
-                    MediaSourceId = session.PlayState.MediaSourceId,
-                    MediaInfo = info.Item,
-                    DeviceName = session.DeviceName,
-                    ClientName = session.Client,
-                    DeviceId = session.DeviceId,
-                    IsPaused = info.IsPaused,
-                    PlaySessionId = info.PlaySessionId,
-                    IsAutomated = isAutomated,
-                    Session = session
-                });
+            var eventArgs = new PlaybackProgressEventArgs
+            {
+                Item = libraryItem,
+                Users = users,
+                PlaybackPositionTicks = session.PlayState.PositionTicks,
+                MediaSourceId = session.PlayState.MediaSourceId,
+                MediaInfo = info.Item,
+                DeviceName = session.DeviceName,
+                ClientName = session.Client,
+                DeviceId = session.DeviceId,
+                IsPaused = info.IsPaused,
+                PlaySessionId = info.PlaySessionId,
+                IsAutomated = isAutomated,
+                Session = session
+            };
+
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+
+            PlaybackProgress?.Invoke(this, eventArgs);
 
             if (!isAutomated)
             {
@@ -847,8 +853,8 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">info</exception>
-        /// <exception cref="ArgumentOutOfRangeException">positionTicks</exception>
+        /// <exception cref="ArgumentNullException"><c>info</c> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><c>info.PositionTicks</c> is <c>null</c> or negative.</exception>
         public async Task OnPlaybackStopped(PlaybackStopInfo info)
         {
             CheckDisposed();
@@ -942,23 +948,23 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            EventHelper.QueueEventIfNotNull(
-                PlaybackStopped,
-                this,
-                new PlaybackStopEventArgs
-                {
-                    Item = libraryItem,
-                    Users = users,
-                    PlaybackPositionTicks = info.PositionTicks,
-                    PlayedToCompletion = playedToCompletion,
-                    MediaSourceId = info.MediaSourceId,
-                    MediaInfo = info.Item,
-                    DeviceName = session.DeviceName,
-                    ClientName = session.Client,
-                    DeviceId = session.DeviceId,
-                    Session = session
-                },
-                _logger);
+            var eventArgs = new PlaybackStopEventArgs
+            {
+                Item = libraryItem,
+                Users = users,
+                PlaybackPositionTicks = info.PositionTicks,
+                PlayedToCompletion = playedToCompletion,
+                MediaSourceId = info.MediaSourceId,
+                MediaInfo = info.Item,
+                DeviceName = session.DeviceName,
+                ClientName = session.Client,
+                DeviceId = session.DeviceId,
+                Session = session
+            };
+
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+
+            EventHelper.QueueEventIfNotNull(PlaybackStopped, this, eventArgs, _logger);
         }
 
         private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)
@@ -1420,6 +1426,24 @@ namespace Emby.Server.Implementations.Session
 
         public Task<AuthenticationResult> CreateNewSession(AuthenticationRequest request)
         {
+            return AuthenticateNewSessionInternal(request, false);
+        }
+
+        public Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token)
+        {
+            var result = _authRepo.Get(new AuthenticationInfoQuery()
+            {
+                AccessToken = token,
+                DeviceId = _appHost.SystemId,
+                Limit = 1
+            });
+
+            if (result.TotalRecordCount == 0)
+            {
+                throw new SecurityException("Unknown quick connect token");
+            }
+
+            request.UserId = result.Items[0].UserId;
             return AuthenticateNewSessionInternal(request, false);
         }
 

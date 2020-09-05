@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Common.Updates
@@ -39,6 +38,14 @@ namespace MediaBrowser.Common.Updates
         /// Gets the completed installations.
         /// </summary>
         IEnumerable<InstallationInfo> CompletedInstallations { get; }
+
+        /// <summary>
+        /// Parses a plugin manifest at the supplied URL.
+        /// </summary>
+        /// <param name="manifest">The URL to query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all available packages.

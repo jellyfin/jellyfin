@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -198,7 +200,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public Guid[] GetLibraryFolderIds()
         {
-            var expandedFolders = new List<Guid>() { };
+            var expandedFolders = new List<Guid>();
 
             return FlattenItems(this, expandedFolders)
                 .SelectMany(i => LibraryManager.GetCollectionFolders(i))

@@ -42,6 +42,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "MigrateActivityLogDatabase";
 
         /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
+
+        /// <inheritdoc/>
         public void Perform()
         {
             var logLevelDictionary = new Dictionary<string, LogLevel>(StringComparer.OrdinalIgnoreCase)

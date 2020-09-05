@@ -13,7 +13,7 @@ namespace Emby.Dlna.Common
 
         public string Name { get; set; }
 
-        public List<Argument> ArgumentList { get; set; }
+        public List<Argument> ArgumentList { get; }
 
         /// <inheritdoc />
         public override string ToString()

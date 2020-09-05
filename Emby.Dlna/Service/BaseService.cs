@@ -1,24 +1,22 @@
 #pragma warning disable CS1591
 
+using System.Net.Http;
 using Emby.Dlna.Eventing;
-using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
 {
-    public class BaseService : IEventManager
+    public class BaseService : IDlnaEventManager
     {
-        protected IEventManager EventManager;
-        protected IHttpClient HttpClient;
-        protected ILogger Logger;
-
-        protected BaseService(ILogger<BaseService> logger, IHttpClient httpClient)
+        protected BaseService(ILogger<BaseService> logger, IHttpClientFactory httpClientFactory)
         {
             Logger = logger;
-            HttpClient = httpClient;
-
-            EventManager = new EventManager(logger, HttpClient);
+            EventManager = new DlnaEventManager(logger, httpClientFactory);
         }
+
+        protected IDlnaEventManager EventManager { get; }
+
+        protected ILogger Logger { get; }
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {

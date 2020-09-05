@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -21,13 +22,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     /// </summary>
     public class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<TvdbEpisodeProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger<TvdbEpisodeProvider> logger, TvdbClientManager tvdbClientManager)
+        public TvdbEpisodeProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbEpisodeProvider> logger, TvdbClientManager tvdbClientManager)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _tvdbClientManager = tvdbClientManager;
         }
@@ -153,6 +154,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 item.IndexNumber = Convert.ToInt32(episode.DvdEpisodeNumber ?? episode.AiredEpisodeNumber);
                 item.ParentIndexNumber = episode.DvdSeason ?? episode.AiredSeason;
             }
+            else if (string.Equals(id.SeriesDisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase))
+            {
+                if (episode.AbsoluteNumber.GetValueOrDefault() != 0)
+                {
+                    item.IndexNumber = episode.AbsoluteNumber;
+                }
+            }
             else if (episode.AiredEpisodeNumber.HasValue)
             {
                 item.IndexNumber = episode.AiredEpisodeNumber;
@@ -188,7 +196,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             for (var i = 0; i < episode.GuestStars.Length; ++i)
             {
                 var currentActor = episode.GuestStars[i];
-                var roleStartIndex = currentActor.IndexOf('(');
+                var roleStartIndex = currentActor.IndexOf('(', StringComparison.Ordinal);
 
                 if (roleStartIndex == -1)
                 {
@@ -207,7 +215,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 for (var j = i + 1; j < episode.GuestStars.Length; ++j)
                 {
                     var currentRole = episode.GuestStars[j];
-                    var roleEndIndex = currentRole.IndexOf(')');
+                    var roleEndIndex = currentRole.IndexOf(')', StringComparison.Ordinal);
 
                     if (roleEndIndex == -1)
                     {
@@ -242,13 +250,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             return result;
         }
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
         public int Order => 0;

@@ -1,18 +1,23 @@
-#pragma warning disable CS1591
-
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
+    /// <summary>
+    /// External ID for a TMDB series.
+    /// </summary>
     public class TmdbSeriesExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => TmdbUtils.ProviderName;
+        public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
         public string Key => MetadataProvider.Tmdb.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Series;
 
         /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "tv/{0}";

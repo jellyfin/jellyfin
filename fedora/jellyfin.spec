@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.6.0
+Version:        10.7.0
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
@@ -54,7 +54,7 @@ The Jellyfin media server backend.
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
-    "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
+    "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/jellyfin/LICENSE
 %{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
@@ -73,6 +73,9 @@ EOF
 %{__install} -D -m 0600 %{SOURCE13} %{buildroot}%{_sysconfdir}/sudoers.d/jellyfin-sudoers
 %{__install} -D -m 0755 %{SOURCE14} %{buildroot}%{_libexecdir}/jellyfin/restart.sh
 %{__install} -D -m 0644 %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
+
+%files
+# empty as this is just a meta-package
 
 %files server
 %attr(755,root,root) %{_bindir}/jellyfin
@@ -139,6 +142,8 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Mon Jul 27 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
+- Forthcoming stable release
 * Mon Mar 23 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
 - Forthcoming stable release
 * Fri Oct 11 2019 Jellyfin Packaging Team <packaging@jellyfin.org>

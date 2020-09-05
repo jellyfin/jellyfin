@@ -13,15 +13,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoFixture" Version="4.11.0" />
-    <PackageReference Include="AutoFixture.AutoMoq" Version="4.11.0" />
-    <PackageReference Include="AutoFixture.Xunit2" Version="4.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.5" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="AutoFixture" Version="4.13.0" />
+    <PackageReference Include="AutoFixture.AutoMoq" Version="4.13.0" />
+    <PackageReference Include="AutoFixture.Xunit2" Version="4.13.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.7" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
     <PackageReference Include="coverlet.collector" Version="1.3.0" />
-    <PackageReference Include="Moq" Version="4.14.1" />
+    <PackageReference Include="Moq" Version="4.14.5" />
   </ItemGroup>
 
   <!-- Code Analyzers -->
@@ -33,8 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../MediaBrowser.Api/MediaBrowser.Api.csproj" />
-    <ProjectReference Include="../../Jellyfin.Api/Jellyfin.Api.csproj" />
+    <ProjectReference Include="..\..\Jellyfin.Server\Jellyfin.Server.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

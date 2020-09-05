@@ -1,11 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Authentication;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Library
@@ -19,26 +20,6 @@ namespace MediaBrowser.Controller.Library
         /// Occurs when a user is updated.
         /// </summary>
         event EventHandler<GenericEventArgs<User>> OnUserUpdated;
-
-        /// <summary>
-        /// Occurs when a user is created.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserCreated;
-
-        /// <summary>
-        /// Occurs when a user is deleted.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserDeleted;
-
-        /// <summary>
-        /// Occurs when a user's password is changed.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserPasswordChanged;
-
-        /// <summary>
-        /// Occurs when a user is locked out.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
 
         /// <summary>
         /// Gets the users.
@@ -55,7 +36,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Initializes the user manager and ensures that a user exists.
         /// </summary>
-        void Initialize();
+        Task InitializeAsync();
 
         /// <summary>
         /// Gets a user by Id.
@@ -106,13 +87,13 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The created user.</returns>
         /// <exception cref="ArgumentNullException">name</exception>
         /// <exception cref="ArgumentException"></exception>
-        User CreateUser(string name);
+        Task<User> CreateUserAsync(string name);
 
         /// <summary>
         /// Deletes the specified user.
         /// </summary>
-        /// <param name="user">The user to be deleted.</param>
-        void DeleteUser(User user);
+        /// <param name="userId">The id of the user to be deleted.</param>
+        void DeleteUser(Guid userId);
 
         /// <summary>
         /// Resets the password.
@@ -165,8 +146,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="pin">The pin.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
-
-        void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders);
 
         NameIdPair[] GetAuthenticationProviders();
 

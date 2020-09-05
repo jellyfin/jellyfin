@@ -5,28 +5,29 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Jellyfin.Data.Enums;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Devices;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Emby.Server.Implementations.Devices
 {
     public class DeviceManager : IDeviceManager
     {
+        private readonly IMemoryCache _memoryCache;
         private readonly IJsonSerializer _json;
         private readonly IUserManager _userManager;
         private readonly IServerConfigurationManager _config;
         private readonly IAuthenticationRepository _authRepo;
-        private readonly Dictionary<string, ClientCapabilities> _capabilitiesCache;
         private readonly object _capabilitiesSyncLock = new object();
 
         public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
@@ -35,13 +36,14 @@ namespace Emby.Server.Implementations.Devices
             IAuthenticationRepository authRepo,
             IJsonSerializer json,
             IUserManager userManager,
-            IServerConfigurationManager config)
+            IServerConfigurationManager config,
+            IMemoryCache memoryCache)
         {
             _json = json;
             _userManager = userManager;
             _config = config;
+            _memoryCache = memoryCache;
             _authRepo = authRepo;
-            _capabilitiesCache = new Dictionary<string, ClientCapabilities>(StringComparer.OrdinalIgnoreCase);
         }
 
         public void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
@@ -51,8 +53,7 @@ namespace Emby.Server.Implementations.Devices
 
             lock (_capabilitiesSyncLock)
             {
-                _capabilitiesCache[deviceId] = capabilities;
-
+                _memoryCache.Set(deviceId, capabilities);
                 _json.SerializeToFile(capabilities, path);
             }
         }
@@ -71,13 +72,13 @@ namespace Emby.Server.Implementations.Devices
 
         public ClientCapabilities GetCapabilities(string id)
         {
+            if (_memoryCache.TryGetValue(id, out ClientCapabilities result))
+            {
+                return result;
+            }
+
             lock (_capabilitiesSyncLock)
             {
-                if (_capabilitiesCache.TryGetValue(id, out var result))
-                {
-                    return result;
-                }
-
                 var path = Path.Combine(GetDevicePath(id), "capabilities.json");
                 try
                 {
