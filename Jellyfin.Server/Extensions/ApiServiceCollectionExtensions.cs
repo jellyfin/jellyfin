@@ -15,6 +15,7 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Formatters;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Json;
