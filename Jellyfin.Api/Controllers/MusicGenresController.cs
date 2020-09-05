@@ -258,7 +258,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing a <see cref="BaseItemDto"/> with the music genre.</returns>
         [HttpGet("{genreName}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetMusicGenre([FromRoute] string genreName, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetMusicGenre([FromRoute][Required] string genreName, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 

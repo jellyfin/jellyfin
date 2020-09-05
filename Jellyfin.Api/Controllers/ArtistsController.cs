@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
@@ -469,7 +470,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the artist.</returns>
         [HttpGet("{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetArtistByName([FromRoute] string name, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetArtistByName([FromRoute][Required] string name, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 

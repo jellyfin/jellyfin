@@ -115,7 +115,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{itemId}/AdditionalParts")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute] Guid itemId, [FromQuery] Guid? userId)
+        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute][Required] Guid itemId, [FromQuery] Guid? userId)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -162,7 +162,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> DeleteAlternateSources([FromRoute] Guid itemId)
+        public async Task<ActionResult> DeleteAlternateSources([FromRoute][Required] Guid itemId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -331,8 +331,8 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetVideoStream(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute][Required] Guid itemId,
+            [FromRoute][Required] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,

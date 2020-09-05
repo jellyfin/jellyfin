@@ -259,7 +259,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the studio.</returns>
         [HttpGet("{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetStudio([FromRoute] string name, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetStudio([FromRoute][Required] string name, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 

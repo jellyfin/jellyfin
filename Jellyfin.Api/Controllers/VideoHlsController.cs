@@ -162,7 +162,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/live.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetLiveHlsStream(
-            [FromRoute] Guid itemId,
+            [FromRoute][Required] Guid itemId,
             [FromQuery] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,

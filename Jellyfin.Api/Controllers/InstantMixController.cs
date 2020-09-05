@@ -64,7 +64,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Songs/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromSong(
-            [FromRoute] Guid id,
+            [FromRoute][Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -101,7 +101,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Albums/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromAlbum(
-            [FromRoute] Guid id,
+            [FromRoute][Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -138,7 +138,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Playlists/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromPlaylist(
-            [FromRoute] Guid id,
+            [FromRoute][Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -211,7 +211,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Artists/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists(
-            [FromRoute] Guid id,
+            [FromRoute][Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -248,7 +248,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("MusicGenres/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenres(
-            [FromRoute] Guid id,
+            [FromRoute][Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -285,7 +285,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Items/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromItem(
-            [FromRoute] Guid id,
+            [FromRoute][Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,

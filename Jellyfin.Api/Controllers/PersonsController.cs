@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -262,7 +263,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<BaseItemDto> GetPerson([FromRoute] string name, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetPerson([FromRoute][Required] string name, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions()
                 .AddClientFields(Request);

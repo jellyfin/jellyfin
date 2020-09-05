@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -89,8 +90,8 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("{itemId}/stream", Name = "HeadAudioStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAudioStream(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute][Required] Guid itemId,
+            [FromRoute][Required] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
