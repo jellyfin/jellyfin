@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.Branding;
 using Xunit;
 
-namespace MediaBrowser.Api.Tests
+namespace Jellyfin.Api.Tests
 {
     public sealed class BrandingServiceTests : IClassFixture<JellyfinApplicationFactory>
     {
