@@ -5,7 +5,6 @@ using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
-using Jellyfin.Server.Models;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -53,9 +52,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(
-                _serverApplicationHost.GetApiPluginAssemblies(),
-                _serverConfigurationManager.Configuration.CorsHosts);
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies());
 
             services.AddJellyfinApiSwagger();
 
@@ -118,7 +115,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseResponseCompression();
 
-                mainApp.UseCors(ServerCorsPolicy.DefaultPolicyName);
+                mainApp.UseCors();
 
                 if (_serverConfigurationManager.Configuration.RequireHttps
                     && _serverApplicationHost.ListenWithHttps)
