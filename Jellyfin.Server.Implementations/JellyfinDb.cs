@@ -145,6 +145,10 @@ namespace Jellyfin.Server.Implementations
             modelBuilder.HasDefaultSchema("jellyfin");
 
             modelBuilder.Entity<DisplayPreferences>()
+                .HasIndex(entity => entity.UserId)
+                .IsUnique(false);
+
+            modelBuilder.Entity<DisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.Client })
                 .IsUnique();
         }
