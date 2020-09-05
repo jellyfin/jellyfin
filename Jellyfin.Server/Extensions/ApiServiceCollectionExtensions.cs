@@ -135,11 +135,8 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
-        /// ///
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(
-            this IServiceCollection serviceCollection,
-            IEnumerable<Assembly> pluginAssemblies)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies)
         {
             IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors()
