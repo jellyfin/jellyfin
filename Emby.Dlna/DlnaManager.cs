@@ -295,7 +295,7 @@ namespace Emby.Dlna
             return true;
         }
 
-        private bool IsRegexMatch(string input, string pattern)
+        private bool IsPropertyMatch(string input, string pattern)
         {
             try
             {
