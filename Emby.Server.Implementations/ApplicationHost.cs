@@ -1011,13 +1011,15 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Comparison function used in <see cref="GetLatestDLLVersion" />.
         /// </summary>
-        private static int VersionCompare(Tuple<Version, string, string> a, Tuple<Version, string, string> b)
+        private static int VersionCompare(
+            (Version PluginVersion, string Name, string Path) a, 
+            (Version PluginVersion, string Name, string Path) b)
         {
-            int compare = string.Compare(a.Item2, b.Item2, true, CultureInfo.InvariantCulture);
+            int compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
 
             if (compare == 0)
             {
-                return a.Item1.CompareTo(b.Item1);
+                return a.PluginVersion.CompareTo(b.PluginVersion);
             }
 
             return compare;
@@ -1034,7 +1036,7 @@ namespace Emby.Server.Implementations
         protected IEnumerable<string> GetLatestDLLVersion(string path, bool cleanup = true)
         {
             var dllList = new List<string>();
-            var versions = new List<Tuple<Version, string, string>>();
+            var versions = new List<(Version PluginVersion, string Name, string Path)>();
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
 
             foreach (var dir in directories)
@@ -1043,12 +1045,12 @@ namespace Emby.Server.Implementations
                 if (p != -1 && Version.TryParse(dir.Substring(p + 1), out Version ver))
                 {
                     // Versioned folder.
-                    versions.Add(Tuple.Create(ver, dir.Substring(0, p), dir));
+                    versions.Add((ver, dir.Substring(0, p), dir));
                 }
                 else
                 {
                     // Un-versioned folder.
-                    versions.Add(Tuple.Create(new Version(), dir, dir));
+                    versions.Add((new Version(), dir, dir));
                 }
             }
 
@@ -1058,10 +1060,10 @@ namespace Emby.Server.Implementations
             // The first item will be the latest version.
             for (int x = versions.Count - 1; x >= 0; x--)
             {
-                if (!string.Equals(lastName, versions[x].Item2, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(lastName, versions[x].Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    dllList.AddRange(Directory.EnumerateFiles(versions[x].Item3, "*.dll", SearchOption.AllDirectories));
-                    lastName = versions[x].Item2;
+                    dllList.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
+                    lastName = versions[x].Name;
                     continue;
                 }
 
@@ -1070,8 +1072,8 @@ namespace Emby.Server.Implementations
                     // Attempt a cleanup of old folders.
                     try
                     {
-                        Logger.LogDebug("Attempting to delete {0}", versions[x].Item3);
-                        Directory.Delete(versions[x].Item3, true);
+                        Logger.LogDebug("Attempting to delete {0}", versions[x].Path);
+                        Directory.Delete(versions[x].Path, true);
                     }
                     catch
                     {
