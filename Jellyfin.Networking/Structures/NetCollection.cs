@@ -8,7 +8,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Structures
 {
     /// <summary>
     /// A class that holds a list of Network Address objects. (IPAddress, IPNetAddress and IPHostEntry).

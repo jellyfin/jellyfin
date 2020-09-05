@@ -4,10 +4,11 @@
 using System;
 using System.Text;
 using System.Web;
-using XMLProperties = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Emby.Dlna.PlayTo
 {
+    using XMLProperties = System.Collections.Generic.Dictionary<string, string>;
+
     /// <summary>
     /// Non-standard XML parser.
     ///

@@ -50,6 +50,11 @@ namespace Emby.Dlna.PlayTo
     public class DeviceInterface : IDisposable
     {
         /// <summary>
+        /// Maximum wait time for http responses in ms.
+        /// </summary>
+        private const int CTSTimeout = 4000;
+
+        /// <summary>
         /// Defines the USERAGENT that we send to devices.
         /// </summary>
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
@@ -188,7 +193,7 @@ namespace Emby.Dlna.PlayTo
             _playToManager = playToManager;
             _config = config;
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
-            TransportState = TransportState.NoMediaPresent;
+            TransportState = TransportState.No_Media_Present;
             Tracing = _config.GetDlnaConfiguration().EnablePlayToTracing;
         }
 
@@ -299,7 +304,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets a value indicating whether IsPaused.
         /// </summary>
-        public bool IsPaused => TransportState == TransportState.Paused || TransportState == TransportState.PausedPlayback;
+        public bool IsPaused => TransportState == TransportState.Paused || TransportState == TransportState.Paused_Playback;
 
         /// <summary>
         /// Gets a value indicating whether IsStopped.
@@ -359,7 +364,15 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(httpClientFactory));
             }
 
-            var document = await GetDataAsync(httpClientFactory, url.ToString(), logger).ConfigureAwait(false);
+            XDocument document;
+            try
+            {
+                document = await GetDataAsync(httpClientFactory, url.ToString(), logger).ConfigureAwait(false);
+            }
+            catch
+            {
+                return null;
+            }
 
             var friendlyNames = new List<string>();
 
@@ -491,16 +504,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            try
-            {
-                return new DeviceInterface(playToManager, deviceProperties, httpClientFactory, logger, config, serverUrl);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types : Don't let our errors affect our owners.
-            catch
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                return null;
-            }
+            return new DeviceInterface(playToManager, deviceProperties, httpClientFactory, logger, config, serverUrl);
         }
 
         /// <summary>
@@ -877,63 +881,51 @@ namespace Emby.Dlna.PlayTo
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
             string reply = string.Empty;
-            int attempt = 0;
-
-            while (true)
+            try
             {
-                try
+                logger.LogDebug("GetDataAsync: Communicating with {0}", url);
+
+                if (Tracing)
                 {
-                    logger.LogDebug("GetDataAsync: Communicating with {0}", url);
+                    logger.LogDebug("-> {0} Headers: {1}", url, PrettyPrint(options.Headers));
+                }
+
+                using var response = await httpClientFactory
+                    .CreateClient(NamedClient.Default)
+                    .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, default).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    using var reader = new StreamReader(stream, Encoding.UTF8);
+                    reply = await reader.ReadToEndAsync().ConfigureAwait(false);
 
                     if (Tracing)
                     {
-                        logger.LogDebug("-> {0} Headers: {1}", url, PrettyPrint(options.Headers));
+                        logger.LogDebug("<- {0}\r\n{1}", url, reply);
                     }
 
-                    using var response = await httpClientFactory
-                        .CreateClient(NamedClient.Default)
-                        .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, default).ConfigureAwait(false);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                        using var reader = new StreamReader(stream, Encoding.UTF8);
-                        reply = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                        if (Tracing)
-                        {
-                            logger.LogDebug("<- {0}\r\n{1}", url, reply);
-                        }
-
-                        return XDocument.Parse(reply);
-                    }
-                }
-                catch (XmlException)
-                {
-                    logger.LogDebug("GetDataAsync: Invalid XML returned {0}", reply);
-                    if (attempt++ > 3)
-                    {
-                        throw;
-                    }
-                }
-                catch (HttpRequestException ex)
-                {
-                    logger.LogDebug("GetDataAsync: Failed with {0}", ex.Message);
-                    if (attempt++ > 3)
-                    {
-                        throw;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Show stack trace on other errors.
-                    logger.LogDebug(ex, "GetDataAsync: Failed.");
-                    if (attempt++ > 3)
-                    {
-                        throw;
-                    }
+                    return XDocument.Parse(reply);
                 }
 
-                await Task.Delay(100).ConfigureAwait(false);
+                logger.LogDebug("Error: {0}", response.ReasonPhrase);
+
+                throw new HttpRequestException(response.ReasonPhrase);
+            }
+            catch (XmlException)
+            {
+                logger.LogDebug("GetDataAsync: Invalid XML returned {0}", reply);
+                throw;
+            }
+            catch (HttpRequestException ex)
+            {
+                logger.LogDebug("GetDataAsync: Failed with {0}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // Show stack trace on other errors.
+                logger.LogDebug(ex, "GetDataAsync: Failed.");
+                throw;
             }
         }
 
@@ -1290,7 +1282,7 @@ namespace Emby.Dlna.PlayTo
             CancellationTokenSource cts = new CancellationTokenSource();
             try
             {
-                cts.CancelAfter(2000);
+                cts.CancelAfter(CTSTimeout);
                 stopWatch.Start();
 
                 var response = await _httpClientFactory
@@ -1316,15 +1308,18 @@ namespace Emby.Dlna.PlayTo
                 // Some devices don't return valid xml - so we need to loosly parse it.
                 XMLUtilities.ParseXML(xmlResponse, out results);
             }
+            catch (TaskCanceledException)
+            {
+                _logger.LogError("{0}: SendCommandAsync timed out: {1}.", Properties.Name, url);
+                return null;
+            }
             catch (HttpRequestException ex)
             {
-                stopWatch.Stop();
                 _logger.LogError("{0}: SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.ToString(), url);
                 return null;
             }
             catch (XmlException)
             {
-                stopWatch.Stop();
                 _logger.LogError("{0}: SendCommandAsync responded with invalid XML. \r\n{1} ", Properties.Name, xmlResponse);
                 return null;
             }
@@ -1508,7 +1503,7 @@ namespace Emby.Dlna.PlayTo
                     _logger.LogDebug("{0}:-> {1}\r\nHeaders: {2}", Properties.Name, url, PrettyPrint(options.Headers));
                 }
 
-                cts.CancelAfter(2000);
+                cts.CancelAfter(CTSTimeout);
                 using var client = _httpClientFactory.CreateClient(NamedClient.Default);
                 var response = await client.SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -1549,6 +1544,10 @@ namespace Emby.Dlna.PlayTo
                     _volRange.Range = _volRange.Max - _volRange.Min;
                     _volRange.FivePoints = (int)Math.Round(_volRange.Range / 100 * 5);
                 }
+            }
+            catch (TaskCanceledException)
+            {
+                _logger.LogError("{0}: GetStateVariableRange timed out.", Properties.Name);
             }
             catch (XmlException)
             {
@@ -1619,10 +1618,12 @@ namespace Emby.Dlna.PlayTo
                     _logger.LogDebug("->{0}:\r\nHeaders: {1}", url, PrettyPrint(options.Headers));
                 }
 
+                CancellationTokenSource cts = new CancellationTokenSource();
                 try
                 {
+                    cts.CancelAfter(CTSTimeout);
                     using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
+                        .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                         .ConfigureAwait(false);
                     if (!response.IsSuccessStatusCode)
                     {
@@ -1637,9 +1638,17 @@ namespace Emby.Dlna.PlayTo
                         return response.Headers.GetValues("SID").FirstOrDefault();
                     }
                 }
+                catch (TaskCanceledException)
+                {
+                    _logger.LogError("{0}: SUBSCRIBE timed out: {1}.", Properties.Name);
+                }
                 catch (HttpException ex)
                 {
                     _logger.LogError(ex, "{0}: SUBSCRIBE failed: {1}", Properties.Name, ex.StatusCode);
+                }
+                finally
+                {
+                    cts.Dispose();
                 }
             }
 
@@ -1724,7 +1733,7 @@ namespace Emby.Dlna.PlayTo
                 CancellationTokenSource cts = new CancellationTokenSource();
                 try
                 {
-                    cts.CancelAfter(2000);
+                    cts.CancelAfter(CTSTimeout);
 
                     using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                         .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token)
@@ -1739,6 +1748,10 @@ namespace Emby.Dlna.PlayTo
                     {
                         _logger.LogDebug("{0}: UNSUBSCRIBE failed. {1}", Properties.Name, response.Content);
                     }
+                }
+                catch (TaskCanceledException)
+                {
+                    _logger.LogError("{0}: UNSUBSCRIBE timed out: {1}.", Properties.Name);
                 }
                 catch (HttpException ex)
                 {
@@ -2147,10 +2160,19 @@ namespace Emby.Dlna.PlayTo
                         _lastTransportRefresh = DateTime.UtcNow;
                         return state;
                     }
+
+                    _logger.LogWarning("{0}: Unable to parse CurrentTransportState {1}.", Properties.Name, TransportState);
+                    return TransportState.Error;
                 }
+
+                _logger.LogWarning("{0}: GetTransportState did not include CurrentTransportState.", Properties.Name);
+                return TransportState.Error;
+            }
+            else
+            {
+                _logger.LogWarning("{0}: GetTransportInfo failed.", Properties.Name);
             }
 
-            _logger.LogWarning("GetTransportInfo failed.");
             return TransportState.Error;
         }
 
@@ -2190,9 +2212,16 @@ namespace Emby.Dlna.PlayTo
                     IsMuted = string.Equals(muted, "1", StringComparison.OrdinalIgnoreCase);
                     return true;
                 }
+                else
+                {
+                    _logger.LogWarning("{0}: CurrentMute missing from GetMute.", Properties.Name);
+                }
+            }
+            else
+            {
+                _logger.LogWarning("{0}: GetMute failed.", Properties.Name);
             }
 
-            _logger.LogWarning("{0} : GetMute failed.", Properties.Name);
             return false;
         }
 

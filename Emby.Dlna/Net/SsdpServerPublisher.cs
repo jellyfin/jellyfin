@@ -9,11 +9,12 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Main;
 using Emby.Dlna.PlayTo.Devices;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
+using Jellyfin.Networking.Manager;
+using Jellyfin.Networking.Ssdp;
 using Microsoft.Extensions.Logging;
-using Mono.Nat;
+// using Mono.Nat;
 
 namespace Emby.Dlna.Net
 {

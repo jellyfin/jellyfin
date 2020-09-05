@@ -1,24 +1,23 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.EntryPoints
+namespace Jellyfin.Networking.Advertising
 {
     /// <summary>
-    /// Class UdpServerEntryPoint.
+    /// Class WhoIsJellyfinServer.
     /// </summary>
-    public sealed class UdpServerEntryPoint : IServerEntryPoint
+    public class WhoIsJellyfinServer
     {
         /// <summary>
         /// The port of the UDP server.
@@ -27,29 +26,24 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly IServerApplicationHost _appHost;
         private readonly IServerConfigurationManager _config;
-        private readonly ILogger<UdpServerEntryPoint> _logger;
-        private List<UdpProcess>? _udpProcess;
-        private bool _disposed;
+        private readonly ILogger _logger;
+        private readonly List<UdpProcess>? _udpProcess;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UdpServerEntryPoint"/> class.
+        /// Initializes a new instance of the <see cref="WhoIsJellyfinServer"/> class.
         /// </summary>
         /// <param name="logger">Logger instance.</param>
         /// <param name="appHost">Application Host instance.</param>
         /// <param name="configurationManager">IServerConfigurationManager instance.</param>
-        public UdpServerEntryPoint(
-            ILogger<UdpServerEntryPoint> logger,
+        public WhoIsJellyfinServer(
+            ILogger logger,
             IServerApplicationHost appHost,
             IServerConfigurationManager configurationManager)
         {
             _logger = logger ?? throw new NullReferenceException(nameof(logger));
             _appHost = appHost ?? throw new NullReferenceException(nameof(appHost));
-            _config = configurationManager;
-        }
+            _config = configurationManager ?? throw new NullReferenceException(nameof(configurationManager));
 
-        /// <inheritdoc />
-        public Task RunAsync()
-        {
             if (_config.Configuration.AutoDiscovery)
             {
                 _udpProcess = UdpServer.CreateMulticastClients(
@@ -68,22 +62,6 @@ namespace Emby.Server.Implementations.EntryPoints
                     _logger.LogDebug("Starting auto discovery.");
                 }
             }
-
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _udpProcess?.Clear();
-            _udpProcess = null;
-            GC.SuppressFinalize(this);
         }
 
         private async Task ProcessMessage(UdpProcess client, string data, IPEndPoint receivedFrom)
@@ -105,13 +83,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 catch (SocketException ex)
                 {
                     _logger.LogError(ex, "Error sending response to {0}->{1}", client.LocalEndPoint.Address, receivedFrom.Address);
-                }
-
-                // TODO: this code does nothing. It calls a blank function.
-                var parts = data.Split('|');
-                if (parts.Length > 1)
-                {
-                    _appHost.EnableLoopback(parts[1]);
                 }
             }
         }

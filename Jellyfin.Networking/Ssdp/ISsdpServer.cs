@@ -1,11 +1,11 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Networking;
-using SsdpMessage = System.Collections.Generic.Dictionary<string, string>;
 
-namespace MediaBrowser.Common.Net
+namespace Jellyfin.Networking.Ssdp
 {
+    using SsdpMessage = System.Collections.Generic.Dictionary<string, string>;
+
     /// <summary>
     /// Interface for SsdpServer.
     /// </summary>
@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Net
          /// <summary>
         /// Gets or sets a value indicating the tracing filter to be applied.
         /// </summary>
-        IPAddress TracingFilter { get; set; }
+        IPAddress? TracingFilter { get; set; }
 
         /// <summary>
         /// Gets the number of times each udp packet should be sent.
@@ -53,7 +53,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="advertising">If provided, contain the address embedded in the message that is being advertised.</param>
         /// <param name="sendCount">Optional value indicating the number of times to transmit the message.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task SendMulticastSSDP(SsdpMessage values, string classification, IPAddress advertising = null, int? sendCount = null);
+        Task SendMulticastSSDP(SsdpMessage values, string classification, IPAddress? advertising = null, int? sendCount = null);
 
         /// <summary>
         /// Unicasts an SSDP message.

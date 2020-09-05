@@ -41,11 +41,14 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Networking.Advertising;
+using Jellyfin.Networking.Gateway;
+using Jellyfin.Networking.Manager;
+using Jellyfin.Networking.UPnP;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
@@ -508,7 +511,10 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<TvdbClientManager>();
 
             ServiceCollection.AddSingleton(_networkManager);
-            ServiceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
+            ServiceCollection.AddSingleton<GatewayMonitor>();
+            ServiceCollection.AddSingleton<WhoIsJellyfinServer>();
+            ServiceCollection.AddSingleton<ExternalPortForwarding>();
+            // ServiceCollection.AddSingleton<ChromecastLocator>();
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
 
@@ -1266,10 +1272,6 @@ namespace Emby.Server.Implementations
                 Logger.LogError(ex, "Error launching url: {url}", url);
                 throw;
             }
-        }
-
-        public virtual void EnableLoopback(string appName)
-        {
         }
 
         private bool _disposed = false;

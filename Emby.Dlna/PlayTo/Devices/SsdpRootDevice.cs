@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 using System.Net;
-using MediaBrowser.Common.Networking;
+using Jellyfin.Networking.Structures;
 
 namespace Emby.Dlna.PlayTo.Devices
 {

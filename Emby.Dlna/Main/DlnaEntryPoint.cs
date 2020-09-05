@@ -4,7 +4,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Emby.Dlna.ConnectionManager;
@@ -13,10 +12,11 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.PlayTo.Devices;
+using Jellyfin.Networking.Manager;
+using Jellyfin.Networking.Ssdp;
+using Jellyfin.Networking.Structures;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -37,12 +37,7 @@ namespace Emby.Dlna.Main
     /// </summary>
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
-#pragma warning disable IDE0032 // Convert to auto: _name only needs to be calculated once. _nLS MUST stay the same until a network change.
-        private static readonly string _name = $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/2.0 RSSDP/1.0";
-        private static string _nLS = Guid.NewGuid().ToString();
-#pragma warning restore IDO0032
         private static DlnaEntryPoint? _instance;
-
         private readonly object _syncLock = new object();
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<DlnaEntryPoint> _logger;
@@ -67,7 +62,6 @@ namespace Emby.Dlna.Main
 
         private SsdpServerPublisher? _publisher;
         private bool _isDisposed;
-        private int _changes = 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DlnaEntryPoint"/> class.
@@ -110,17 +104,11 @@ namespace Emby.Dlna.Main
             _tvSeriesManager = tvSeriesManager;
             _notificationManager = notificationManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-            _ssdpServer = new SsdpServer(_networkManager, config, loggerFactory.CreateLogger<SsdpServer>(), appHost);
+            _ssdpServer = SsdpServer.GetOrCreateInstance(_networkManager, config, loggerFactory.CreateLogger<SsdpServer>(), appHost);
             Instance = this;
 
             _networkManager.NetworkChanged += NetworkChanged;
-            NetworkChange.NetworkAddressChanged += this.OnNetworkAddressChanged;
         }
-
-        /// <summary>
-        /// Gets the GUID of this Dlna instance.
-        /// </summary>
-        public static string NetworkLocationSignature => _nLS;
 
         /// <summary>
         /// Gets the singleton instance of this object.
@@ -137,11 +125,6 @@ namespace Emby.Dlna.Main
                 _instance = value;
             }
         }
-
-        /// <summary>
-        /// Gets the SsdpServer name used in advertisements.
-        /// </summary>
-        public static string Name => _name;
 
         /// <summary>
         /// Gets the DLNA server' ContentDirectory instance.
@@ -177,11 +160,6 @@ namespace Emby.Dlna.Main
         /// Gets the unqiue user agent used in ssdp communications.
         /// </summary>
         public string SsdpUserAgent => $"UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2 /{_appHost.SystemId}";
-
-        /// <summary>
-        /// Gets the number of times the network address has changed.
-        /// </summary>
-        public string NetworkChangeCount => _changes.ToString("d2", CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Executes DlnaEntryPoint's functionality.
@@ -229,8 +207,6 @@ namespace Emby.Dlna.Main
                 _networkManager.NetworkChanged -= NetworkChanged;
                 _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
 
-                NetworkChange.NetworkAddressChanged -= this.OnNetworkAddressChanged;
-
                 ContentDirectory = null;
                 ConnectionManager = null;
                 MediaReceiverRegistrar = null;
@@ -274,22 +250,6 @@ namespace Emby.Dlna.Main
         }
 
         /// <summary>
-        /// Handler for network change events.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void OnNetworkAddressChanged(object sender, EventArgs e)
-        {
-            // As per UPnP Device Architecture v1.0 Annex A - IPv6 Support.
-            _nLS = Guid.NewGuid().ToString();
-            _changes++;
-            if (_changes > 99)
-            {
-                _changes = 1;
-            }
-        }
-
-        /// <summary>
         /// Triggerer every time the configuration is updated.
         /// </summary>
         /// <param name="sender">Configuration instance.</param>
@@ -312,7 +272,7 @@ namespace Emby.Dlna.Main
         /// </summary>
         /// <param name="sender">NetworkManager instance.</param>
         /// <param name="e">Event argument.</param>
-        private void NetworkChanged(object sender, EventArgs e)
+        private void NetworkChanged(object? sender, EventArgs e)
         {
             _publisher?.Dispose();
             _publisher = null;
@@ -348,7 +308,6 @@ namespace Emby.Dlna.Main
                             _mediaSourceManager,
                             _mediaEncoder,
                             _notificationManager,
-                            _ssdpServer,
                             _configurationManager);
                     }
                 }

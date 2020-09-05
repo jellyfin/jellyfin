@@ -1,26 +1,23 @@
-#pragma warning disable CS1591
-#nullable enable
+#pragma warning disable IDE0052 // Remove unread private members : Code in prep for next version of mono.nat.
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Emby.Dlna;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 // using NATLogger = Mono.Nat.Logging.ILogger;
 
-namespace Emby.Server.Implementations.EntryPoints
+namespace Jellyfin.Networking.UPnP
 {
     /// <summary>
     /// Server entrypoint handling external port forwarding.
     /// </summary>
-    public class ExternalPortForwarding : IServerEntryPoint
+    public class ExternalPortForwarding : IDisposable
     {
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger<ExternalPortForwarding> _logger;
@@ -59,24 +56,16 @@ namespace Emby.Server.Implementations.EntryPoints
             _devices = new List<INatDevice>();
             _configIdentifier = GetConfigIdentifier();
             // Mono.Nat.Logging.Logger.Factory = GetLogger;
+            _config.ConfigurationUpdated += OnConfigurationUpdated;
+            Start();
         }
 
-         /// <summary>
+        /// <summary>
         /// Gets a value indicating whether uPNP port forwarding is active.
         /// </summary>
         public bool IsUPnPActive => _config.Configuration.EnableUPnP &&
             _config.Configuration.EnableRemoteAccess &&
             (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _config.Configuration.UPnPCreateHttpPortMap));
-
-        /// <inheritdoc />
-        public Task RunAsync()
-        {
-            Start();
-
-            _config.ConfigurationUpdated += OnConfigurationUpdated;
-
-            return Task.CompletedTask;
-        }
 
         /// <inheritdoc />
         public void Dispose()

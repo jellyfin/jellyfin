@@ -11,7 +11,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Gateway
 {
     /// <summary>
     /// Singleton that periodically checks the state of the internet.

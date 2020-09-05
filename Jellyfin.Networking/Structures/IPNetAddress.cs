@@ -4,7 +4,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Structures
 {
     /// <summary>
     /// An object that holds and IP address and subnet mask.
@@ -256,7 +256,7 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <inheritdoc/>
-        public override bool Equals(IPObject other)
+        public override bool Equals(IPObject? other)
         {
             if (other is IPNetAddress otherObj && !Address.Equals(IPAddress.None) && !otherObj.Address.Equals(IPAddress.None))
             {

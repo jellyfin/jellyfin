@@ -11,6 +11,7 @@ using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo.EventArgs;
 using Emby.Dlna.Ssdp;
 using Jellyfin.Data.Events;
+using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -67,7 +68,6 @@ namespace Emby.Dlna.PlayTo
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             INotificationManager notificationManager,
-            ISsdpServer ssdpServer,
             IServerConfigurationManager configurationManager)
         {
             _logger = loggerFactory.CreateLogger<PlayToManager>();
@@ -86,7 +86,7 @@ namespace Emby.Dlna.PlayTo
             _notificationManager = notificationManager;
 
             _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
-            _playToLocator = new SsdpPlayToLocator(ssdpServer, configurationManager, loggerFactory.CreateLogger<SsdpPlayToLocator>());
+            _playToLocator = new SsdpPlayToLocator(loggerFactory.CreateLogger<SsdpPlayToLocator>(), configurationManager, appHost);
             _playToLocator.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
             _playToLocator.Start();
         }

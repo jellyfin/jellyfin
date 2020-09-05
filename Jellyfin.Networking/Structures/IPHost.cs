@@ -1,14 +1,13 @@
 #nullable enable
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Structures
 {
     /// <summary>
     /// Object that holds a host name.
@@ -247,7 +246,7 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <inheritdoc/>
-        public override bool Equals(IPObject other)
+        public override bool Equals(IPObject? other)
         {
             if (other is IPHost otherObj)
             {

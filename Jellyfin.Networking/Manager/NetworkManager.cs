@@ -7,13 +7,13 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Structures;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Manager
 {
     /// <summary>
     /// Class to take care of network interface management.
@@ -108,7 +108,7 @@ namespace MediaBrowser.Common.Networking
             _interfaceNames = new SortedList<string, int>();
             _overrideUrls = new Dictionary<IPNetAddress, string>();
 
-            UpdateSettings();
+            UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
             if (!IsIP6Enabled && !IsIP4Enabled)
             {
                 throw new ApplicationException("IPv4 and IPv6 cannot both be disabled.");
@@ -142,6 +142,11 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
+        /// Gets the unique network location signature, which is updated on every network change.
+        /// </summary>
+        public static string NetworkLocationSignature { get; internal set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
         /// Gets a value indicating whether IP6 is enabled.
         /// </summary>
         public static bool IsIP6Enabled { get; internal set; }
@@ -156,6 +161,11 @@ namespace MediaBrowser.Common.Networking
         /// </summary>
         public static bool EnableMultiSocketBinding { get; internal set; } = true;
 
+        /// <summary>
+        /// Gets the number of times the network address has changed.
+        /// </summary>
+        public static int NetworkChangeCount { get; internal set; } = 1;
+
         /// <inheritdoc/>
         public NetCollection RemoteAddressFilter { get; private set; }
 
@@ -163,6 +173,11 @@ namespace MediaBrowser.Common.Networking
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
         /// </summary>
         public bool TrustAllIP6Interfaces { get; internal set; }
+
+        /// <summary>
+        /// Gets the Published server override list.
+        /// </summary>
+        public Dictionary<IPNetAddress, string> PublishedServerOverrides => _overrideUrls;
 
         /// <inheritdoc/>
         public void Dispose()
@@ -215,25 +230,6 @@ namespace MediaBrowser.Common.Networking
         public bool IsExcluded(IPAddress ip)
         {
             return _excludedSubnets.Contains(ip);
-        }
-
-        /// <summary>
-        /// Adds an override url.
-        /// </summary>
-        /// <param name="address">IP address to match.</param>
-        /// <param name="url">Corresponding url.</param>
-        public void AddOverrideUrl(IPNetAddress address, string url)
-        {
-            _overrideUrls[address] = url;
-        }
-
-        /// <summary>
-        /// Removes an override url.
-        /// </summary>
-        /// <param name="address">IP address to match.</param>
-        public void DeleteOverrrideUrl(IPNetAddress address)
-        {
-            _overrideUrls.Remove(address);
         }
 
         /// <inheritdoc/>
@@ -349,6 +345,7 @@ namespace MediaBrowser.Common.Networking
         /// <inheritdoc/>
         public string GetBindInterface(object? source, out int? port)
         {
+            bool chromeCast = false;
             port = null;
             // Parse the source object in an attempt to discover where the request originated.
             IPObject sourceAddr;
@@ -367,6 +364,13 @@ namespace MediaBrowser.Common.Networking
             }
             else if (source is string sourceStr && !string.IsNullOrEmpty(sourceStr))
             {
+                if (string.Equals(sourceStr, "chromecast", StringComparison.OrdinalIgnoreCase))
+                {
+                    chromeCast = true;
+                    // Just assign a variable so has source = true;
+                    sourceAddr = IPNetAddress.IP4Loopback;
+                }
+
                 if (IPHost.TryParse(sourceStr, out IPHost host))
                 {
                     sourceAddr = host;
@@ -411,18 +415,21 @@ namespace MediaBrowser.Common.Networking
                 // Check for user override.
                 foreach (var addr in _overrideUrls)
                 {
+                    // Remaining. Match anything.
                     if (addr.Key.Equals(IPAddress.Broadcast))
                     {
                         bindPreference = addr.Value;
                         break;
                     }
-                    else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && isExternal)
+                    else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && (isExternal || chromeCast))
                     {
+                        // External.
                         bindPreference = addr.Value;
                         break;
                     }
                     else if (addr.Key.Contains(sourceAddr))
                     {
+                        // Match ip address.
                         bindPreference = addr.Value;
                         break;
                     }
@@ -746,6 +753,24 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
+        /// Reloads all settings and re-initialises the instance.
+        /// </summary>
+        /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
+        public void UpdateSettings(ServerConfiguration config)
+        {
+            IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
+            IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
+            TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
+            EnableMultiSocketBinding = config.EnableMultiSocketBinding;
+
+            InitialiseInterfaces();
+            InitialiseLAN(config);
+            InitialiseBind(config);
+            InitialiseRemote(config);
+            InitialiseOverrides(config);
+        }
+
+        /// <summary>
         /// Protected implementation of Dispose pattern.
         /// </summary>
         /// <param name="disposing">True to dispose the managed state.</param>
@@ -776,22 +801,7 @@ namespace MediaBrowser.Common.Networking
 
         private void ConfigurationUpdated(object? sender, EventArgs args)
         {
-            UpdateSettings();
-        }
-
-        private void UpdateSettings()
-        {
-            var config = (ServerConfiguration)_configurationManager.CommonConfiguration;
-            IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
-            IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
-            TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
-            EnableMultiSocketBinding = config.EnableMultiSocketBinding;
-
-            InitialiseInterfaces();
-            InitialiseLAN(config);
-            InitialiseBind(config);
-            InitialiseRemote(config);
-            InitialiseOverrides(config);
+            UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
         }
 
         /// <summary>
@@ -921,6 +931,14 @@ namespace MediaBrowser.Common.Networking
         /// </summary>
         private void OnNetworkChanged()
         {
+            // As per UPnP Device Architecture v1.0 Annex A - IPv6 Support.
+            NetworkLocationSignature = Guid.NewGuid().ToString();
+            NetworkChangeCount++;
+            if (NetworkChangeCount > 99)
+            {
+                NetworkChangeCount = 1;
+            }
+
             if (!_eventfire)
             {
                 _logger.LogDebug("Network Address Change Event.");

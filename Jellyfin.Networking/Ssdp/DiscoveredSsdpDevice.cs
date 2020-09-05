@@ -1,10 +1,8 @@
-#nullable enable
 using System;
-using System.Net.Http.Headers;
 
 using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
 
-namespace Emby.Dlna.PlayTo.Devices
+namespace Jellyfin.Networking.Ssdp
 {
     /// <summary>
     /// Represents a discovered device, containing basic information about the device and the location of it's full device description document. Also provides convenience methods for retrieving the device description document.
@@ -25,17 +23,19 @@ namespace Emby.Dlna.PlayTo.Devices
         public DiscoveredSsdpDevice(DateTimeOffset asAt, string notificationType, SddpMessage messageHeaders)
         {
             AsAt = asAt;
-            var cc = messageHeaders["CACHE-CONTROL"];
             CacheLifetime = TimeSpan.Zero;
 
-            if (!string.IsNullOrEmpty(cc))
+            if (messageHeaders.TryGetValue("CACHE-CONTROL", out var cc))
             {
-                var values = cc.Split('=');
-                if (string.Equals("Max-Age", values[0], StringComparison.OrdinalIgnoreCase) || string.Equals("Shared-MaxAge", values[0], StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(cc))
                 {
-                    if (TimeSpan.TryParse(values[1], out TimeSpan clt))
+                    var values = cc.Split('=');
+                    if (string.Equals("Max-Age", values[0], StringComparison.OrdinalIgnoreCase) || string.Equals("Shared-MaxAge", values[0], StringComparison.OrdinalIgnoreCase))
                     {
-                        CacheLifetime = clt;
+                        if (TimeSpan.TryParse(values[1], out TimeSpan clt))
+                        {
+                            CacheLifetime = clt;
+                        }
                     }
                 }
             }

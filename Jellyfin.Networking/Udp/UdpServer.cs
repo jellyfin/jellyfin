@@ -8,12 +8,14 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Manager;
+using Jellyfin.Networking.Structures;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Udp
 {
     /// <summary>
     /// Processes a SSDP message.
@@ -105,6 +107,11 @@ namespace MediaBrowser.Common.Networking
         /// Gets the ConfigurationManager instance.
         /// </summary>
         protected IConfigurationManager ConfigurationManager { get; }
+
+        /// <summary>
+        /// Gets the common configuration.
+        /// </summary>
+        protected ServerConfiguration Configuration { get => (ServerConfiguration)ConfigurationManager.CommonConfiguration; }
 
         /// <summary>
         /// Parses a string and returns a range value if possible.
@@ -717,6 +724,11 @@ namespace MediaBrowser.Common.Networking
 
         private static void OnReceive(IAsyncResult result)
         {
+            if (result.AsyncState == null)
+            {
+                return;
+            }
+
             UdpProcess client = (UdpProcess)result.AsyncState;
 
             if (client == null || client.Processor == null)

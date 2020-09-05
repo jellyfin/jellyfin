@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -69,13 +70,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets public information about the server.
         /// </summary>
+        /// <param name="chromecast">True if the request is for a cast.</param>
         /// <response code="200">Information retrieved.</response>
         /// <returns>A <see cref="PublicSystemInfo"/> with public info about the system.</returns>
         [HttpGet("Info/Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
+        public ActionResult<PublicSystemInfo> GetPublicSystemInfo(bool chromecast = false)
         {
-            return _appHost.GetPublicSystemInfo(Request.Host.Value);
+            return _appHost.GetPublicSystemInfo(chromecast ? "Chromecast" : Request.Host.Value);
         }
 
         /// <summary>

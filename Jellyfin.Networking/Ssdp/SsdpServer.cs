@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,17 +7,15 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Emby.Dlna.Configuration;
-using Emby.Dlna.Main;
+using Jellyfin.Networking.Manager;
+using Jellyfin.Networking.Structures;
+using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
-using Mono.Nat;
+// using Mono.Nat;
 
-namespace Emby.Dlna.Net
+namespace Jellyfin.Networking.Ssdp
 {
     using SsdpMessage = System.Collections.Generic.Dictionary<string, string>;
 
@@ -31,13 +28,14 @@ namespace Emby.Dlna.Net
     /// </summary>
     public class SsdpServer : UdpServer, ISsdpServer
     {
+        private static readonly string _hostName = $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
+        private static SsdpServer? _instance;
         private readonly object _synchroniser;
         private readonly IServerApplicationHost _appHost;
         private readonly Hashtable _listeners;
         private readonly Hashtable _senders;
         private readonly Dictionary<string, List<EventHandler<SsdpEventArgs>>> _events;
         private NetCollection _interfaces;
-        private DlnaOptions _options;
         private bool _running;
 
         /// <summary>
@@ -59,7 +57,6 @@ namespace Emby.Dlna.Net
             _synchroniser = new object();
             _listeners = new Hashtable();
             _senders = new Hashtable();
-            _options = ConfigurationManager.GetConfiguration<DlnaOptions>("dlna");
             _events = new Dictionary<string, List<EventHandler<SsdpEventArgs>>>();
             UpdateArguments();
         }
@@ -73,7 +70,7 @@ namespace Emby.Dlna.Net
         /// <summary>
         /// Gets the number of times each udp packet should be sent.
         /// </summary>
-        public int UdpSendCount { get => _options.UDPSendCount; }
+        public int UdpSendCount { get => Configuration.UDPSendCount; }
 
         /// <summary>
         /// Gets a value indicating whether detailed DNLA debug logging is active.
@@ -84,6 +81,28 @@ namespace Emby.Dlna.Net
         /// Gets or sets a value indicating the tracing filter to be applied.
         /// </summary>
         public IPAddress? TracingFilter { get; set; }
+
+        /// <summary>
+        /// Gets or creates the singleton instance.
+        /// </summary>
+        /// <param name="networkManager">Network manager instance.</param>
+        /// <param name="configurationManager">Configuration manager instance.</param>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="appHost">Application instance.</param>
+        /// <returns>The SsdpServer singleton instance.</returns>
+        public static ISsdpServer GetOrCreateInstance(
+            INetworkManager networkManager,
+            IConfigurationManager configurationManager,
+            ILogger logger,
+            IServerApplicationHost appHost)
+        {
+            if (_instance == null)
+            {
+                _instance = new SsdpServer(networkManager, configurationManager, logger, appHost);
+            }
+
+            return _instance;
+        }
 
         /// <summary>
         /// Adds an event.
@@ -158,30 +177,33 @@ namespace Emby.Dlna.Net
                 }
             }
 
-            foreach (var entry in _senders.Keys)
+            foreach (var ipEntry in _senders.Keys)
             {
-                var addr = (IPAddress)entry;
-                if (((advertising != null) && (addr.AddressFamily != advertising.AddressFamily)) || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
+                if (ipEntry != null)
                 {
-                    continue;
-                }
+                    var addr = (IPAddress)ipEntry;
+                    if (((advertising != null) && (addr.AddressFamily != advertising.AddressFamily)) || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
+                    {
+                        continue;
+                    }
 
-                var mcast = addr.AddressFamily == AddressFamily.InterNetwork ?
-                    IPNetAddress.MulticastIPv4 : IPObject.IsIPv6LinkLocal(addr) ?
-                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal;
+                    var mcast = addr.AddressFamily == AddressFamily.InterNetwork ?
+                        IPNetAddress.MulticastIPv4 : IPObject.IsIPv6LinkLocal(addr) ?
+                            IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal;
 
-                values["HOST"] = mcast.ToString() + ":1900";
+                    values["HOST"] = mcast.ToString() + ":1900";
 
-                var message = BuildMessage(classification, values);
+                    var message = BuildMessage(classification, values);
 
-                var client = (UdpProcess)_senders[addr];
-                if (client != null)
-                {
-                    await SendMulticast(client, 1900, message, sendCount ?? UdpSendCount).ConfigureAwait(false);
-                }
-                else
-                {
-                    Logger.LogError("Unable to find client for {0}", addr);
+                    var client = _senders[ipEntry];
+                    if (client != null)
+                    {
+                        await SendMulticast((UdpProcess)client, 1900, message, sendCount ?? UdpSendCount).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Logger.LogError("Unable to find client for {0}", addr);
+                    }
                 }
             }
 
@@ -215,11 +237,11 @@ namespace Emby.Dlna.Net
 
             _interfaces = NetManager.GetInternalBindAddresses();
 
-            _options = ConfigurationManager.GetConfiguration<DlnaOptions>("dlna");
-            if (!string.IsNullOrEmpty(_options.SSDPTracingFilter))
+            if (!string.IsNullOrEmpty(Configuration.SSDPTracingFilter))
             {
-                if (IPAddress.TryParse(_options.SSDPTracingFilter, out IPAddress result))
+                if (IPAddress.TryParse(Configuration.SSDPTracingFilter, out IPAddress result))
                 {
+                    Logger.LogDebug("Filtering on: {0}", result);
                     TracingFilter = result;
                 }
                 else
@@ -229,36 +251,41 @@ namespace Emby.Dlna.Net
             }
 
             IPAddress? ipFilter = null;
-            if (IPAddress.TryParse(_options.SSDPTracingFilter, out IPAddress filter))
+            if (IPAddress.TryParse(Configuration.SSDPTracingFilter, out IPAddress filter))
             {
                 ipFilter = filter;
             }
 
-            if (_options.EnableSSDPTracing != Tracing || ipFilter != TracingFilter)
+            if (Configuration.EnableSSDPTracing != Tracing || ipFilter != TracingFilter)
             {
                 UdpProcess client;
                 foreach (var i in _listeners.Values)
                 {
-                    client = (UdpProcess)i;
-                    client.TracingFilter = ipFilter;
-                    client.Tracing = _options.EnableSSDPTracing;
+                    if (i != null)
+                    {
+                        client = (UdpProcess)i;
+                        client.TracingFilter = ipFilter;
+                        client.Tracing = Configuration.EnableSSDPTracing;
+                    }
                 }
 
                 foreach (var i in _senders.Values)
                 {
-                    client = (UdpProcess)i;
-                    client.TracingFilter = ipFilter;
-                    client.Tracing = _options.EnableSSDPTracing;
+                    if (i != null)
+                    {
+                        client = (UdpProcess)i;
+                        client.TracingFilter = ipFilter;
+                        client.Tracing = Configuration.EnableSSDPTracing;
+                    }
                 }
 
-                Tracing = _options.EnableSSDPTracing;
+                Tracing = Configuration.EnableSSDPTracing;
                 TracingFilter = ipFilter;
             }
 
-            var config = (ServerConfiguration)ConfigurationManager.CommonConfiguration;
-            IsUPnPActive = config.EnableUPnP &&
-                           config.EnableRemoteAccess &&
-                           (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && config.UPnPCreateHttpPortMap));
+            IsUPnPActive = Configuration.EnableUPnP &&
+                           Configuration.EnableRemoteAccess &&
+                           (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && Configuration.UPnPCreateHttpPortMap));
 
             // if (IsUPnPActive)
             // {
@@ -289,7 +316,7 @@ namespace Emby.Dlna.Net
         /// <param name="header">SSDP Header string.</param>
         /// <param name="values">SSDP paramaters.</param>
         /// <returns>Formatted string.</returns>
-        private static string BuildMessage(string header, Dictionary<string, string> values)
+        private string BuildMessage(string header, Dictionary<string, string> values)
         {
             const string SsdpOpt = "\"http://schemas.upnp.org/upnp/1/0/\"; ns=";
 
@@ -298,11 +325,12 @@ namespace Emby.Dlna.Net
                 throw new ArgumentNullException(nameof(values));
             }
 
-            values["SERVER"] = DlnaEntryPoint.Name;
+            string nc = NetworkManager.NetworkChangeCount.ToString("d2", CultureInfo.InvariantCulture);
+            values["SERVER"] = _hostName;
             // Optional headers.
-            values["OPT"] = SsdpOpt + DlnaEntryPoint.Instance.NetworkChangeCount;
+            values["OPT"] = SsdpOpt + nc;
             values["CONFIGID.UPNP.ORG"] = "1";
-            values["BOOTID.UPNP.ORG"] = values[DlnaEntryPoint.Instance.NetworkChangeCount + "-NLS"] = DlnaEntryPoint.NetworkLocationSignature;
+            values["BOOTID.UPNP.ORG"] = values[nc + "-NLS"] = NetworkManager.NetworkLocationSignature;
 
             var builder = new StringBuilder();
 
@@ -353,10 +381,10 @@ namespace Emby.Dlna.Net
                 }
             }
 
-            var client = (UdpProcess)_senders[localIPAddress];
+            var client = _senders[localIPAddress];
             if (client != null)
             {
-                await SendUnicast(client, message, endPoint).ConfigureAwait(false);
+                await SendUnicast((UdpProcess)client, message, endPoint).ConfigureAwait(false);
             }
             else
             {
@@ -429,12 +457,16 @@ namespace Emby.Dlna.Net
                 return Task.CompletedTask;
             }
 
-            var from = (UdpProcess)_senders[receivedFrom.Address];
-            if (from != null && from.LocalEndPoint.Equals(receivedFrom))
-            {
-                Logger.LogDebug("FILTERING: Message came from us {0}, {1}", from.LocalEndPoint, receivedFrom);
-                return Task.CompletedTask;
-            }
+            // var from = _senders[receivedFrom.Address];
+            // if (from != null)
+            // {
+            //    var fromClient = (UdpProcess)from;
+            //    if (fromClient.LocalEndPoint.Equals(receivedFrom))
+            //    {
+            //        Logger.LogDebug("FILTERING: Message came from us {0}, {1}", fromClient.LocalEndPoint, receivedFrom);
+            //        return Task.CompletedTask;
+            //    }
+            // }
 
             string action;
 
@@ -443,7 +475,7 @@ namespace Emby.Dlna.Net
 
             var localIpAddress = client.LocalEndPoint.Address;
 
-            if (_options.EnableSSDPTracing)
+            if (Configuration.EnableSSDPTracing)
             {
                 if (TracingFilter == null || TracingFilter.Equals(receivedFrom.Address) || TracingFilter.Equals(localIpAddress))
                 {
@@ -487,6 +519,7 @@ namespace Emby.Dlna.Net
             {
                 _running = true;
                 NetManager.NetworkChanged += NetworkChanged;
+
                 Logger.LogDebug("EnableMultiSocketBinding : {0}", EnableMultiSocketBinding);
 
                 // if (IsUPnPActive)
@@ -500,7 +533,7 @@ namespace Emby.Dlna.Net
                     if (client != null)
                     {
                         client.TracingFilter = TracingFilter;
-                        client.Tracing = _options.EnableSSDPTracing;
+                        client.Tracing = Configuration.EnableSSDPTracing;
                         _listeners[ip.Address] = client;
                     }
 
@@ -508,7 +541,7 @@ namespace Emby.Dlna.Net
                     if (client != null)
                     {
                         client.TracingFilter = TracingFilter;
-                        client.Tracing = _options.EnableSSDPTracing;
+                        client.Tracing = Configuration.EnableSSDPTracing;
                         _senders[ip.Address] = client;
                     }
                 }
@@ -532,7 +565,7 @@ namespace Emby.Dlna.Net
         /// </summary>
         /// <param name="sender">NetManager object.</param>
         /// <param name="args">Event arguments.</param>
-        private void NetworkChanged(object sender, System.EventArgs args)
+        private void NetworkChanged(object? sender, System.EventArgs args)
         {
             if (_running && !Disposed)
             {

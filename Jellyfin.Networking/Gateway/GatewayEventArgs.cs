@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Gateway
 {
     /// <summary>
     /// EventArgs class.

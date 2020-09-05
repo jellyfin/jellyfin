@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using MediaBrowser.Common.Networking;
+using Jellyfin.Networking.Structures;
+using MediaBrowser.Model.Configuration;
 
-namespace MediaBrowser.Common.Net
+namespace Jellyfin.Networking.Manager
 {
     /// <summary>
     /// Interface for the NetworkManager class.
@@ -16,6 +17,11 @@ namespace MediaBrowser.Common.Net
         /// Event triggered on network changes.
         /// </summary>
         event EventHandler NetworkChanged;
+
+        /// <summary>
+        /// Gets the Published server override list.
+        /// </summary>
+        Dictionary<IPNetAddress, string> PublishedServerOverrides { get; }
 
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
@@ -180,5 +186,11 @@ namespace MediaBrowser.Common.Net
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         NetCollection GetFilteredLANSubnets(NetCollection? filter = null);
+
+        /// <summary>
+        /// Reloads all settings and re-initialises the instance.
+        /// </summary>
+        /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
+        public void UpdateSettings(ServerConfiguration config);
     }
 }

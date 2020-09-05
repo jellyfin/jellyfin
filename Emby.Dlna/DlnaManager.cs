@@ -258,7 +258,7 @@ namespace Emby.Dlna
         {
             try
             {
-                return Regex.IsMatch(input, pattern);
+                return Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || input.Contains(pattern, StringComparison.OrdinalIgnoreCase);
             }
             catch (ArgumentException ex)
             {

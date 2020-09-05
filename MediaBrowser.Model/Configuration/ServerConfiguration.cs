@@ -1,5 +1,6 @@
 #nullable disable
 #pragma warning disable CS1591
+#pragma warning disable CA1819
 
 using System;
 using System.Collections.Generic;
@@ -20,23 +21,23 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
-        public bool EnableUPnP { get; set; }
+        public bool EnableUPnP { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
         /// </summary>
-        public bool EnableMetrics { get; set; }
+        public bool EnableMetrics { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the public mapped port.
         /// </summary>
         /// <value>The public mapped port.</value>
-        public int PublicPort { get; set; }
+        public int PublicPort { get; set; } = DefaultHttpPort;
 
         /// <summary>
         /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
         /// </summary>
-        public bool UPnPCreateHttpPortMap { get; set; }
+        public bool UPnPCreateHttpPortMap { get; set; } = false;
 
         /// <summary>
         /// Gets or sets client udp port range.
@@ -46,7 +47,7 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether gets or sets IPV6 capability.
         /// </summary>
-        public bool EnableIPV6 { get; set; }
+        public bool EnableIPV6 { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether gets or sets IPV4 capability.
@@ -54,57 +55,80 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIPV4 { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether detailed ssdp logs are sent to the console/log.
+        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
+        /// </summary>
+        public bool EnableSSDPTracing { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether an IP address is to be used to filter the detailed ssdp logs that are being sent to the console/log.
+        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
+        /// </summary>
+        public string SSDPTracingFilter { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the number of times SSDP UDP messages are sent.
+        /// </summary>
+        public int UDPSendCount { get; set; } = 2;
+
+        /// <summary>
+        /// Gets or sets the delay between each groups of SSDP messages (in ms).
+        /// </summary>
+        public int UDPSendDelay { get; set; } = 100;
+
+        /// <summary>
         /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
         /// </summary>
-        public int GatewayMonitorPeriod { get; set; }
+        public int GatewayMonitorPeriod { get; set; } = 60;
 
         /// <summary>
         /// Gets a value indicating whether is multi-socket binding available.
         /// </summary>
-        public bool EnableMultiSocketBinding { get; }
+        public bool EnableMultiSocketBinding { get; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
+        /// Depending on the address range implemented ULA ranges might not be used.
         /// </summary>
-        public bool TrustAllIP6Interfaces { get; set; }
+        public bool TrustAllIP6Interfaces { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the ports that HDHomerun uses.
         /// </summary>
-        public string HDHomerunPortRange { get; set; }
+        public string HDHomerunPortRange { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets PublishedServerUri to advertise for specific subnets.
         /// </summary>
-        public string[] PublishedServerUriBySubnet { get; set; }
+        public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets Autodiscovery tracing.
+        /// </summary>
+        public bool AutoDiscoveryTracing { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Autodiscovery is enabled.
+        /// </summary>
+        public bool AutoDiscovery { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the public HTTPS port.
         /// </summary>
         /// <value>The public HTTPS port.</value>
-        public int PublicHttpsPort { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether gets or sets Autodiscovery tracing.
-        /// </summary>
-        public bool AutoDiscoveryTracing { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether Autodiscovery is enabled.
-        /// </summary>
-        public bool AutoDiscovery { get; set; }
+        public int PublicHttpsPort { get; set; } = DefaultHttpsPort;
 
         /// <summary>
         /// Gets or sets the HTTP server port number.
         /// </summary>
         /// <value>The HTTP server port number.</value>
-        public int HttpServerPortNumber { get; set; }
+        public int HttpServerPortNumber { get; set; } = DefaultHttpPort;
 
         /// <summary>
         /// Gets or sets the HTTPS server port number.
         /// </summary>
         /// <value>The HTTPS server port number.</value>
-        public int HttpsPortNumber { get; set; }
+        public int HttpsPortNumber { get; set; } = DefaultHttpsPort;
 
         /// <summary>
         /// Gets or sets a value indicating whether to use HTTPS.
@@ -113,19 +137,19 @@ namespace MediaBrowser.Model.Configuration
         /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
         /// provided for <see cref="CertificatePath"/> and <see cref="CertificatePassword"/>.
         /// </remarks>
-        public bool EnableHttps { get; set; }
+        public bool EnableHttps { get; set; } = false;
 
-        public bool EnableNormalizedItemByNameIds { get; set; }
+        public bool EnableNormalizedItemByNameIds { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the filesystem path of an X.509 certificate to use for SSL.
         /// </summary>
-        public string CertificatePath { get; set; }
+        public string CertificatePath { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="CertificatePath"/>.
         /// </summary>
-        public string CertificatePassword { get; set; }
+        public string CertificatePassword { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is port authorized.
@@ -134,21 +158,24 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         /// <summary>
-        /// Gets or sets if quick connect is available for use on this server.
+        /// Gets or sets a value indicating whether quick connect is available for use on this server.
         /// </summary>
-        public bool QuickConnectAvailable { get; set; }
+        public bool QuickConnectAvailable { get; set; } = false;
 
-        public bool AutoRunWebApp { get; set; }
+        public bool AutoRunWebApp { get; set; } = true;
 
-        public bool EnableRemoteAccess { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether access outside of the LAN is permitted.
+        /// </summary>
+        public bool EnableRemoteAccess { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
         /// </summary>
         /// <value><c>true</c> if [enable case sensitive item ids]; otherwise, <c>false</c>.</value>
-        public bool EnableCaseSensitiveItemIds { get; set; }
+        public bool EnableCaseSensitiveItemIds { get; set; } = true;
 
-        public bool DisableLiveTvChannelUserDataName { get; set; }
+        public bool DisableLiveTvChannelUserDataName { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the metadata path.
@@ -168,64 +195,64 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the metadata country code.
         /// </summary>
         /// <value>The metadata country code.</value>
-        public string MetadataCountryCode { get; set; }
+        public string MetadataCountryCode { get; set; } = "US";
 
         /// <summary>
-        /// Characters to be replaced with a ' ' in strings to create a sort name.
+        /// Gets or sets characters to be replaced with a ' ' in strings to create a sort name.
         /// </summary>
         /// <value>The sort replace characters.</value>
-        public string[] SortReplaceCharacters { get; set; }
+        public string[] SortReplaceCharacters { get; set; } = new[] { ".", "+", "%" };
 
         /// <summary>
-        /// Characters to be removed from strings to create a sort name.
+        /// Gets or sets characters to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove characters.</value>
-        public string[] SortRemoveCharacters { get; set; }
+        public string[] SortRemoveCharacters { get; set; } = new[] { ",", "&", "-", "{", "}", "'" };
 
         /// <summary>
-        /// Words to be removed from strings to create a sort name.
+        /// Gets or sets words to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove words.</value>
-        public string[] SortRemoveWords { get; set; }
+        public string[] SortRemoveWords { get; set; } = new[] { "the", "a", "an" };
 
         /// <summary>
         /// Gets or sets the minimum percentage of an item that must be played in order for playstate to be updated.
         /// </summary>
         /// <value>The min resume PCT.</value>
-        public int MinResumePct { get; set; }
+        public int MinResumePct { get; set; } = 5;
 
         /// <summary>
         /// Gets or sets the maximum percentage of an item that can be played while still saving playstate. If this percentage is crossed playstate will be reset to the beginning and the item will be marked watched.
         /// </summary>
         /// <value>The max resume PCT.</value>
-        public int MaxResumePct { get; set; }
+        public int MaxResumePct { get; set; } = 90;
 
         /// <summary>
         /// Gets or sets the minimum duration that an item must have in order to be eligible for playstate updates..
         /// </summary>
         /// <value>The min resume duration seconds.</value>
-        public int MinResumeDurationSeconds { get; set; }
+        public int MinResumeDurationSeconds { get; set; } = 300;
 
         /// <summary>
-        /// The delay in seconds that we will wait after a file system change to try and discover what has been added/removed
+        /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
         /// Some delay is necessary with some items because their creation is not atomic.  It involves the creation of several
         /// different directories and files.
         /// </summary>
         /// <value>The file watcher delay.</value>
-        public int LibraryMonitorDelay { get; set; }
+        public int LibraryMonitorDelay { get; set; } = 60;
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable dashboard response caching].
         /// Allows potential contributors without visual studio to modify production dashboard code and test changes.
         /// </summary>
         /// <value><c>true</c> if [enable dashboard response caching]; otherwise, <c>false</c>.</value>
-        public bool EnableDashboardResponseCaching { get; set; }
+        public bool EnableDashboardResponseCaching { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a custom path to serve the dashboard from.
         /// </summary>
         /// <value>The dashboard source path, or null if the default path should be used.</value>
-        public string DashboardSourcePath { get; set; }
+        public string DashboardSourcePath { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the image saving convention.
@@ -235,9 +262,9 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public bool SkipDeserializationForBasicTypes { get; set; }
+        public bool SkipDeserializationForBasicTypes { get; set; } = true;
 
-        public string ServerName { get; set; }
+        public string ServerName { get; set; } = string.Empty;
 
         public string BaseUrl
         {
@@ -269,128 +296,76 @@ namespace MediaBrowser.Model.Configuration
             }
         }
 
-        public string UICulture { get; set; }
+        public string UICulture { get; set; } = "en-US";
 
-        public bool SaveMetadataHidden { get; set; }
+        public bool SaveMetadataHidden { get; set; } = false;
 
-        public NameValuePair[] ContentTypes { get; set; }
+        public NameValuePair[] ContentTypes { get; set; } = Array.Empty<NameValuePair>();
 
-        public int RemoteClientBitrateLimit { get; set; }
+        public int RemoteClientBitrateLimit { get; set; } = 0;
 
-        public bool EnableFolderView { get; set; }
+        public bool EnableFolderView { get; set; } = false;
 
-        public bool EnableGroupingIntoCollections { get; set; }
+        public bool EnableGroupingIntoCollections { get; set; } = false;
 
-        public bool DisplaySpecialsWithinSeasons { get; set; }
+        public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 
-        public string[] LocalNetworkSubnets { get; set; }
+        /// <summary>
+        /// Gets or sets the subnets that are deemed to make up the LAN.
+        /// </summary>
+        public string[] LocalNetworkSubnets { get; set; } = Array.Empty<string>();
 
-        public string[] LocalNetworkAddresses { get; set; }
+        /// <summary>
+        /// Gets or sets the interface addresses which Jellyfin will bind to. If empty, all interfaces will be used.
+        /// </summary>
+        public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
 
-        public string[] CodecsUsed { get; set; }
+        public string[] CodecsUsed { get; set; } = Array.Empty<string>();
 
-        public List<RepositoryInfo> PluginRepositories { get; set; }
+        public List<RepositoryInfo> PluginRepositories { get; set; } = new List<RepositoryInfo>();
 
-        public bool IgnoreVirtualInterfaces { get; set; }
-
-        public bool EnableExternalContentInSuggestions { get; set; }
+        public bool EnableExternalContentInSuggestions { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the server should force connections over HTTPS.
         /// </summary>
-        public bool RequireHttps { get; set; }
+        public bool RequireHttps { get; set; } = false;
 
-        public bool EnableNewOmdbSupport { get; set; }
+        public bool EnableNewOmdbSupport { get; set; } = true;
 
-        public string[] RemoteIPFilter { get; set; }
+        /// <summary>
+        /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
+        /// </summary>
+        public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
 
-        public bool IsRemoteIPFilterBlacklist { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.
+        /// </summary>
+        public bool IsRemoteIPFilterBlacklist { get; set; } = false;
 
-        public int ImageExtractionTimeoutMs { get; set; }
+        public int ImageExtractionTimeoutMs { get; set; } = 0;
 
-        public PathSubstitution[] PathSubstitutions { get; set; }
+        public PathSubstitution[] PathSubstitutions { get; set; } = Array.Empty<PathSubstitution>();
 
-        public bool EnableSimpleArtistDetection { get; set; }
+        public bool EnableSimpleArtistDetection { get; set; } = false;
 
-        public string[] UninstalledPlugins { get; set; }
+        public string[] UninstalledPlugins { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets a value indicating whether slow server responses should be logged as a warning.
         /// </summary>
-        public bool EnableSlowResponseWarning { get; set; }
+        public bool EnableSlowResponseWarning { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the threshold for the slow response time warning in ms.
         /// </summary>
-        public long SlowResponseThresholdMs { get; set; }
+        public long SlowResponseThresholdMs { get; set; } = 500;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
         {
-            // Network settings
-            AutoDiscovery = true;
-            EnableIPV6 = false;
-            GatewayMonitorPeriod = 60;
-            TrustAllIP6Interfaces = false;
-            EnableMultiSocketBinding = true;
-            PublishedServerUriBySubnet = Array.Empty<string>();
-            HDHomerunPortRange = string.Empty;
-            UPnPCreateHttpPortMap = false;
-            UninstalledPlugins = Array.Empty<string>();
-            RemoteIPFilter = Array.Empty<string>();
-            LocalNetworkSubnets = Array.Empty<string>();
-            LocalNetworkAddresses = Array.Empty<string>();
-            CodecsUsed = Array.Empty<string>();
-            PathSubstitutions = Array.Empty<PathSubstitution>();
-            IgnoreVirtualInterfaces = false;
-            EnableSimpleArtistDetection = false;
-            SkipDeserializationForBasicTypes = true;
-
-            PluginRepositories = new List<RepositoryInfo>();
-
-            DisplaySpecialsWithinSeasons = true;
-            EnableExternalContentInSuggestions = true;
-
-            ImageSavingConvention = ImageSavingConvention.Compatible;
-            PublicPort = DefaultHttpPort;
-            PublicHttpsPort = DefaultHttpsPort;
-            HttpServerPortNumber = DefaultHttpPort;
-            HttpsPortNumber = DefaultHttpsPort;
-            EnableMetrics = false;
-            EnableHttps = false;
-            EnableDashboardResponseCaching = true;
-            EnableCaseSensitiveItemIds = true;
-            EnableNormalizedItemByNameIds = true;
-            DisableLiveTvChannelUserDataName = true;
-            EnableNewOmdbSupport = true;
-
-            AutoRunWebApp = true;
-            EnableRemoteAccess = true;
-            QuickConnectAvailable = false;
-
-            EnableUPnP = false;
-            MinResumePct = 5;
-            MaxResumePct = 90;
-
-            // 5 minutes
-            MinResumeDurationSeconds = 300;
-
-            LibraryMonitorDelay = 60;
-
-            ContentTypes = Array.Empty<NameValuePair>();
-
-            PreferredMetadataLanguage = "en";
-            MetadataCountryCode = "US";
-
-            SortReplaceCharacters = new[] { ".", "+", "%" };
-            SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
-            SortRemoveWords = new[] { "the", "a", "an" };
-
-            BaseUrl = string.Empty;
-            UICulture = "en-US";
-
             MetadataOptions = new[]
             {
                 new MetadataOptions()
@@ -439,9 +414,6 @@ namespace MediaBrowser.Model.Configuration
                     DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
-
-            EnableSlowResponseWarning = true;
-            SlowResponseThresholdMs = 500;
         }
     }
 

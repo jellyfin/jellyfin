@@ -16,9 +16,6 @@ namespace Emby.Dlna.Configuration
             EnableServer = true;
             ClientDiscoveryIntervalSeconds = 60;
             AliveMessageIntervalSeconds = 1800;
-            UDPSendCount = 2;
-            UDPSendDelay = 100;
-            SSDPTracingFilter = string.Empty;
         }
 
         /// <summary>
@@ -36,18 +33,6 @@ namespace Emby.Dlna.Configuration
         /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
         /// </summary>
         public bool EnableDebugLog { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether detailed ssdp logs are sent to the console/log.
-        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
-        /// </summary>
-        public bool EnableSSDPTracing { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether an IP address is to be used to filter the detailed ssdp logs that are being sent to the console/log.
-        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
-        /// </summary>
-        public string SSDPTracingFilter { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether whether detailed playTo debug logs are sent to the console/log.
@@ -86,16 +71,6 @@ namespace Emby.Dlna.Configuration
         /// Gets or sets the default user account that the dlna server uses.
         /// </summary>
         public string? DefaultUserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of times SSDP UDP messages are sent.
-        /// </summary>
-        public int UDPSendCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the delay between each groups of SSDP messages (in ms).
-        /// </summary>
-        public int UDPSendDelay { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether playTo device profiles should be created.

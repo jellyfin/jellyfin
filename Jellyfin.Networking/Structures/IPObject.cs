@@ -3,7 +3,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Structures
 {
     /// <summary>
     /// Base network object class.
@@ -77,6 +77,43 @@ namespace MediaBrowser.Common.Networking
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns the network address of an object.
+        /// </summary>
+        /// <param name="address">IP Address to convert.</param>
+        /// <param name="prefixLength">Subnet prefix.</param>
+        /// <returns>IPAddress.</returns>
+        public static Tuple<IPAddress, byte> NetworkAddressOf(IPAddress address, byte prefixLength)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (IsLoopback(address))
+            {
+                return Tuple.Create<IPAddress, byte>(address, prefixLength);
+            }
+
+            byte[] addressBytes = address.GetAddressBytes();
+
+            int div = prefixLength / 8;
+            int mod = prefixLength % 8;
+            if (mod != 0)
+            {
+                mod = 8 - mod;
+                addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
+                div++;
+            }
+
+            for (int octet = div; octet < addressBytes.Length; octet++)
+            {
+                addressBytes[octet] = 0;
+            }
+
+            return Tuple.Create<IPAddress, byte>(new IPAddress(addressBytes), prefixLength);
         }
 
         /// <summary>
@@ -160,6 +197,11 @@ namespace MediaBrowser.Common.Networking
         /// </remarks>
         public static bool IsIPv6LinkLocal(IPAddress address)
         {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
             if (address.AddressFamily != AddressFamily.InterNetworkV6)
             {
                 return false;
@@ -283,7 +325,7 @@ namespace MediaBrowser.Common.Networking
         /// </summary>
         /// <param name="other">Object to compare to.</param>
         /// <returns>Equality result.</returns>
-        public virtual bool Equals(IPObject other)
+        public virtual bool Equals(IPObject? other)
         {
             if (other != null && other is IPObject otherObj)
             {
@@ -342,43 +384,6 @@ namespace MediaBrowser.Common.Networking
         public override int GetHashCode()
         {
             return Address.Equals(IPAddress.None) ? 0 : Address.GetHashCode();
-        }
-
-        /// <summary>
-        /// Returns the network address of an object.
-        /// </summary>
-        /// <param name="address">IP Address to convert.</param>
-        /// <param name="prefixLength">Subnet prefix.</param>
-        /// <returns>IPAddress.</returns>
-        public static Tuple<IPAddress, byte> NetworkAddressOf(IPAddress address, byte prefixLength)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (IsLoopback(address))
-            {
-                return Tuple.Create<IPAddress, byte>(address, prefixLength);
-            }
-
-            byte[] addressBytes = address.GetAddressBytes();
-
-            int div = prefixLength / 8;
-            int mod = prefixLength % 8;
-            if (mod != 0)
-            {
-                mod = 8 - mod;
-                addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
-                div++;
-            }
-
-            for (int octet = div; octet < addressBytes.Length; octet++)
-            {
-                addressBytes[octet] = 0;
-            }
-
-            return Tuple.Create<IPAddress, byte>(new IPAddress(addressBytes), prefixLength);
         }
     }
 }

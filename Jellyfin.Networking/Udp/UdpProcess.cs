@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Udp
 {
     /// <summary>
     /// Provides logging capabilities.

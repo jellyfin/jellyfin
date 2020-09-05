@@ -1,13 +1,12 @@
 using System.Net;
-using System.Net.Http;
 using System.Text;
-using MediaBrowser.Common.Net;
-using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
 
-namespace MediaBrowser.Common.Networking
+namespace Jellyfin.Networking.Ssdp
 {
+    using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
+
     /// <summary>
-    /// Provides arguments for the <see cref="ISsdpServer"/>.
+    /// Ssdp arguments class.
     /// </summary>
     public sealed class SsdpEventArgs
     {
@@ -41,7 +40,7 @@ namespace MediaBrowser.Common.Networking
         public IPAddress LocalIPAddress { get; }
 
         /// <summary>
-        /// Gets the <see cref="HttpRequestMessage"/> that was received.
+        /// Gets the <see cref="SddpMessage"/> that was received.
         /// </summary>
         public SddpMessage Message { get; }
 
