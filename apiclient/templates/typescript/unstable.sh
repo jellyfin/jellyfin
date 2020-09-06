@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CLIENT=$1
-openapi-generator generate \
+java -jar openapi-generator-cli.jar generate \
     --input-spec $(System.ArtifactsDirectory)/openapi/openapi.json \
     --generator-name typescript-${CLIENT} \
     --output ./apiclient/generated/typescript/${CLIENT}  \
