@@ -120,6 +120,7 @@ namespace Emby.Server.Implementations
         private readonly INetworkManager _networkManager;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
+        private readonly IConfigurationManager _configurationManager;
 
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
@@ -238,18 +239,27 @@ namespace Emby.Server.Implementations
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
+        /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
+        /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
+        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+        /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
+        /// <param name="configurationManager">Instance of the <see cref="ICollectionManager"/> interface.</param>
         public ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
             INetworkManager networkManager,
-            IServiceCollection serviceCollection)
+            IServiceCollection serviceCollection,
+            IConfigurationManager configurationManager)
         {
             _xmlSerializer = new MyXmlSerializer();
             ServiceCollection = serviceCollection;
+            _configurationManager = configurationManager;
 
             _networkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
@@ -1138,7 +1148,7 @@ namespace Emby.Server.Implementations
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
-                StartupCompleted = CoreStartupHasCompleted
+                StartupCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
 
