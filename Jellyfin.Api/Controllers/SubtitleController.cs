@@ -86,8 +86,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<Task> DeleteSubtitle(
-            [FromRoute] Guid itemId,
-            [FromRoute] int index)
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] int index)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -112,7 +112,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string? language,
             [FromQuery] bool? isPerfectMatch)
         {
@@ -132,7 +132,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DownloadRemoteSubtitles(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string? subtitleId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
@@ -193,7 +193,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false,
-            [FromRoute] long startPositionTicks = 0)
+            [FromRoute, Required] long startPositionTicks = 0)
         {
             if (string.Equals(format, "js", StringComparison.OrdinalIgnoreCase))
             {
@@ -253,9 +253,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetSubtitlePlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] int index,
-            [FromRoute] string? mediaSourceId,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] int index,
+            [FromRoute, Required] string? mediaSourceId,
             [FromQuery, Required] int segmentLength)
         {
             var item = (Video)_libraryManager.GetItemById(itemId);

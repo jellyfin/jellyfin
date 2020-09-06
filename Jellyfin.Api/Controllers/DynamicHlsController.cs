@@ -167,8 +167,8 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -334,8 +334,8 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -499,8 +499,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -664,8 +664,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Audio/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -832,10 +832,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsVideoSegment(
-            [FromRoute] Guid itemId,
-            [FromRoute] string playlistId,
-            [FromRoute] int segmentId,
-            [FromRoute] string container,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] int segmentId,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -1001,10 +1001,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsAudioSegment(
-            [FromRoute] Guid itemId,
-            [FromRoute] string playlistId,
-            [FromRoute] int segmentId,
-            [FromRoute] string container,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] int segmentId,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
