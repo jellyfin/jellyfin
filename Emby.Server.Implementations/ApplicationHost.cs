@@ -1148,7 +1148,7 @@ namespace Emby.Server.Implementations
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
-                StartupCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted
+                StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
 
