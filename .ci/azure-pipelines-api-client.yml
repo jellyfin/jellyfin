@@ -1,0 +1,72 @@
+﻿parameters:
+  - name: LinuxImage
+    type: string
+    default: "ubuntu-latest"
+  - name: GeneratorVersion
+    type: string
+    default: "4.3.1"
+
+jobs:
+- job: GenerateApiClients
+  displayName: 'Generate Api Clients'
+
+  pool:
+    vmImage: "${{ parameters.LinuxImage }}"
+
+  steps:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download OpenAPI Spec Artifact'
+      inputs:
+        source: "specific"
+        artifact: "OpenAPI Spec"
+        path: "$(System.ArtifactsDirectory)/openapi"
+        project: "$(System.TeamProjectId)"
+        pipeline: "29" # The main server CI build
+        runVersion: "latestFromBranch"
+        runBranch: "refs/heads/$(System.PullRequest.TargetBranch)"
+
+    - task: CmdLine@2
+    displayName: 'Download OpenApi Generator'
+    inputs:
+      scripts: "wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/${{ parameters.GeneratorVersion }}/openapi-generator-cli-${{ parameters.GeneratorVersion }}.jar -O openapi-generator-cli.jar"
+
+# Generate npm api client
+# Unstable
+    - task: npmAuthenticate@0
+    displayName: 'Authenticate to unstable npm feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+
+    - task: CmdLine@2
+    displayName: 'Build unstable typescript axios client'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+    inputs:
+      script: 'bash ./apiclient/templates/typescript/unstable.sh axios'
+
+    - task: Npm@1
+    displayName: 'Publish unstable typescript axios client'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+    inputs:
+      command: publish
+      publishRegistry: useFeed
+      publishFeed: jellyfin/unstable
+      workingDir: ./apiclient/generated/typescript/axios
+
+# Stable
+    - task: npmAuthenticate@0
+    displayName: 'Authenticate to stable npm feed'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
+    - task: CmdLine@2
+    displayName: 'Build stable typescript axios client'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    inputs:
+      script: 'bash ./apiclient/templates/typescript/stable.sh axios'
+
+    - task: Npm@1
+    displayName: 'Publish stable typescript axios client'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    inputs:
+      command: publish
+      publishRegistry: useExternalRegistry
+      publishEndpoint: 
+      workingDir: ./apiclient/generated/typescript/axios
