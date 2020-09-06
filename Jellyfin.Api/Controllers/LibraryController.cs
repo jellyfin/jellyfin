@@ -104,7 +104,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult GetFile([FromRoute][Required] Guid itemId)
+        public ActionResult GetFile([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeSongs(
-            [FromRoute][Required] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
@@ -210,7 +210,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeVideos(
-            [FromRoute][Required] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
@@ -275,7 +275,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<AllThemeMediaResult> GetThemeMedia(
-            [FromRoute][Required] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
@@ -438,7 +438,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute][Required] Guid itemId, [FromQuery] Guid? userId)
+        public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -555,7 +555,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Library/Movies/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedMovies([FromRoute][Required] string? tmdbId, [FromRoute][Required] string? imdbId)
+        public ActionResult PostUpdatedMovies([FromRoute, Required] string? tmdbId, [FromRoute, Required] string? imdbId)
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -618,7 +618,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.Download)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetDownload([FromRoute][Required] Guid itemId)
+        public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -687,7 +687,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
-            [FromRoute][Required] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? excludeArtistIds,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,

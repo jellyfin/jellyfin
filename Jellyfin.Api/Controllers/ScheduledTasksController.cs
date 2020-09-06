@@ -94,7 +94,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Running/{taskId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult StartTask([FromRoute][Required] string? taskId)
+        public ActionResult StartTask([FromRoute, Required] string? taskId)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));

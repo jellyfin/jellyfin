@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Suggestions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
-            [FromRoute][Required] Guid userId,
+            [FromRoute, Required] Guid userId,
             [FromQuery] string? mediaType,
             [FromQuery] string? type,
             [FromQuery] int? startIndex,

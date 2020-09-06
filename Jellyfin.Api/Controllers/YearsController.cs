@@ -180,7 +180,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{year}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<BaseItemDto> GetYear([FromRoute][Required] int year, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetYear([FromRoute, Required] int year, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetYear(year);
             if (item == null)

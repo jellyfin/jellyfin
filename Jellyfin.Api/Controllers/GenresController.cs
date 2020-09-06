@@ -261,7 +261,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the genre.</returns>
         [HttpGet("{genreName}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetGenre([FromRoute][Required] string genreName, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions()
                 .AddClientFields(Request);

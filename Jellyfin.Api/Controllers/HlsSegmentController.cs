@@ -56,7 +56,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.aac", Name = "GetHlsAudioSegmentLegacyAac")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
-        public ActionResult GetHlsAudioSegmentLegacy([FromRoute][Required] string itemId, [FromRoute][Required] string segmentId)
+        public ActionResult GetHlsAudioSegmentLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string segmentId)
         {
             // TODO: Deprecate with new iOS app
             var file = segmentId + Path.GetExtension(Request.Path);
@@ -76,7 +76,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
-        public ActionResult GetHlsPlaylistLegacy([FromRoute][Required] string itemId, [FromRoute][Required] string playlistId)
+        public ActionResult GetHlsPlaylistLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string playlistId)
         {
             var file = playlistId + Path.GetExtension(Request.Path);
             file = Path.Combine(_serverConfigurationManager.GetTranscodePath(), file);
@@ -115,10 +115,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsVideoSegmentLegacy(
-            [FromRoute][Required] string itemId,
-            [FromRoute][Required] string playlistId,
-            [FromRoute][Required] string segmentId,
-            [FromRoute][Required] string segmentContainer)
+            [FromRoute, Required] string itemId,
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] string segmentId,
+            [FromRoute, Required] string segmentContainer)
         {
             var file = segmentId + Path.GetExtension(Request.Path);
             var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();

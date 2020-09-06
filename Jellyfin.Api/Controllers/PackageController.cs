@@ -44,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Packages/{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
-            [FromRoute][Required] string? name,
+            [FromRoute, Required] string? name,
             [FromQuery] string? assemblyGuid)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = Policies.RequiresElevation)]
         public async Task<ActionResult> InstallPackage(
-            [FromRoute][Required] string? name,
+            [FromRoute, Required] string? name,
             [FromQuery] string? assemblyGuid,
             [FromQuery] string? version)
         {
@@ -115,7 +115,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CancelPackageInstallation(
-            [FromRoute][Required] Guid packageId)
+            [FromRoute, Required] Guid packageId)
         {
             _installationManager.CancelInstallation(packageId);
             return NoContent();

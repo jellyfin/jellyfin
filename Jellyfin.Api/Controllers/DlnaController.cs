@@ -60,7 +60,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Profiles/{profileId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceProfile> GetProfile([FromRoute][Required] string profileId)
+        public ActionResult<DeviceProfile> GetProfile([FromRoute, Required] string profileId)
         {
             var profile = _dlnaManager.GetProfile(profileId);
             if (profile == null)
@@ -81,7 +81,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Profiles/{profileId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteProfile([FromRoute][Required] string profileId)
+        public ActionResult DeleteProfile([FromRoute, Required] string profileId)
         {
             var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
             if (existingDeviceProfile == null)
@@ -118,7 +118,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Profiles/{profileId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateProfile([FromRoute][Required] string profileId, [FromBody] DeviceProfile deviceProfile)
+        public ActionResult UpdateProfile([FromRoute, Required] string profileId, [FromBody] DeviceProfile deviceProfile)
         {
             var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
             if (existingDeviceProfile == null)

@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> AddToCollection([FromRoute][Required] Guid collectionId, [FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> AddToCollection([FromRoute, Required] Guid collectionId, [FromQuery, Required] string? itemIds)
         {
             await _collectionManager.AddToCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(true);
             return NoContent();
@@ -103,7 +103,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpDelete("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemoveFromCollection([FromRoute][Required] Guid collectionId, [FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> RemoveFromCollection([FromRoute, Required] Guid collectionId, [FromQuery, Required] string? itemIds)
         {
             await _collectionManager.RemoveFromCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(false);
             return NoContent();

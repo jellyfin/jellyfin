@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Post(
-            [FromRoute][Required] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] MetadataRefreshMode metadataRefreshMode = MetadataRefreshMode.None,
             [FromQuery] MetadataRefreshMode imageRefreshMode = MetadataRefreshMode.None,
             [FromQuery] bool replaceAllMetadata = false,

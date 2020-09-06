@@ -336,7 +336,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddUserToSession(
             [FromRoute, Required] string? sessionId,
-            [FromRoute][Required] Guid userId)
+            [FromRoute, Required] Guid userId)
         {
             _sessionManager.AddAdditionalUser(sessionId, userId);
             return NoContent();
@@ -353,8 +353,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RemoveUserFromSession(
-            [FromRoute][Required] string? sessionId,
-            [FromRoute][Required] Guid userId)
+            [FromRoute, Required] string? sessionId,
+            [FromRoute, Required] Guid userId)
         {
             _sessionManager.RemoveAdditionalUser(sessionId, userId);
             return NoContent();

@@ -91,9 +91,9 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> PostUserImage(
-            [FromRoute][Required] Guid userId,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] int? index = null)
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int? index = null)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
@@ -138,9 +138,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public ActionResult DeleteUserImage(
-            [FromRoute][Required] Guid userId,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] int? index = null)
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int? index = null)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
@@ -176,9 +176,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteItemImage(
-            [FromRoute][Required] Guid itemId,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -206,9 +206,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> SetItemImage(
-            [FromRoute][Required] Guid itemId,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -239,9 +239,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateItemImageIndex(
-            [FromRoute][Required] Guid itemId,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] int imageIndex,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
             [FromQuery] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -265,7 +265,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute][Required] Guid itemId)
+        public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -353,10 +353,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetItemImage(
-            [FromRoute][Required] Guid itemId,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] int? maxWidth,
-            [FromRoute][Required] int? maxHeight,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int? maxWidth,
+            [FromRoute, Required] int? maxHeight,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -369,7 +369,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -431,23 +431,23 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetItemImage2(
-            [FromRoute][Required] Guid itemId,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] int? maxWidth,
-            [FromRoute][Required] int? maxHeight,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int? maxWidth,
+            [FromRoute, Required] int? maxHeight,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromRoute][Required] string tag,
+            [FromRoute, Required] string tag,
             [FromQuery] bool? cropWhitespace,
-            [FromRoute][Required] string format,
+            [FromRoute, Required] string format,
             [FromQuery] bool? addPlayedIndicator,
-            [FromRoute][Required] double? percentPlayed,
-            [FromRoute][Required] int? unplayedCount,
+            [FromRoute, Required] double? percentPlayed,
+            [FromRoute, Required] int? unplayedCount,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -509,14 +509,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetArtistImage(
-            [FromRoute][Required] string name,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] string tag,
-            [FromRoute][Required] string format,
-            [FromRoute][Required] int? maxWidth,
-            [FromRoute][Required] int? maxHeight,
-            [FromRoute][Required] double? percentPlayed,
-            [FromRoute][Required] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] string tag,
+            [FromRoute, Required] string format,
+            [FromRoute, Required] int? maxWidth,
+            [FromRoute, Required] int? maxHeight,
+            [FromRoute, Required] double? percentPlayed,
+            [FromRoute, Required] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -525,7 +525,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetArtist(name);
             if (item == null)
@@ -587,14 +587,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetGenreImage(
-            [FromRoute][Required] string name,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] string tag,
-            [FromRoute][Required] string format,
-            [FromRoute][Required] int? maxWidth,
-            [FromRoute][Required] int? maxHeight,
-            [FromRoute][Required] double? percentPlayed,
-            [FromRoute][Required] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] string tag,
+            [FromRoute, Required] string format,
+            [FromRoute, Required] int? maxWidth,
+            [FromRoute, Required] int? maxHeight,
+            [FromRoute, Required] double? percentPlayed,
+            [FromRoute, Required] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -603,7 +603,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetGenre(name);
             if (item == null)
@@ -665,14 +665,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetMusicGenreImage(
-            [FromRoute][Required] string name,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] string tag,
-            [FromRoute][Required] string format,
-            [FromRoute][Required] int? maxWidth,
-            [FromRoute][Required] int? maxHeight,
-            [FromRoute][Required] double? percentPlayed,
-            [FromRoute][Required] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] string tag,
+            [FromRoute, Required] string format,
+            [FromRoute, Required] int? maxWidth,
+            [FromRoute, Required] int? maxHeight,
+            [FromRoute, Required] double? percentPlayed,
+            [FromRoute, Required] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -681,7 +681,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetMusicGenre(name);
             if (item == null)
@@ -743,14 +743,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetPersonImage(
-            [FromRoute][Required] string name,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] string tag,
-            [FromRoute][Required] string format,
-            [FromRoute][Required] int? maxWidth,
-            [FromRoute][Required] int? maxHeight,
-            [FromRoute][Required] double? percentPlayed,
-            [FromRoute][Required] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] string tag,
+            [FromRoute, Required] string format,
+            [FromRoute, Required] int? maxWidth,
+            [FromRoute, Required] int? maxHeight,
+            [FromRoute, Required] double? percentPlayed,
+            [FromRoute, Required] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -759,7 +759,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetPerson(name);
             if (item == null)
@@ -821,14 +821,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetStudioImage(
-            [FromRoute][Required] string name,
-            [FromRoute][Required] ImageType imageType,
-            [FromRoute][Required] string tag,
-            [FromRoute][Required] string format,
-            [FromRoute][Required] int? maxWidth,
-            [FromRoute][Required] int? maxHeight,
-            [FromRoute][Required] double? percentPlayed,
-            [FromRoute][Required] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] string tag,
+            [FromRoute, Required] string format,
+            [FromRoute, Required] int? maxWidth,
+            [FromRoute, Required] int? maxHeight,
+            [FromRoute, Required] double? percentPlayed,
+            [FromRoute, Required] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -837,7 +837,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var item = _libraryManager.GetStudio(name);
             if (item == null)
@@ -899,8 +899,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetUserImage(
-            [FromRoute][Required] Guid userId,
-            [FromRoute][Required] ImageType imageType,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
             [FromQuery] string? tag,
             [FromQuery] string? format,
             [FromQuery] int? maxWidth,
@@ -915,7 +915,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute][Required] int? imageIndex = null)
+            [FromRoute, Required] int? imageIndex = null)
         {
             var user = _userManager.GetUserById(userId);
             if (user == null)
