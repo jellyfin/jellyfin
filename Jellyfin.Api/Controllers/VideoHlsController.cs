@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -164,7 +165,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetLiveHlsStream(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,

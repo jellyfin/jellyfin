@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -296,7 +296,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ApplySearchCriteria(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromBody, Required] RemoteSearchResult searchResult,
             [FromQuery] bool replaceAllImages = true)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -94,8 +95,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesAudioFile]
         public async Task<ActionResult> GetUniversalAudioStream(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string? container,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] Guid? userId,

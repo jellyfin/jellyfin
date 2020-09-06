@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<RemoteImageResult>> GetRemoteImages(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] ImageType? type,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -134,7 +134,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -211,7 +211,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DownloadRemoteImage(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery, Required] ImageType type,
             [FromQuery] string? imageUrl)
         {
