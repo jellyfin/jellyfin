@@ -142,7 +142,7 @@ namespace Emby.Dlna
         {
             if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
-                if (deviceInfo.FriendlyName == null || !IsRegexMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                if (deviceInfo.FriendlyName == null || !IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
                 {
                     return false;
                 }
@@ -150,7 +150,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
-                if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
+                if (deviceInfo.Manufacturer == null || !IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
                 {
                     return false;
                 }
@@ -158,7 +158,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
             {
-                if (deviceInfo.ManufacturerUrl == null || !IsRegexMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
+                if (deviceInfo.ManufacturerUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
                 {
                     return false;
                 }
@@ -166,7 +166,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
             {
-                if (deviceInfo.ModelDescription == null || !IsRegexMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
+                if (deviceInfo.ModelDescription == null || !IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
                 {
                     return false;
                 }
@@ -174,7 +174,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelName))
             {
-                if (deviceInfo.ModelName == null || !IsRegexMatch(deviceInfo.ModelName, profileInfo.ModelName))
+                if (deviceInfo.ModelName == null || !IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName))
                 {
                     return false;
                 }
@@ -182,7 +182,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
             {
-                if (deviceInfo.ModelNumber == null || !IsRegexMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
+                if (deviceInfo.ModelNumber == null || !IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
                 {
                     return false;
                 }
@@ -190,7 +190,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
             {
-                if (deviceInfo.ModelUrl == null || !IsRegexMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
+                if (deviceInfo.ModelUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
                 {
                     return false;
                 }
@@ -198,7 +198,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
             {
-                if (deviceInfo.SerialNumber == null || !IsRegexMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
+                if (deviceInfo.SerialNumber == null || !IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
                 {
                     return false;
                 }
@@ -207,11 +207,11 @@ namespace Emby.Dlna
             return true;
         }
 
-        private bool IsRegexMatch(string input, string pattern)
+        private bool IsRegexOrSubstringMatch(string input, string pattern)
         {
             try
             {
-                return Regex.IsMatch(input, pattern);
+                return input.Contains(pattern, StringComparison.OrdinalIgnoreCase) || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             }
             catch (ArgumentException ex)
             {
