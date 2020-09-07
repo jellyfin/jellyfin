@@ -83,8 +83,4 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.6" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Common\" />
-  </ItemGroup>
-
 </Project>
