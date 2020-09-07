@@ -109,7 +109,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 item.ParentIndexNumber = info.ParentIndexNumber;
                 item.IndexNumberEnd = info.IndexNumberEnd;
 
-                if (response.External_Ids.Tvdb_Id > 0)
+                if (response.External_Ids != null && response.External_Ids.Tvdb_Id > 0)
                 {
                     item.SetProviderId(MetadataProvider.Tvdb, response.External_Ids.Tvdb_Id.Value.ToString(CultureInfo.InvariantCulture));
                 }

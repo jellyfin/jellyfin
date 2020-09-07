@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     result.Item.Overview = seasonInfo.Overview;
 
-                    if (seasonInfo.External_Ids.Tvdb_Id > 0)
+                    if (seasonInfo.External_Ids != null && seasonInfo.External_Ids.Tvdb_Id > 0)
                     {
                         result.Item.SetProviderId(MetadataProvider.Tvdb, seasonInfo.External_Ids.Tvdb_Id.Value.ToString(CultureInfo.InvariantCulture));
                     }
