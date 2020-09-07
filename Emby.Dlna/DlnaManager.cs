@@ -502,8 +502,7 @@ namespace Emby.Dlna
 
         public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
         {
-            var profile = GetProfile(headers) ??
-                          GetDefaultProfile();
+            var profile = GetDefaultProfile();
 
             var serverId = _appHost.SystemId;
 
