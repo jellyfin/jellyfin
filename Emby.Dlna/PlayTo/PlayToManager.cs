@@ -130,20 +130,20 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private string GetUuid(string usn)
+        private static string GetUuid(string usn)
         {
             var found = false;
             var index = usn.IndexOf("uuid:", StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                usn = usn.Substring(index);
+                usn = usn.Substring(index + 5);
                 found = true;
             }
 
             index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                usn = usn.Substring(0, index);
+                usn = usn.Substring(0, index + 2);
             }
 
             if (found)
