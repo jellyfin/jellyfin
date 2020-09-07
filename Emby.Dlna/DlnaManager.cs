@@ -126,7 +126,6 @@ namespace Emby.Dlna
             var builder = new StringBuilder();
 
             builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.AppendFormat(CultureInfo.InvariantCulture, "DeviceDescription:{0}", profile.DeviceDescription ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "FriendlyName:{0}", profile.FriendlyName ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "Manufacturer:{0}", profile.Manufacturer ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty).AppendLine();
@@ -141,22 +140,6 @@ namespace Emby.Dlna
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
-            if (!string.IsNullOrEmpty(profileInfo.DeviceDescription))
-            {
-                if (deviceInfo.DeviceDescription == null || !IsRegexMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
-            {
-                if (deviceInfo.FriendlyName == null || !IsRegexMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
-                {
-                    return false;
-                }
-            }
-
             if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
                 if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
