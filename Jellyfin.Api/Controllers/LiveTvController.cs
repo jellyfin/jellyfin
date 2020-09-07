@@ -447,7 +447,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Timers/{timerId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public async Task<ActionResult<TimerInfoDto>> GetTimer(string timerId)
+        public async Task<ActionResult<TimerInfoDto>> GetTimer([FromRoute, Required] string timerId)
         {
             return await _liveTvManager.GetTimer(timerId, CancellationToken.None).ConfigureAwait(false);
         }
