@@ -36,6 +36,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _appHost = appHost;
         }
 
+        public string Name => "The Open Movie Database";
+
+        // After other internet providers, because they're better
+        // But before fallback providers like screengrab
+        public int Order => 90;
+
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
@@ -86,15 +92,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
-        public string Name => "The Open Movie Database";
-
         public bool Supports(BaseItem item)
         {
             return item is Movie || item is Trailer || item is Episode;
         }
-
-        // After other internet providers, because they're better
-        // But before fallback providers like screengrab
-        public int Order => 90;
     }
 }
