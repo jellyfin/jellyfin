@@ -264,6 +264,11 @@ namespace MediaBrowser.Model.Configuration
         public long SlowResponseThresholdMs { get; set; }
 
         /// <summary>
+        /// Gets or sets the cors hosts.
+        /// </summary>
+        public string[] CorsHosts { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -372,6 +377,7 @@ namespace MediaBrowser.Model.Configuration
 
             EnableSlowResponseWarning = true;
             SlowResponseThresholdMs = 500;
+            CorsHosts = new[] { "*" };
         }
     }
 
