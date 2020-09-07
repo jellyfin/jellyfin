@@ -299,7 +299,7 @@ namespace Emby.Dlna
         {
             try
             {
-                return Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || input.Contains(pattern, StringComparison.OrdinalIgnoreCase);
+                return input.Contains(pattern, StringComparison.OrdinalIgnoreCase) || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             }
             catch (ArgumentException ex)
             {
