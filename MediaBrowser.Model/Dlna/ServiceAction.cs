@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Dlna
             ArgumentList = new List<Argument>();
         }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public List<Argument> ArgumentList { get; }
 

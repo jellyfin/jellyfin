@@ -4,10 +4,10 @@ namespace MediaBrowser.Model.Dlna
 {
     public class Argument
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Direction { get; set; }
+        public string Direction { get; set; } = string.Empty;
 
-        public string RelatedStateVariable { get; set; }
+        public string RelatedStateVariable { get; set; } = string.Empty;
     }
 }

@@ -34,7 +34,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Jellyfin.Api.Controllers
 {
-    /// <summar
+    /// <summary>
     /// The videos controller.
     /// </summary>
     public class VideosController : BaseJellyfinApiController

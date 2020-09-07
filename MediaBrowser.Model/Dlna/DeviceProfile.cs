@@ -71,7 +71,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxStaticMusicBitrate { get; set; }
 
         /// <summary>
-        /// Controls the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.
+        /// Gets or sets the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.
         /// </summary>
         public string SonyAggregationFlags { get; set; }
 
