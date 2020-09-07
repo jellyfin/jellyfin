@@ -30,6 +30,13 @@ namespace MediaBrowser.Controller.Dlna
         DeviceProfile GetDefaultProfile();
 
         /// <summary>
+        /// Gets the default profile based on the capabilities provided.
+        /// </summary>
+        /// <param name="playToDeviceInfo">The PlayTo device information record.</param>
+        /// <returns>DeviceProfile.</returns>
+        DeviceProfile GetDefaultProfile(PlayToDeviceInfo playToDeviceInfo);
+
+        /// <summary>
         /// Creates the profile.
         /// </summary>
         /// <param name="profile">The profile.</param>
@@ -57,9 +64,9 @@ namespace MediaBrowser.Controller.Dlna
         /// <summary>
         /// Gets the profile.
         /// </summary>
-        /// <param name="deviceInfo">The device information.</param>
+        /// <param name="playToDeviceInfo">The device information.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(DeviceIdentification deviceInfo);
+        DeviceProfile GetProfile(PlayToDeviceInfo playToDeviceInfo);
 
         /// <summary>
         /// Gets the server description XML.

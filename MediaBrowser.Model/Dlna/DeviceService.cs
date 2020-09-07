@@ -1,6 +1,6 @@
 #pragma warning disable CS1591
 
-namespace Emby.Dlna.Common
+namespace MediaBrowser.Model.Dlna
 {
     public class DeviceService
     {

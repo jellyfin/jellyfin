@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;

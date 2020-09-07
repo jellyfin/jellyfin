@@ -2,7 +2,7 @@
 
 using System.Globalization;
 
-namespace Emby.Dlna.Common
+namespace MediaBrowser.Model.Dlna
 {
     public class DeviceIcon
     {

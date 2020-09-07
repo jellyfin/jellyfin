@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Security;
 using System.Text;
-using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Server

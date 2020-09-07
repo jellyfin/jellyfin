@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Emby.Dlna.Common
+namespace MediaBrowser.Model.Dlna
 {
     public class StateVariable
     {

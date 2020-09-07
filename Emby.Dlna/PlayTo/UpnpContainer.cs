@@ -2,7 +2,6 @@
 
 using System;
 using System.Xml.Linq;
-using Emby.Dlna.Ssdp;
 
 namespace Emby.Dlna.PlayTo
 {

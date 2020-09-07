@@ -3,7 +3,7 @@ using System;
 using Jellyfin.Data.Events;
 using MediaBrowser.Model.Dlna;
 
-namespace Emby.Dlna.Net
+namespace Emby.Dlna.PlayTo
 {
     public interface ISsdpPlayToLocator
     {

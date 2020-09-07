@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Emby.Dlna.Configuration;
 using Jellyfin.Data.Events;
 using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Controller;
@@ -7,7 +8,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Dlna.Net
+namespace Emby.Dlna.PlayTo
 {
     /// <summary>
     /// Locates SsdpPlayTo ssdp devices.

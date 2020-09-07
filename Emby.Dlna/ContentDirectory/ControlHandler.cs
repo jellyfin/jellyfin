@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;

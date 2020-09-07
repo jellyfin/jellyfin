@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.ConnectionManager;
 using Emby.Dlna.ContentDirectory;
 using Emby.Dlna.MediaReceiverRegistrar;

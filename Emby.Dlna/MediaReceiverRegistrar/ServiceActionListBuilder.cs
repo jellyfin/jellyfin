@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
-using Emby.Dlna.Common;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {

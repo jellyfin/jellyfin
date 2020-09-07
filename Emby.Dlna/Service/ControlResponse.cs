@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Emby.Dlna
+namespace Emby.Dlna.Service
 {
     public class ControlResponse
     {

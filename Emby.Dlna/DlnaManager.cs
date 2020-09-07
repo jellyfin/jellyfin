@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.Profiles;
 using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
@@ -103,15 +104,98 @@ namespace Emby.Dlna
             return new DefaultProfile();
         }
 
-        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
+        /// <summary>
+        /// Copies the properties from a PlayTo PlayToDevice into a DeviceProfile.
+        /// </summary>
+        /// <param name="playToDeviceInfo">PlayToDeviceInfo.</param>
+        private static DeviceProfile PlayToDeviceInfoToDeviceProfile(PlayToDeviceInfo playToDeviceInfo)
         {
-            if (deviceInfo == null)
+            DeviceProfile profile = new DefaultProfile
             {
-                throw new ArgumentNullException(nameof(deviceInfo));
+                Name = playToDeviceInfo.FriendlyName,
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = playToDeviceInfo.FriendlyName,
+                    Manufacturer = playToDeviceInfo.Manufacturer,
+                    ModelName = playToDeviceInfo.ModelName
+                },
+                Manufacturer = playToDeviceInfo.Manufacturer,
+                FriendlyName = playToDeviceInfo.FriendlyName,
+                ModelNumber = playToDeviceInfo.ModelNumber,
+                ModelName = playToDeviceInfo.ModelName,
+                ModelUrl = playToDeviceInfo.ModelUrl,
+                ModelDescription = playToDeviceInfo.ModelDescription,
+                ManufacturerUrl = playToDeviceInfo.ManufacturerUrl,
+                SerialNumber = playToDeviceInfo.SerialNumber
+            };
+
+            return profile;
+        }
+
+        private DeviceProfile AutoCreateProfile(PlayToDeviceInfo playToDeviceInfo)
+        {
+            if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
+            {
+                try
+                {
+                    var profile = PlayToDeviceInfoToDeviceProfile(playToDeviceInfo);
+                    CreateProfile(profile);
+                    return profile;
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error saving default profile for {0}.", playToDeviceInfo.FriendlyName);
+                }
+            }
+
+            return null;
+        }
+
+        public DeviceProfile GetDefaultProfile(PlayToDeviceInfo playToDeviceInfo)
+        {
+            var profile = PlayToDeviceInfoToDeviceProfile(playToDeviceInfo);
+            profile.ProtocolInfo = playToDeviceInfo.Capabilities;
+            var supportedMediaTypes = new HashSet<string>();
+
+            foreach (var capability in playToDeviceInfo
+                .Capabilities
+                .Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var protocolInfo = capability.Split(':');
+                var protocolName = "*";
+                if (protocolInfo.Length == 4)
+                {
+                    string org_pn = protocolInfo[3];
+                    int index = org_pn.IndexOf("DLNA.ORG_PN", StringComparison.OrdinalIgnoreCase);
+                    if (index != -1)
+                    {
+                        int endIndex = org_pn.IndexOf(',', index + 1);
+                        protocolName = org_pn.Substring(index + 12, endIndex);
+                    }
+
+                    // Split video/mpg.
+                    supportedMediaTypes.Add(protocolInfo[2].Split('/')[0]);
+                }
+            }
+
+            profile.SupportedMediaTypes = supportedMediaTypes.Aggregate((i, j) => i + ',' + j);
+
+            return profile;
+        }
+
+        public DeviceProfile GetProfile(PlayToDeviceInfo playToDeviceInfo)
+        {
+            if (playToDeviceInfo == null)
+            {
+                throw new ArgumentNullException(nameof(playToDeviceInfo));
             }
 
             var profile = GetProfiles()
-                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
+                .FirstOrDefault(i => i.Identification != null && IsMatch(playToDeviceInfo, i.Identification));
 
             if (profile != null)
             {
@@ -119,52 +203,17 @@ namespace Emby.Dlna
             }
             else
             {
-                if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
-                {
-                    profile = new DefaultProfile();
-                    profile.Name = deviceInfo.FriendlyName;
-                    profile.Identification = new DeviceIdentification
-                    {
-                        FriendlyName = deviceInfo.FriendlyName,
-                        Manufacturer = deviceInfo.Manufacturer,
-                        DeviceDescription = deviceInfo.DeviceDescription
-                    };
-                    profile.Manufacturer = deviceInfo.Manufacturer;
-                    profile.FriendlyName = deviceInfo.FriendlyName;
-                    profile.ModelNumber = deviceInfo.ModelNumber;
-                    profile.ModelName = deviceInfo.ModelName;
-                    profile.ModelUrl = deviceInfo.ModelUrl;
-                    profile.ModelDescription = deviceInfo.ModelDescription;
-                    profile.ManufacturerUrl = deviceInfo.ManufacturerUrl;
-                    profile.SerialNumber = deviceInfo.SerialNumber;
-
-                    try
-                    {
-                        CreateProfile(profile);
-                        return profile;
-                    }
-                    catch (IOException ex)
-                    {
-                        _logger.LogError(ex.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error saving default profile for {0}.", deviceInfo.FriendlyName);
-                    }
-                }
-
-                LogUnmatchedProfile(deviceInfo);
+                LogUnmatchedProfile(playToDeviceInfo);
             }
 
             return profile;
         }
 
-        private void LogUnmatchedProfile(DeviceIdentification profile)
+        private void LogUnmatchedProfile(PlayToDeviceInfo profile)
         {
             var builder = new StringBuilder();
 
             builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.AppendFormat(CultureInfo.InvariantCulture, "DeviceDescription:{0}", profile.DeviceDescription ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "FriendlyName:{0}", profile.FriendlyName ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "Manufacturer:{0}", profile.Manufacturer ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty).AppendLine();
@@ -177,19 +226,11 @@ namespace Emby.Dlna
             _logger.LogInformation(builder.ToString());
         }
 
-        private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
+        private bool IsMatch(PlayToDeviceInfo playToDeviceInfo, DeviceIdentification profileInfo)
         {
-            if (!string.IsNullOrEmpty(profileInfo.DeviceDescription))
-            {
-                if (deviceInfo.DeviceDescription == null || !IsRegexMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
-                {
-                    return false;
-                }
-            }
-
             if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
-                if (deviceInfo.FriendlyName == null || !IsRegexMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                if (playToDeviceInfo.FriendlyName == null || !IsRegexMatch(playToDeviceInfo.FriendlyName, profileInfo.FriendlyName))
                 {
                     return false;
                 }
@@ -197,7 +238,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
-                if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
+                if (playToDeviceInfo.Manufacturer == null || !IsRegexMatch(playToDeviceInfo.Manufacturer, profileInfo.Manufacturer))
                 {
                     return false;
                 }
@@ -205,7 +246,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
             {
-                if (deviceInfo.ManufacturerUrl == null || !IsRegexMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
+                if (playToDeviceInfo.ManufacturerUrl == null || !IsRegexMatch(playToDeviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
                 {
                     return false;
                 }
@@ -213,7 +254,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
             {
-                if (deviceInfo.ModelDescription == null || !IsRegexMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
+                if (playToDeviceInfo.ModelDescription == null || !IsRegexMatch(playToDeviceInfo.ModelDescription, profileInfo.ModelDescription))
                 {
                     return false;
                 }
@@ -221,7 +262,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelName))
             {
-                if (deviceInfo.ModelName == null || !IsRegexMatch(deviceInfo.ModelName, profileInfo.ModelName))
+                if (playToDeviceInfo.ModelName == null || !IsRegexMatch(playToDeviceInfo.ModelName, profileInfo.ModelName))
                 {
                     return false;
                 }
@@ -229,7 +270,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
             {
-                if (deviceInfo.ModelNumber == null || !IsRegexMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
+                if (playToDeviceInfo.ModelNumber == null || !IsRegexMatch(playToDeviceInfo.ModelNumber, profileInfo.ModelNumber))
                 {
                     return false;
                 }
@@ -237,7 +278,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
             {
-                if (deviceInfo.ModelUrl == null || !IsRegexMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
+                if (playToDeviceInfo.ModelUrl == null || !IsRegexMatch(playToDeviceInfo.ModelUrl, profileInfo.ModelUrl))
                 {
                     return false;
                 }
@@ -245,7 +286,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
             {
-                if (deviceInfo.SerialNumber == null || !IsRegexMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
+                if (playToDeviceInfo.SerialNumber == null || !IsRegexMatch(playToDeviceInfo.SerialNumber, profileInfo.SerialNumber))
                 {
                     return false;
                 }
@@ -589,8 +630,7 @@ namespace Emby.Dlna
 
         public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request)
         {
-            var profile = // GetProfile(headers) ??
-                          GetDefaultProfile();
+            var profile = GetDefaultProfile();
 
             var serverId = _appHost.SystemId;
 

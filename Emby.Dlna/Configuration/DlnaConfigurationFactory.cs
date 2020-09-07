@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Emby.Dlna.Configuration;
 using MediaBrowser.Common.Configuration;
 
-namespace Emby.Dlna
+namespace Emby.Dlna.Configuration
 {
     public class DlnaConfigurationFactory : IConfigurationFactory
     {

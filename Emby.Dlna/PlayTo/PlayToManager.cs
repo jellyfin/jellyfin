@@ -7,9 +7,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Eventing;
 using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo.EventArgs;
-using Emby.Dlna.Ssdp;
+using Emby.Dlna.Service;
 using Jellyfin.Data.Events;
 using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Extensions;
@@ -50,7 +51,7 @@ namespace Emby.Dlna.PlayTo
         private readonly INotificationManager _notificationManager;
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
-        private readonly List<DeviceInterface> _devices = new List<DeviceInterface>();
+        private readonly List<PlayToDevice> _devices = new List<PlayToDevice>();
         private bool _disposed;
 
         public PlayToManager(
@@ -105,7 +106,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="device">Device sending the notification.</param>
         /// <param name="notification">The notification to send.</param>
         /// <returns>Task.</returns>
-        public async Task SendNotification(DeviceInterface device, NotificationRequest notification)
+        public async Task SendNotification(PlayToDevice device, NotificationRequest notification)
         {
             try
             {
@@ -198,7 +199,7 @@ namespace Emby.Dlna.PlayTo
 
                     _disposeCancellationTokenSource.Dispose();
 
-                    // Dispose the CreateuPnpDeviceAsync created in AddDevice.
+                    // Dispose the PlayToDevices created in AddDevice.
                     foreach (var device in _devices)
                     {
                         device?.Dispose();
@@ -292,17 +293,21 @@ namespace Emby.Dlna.PlayTo
             {
                 string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
 
-                var device = await DeviceInterface.CreateuPnpDeviceAsync(this, uri, _httpClientFactory, _logger, _config, serverAddress).ConfigureAwait(false);
-                if (device == null)
+                var playToDevice = await PlayToDevice.CreateDevice(
+                    this,
+                    uri,
+                    _httpClientFactory,
+                    _logger,
+                    _config,
+                    serverAddress).ConfigureAwait(false);
+                if (playToDevice == null)
                 {
                     return false;
                 }
 
-                _devices.Add(device);
+                _devices.Add(playToDevice);
 
-                string deviceName = device.Properties.Name;
-
-                _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
+                _sessionManager.UpdateDeviceName(sessionInfo.Id, playToDevice.Properties.FriendlyName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope: This object is disposed of in the dispose section.
                 controller = new PlayToController(
@@ -325,10 +330,10 @@ namespace Emby.Dlna.PlayTo
 
                 sessionInfo.AddController(controller);
 
-                controller.Init(device);
+                controller.Init(playToDevice);
 
-                var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
-                              _dlnaManager.GetDefaultProfile();
+                var profile = _dlnaManager.GetProfile(playToDevice.Properties) ??
+                              _dlnaManager.GetDefaultProfile(playToDevice.Properties);
 
                 _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
                 {
@@ -350,7 +355,7 @@ namespace Emby.Dlna.PlayTo
                     SupportsMediaControl = true
                 });
 
-                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.FriendlyName, device.Properties.ModelName);
 
                 return true;
             }

@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Emby.Dlna.Eventing;
+using Emby.Dlna.Service;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;

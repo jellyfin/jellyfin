@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Net;
-using Emby.Dlna.Ssdp;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Configuration;
@@ -52,7 +51,7 @@ namespace Emby.Dlna.PlayTo
         private readonly string _accessToken;
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
-        private DeviceInterface _device;
+        private PlayToDevice _device;
         private int _currentPlaylistIndex = -1;
 
         private bool _disposed;
@@ -95,7 +94,7 @@ namespace Emby.Dlna.PlayTo
 
         public bool SupportsMediaControl => IsSessionActive;
 
-        public void Init(DeviceInterface device)
+        public void Init(PlayToDevice device)
         {
             _device = device;
             _device.OnDeviceUnavailable = OnDeviceUnavailable;
@@ -380,8 +379,8 @@ namespace Emby.Dlna.PlayTo
             var deviceInfo = _device.Properties;
 
             // Checking the profile once instead of on each iteration.
-            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
-                _dlnaManager.GetDefaultProfile();
+            var profile = _dlnaManager.GetProfile(deviceInfo) ??
+                _dlnaManager.GetDefaultProfile(deviceInfo);
 
             foreach (var item in items)
             {
@@ -539,8 +538,8 @@ namespace Emby.Dlna.PlayTo
             if (profile == null)
             {
                 var deviceInfo = _device.Properties;
-                profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
-                        _dlnaManager.GetDefaultProfile();
+                profile = _dlnaManager.GetProfile(deviceInfo) ??
+                        _dlnaManager.GetDefaultProfile(deviceInfo);
             }
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);

@@ -84,4 +84,8 @@
     <PackageReference Include="Mono.Nat" Version="2.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\" />
+  </ItemGroup>
+
 </Project>

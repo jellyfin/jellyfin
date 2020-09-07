@@ -16,9 +16,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Emby.Dlna.Common;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.PlayTo.EventArgs;
-using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -47,7 +46,7 @@ namespace Emby.Dlna.PlayTo
     /// Both these two methods work side by side getting constant updates, using mutual
     /// caching to ensure the device isn't polled too frequently.
     /// </summary>
-    public class DeviceInterface : IDisposable
+    public class PlayToDevice : IDisposable
     {
         /// <summary>
         /// Maximum wait time for http responses in ms.
@@ -77,8 +76,9 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Constants used in SendCommand.
         /// </summary>
-        private const int TransportCommandsAV = 1;
-        private const int TransportCommandsRender = 2;
+        private const int TransportAVService = 1;
+        private const int RenderingControlService = 2;
+        private const int ConnectionManagerService = 3;
 
         private const int Now = 1;
         private const int Never = 0;
@@ -120,6 +120,10 @@ namespace Emby.Dlna.PlayTo
 
         private bool _disposed;
         private Timer? _timer;
+
+        private TransportCommands? _avTransportCommands;
+        private TransportCommands? _renderCommands;
+        private TransportCommands? _connectionCommands;
 
         /// <summary>
         /// Connection failure retry counter.
@@ -176,17 +180,17 @@ namespace Emby.Dlna.PlayTo
         private string _mediaPlaying = string.Empty;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceInterface"/> class.
+        /// Initializes a new instance of the <see cref="PlayToDevice"/> class.
         /// </summary>
         /// <param name="playToManager">Our playToManager<see cref="PlayToManager"/>.</param>
-        /// <param name="deviceProperties">The deviceProperties<see cref="DeviceInfo"/>.</param>
+        /// <param name="PlayToDeviceInfo">The playToDeviceInfo record.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="config">The IServerConfigurationManager instance.</param>
         /// <param name="webUrl">The webUrl.</param>
-        public DeviceInterface(PlayToManager playToManager, DeviceInfo deviceProperties, IHttpClientFactory httpClientFactory, ILogger logger, IServerConfigurationManager config, string webUrl)
+        public PlayToDevice(PlayToManager playToManager, PlayToDeviceInfo playToDeviceInfo, IHttpClientFactory httpClientFactory, ILogger logger, IServerConfigurationManager config, string webUrl)
         {
-            Properties = deviceProperties;
+            Properties = playToDeviceInfo;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
             _jellyfinUrl = webUrl;
@@ -220,7 +224,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets the device's properties.
         /// </summary>
-        public DeviceInfo Properties { get; }
+        public PlayToDeviceInfo Properties { get; }
 
         /// <summary>
         /// Gets a value indicating whether the sound is muted.
@@ -251,7 +255,7 @@ namespace Emby.Dlna.PlayTo
                     }
                     catch (HttpException ex)
                     {
-                        _logger.LogError(ex, "{0}: Error getting device volume.", Properties.Name);
+                        _logger.LogError(ex, "{0}: Error getting device volume.", Properties.FriendlyName);
                     }
                 }
 
@@ -327,26 +331,31 @@ namespace Emby.Dlna.PlayTo
         private static bool Tracing { get; set; }
 
         /// <summary>
-        /// Gets or sets the AvCommands.
+        /// Gets the AvTransport Commands.
         /// </summary>
-        private TransportCommands? AvCommands { get; set; }
+        private TransportCommands AvTransportCommands => GetCommandValue(TransportAVService);
 
         /// <summary>
-        /// Gets or sets the RendererCommands.
+        /// Gets the RenderingControl Commands.
         /// </summary>
-        private TransportCommands? RendererCommands { get; set; }
+        private TransportCommands RenderCommands => GetCommandValue(RenderingControlService);
 
         /// <summary>
-        /// The CreateuPnpDeviceAsync.
+        /// Gets the ConnectionManager Commands.
         /// </summary>
-        /// <param name="playToManager">The playToManager<see cref="PlayToManager"/>.</param>
-        /// <param name="url">The url<see cref="Uri"/>.</param>
-        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
-        /// <param name="logger">The logger<see cref="ILogger"/>.</param>
-        /// <param name="config">The IServerConfigurationManager instance.</param>
-        /// <param name="serverUrl">The url to use for the server.</param>
+        private TransportCommands ConnectionCommands => GetCommandValue(ConnectionManagerService);
+
+        /// <summary>
+        /// Generates a PlayToDeviceInfo from the device at <see cref="Url"/>.
+        /// </summary>
+        /// <param name="playToManager">The <see cref="PlayToManager"/> instance.</param>
+        /// <param name="url">The url of the device.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> instance..</param>
+        /// <param name="logger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> instance.</param>
+        /// <param name="serverUrl">The url to embed for Jellyfin.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        public static async Task<DeviceInterface?> CreateuPnpDeviceAsync(
+        public static async Task<PlayToDevice?> CreateDevice(
             PlayToManager playToManager,
             Uri url,
             IHttpClientFactory httpClientFactory,
@@ -393,9 +402,9 @@ namespace Emby.Dlna.PlayTo
                 friendlyNames.Add(room.Value);
             }
 
-            var deviceProperties = new DeviceInfo()
+            var deviceProperties = new PlayToDeviceInfo()
             {
-                Name = string.Join(" ", friendlyNames),
+                FriendlyName = string.Join(" ", friendlyNames),
                 BaseUrl = string.Format(_usCulture, "http://{0}:{1}", url.Host, url.Port)
             };
 
@@ -504,7 +513,10 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            return new DeviceInterface(playToManager, deviceProperties, httpClientFactory, logger, config, serverUrl);
+            var playToDevice = new PlayToDevice(playToManager, deviceProperties, httpClientFactory, logger, config, serverUrl);
+            // Get device capabilities.
+            playToDevice.Properties.Capabilities = await playToDevice.GetProtocolInfo().ConfigureAwait(false);
+            return playToDevice;
         }
 
         /// <summary>
@@ -522,25 +534,22 @@ namespace Emby.Dlna.PlayTo
                 _lastMetaRefresh = _lastPositionRequest;
                 _lastMuteRefresh = _lastPositionRequest;
 
-                // Make sure that the device doesn't have a range on the volume controls.
                 try
                 {
-                    await GetStateVariableRange(GetServiceRenderingControl(), "Volume").ConfigureAwait(false);
-                }
-                catch (ObjectDisposedException)
-                {
-                    return;
-                }
-                catch (HttpException ex)
-                {
-                    if (Tracing)
+                    // Make sure that the device doesn't have a range on the volume controls.
+                    var volumeSettings = RenderCommands.StateVariables.Where(i => i.Name == "Volume").FirstOrDefault();
+                    if (volumeSettings != null && volumeSettings.AllowedValues.Count != 0)
                     {
-                        _logger.LogDebug(ex, "{0}: Attempting to get volume range. Error usually means NOT SUPPORTED.", Properties.Name);
+                        if (int.TryParse(volumeSettings.AllowedValues[0], out int value1) &&
+                            int.TryParse(volumeSettings.AllowedValues[1], out int value2))
+                        {
+                            _volRange.Min = value1;
+                            _volRange.Max = value2;
+                            _volRange.Range = value2 - value1;
+                            _volRange.FivePoints = (int)Math.Round(_volRange.Range / 100 * 5);
+                        }
                     }
-                }
 
-                try
-                {
                     await SubscribeAsync().ConfigureAwait(false);
                     // Update the position, volume and subscript for events.
                     await GetPositionRequest().ConfigureAwait(false);
@@ -927,6 +936,63 @@ namespace Emby.Dlna.PlayTo
                 logger.LogDebug(ex, "GetDataAsync: Failed.");
                 throw;
             }
+        }
+
+        private TransportCommands GetCommandValue(int cmd)
+        {
+            if (cmd == TransportAVService)
+            {
+                return GetAVTransportCommands().Result;
+            }
+            else if (cmd == RenderingControlService)
+            {
+                return GetRenderCommands().Result;
+            }
+
+            return GetConnectionCommands().Result;
+        }
+
+        private async Task<TransportCommands> GetRenderCommands()
+        {
+            if (_renderCommands == null)
+            {
+                _renderCommands = await GetProtocolAsync(GetRenderingControl()).ConfigureAwait(false);
+                if (_renderCommands == null)
+                {
+                    throw new NullReferenceException($"{Properties.Name}: GetProtocolAsync for Rendering Control returned null.");
+                }
+            }
+
+            return _renderCommands;
+        }
+
+        private async Task<TransportCommands> GetAVTransportCommands()
+        {
+            if (_avTransportCommands == null)
+            {
+                _avTransportCommands = await GetProtocolAsync(GetAvTransportService()).ConfigureAwait(false);
+                if (_avTransportCommands == null)
+                {
+                    throw new NullReferenceException($"{Properties.Name}: GetProtocolAsync for AVTransport returned null.");
+                }
+            }
+
+            return _avTransportCommands;
+        }
+
+        private async Task<TransportCommands> GetConnectionCommands()
+        {
+            if (_connectionCommands == null)
+            {
+                _connectionCommands = await GetProtocolAsync(GetConnectionManagerControl()).ConfigureAwait(false);
+
+                if (_connectionCommands == null)
+                {
+                    throw new NullReferenceException($"{Properties.Name}: GetProtocolAsync for ConnectionManager returned null.");
+                }
+            }
+
+            return _connectionCommands;
         }
 
         /// <summary>
@@ -1337,7 +1403,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Sends a command to the device and waits for a response.
         /// </summary>
-        /// <param name="transportCommandsType">The transport type.</param>
+        /// <param name="serviceType">The transport type.</param>
         /// <param name="actionCommand">The actionCommand.</param>
         /// <param name="name">The name.</param>
         /// <param name="commandParameter">The commandParameter.</param>
@@ -1345,7 +1411,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="header">The header.</param>
         /// <returns>The <see cref="Task{XDocument}"/>.</returns>
         private async Task<XMLProperties?> SendCommandResponseRequired(
-            int transportCommandsType,
+            int serviceType,
             string actionCommand,
             object? name = null,
             string? commandParameter = null,
@@ -1362,44 +1428,38 @@ namespace Emby.Dlna.PlayTo
             DeviceService? service;
             string? postData = string.Empty;
 
-            if (transportCommandsType == TransportCommandsRender)
+            if (serviceType == RenderingControlService)
             {
-                service = GetServiceRenderingControl();
-
-                RendererCommands ??= await GetProtocolAsync(service).ConfigureAwait(false);
-                if (RendererCommands == null)
-                {
-                    _logger.LogError("{0}: GetRenderingProtocolAsync returned null.", Properties.Name);
-                    return null;
-                }
-
-                command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == actionCommand);
+                service = GetRenderingControl();
+                commands = RenderCommands;
+                command = commands.ServiceActions.FirstOrDefault(c => c.Name == actionCommand);
                 if (service == null || command == null)
                 {
                     _logger.LogError("{0}: Command or service returned null.", Properties.Name);
                     return null;
                 }
-
-                commands = RendererCommands;
             }
-            else
+            else if (serviceType == TransportAVService)
             {
                 service = GetAvTransportService();
-                AvCommands ??= await GetProtocolAsync(service).ConfigureAwait(false);
-                if (AvCommands == null)
-                {
-                    _logger.LogError("{0}: GetAVProtocolAsync returned null.", Properties.Name);
-                    return null;
-                }
-
-                command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == actionCommand);
+                commands = AvTransportCommands;
+                command = commands.ServiceActions.FirstOrDefault(c => c.Name == actionCommand);
                 if (service == null || command == null)
                 {
                     _logger.LogWarning("{0}: Command or service returned null.", Properties.Name);
                     return null;
                 }
-
-                commands = AvCommands;
+            }
+            else
+            {
+                service = GetConnectionManagerService();
+                commands = ConnectionCommands;
+                command = commands.ServiceActions.FirstOrDefault(c => c.Name == actionCommand);
+                if (service == null || command == null)
+                {
+                    _logger.LogWarning("{0}: Command or service returned null.", Properties.Name);
+                    return null;
+                }
             }
 
             if (commandParameter != null)
@@ -1427,7 +1487,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Sends a command to the device, verifies receipt, and does return a response.
         /// </summary>
-        /// <param name="transportCommandsType">The transport commands type.</param>
+        /// <param name="serviceType">The transport commands type.</param>
         /// <param name="actionCommand">The action command to use.</param>
         /// <param name="name">The name.</param>
         /// <param name="commandParameter">The command parameter.</param>
@@ -1435,7 +1495,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="header">The header.</param>
         /// <returns>Returns success of the task.</returns>
         private async Task<bool> SendCommand(
-            int transportCommandsType,
+            int serviceType,
             string actionCommand,
             object? name = null,
             string? commandParameter = null,
@@ -1447,7 +1507,7 @@ namespace Emby.Dlna.PlayTo
                 throw new ObjectDisposedException(string.Empty);
             }
 
-            XMLProperties? result = await SendCommandResponseRequired(transportCommandsType, actionCommand, name, commandParameter, dictionary, header).ConfigureAwait(false);
+            XMLProperties? result = await SendCommandResponseRequired(serviceType, actionCommand, name, commandParameter, dictionary, header).ConfigureAwait(false);
             if (result != null && result.TryGetValue(actionCommand + "Response", out string _))
             {
                 return true;
@@ -1473,99 +1533,6 @@ namespace Emby.Dlna.PlayTo
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Retrieves the DNLA device description and parses the state variable info.
-        /// </summary>
-        /// <param name="renderService">Service to use.</param>
-        /// <param name="wanted">State variable to return.</param>
-        private async Task GetStateVariableRange(DeviceService renderService, string wanted)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            string xmlstring = string.Empty;
-            CancellationTokenSource cts = new CancellationTokenSource();
-
-            try
-            {
-                string url = NormalizeUrl(Properties.BaseUrl, renderService.ScpdUrl);
-                using var options = new HttpRequestMessage(HttpMethod.Get, url);
-                options.Headers.UserAgent.ParseAdd(USERAGENT);
-                options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
-                options.Headers.TryAddWithoutValidation("Accept", MediaTypeNames.Text.Xml);
-
-                if (Tracing)
-                {
-                    _logger.LogDebug("{0}:-> {1}\r\nHeaders: {2}", Properties.Name, url, PrettyPrint(options.Headers));
-                }
-
-                cts.CancelAfter(CTSTimeout);
-                using var client = _httpClientFactory.CreateClient(NamedClient.Default);
-                var response = await client.SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogDebug("{0}:<- Error:{1} : {2}", Properties.Name, response.StatusCode, response.ReasonPhrase);
-                    return;
-                }
-
-                xmlstring = Encoding.UTF8.GetString(await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false));
-
-                if (Tracing)
-                {
-                    _logger.LogDebug("{0}:<-\r\n{1}", Properties.Name, xmlstring);
-                }
-
-                var dlnaDescripton = new XmlDocument();
-                dlnaDescripton.LoadXml(xmlstring);
-
-                // Use xpath to get to /stateVariable/allowedValueRange/minimum|maximum where /stateVariable/Name == wanted.
-                XmlNamespaceManager xmlns = new XmlNamespaceManager(dlnaDescripton.NameTable);
-                xmlns.AddNamespace("ns", "urn:schemas-upnp-org:service-1-0");
-
-                XmlNode? minimum = dlnaDescripton.SelectSingleNode(
-                    "//ns:stateVariable[ns:name/text()='"
-                    + wanted
-                    + "']/ns:allowedValueRange/ns:minimum/text()", xmlns);
-
-                XmlNode? maximum = dlnaDescripton.SelectSingleNode(
-                    "//ns:stateVariable[ns:name/text()='"
-                    + wanted
-                    + "']/ns:allowedValueRange/ns:maximum/text()", xmlns);
-
-                // Populate the return value with what we have. Don't worry about null values.
-                if (minimum.Value != null && maximum.Value != null)
-                {
-                    _volRange.Min = int.Parse(minimum.Value, _usCulture);
-                    _volRange.Max = int.Parse(maximum.Value, _usCulture);
-                    _volRange.Range = _volRange.Max - _volRange.Min;
-                    _volRange.FivePoints = (int)Math.Round(_volRange.Range / 100 * 5);
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                _logger.LogError("{0}: GetStateVariableRange timed out.", Properties.Name);
-            }
-            catch (XmlException)
-            {
-                _logger.LogError("{0}: Badly formed description document received XML: {1}", Properties.Name, xmlstring);
-            }
-            catch (HttpRequestException ex)
-            {
-                if (Tracing)
-                {
-                    _logger.LogDebug(ex, "{0}: Error getting StateVariableRange.", Properties.Name);
-                }
-
-                _logger.LogError("{0}: Unable to retrieve ssdp description.", Properties.Name);
-            }
-            finally
-            {
-                cts.Dispose();
-            }
         }
 
         /// <summary>
@@ -1677,7 +1644,7 @@ namespace Emby.Dlna.PlayTo
                     _transportSid = await SubscribeInternalAsync(GetAvTransportService(), _transportSid).ConfigureAwait(false);
                     _logger.LogDebug("{0}: AVTransport SID {0}.", Properties.Name, _transportSid);
 
-                    _renderSid = await SubscribeInternalAsync(GetServiceRenderingControl(), _renderSid).ConfigureAwait(false);
+                    _renderSid = await SubscribeInternalAsync(GetRenderingControl(), _renderSid).ConfigureAwait(false);
                     _logger.LogDebug("{0}: RenderControl SID {0}.", Properties.Name, _renderSid);
 
                     _subscribed = true;
@@ -1786,7 +1753,7 @@ namespace Emby.Dlna.PlayTo
                         _transportSid = string.Empty;
                     }
 
-                    success = await UnSubscribeInternalAsync(GetServiceRenderingControl(), _renderSid).ConfigureAwait(false);
+                    success = await UnSubscribeInternalAsync(GetRenderingControl(), _renderSid).ConfigureAwait(false);
                     if (success)
                     {
                         _renderSid = string.Empty;
@@ -1951,7 +1918,7 @@ namespace Emby.Dlna.PlayTo
                         }
                         else
                         {
-                            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo").ConfigureAwait(false);
+                            XMLProperties? response = await SendCommandResponseRequired(TransportAVService, "GetPositionInfo").ConfigureAwait(false);
                             if (response == null || response.Count == 0)
                             {
                                 RestartTimer(Normal);
@@ -2023,7 +1990,7 @@ namespace Emby.Dlna.PlayTo
             if (_volume != value)
             {
                 // Adjust for items that don't have a volume range 0..100.
-                result = await SendCommand(TransportCommandsRender, "SetVolume", value).ConfigureAwait(false);
+                result = await SendCommand(RenderingControlService, "SetVolume", value).ConfigureAwait(false);
                 if (result)
                 {
                     _volume = value;
@@ -2052,7 +2019,7 @@ namespace Emby.Dlna.PlayTo
             string volume = string.Empty;
             try
             {
-                XMLProperties? response = await SendCommandResponseRequired(TransportCommandsRender, "GetVolume").ConfigureAwait(false);
+                XMLProperties? response = await SendCommandResponseRequired(RenderingControlService, "GetVolume").ConfigureAwait(false);
                 if (response != null && response.TryGetValue("GetVolumeResponse", out volume))
                 {
                     if (response.TryGetValue("CurrentVolume", out volume) && int.TryParse(volume, out int value))
@@ -2083,12 +2050,41 @@ namespace Emby.Dlna.PlayTo
             return false;
         }
 
+        /// <summary>
+        /// Requests the volume setting from the client.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task<string> GetProtocolInfo()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            try
+            {
+                XMLProperties? response = await SendCommandResponseRequired(ConnectionManagerService, "GetProtocolInfo").ConfigureAwait(false);
+                if (response != null && response.TryGetValue("Sink", out string settings))
+                {
+                    return settings;
+                }
+
+                _logger.LogWarning("{0}: GetProtocolInfo Failed.", Properties.Name);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Ignore.
+            }
+
+            return Array.Empty<string>();
+        }
+
         private async Task<bool> SendPauseRequest()
         {
             var result = false;
             if (!IsPaused)
             {
-                result = await SendCommand(TransportCommandsAV, "Pause", 1).ConfigureAwait(false);
+                result = await SendCommand(TransportAVService, "Pause", 1).ConfigureAwait(false);
                 if (result)
                 {
                     // Stop user from issuing multiple commands.
@@ -2105,7 +2101,7 @@ namespace Emby.Dlna.PlayTo
             var result = false;
             if (!IsPlaying)
             {
-                result = await SendCommand(TransportCommandsAV, "Play", 1).ConfigureAwait(false);
+                result = await SendCommand(TransportAVService, "Play", 1).ConfigureAwait(false);
                 if (result)
                 {
                     // Stop user from issuing multiple commands.
@@ -2122,7 +2118,7 @@ namespace Emby.Dlna.PlayTo
             var result = false;
             if (IsPlaying || IsPaused)
             {
-                result = await SendCommand(TransportCommandsAV, "Stop", 1).ConfigureAwait(false);
+                result = await SendCommand(TransportAVService, "Stop", 1).ConfigureAwait(false);
                 if (result)
                 {
                     // Stop user from issuing multiple commands.
@@ -2150,7 +2146,7 @@ namespace Emby.Dlna.PlayTo
                 return TransportState;
             }
 
-            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetTransportInfo").ConfigureAwait(false);
+            XMLProperties? response = await SendCommandResponseRequired(TransportAVService, "GetTransportInfo").ConfigureAwait(false);
             if (response != null && response.ContainsKey("GetTransportInfoResponse"))
             {
                 if (response.TryGetValue("CurrentTransportState", out string transportState))
@@ -2182,7 +2178,7 @@ namespace Emby.Dlna.PlayTo
 
             if (IsMuted != value)
             {
-                result = await SendCommand(TransportCommandsRender, "SetMute", value ? 1 : 0).ConfigureAwait(false);
+                result = await SendCommand(RenderingControlService, "SetMute", value ? 1 : 0).ConfigureAwait(false);
             }
 
             return result;
@@ -2204,7 +2200,7 @@ namespace Emby.Dlna.PlayTo
                 return true;
             }
 
-            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsRender, "GetMute").ConfigureAwait(false);
+            XMLProperties? response = await SendCommandResponseRequired(RenderingControlService, "GetMute").ConfigureAwait(false);
             if (response != null && response.ContainsKey("GetMuteResponse"))
             {
                 if (response.TryGetValue("CurrentMute", out string muted))
@@ -2245,7 +2241,7 @@ namespace Emby.Dlna.PlayTo
                 };
 
                 result = await SendCommand(
-                    TransportCommandsAV,
+                    TransportAVService,
                     "SetAVTransportURI",
                     settings.Url,
                     dictionary: dictionary,
@@ -2285,7 +2281,7 @@ namespace Emby.Dlna.PlayTo
                 return CurrentMediaInfo;
             }
 
-            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetMediaInfo").ConfigureAwait(false);
+            XMLProperties? response = await SendCommandResponseRequired(TransportAVService, "GetMediaInfo").ConfigureAwait(false);
             if (response != null && response.ContainsKey("GetMediaInfoResponse"))
             {
                 _lastMetaRefresh = DateTime.UtcNow;
@@ -2338,7 +2334,7 @@ namespace Emby.Dlna.PlayTo
             if (IsPlaying || IsPaused)
             {
                 result = await SendCommand(
-                    TransportCommandsAV,
+                    TransportAVService,
                     "Seek",
                     string.Format(CultureInfo.InvariantCulture, "{0:hh}:{0:mm}:{0:ss}", value),
                     commandParameter: "REL_TIME").ConfigureAwait(false);
@@ -2368,7 +2364,7 @@ namespace Emby.Dlna.PlayTo
             // Update position information.
             try
             {
-                XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo").ConfigureAwait(false);
+                XMLProperties? response = await SendCommandResponseRequired(TransportAVService, "GetPositionInfo").ConfigureAwait(false);
                 if (response != null && response.ContainsKey("GetPositionInfoResponse"))
                 {
                     if (response.TryGetValue("TrackDuration", out string value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan d))
@@ -2479,15 +2475,27 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Returns the ServiceRenderingControl element of the device.
+        /// Returns the Service:RenderingControl element of the device.
         /// </summary>
-        /// <returns>The ServiceRenderingControl <see cref="DeviceService"/>.</returns>
-        private DeviceService GetServiceRenderingControl()
+        /// <returns>The Service:RenderingControl <see cref="DeviceService"/>.</returns>
+        private DeviceService GetRenderingControl()
         {
             var services = Properties.Services;
 
             return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:RenderingControl:1", StringComparison.OrdinalIgnoreCase)) ??
                 services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:RenderingControl", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Returns the Service:ConnectionControl element of the device.
+        /// </summary>
+        /// <returns>The Service:ConnectionControl <see cref="DeviceService"/>.</returns>
+        private DeviceService GetConnectionManagerControl()
+        {
+            var services = Properties.Services;
+
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:ConnectionManager:1", StringComparison.OrdinalIgnoreCase)) ??
+                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:ConnectionManager", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -2500,6 +2508,18 @@ namespace Emby.Dlna.PlayTo
 
             return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:AVTransport:1", StringComparison.OrdinalIgnoreCase)) ??
                 services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:AVTransport", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Returns the AvTransportService element of the device.
+        /// </summary>
+        /// <returns>The AvTransportService <see cref="DeviceService"/>.</returns>
+        private DeviceService GetConnectionManagerService()
+        {
+            var services = Properties.Services;
+
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:ConnectionManager:1", StringComparison.OrdinalIgnoreCase)) ??
+                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:ConnectionManager", StringComparison.OrdinalIgnoreCase));
         }
 
 #pragma warning disable SA1401 // Fields should be private

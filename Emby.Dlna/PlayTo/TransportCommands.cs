@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
-using Emby.Dlna.Common;
-using Emby.Dlna.Ssdp;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -25,6 +24,11 @@ namespace Emby.Dlna.PlayTo
         /// <returns>TransportCommand object.</returns>
         public static TransportCommands Create(XDocument document)
         {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
             var command = new TransportCommands();
 
             var actionList = document.Descendants(UPnpNamespaces.Svc + "actionList");
@@ -97,14 +101,25 @@ namespace Emby.Dlna.PlayTo
         private static StateVariable FromXml(XElement container)
         {
             var allowedValues = new List<string>();
-            var element = container.Descendants(UPnpNamespaces.Svc + "allowedValueList")
-                .FirstOrDefault();
+            var element = container.Descendants(UPnpNamespaces.Svc + "allowedValueList").FirstOrDefault();
 
             if (element != null)
             {
                 var values = element.Descendants(UPnpNamespaces.Svc + "allowedValue");
 
                 allowedValues.AddRange(values.Select(child => child.Value));
+            }
+
+            element = container.Descendants(UPnpNamespaces.Svc + "allowedValueRange").FirstOrDefault();
+
+            if (element != null)
+            {
+                var child = element.Descendants(UPnpNamespaces.Svc + "minimum").FirstOrDefault();
+                allowedValues.Add(child?.Value ?? "1");
+                child = element.Descendants(UPnpNamespaces.Svc + "maximum").FirstOrDefault();
+                allowedValues.Add(child?.Value ?? "100");
+                child = element.Descendants(UPnpNamespaces.Svc + "step").FirstOrDefault();
+                allowedValues.Add(child?.Value ?? "1");
             }
 
             return new StateVariable
@@ -117,6 +132,11 @@ namespace Emby.Dlna.PlayTo
 
         public string BuildPost(ServiceAction action, string xmlNamespace)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             var stateString = string.Empty;
 
             foreach (var arg in action.ArgumentList)
@@ -141,6 +161,16 @@ namespace Emby.Dlna.PlayTo
 
         public string BuildPost(ServiceAction action, string xmlNamesapce, object value, string commandParameter = "")
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             var stateString = string.Empty;
 
             foreach (var arg in action.ArgumentList)
@@ -165,6 +195,21 @@ namespace Emby.Dlna.PlayTo
 
         public string BuildPost(ServiceAction action, string xmlNamesapce, object value, Dictionary<string, string> dictionary)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if (dictionary == null)
+            {
+                throw new ArgumentNullException(nameof(dictionary));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             var stateString = string.Empty;
 
             foreach (var arg in action.ArgumentList)
