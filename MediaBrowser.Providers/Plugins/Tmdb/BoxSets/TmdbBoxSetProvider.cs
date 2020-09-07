@@ -37,7 +37,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         private readonly IJsonSerializer _json;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
-        private readonly ILocalizationManager _localization;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
 
@@ -46,7 +45,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             IJsonSerializer json,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            ILocalizationManager localization,
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager)
         {
@@ -54,7 +52,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             _json = json;
             _config = config;
             _fileSystem = fileSystem;
-            _localization = localization;
             _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             Current = this;
@@ -177,7 +174,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         private async Task<CollectionResult> FetchMainResult(string id, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetCollectionInfo3, id, TmdbUtils.ApiKey);
+            var url = string.Format(CultureInfo.InvariantCulture, GetCollectionInfo3, id, TmdbUtils.ApiKey);
 
             if (!string.IsNullOrEmpty(language))
             {
@@ -195,7 +192,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var mainResponse = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage);
+            using var mainResponse = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await mainResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var mainResult = await _json.DeserializeFromStreamAsync<CollectionResult>(stream).ConfigureAwait(false);
 
@@ -205,7 +202,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             {
                 if (!string.IsNullOrEmpty(language) && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
-                    url = string.Format(GetCollectionInfo3, id, TmdbUtils.ApiKey) + "&language=en";
+                    url = string.Format(CultureInfo.InvariantCulture, GetCollectionInfo3, id, TmdbUtils.ApiKey) + "&language=en";
 
                     if (!string.IsNullOrEmpty(language))
                     {
