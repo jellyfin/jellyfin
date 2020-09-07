@@ -147,7 +147,7 @@ namespace Emby.Dlna
                     return false;
                 }
             }
-            
+
             if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
                 if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
