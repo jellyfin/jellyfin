@@ -73,12 +73,14 @@ namespace MediaBrowser.Common.Updates
         /// <param name="name">The name.</param>
         /// <param name="guid">The guid of the plugin.</param>
         /// <param name="minVersion">The minimum required version of the plugin.</param>
+        /// <param name="specificVersion">The specific version of the plugin to install.</param>
         /// <returns>All compatible versions ordered from newest to oldest.</returns>
         IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null);
+            Version minVersion = null,
+            Version specificVersion = null);
 
         /// <summary>
         /// Returns the available plugin updates.
