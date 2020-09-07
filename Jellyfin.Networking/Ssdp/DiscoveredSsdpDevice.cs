@@ -22,28 +22,41 @@ namespace Jellyfin.Networking.Ssdp
         /// <param name="messageHeaders">Message headers.</param>
         public DiscoveredSsdpDevice(DateTimeOffset asAt, string notificationType, SddpMessage messageHeaders)
         {
-            AsAt = asAt;
-            CacheLifetime = TimeSpan.Zero;
-
-            if (messageHeaders.TryGetValue("CACHE-CONTROL", out var cc))
+            if (messageHeaders == null)
             {
-                if (!string.IsNullOrEmpty(cc))
+                throw new ArgumentNullException(nameof(messageHeaders));
+            }
+
+            try
+            {
+                AsAt = asAt;
+                CacheLifetime = TimeSpan.Zero;
+
+                if (messageHeaders.TryGetValue("CACHE-CONTROL", out var cc))
                 {
-                    var values = cc.Split('=');
-                    if (string.Equals("Max-Age", values[0], StringComparison.OrdinalIgnoreCase) || string.Equals("Shared-MaxAge", values[0], StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrEmpty(cc))
                     {
-                        if (TimeSpan.TryParse(values[1], out TimeSpan clt))
+                        var values = cc.Split('=');
+                        if (string.Equals("Max-Age", values[0], StringComparison.OrdinalIgnoreCase) || string.Equals("Shared-MaxAge", values[0], StringComparison.OrdinalIgnoreCase))
                         {
-                            CacheLifetime = clt;
+                            if (TimeSpan.TryParse(values[1], out TimeSpan clt))
+                            {
+                                CacheLifetime = clt;
+                            }
                         }
                     }
                 }
-            }
 
-            DescriptionLocation = new Uri(messageHeaders["LOCATION"], UriKind.RelativeOrAbsolute);
-            NotificationType = messageHeaders[notificationType];
-            Usn = messageHeaders["USN"];
-            Headers = messageHeaders;
+                DescriptionLocation = new Uri(messageHeaders["LOCATION"], UriKind.RelativeOrAbsolute);
+
+                NotificationType = messageHeaders[notificationType];
+                Usn = messageHeaders["USN"];
+                Headers = messageHeaders;
+            }
+            catch
+            {
+                throw new ArgumentException("Invalid structure passed to DiscoveredSsdpDevice\r\n{0}", SsdpServer.DebugOutput(messageHeaders));
+            }
         }
 
         /// <summary>

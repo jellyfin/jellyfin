@@ -183,7 +183,7 @@ namespace Emby.Dlna.PlayTo
         /// Initializes a new instance of the <see cref="PlayToDevice"/> class.
         /// </summary>
         /// <param name="playToManager">Our playToManager<see cref="PlayToManager"/>.</param>
-        /// <param name="PlayToDeviceInfo">The playToDeviceInfo record.</param>
+        /// <param name="playToDeviceInfo">The playToDeviceInfo record.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="config">The IServerConfigurationManager instance.</param>
@@ -255,7 +255,7 @@ namespace Emby.Dlna.PlayTo
                     }
                     catch (HttpException ex)
                     {
-                        _logger.LogError(ex, "{0}: Error getting device volume.", Properties.FriendlyName);
+                        _logger.LogError(ex, "{0}: Error getting device volume.", Properties.Name);
                     }
                 }
 
@@ -346,7 +346,7 @@ namespace Emby.Dlna.PlayTo
         private TransportCommands ConnectionCommands => GetCommandValue(ConnectionManagerService);
 
         /// <summary>
-        /// Generates a PlayToDeviceInfo from the device at <see cref="Url"/>.
+        /// Generates a PlayToDeviceInfo from the device at the address contained in the url parameter."/>.
         /// </summary>
         /// <param name="playToManager">The <see cref="PlayToManager"/> instance.</param>
         /// <param name="url">The url of the device.</param>
@@ -404,7 +404,7 @@ namespace Emby.Dlna.PlayTo
 
             var deviceProperties = new PlayToDeviceInfo()
             {
-                FriendlyName = string.Join(" ", friendlyNames),
+                Name = string.Join(" ", friendlyNames),
                 BaseUrl = string.Format(_usCulture, "http://{0}:{1}", url.Host, url.Port)
             };
 
@@ -729,9 +729,9 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Diposes this object.
+        /// Override this method and dispose any objects you own the lifetime of if disposing is true.
         /// </summary>
-        /// <param name="disposing">The disposing<see cref="bool"/>.</param>
+        /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -2076,7 +2076,7 @@ namespace Emby.Dlna.PlayTo
                 // Ignore.
             }
 
-            return Array.Empty<string>();
+            return string.Empty;
         }
 
         private async Task<bool> SendPauseRequest()

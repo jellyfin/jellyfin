@@ -105,6 +105,24 @@ namespace Jellyfin.Networking.Ssdp
         }
 
         /// <summary>
+        /// Formats a SsdpMessage for output.
+        /// </summary>
+        /// <param name="m">Ssdp message to output.</param>
+        /// <returns>Formatted message.</returns>
+        public static string DebugOutput(SsdpMessage m)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var l in m ?? throw new ArgumentNullException(nameof(m)))
+            {
+                sb.Append(l.Key);
+                sb.Append(": ");
+                sb.AppendLine(l.Value);
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Adds an event.
         /// </summary>
         /// <param name="action">The string to event on.</param>
@@ -297,19 +315,6 @@ namespace Jellyfin.Networking.Ssdp
             // }
         }
 
-        private static string PrettyPrint(SsdpMessage m)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (var l in m)
-            {
-                sb.Append(l.Key);
-                sb.Append(": ");
-                sb.AppendLine(l.Value);
-            }
-
-            return sb.ToString();
-        }
-
         /// <summary>
         /// Builds an SSDP message.
         /// </summary>
@@ -479,7 +484,7 @@ namespace Jellyfin.Networking.Ssdp
             {
                 if (TracingFilter == null || TracingFilter.Equals(receivedFrom.Address) || TracingFilter.Equals(localIpAddress))
                 {
-                    Logger.LogDebug("<- {0} : {1} \r\n{3}", receivedFrom.Address, localIpAddress, PrettyPrint(msg));
+                    Logger.LogDebug("<- {0} : {1} \r\n{3}", receivedFrom.Address, localIpAddress, DebugOutput(msg));
                 }
             }
 

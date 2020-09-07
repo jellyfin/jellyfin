@@ -158,9 +158,9 @@ namespace Emby.Dlna.Net
         }
 
         /// <summary>
-        /// Stops listening for requests, stops sending periodic broadcasts, disposes all internal relocalIPs.
+        /// Override this method and dispose any objects you own the lifetime of if disposing is true.
         /// </summary>
-        /// <param name="disposing">Is disposing.</param>
+        /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)

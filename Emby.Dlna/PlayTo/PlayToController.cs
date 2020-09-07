@@ -708,9 +708,9 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Releases unmanaged and optionally managed resources.
+        /// Override this method and dispose any objects you own the lifetime of if disposing is true.
         /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable SA1611
 
 using System;
 using System.Collections.Generic;
@@ -7,14 +7,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.Eventing;
-using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo.EventArgs;
-using Emby.Dlna.Service;
 using Jellyfin.Data.Events;
-using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -31,6 +26,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
+    /// <summary>
+    /// PlayToManager class.
+    /// </summary>
     public sealed class PlayToManager : IDisposable
     {
         private readonly ILogger _logger;
@@ -54,6 +52,9 @@ namespace Emby.Dlna.PlayTo
         private readonly List<PlayToDevice> _devices = new List<PlayToDevice>();
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PlayToManager"/> class.
+        /// </summary>
         public PlayToManager(
             ILoggerFactory loggerFactory,
             ISessionManager sessionManager,
@@ -92,8 +93,16 @@ namespace Emby.Dlna.PlayTo
             _playToLocator.Start();
         }
 
+        /// <summary>
+        /// An event handler that is triggered on reciept of a PlayTo client subscription event.
+        /// </summary>
         public event EventHandler<DlnaEventArgs> DLNAEvents;
 
+        /// <summary>
+        /// Method that triggers a DLNAEvents event.
+        /// </summary>
+        /// <param name="args">A DlnaEventArgs instance containing the event message.</param>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task NotifyDevice(DlnaEventArgs args)
         {
             DLNAEvents?.Invoke(this, args);
@@ -153,6 +162,10 @@ namespace Emby.Dlna.PlayTo
             return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Override this method and dispose any objects you own the lifetime of if disposing is true.
+        /// </summary>
+        /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
         private async Task Dispose(bool disposing)
         {
             if (!_disposed)
@@ -293,21 +306,21 @@ namespace Emby.Dlna.PlayTo
             {
                 string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
 
-                var playToDevice = await PlayToDevice.CreateDevice(
+                var device = await PlayToDevice.CreateDevice(
                     this,
                     uri,
                     _httpClientFactory,
                     _logger,
                     _config,
                     serverAddress).ConfigureAwait(false);
-                if (playToDevice == null)
+                if (device == null)
                 {
                     return false;
                 }
 
-                _devices.Add(playToDevice);
+                _devices.Add(device);
 
-                _sessionManager.UpdateDeviceName(sessionInfo.Id, playToDevice.Properties.FriendlyName);
+                _sessionManager.UpdateDeviceName(sessionInfo.Id, device.Properties.Name);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope: This object is disposed of in the dispose section.
                 controller = new PlayToController(
@@ -330,10 +343,10 @@ namespace Emby.Dlna.PlayTo
 
                 sessionInfo.AddController(controller);
 
-                controller.Init(playToDevice);
+                controller.Init(device);
 
-                var profile = _dlnaManager.GetProfile(playToDevice.Properties) ??
-                              _dlnaManager.GetDefaultProfile(playToDevice.Properties);
+                var profile = _dlnaManager.GetProfile(device.Properties) ??
+                              _dlnaManager.GetDefaultProfile(device.Properties);
 
                 _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
                 {
@@ -355,7 +368,7 @@ namespace Emby.Dlna.PlayTo
                     SupportsMediaControl = true
                 });
 
-                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.FriendlyName, device.Properties.ModelName);
+                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
 
                 return true;
             }
