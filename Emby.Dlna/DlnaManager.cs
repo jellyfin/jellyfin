@@ -143,7 +143,7 @@ namespace Emby.Dlna
         {
             if (!string.IsNullOrEmpty(profileInfo.DeviceDescription))
             {
-                if (deviceInfo.DeviceDescription == null || !IsPropertyMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
+                if (deviceInfo.DeviceDescription == null || !IsRegexOrSubstringMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
                 {
                     return false;
                 }
@@ -151,7 +151,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
-                if (deviceInfo.FriendlyName == null || !IsPropertyMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                if (deviceInfo.FriendlyName == null || !IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
                 {
                     return false;
                 }
@@ -159,7 +159,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
-                if (deviceInfo.Manufacturer == null || !IsPropertyMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
+                if (deviceInfo.Manufacturer == null || !IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
                 {
                     return false;
                 }
@@ -167,7 +167,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
             {
-                if (deviceInfo.ManufacturerUrl == null || !IsPropertyMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
+                if (deviceInfo.ManufacturerUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
                 {
                     return false;
                 }
@@ -175,7 +175,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
             {
-                if (deviceInfo.ModelDescription == null || !IsPropertyMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
+                if (deviceInfo.ModelDescription == null || !IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
                 {
                     return false;
                 }
@@ -183,7 +183,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelName))
             {
-                if (deviceInfo.ModelName == null || !IsPropertyMatch(deviceInfo.ModelName, profileInfo.ModelName))
+                if (deviceInfo.ModelName == null || !IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName))
                 {
                     return false;
                 }
@@ -191,7 +191,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
             {
-                if (deviceInfo.ModelNumber == null || !IsPropertyMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
+                if (deviceInfo.ModelNumber == null || !IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
                 {
                     return false;
                 }
@@ -199,7 +199,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
             {
-                if (deviceInfo.ModelUrl == null || !IsPropertyMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
+                if (deviceInfo.ModelUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
                 {
                     return false;
                 }
@@ -207,7 +207,7 @@ namespace Emby.Dlna
 
             if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
             {
-                if (deviceInfo.SerialNumber == null || !IsPropertyMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
+                if (deviceInfo.SerialNumber == null || !IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
                 {
                     return false;
                 }
@@ -216,7 +216,7 @@ namespace Emby.Dlna
             return true;
         }
 
-        private bool IsPropertyMatch(string input, string pattern)
+        private bool IsRegexOrSubstringMatch(string input, string pattern)
         {
             try
             {
