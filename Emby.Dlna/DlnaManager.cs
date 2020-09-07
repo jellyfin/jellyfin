@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Emby.Dlna.PlayTo;
 using Emby.Dlna.Profiles;
 using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
@@ -99,7 +100,7 @@ namespace Emby.Dlna
             return new DefaultProfile();
         }
 
-        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
+        public DeviceProfile GetProfile(PlayToDeviceInfo deviceInfo)
         {
             if (deviceInfo == null)
             {
@@ -121,12 +122,12 @@ namespace Emby.Dlna
             return profile;
         }
 
-        private void LogUnmatchedProfile(DeviceIdentification profile)
+        private void LogUnmatchedProfile(PlayToDeviceInfo profile)
         {
             var builder = new StringBuilder();
 
             builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.AppendFormat(CultureInfo.InvariantCulture, "FriendlyName:{0}", profile.FriendlyName ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "FriendlyName:{0}", profile.Name ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "Manufacturer:{0}", profile.Manufacturer ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty).AppendLine();
             builder.AppendFormat(CultureInfo.InvariantCulture, "ModelDescription:{0}", profile.ModelDescription ?? string.Empty).AppendLine();
@@ -138,11 +139,11 @@ namespace Emby.Dlna
             _logger.LogInformation(builder.ToString());
         }
 
-        private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
+        private bool IsMatch(PlayToDeviceInfo deviceInfo, DeviceIdentification profileInfo)
         {
             if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
-                if (deviceInfo.FriendlyName == null || !IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                if (deviceInfo.Name == null || !IsRegexOrSubstringMatch(deviceInfo.Name, profileInfo.FriendlyName))
                 {
                     return false;
                 }

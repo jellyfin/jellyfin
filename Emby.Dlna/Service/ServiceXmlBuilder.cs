@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Security;
 using System.Text;
 using Emby.Dlna.Common;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Service
 {

@@ -464,7 +464,7 @@ namespace Emby.Dlna.PlayTo
         {
             var deviceInfo = _device.Properties;
 
-            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
+            var profile = _dlnaManager.GetProfile(deviceInfo) ??
                 _dlnaManager.GetDefaultProfile();
 
             var mediaSources = item is IHasMediaSources

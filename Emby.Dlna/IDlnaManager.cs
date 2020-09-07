@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using Emby.Dlna.PlayTo;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
@@ -58,7 +59,7 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="deviceInfo">The device information.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(DeviceIdentification deviceInfo);
+        DeviceProfile GetProfile(PlayToDeviceInfo deviceInfo);
 
         /// <summary>
         /// Gets the server description XML.

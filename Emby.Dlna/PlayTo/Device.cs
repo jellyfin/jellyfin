@@ -12,8 +12,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
 using Emby.Dlna.Ssdp;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
@@ -35,7 +34,7 @@ namespace Emby.Dlna.PlayTo
         private int _connectFailureCount;
         private bool _disposed;
 
-        public Device(DeviceInfo deviceProperties, IHttpClientFactory httpClientFactory, ILogger logger)
+        public Device(PlayToDeviceInfo deviceProperties, IHttpClientFactory httpClientFactory, ILogger logger)
         {
             Properties = deviceProperties;
             _httpClientFactory = httpClientFactory;
@@ -50,7 +49,7 @@ namespace Emby.Dlna.PlayTo
 
         public event EventHandler<MediaChangedEventArgs> MediaChanged;
 
-        public DeviceInfo Properties { get; set; }
+        public PlayToDeviceInfo Properties { get; set; }
 
         public bool IsMuted { get; set; }
 
@@ -990,7 +989,7 @@ namespace Emby.Dlna.PlayTo
                 friendlyNames.Add(room.Value);
             }
 
-            var deviceProperties = new DeviceInfo()
+            var deviceProperties = new PlayToDeviceInfo()
             {
                 Name = string.Join(" ", friendlyNames),
                 BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)

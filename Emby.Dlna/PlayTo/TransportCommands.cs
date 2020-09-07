@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
 using Emby.Dlna.Ssdp;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.PlayTo
 {

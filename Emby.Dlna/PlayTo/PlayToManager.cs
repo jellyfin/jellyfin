@@ -212,7 +212,7 @@ namespace Emby.Dlna.PlayTo
 
                 controller.Init(device);
 
-                var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                var profile = _dlnaManager.GetProfile(device.Properties) ??
                               _dlnaManager.GetDefaultProfile();
 
                 _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
