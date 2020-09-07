@@ -238,8 +238,14 @@ namespace Emby.Server.Implementations
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
+        /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
+        /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
+        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+        /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
         public ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
@@ -1137,7 +1143,8 @@ namespace Emby.Server.Implementations
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = localAddress
+                LocalAddress = localAddress,
+                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
 
