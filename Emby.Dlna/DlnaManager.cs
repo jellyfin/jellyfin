@@ -140,6 +140,14 @@ namespace Emby.Dlna
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
+            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
+            {
+                if (deviceInfo.FriendlyName == null || !IsRegexMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                {
+                    return false;
+                }
+            }
+            
             if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
                 if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
