@@ -24,11 +24,11 @@ namespace Jellyfin.Server.Extensions
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
 
-            var baseUrl = serverConfigurationManager.Configuration.BaseUrl.Trim('/');
+            var baseUrl = serverConfigurationManager.Configuration.BaseUrl;
             var apiDocBaseUrl = serverConfigurationManager.Configuration.BaseUrl;
             if (!string.IsNullOrEmpty(baseUrl))
             {
-                baseUrl += '/';
+                baseUrl = baseUrl.Trim('/') + '/';
             }
 
             return applicationBuilder
