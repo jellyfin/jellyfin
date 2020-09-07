@@ -6,14 +6,9 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ServiceAction
     {
-        public ServiceAction()
-        {
-            ArgumentList = new List<Argument>();
-        }
+        public string Name { get; set; } = string.Empty;
 
-        public string Name { get; set; }
-
-        public List<Argument> ArgumentList { get; }
+        public List<Argument> ArgumentList { get; } = new List<Argument>();
 
         /// <inheritdoc />
         public override string ToString()
