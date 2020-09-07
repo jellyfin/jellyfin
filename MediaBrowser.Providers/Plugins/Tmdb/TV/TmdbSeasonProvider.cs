@@ -200,7 +200,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         internal async Task<SeasonResult> FetchMainResult(string id, int seasonNumber, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetTvInfo3, id, seasonNumber.ToString(CultureInfo.InvariantCulture), TmdbUtils.ApiKey);
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                GetTvInfo3,
+                id,
+                seasonNumber.ToString(CultureInfo.InvariantCulture),
+                TmdbUtils.ApiKey);
 
             if (!string.IsNullOrEmpty(language))
             {
@@ -219,7 +224,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             return await _jsonSerializer.DeserializeFromStreamAsync<SeasonResult>(stream).ConfigureAwait(false);
         }
