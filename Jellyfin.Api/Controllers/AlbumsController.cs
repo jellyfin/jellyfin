@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -52,7 +53,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Albums/{albumId}/Similar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarAlbums(
-            [FromRoute] string albumId,
+            [FromRoute, Required] string albumId,
             [FromQuery] Guid? userId,
             [FromQuery] string? excludeArtistIds,
             [FromQuery] int? limit)
@@ -84,7 +85,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Artists/{artistId}/Similar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarArtists(
-            [FromRoute] string artistId,
+            [FromRoute, Required] string artistId,
             [FromQuery] Guid? userId,
             [FromQuery] string? excludeArtistIds,
             [FromQuery] int? limit)

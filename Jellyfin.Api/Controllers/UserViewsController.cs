@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Extensions;
@@ -64,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Views")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetUserViews(
-            [FromRoute] Guid userId,
+            [FromRoute, Required] Guid userId,
             [FromQuery] bool? includeExternalContent,
             [FromQuery] string? presetViews,
             [FromQuery] bool includeHidden = false)
@@ -126,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/GroupingOptions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromRoute] Guid userId)
+        public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
             if (user == null)

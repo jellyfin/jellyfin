@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -92,6 +92,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             var enableDlnaHeaders = !string.IsNullOrWhiteSpace(streamingRequest.Params) ||
+                                    streamingRequest.StreamOptions.ContainsKey("dlnaheaders") ||
                                     string.Equals(httpRequest.Headers["GetContentFeatures.DLNA.ORG"], "1", StringComparison.OrdinalIgnoreCase);
 
             var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
