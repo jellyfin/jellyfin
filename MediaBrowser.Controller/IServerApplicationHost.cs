@@ -114,8 +114,6 @@ namespace MediaBrowser.Controller
         /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
         void LaunchUrl(string url);
 
-        void EnableLoopback(string appName);
-
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
