@@ -10,8 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Emby.Dlna.Common;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.PlayTo
 {

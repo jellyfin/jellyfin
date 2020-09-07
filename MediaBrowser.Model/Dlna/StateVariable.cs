@@ -7,18 +7,13 @@ namespace MediaBrowser.Model.Dlna
 {
     public class StateVariable
     {
-        public StateVariable()
-        {
-            AllowedValues = Array.Empty<string>();
-        }
+        public string Name { get; set; } = string.Empty;
 
-        public string Name { get; set; }
-
-        public string DataType { get; set; }
+        public string DataType { get; set; } = string.Empty;
 
         public bool SendsEvents { get; set; }
 
-        public IReadOnlyList<string> AllowedValues { get; set; }
+        public IReadOnlyList<string> AllowedValues { get; set; } = Array.Empty<string>();
 
         /// <inheritdoc />
         public override string ToString()

@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
-using Emby.Dlna.Common;
 using Emby.Dlna.Service;
 using MediaBrowser.Model.Dlna;
 
