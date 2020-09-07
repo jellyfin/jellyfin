@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 
@@ -23,15 +22,16 @@ namespace MediaBrowser.Providers.Playlists
         IHasItemChangeMonitor
     {
         private readonly ILogger<PlaylistItemsProvider> _logger;
-        private IFileSystem _fileSystem;
 
-        public PlaylistItemsProvider(IFileSystem fileSystem, ILogger<PlaylistItemsProvider> logger)
+        public PlaylistItemsProvider(ILogger<PlaylistItemsProvider> logger)
         {
-            _fileSystem = fileSystem;
             _logger = logger;
         }
 
         public string Name => "Playlist Reader";
+
+        // Run last
+        public int Order => 100;
 
         public Task<ItemUpdateType> FetchAsync(Playlist item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
@@ -163,7 +163,5 @@ namespace MediaBrowser.Providers.Playlists
 
             return false;
         }
-        // Run last
-        public int Order => 100;
     }
 }

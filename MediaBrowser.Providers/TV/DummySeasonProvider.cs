@@ -124,7 +124,8 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Adds the season.
         /// </summary>
-        public async Task<Season> AddSeason(Series series,
+        public async Task<Season> AddSeason(
+            Series series,
             int? seasonNumber,
             bool isVirtualItem,
             CancellationToken cancellationToken)
@@ -211,11 +212,14 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.LogInformation("Removing virtual season {0} {1}", series.Name, seasonToRemove.IndexNumber);
 
-                _libraryManager.DeleteItem(seasonToRemove, new DeleteOptions
-                {
-                    DeleteFileLocation = true
+                _libraryManager.DeleteItem(
+                    seasonToRemove,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = true
 
-                }, false);
+                    },
+                    false);
 
                 hasChanges = true;
             }

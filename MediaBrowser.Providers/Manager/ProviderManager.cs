@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
@@ -905,8 +904,7 @@ namespace MediaBrowser.Providers.Manager
             return provider.GetImageResponse(url, cancellationToken);
         }
 
-        /// <inheritdoc/>
-        public IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
+        private IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
         {
             return _externalIds.Where(i =>
             {
