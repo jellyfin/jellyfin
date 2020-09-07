@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 remoteResult.SetProviderId(MetadataProvider.Tmdb, obj.Id.ToString(_usCulture));
                 remoteResult.SetProviderId(MetadataProvider.Imdb, obj.External_Ids.Imdb_Id);
 
-                if (obj.External_Ids.Tvdb_Id > 0)
+                if (obj.External_Ids != null && obj.External_Ids.Tvdb_Id > 0)
                 {
                     remoteResult.SetProviderId(MetadataProvider.Tvdb, obj.External_Ids.Tvdb_Id.Value.ToString(_usCulture));
                 }

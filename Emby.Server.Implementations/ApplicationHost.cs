@@ -1442,10 +1442,6 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public virtual void EnableLoopback(string appName)
-        {
-        }
-
         private bool _disposed = false;
 
         /// <summary>

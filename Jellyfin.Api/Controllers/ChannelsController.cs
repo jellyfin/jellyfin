@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,7 +91,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Channel features returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the channel features.</returns>
         [HttpGet("{channelId}/Features")]
-        public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute] string channelId)
+        public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute, Required] string channelId)
         {
             return _channelManager.GetChannelFeatures(channelId);
         }
@@ -114,7 +115,7 @@ namespace Jellyfin.Api.Controllers
         /// </returns>
         [HttpGet("{channelId}/Items")]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetChannelItems(
-            [FromRoute] Guid channelId,
+            [FromRoute, Required] Guid channelId,
             [FromQuery] Guid? folderId,
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
