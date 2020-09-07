@@ -68,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> UpdateItem([FromRoute] Guid itemId, [FromBody, Required] BaseItemDto request)
+        public async Task<ActionResult> UpdateItem([FromRoute, Required] Guid itemId, [FromBody, Required] BaseItemDto request)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -141,7 +141,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Items/{itemId}/MetadataEditor")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<MetadataEditorInfo> GetMetadataEditorInfo([FromRoute] Guid itemId)
+        public ActionResult<MetadataEditorInfo> GetMetadataEditorInfo([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -195,7 +195,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Items/{itemId}/ContentType")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateItemContentType([FromRoute] Guid itemId, [FromQuery, Required] string? contentType)
+        public ActionResult UpdateItemContentType([FromRoute, Required] Guid itemId, [FromQuery, Required] string? contentType)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
