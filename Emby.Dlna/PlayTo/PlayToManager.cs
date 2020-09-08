@@ -132,19 +132,19 @@ namespace Emby.Dlna.PlayTo
 
         private static string GetUuid(string usn)
         {
-            const string uuidStr = "uuid:";
-            const string uuidColonStr = "::";
+            const string UuidStr = "uuid:";
+            const string UuidColonStr = "::";
 
-            var index = usn.IndexOf(uuidStr, StringComparison.OrdinalIgnoreCase);
+            var index = usn.IndexOf(UuidStr, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                return usn.Substring(index + uuidStr.Length);
+                return usn.Substring(index + UuidStr.Length);
             }
 
-            index = usn.IndexOf(uuidColonStr, StringComparison.OrdinalIgnoreCase);
+            index = usn.IndexOf(UuidColonStr, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                usn = usn.Substring(0, index + uuidColonStr.Length);
+                usn = usn.Substring(0, index + UuidColonStr.Length);
             }
 
             return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
