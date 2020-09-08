@@ -246,7 +246,6 @@ namespace Emby.Server.Implementations
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
         public ApplicationHost(
             IServerApplicationPaths applicationPaths,

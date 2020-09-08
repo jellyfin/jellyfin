@@ -1381,7 +1381,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError("{0}: SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.ToString(), url);
+                _logger.LogError("{0}: SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.Message, url);
                 return null;
             }
             catch (XmlException)
