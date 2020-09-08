@@ -1083,9 +1083,9 @@ namespace Emby.Server.Implementations
                         Logger.LogDebug("Deleting {Path}", versions[x].Path);
                         Directory.Delete(versions[x].Path, true);
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        // Ignore errors.
+                        Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
                     }
                 }
             }
