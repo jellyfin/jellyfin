@@ -409,5 +409,10 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the threshold for the slow response time warning in ms.
         /// </summary>
         public long SlowResponseThresholdMs { get; set; } = 500;
+        
+        /// <summary>
+        /// Gets or sets the cors hosts.
+        /// </summary>
+        public string[] CorsHosts { get; set; } = new[] { "*" };
     }
 }
