@@ -132,9 +132,9 @@ namespace Emby.Dlna.PlayTo
 
         private static string GetUuid(string usn)
         {
-            const string uuidStr ="uuid:";
+            const string uuidStr = "uuid:";
             const string uuidColonStr = "::";
-            
+
             var index = usn.IndexOf(uuidStr, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
