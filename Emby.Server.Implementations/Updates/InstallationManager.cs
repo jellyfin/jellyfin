@@ -375,7 +375,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             // Version folder as they cannot be overwritten in Windows.
-            targetDir += "_" + package.Version.ToString();
+            targetDir += "_" + package.Version;
 
             if (Directory.Exists(targetDir))
             {
