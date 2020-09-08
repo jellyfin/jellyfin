@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -25,9 +26,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IFileSystem _fileSystem;
 
-        public TmdbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
+        public TmdbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory)
         {
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
@@ -37,6 +37,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         public string Name => ProviderName;
 
         public static string ProviderName => TmdbUtils.ProviderName;
+
+        // After tvdb and fanart
+        public int Order => 2;
 
         public bool Supports(BaseItem item)
         {
@@ -56,7 +59,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var list = new List<RemoteImageInfo>();
 
-            var results = await FetchImages(item, null, _jsonSerializer, cancellationToken).ConfigureAwait(false);
+            var results = await FetchImages(item, null, cancellationToken).ConfigureAwait(false);
 
             if (results == null)
             {
@@ -148,10 +151,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="language">The language.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private async Task<Images> FetchImages(BaseItem item, string language, IJsonSerializer jsonSerializer,
+        private async Task<Images> FetchImages(
+            BaseItem item,
+            string language,
             CancellationToken cancellationToken)
         {
             var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
@@ -165,21 +169,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var path = TmdbSeriesProvider.Current.GetDataFilePath(tmdbId, language);
 
-            if (!string.IsNullOrEmpty(path))
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
             {
-                var fileInfo = _fileSystem.GetFileInfo(path);
-
-                if (fileInfo.Exists)
-                {
-                    return jsonSerializer.DeserializeFromFile<SeriesResult>(path).Images;
-                }
+                return _jsonSerializer.DeserializeFromFile<SeriesResult>(path).Images;
             }
 
             return null;
         }
-
-        // After tvdb and fanart
-        public int Order => 2;
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
