@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Globalization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Jellyfin.Server.Middleware
 {
