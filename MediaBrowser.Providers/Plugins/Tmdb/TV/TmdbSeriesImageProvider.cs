@@ -13,7 +13,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
@@ -31,7 +30,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
-            _fileSystem = fileSystem;
         }
 
         public string Name => ProviderName;
