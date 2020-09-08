@@ -504,8 +504,8 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("Artists/{name}/Images/{imageType}/{imageIndex}")]
-        [HttpHead("Artists/{name}/Images/{imageType}/{imageIndex}", Name = "HeadArtistImage")]
+        [HttpGet("Artists/{name}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("Artists/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadArtistImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetArtistImage(
@@ -582,7 +582,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("Genres/{name}/Images/{imageType}/{imageIndex}")]
+        [HttpGet("Genres/{name}/Images/{imageType}/{imageIndex?}")]
         [HttpHead("Genres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
