@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +7,6 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
-using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -513,7 +512,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string? enteredUsername)
         {
             var isLocal = HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress)
-                          || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress);
+                          || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString());
 
             var result = await _userManager.StartForgotPasswordProcess(enteredUsername, isLocal).ConfigureAwait(false);
 
@@ -560,7 +559,7 @@ namespace Jellyfin.Api.Controllers
 
             if (filterByNetwork)
             {
-                if (!_networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress))
+                if (!_networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString()))
                 {
                     users = users.Where(i => i.HasPermission(PermissionKind.EnableRemoteAccess));
                 }

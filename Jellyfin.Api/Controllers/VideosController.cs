@@ -470,7 +470,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // Static remote stream
-            if (@static.HasValue && @static.Value && (state.InputProtocol == MediaProtocol.Http))
+            if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 

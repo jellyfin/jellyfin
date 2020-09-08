@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -935,7 +935,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Obsolete("This endpoint is obsolete.")]
-        public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute, Required] Guid? groupId)
+        public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute, Required] Guid groupId)
         {
             return NotFound();
         }
