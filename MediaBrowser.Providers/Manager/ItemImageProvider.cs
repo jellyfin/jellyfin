@@ -28,6 +28,22 @@ namespace MediaBrowser.Providers.Manager
         private readonly IProviderManager _providerManager;
         private readonly IFileSystem _fileSystem;
 
+        /// <summary>
+        /// Image types that are only one per item.
+        /// </summary>
+        private readonly ImageType[] _singularImages =
+        {
+            ImageType.Primary,
+            ImageType.Art,
+            ImageType.Banner,
+            ImageType.Box,
+            ImageType.BoxRear,
+            ImageType.Disc,
+            ImageType.Logo,
+            ImageType.Menu,
+            ImageType.Thumb
+        };
+
         public ItemImageProvider(ILogger logger, IProviderManager providerManager, IFileSystem fileSystem)
         {
             _logger = logger;
@@ -174,22 +190,6 @@ namespace MediaBrowser.Providers.Manager
                 _logger.LogError(ex, "Error in {provider}", provider.Name);
             }
         }
-
-        /// <summary>
-        /// Image types that are only one per item.
-        /// </summary>
-        private readonly ImageType[] _singularImages =
-        {
-            ImageType.Primary,
-            ImageType.Art,
-            ImageType.Banner,
-            ImageType.Box,
-            ImageType.BoxRear,
-            ImageType.Disc,
-            ImageType.Logo,
-            ImageType.Menu,
-            ImageType.Thumb
-        };
 
         private bool HasImage(BaseItem item, ImageType type)
         {
@@ -378,7 +378,6 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-
                         var newDateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
 
                         // If date changed then we need to reset saved image dimensions
@@ -441,7 +440,9 @@ namespace MediaBrowser.Providers.Manager
             return changed;
         }
 
-        private async Task<bool> DownloadImage(BaseItem item, LibraryOptions libraryOptions,
+        private async Task<bool> DownloadImage(
+            BaseItem item,
+            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             RefreshResult result,
             IEnumerable<RemoteImageInfo> images,
@@ -522,11 +523,6 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            // if (!item.IsSaveLocalMetadataEnabled())
-            //{
-            //    return true;
-            //}
-
             return true;
         }
 
@@ -539,13 +535,15 @@ namespace MediaBrowser.Providers.Manager
 
         private void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls, int newIndex)
         {
-            var path = string.Join("|", urls.Take(1).ToArray());
+            var path = string.Join('|', urls.Take(1));
 
-            item.SetImage(new ItemImageInfo
-            {
-                Path = path,
-                Type = imageType
-            }, newIndex);
+            item.SetImage(
+                new ItemImageInfo
+                {
+                    Path = path,
+                    Type = imageType
+                },
+                newIndex);
         }
 
         private async Task DownloadBackdrops(BaseItem item, LibraryOptions libraryOptions, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)

@@ -49,9 +49,10 @@ namespace Jellyfin.Api.Controllers
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             var result = _installationManager.FilterPackages(
-                packages,
-                name,
-                string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid)).FirstOrDefault();
+                    packages,
+                    name,
+                    string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid))
+                .FirstOrDefault();
 
             return result;
         }
@@ -93,7 +94,8 @@ namespace Jellyfin.Api.Controllers
                     packages,
                     name,
                     string.IsNullOrEmpty(assemblyGuid) ? Guid.Empty : Guid.Parse(assemblyGuid),
-                    string.IsNullOrEmpty(version) ? null : Version.Parse(version)).FirstOrDefault();
+                    specificVersion: string.IsNullOrEmpty(version) ? null : Version.Parse(version))
+                .FirstOrDefault();
 
             if (package == null)
             {

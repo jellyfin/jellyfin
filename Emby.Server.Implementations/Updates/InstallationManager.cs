@@ -183,7 +183,8 @@ namespace Emby.Server.Implementations.Updates
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null)
+            Version minVersion = null,
+            Version specificVersion = null)
         {
             var package = FilterPackages(availablePackages, name, guid).FirstOrDefault();
 
@@ -197,7 +198,11 @@ namespace Emby.Server.Implementations.Updates
             var availableVersions = package.versions
                 .Where(x => Version.Parse(x.targetAbi) <= appVer);
 
-            if (minVersion != null)
+            if (specificVersion != null)
+            {
+                availableVersions = availableVersions.Where(x => new Version(x.version) == specificVersion);
+            }
+            else if (minVersion != null)
             {
                 availableVersions = availableVersions.Where(x => new Version(x.version) >= minVersion);
             }
@@ -227,8 +232,8 @@ namespace Emby.Server.Implementations.Updates
         {
             foreach (var plugin in _applicationHost.Plugins)
             {
-                var compatibleversions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, plugin.Version);
-                var version = compatibleversions.FirstOrDefault(y => y.Version > plugin.Version);
+                var compatibleVersions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, minVersion: plugin.Version);
+                var version = compatibleVersions.FirstOrDefault(y => y.Version > plugin.Version);
                 if (version != null && CompletedInstallations.All(x => x.Guid != version.Guid))
                 {
                     yield return version;

@@ -198,7 +198,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var searchResults = await _json.DeserializeFromStreamAsync<TmdbSearchResult<MovieResult>>(stream).ConfigureAwait(false);
 
@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var searchResults = await _json.DeserializeFromStreamAsync<TmdbSearchResult<TvResult>>(stream).ConfigureAwait(false);
 
