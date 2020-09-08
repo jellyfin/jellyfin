@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Keys/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RevokeKey([FromRoute, Required] string? key)
+        public ActionResult RevokeKey([FromRoute, Required] string key)
         {
             _sessionManager.RevokeToken(key);
             return NoContent();

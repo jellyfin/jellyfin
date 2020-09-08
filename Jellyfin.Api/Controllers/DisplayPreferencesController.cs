@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
         public ActionResult<DisplayPreferencesDto> GetDisplayPreferences(
-            [FromRoute, Required] string? displayPreferencesId,
+            [FromRoute, Required] string displayPreferencesId,
             [FromQuery] [Required] Guid userId,
             [FromQuery] [Required] string? client)
         {
@@ -97,7 +97,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
         public ActionResult UpdateDisplayPreferences(
-            [FromRoute, Required] string? displayPreferencesId,
+            [FromRoute, Required] string displayPreferencesId,
             [FromQuery, Required] Guid userId,
             [FromQuery, Required] string? client,
             [FromBody, Required] DisplayPreferencesDto displayPreferences)

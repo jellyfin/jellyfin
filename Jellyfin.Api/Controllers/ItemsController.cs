@@ -145,7 +145,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{uId}/Items", Name = "GetItems_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromRoute, Required] Guid? uId,
+            [FromRoute] Guid? uId,
             [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,

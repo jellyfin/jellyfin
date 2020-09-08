@@ -168,7 +168,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? container,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -335,7 +335,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? container,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -344,7 +344,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? segmentContainer,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
-            [FromQuery, Required] string? mediaSourceId,
+            [FromQuery, Required] string mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] string? audioCodec,
             [FromQuery] bool? enableAutoStreamCopy,

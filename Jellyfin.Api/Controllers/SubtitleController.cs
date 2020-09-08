@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? language,
+            [FromRoute, Required] string language,
             [FromQuery] bool? isPerfectMatch)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
@@ -133,7 +133,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DownloadRemoteSubtitles(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? subtitleId)
+            [FromRoute, Required] string subtitleId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -162,7 +162,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Application.Octet)]
-        public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string? id)
+        public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string id)
         {
             var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
 
@@ -187,13 +187,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSubtitle(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? mediaSourceId,
+            [FromRoute, Required] string mediaSourceId,
             [FromRoute, Required] int index,
-            [FromRoute, Required] string? format,
+            [FromRoute, Required] string format,
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false,
-            [FromRoute, Required] long startPositionTicks = 0)
+            [FromRoute] long startPositionTicks = 0)
         {
             if (string.Equals(format, "js", StringComparison.OrdinalIgnoreCase))
             {
@@ -255,7 +255,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetSubtitlePlaylist(
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] int index,
-            [FromRoute, Required] string? mediaSourceId,
+            [FromRoute, Required] string mediaSourceId,
             [FromQuery, Required] int segmentLength)
         {
             var item = (Video)_libraryManager.GetItemById(itemId);
