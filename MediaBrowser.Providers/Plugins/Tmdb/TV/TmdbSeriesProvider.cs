@@ -405,7 +405,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         internal async Task<SeriesResult> FetchMainResult(string id, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetTvInfo3, id, TmdbUtils.ApiKey);
+            var url = string.Format(CultureInfo.InvariantCulture, GetTvInfo3, id, TmdbUtils.ApiKey);
 
             if (!string.IsNullOrEmpty(language))
             {
@@ -421,7 +421,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 mainRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var mainResponse = await TmdbMovieProvider.Current.GetMovieDbResponse(mainRequestMessage);
+            using var mainResponse = await TmdbMovieProvider.Current.GetMovieDbResponse(mainRequestMessage, cancellationToken).ConfigureAwait(false);
             await using var mainStream = await mainResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var mainResult = await _jsonSerializer.DeserializeFromStreamAsync<SeriesResult>(mainStream).ConfigureAwait(false);
 
@@ -440,7 +440,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             {
                 _logger.LogInformation("MovieDbSeriesProvider couldn't find meta for language {Language}. Trying English...", language);
 
-                url = string.Format(GetTvInfo3, id, TmdbUtils.ApiKey) + "&language=en";
+                url = string.Format(CultureInfo.InvariantCulture, GetTvInfo3, id, TmdbUtils.ApiKey) + "&language=en";
 
                 if (!string.IsNullOrEmpty(language))
                 {
@@ -454,7 +454,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     mainRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
                 }
 
-                using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage);
+                using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
                 await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 var englishResult = await _jsonSerializer.DeserializeFromStreamAsync<SeriesResult>(stream).ConfigureAwait(false);
 
@@ -504,7 +504,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
-            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/find/{0}?api_key={1}&external_source={2}",
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                TmdbUtils.BaseTmdbApiUrl + @"3/find/{0}?api_key={1}&external_source={2}",
                 id,
                 TmdbUtils.ApiKey,
                 externalSource);
@@ -515,7 +517,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
             var result = await _jsonSerializer.DeserializeFromStreamAsync<ExternalIdLookupResult>(stream).ConfigureAwait(false);

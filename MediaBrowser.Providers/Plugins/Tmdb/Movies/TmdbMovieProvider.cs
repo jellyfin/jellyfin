@@ -155,7 +155,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(stream).ConfigureAwait(false);
             return _tmdbSettings;
@@ -335,7 +335,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var mainResponse = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var mainResponse = await GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             if (mainResponse.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
@@ -368,7 +368,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
                 }
 
-                using var langResponse = await GetMovieDbResponse(langRequestMessage).ConfigureAwait(false);
+                using var langResponse = await GetMovieDbResponse(langRequestMessage, cancellationToken).ConfigureAwait(false);
 
                 await using var langStream = await langResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 var langResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(stream).ConfigureAwait(false);
@@ -381,10 +381,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
-        internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message)
+        internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message, CancellationToken cancellationToken = default)
         {
             message.Headers.UserAgent.ParseAdd(_appHost.ApplicationUserAgent);
-            return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(message);
+            return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(message, cancellationToken);
         }
 
         /// <inheritdoc />
