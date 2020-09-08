@@ -1049,11 +1049,11 @@ namespace Emby.Server.Implementations
 
             foreach (var dir in directories)
             {
-                int p = dir.LastIndexOf('_');
-                if (p != -1 && Version.TryParse(dir.Substring(p + 1), out Version ver))
+                int underscoreIndex = dir.LastIndexOf('_');
+                if (underscoreIndex != -1 && Version.TryParse(dir.Substring(underscoreIndex + 1), out Version ver))
                 {
                     // Versioned folder.
-                    versions.Add((ver, dir.Substring(0, p), dir));
+                    versions.Add((ver, dir.Substring(0, underscoreIndex), dir));
                 }
                 else
                 {
