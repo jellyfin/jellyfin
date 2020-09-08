@@ -14,7 +14,7 @@ using Emby.Dlna.PlayTo.Devices;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
 using Microsoft.Extensions.Logging;
-// using Mono.Nat;
+using Mono.Nat;
 
 namespace Emby.Dlna.Net
 {
@@ -522,11 +522,11 @@ namespace Emby.Dlna.Net
             if (searchTarget.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
             {
                 // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                // if (_ssdpServer.IsUPnPActive && !e.Internal)
-                // {
-                    // _logger.LogDebug("Passing notify message to Mono.Nat.");
-                //    NatUtility.ParseMessage(NatProtocol.Upnp, e.LocalIPAddress, e.Raw(), e.ReceivedFrom);
-                // }
+                if (_ssdpServer.IsUPnPActive && !e.Internal)
+                {
+                    _logger.LogDebug("Passing notify message to Mono.Nat.");
+                    NatUtility.ParseMessage(NatProtocol.Upnp, e.LocalIPAddress, e.Raw(), e.ReceivedFrom);
+                }
 
                 return;
             }

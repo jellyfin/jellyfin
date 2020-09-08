@@ -29,7 +29,7 @@ namespace NetworkTesting
                 LocalNetworkSubnets = network.Split(',')
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
             
@@ -102,10 +102,11 @@ namespace NetworkTesting
             var conf = new ServerConfiguration()
             {
                 EnableIPV6 = true,
-                EnableIPV4 = true
+                EnableIPV4 = true,
+
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
@@ -227,7 +228,7 @@ namespace NetworkTesting
                 EnableIPV4 = true
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
@@ -269,7 +270,7 @@ namespace NetworkTesting
                 EnableIPV4 = true
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
             // Test included, IP6.
@@ -317,7 +318,7 @@ namespace NetworkTesting
                 EnableIPV4 = true
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
@@ -372,7 +373,7 @@ namespace NetworkTesting
                 PublishedServerUriBySubnet = new string[] { publishedServers }
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
 
@@ -399,7 +400,7 @@ namespace NetworkTesting
         // No starting value, so 1 assumed.
         [InlineData("-1", 1, 1)]
         // Range not defined = random port.
-        [InlineData("", 0, 0)]
+        [InlineData("", 1, 65535)]
         // Range invalid, but two numbers specified.
         [InlineData("-14-12", 1, 65535)]
 
@@ -417,9 +418,9 @@ namespace NetworkTesting
         {
             XMLUtilities.ParseXML(xml, out XMLProperties properties);
 
-            properties.TryGetValue("CurrentTransportState", out string? value);
-
-            Assert.True(string.Equals(value, ""));        
+            bool res = properties.TryGetValue("CurrentTransportState", out string? value);
+            Assert.True(res);
+            Assert.True(value?.Equals("NO_MEDIA_PRESENT", System.StringComparison.Ordinal));
         }
     }
 }

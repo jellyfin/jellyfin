@@ -1,5 +1,3 @@
-#pragma warning disable IDE0052 // Remove unread private members : Code in prep for next version of mono.nat.
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +8,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
-// using NATLogger = Mono.Nat.Logging.ILogger;
+using NATLogger = Mono.Nat.Logging.ILogger;
 
 namespace Jellyfin.Networking.UPnP
 {
@@ -55,7 +53,7 @@ namespace Jellyfin.Networking.UPnP
             _gatewayMonitor = gwMonitor ?? throw new NullReferenceException(nameof(gwMonitor));
             _devices = new List<INatDevice>();
             _configIdentifier = GetConfigIdentifier();
-            // Mono.Nat.Logging.Logger.Factory = GetLogger;
+            Mono.Nat.Logging.Logger.Factory = GetLogger;
             _config.ConfigurationUpdated += OnConfigurationUpdated;
             Start();
         }
@@ -97,10 +95,10 @@ namespace Jellyfin.Networking.UPnP
         // /// </summary>
         // /// <param name="name">Name of instance.</param>
         // /// <returns>ILogger implementation.</returns>
-        // private NATLogger GetLogger(string name)
-        // {
-        //     return new LoggingInterface(_loggerFactory.CreateLogger(name));
-        // }
+        private NATLogger GetLogger(string name)
+        {
+            return new LoggingInterface(_loggerFactory.CreateLogger(name));
+        }
 
         /// <summary>
         /// Converts the uPNP settings to a string.
@@ -402,9 +400,9 @@ namespace Jellyfin.Networking.UPnP
         }
 
         /// <summary>
-        /// Interface class that transpose Mono.NAT 2.0.3 logs into our logging system.
+        /// Interface class that transpose Mono.NAT logs into our logging system.
         /// </summary>
-        private class LoggingInterface // : NATLogger
+        private class LoggingInterface : NATLogger
         {
             private readonly ILogger _logger;
 

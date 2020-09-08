@@ -758,6 +758,11 @@ namespace Jellyfin.Networking.Manager
         /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
         public void UpdateSettings(ServerConfiguration config)
         {
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
             IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;

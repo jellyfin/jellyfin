@@ -13,6 +13,7 @@ using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using Microsoft.Extensions.Logging;
+using Mono.Nat;
 // using Mono.Nat;
 
 namespace Jellyfin.Networking.Ssdp
@@ -579,51 +580,52 @@ namespace Jellyfin.Networking.Ssdp
             }
         }
 
-        // /// <summary>
-        // /// Enables the SSDP injection of devices found by Mono.Nat. 2.0.3
-        // /// </summary>
-        // /// <param name="sender">Mono.Nat instance.</param>
-        // /// <param name="e">Information Mono received, but doesn't use.</param>
-        // private void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
-        // {
-        //    if (!_running || Disposed)
-        //    {
-        //        return;
-        //    }
-        //
-        //    IPEndPoint ep = (IPEndPoint)e.EndPoint;
-        //    IPAddress remote = ep.Address;
-        //
-        //    // Only process the IP address family that we are configured for.
-        //    if (!IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
-        //    {
-        //        return;
-        //    }
-        //
-        //    if (!IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
-        //    {
-        //        return;
-        //    }
-        //
-        //    if (NetManager.IsExcluded(remote))
-        //    {
-        //        return;
-        //    }
-        //
-        //    if (!NetManager.IsInLocalNetwork(remote) && NetManager.IsValidInterfaceAddress(remote))
-        //    {
-        //        Logger.LogDebug("FILTERED: Sending to non-LAN address: {0}.", remote);
-        //        return;
-        //    }
-        //
-        //    if (_senders[ep.Address] != null)
-        //    {
-        //        Logger.LogDebug("FILTERED: Sending to Self: {0} -> {0}/{1}. uPnP?", e.Address, remote, ep.Port);
-        //        return;
-        //    }
-        //
-        //    // _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
-        //    ProcessMessage(UdpProcess.CreateIsolated(e.Address), e.Data, ep);
-        // }
+        /// <summary>
+        /// Enables the SSDP injection of devices found by Mono.Nat.
+        /// </summary>
+        /// <param name="sender">Mono.Nat instance.</param>
+        /// <param name="e">Information Mono received, but doesn't use.</param>
+        private void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
+        {
+            if (!_running || Disposed)
+            {
+                return;
+            }
+
+            IPEndPoint ep = (IPEndPoint)e.EndPoint;
+            IPAddress remote = ep.Address;
+
+            // Only process the IP address family that we are configured for.
+            if (!IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
+            {
+                return;
+            }
+
+            if (!IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                return;
+            }
+
+            if (NetManager.IsExcluded(remote))
+            {
+                return;
+            }
+
+            if (!NetManager.IsInLocalNetwork(remote) && NetManager.IsValidInterfaceAddress(remote))
+            {
+                Logger.LogDebug("FILTERED: Sending to non-LAN address: {0}.", remote);
+                return;
+            }
+
+            if (_senders[ep.Address] != null)
+            {
+                Logger.LogDebug("FILTERED: Sending to Self: {0} -> {0}/{1}. uPnP?", e.Address, remote, ep.Port);
+                return;
+            }
+
+            // _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
+            using var dummyUdp = UdpProcess.CreateIsolated(e.Address);
+            ProcessMessage(dummyUdp, e.Data, ep);
+        }
     }
 }

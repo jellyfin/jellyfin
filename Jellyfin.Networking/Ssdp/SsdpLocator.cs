@@ -292,6 +292,11 @@ namespace Jellyfin.Networking.Ssdp
 
         private void ProcessNotificationMessage(object? sender, SsdpEventArgs e)
         {
+            if (!e.Message.ContainsKey("LOCATION"))
+            {
+                return;
+            }
+
             var device = new DiscoveredSsdpDevice(DateTimeOffset.Now, "NT", e.Message);
             if (!SsdpTypeMatchesFilter(device))
             {
