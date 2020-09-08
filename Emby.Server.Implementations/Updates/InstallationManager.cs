@@ -388,7 +388,6 @@ namespace Emby.Server.Implementations.Updates
                     // Ignore any exceptions.
                 }
             }
-            
             stream.Position = 0;
             _zipClient.ExtractAllFromZip(stream, targetDir, true);
 
