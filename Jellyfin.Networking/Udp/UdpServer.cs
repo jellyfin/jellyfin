@@ -123,7 +123,9 @@ namespace Jellyfin.Networking.Udp
         {
             if (string.IsNullOrEmpty(rangeStr))
             {
-                range.Min = range.Max = 0; // Random Port.
+                // Random Port.
+                range.Min = 1;
+                range.Max = 65535;
                 return false;
             }
 
@@ -162,7 +164,8 @@ namespace Jellyfin.Networking.Udp
             }
 
             // Random Port.
-            range.Min = range.Max = 0;
+            range.Min = 1;
+            range.Max = 65535;
             return false;
         }
 
