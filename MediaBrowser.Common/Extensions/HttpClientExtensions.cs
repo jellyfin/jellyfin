@@ -14,7 +14,7 @@ namespace MediaBrowser.Common.Extensions
         private static readonly JsonSerializerOptions _defaultJsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
-        /// Get json from uri as T.
+        /// Read json from uri as T.
         /// </summary>
         /// <param name="client">The http client.</param>
         /// <param name="requestUri">The request uri.</param>
@@ -22,25 +22,25 @@ namespace MediaBrowser.Common.Extensions
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <typeparam name="T">Type to deserialize json as.</typeparam>
         /// <returns>Deserialized json.</returns>
-        public static async Task<T> GetJsonAsAsync<T>(
+        public static async Task<T> ReadAsAsync<T>(
             this HttpClient client,
             string requestUri,
             JsonSerializerOptions jsonSerializerOptions = null,
             CancellationToken cancellationToken = default)
         {
             using var response = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            return await response.GetJsonAsAsync<T>(jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+            return await response.ReadAsAsync<T>(jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Get json from http response message as T.
+        /// Read json from http response message as T.
         /// </summary>
         /// <param name="responseMessage">The response message.</param>
         /// <param name="jsonSerializerOptions">The json serializer options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <typeparam name="T">Type to deserialize json as.</typeparam>
         /// <returns>Deserialized json.</returns>
-        public static async Task<T> GetJsonAsAsync<T>(
+        public static async Task<T> ReadAsAsync<T>(
             this HttpResponseMessage responseMessage,
             JsonSerializerOptions jsonSerializerOptions = null,
             CancellationToken cancellationToken = default)
