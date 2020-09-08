@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 #pragma warning disable CS1591
 #pragma warning disable CA1819
 
@@ -16,7 +16,62 @@ namespace MediaBrowser.Model.Configuration
     {
         public const int DefaultHttpPort = 8096;
         public const int DefaultHttpsPort = 8920;
-        private string _baseUrl;
+        private string _baseUrl = string.Empty;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
+        /// </summary>
+        public ServerConfiguration()
+        {
+            MetadataOptions = new[]
+            {
+                new MetadataOptions()
+                {
+                    ItemType = "Book"
+                },
+                new MetadataOptions()
+                {
+                    ItemType = "Movie"
+                },
+                new MetadataOptions
+                {
+                    ItemType = "MusicVideo",
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "Series",
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "TheMovieDb" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "MusicAlbum",
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "MusicArtist",
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "BoxSet"
+                },
+                new MetadataOptions
+                {
+                    ItemType = "Season",
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
+                },
+                new MetadataOptions
+                {
+                    ItemType = "Episode",
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
+                }
+            };
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable automatic port forwarding.
@@ -181,15 +236,15 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the metadata path.
         /// </summary>
         /// <value>The metadata path.</value>
-        public string MetadataPath { get; set; }
+        public string MetadataPath { get; set; } = string.Empty;
 
-        public string MetadataNetworkPath { get; set; }
+        public string MetadataNetworkPath { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>
-        public string PreferredMetadataLanguage { get; set; }
+        public string PreferredMetadataLanguage { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the metadata country code.
@@ -354,67 +409,5 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the threshold for the slow response time warning in ms.
         /// </summary>
         public long SlowResponseThresholdMs { get; set; } = 500;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
-        /// </summary>
-        public ServerConfiguration()
-        {
-            MetadataOptions = new[]
-            {
-                new MetadataOptions()
-                {
-                    ItemType = "Book"
-                },
-                new MetadataOptions()
-                {
-                    ItemType = "Movie"
-                },
-                new MetadataOptions
-                {
-                    ItemType = "MusicVideo",
-                    DisabledMetadataFetchers = new[] { "The Open Movie Database" },
-                    DisabledImageFetchers = new[] { "The Open Movie Database" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "Series",
-                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
-                    DisabledImageFetchers = new[] { "TheMovieDb" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "MusicAlbum",
-                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "MusicArtist",
-                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "BoxSet"
-                },
-                new MetadataOptions
-                {
-                    ItemType = "Season",
-                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
-                },
-                new MetadataOptions
-                {
-                    ItemType = "Episode",
-                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
-                }
-            };
-        }
-    }
-
-    public class PathSubstitution
-    {
-        public string From { get; set; }
-
-        public string To { get; set; }
     }
 }
