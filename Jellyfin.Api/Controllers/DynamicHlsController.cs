@@ -335,7 +335,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string container,
+            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -500,7 +500,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? container,
+            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -665,7 +665,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? container,
+            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
