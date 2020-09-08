@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -53,6 +54,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<VideosController> _logger;
 
         private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -73,6 +75,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
         /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         public VideosController(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -87,7 +90,8 @@ namespace Jellyfin.Api.Controllers
             IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ILogger<VideosController> logger)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -103,6 +107,7 @@ namespace Jellyfin.Api.Controllers
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
         }
 
         /// <summary>
@@ -514,6 +519,7 @@ namespace Jellyfin.Api.Controllers
                     HttpContext);
             }
 
+            _logger.LogDebug("Testing.");
             // Need to start ffmpeg (because media can't be returned directly)
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
             var encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
@@ -525,6 +531,7 @@ namespace Jellyfin.Api.Controllers
                 _transcodingJobHelper,
                 ffmpegCommandLineArguments,
                 _transcodingJobType,
+                _logger,
                 cancellationTokenSource).ConfigureAwait(false);
         }
     }

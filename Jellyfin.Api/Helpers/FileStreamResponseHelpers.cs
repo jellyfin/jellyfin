@@ -8,6 +8,7 @@ using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers
@@ -84,6 +85,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
         /// <param name="ffmpegCommandLineArguments">The command line arguments to start ffmpeg.</param>
         /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
+        /// <param name="logger">Logger instance.</param>
         /// <param name="cancellationTokenSource">The <see cref="CancellationTokenSource"/>.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the transcoded file.</returns>
         public static async Task<ActionResult> GetTranscodedFile(
@@ -93,6 +95,7 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobHelper transcodingJobHelper,
             string ffmpegCommandLineArguments,
             TranscodingJobType transcodingJobType,
+            ILogger? logger,
             CancellationTokenSource cancellationTokenSource)
         {
             // Use the command line args with a dummy playlist path
@@ -123,9 +126,15 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None)
-                    .WriteToAsync(httpContext.Response.Body, CancellationToken.None).ConfigureAwait(false);
-                return new FileStreamResult(httpContext.Response.Body, contentType);
+                logger?.LogDebug("Starting response...");
+                return new FileCallbackResult(new MediaTypeHeaderValue(contentType), async (outputStream, _) =>
+                    {
+                        logger?.LogDebug("downloading content.");
+                        await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None)
+                            .WriteToAsync(outputStream, CancellationToken.None).ConfigureAwait(false);
+                    });
+
+                // return new FileStreamResult(httpContext.Response.Body, contentType);
             }
             finally
             {
