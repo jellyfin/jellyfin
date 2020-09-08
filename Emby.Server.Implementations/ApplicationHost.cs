@@ -1080,7 +1080,7 @@ namespace Emby.Server.Implementations
                     // Attempt a cleanup of old folders.
                     try
                     {
-                        Logger.LogDebug("Attempting to delete {0}", versions[x].Path);
+                        Logger.LogDebug("Deleting {Path}", versions[x].Path);
                         Directory.Delete(versions[x].Path, true);
                     }
                     catch
