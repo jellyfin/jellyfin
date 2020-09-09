@@ -138,7 +138,6 @@ namespace Emby.Server.Implementations.Data
                 "pragma shrink_memory"
             };
 
-
             string[] postQueries =
             {
                 // obsolete
@@ -2963,7 +2962,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (query.EnableTotalRecordCount)
                     {
-                        using (var statement = statements[statements.Count - 1])
+                        using (var statement = statements[statements.Length - 1])
                         {
                             if (EnableJoinUserData(query))
                             {
@@ -3355,7 +3354,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (query.EnableTotalRecordCount)
                     {
-                        using (var statement = statements[statements.Count - 1])
+                        using (var statement = statements[statements.Length - 1])
                         {
                             if (EnableJoinUserData(query))
                             {
@@ -5166,7 +5165,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            Span<byte> itemIdBlob = stackalloc byte[16]
+            Span<byte> itemIdBlob = stackalloc byte[16];
             itemId.TryWriteBytes(itemIdBlob);
 
             // First delete
@@ -5534,7 +5533,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                                         + GetJoinUserDataText(query)
                                         + whereText;
 
-                            using (var statement = statements[statements.Count - 1])
+                            using (var statement = statements[statements.Length - 1])
                             {
                                 statement.TryBind("@SelectType", returnType);
                                 if (EnableJoinUserData(query))
