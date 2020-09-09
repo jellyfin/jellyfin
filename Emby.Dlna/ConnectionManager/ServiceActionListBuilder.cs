@@ -9,7 +9,7 @@ namespace Emby.Dlna.ConnectionManager
     public static class ServiceActionListBuilder
     {
         /// <summary>
-        /// Returns a list of services that this instance provides.
+        /// Returns an enumerable of the ConnectionManagar:1 DLNA actions.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{ServiceAction}"/>.</returns>
         public static IEnumerable<ServiceAction> GetActions()
@@ -27,7 +27,7 @@ namespace Emby.Dlna.ConnectionManager
         }
 
         /// <summary>
-        /// Returns PrepareForConnection parameter description.
+        /// Returns the action details for "PrepareForConnection".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction PrepareForConnection()
@@ -90,7 +90,7 @@ namespace Emby.Dlna.ConnectionManager
         }
 
         /// <summary>
-        /// Returns GetCurrentConnectionInfo parameter description.
+        /// Returns the action details for "GetCurrentConnectionInfo".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetCurrentConnectionInfo()
@@ -160,7 +160,7 @@ namespace Emby.Dlna.ConnectionManager
         }
 
         /// <summary>
-        /// Returns GetProtocolInfo parameter description.
+        /// Returns the action details for "GetProtocolInfo".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetProtocolInfo()
@@ -188,7 +188,7 @@ namespace Emby.Dlna.ConnectionManager
         }
 
         /// <summary>
-        /// Returns GetCurrentConnectionIDs parameter description.
+        /// Returns the action details for "GetCurrentConnectionIDs".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetCurrentConnectionIDs()
@@ -209,7 +209,7 @@ namespace Emby.Dlna.ConnectionManager
         }
 
         /// <summary>
-        /// Returns ConnectionComplete parameter description.
+        /// Returns the action details for "ConnectionComplete".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction ConnectionComplete()

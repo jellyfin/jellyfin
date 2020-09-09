@@ -10,7 +10,8 @@ namespace Emby.Dlna.ConnectionManager
     public static class ConnectionManagerXmlBuilder
     {
         /// <summary>
-        /// Gets an xml description of this service.
+        /// Gets the ConnectionManager:1 service template.
+        /// See http://upnp.org/specs/av/UPnP-av-ConnectionManager-v1-Service.pdf.
         /// </summary>
         /// <returns>An XML description of this service.</returns>
         public static string GetXml()

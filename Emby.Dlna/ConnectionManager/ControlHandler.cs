@@ -14,17 +14,14 @@ namespace Emby.Dlna.ConnectionManager
     /// </summary>
     public class ControlHandler : BaseControlHandler
     {
-        /// <summary>
-        /// Defines the _profile.
-        /// </summary>
         private readonly DeviceProfile _profile;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ControlHandler"/> class.
         /// </summary>
-        /// <param name="config">The config<see cref="IServerConfigurationManager"/>.</param>
-        /// <param name="logger">The logger<see cref="ILogger"/>.</param>
-        /// <param name="profile">The profile<see cref="DeviceProfile"/>.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="logger">The <see cref="ILogger"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/> for use with the <see cref="ControlHandler"/> instance.</param>
         public ControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
             : base(config, logger)
         {
@@ -44,9 +41,9 @@ namespace Emby.Dlna.ConnectionManager
         }
 
         /// <summary>
-        /// The HandleGetProtocolInfo.
+        /// Builds the response to the GetProtocolInfo request.
         /// </summary>
-        /// <param name="xmlWriter">The xmlWriter<see cref="XmlWriter"/>.</param>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetProtocolInfo(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString("Source", _profile.ProtocolInfo);
