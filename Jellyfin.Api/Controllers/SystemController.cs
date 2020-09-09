@@ -200,7 +200,10 @@ namespace Jellyfin.Api.Controllers
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
 
-            return File(file.FullName, MediaTypeNames.Text.Plain);
+            // For older files, assume fully static
+            var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
+            FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare);
+            return File(stream, "text/plain");
         }
 
         /// <summary>
