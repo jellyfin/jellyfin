@@ -214,7 +214,7 @@ namespace MediaBrowser.Api.System
             return ToOptimizedResult(new EndPointInfo
             {
                 IsLocal = Request.IsLocal,
-                IsInNetwork = _network.IsInLocalNetwork(request.Endpoint ?? Request.RemoteIp)
+                IsInNetwork = _network.IsInLocalNetwork(Request.AbsoluteUri ?? Request.RemoteIp)
             });
         }
     }
