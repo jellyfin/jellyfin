@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
             var result2 = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSearchResult<PersonSearchResult>>(stream).ConfigureAwait(false)
@@ -243,7 +243,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             await using var fs = new FileStream(dataFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
             await response.Content.CopyToAsync(fs).ConfigureAwait(false);

@@ -23,15 +23,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
     {
+        private const string ApiKey = "195003";
+        public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
+
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _json;
-
-        public static AudioDbArtistProvider Current;
-
-        private const string ApiKey = "195003";
-        public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
 
         public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json)
         {
@@ -41,6 +39,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             _json = json;
             Current = this;
         }
+
+        public static AudioDbArtistProvider Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "TheAudioDB";

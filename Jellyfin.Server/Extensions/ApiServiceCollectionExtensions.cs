@@ -15,14 +15,15 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
-using Jellyfin.Server.Models;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -139,10 +140,8 @@ namespace Jellyfin.Server.Extensions
         public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies)
         {
             IMvcBuilder mvcBuilder = serviceCollection
-                .AddCors(options =>
-                {
-                    options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
-                })
+                .AddCors()
+                .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;

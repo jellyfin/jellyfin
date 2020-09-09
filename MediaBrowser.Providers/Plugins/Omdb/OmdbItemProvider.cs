@@ -49,6 +49,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _appHost = appHost;
         }
 
+        public string Name => "The Open Movie Database";
+
         // After primary option
         public int Order => 2;
 
@@ -199,8 +201,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return GetSearchResults(searchInfo, "movie", cancellationToken);
         }
 
-        public string Name => "The Open Movie Database";
-
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Series>
@@ -263,14 +263,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             var results = await GetSearchResultsInternal(info, "movie", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
-            return first == null ? null : first.GetProviderId(MetadataProvider.Imdb);
+            return first?.GetProviderId(MetadataProvider.Imdb);
         }
 
         private async Task<string> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
         {
             var results = await GetSearchResultsInternal(info, "series", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
-            return first == null ? null : first.GetProviderId(MetadataProvider.Imdb);
+            return first?.GetProviderId(MetadataProvider.Imdb);
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
@@ -278,7 +278,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
-        class SearchResult
+        private class SearchResult
         {
             public string Title { get; set; }
 

@@ -29,6 +29,11 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
         }
 
+        public string Name => "Screen Grabber";
+
+        // Make sure this comes after internet image providers
+        public int Order => 100;
+
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType> { ImageType.Primary };
@@ -127,8 +132,6 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
-        public string Name => "Screen Grabber";
-
         public bool Supports(BaseItem item)
         {
             if (item.IsShortcut)
@@ -150,7 +153,5 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return false;
         }
-        // Make sure this comes after internet image providers
-        public int Order => 100;
     }
 }

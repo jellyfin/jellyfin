@@ -159,7 +159,7 @@ namespace MediaBrowser.Providers.TV
 
                 var now = DateTime.UtcNow.AddDays(-UnairedEpisodeThresholdDays);
 
-                if (airDate < now && addMissingEpisodes || airDate > now)
+                if ((airDate < now && addMissingEpisodes) || airDate > now)
                 {
                     // tvdb has a lot of nearly blank episodes
                     _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.seasonNumber, tuple.episodenumber);
@@ -232,10 +232,13 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var episodeToRemove in episodesToRemove)
             {
-                _libraryManager.DeleteItem(episodeToRemove, new DeleteOptions
-                {
-                    DeleteFileLocation = true
-                }, false);
+                _libraryManager.DeleteItem(
+                    episodeToRemove,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = true
+                    },
+                    false);
 
                 hasChanges = true;
             }
@@ -246,7 +249,7 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the obsolete or missing seasons.
         /// </summary>
-        /// <param name="allRecursiveChildren"></param>
+        /// <param name="allRecursiveChildren">All recursive children.</param>
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <returns><see cref="bool" />.</returns>
         private bool RemoveObsoleteOrMissingSeasons(
@@ -297,10 +300,13 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var seasonToRemove in seasonsToRemove)
             {
-                _libraryManager.DeleteItem(seasonToRemove, new DeleteOptions
-                {
-                    DeleteFileLocation = true
-                }, false);
+                _libraryManager.DeleteItem(
+                    seasonToRemove,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = true
+                    },
+                    false);
 
                 hasChanges = true;
             }
@@ -354,7 +360,10 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonCounts"></param>
         /// <param name="episodeTuple"></param>
         /// <returns>Episode.</returns>
-        private Episode GetExistingEpisode(IEnumerable<Episode> existingEpisodes, IReadOnlyDictionary<int, int> seasonCounts, (int seasonNumber, int episodeNumber, DateTime firstAired) episodeTuple)
+        private Episode GetExistingEpisode(
+            IEnumerable<Episode> existingEpisodes,
+            IReadOnlyDictionary<int, int> seasonCounts,
+            (int seasonNumber, int episodeNumber, DateTime firstAired) episodeTuple)
         {
             var seasonNumber = episodeTuple.seasonNumber;
             var episodeNumber = episodeTuple.episodeNumber;

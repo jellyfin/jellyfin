@@ -5,7 +5,6 @@ using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
-using Jellyfin.Server.Models;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -94,11 +93,7 @@ namespace Jellyfin.Server
             IWebHostEnvironment env,
             IConfiguration appConfig)
         {
-            // Only add base url redirection if a base url is set.
-            if (!string.IsNullOrEmpty(_serverConfigurationManager.Configuration.BaseUrl))
-            {
-                app.UseBaseUrlRedirection();
-            }
+            app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
             app.Map(_serverConfigurationManager.Configuration.BaseUrl, mainApp =>
@@ -116,7 +111,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseResponseCompression();
 
-                mainApp.UseCors(ServerCorsPolicy.DefaultPolicyName);
+                mainApp.UseCors();
 
                 if (_serverConfigurationManager.Configuration.RequireHttps
                     && _serverApplicationHost.ListenWithHttps)

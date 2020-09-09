@@ -468,13 +468,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             imageIdString = imageIdString.TrimEnd(',') + "]";
 
-            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs");
-            message.Content = new StringContent(imageIdString, Encoding.UTF8, MediaTypeNames.Application.Json);
+            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs")
+            {
+                Content = new StringContent(imageIdString, Encoding.UTF8, MediaTypeNames.Application.Json)
+            };
 
             try
             {
                 using var innerResponse2 = await Send(message, true, info, cancellationToken).ConfigureAwait(false);
-                await using var response = await innerResponse2.Content.ReadAsStreamAsync();
+                await using var response = await innerResponse2.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 return await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ShowImages>>(
                     response).ConfigureAwait(false);
             }

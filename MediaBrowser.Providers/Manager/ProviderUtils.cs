@@ -26,12 +26,12 @@ namespace MediaBrowser.Providers.Manager
 
             if (source == null)
             {
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentException("Item cannot be null.", nameof(sourceResult));
             }
 
             if (target == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentException("Item cannot be null.", nameof(targetResult));
             }
 
             if (!lockedFields.Contains(MetadataField.Name))

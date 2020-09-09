@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,21 +26,19 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         /// <summary>
-        /// The Jellyfin user-agent is unrestricted but source IP must not exceed
-        /// one request per second, therefore we rate limit to avoid throttling.
-        /// Be prudent, use a value slightly above the minimun required.
-        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
-        /// </summary>
-        private readonly long _musicBrainzQueryIntervalMs;
-
-        /// <summary>
         /// For each single MB lookup/search, this is the maximum number of
         /// attempts that shall be made whilst receiving a 503 Server
         /// Unavailable (indicating throttled) response.
         /// </summary>
         private const uint MusicBrainzQueryAttempts = 5u;
 
-        internal static MusicBrainzAlbumProvider Current;
+        /// <summary>
+        /// The Jellyfin user-agent is unrestricted but source IP must not exceed
+        /// one request per second, therefore we rate limit to avoid throttling.
+        /// Be prudent, use a value slightly above the minimun required.
+        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
+        /// </summary>
+        private readonly long _musicBrainzQueryIntervalMs;
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IApplicationHost _appHost;
@@ -68,6 +65,8 @@ namespace MediaBrowser.Providers.Music
 
             Current = this;
         }
+
+        internal static MusicBrainzAlbumProvider Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "MusicBrainz";
@@ -112,7 +111,7 @@ namespace MediaBrowser.Providers.Music
                 else
                 {
                     // I'm sure there is a better way but for now it resolves search for 12" Mixes
-                    var queryName = searchInfo.Name.Replace("\"", string.Empty);
+                    var queryName = searchInfo.Name.Replace("\"", string.Empty, StringComparison.Ordinal);
 
                     url = string.Format(
                         CultureInfo.InvariantCulture,
@@ -277,7 +276,9 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
         {
-            var url = string.Format(CultureInfo.InvariantCulture, "/ws/2/release/?query=\"{0}\" AND arid:{1}",
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                "/ws/2/release/?query=\"{0}\" AND arid:{1}",
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
@@ -496,7 +497,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        private static ValueTuple<string, string> ParseArtistCredit(XmlReader reader)
+        private static (string, string) ParseArtistCredit(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -531,7 +532,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new ValueTuple<string, string>();
+            return default;
         }
 
         private static (string, string) ParseArtistNameCredit(XmlReader reader)
