@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Models;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
@@ -106,6 +108,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("web/ConfigurationPage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesFile(MediaTypeNames.Text.Html, "application/x-javascript")]
         public ActionResult GetDashboardConfigurationPage([FromQuery] string? name)
         {
             IPlugin? plugin = null;

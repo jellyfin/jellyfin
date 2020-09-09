@@ -16,8 +16,8 @@ using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Configuration;
+using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
-using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -248,6 +248,8 @@ namespace Jellyfin.Server.Extensions
 
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
+
+                c.OperationFilter<FileResponseFilter>();
             });
         }
 
