@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.Security;
 using System.Text;
@@ -7,9 +5,18 @@ using Emby.Dlna.Common;
 
 namespace Emby.Dlna.Service
 {
-    public class ServiceXmlBuilder
+    /// <summary>
+    /// Defines the <see cref="ServiceXmlBuilder" />.
+    /// </summary>
+    public static class ServiceXmlBuilder
     {
-        public string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
+        /// <summary>
+        /// Returns a list of services that this instance provides.
+        /// </summary>
+        /// <param name="actions">The <see cref="IEnumerable{ServiceAction}"/>.</param>
+        /// <param name="stateVariables">The <see cref="IEnumerable{StateVariable}"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
+        public static string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
         {
             var builder = new StringBuilder();
 
@@ -29,6 +36,11 @@ namespace Emby.Dlna.Service
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Adds an action list.
+        /// </summary>
+        /// <param name="builder">The <see cref="StringBuilder"/>.</param>
+        /// <param name="actions">The <see cref="IEnumerable{ServiceAction}"/>.</param>
         private static void AppendActionList(StringBuilder builder, IEnumerable<ServiceAction> actions)
         {
             builder.Append("<actionList>");
@@ -68,6 +80,11 @@ namespace Emby.Dlna.Service
             builder.Append("</actionList>");
         }
 
+        /// <summary>
+        /// Adds a service state table.
+        /// </summary>
+        /// <param name="builder">The <see cref="StringBuilder"/>.</param>
+        /// <param name="stateVariables">The <see cref="IEnumerable{StateVariable}"/>.</param>
         private static void AppendServiceStateTable(StringBuilder builder, IEnumerable<StateVariable> stateVariables)
         {
             builder.Append("<serviceStateTable>");

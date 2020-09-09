@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
@@ -9,11 +7,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ConnectionManager
 {
+    /// <summary>
+    /// Defines the <see cref="ConnectionManagerService" />.
+    /// </summary>
     public class ConnectionManagerService : BaseService, IConnectionManager
     {
         private readonly IDlnaManager _dlna;
         private readonly IServerConfigurationManager _config;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionManagerService"/> class.
+        /// </summary>
+        /// <param name="dlna">The <see cref="IDlnaManager"/> for use with the <see cref="ConnectionManagerService"/> instance.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="ConnectionManagerService"/> instance.</param>
+        /// <param name="logger">The <see cref="ILogger{ConnectionManagerService}"/> for use with the <see cref="ConnectionManagerService"/> instance..</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> for use with the <see cref="ConnectionManagerService"/> instance..</param>
         public ConnectionManagerService(
             IDlnaManager dlna,
             IServerConfigurationManager config,
@@ -28,7 +36,7 @@ namespace Emby.Dlna.ConnectionManager
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new ConnectionManagerXmlBuilder().GetXml();
+            return ConnectionManagerXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />

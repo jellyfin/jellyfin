@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
@@ -8,10 +6,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
+    /// <summary>
+    /// Defines the <see cref="MediaReceiverRegistrarService" />.
+    /// </summary>
     public class MediaReceiverRegistrarService : BaseService, IMediaReceiverRegistrar
     {
+        /// <summary>
+        /// Defines the _config.
+        /// </summary>
         private readonly IServerConfigurationManager _config;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MediaReceiverRegistrarService"/> class.
+        /// </summary>
+        /// <param name="logger">The logger<see cref="ILogger{MediaReceiverRegistrarService}"/>.</param>
+        /// <param name="httpClientFactory">The httpClientFactory<see cref="IHttpClientFactory"/>.</param>
+        /// <param name="config">The config<see cref="IServerConfigurationManager"/>.</param>
         public MediaReceiverRegistrarService(
             ILogger<MediaReceiverRegistrarService> logger,
             IHttpClientFactory httpClientFactory,
@@ -24,7 +34,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new MediaReceiverRegistrarXmlBuilder().GetXml();
+            return MediaReceiverRegistrarXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />
