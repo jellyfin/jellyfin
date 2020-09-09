@@ -155,6 +155,8 @@ namespace Emby.Dlna
 
         private DeviceProfile AutoCreateProfile(PlayToDeviceInfo deviceInfo)
         {
+            const string dlnaOrgStr = "DLNA.ORG_PN=";
+
             DeviceProfile profile = new DefaultProfile
             {
                 Name = deviceInfo.Name,
@@ -186,11 +188,18 @@ namespace Emby.Dlna
                 if (protocolInfo.Length == 4)
                 {
                     string org_pn = protocolInfo[3];
-                    int index = org_pn.IndexOf("DLNA.ORG_PN", StringComparison.OrdinalIgnoreCase);
+                    int index = org_pn.IndexOf(dlnaOrgStr, StringComparison.OrdinalIgnoreCase);
                     if (index != -1)
                     {
                         int endIndex = org_pn.IndexOf(',', index + 1);
-                        protocolName = org_pn.Substring(index + 12, endIndex);
+                        if (endIndex != -1)
+                        {
+                            protocolName = org_pn.Substring(index + dlnaOrgStr.Length, endIndex);
+                        }
+                        else
+                        {
+                            protocolName = org_pn.Substring(index + dlnaOrgStr.Length);
+                        }
                     }
 
                     // Split video/mpg.

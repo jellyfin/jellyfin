@@ -35,7 +35,7 @@ namespace Jellyfin.Server.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var contentType = context.HttpContext.Request.ContentType;
+            var contentType = context.HttpContext.Request.ContentType ?? string.Empty;
             return contentType.StartsWith(MediaTypeNames.Text.Xml, StringComparison.OrdinalIgnoreCase);
         }
 
