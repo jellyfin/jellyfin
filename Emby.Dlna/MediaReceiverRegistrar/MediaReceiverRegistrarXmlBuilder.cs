@@ -13,7 +13,6 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <summary>
         /// Retrieves an XML description of the X_MS_MediaReceiverRegistrar.
         /// </summary>
-
         /// <returns>An XML representation of this service.</returns>
         public static string GetXml()
         {
