@@ -10,7 +10,8 @@ namespace Emby.Dlna.ContentDirectory
     public static class ContentDirectoryXmlBuilder
     {
         /// <summary>
-        /// Gets an xml description of this service.
+        /// Gets the ContentDirectory:1 service template.
+        /// See http://upnp.org/specs/av/UPnP-av-ContentDirectory-v1-Service.pdf.
         /// </summary>
         /// <returns>An XML description of this service.</returns>
         public static string GetXml()

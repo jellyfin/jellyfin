@@ -22,12 +22,12 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Gets or sets the Item.
+        /// Gets or sets the underlying base item.
         /// </summary>
         public BaseItem Item { get; set; }
 
         /// <summary>
-        /// Gets or sets the StubType.
+        /// Gets or sets the DLNA item type.
         /// </summary>
         public StubType? StubType { get; set; }
     }

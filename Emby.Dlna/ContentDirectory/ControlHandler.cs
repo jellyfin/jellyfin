@@ -60,21 +60,21 @@ namespace Emby.Dlna.ContentDirectory
         /// <summary>
         /// Initializes a new instance of the <see cref="ControlHandler"/> class.
         /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
-        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
-        /// <param name="serverAddress">The server address to use in this instance>.</param>
-        /// <param name="accessToken">The <see cref="string"/>.</param>
-        /// <param name="imageProcessor">The <see cref="IImageProcessor"/>.</param>
-        /// <param name="userDataManager">The <see cref="IUserDataManager"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="systemUpdateId">The <see cref="int"/>.</param>
-        /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
-        /// <param name="localization">The <see cref="ILocalizationManager"/>.</param>
-        /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/>.</param>
-        /// <param name="userViewManager">The <see cref="IUserViewManager"/>.</param>
-        /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/>.</param>
-        /// <param name="tvSeriesManager">The <see cref="ITVSeriesManager"/>.</param>
+        /// <param name="logger">The <see cref="ILogger"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="serverAddress">The server address to use in this instance> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="accessToken">The <see cref="string"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="imageProcessor">The <see cref="IImageProcessor"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="userDataManager">The <see cref="IUserDataManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="user">The <see cref="User"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="systemUpdateId">The system id for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="localization">The <see cref="ILocalizationManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="userViewManager">The <see cref="IUserViewManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="tvSeriesManager">The <see cref="ITVSeriesManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
         public ControlHandler(
             ILogger logger,
             ILibraryManager libraryManager,
@@ -185,7 +185,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Adds a XSetBookmark property to the xml document.
+        /// Adds a "XSetBookmark" element to the xml document.
         /// </summary>
         /// <param name="sparams">The <see cref="IDictionary"/>.</param>
         private void HandleXSetBookmark(IDictionary<string, string> sparams)
@@ -211,7 +211,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Adds the GetSearchCapabilities method description to the xml document.
+        /// Adds the "SearchCaps" element to the xml document.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetSearchCapabilities(XmlWriter xmlWriter)
@@ -222,7 +222,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Adds the GetSortCapabilities method description to the xml document.
+        // Adds the "SortCaps" element to the xml document.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetSortCapabilities(XmlWriter xmlWriter)
@@ -233,7 +233,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Adds the GetSortExtensionCapabilities method description to the xml document.
+        /// Adds the "SortExtensionCaps" element to the xml document.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetSortExtensionCapabilities(XmlWriter xmlWriter)
@@ -244,7 +244,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Adds the GetSystemUpdateID method description to the xml document.
+        /// Adds the "Id" element to the xml document.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetSystemUpdateID(XmlWriter xmlWriter)
@@ -253,7 +253,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Adds the HandleGetFeatureList method description to the xml document.
+        /// Adds the "FeatureList" element to the xml document.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetFeatureList(XmlWriter xmlWriter)
@@ -262,7 +262,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Adds the HandleXGetFeatureList method description to the xml document.
+        /// Adds the "FeatureList" element to the xml document.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleXGetFeatureList(XmlWriter xmlWriter)
@@ -309,7 +309,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Builds the browse xml response.
+        /// Builds the "Browse" xml response.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         /// <param name="sparams">The <see cref="IDictionary"/>.</param>
@@ -420,11 +420,11 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Builds the response to the HandleXBrowseByLetter request.
+        /// Builds the response to the "X_BrowseByLetter request.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         /// <param name="sparams">The <see cref="IDictionary"/>.</param>
-        /// <param name="deviceId">The <see cref="string"/>.</param>
+        /// <param name="deviceId">The device id.</param>
         private void HandleXBrowseByLetter(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
             // TODO: Implement this method
@@ -432,7 +432,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Builds a response to the HandleSearch request.
+        /// Builds a response to the "Search" request.
         /// </summary>
         /// <param name="xmlWriter">The xmlWriter<see cref="XmlWriter"/>.</param>
         /// <param name="sparams">The sparams<see cref="IDictionary"/>.</param>

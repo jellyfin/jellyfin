@@ -28,7 +28,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the GetSystemUpdateID values.
+        /// Returns the action details for "GetSystemUpdateID".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetGetSystemUpdateIDAction()
@@ -49,7 +49,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the GetSearchCapabilities values.
+        /// Returns the action details for "GetSearchCapabilities".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetSearchCapabilitiesAction()
@@ -70,7 +70,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the GetSortCapabilities values.
+        /// Returns the action details for "GetSortCapabilities".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetSortCapabilitiesAction()
@@ -91,7 +91,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the X_GetFeatureList values.
+        /// Returns the action details for "X_GetFeatureList".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetX_GetFeatureListAction()
@@ -112,7 +112,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the Search values.
+        /// Returns the action details for "Search".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetSearchAction()
@@ -196,7 +196,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the Browse values.
+        /// Returns the action details for "Browse".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetBrowseAction()
@@ -280,7 +280,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the X_BrowseByLetter values.
+        /// Returns the action details for "X_BrowseByLetter".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetBrowseByLetterAction()
@@ -371,7 +371,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the X_SetBookmark values.
+        /// Returns the action details for "X_SetBookmark".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetXSetBookmarkAction()

@@ -37,7 +37,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentDirectoryService"/> class.
         /// </summary>
-        /// <param name="dlna">The dlna<see cref="IDlnaManager"/>.</param>
+        /// <param name="dlna">The <see cref="IDlnaManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
         /// <param name="userDataManager">The <see cref="IUserDataManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
         /// <param name="imageProcessor">The <see cref="IImageProcessor"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
         /// <param name="libraryManager">The <see cref="ILibraryManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
@@ -80,7 +80,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Gets the System Update Id. (A unique id which informs the clients if out definition has changed.)
+        /// Gets the system id. (A unique id which changes on when our definition changes.)
         /// </summary>
         private int SystemUpdateId
         {
@@ -128,9 +128,9 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// The GetUser.
+        /// Get the user stored in the device profile.
         /// </summary>
-        /// <param name="profile">The profile<see cref="DeviceProfile"/>.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
         /// <returns>The <see cref="User"/>.</returns>
         private User GetUser(DeviceProfile profile)
         {
