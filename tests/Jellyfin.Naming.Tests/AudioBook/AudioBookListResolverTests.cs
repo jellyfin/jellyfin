@@ -31,13 +31,13 @@ namespace Jellyfin.Naming.Tests.AudioBook
             {
                 IsDirectory = false,
                 FullName = i
-            }).ToList()).ToList();
+            })).ToList();
 
-            Assert.Equal(2, result[0].Files.ToList().Count);
+            Assert.Equal(2, result[0].Files.Count);
             // Assert.Empty(result[0].Extras); FIXME: AudioBookListResolver should resolve extra files properly
             Assert.Equal("Harry Potter and the Deathly Hallows", result[0].Name);
 
-            Assert.Equal(3, result[1].Files.ToList().Count);
+            Assert.Equal(3, result[1].Files.Count);
             Assert.Empty(result[1].Extras);
             Assert.Equal("Batman", result[1].Name);
         }
@@ -57,7 +57,7 @@ namespace Jellyfin.Naming.Tests.AudioBook
             {
                 IsDirectory = false,
                 FullName = i
-            }).ToList()).ToList();
+            }));
 
             Assert.Single(result);
         }
@@ -77,7 +77,7 @@ namespace Jellyfin.Naming.Tests.AudioBook
             {
                 IsDirectory = false,
                 FullName = i
-            }).ToList()).ToList();
+            })).ToList();
 
             Assert.Single(result);
         }
