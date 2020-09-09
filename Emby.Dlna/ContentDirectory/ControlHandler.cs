@@ -222,7 +222,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        // Adds the "SortCaps" element to the xml document.
+        /// Adds the "SortCaps" element to the xml document.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetSortCapabilities(XmlWriter xmlWriter)
