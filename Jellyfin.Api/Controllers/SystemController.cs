@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -190,6 +192,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Logs/Log")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile(MediaTypeNames.Text.Plain)]
         public ActionResult GetLogFile([FromQuery, Required] string? name)
         {
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
@@ -197,7 +200,6 @@ namespace Jellyfin.Api.Controllers
 
             // For older files, assume fully static
             var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
-
             FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare);
             return File(stream, "text/plain");
         }
