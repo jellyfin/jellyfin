@@ -47,11 +47,11 @@ namespace Jellyfin.Naming.Tests.AudioBook
             var result = new AudioBookResolver(_namingOptions).Resolve(expectedResult.Path);
 
             Assert.NotNull(result);
-            Assert.Equal(result?.Path, expectedResult.Path);
-            Assert.Equal(result?.Container, expectedResult.Container);
-            Assert.Equal(result?.ChapterNumber, expectedResult.ChapterNumber);
-            Assert.Equal(result?.PartNumber, expectedResult.PartNumber);
-            Assert.Equal(result?.IsDirectory, expectedResult.IsDirectory);
+            Assert.Equal(result.Path, expectedResult.Path);
+            Assert.Equal(result.Container, expectedResult.Container);
+            Assert.Equal(result.ChapterNumber, expectedResult.ChapterNumber);
+            Assert.Equal(result.PartNumber, expectedResult.PartNumber);
+            Assert.Equal(result.IsDirectory, expectedResult.IsDirectory);
         }
     }
 }
