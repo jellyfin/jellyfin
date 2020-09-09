@@ -11,7 +11,6 @@ using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Structures;
 using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -61,6 +60,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var uri = new Uri(mediaSource.Path);
             var localPort = UdpServer.GetRandomUnusedUdpPort();
+            Logger.LogDebug("Using udp port {0}", localPort);
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
@@ -68,6 +68,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var remote = IPHost.Parse(uri.Host);
             _networkManager.Restrict(remote);
+
+            Logger.LogDebug("Parsed host from {0} as {1}", uri.Host, remote);
 
             IPAddress localAddress = null;
             using (var tcpClient = new TcpClient())
@@ -90,6 +92,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
+                Logger.LogDebug("Starting streaming to {0}/{1} -> {1}", localAddress, localPort, remote.Address);
                 // send url to start streaming
                 await hdHomerunManager.StartStreaming(
                     remote.Address,
@@ -101,7 +104,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             catch (Exception ex)
             {
-                using (udpClient)
                 using (hdHomerunManager)
                 {
                     if (!(ex is OperationCanceledException))
@@ -131,6 +133,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;
             // OpenedMediaSource.SupportsTranscoding = true;
+
+            Logger.LogDebug("Mediasource path {0}", MediaSource.Path);
 
             // await Task.Delay(5000).ConfigureAwait(false);
             await taskCompletionSource.Task.ConfigureAwait(false);
