@@ -27,7 +27,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         }
 
         /// <summary>
-        /// Returns the IsValidated property.
+        /// Returns the action details for "IsValidated".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetIsValidated()
@@ -53,7 +53,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         }
 
         /// <summary>
-        /// Returns the IsAuthorized property.
+        /// Returns the action details for "IsAuthorized".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetIsAuthorized()
@@ -79,7 +79,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         }
 
         /// <summary>
-        /// Returns the RegisterDevice service.
+        /// Returns the action details for "RegisterDevice".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetRegisterDevice()
@@ -105,7 +105,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         }
 
         /// <summary>
-        /// Returns the GetValidationSucceededUpdateID service.
+        /// Returns the action details for "GetValidationSucceededUpdateID".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetGetValidationSucceededUpdateID()
@@ -125,7 +125,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         }
 
         /// <summary>
-        /// Returns the GetGetAuthorizationDeniedUpdateID service.
+        /// Returns the action details for "GetGetAuthorizationDeniedUpdateID".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetGetAuthorizationDeniedUpdateID()
@@ -145,7 +145,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         }
 
         /// <summary>
-        /// Returns the GetValidationRevokedUpdateID service.
+        /// Returns the action details for "GetValidationRevokedUpdateID".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetGetValidationRevokedUpdateID()
@@ -165,7 +165,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         }
 
         /// <summary>
-        /// Returns the GetAuthorizationGrantedUpdateID service.
+        /// Returns the action details for "GetAuthorizationGrantedUpdateID".
         /// </summary>
         /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetGetAuthorizationGrantedUpdateID()

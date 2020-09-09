@@ -11,17 +11,14 @@ namespace Emby.Dlna.MediaReceiverRegistrar
     /// </summary>
     public class MediaReceiverRegistrarService : BaseService, IMediaReceiverRegistrar
     {
-        /// <summary>
-        /// Defines the _config.
-        /// </summary>
         private readonly IServerConfigurationManager _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaReceiverRegistrarService"/> class.
         /// </summary>
-        /// <param name="logger">The logger<see cref="ILogger{MediaReceiverRegistrarService}"/>.</param>
-        /// <param name="httpClientFactory">The httpClientFactory<see cref="IHttpClientFactory"/>.</param>
-        /// <param name="config">The config<see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="logger">The <see cref="ILogger{MediaReceiverRegistrarService}"/> for use with the <see cref="MediaReceiverRegistrarService"/> instance.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> for use with the <see cref="MediaReceiverRegistrarService"/> instance.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="MediaReceiverRegistrarService"/> instance.</param>
         public MediaReceiverRegistrarService(
             ILogger<MediaReceiverRegistrarService> logger,
             IHttpClientFactory httpClientFactory,

@@ -16,8 +16,8 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <summary>
         /// Initializes a new instance of the <see cref="ControlHandler"/> class.
         /// </summary>
-        /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="logger">The <see cref="ILogger"/> for use with the <see cref="ControlHandler"/> instance.</param>
         public ControlHandler(IServerConfigurationManager config, ILogger logger)
             : base(config, logger)
         {
