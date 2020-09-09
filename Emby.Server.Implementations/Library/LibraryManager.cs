@@ -513,10 +513,11 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (key.StartsWith(_configurationManager.ApplicationPaths.ProgramDataPath, StringComparison.Ordinal))
+            string programDataPath = _configurationManager.ApplicationPaths.ProgramDataPath;
+            if (key.StartsWith(programDataPath, StringComparison.Ordinal))
             {
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
-                key = key.Substring(_configurationManager.ApplicationPaths.ProgramDataPath.Length)
+                key = key.Substring(programDataPath.Length)
                     .TrimStart('/', '\\')
                     .Replace('/', '\\');
             }
@@ -871,17 +872,17 @@ namespace Emby.Server.Implementations.Library
 
         public Guid GetStudioId(string name)
         {
-            return GetItemByNameId<Studio>(Studio.GetPath, name);
+            return GetItemByNameId<Studio>(Studio.GetPath(name));
         }
 
         public Guid GetGenreId(string name)
         {
-            return GetItemByNameId<Genre>(Genre.GetPath, name);
+            return GetItemByNameId<Genre>(Genre.GetPath(name));
         }
 
         public Guid GetMusicGenreId(string name)
         {
-            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath, name);
+            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath(name));
         }
 
         /// <summary>
@@ -943,7 +944,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(T).Name },
+                    IncludeItemTypes = new[] { nameof(MusicArtist) },
                     Name = name,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
@@ -957,13 +958,11 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var id = GetItemByNameId<T>(getPathFn, name);
+            var path = getPathFn(name);
+            var id = GetItemByNameId<T>(path);
 
-            var item = GetItemById(id) as T;
-
-            if (item == null)
+            if (GetItemById(id) is T item)
             {
-                var path = getPathFn(name);
                 item = new T
                 {
                     Name = name,
@@ -974,15 +973,16 @@ namespace Emby.Server.Implementations.Library
                 };
 
                 CreateItem(item, null);
+
+                return item;
             }
 
-            return item;
+            return null;
         }
 
-        private Guid GetItemByNameId<T>(Func<string, string> getPathFn, string name)
+        private Guid GetItemByNameId<T>(string path)
               where T : BaseItem, new()
         {
-            var path = getPathFn(name);
             var forceCaseInsensitiveId = _configurationManager.Configuration.EnableNormalizedItemByNameIds;
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
@@ -1805,21 +1805,18 @@ namespace Emby.Server.Implementations.Library
         /// <param name="items">The items.</param>
         /// <param name="parent">The parent item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
+        public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
-            // Don't iterate multiple times
-            var itemsList = items.ToList();
+            _itemRepository.SaveItems(items, cancellationToken);
 
-            _itemRepository.SaveItems(itemsList, cancellationToken);
-
-            foreach (var item in itemsList)
+            foreach (var item in items)
             {
                 RegisterItem(item);
             }
 
             if (ItemAdded != null)
             {
-                foreach (var item in itemsList)
+                foreach (var item in items)
                 {
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
