@@ -309,7 +309,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult SendMessageCommand(
             [FromRoute, Required] string sessionId,
             [FromQuery, Required] string text,
-            [FromQuery, Required] string? header,
+            [FromQuery] string? header,
             [FromQuery] long? timeoutMs)
         {
             var command = new MessageCommand
@@ -375,7 +375,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostCapabilities(
-            [FromQuery, Required] string? id,
+            [FromQuery] string? id,
             [FromQuery] string? playableMediaTypes,
             [FromQuery] string? supportedCommands,
             [FromQuery] bool supportsMediaControl = false,

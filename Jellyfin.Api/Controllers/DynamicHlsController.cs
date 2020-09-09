@@ -179,7 +179,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? segmentContainer,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
-            [FromQuery, Required] string? mediaSourceId,
+            [FromQuery, Required] string mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] string? audioCodec,
             [FromQuery] bool? enableAutoStreamCopy,

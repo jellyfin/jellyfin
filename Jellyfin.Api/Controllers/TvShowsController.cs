@@ -69,7 +69,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("NextUp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetNextUp(
-            [FromQuery, Required] Guid? userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -127,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Upcoming")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetUpcomingEpisodes(
-            [FromQuery, Required] Guid? userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
