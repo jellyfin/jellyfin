@@ -505,17 +505,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Initiates the forgot password process for a local user.
         /// </summary>
-        /// <param name="enteredUsername">The entered username.</param>
+        /// <param name="forgotPasswordRequest">The forgot password request containing the entered username.</param>
         /// <response code="200">Password reset process started.</response>
         /// <returns>A <see cref="Task"/> containing a <see cref="ForgotPasswordResult"/>.</returns>
         [HttpPost("ForgotPassword")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string? enteredUsername)
+        public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody, Required] ForgotPasswordDto forgotPasswordRequest)
         {
             var isLocal = HttpContext.IsLocal()
                           || _networkManager.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp());
 
-            var result = await _userManager.StartForgotPasswordProcess(enteredUsername, isLocal).ConfigureAwait(false);
+            var result = await _userManager.StartForgotPasswordProcess(forgotPasswordRequest.EnteredUsername, isLocal).ConfigureAwait(false);
 
             return result;
         }
