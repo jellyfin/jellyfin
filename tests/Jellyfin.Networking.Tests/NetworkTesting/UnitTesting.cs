@@ -7,10 +7,10 @@ using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Networking.Structures;
 using Jellyfin.Data.Events;
 using Jellyfin.Networking.Udp;
 using Emby.Dlna.PlayTo;
+using NetworkCollection;
 
 namespace NetworkTesting
 {

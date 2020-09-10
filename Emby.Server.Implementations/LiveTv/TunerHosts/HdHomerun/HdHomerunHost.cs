@@ -13,7 +13,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Networking.Structures;
 using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -31,6 +30,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using NetworkCollection;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {

@@ -15,7 +15,6 @@ using Emby.Dlna.PlayTo;
 using Emby.Dlna.PlayTo.Devices;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
-using Jellyfin.Networking.Structures;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -30,6 +29,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
+using NetworkCollection;
 
 namespace Emby.Dlna.Main
 {

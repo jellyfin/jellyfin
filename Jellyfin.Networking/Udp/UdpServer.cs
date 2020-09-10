@@ -8,11 +8,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Networking.Structures;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
+using NetworkCollection;
 
 namespace Jellyfin.Networking.Udp
 {

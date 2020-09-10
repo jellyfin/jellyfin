@@ -4,11 +4,11 @@ using System.Net;
 using Jellyfin.Data.Events;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
-using Jellyfin.Networking.Structures;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
+using NetworkCollection;
 
 namespace Emby.Dlna.Net
 {

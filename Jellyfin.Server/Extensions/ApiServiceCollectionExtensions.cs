@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
@@ -16,16 +15,17 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
-using Jellyfin.Server.Models;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -136,28 +136,28 @@ namespace Jellyfin.Server.Extensions
         /// Extension method for adding the jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
-        /// <param name="baseUrl">The base url for the API.</param>
-        /// <param name="pluginAssemblies">An IEnumberable containing all plugin assemblies with API controllers.</param>
+        /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl, IEnumerable<Assembly> pluginAssemblies)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies)
         {
             IMvcBuilder mvcBuilder = serviceCollection
-                .AddCors(options =>
-                {
-                    options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
-                })
+                .AddCors()
+                .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
                 })
                 .AddMvc(opts =>
                 {
-                    opts.UseGeneralRoutePrefix(baseUrl);
+                    // Allow requester to change between camelCase and PascalCase
+                    opts.RespectBrowserAcceptHeader = true;
+
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
+                    opts.InputFormatters.Add(new XmlSerializerInputFormatter(opts));
                 })
 
                 // Clear app parts to avoid other assemblies being picked up

@@ -8,13 +8,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Networking.Structures;
 using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
-// using Mono.Nat;
+using NetworkCollection;
 
 namespace Jellyfin.Networking.Ssdp
 {

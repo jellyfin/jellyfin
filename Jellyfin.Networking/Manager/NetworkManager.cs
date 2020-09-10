@@ -6,11 +6,11 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Jellyfin.Networking.Structures;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using NetworkCollection;
 
 namespace Jellyfin.Networking.Manager
 {

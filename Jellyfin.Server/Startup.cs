@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
-using Jellyfin.Server.HealthChecks;
+using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
@@ -79,7 +80,7 @@ namespace Jellyfin.Server
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
 
             services.AddHealthChecks()
-                .AddCheck<JellyfinDbHealthCheck>("JellyfinDb");
+                .AddDbContextCheck<JellyfinDb>();
         }
 
         /// <summary>

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using Jellyfin.Networking.Structures;
 using MediaBrowser.Model.Configuration;
+using NetworkCollection;
 
 namespace Jellyfin.Networking.Manager
 {
