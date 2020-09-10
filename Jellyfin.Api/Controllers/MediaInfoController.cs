@@ -9,6 +9,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
 using Jellyfin.Api.Models.VideoDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -165,7 +166,7 @@ namespace Jellyfin.Api.Controllers
                         enableTranscoding,
                         allowVideoStreamCopy,
                         allowAudioStreamCopy,
-                        Request.HttpContext.Connection.RemoteIpAddress.ToString());
+                        Request.HttpContext.GetNormalizedRemoteIp());
                 }
 
                 _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
