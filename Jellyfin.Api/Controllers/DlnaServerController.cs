@@ -44,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
-        public ActionResult GetDescriptionXml([FromRoute] string serverId)
+        public ActionResult GetDescriptionXml([FromRoute, Required] string serverId)
         {
             if (DlnaEntryPoint.Instance.IsDLNAServerEnabled)
             {
