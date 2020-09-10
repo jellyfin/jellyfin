@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Configuration;
@@ -352,6 +353,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "HeadItemImage_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetItemImage(
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] ImageType imageType,
@@ -430,6 +432,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}", Name = "HeadItemImage2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetItemImage2(
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] ImageType imageType,
@@ -508,6 +511,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Artists/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadArtistImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetArtistImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
@@ -586,6 +590,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Genres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
@@ -664,6 +669,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("MusicGenres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadMusicGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetMusicGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
@@ -742,6 +748,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Persons/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadPersonImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetPersonImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
@@ -820,6 +827,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Studios/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadStudioImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetStudioImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
@@ -898,6 +906,7 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Users/{userId}/Images/{imageType}/{imageIndex?}", Name = "HeadUserImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetUserImage(
             [FromRoute, Required] Guid userId,
             [FromRoute, Required] ImageType imageType,
@@ -1298,8 +1307,7 @@ namespace Jellyfin.Api.Controllers
                 return NoContent();
             }
 
-            var stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
-            return File(stream, imageContentType);
+            return PhysicalFile(imagePath, imageContentType);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -104,6 +105,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesFile("video/*", "audio/*")]
         public ActionResult GetFile([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -112,8 +114,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            using var fileStream = new FileStream(item.Path, FileMode.Open, FileAccess.Read);
-            return File(fileStream, MimeTypes.GetMimeType(item.Path));
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path));
         }
 
         /// <summary>
@@ -618,6 +619,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.Download)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesFile("video/*", "audio/*")]
         public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);

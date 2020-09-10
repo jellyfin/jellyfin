@@ -52,7 +52,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies());
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.Configuration.KnownProxies);
 
             services.AddJellyfinApiSwagger();
 
@@ -93,11 +93,7 @@ namespace Jellyfin.Server
             IWebHostEnvironment env,
             IConfiguration appConfig)
         {
-            // Only add base url redirection if a base url is set.
-            if (!string.IsNullOrEmpty(_serverConfigurationManager.Configuration.BaseUrl))
-            {
-                app.UseBaseUrlRedirection();
-            }
+            app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
             app.Map(_serverConfigurationManager.Configuration.BaseUrl, mainApp =>
@@ -107,6 +103,7 @@ namespace Jellyfin.Server
                     mainApp.UseDeveloperExceptionPage();
                 }
 
+                mainApp.UseForwardedHeaders();
                 mainApp.UseMiddleware<ExceptionMiddleware>();
 
                 mainApp.UseMiddleware<ResponseTimeMiddleware>();

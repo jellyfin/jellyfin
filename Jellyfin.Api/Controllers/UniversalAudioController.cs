@@ -4,9 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -92,6 +94,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
+        [ProducesAudioFile]
         public async Task<ActionResult> GetUniversalAudioStream(
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string? container,
@@ -158,7 +161,7 @@ namespace Jellyfin.Api.Controllers
                         true,
                         true,
                         true,
-                        Request.HttpContext.Connection.RemoteIpAddress.ToString());
+                        Request.HttpContext.GetNormalizedRemoteIp());
                 }
 
                 _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
