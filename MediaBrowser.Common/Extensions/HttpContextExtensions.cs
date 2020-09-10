@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Common.Extensions
@@ -26,7 +27,8 @@ namespace MediaBrowser.Common.Extensions
         /// <returns>The remote caller IP address.</returns>
         public static string GetNormalizedRemoteIp(this HttpContext context)
         {
-            var ip = context.Connection.RemoteIpAddress;
+            // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
+            var ip = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
             if (ip.IsIPv4MappedToIPv6)
             {

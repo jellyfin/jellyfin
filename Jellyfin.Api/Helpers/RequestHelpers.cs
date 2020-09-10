@@ -173,10 +173,5 @@ namespace Jellyfin.Api.Helpers
                 .Select(i => i!.Value)
                 .ToArray();
         }
-
-        internal static IPAddress NormalizeIp(IPAddress ip)
-        {
-            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
-        }
     }
 }
