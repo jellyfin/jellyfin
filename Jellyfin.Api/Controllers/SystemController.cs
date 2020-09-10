@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -176,8 +177,8 @@ namespace Jellyfin.Api.Controllers
         {
             return new EndPointInfo
             {
-                IsLocal = Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress),
-                IsInNetwork = _network.IsInLocalNetwork(Request.HttpContext.Connection.RemoteIpAddress.ToString())
+                IsLocal = HttpContext.IsLocal(),
+                IsInNetwork = _network.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp())
             };
         }
 

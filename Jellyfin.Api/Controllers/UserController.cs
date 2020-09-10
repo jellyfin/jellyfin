@@ -7,6 +7,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -117,7 +118,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound("User not found");
             }
 
-            var result = _userManager.GetUserDto(user, HttpContext.Connection.RemoteIpAddress.ToString());
+            var result = _userManager.GetUserDto(user, HttpContext.GetNormalizedRemoteIp());
             return result;
         }
 
@@ -203,7 +204,7 @@ namespace Jellyfin.Api.Controllers
                     DeviceName = auth.Device,
                     Password = request.Pw,
                     PasswordSha1 = request.Password,
-                    RemoteEndPoint = HttpContext.Connection.RemoteIpAddress.ToString(),
+                    RemoteEndPoint = HttpContext.GetNormalizedRemoteIp(),
                     Username = request.Username
                 }).ConfigureAwait(false);
 
@@ -212,7 +213,7 @@ namespace Jellyfin.Api.Controllers
             catch (SecurityException e)
             {
                 // rethrow adding IP address to message
-                throw new SecurityException($"[{HttpContext.Connection.RemoteIpAddress}] {e.Message}", e);
+                throw new SecurityException($"[{HttpContext.GetNormalizedRemoteIp()}] {e.Message}", e);
             }
         }
 
@@ -246,7 +247,7 @@ namespace Jellyfin.Api.Controllers
             catch (SecurityException e)
             {
                 // rethrow adding IP address to message
-                throw new SecurityException($"[{HttpContext.Connection.RemoteIpAddress}] {e.Message}", e);
+                throw new SecurityException($"[{HttpContext.GetNormalizedRemoteIp()}] {e.Message}", e);
             }
         }
 
@@ -290,7 +291,7 @@ namespace Jellyfin.Api.Controllers
                     user.Username,
                     request.CurrentPw,
                     request.CurrentPw,
-                    HttpContext.Connection.RemoteIpAddress.ToString(),
+                    HttpContext.GetNormalizedRemoteIp(),
                     false).ConfigureAwait(false);
 
                 if (success == null)
@@ -496,7 +497,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
             }
 
-            var result = _userManager.GetUserDto(newUser, HttpContext.Connection.RemoteIpAddress.ToString());
+            var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIp());
 
             return result;
         }
@@ -511,8 +512,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string? enteredUsername)
         {
-            var isLocal = HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress)
-                          || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString());
+            var isLocal = HttpContext.IsLocal()
+                          || _networkManager.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp());
 
             var result = await _userManager.StartForgotPasswordProcess(enteredUsername, isLocal).ConfigureAwait(false);
 
@@ -559,7 +560,7 @@ namespace Jellyfin.Api.Controllers
 
             if (filterByNetwork)
             {
-                if (!_networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString()))
+                if (!_networkManager.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp()))
                 {
                     users = users.Where(i => i.HasPermission(PermissionKind.EnableRemoteAccess));
                 }
@@ -567,7 +568,7 @@ namespace Jellyfin.Api.Controllers
 
             var result = users
                 .OrderBy(u => u.Username)
-                .Select(i => _userManager.GetUserDto(i, HttpContext.Connection.RemoteIpAddress.ToString()));
+                .Select(i => _userManager.GetUserDto(i, HttpContext.GetNormalizedRemoteIp()));
 
             return result;
         }
