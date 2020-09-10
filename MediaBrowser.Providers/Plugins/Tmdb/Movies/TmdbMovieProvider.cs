@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 movie.AddGenre(genre);
             }
 
-            if (movieResult.Keywords.Keywords != null)
+            if (movieResult.Keywords?.Keywords != null)
             {
                 for (var i = 0; i < movieResult.Keywords.Keywords.Count; i++)
                 {

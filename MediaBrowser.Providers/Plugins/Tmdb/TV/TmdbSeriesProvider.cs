@@ -1,28 +1,18 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Plugins.Tmdb.Movies;
-using Microsoft.Extensions.Logging;
 using TMDbLib.Objects.Find;
 using TMDbLib.Objects.Search;
 using TMDbLib.Objects.TvShows;
@@ -33,8 +23,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public TmdbSeriesProvider(
             IHttpClientFactory httpClientFactory,
@@ -136,7 +124,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = series.Overview
             };
 
-            remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(_usCulture));
+            remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));
             if (series.ExternalIds != null)
             {
                 if (!string.IsNullOrEmpty(series.ExternalIds.ImdbId))
@@ -165,7 +153,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = series.Overview
             };
 
-            remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(_usCulture));
+            remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));
             remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
 
             return remoteResult;
@@ -250,7 +238,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var series = new Series {Name = seriesResult.Name, OriginalTitle = seriesResult.OriginalName};
 
-            series.SetProviderId(MetadataProvider.Tmdb, seriesResult.Id.ToString(_usCulture));
+            series.SetProviderId(MetadataProvider.Tmdb, seriesResult.Id.ToString(CultureInfo.InvariantCulture));
 
             series.CommunityRating = Convert.ToSingle(seriesResult.VoteAverage);
 
@@ -264,6 +252,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (seriesResult.Genres != null)
             {
                 series.Genres = seriesResult.Genres.Select(i => i.Name).ToArray();
+            }
+
+            if (seriesResult.Keywords?.Results != null)
+            {
+                for (var i = 0; i < seriesResult.Keywords.Results.Count; i++)
+                {
+                    series.AddTag(seriesResult.Keywords.Results[i].Name);
+                }
             }
 
             series.HomePageUrl = seriesResult.Homepage;
