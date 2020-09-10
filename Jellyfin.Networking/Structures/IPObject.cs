@@ -71,6 +71,11 @@ namespace Jellyfin.Networking.Structures
                     return true;
                 }
 
+                if (address.IsIPv4MappedToIPv6)
+                {
+                    address = address.MapToIPv4();
+                }
+
                 byte[] b = address.GetAddressBytes();
                 return b[0] == 169 && b[1] == 254;
             }
@@ -89,6 +94,11 @@ namespace Jellyfin.Networking.Structures
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
+            }
+
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
             }
 
             if (IsLoopback(address))
@@ -129,6 +139,11 @@ namespace Jellyfin.Networking.Structures
 
             if (!address.Equals(IPAddress.None))
             {
+                if (address.IsIPv4MappedToIPv6)
+                {
+                    address = address.MapToIPv4();
+                }
+
                 return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
             }
 
@@ -145,6 +160,11 @@ namespace Jellyfin.Networking.Structures
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
+            }
+
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
             }
 
             return !address.Equals(IPAddress.None) && (address.AddressFamily == AddressFamily.InterNetworkV6);
@@ -166,6 +186,11 @@ namespace Jellyfin.Networking.Structures
             {
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
+                    if (address.IsIPv4MappedToIPv6)
+                    {
+                        address = address.MapToIPv4();
+                    }
+
                     byte[] octet = address.GetAddressBytes();
 
                     return (octet[0] == 10) ||
@@ -199,6 +224,11 @@ namespace Jellyfin.Networking.Structures
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
+            }
+
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
             }
 
             if (address.AddressFamily != AddressFamily.InterNetworkV6)
@@ -366,6 +396,11 @@ namespace Jellyfin.Networking.Structures
         /// <returns>Comparison result.</returns>
         public virtual bool Contains(IPAddress address)
         {
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
             return Equals(address);
         }
 

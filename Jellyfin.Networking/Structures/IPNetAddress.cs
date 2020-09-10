@@ -66,7 +66,15 @@ namespace Jellyfin.Networking.Structures
         /// <param name="subnet">Mask to assign.</param>
         public IPNetAddress(IPAddress address, IPAddress subnet)
         {
-            _address = address ?? throw new ArgumentNullException(nameof(address));
+            if (address?.IsIPv4MappedToIPv6 ?? throw new ArgumentNullException(nameof(address)))
+            {
+                _address = address.MapToIPv4();
+            }
+            else
+            {
+                _address = address;
+            }
+
             if (subnet == null)
             {
                 throw new ArgumentNullException(nameof(subnet));
@@ -87,7 +95,15 @@ namespace Jellyfin.Networking.Structures
         /// <param name="prefixLength">Mask as a CIDR.</param>
         public IPNetAddress(IPAddress address, byte prefixLength)
         {
-            _address = address ?? throw new ArgumentNullException(nameof(address));
+            if (address?.IsIPv4MappedToIPv6 ?? throw new ArgumentNullException(nameof(address)))
+            {
+                _address = address.MapToIPv4();
+            }
+            else
+            {
+                _address = address;
+            }
+
             PrefixLength = prefixLength;
         }
 
@@ -216,6 +232,11 @@ namespace Jellyfin.Networking.Structures
                 throw new ArgumentNullException(nameof(address));
             }
 
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
             var altAddress = NetworkAddressOf(address, PrefixLength);
             return NetworkAddress.Address.Equals(altAddress.Item1);
         }
@@ -287,6 +308,11 @@ namespace Jellyfin.Networking.Structures
 
                 if (Address.AddressFamily == AddressFamily.InterNetwork)
                 {
+                    if (address.IsIPv4MappedToIPv6)
+                    {
+                        address = address.MapToIPv4();
+                    }
+
                     // Is one an ipv4 to ipv6 mapping?
                     return string.Equals(
                         address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
@@ -303,6 +329,11 @@ namespace Jellyfin.Networking.Structures
         {
             if (address != null && !Address.Equals(IPAddress.None))
             {
+                if (address.IsIPv4MappedToIPv6)
+                {
+                    address = address.MapToIPv4();
+                }
+
                 return Address.Equals(address);
             }
 

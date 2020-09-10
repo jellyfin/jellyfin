@@ -335,6 +335,11 @@ namespace Jellyfin.Networking.Structures
                 throw new ArgumentNullException(nameof(item));
             }
 
+            if (item.IsIPv4MappedToIPv6)
+            {
+                item = item.MapToIPv4();
+            }
+
             foreach (var i in Items)
             {
                 if (i.AddressFamily == item.AddressFamily && i.Contains(item))
@@ -489,23 +494,28 @@ namespace Jellyfin.Networking.Structures
         /// <summary>
         /// Returns true is the collection contains the ip address.
         /// </summary>
-        /// <param name="networkItem">IP address to search for.</param>
+        /// <param name="item">IP address to search for.</param>
         /// <returns>True if the item exists in the collection.</returns>
-        public bool Exists(IPAddress networkItem)
+        public bool Exists(IPAddress item)
         {
             if (Count == 0)
             {
                 return false;
             }
 
-            if (networkItem == null)
+            if (item == null)
             {
-                throw new ArgumentNullException(nameof(networkItem));
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (item.IsIPv4MappedToIPv6)
+            {
+                item = item.MapToIPv4();
             }
 
             foreach (IPObject i in Items)
             {
-                if (i.Exists(networkItem))
+                if (i.Exists(item))
                 {
                     return true;
                 }

@@ -230,6 +230,31 @@ namespace Jellyfin.Networking.Structures
         }
 
         /// <summary>
+        /// Attempts to parse the host string.
+        /// </summary>
+        /// <param name="host">Host name to parse.</param>
+        /// <param name="family">Optional Addressfamily filter.</param>
+        /// <returns>Object representing the string, if it has successfully been parsed.</returns>
+        public static IPHost Parse(string host, AddressFamily family)
+        {
+            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost res))
+            {
+                if (family == AddressFamily.InterNetwork)
+                {
+                    res.Remove(AddressFamily.InterNetworkV6);
+                }
+                else
+                {
+                    res.Remove(AddressFamily.InterNetwork);
+                }
+
+                return res;
+            }
+
+            throw new InvalidCastException("Host does not contain a valid value. {host}");
+        }
+
+        /// <summary>
         /// Returns the Addresses that this item resolved to.
         /// </summary>
         /// <returns>IPAddress Array.</returns>

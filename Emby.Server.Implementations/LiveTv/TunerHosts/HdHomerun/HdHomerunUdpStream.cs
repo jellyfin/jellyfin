@@ -66,8 +66,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
 
-            var remote = IPHost.Parse(uri.Host);
-            _networkManager.Restrict(remote);
+            var remote = IPHost.Parse(uri.Host, AddressFamily.InterNetwork);
 
             Logger.LogDebug("Parsed host from {0} as {1}", uri.Host, remote);
 

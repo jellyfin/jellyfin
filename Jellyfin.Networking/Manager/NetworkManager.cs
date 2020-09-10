@@ -242,28 +242,6 @@ namespace Jellyfin.Networking.Manager
             return false;
         }
 
-        /// <summary>
-        /// Removes invalid addresses from an IPHost object, based upon IP settings.
-        /// </summary>
-        /// <param name="host">IPHost object to restrict.</param>
-        public void Restrict(IPHost host)
-        {
-            if (host == null)
-            {
-                throw new ArgumentNullException(nameof(host));
-            }
-
-            if (!IsIP4Enabled)
-            {
-                host.Remove(AddressFamily.InterNetworkV6);
-            }
-
-            if (!IsIP6Enabled)
-            {
-                host.Remove(AddressFamily.InterNetworkV6);
-            }
-        }
-
         /// <inheritdoc/>
         public NetCollection CreateIPCollection(string[] values, bool bracketed = false)
         {

@@ -85,12 +85,6 @@ namespace Jellyfin.Networking.Manager
         bool IsExcludedInterface(IPAddress address);
 
         /// <summary>
-        /// Removes invalid addresses from an IPHost object, based upon IP settings.
-        /// </summary>
-        /// <param name="host">IPHost object to restrict.</param>
-        public void Restrict(IPHost host);
-
-        /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.
         /// </summary>
         /// <returns>List of MAC addresses.</returns>
