@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         public virtual ResolverPriority Priority => ResolverPriority.First;
 
         /// <summary>
-        /// Sets initial values on the newly resolved item
+        /// Sets initial values on the newly resolved item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>

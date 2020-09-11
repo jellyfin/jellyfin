@@ -1,4 +1,7 @@
+#nullable disable
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -36,6 +39,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The primary image tag.</value>
         public string PrimaryImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the primary image blurhash.
+        /// </summary>
+        /// <value>The primary image blurhash.</value>
+        public Dictionary<ImageType, Dictionary<string, string>> ImageBlurHashes { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.

@@ -1,8 +1,10 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -10,6 +12,10 @@ namespace MediaBrowser.Controller.Entities
     {
         [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Book;
+
+        public override bool SupportsPlayedStatus => true;
+
+        public override bool SupportsPositionTicksResume => true;
 
         [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
@@ -19,6 +25,11 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public Guid SeriesId { get; set; }
+
+        public Book()
+        {
+            this.RunTimeTicks = TimeSpan.TicksPerSecond;
+        }
 
         public string FindSeriesSortName()
         {
@@ -40,11 +51,13 @@ namespace MediaBrowser.Controller.Entities
             return SeriesId;
         }
 
+        /// <inheritdoc />
         public override bool CanDownload()
         {
             return IsFileProtocol;
         }
 
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Book;

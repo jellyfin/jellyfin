@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS1591
+
+using System;
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
@@ -20,6 +22,9 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
         public const string DefaultServer = "https://musicbrainz.org";
 
         public const long DefaultRateLimit = 2000u;
+
+        // TODO remove when plugin removed from server.
+        public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";
 
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)

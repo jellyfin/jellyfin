@@ -113,5 +113,6 @@
     "TasksChannelsCategory": "Spletni kanali",
     "TasksApplicationCategory": "Aplikacija",
     "TasksLibraryCategory": "Knjižnica",
-    "TasksMaintenanceCategory": "Vzdrževanje"
+    "TasksMaintenanceCategory": "Vzdrževanje",
+    "TaskDownloadMissingSubtitlesDescription": "Na podlagi nastavitev metapodatkov poišče manjkajoče podnapise na internetu."
 }

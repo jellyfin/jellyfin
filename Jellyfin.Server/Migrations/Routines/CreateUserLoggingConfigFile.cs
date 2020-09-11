@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Common.Configuration;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Jellyfin.Server.Migrations.Routines
@@ -36,6 +35,13 @@ namespace Jellyfin.Server.Migrations.Routines
             @"{""Serilog"":{""MinimumLevel"":""Information"",""WriteTo"":[{""Name"":""Console"",""Args"":{""outputTemplate"":""[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}""}},{""Name"":""Async"",""Args"":{""configure"":[{""Name"":""File"",""Args"":{""path"":""%JELLYFIN_LOG_DIR%//log_.log"",""rollingInterval"":""Day"",""retainedFileCountLimit"":3,""rollOnFileSizeLimit"":true,""fileSizeLimitBytes"":100000000,""outputTemplate"":""[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}:{Message}{NewLine}{Exception}""}}]}}],""Enrich"":[""FromLogContext"",""WithThreadId""]}}",
         };
 
+        private readonly IApplicationPaths _appPaths;
+
+        public CreateUserLoggingConfigFile(IApplicationPaths appPaths)
+        {
+            _appPaths = appPaths;
+        }
+
         /// <inheritdoc/>
         public Guid Id => Guid.Parse("{EF103419-8451-40D8-9F34-D1A8E93A1679}");
 
@@ -43,9 +49,12 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "CreateLoggingConfigHeirarchy";
 
         /// <inheritdoc/>
-        public void Perform(CoreAppHost host, ILogger logger)
+        public bool PerformOnNewInstall => false;
+
+        /// <inheritdoc/>
+        public void Perform()
         {
-            var logDirectory = host.Resolve<IApplicationPaths>().ConfigurationDirectoryPath;
+            var logDirectory = _appPaths.ConfigurationDirectoryPath;
             var existingConfigPath = Path.Combine(logDirectory, "logging.json");
 
             // If the existing logging.json config file is unmodified, then 'reset' it by moving it to 'logging.old.json'

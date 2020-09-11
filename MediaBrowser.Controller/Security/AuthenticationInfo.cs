@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Controller.Security
@@ -65,6 +67,7 @@ namespace MediaBrowser.Controller.Security
         public DateTime? DateRevoked { get; set; }
 
         public DateTime DateLastActivity { get; set; }
+
         public string UserName { get; set; }
     }
 }

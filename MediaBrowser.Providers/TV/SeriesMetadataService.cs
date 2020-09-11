@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +44,8 @@ namespace MediaBrowser.Providers.TV
             await seasonProvider.Run(item, cancellationToken).ConfigureAwait(false);
 
             // TODO why does it not register this itself omg
-            var provider = new MissingEpisodeProvider(Logger,
+            var provider = new MissingEpisodeProvider(
+                Logger,
                 ServerConfigurationManager,
                 LibraryManager,
                 _localization,
@@ -55,7 +58,7 @@ namespace MediaBrowser.Providers.TV
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error in DummySeasonProvider");
+                Logger.LogError(ex, "Error in DummySeasonProvider for {ItemPath}", item.Path);
             }
         }
 
@@ -66,15 +69,17 @@ namespace MediaBrowser.Providers.TV
             {
                 return false;
             }
+
             if (!item.ProductionYear.HasValue)
             {
                 return false;
             }
+
             return base.IsFullLocalMetadata(item);
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

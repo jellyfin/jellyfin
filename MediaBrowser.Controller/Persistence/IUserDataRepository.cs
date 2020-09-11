@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Persistence
 {
     /// <summary>
-    /// Provides an interface to implement a UserData repository
+    /// Provides an interface to implement a UserData repository.
     /// </summary>
     public interface IUserDataRepository : IRepository
     {
@@ -24,26 +24,31 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
-        /// <returns>Task{UserItemData}.</returns>
+        /// <returns>The user data.</returns>
         UserItemData GetUserData(long userId, string key);
 
+        /// <summary>
+        /// Gets the user data.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="keys">The keys.</param>
+        /// <returns>The user data.</returns>
         UserItemData GetUserData(long userId, List<string> keys);
 
         /// <summary>
-        /// Return all user data associated with the given user
+        /// Return all user data associated with the given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
         List<UserItemData> GetAllUserData(long userId);
 
         /// <summary>
-        /// Save all user data associated with the given user
+        /// Save all user data associated with the given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="userData"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         void SaveAllUserData(long userId, UserItemData[] userData, CancellationToken cancellationToken);
-
     }
 }

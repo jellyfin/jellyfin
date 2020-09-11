@@ -4,6 +4,7 @@
 
 set -o errexit
 set -o pipefail
+set -o xtrace
 
 usage() {
     echo -e "bump_version - increase the shared version and generate changelogs"
@@ -19,6 +20,8 @@ fi
 
 shared_version_file="./SharedVersion.cs"
 build_file="./build.yaml"
+# csproj files for nuget packages
+jellyfin_subprojects=( MediaBrowser.Common/MediaBrowser.Common.csproj Jellyfin.Data/Jellyfin.Data.csproj MediaBrowser.Controller/MediaBrowser.Controller.csproj MediaBrowser.Model/MediaBrowser.Model.csproj Emby.Naming/Emby.Naming.csproj )
 
 new_version="$1"
 
@@ -44,6 +47,22 @@ echo $old_version
 old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
 sed -i "s/${old_version_sed}/${new_version}/g" ${build_file}
 
+# update nuget package version
+for subproject in ${jellyfin_subprojects[@]}; do
+do
+    echo ${subproject}
+    # Parse the version from the *.csproj file
+    old_version="$(
+        grep "VersionPrefix" ${subproject} \
+            | awk '{$1=$1};1' \
+            | sed -E 's/<VersionPrefix>([0-9\.]+[-a-z0-9]*)<\/VersionPrefix>/\1/'
+    )"
+    echo old nuget version: $old_version
+
+    # Set the nuget version to the specified new_version
+    sed -i "s|${old_version}|${new_version}|g" ${subproject}
+done
+
 if [[ ${new_version} == *"-"* ]]; then
     new_version_deb="$( sed 's/-/~/g' <<<"${new_version}" )"
 else
@@ -58,7 +77,7 @@ sed -i "s/${old_version_sed}/${new_version}/g" ${debian_equivs_file}
 debian_changelog_file="debian/changelog"
 debian_changelog_temp="$( mktemp )"
 # Create new temp file with our changelog
-echo -e "jellyfin (${new_version_deb}) unstable; urgency=medium
+echo -e "jellyfin-server (${new_version_deb}) unstable; urgency=medium
 
   * New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}
 

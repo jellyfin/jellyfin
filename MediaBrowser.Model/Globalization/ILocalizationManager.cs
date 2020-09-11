@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using System.Globalization;
 using MediaBrowser.Model.Entities;

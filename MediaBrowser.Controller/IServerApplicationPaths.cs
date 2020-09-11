@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller
@@ -5,7 +7,7 @@ namespace MediaBrowser.Controller
     public interface IServerApplicationPaths : IApplicationPaths
     {
         /// <summary>
-        /// Gets the path to the base root media directory
+        /// Gets the path to the base root media directory.
         /// </summary>
         /// <value>The root folder path.</value>
         string RootFolderPath { get; }
@@ -17,13 +19,13 @@ namespace MediaBrowser.Controller
         string DefaultUserViewsPath { get; }
 
         /// <summary>
-        /// Gets the path to the People directory
+        /// Gets the path to the People directory.
         /// </summary>
         /// <value>The people path.</value>
         string PeoplePath { get; }
 
         /// <summary>
-        /// Gets the path to the Genre directory
+        /// Gets the path to the Genre directory.
         /// </summary>
         /// <value>The genre path.</value>
         string GenrePath { get; }
@@ -35,25 +37,25 @@ namespace MediaBrowser.Controller
         string MusicGenrePath { get; }
 
         /// <summary>
-        /// Gets the path to the Studio directory
+        /// Gets the path to the Studio directory.
         /// </summary>
         /// <value>The studio path.</value>
         string StudioPath { get; }
 
         /// <summary>
-        /// Gets the path to the Year directory
+        /// Gets the path to the Year directory.
         /// </summary>
         /// <value>The year path.</value>
         string YearPath { get; }
 
         /// <summary>
-        /// Gets the path to the General IBN directory
+        /// Gets the path to the General IBN directory.
         /// </summary>
         /// <value>The general path.</value>
         string GeneralPath { get; }
 
         /// <summary>
-        /// Gets the path to the Ratings IBN directory
+        /// Gets the path to the Ratings IBN directory.
         /// </summary>
         /// <value>The ratings path.</value>
         string RatingsPath { get; }
@@ -65,7 +67,7 @@ namespace MediaBrowser.Controller
         string MediaInfoImagesPath { get; }
 
         /// <summary>
-        /// Gets the path to the user configuration directory
+        /// Gets the path to the user configuration directory.
         /// </summary>
         /// <value>The user configuration directory path.</value>
         string UserConfigurationDirectoryPath { get; }
@@ -81,6 +83,10 @@ namespace MediaBrowser.Controller
         /// <value>The internal metadata path.</value>
         string InternalMetadataPath { get; }
 
+        /// <summary>
+        /// Gets the virtual internal metadata path, either a custom path or the default.
+        /// </summary>
+        /// <value>The virtual internal metadata path.</value>
         string VirtualInternalMetadataPath { get; }
 
         /// <summary>

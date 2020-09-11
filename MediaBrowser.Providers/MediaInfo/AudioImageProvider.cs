@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,7 +19,7 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Providers.MediaInfo
 {
     /// <summary>
-    /// Uses ffmpeg to create video images
+    /// Uses ffmpeg to create video images.
     /// </summary>
     public class AudioImageProvider : IDynamicImageProvider
     {
@@ -31,6 +33,10 @@ namespace MediaBrowser.Providers.MediaInfo
             _config = config;
             _fileSystem = fileSystem;
         }
+
+        public string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
+
+        public string Name => "Image Extractor";
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
@@ -79,7 +85,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 catch
                 {
-
                 }
             }
 
@@ -92,15 +97,15 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private string GetAudioImagePath(Audio item)
         {
-            string filename = null;
+            string filename;
 
             if (item.GetType() == typeof(Audio))
             {
-                var albumArtist = item.AlbumArtists.FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(item.Album) && !string.IsNullOrWhiteSpace(albumArtist))
+                if (item.AlbumArtists.Count > 0
+                    && !string.IsNullOrWhiteSpace(item.Album)
+                    && !string.IsNullOrWhiteSpace(item.AlbumArtists[0]))
                 {
-                    filename = (item.Album + "-" + albumArtist).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                    filename = (item.Album + "-" + item.AlbumArtists[0]).GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -115,14 +120,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 filename = item.Id.ToString("N", CultureInfo.InvariantCulture) + ".jpg";
             }
 
-            var prefix = filename.Substring(0, 1);
+            var prefix = filename.AsSpan().Slice(0, 1);
 
-            return Path.Combine(AudioImagesPath, prefix, filename);
+            return Path.Join(AudioImagesPath, prefix, filename);
         }
-
-        public string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
-
-        public string Name => "Image Extractor";
 
         public bool Supports(BaseItem item)
         {
@@ -130,6 +131,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;

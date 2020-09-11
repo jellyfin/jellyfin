@@ -14,9 +14,7 @@ namespace MediaBrowser.Model.Tasks
         {
             var isHidden = false;
 
-            var configurableTask = task.ScheduledTask as IConfigurableScheduledTask;
-
-            if (configurableTask != null)
+            if (task.ScheduledTask is IConfigurableScheduledTask configurableTask)
             {
                 isHidden = configurableTask.IsHidden;
             }

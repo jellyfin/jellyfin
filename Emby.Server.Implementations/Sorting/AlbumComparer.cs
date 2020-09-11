@@ -7,7 +7,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class AlbumComparer
+    /// Class AlbumComparer.
     /// </summary>
     public class AlbumComparer : IBaseItemComparer
     {

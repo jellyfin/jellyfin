@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -7,34 +8,33 @@ namespace MediaBrowser.Model.Entities
     public class PackageReviewInfo
     {
         /// <summary>
-        /// The package id (database key) for this review
+        /// Gets or sets the package id (database key) for this review.
         /// </summary>
         public int id { get; set; }
 
         /// <summary>
-        /// The rating value
+        /// Gets or sets the rating value.
         /// </summary>
         public int rating { get; set; }
 
         /// <summary>
-        /// Whether or not this review recommends this item
+        /// Gets or sets whether or not this review recommends this item.
         /// </summary>
         public bool recommend { get; set; }
 
         /// <summary>
-        /// A short description of the review
+        /// Gets or sets a short description of the review.
         /// </summary>
         public string title { get; set; }
 
         /// <summary>
-        /// A full review
+        /// Gets or sets the full review.
         /// </summary>
         public string review { get; set; }
 
         /// <summary>
-        /// Time of review
+        /// Gets or sets the time of review.
         /// </summary>
         public DateTime timestamp { get; set; }
-
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -40,11 +42,11 @@ namespace MediaBrowser.Providers.TV
 
             if (hasNewSeasons)
             {
-                //var directoryService = new DirectoryService(_fileSystem);
+                // var directoryService = new DirectoryService(_fileSystem);
 
-                //await series.RefreshMetadata(new MetadataRefreshOptions(directoryService), cancellationToken).ConfigureAwait(false);
+                // await series.RefreshMetadata(new MetadataRefreshOptions(directoryService), cancellationToken).ConfigureAwait(false);
 
-                //await series.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(directoryService))
+                // await series.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(directoryService))
                 //    .ConfigureAwait(false);
             }
 
@@ -72,6 +74,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     seasons = series.Children.OfType<Season>().ToList();
                 }
+
                 var existingSeason = seasons
                     .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
 
@@ -84,7 +87,7 @@ namespace MediaBrowser.Providers.TV
                 else if (existingSeason.IsVirtualItem)
                 {
                     existingSeason.IsVirtualItem = false;
-                    existingSeason.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken);
+                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                     seasons = null;
                 }
             }
@@ -110,7 +113,7 @@ namespace MediaBrowser.Providers.TV
                 else if (existingSeason.IsVirtualItem)
                 {
                     existingSeason.IsVirtualItem = false;
-                    existingSeason.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken);
+                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                     seasons = null;
                 }
             }
@@ -121,7 +124,8 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Adds the season.
         /// </summary>
-        public async Task<Season> AddSeason(Series series,
+        public async Task<Season> AddSeason(
+            Series series,
             int? seasonNumber,
             bool isVirtualItem,
             CancellationToken cancellationToken)
@@ -208,11 +212,14 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.LogInformation("Removing virtual season {0} {1}", series.Name, seasonToRemove.IndexNumber);
 
-                _libraryManager.DeleteItem(seasonToRemove, new DeleteOptions
-                {
-                    DeleteFileLocation = true
+                _libraryManager.DeleteItem(
+                    seasonToRemove,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = true
 
-                }, false);
+                    },
+                    false);
 
                 hasChanges = true;
             }

@@ -10,14 +10,7 @@ namespace Rssdp
     /// <seealso cref="Infrastructure.ISsdpDeviceLocator"/>
     public sealed class DiscoveredSsdpDevice
     {
-
-        #region Fields
-
         private DateTimeOffset _AsAt;
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// Sets or returns the type of notification, being either a uuid, device type, service type or upnp:rootdevice.
@@ -45,6 +38,7 @@ namespace Rssdp
         public DateTimeOffset AsAt
         {
             get { return _AsAt; }
+
             set
             {
                 if (_AsAt != value)
@@ -55,13 +49,9 @@ namespace Rssdp
         }
 
         /// <summary>
-        /// Returns the headers from the SSDP device response message
+        /// Returns the headers from the SSDP device response message.
         /// </summary>
         public HttpHeaders ResponseHeaders { get; set; }
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Returns true if this device information has expired, based on the current date/time, and the <see cref="CacheLifetime"/> &amp; <see cref="AsAt"/> properties.
@@ -72,10 +62,6 @@ namespace Rssdp
             return this.CacheLifetime == TimeSpan.Zero || this.AsAt.Add(this.CacheLifetime) <= DateTimeOffset.Now;
         }
 
-        #endregion
-
-        #region Overrides
-
         /// <summary>
         /// Returns the device's <see cref="Usn"/> value.
         /// </summary>
@@ -84,7 +70,5 @@ namespace Rssdp
         {
             return this.Usn;
         }
-
-        #endregion
     }
 }

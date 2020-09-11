@@ -40,14 +40,14 @@ function Build-JellyFin {
     Write-Verbose "windowsversion-Architecture: $windowsversion-$Architecture"
     Write-Verbose "InstallLocation: $ResolvedInstallLocation"
     Write-Verbose "DotNetVerbosity: $DotNetVerbosity"
-    dotnet publish --self-contained -c $BuildType --output $ResolvedInstallLocation -v $DotNetVerbosity -p:GenerateDocumentationFile=false -p:DebugSymbols=false -p:DebugType=none --runtime `"$windowsversion-$Architecture`" Jellyfin.Server
+    dotnet publish --self-contained -c $BuildType --output $ResolvedInstallLocation -v $DotNetVerbosity -p:GenerateDocumentationFile=true -p:DebugSymbols=false -p:DebugType=none --runtime `"$windowsversion-$Architecture`" Jellyfin.Server
 }
 
 function Install-FFMPEG {
     param(
         [string]$ResolvedInstallLocation,
         [string]$Architecture,
-        [string]$FFMPEGVersionX86 = "ffmpeg-4.2.1-win32-shared"
+        [string]$FFMPEGVersionX86 = "ffmpeg-4.3-win32-shared"
     )
     Write-Verbose "Checking Architecture"
     if($Architecture -notin @('x86','x64')){

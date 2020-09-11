@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Ensures DateCreated and DateModified have values
+        /// Ensures DateCreated and DateModified have values.
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="item">The item.</param>

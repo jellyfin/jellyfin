@@ -36,33 +36,47 @@
                 uniquePluginId: "8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a"
             };
 
-            $('.musicBrainzConfigPage').on('pageshow', function () {
-                Dashboard.showLoadingMsg();
-                ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
-                    $('#server').val(config.Server).change();
-                    $('#rateLimit').val(config.RateLimit).change();
-                    $('#enable').checked(config.Enable);
-                    $('#replaceArtistName').checked(config.ReplaceArtistName);
+            document.querySelector('.musicBrainzConfigPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
+                        var server = document.querySelector('#server');
+                        server.value = config.Server;
+                        server.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+                        
+                        var rateLimit = document.querySelector('#rateLimit');
+                        rateLimit.value = config.RateLimit;
+                        rateLimit.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+                        
+                        document.querySelector('#enable').checked = config.Enable;
+                        document.querySelector('#replaceArtistName').checked = config.ReplaceArtistName;
 
-                    Dashboard.hideLoadingMsg();
+                        Dashboard.hideLoadingMsg();
+                    });
                 });
-            });
-
-            $('.musicBrainzConfigForm').on('submit', function (e) {
-                Dashboard.showLoadingMsg();
-
-                var form = this;
-                ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
-                    config.Server = $('#server', form).val();
-                    config.RateLimit = $('#rateLimit', form).val();
-                    config.Enable = $('#enable', form).checked();
-                    config.ReplaceArtistName = $('#replaceArtistName', form).checked();
-
-                    ApiClient.updatePluginConfiguration(MusicBrainzPluginConfig.uniquePluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+            
+            document.querySelector('.musicBrainzConfigForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+    
+                    ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
+                        config.Server = document.querySelector('#server').value;
+                        config.RateLimit = document.querySelector('#rateLimit').value;
+                        config.Enable = document.querySelector('#enable').checked;
+                        config.ReplaceArtistName = document.querySelector('#replaceArtistName').checked;
+    
+                        ApiClient.updatePluginConfiguration(MusicBrainzPluginConfig.uniquePluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+                    
+                    e.preventDefault();
+                    return false;
                 });
-
-                return false;
-            });
         </script>
     </div>
 </body>

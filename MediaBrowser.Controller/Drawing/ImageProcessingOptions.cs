@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +17,7 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         public Guid ItemId { get; set; }
+
         public BaseItem Item { get; set; }
 
         public ItemImageInfo Image { get; set; }
@@ -38,12 +41,15 @@ namespace MediaBrowser.Controller.Drawing
         public bool AddPlayedIndicator { get; set; }
 
         public int? UnplayedCount { get; set; }
+
         public int? Blur { get; set; }
 
         public double PercentPlayed { get; set; }
 
         public string BackgroundColor { get; set; }
+
         public string ForegroundLayer { get; set; }
+
         public bool RequiresAutoOrientation { get; set; }
 
         private bool HasDefaultOptions(string originalImagePath)
@@ -73,14 +79,17 @@ namespace MediaBrowser.Controller.Drawing
             {
                 return false;
             }
+
             if (Height.HasValue && !sizeValue.Height.Equals(Height.Value))
             {
                 return false;
             }
+
             if (MaxWidth.HasValue && sizeValue.Width > MaxWidth.Value)
             {
                 return false;
             }
+
             if (MaxHeight.HasValue && sizeValue.Height > MaxHeight.Value)
             {
                 return false;

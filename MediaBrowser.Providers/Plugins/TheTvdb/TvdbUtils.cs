@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.Entities;
 
@@ -7,7 +9,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     {
         public const string TvdbApiKey = "OG4V3YJ3FAP7FP2K";
         public const string TvdbBaseUrl = "https://www.thetvdb.com/";
-        public const string BannerUrl = TvdbBaseUrl + "banners/";
+        public const string TvdbImageBaseUrl = "https://www.thetvdb.com";
+        public const string BannerUrl = TvdbImageBaseUrl + "/banners/";
 
         public static ImageType GetImageTypeFromKeyType(string keyType)
         {

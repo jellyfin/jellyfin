@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Dlna
             int? height,
             int? videoBitDepth,
             int? videoBitrate,
-            string videoProfile,
+            string? videoProfile,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.Dlna
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
-            string videoCodecTag,
+            string? videoCodecTag,
             bool? isAvc)
         {
             switch (condition.Property)
@@ -103,7 +103,7 @@ namespace MediaBrowser.Model.Dlna
             int? audioBitrate,
             int? audioSampleRate,
             int? audioBitDepth,
-            string audioProfile,
+            string? audioProfile,
             bool? isSecondaryTrack)
         {
             switch (condition.Property)
@@ -154,7 +154,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static bool IsConditionSatisfied(ProfileCondition condition, string currentValue)
+        private static bool IsConditionSatisfied(ProfileCondition condition, string? currentValue)
         {
             if (string.IsNullOrEmpty(currentValue))
             {
@@ -193,34 +193,6 @@ namespace MediaBrowser.Model.Dlna
                         return currentValue.Value == expected;
                     case ProfileConditionType.NotEquals:
                         return currentValue.Value != expected;
-                    default:
-                        throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
-                }
-            }
-
-            return false;
-        }
-
-        private static bool IsConditionSatisfied(ProfileCondition condition, float currentValue)
-        {
-            if (currentValue <= 0)
-            {
-                // If the value is unknown, it satisfies if not marked as required
-                return !condition.IsRequired;
-            }
-
-            if (float.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
-            {
-                switch (condition.Condition)
-                {
-                    case ProfileConditionType.Equals:
-                        return currentValue.Equals(expected);
-                    case ProfileConditionType.GreaterThanEqual:
-                        return currentValue >= expected;
-                    case ProfileConditionType.LessThanEqual:
-                        return currentValue <= expected;
-                    case ProfileConditionType.NotEquals:
-                        return !currentValue.Equals(expected);
                     default:
                         throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
                 }

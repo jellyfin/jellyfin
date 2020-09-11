@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +20,9 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         public Dictionary<string, string> ProviderIds { get; set; }
+
         public Dictionary<string, string> SeriesProviderIds { get; set; }
+
         public string[] Tags { get; set; }
 
         /// <summary>
@@ -146,10 +150,15 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsRepeat { get; set; }
 
         public string HomePageUrl { get; set; }
+
         public float? CommunityRating { get; set; }
+
         public string OfficialRating { get; set; }
+
         public string[] Genres { get; set; }
+
         public string RecordingPath { get; set; }
+
         public KeepUntil KeepUntil { get; set; }
     }
 }

@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Localization
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly ILogger _logger;
+        private readonly ILogger<LocalizationManager> _logger;
 
         private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
             new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
@@ -247,7 +247,7 @@ namespace Emby.Server.Implementations.Localization
             }
 
             // Try splitting by : to handle "Germany: FSK 18"
-            var index = rating.IndexOf(':');
+            var index = rating.IndexOf(':', StringComparison.Ordinal);
             if (index != -1)
             {
                 rating = rating.Substring(index).TrimStart(':').Trim();
@@ -312,12 +312,12 @@ namespace Emby.Server.Implementations.Localization
                 throw new ArgumentNullException(nameof(culture));
             }
 
-            const string prefix = "Core";
-            var key = prefix + culture;
+            const string Prefix = "Core";
+            var key = Prefix + culture;
 
             return _dictionaries.GetOrAdd(
                 key,
-                f => GetDictionary(prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
+                f => GetDictionary(Prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
         }
 
         private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)

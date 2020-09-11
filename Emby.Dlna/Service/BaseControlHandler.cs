@@ -15,16 +15,17 @@ namespace Emby.Dlna.Service
 {
     public abstract class BaseControlHandler
     {
-        private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
-
-        protected IServerConfigurationManager Config { get; }
-        protected ILogger Logger { get; }
+        private const string NsSoapEnv = "http://schemas.xmlsoap.org/soap/envelope/";
 
         protected BaseControlHandler(IServerConfigurationManager config, ILogger logger)
         {
             Config = config;
             Logger = logger;
         }
+
+        protected IServerConfigurationManager Config { get; }
+
+        protected ILogger Logger { get; }
 
         public async Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
@@ -79,10 +80,10 @@ namespace Emby.Dlna.Service
             {
                 writer.WriteStartDocument(true);
 
-                writer.WriteStartElement("SOAP-ENV", "Envelope", NS_SOAPENV);
-                writer.WriteAttributeString(string.Empty, "encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
+                writer.WriteStartElement("SOAP-ENV", "Envelope", NsSoapEnv);
+                writer.WriteAttributeString(string.Empty, "encodingStyle", NsSoapEnv, "http://schemas.xmlsoap.org/soap/encoding/");
 
-                writer.WriteStartElement("SOAP-ENV", "Body", NS_SOAPENV);
+                writer.WriteStartElement("SOAP-ENV", "Body", NsSoapEnv);
                 writer.WriteStartElement("u", requestInfo.LocalName + "Response", requestInfo.NamespaceURI);
 
                 WriteResult(requestInfo.LocalName, requestInfo.Headers, writer);
@@ -135,6 +136,7 @@ namespace Emby.Dlna.Service
 
                                 break;
                             }
+
                         default:
                             {
                                 await reader.SkipAsync().ConfigureAwait(false);
@@ -208,13 +210,6 @@ namespace Emby.Dlna.Service
             }
         }
 
-        private class ControlRequestInfo
-        {
-            public string LocalName { get; set; }
-            public string NamespaceURI { get; set; }
-            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
         protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
 
         private void LogRequest(ControlRequest request)
@@ -235,6 +230,15 @@ namespace Emby.Dlna.Service
             }
 
             Logger.LogDebug("Control response. Headers: {@Headers}\n{Xml}", response.Headers, response.Xml);
+        }
+
+        private class ControlRequestInfo
+        {
+            public string LocalName { get; set; }
+
+            public string NamespaceURI { get; set; }
+
+            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -46,7 +48,7 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
-            var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
+            var tvdbId = series.GetProviderId(MetadataProvider.Tvdb);
             if (string.IsNullOrEmpty(tvdbId))
             {
                 return false;
@@ -108,7 +110,7 @@ namespace MediaBrowser.Providers.TV
 
         /// <summary>
         /// Returns true if a series has any seasons or episodes without season or episode numbers
-        /// If this data is missing no virtual items will be added in order to prevent possible duplicates
+        /// If this data is missing no virtual items will be added in order to prevent possible duplicates.
         /// </summary>
         private bool HasInvalidContent(IList<BaseItem> allItems)
         {
@@ -157,7 +159,7 @@ namespace MediaBrowser.Providers.TV
 
                 var now = DateTime.UtcNow.AddDays(-UnairedEpisodeThresholdDays);
 
-                if (airDate < now && addMissingEpisodes || airDate > now)
+                if ((airDate < now && addMissingEpisodes) || airDate > now)
                 {
                     // tvdb has a lot of nearly blank episodes
                     _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.seasonNumber, tuple.episodenumber);
@@ -171,7 +173,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Removes the virtual entry after a corresponding physical version has been added
+        /// Removes the virtual entry after a corresponding physical version has been added.
         /// </summary>
         private bool RemoveObsoleteOrMissingEpisodes(
             IEnumerable<BaseItem> allRecursiveChildren,
@@ -230,10 +232,13 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var episodeToRemove in episodesToRemove)
             {
-                _libraryManager.DeleteItem(episodeToRemove, new DeleteOptions
-                {
-                    DeleteFileLocation = true
-                }, false);
+                _libraryManager.DeleteItem(
+                    episodeToRemove,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = true
+                    },
+                    false);
 
                 hasChanges = true;
             }
@@ -244,7 +249,7 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the obsolete or missing seasons.
         /// </summary>
-        /// <param name="allRecursiveChildren"></param>
+        /// <param name="allRecursiveChildren">All recursive children.</param>
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <returns><see cref="bool" />.</returns>
         private bool RemoveObsoleteOrMissingSeasons(
@@ -295,10 +300,13 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var seasonToRemove in seasonsToRemove)
             {
-                _libraryManager.DeleteItem(seasonToRemove, new DeleteOptions
-                {
-                    DeleteFileLocation = true
-                }, false);
+                _libraryManager.DeleteItem(
+                    seasonToRemove,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = true
+                    },
+                    false);
 
                 hasChanges = true;
             }
@@ -352,7 +360,10 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonCounts"></param>
         /// <param name="episodeTuple"></param>
         /// <returns>Episode.</returns>
-        private Episode GetExistingEpisode(IEnumerable<Episode> existingEpisodes, IReadOnlyDictionary<int, int> seasonCounts, (int seasonNumber, int episodeNumber, DateTime firstAired) episodeTuple)
+        private Episode GetExistingEpisode(
+            IEnumerable<Episode> existingEpisodes,
+            IReadOnlyDictionary<int, int> seasonCounts,
+            (int seasonNumber, int episodeNumber, DateTime firstAired) episodeTuple)
         {
             var seasonNumber = episodeTuple.seasonNumber;
             var episodeNumber = episodeTuple.episodeNumber;

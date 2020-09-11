@@ -14,7 +14,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
     /// </summary>
     public class SeriesNfoProvider : BaseNfoProvider<Series>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SeriesNfoProvider> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 

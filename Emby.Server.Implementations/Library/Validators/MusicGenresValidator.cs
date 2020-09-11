@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<MusicGenresValidator> _logger;
         private readonly IItemRepository _itemRepo;
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repository.</param>
-        public MusicGenresValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        public MusicGenresValidator(ILibraryManager libraryManager, ILogger<MusicGenresValidator> logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;

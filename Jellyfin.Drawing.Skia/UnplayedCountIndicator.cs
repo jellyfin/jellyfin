@@ -28,41 +28,37 @@ namespace Jellyfin.Drawing.Skia
             var x = imageSize.Width - OffsetFromTopRightCorner;
             var text = count.ToString(CultureInfo.InvariantCulture);
 
-            using (var paint = new SKPaint())
+            using var paint = new SKPaint
             {
-                paint.Color = SKColor.Parse("#CC00A4DC");
-                paint.Style = SKPaintStyle.Fill;
-                canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
+                Color = SKColor.Parse("#CC00A4DC"),
+                Style = SKPaintStyle.Fill
+            };
+
+            canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
+
+            paint.Color = new SKColor(255, 255, 255, 255);
+            paint.TextSize = 24;
+            paint.IsAntialias = true;
+
+            var y = OffsetFromTopRightCorner + 9;
+
+            if (text.Length == 1)
+            {
+                x -= 7;
             }
 
-            using (var paint = new SKPaint())
+            if (text.Length == 2)
             {
-                paint.Color = new SKColor(255, 255, 255, 255);
-                paint.Style = SKPaintStyle.Fill;
-
-                paint.TextSize = 24;
-                paint.IsAntialias = true;
-
-                var y = OffsetFromTopRightCorner + 9;
-
-                if (text.Length == 1)
-                {
-                    x -= 7;
-                }
-
-                if (text.Length == 2)
-                {
-                    x -= 13;
-                }
-                else if (text.Length >= 3)
-                {
-                    x -= 15;
-                    y -= 2;
-                    paint.TextSize = 18;
-                }
-
-                canvas.DrawText(text, x, y, paint);
+                x -= 13;
             }
+            else if (text.Length >= 3)
+            {
+                x -= 15;
+                y -= 2;
+                paint.TextSize = 18;
+            }
+
+            canvas.DrawText(text, x, y, paint);
         }
     }
 }

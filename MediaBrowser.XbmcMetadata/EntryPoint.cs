@@ -17,7 +17,7 @@ namespace MediaBrowser.XbmcMetadata
     public sealed class EntryPoint : IServerEntryPoint
     {
         private readonly IUserDataManager _userDataManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<EntryPoint> _logger;
         private readonly IProviderManager _providerManager;
         private readonly IConfigurationManager _config;
 

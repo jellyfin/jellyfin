@@ -133,7 +133,6 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The bits_per_raw_sample.</value>
         [JsonPropertyName("bits_per_raw_sample")]
-        [JsonConverter(typeof(JsonInt32Converter))]
         public int BitsPerRawSample { get; set; }
 
         /// <summary>
@@ -269,6 +268,10 @@ namespace MediaBrowser.MediaEncoding.Probing
         [JsonPropertyName("loro_surmixlev")]
         public string LoroSurmixlev { get; set; }
 
+        /// <summary>
+        /// Gets or sets the field_order.
+        /// </summary>
+        /// <value>The field_order.</value>
         [JsonPropertyName("field_order")]
         public string FieldOrder { get; set; }
 
@@ -278,5 +281,33 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The disposition.</value>
         [JsonPropertyName("disposition")]
         public IReadOnlyDictionary<string, int> Disposition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color range.
+        /// </summary>
+        /// <value>The color range.</value>
+        [JsonPropertyName("color_range")]
+        public string ColorRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
+        [JsonPropertyName("color_space")]
+        public string ColorSpace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color transfer.
+        /// </summary>
+        /// <value>The color transfer.</value>
+        [JsonPropertyName("color_transfer")]
+        public string ColorTransfer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color primaries.
+        /// </summary>
+        /// <value>The color primaries.</value>
+        [JsonPropertyName("color_primaries")]
+        public string ColorPrimaries { get; set; }
     }
 }

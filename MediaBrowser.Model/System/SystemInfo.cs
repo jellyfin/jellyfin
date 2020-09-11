@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -22,7 +23,7 @@ namespace MediaBrowser.Model.System
     };
 
     /// <summary>
-    /// Class SystemInfo
+    /// Class SystemInfo.
     /// </summary>
     public class SystemInfo : PublicSystemInfo
     {
@@ -31,7 +32,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The display name of the operating system.</value>
         public string OperatingSystemDisplayName { get; set; }
-
 
         /// <summary>
         /// Get or sets the package name.
@@ -114,24 +114,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The transcode path.</value>
         public string TranscodingTempPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTTP server port number.
-        /// </summary>
-        /// <value>The HTTP server port number.</value>
-        public int HttpServerPortNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTPS].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTPS]; otherwise, <c>false</c>.</value>
-        public bool SupportsHttps { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTTPS server port number.
-        /// </summary>
-        /// <value>The HTTPS server port number.</value>
-        public int HttpsPortNumber { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.

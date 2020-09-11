@@ -1,4 +1,7 @@
+#nullable disable
 #pragma warning disable CS1591
+
+using System;
 
 namespace MediaBrowser.Model.Net
 {
@@ -13,7 +16,9 @@ namespace MediaBrowser.Model.Net
         /// </summary>
         /// <value>The type of the message.</value>
         public string MessageType { get; set; }
-        public string MessageId { get; set; }
+
+        public Guid MessageId { get; set; }
+
         public string ServerId { get; set; }
 
         /// <summary>
@@ -22,5 +27,4 @@ namespace MediaBrowser.Model.Net
         /// <value>The data.</value>
         public T Data { get; set; }
     }
-
 }

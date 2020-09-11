@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Drawing;
@@ -42,6 +44,15 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="path">The filepath of the image.</param>
         /// <returns>The image dimensions.</returns>
         ImageDimensions GetImageSize(string path);
+
+        /// <summary>
+        /// Gets the blurhash of an image.
+        /// </summary>
+        /// <param name="xComp">Amount of X components of DCT to take.</param>
+        /// <param name="yComp">Amount of Y components of DCT to take.</param>
+        /// <param name="path">The filepath of the image.</param>
+        /// <returns>The blurhash.</returns>
+        string GetImageBlurHash(int xComp, int yComp, string path);
 
         /// <summary>
         /// Encode an image.

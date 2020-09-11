@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.Linq;
@@ -7,7 +9,7 @@ using System.Text.RegularExpressions;
 namespace MediaBrowser.Controller.Extensions
 {
     /// <summary>
-    /// Class BaseExtensions
+    /// Class BaseExtensions.
     /// </summary>
     public static class StringExtensions
     {

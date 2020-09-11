@@ -28,29 +28,31 @@
                 pluginId: "a629c0da-fac5-4c7e-931a-7174223f14c8"
             };
 
-            $('.configPage').on('pageshow', function () {
-                Dashboard.showLoadingMsg();
-                ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                    $('#enable').checked(config.Enable);
-                    $('#replaceAlbumName').checked(config.ReplaceAlbumName);
-
-                    Dashboard.hideLoadingMsg();
-                });
-            });
-
-            $('.configForm').on('submit', function (e) {
-                Dashboard.showLoadingMsg();
-
-                var form = this;
-                ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                    config.Enable = $('#enable', form).checked();
-                    config.ReplaceAlbumName = $('#replaceAlbumName', form).checked();
-
-                    ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+            document.querySelector('.configPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
+                        document.querySelector('#enable').checked = config.Enable;
+                        document.querySelector('#replaceAlbumName').checked = config.ReplaceAlbumName;
+    
+                        Dashboard.hideLoadingMsg();
+                    });
                 });
 
-                return false;
-            });
+            document.querySelector('.configForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+    
+                    ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
+                        config.Enable = document.querySelector('#enable').checked;
+                        config.ReplaceAlbumName = document.querySelector('#replaceAlbumName').checked;
+    
+                        ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+                    
+                    e.preventDefault();
+                    return false;
+                });
         </script>
     </div>
 </body>

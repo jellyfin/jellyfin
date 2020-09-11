@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
@@ -14,6 +16,12 @@ namespace Emby.Server.Implementations.Sorting
         {
             _localization = localization;
         }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.OfficialRating;
 
         /// <summary>
         /// Compares the specified x.
@@ -38,11 +46,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return levelX.CompareTo(levelY);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.OfficialRating;
     }
 }

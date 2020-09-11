@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.LiveTv;
@@ -169,13 +171,13 @@ namespace MediaBrowser.Controller.LiveTv
         public float? CommunityRating { get; set; }
 
         /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system
+        /// Supply the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
 
         /// <summary>
-        /// Supply the image url if it can be downloaded
+        /// Supply the image url if it can be downloaded.
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }

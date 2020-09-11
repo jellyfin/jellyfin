@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 
 namespace MediaBrowser.Model.Updates
@@ -11,7 +12,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the guid.
         /// </summary>
         /// <value>The guid.</value>
-        public string Guid { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -23,6 +24,24 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
-        public string Version { get; set; }
+        public Version Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets the changelog for this version.
+        /// </summary>
+        /// <value>The changelog.</value>
+        public string Changelog { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source URL.
+        /// </summary>
+        /// <value>The source URL.</value>
+        public string SourceUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a checksum for the binary.
+        /// </summary>
+        /// <value>The checksum.</value>
+        public string Checksum { get; set; }
     }
 }

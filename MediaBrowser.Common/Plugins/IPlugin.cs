@@ -2,6 +2,7 @@
 
 using System;
 using MediaBrowser.Model.Plugins;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -41,6 +42,11 @@ namespace MediaBrowser.Common.Plugins
         string AssemblyFilePath { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the plugin can be uninstalled.
+        /// </summary>
+        bool CanUninstall { get; }
+
+        /// <summary>
         /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
         /// </summary>
         /// <value>The data folder path.</value>
@@ -56,6 +62,18 @@ namespace MediaBrowser.Common.Plugins
         /// Called when just before the plugin is uninstalled from the server.
         /// </summary>
         void OnUninstalling();
+
+        /// <summary>
+        /// Registers the plugin's services to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        void RegisterServices(IServiceCollection serviceCollection);
+
+        /// <summary>
+        /// Unregisters the plugin's services from the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        void UnregisterServices(IServiceCollection serviceCollection);
     }
 
     public interface IHasPluginConfiguration

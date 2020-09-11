@@ -1,7 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -15,8 +17,10 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
+
         [JsonIgnore]
         public string SeriesName { get; set; }
+
         [JsonIgnore]
         public Guid SeriesId { get; set; }
 
@@ -24,10 +28,12 @@ namespace MediaBrowser.Controller.Entities
         {
             return SeriesName;
         }
+
         public string FindSeriesName()
         {
             return SeriesName;
         }
+
         public string FindSeriesPresentationUniqueKey()
         {
             return SeriesPresentationUniqueKey;

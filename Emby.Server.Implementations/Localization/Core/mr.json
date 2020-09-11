@@ -57,5 +57,7 @@
     "HeaderCameraUploads": "कॅमेरा अपलोड",
     "CameraImageUploadedFrom": "एक नवीन कॅमेरा चित्र {0} येथून अपलोड केले आहे",
     "Application": "अ‍ॅप्लिकेशन",
-    "AppDeviceValues": "अ‍ॅप: {0}, यंत्र: {1}"
+    "AppDeviceValues": "अ‍ॅप: {0}, यंत्र: {1}",
+    "Collections": "संग्रह",
+    "ChapterNameValue": "धडा {0}"
 }

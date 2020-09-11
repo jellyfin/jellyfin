@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,12 +11,12 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.Persistence
 {
     /// <summary>
-    /// Provides an interface to implement an Item repository
+    /// Provides an interface to implement an Item repository.
     /// </summary>
     public interface IItemRepository : IRepository
     {
         /// <summary>
-        /// Saves an item
+        /// Saves an item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -43,14 +45,14 @@ namespace MediaBrowser.Controller.Persistence
         BaseItem RetrieveItem(Guid id);
 
         /// <summary>
-        /// Gets chapters for an item
+        /// Gets chapters for an item.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         List<ChapterInfo> GetChapters(BaseItem id);
 
         /// <summary>
-        /// Gets a single chapter for an item
+        /// Gets a single chapter for an item.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="index"></param>
@@ -156,15 +158,23 @@ namespace MediaBrowser.Controller.Persistence
         int GetCount(InternalItemsQuery query);
 
         QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         List<string> GetMusicGenreNames();
+
         List<string> GetStudioNames();
+
         List<string> GetGenreNames();
+
         List<string> GetAllArtistNames();
     }
 }

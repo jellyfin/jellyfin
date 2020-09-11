@@ -4,7 +4,7 @@ using MediaBrowser.Model.Dto;
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
-    /// Class ThemeMediaResult
+    /// Class ThemeMediaResult.
     /// </summary>
     public class ThemeMediaResult : QueryResult<BaseItemDto>
     {

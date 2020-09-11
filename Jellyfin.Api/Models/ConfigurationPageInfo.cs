@@ -1,0 +1,85 @@
+﻿using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.Plugins;
+
+namespace Jellyfin.Api.Models
+{
+    /// <summary>
+    /// The configuration page info.
+    /// </summary>
+    public class ConfigurationPageInfo
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
+        /// </summary>
+        /// <param name="page">Instance of <see cref="IPluginConfigurationPage"/> interface.</param>
+        public ConfigurationPageInfo(IPluginConfigurationPage page)
+        {
+            Name = page.Name;
+
+            ConfigurationPageType = page.ConfigurationPageType;
+
+            if (page.Plugin != null)
+            {
+                DisplayName = page.Plugin.Name;
+                // Don't use "N" because it needs to match Plugin.Id
+                PluginId = page.Plugin.Id.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
+        /// </summary>
+        /// <param name="plugin">Instance of <see cref="IPlugin"/> interface.</param>
+        /// <param name="page">Instance of <see cref="PluginPageInfo"/> interface.</param>
+        public ConfigurationPageInfo(IPlugin plugin, PluginPageInfo page)
+        {
+            Name = page.Name;
+            EnableInMainMenu = page.EnableInMainMenu;
+            MenuSection = page.MenuSection;
+            MenuIcon = page.MenuIcon;
+            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin.Name : page.DisplayName;
+
+            // Don't use "N" because it needs to match Plugin.Id
+            PluginId = plugin.Id.ToString();
+        }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the configurations page is enabled in the main menu.
+        /// </summary>
+        public bool EnableInMainMenu { get; set; }
+
+        /// <summary>
+        /// Gets or sets the menu section.
+        /// </summary>
+        public string? MenuSection { get; set; }
+
+        /// <summary>
+        /// Gets or sets the menu icon.
+        /// </summary>
+        public string? MenuIcon { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display name.
+        /// </summary>
+        public string? DisplayName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the configuration page.
+        /// </summary>
+        /// <value>The type of the configuration page.</value>
+        public ConfigurationPageType ConfigurationPageType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the plugin id.
+        /// </summary>
+        /// <value>The plugin id.</value>
+        public string? PluginId { get; set; }
+    }
+}

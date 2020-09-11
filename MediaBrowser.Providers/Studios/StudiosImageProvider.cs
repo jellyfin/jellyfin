@@ -1,5 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -18,13 +21,13 @@ namespace MediaBrowser.Providers.Studios
     public class StudiosImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
 
-        public StudiosImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _config = config;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
         }
 
@@ -99,33 +102,29 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetUrl(string image, string filename)
         {
-            return string.Format("https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
+            return string.Format(CultureInfo.InvariantCulture, "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
         }
 
         private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
             const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studiothumbs.txt";
 
-            return EnsureList(url, file, _httpClient, _fileSystem, cancellationToken);
+            return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         private Task<string> EnsurePosterList(string file, CancellationToken cancellationToken)
         {
             const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studioposters.txt";
 
-            return EnsureList(url, file, _httpClient, _fileSystem, cancellationToken);
+            return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                BufferContent = false
-            });
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+            return httpClient.GetAsync(url, cancellationToken);
         }
 
         /// <summary>
@@ -133,30 +132,21 @@ namespace MediaBrowser.Providers.Studios
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="file">The file.</param>
-        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task<string> EnsureList(string url, string file, IHttpClient httpClient, IFileSystem fileSystem, CancellationToken cancellationToken)
+        public async Task<string> EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
             var fileInfo = fileSystem.GetFileInfo(file);
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
-                using (var res = await httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        CancellationToken = cancellationToken,
-                        Url = url
-                    },
-                    HttpMethod.Get).ConfigureAwait(false))
-                using (var content = res.Content)
-                using (var fileStream = new FileStream(file, FileMode.Create))
-                {
-                    await content.CopyToAsync(fileStream).ConfigureAwait(false);
-                }
+                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                await using var response = await httpClient.GetStreamAsync(url).ConfigureAwait(false);
+                await using var fileStream = new FileStream(file, FileMode.Create);
+                await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
             return file;
@@ -201,6 +191,5 @@ namespace MediaBrowser.Providers.Studios
                 }
             }
         }
-
     }
 }

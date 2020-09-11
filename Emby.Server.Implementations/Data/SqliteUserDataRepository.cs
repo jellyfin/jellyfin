@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -134,10 +135,12 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException(nameof(userData));
             }
+
             if (internalUserId <= 0)
             {
                 throw new ArgumentNullException(nameof(internalUserId));
             }
+
             if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentNullException(nameof(key));
@@ -152,6 +155,7 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException(nameof(userData));
             }
+
             if (internalUserId <= 0)
             {
                 throw new ArgumentNullException(nameof(internalUserId));
@@ -234,7 +238,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Persist all user data for the specified user
+        /// Persist all user data for the specified user.
         /// </summary>
         private void PersistAllUserData(long internalUserId, UserItemData[] userDataList, CancellationToken cancellationToken)
         {
@@ -308,7 +312,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Return all user-data associated with the given user
+        /// Return all user-data associated with the given user.
         /// </summary>
         /// <param name="internalUserId"></param>
         /// <returns></returns>
@@ -338,7 +342,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Read a row from the specified reader into the provided userData object
+        /// Read a row from the specified reader into the provided userData object.
         /// </summary>
         /// <param name="reader"></param>
         private UserItemData ReadRow(IReadOnlyList<IResultSetValue> reader)
@@ -346,7 +350,7 @@ namespace Emby.Server.Implementations.Data
             var userData = new UserItemData();
 
             userData.Key = reader[0].ToString();
-            //userData.UserId = reader[1].ReadGuidFromBlob();
+            // userData.UserId = reader[1].ReadGuidFromBlob();
 
             if (reader[2].SQLiteType != SQLiteType.Null)
             {

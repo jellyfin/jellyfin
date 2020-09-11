@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,24 +23,24 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly IFileSystem _fileSystem;
-        private readonly IHttpClient _httpClient;
-        private readonly IJsonSerializer _json;
-
-        public static AudioDbArtistProvider Current;
-
         private const string ApiKey = "195003";
         public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
 
-        public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer json)
+        private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IJsonSerializer _json;
+
+        public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json)
         {
             _config = config;
             _fileSystem = fileSystem;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _json = json;
             Current = this;
         }
+
+        public static AudioDbArtistProvider Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "TheAudioDB";
@@ -85,15 +87,15 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
         {
-            //item.HomePageUrl = result.strWebsite;
+            // item.HomePageUrl = result.strWebsite;
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
                 item.Genres = new[] { result.strGenre };
             }
 
-            item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
-            item.SetProviderId(MetadataProviders.MusicBrainzArtist, result.strMusicBrainzID);
+            item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
+            item.SetProviderId(MetadataProvider.MusicBrainzArtist, result.strMusicBrainzID);
 
             string overview = null;
 
@@ -153,23 +155,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
-            using (var httpResponse = await _httpClient.SendAsync(
-                new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    BufferContent = true
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var response = httpResponse.Content)
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-                using (var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
-                {
-                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
-                }
-            }
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -199,45 +191,85 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public class Artist
         {
             public string idArtist { get; set; }
+
             public string strArtist { get; set; }
+
             public string strArtistAlternate { get; set; }
+
             public object idLabel { get; set; }
+
             public string intFormedYear { get; set; }
+
             public string intBornYear { get; set; }
+
             public object intDiedYear { get; set; }
+
             public object strDisbanded { get; set; }
+
             public string strGenre { get; set; }
+
             public string strSubGenre { get; set; }
+
             public string strWebsite { get; set; }
+
             public string strFacebook { get; set; }
+
             public string strTwitter { get; set; }
+
             public string strBiographyEN { get; set; }
+
             public string strBiographyDE { get; set; }
+
             public string strBiographyFR { get; set; }
+
             public string strBiographyCN { get; set; }
+
             public string strBiographyIT { get; set; }
+
             public string strBiographyJP { get; set; }
+
             public string strBiographyRU { get; set; }
+
             public string strBiographyES { get; set; }
+
             public string strBiographyPT { get; set; }
+
             public string strBiographySE { get; set; }
+
             public string strBiographyNL { get; set; }
+
             public string strBiographyHU { get; set; }
+
             public string strBiographyNO { get; set; }
+
             public string strBiographyIL { get; set; }
+
             public string strBiographyPL { get; set; }
+
             public string strGender { get; set; }
+
             public string intMembers { get; set; }
+
             public string strCountry { get; set; }
+
             public string strCountryCode { get; set; }
+
             public string strArtistThumb { get; set; }
+
             public string strArtistLogo { get; set; }
+
             public string strArtistFanart { get; set; }
+
             public string strArtistFanart2 { get; set; }
+
             public string strArtistFanart3 { get; set; }
+
             public string strArtistBanner { get; set; }
+
             public string strMusicBrainzID { get; set; }
+
             public object strLastFMChart { get; set; }
+
             public string strLocked { get; set; }
         }
 
@@ -247,7 +279,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         }
 
         /// <inheritdoc />
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

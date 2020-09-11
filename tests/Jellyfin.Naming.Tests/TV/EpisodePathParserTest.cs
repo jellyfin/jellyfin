@@ -1,4 +1,4 @@
-using Emby.Naming.Common;
+﻿using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Xunit;
 
@@ -35,7 +35,6 @@ namespace Jellyfin.Naming.Tests.TV
         // TODO: [InlineData("Watchmen (2019)/Watchmen 1x03 [WEBDL-720p][EAC3 5.1][h264][-TBS] - She Was Killed by Space Junk.mkv", "Watchmen (2019)", 1, 3)]
         // TODO: [InlineData("/The.Legend.of.Condor.Heroes.2017.V2.web-dl.1080p.h264.aac-hdctv/The.Legend.of.Condor.Heroes.2017.E07.V2.web-dl.1080p.h264.aac-hdctv.mkv", "The Legend of Condor Heroes 2017", 1, 7)]
         public void ParseEpisodesCorrectly(string path, string name, int season, int episode)
-
         {
             NamingOptions o = new NamingOptions();
             EpisodePathParser p = new EpisodePathParser(o);

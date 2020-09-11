@@ -45,6 +45,7 @@ jobs:
       - task: SonarCloudPrepare@1
         displayName: 'Prepare analysis on SonarCloud'
         condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
         inputs:
           SonarCloud: 'Sonarcloud for Jellyfin'
           organization: 'jellyfin'
@@ -63,10 +64,12 @@ jobs:
       - task: SonarCloudAnalyze@1
         displayName: 'Run Code Analysis'
         condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
 
       - task: SonarCloudPublish@1
         displayName: 'Publish Quality Gate Result'
         condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
 
       - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
@@ -87,3 +90,9 @@ jobs:
           pathToSources: $(Build.SourcesDirectory)
           failIfCoverageEmpty: true
 
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish OpenAPI Artifact'
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+        inputs:
+          targetPath: "tests/Jellyfin.Api.Tests/bin/Release/netcoreapp3.1/openapi.json"
+          artifactName: 'OpenAPI Spec'

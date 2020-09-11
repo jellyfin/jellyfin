@@ -19,11 +19,10 @@ namespace Emby.Server.Implementations.LiveTv
     public class LiveTvMediaSourceProvider : IMediaSourceProvider
     {
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
-        private const char StreamIdDelimeter = '_';
-        private const string StreamIdDelimeterString = "_";
+        private const char StreamIdDelimiter = '_';
 
         private readonly ILiveTvManager _liveTvManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<LiveTvMediaSourceProvider> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerApplicationHost _appHost;
 
@@ -47,7 +46,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
-            return Task.FromResult<IEnumerable<MediaSourceInfo>>(Array.Empty<MediaSourceInfo>());
+            return Task.FromResult(Enumerable.Empty<MediaSourceInfo>());
         }
 
         private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(BaseItem item, ActiveRecordingInfo activeRecordingInfo, CancellationToken cancellationToken)
@@ -98,7 +97,7 @@ namespace Emby.Server.Implementations.LiveTv
                         source.Id ?? string.Empty
                     };
 
-                    source.OpenToken = string.Join(StreamIdDelimeterString, openKeys);
+                    source.OpenToken = string.Join(StreamIdDelimiter, openKeys);
                 }
 
                 // Dummy this up so that direct play checks can still run
@@ -116,7 +115,7 @@ namespace Emby.Server.Implementations.LiveTv
         /// <inheritdoc />
         public async Task<ILiveStream> OpenMediaSource(string openToken, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
-            var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
+            var keys = openToken.Split(StreamIdDelimiter, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
 
             var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, currentLiveStreams, cancellationToken).ConfigureAwait(false);

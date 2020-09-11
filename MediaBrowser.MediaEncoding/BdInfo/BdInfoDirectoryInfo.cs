@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Linq;
 using BDInfo.IO;
@@ -5,7 +7,7 @@ using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
-    class BdInfoDirectoryInfo : IDirectoryInfo
+    public class BdInfoDirectoryInfo : IDirectoryInfo
     {
         private readonly IFileSystem _fileSystem = null;
 
@@ -43,25 +45,32 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
         public IDirectoryInfo[] GetDirectories()
         {
-            return Array.ConvertAll(_fileSystem.GetDirectories(_impl.FullName).ToArray(),
+            return Array.ConvertAll(
+                _fileSystem.GetDirectories(_impl.FullName).ToArray(),
                 x => new BdInfoDirectoryInfo(_fileSystem, x));
         }
 
         public IFileInfo[] GetFiles()
         {
-            return Array.ConvertAll(_fileSystem.GetFiles(_impl.FullName).ToArray(),
+            return Array.ConvertAll(
+                _fileSystem.GetFiles(_impl.FullName).ToArray(),
                 x => new BdInfoFileInfo(x));
         }
 
         public IFileInfo[] GetFiles(string searchPattern)
         {
-            return Array.ConvertAll(_fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false).ToArray(),
+            return Array.ConvertAll(
+                _fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false).ToArray(),
                 x => new BdInfoFileInfo(x));
         }
 
         public IFileInfo[] GetFiles(string searchPattern, System.IO.SearchOption searchOption)
         {
-            return Array.ConvertAll(_fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false,
+            return Array.ConvertAll(
+                _fileSystem.GetFiles(
+                    _impl.FullName,
+                    new[] { searchPattern },
+                    false,
                     searchOption.HasFlag(System.IO.SearchOption.AllDirectories)).ToArray(),
                 x => new BdInfoFileInfo(x));
         }

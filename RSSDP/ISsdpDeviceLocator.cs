@@ -13,9 +13,6 @@ namespace Rssdp.Infrastructure
     /// <seealso cref="ISsdpDevicePublisher"/>
     public interface ISsdpDeviceLocator
     {
-
-        #region Events
-
         /// <summary>
         /// Event raised when a device becomes available or is found by a search request.
         /// </summary>
@@ -33,10 +30,6 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="StopListeningForNotifications"/>
         event EventHandler<DeviceUnavailableEventArgs> DeviceUnavailable;
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Sets or returns a string containing the filter for notifications. Notifications not matching the filter will not raise the <see cref="DeviceAvailable"/> or <see cref="DeviceUnavailable"/> events.
@@ -57,12 +50,6 @@ namespace Rssdp.Infrastructure
             get;
             set;
         }
-
-        #endregion
-
-        #region Methods
-
-        #region SearchAsync Overloads
 
         /// <summary>
         /// Aynchronously performs a search for all devices using the default search timeout, and returns an awaitable task that can be used to retrieve the results.
@@ -108,8 +95,6 @@ namespace Rssdp.Infrastructure
         /// <returns>A task whose result is an <see cref="System.Collections.Generic.IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances, representing all found devices.</returns>
         System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<DiscoveredSsdpDevice>> SearchAsync(TimeSpan searchWaitTime);
 
-        #endregion
-
         /// <summary>
         /// Starts listening for broadcast notifications of service availability.
         /// </summary>
@@ -134,8 +119,5 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="DeviceUnavailable"/>
         /// <seealso cref="NotificationFilter"/>
         void StopListeningForNotifications();
-
-        #endregion
-
     }
 }

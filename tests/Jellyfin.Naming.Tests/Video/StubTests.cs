@@ -31,10 +31,10 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 new VideoResolver(_namingOptions).ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.dvd.disc");
 
-            Assert.Equal("Oblivion", result.Name);
+            Assert.Equal("Oblivion", result?.Name);
         }
 
-        private void Test(string path, bool isStub, string stubType)
+        private void Test(string path, bool isStub, string? stubType)
         {
             var isStubResult = StubResolver.TryResolveFile(path, _namingOptions, out var stubTypeResult);
 

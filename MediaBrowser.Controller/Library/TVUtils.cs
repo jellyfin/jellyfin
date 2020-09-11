@@ -3,7 +3,7 @@ using System;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class TVUtils
+    /// Class TVUtils.
     /// </summary>
     public static class TVUtils
     {
@@ -38,8 +38,9 @@ namespace MediaBrowser.Controller.Library
                     };
                 }
 
-                return new DayOfWeek[] { };
+                return Array.Empty<DayOfWeek>();
             }
+
             return null;
         }
     }

@@ -1,5 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -16,13 +20,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<TvdbEpisodeImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger<TvdbEpisodeImageProvider> logger, TvdbClientManager tvdbClientManager)
+        public TvdbEpisodeImageProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbEpisodeImageProvider> logger, TvdbClientManager tvdbClientManager)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _tvdbClientManager = tvdbClientManager;
         }
@@ -68,13 +72,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                             "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                             episodeInfo.ParentIndexNumber,
                             episodeInfo.IndexNumber,
-                            series.GetProviderId(MetadataProviders.Tvdb));
+                            series.GetProviderId(MetadataProvider.Tvdb));
                         return imageResult;
                     }
 
                     var episodeResult =
                         await _tvdbClientManager
-                            .GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), language, cancellationToken)
+                            .GetEpisodesAsync(Convert.ToInt32(episodeTvdbId, CultureInfo.InvariantCulture), language, cancellationToken)
                             .ConfigureAwait(false);
 
                     var image = GetImageInfo(episodeResult.Data);
@@ -85,7 +89,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 }
                 catch (TvDbServerException e)
                 {
-                    _logger.LogError(e, "Failed to retrieve episode images for series {TvDbId}", series.GetProviderId(MetadataProviders.Tvdb));
+                    _logger.LogError(e, "Failed to retrieve episode images for series {TvDbId}", series.GetProviderId(MetadataProvider.Tvdb));
                 }
             }
 
@@ -101,8 +105,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             return new RemoteImageInfo
             {
-                Width = Convert.ToInt32(episode.ThumbWidth),
-                Height = Convert.ToInt32(episode.ThumbHeight),
+                Width = Convert.ToInt32(episode.ThumbWidth, CultureInfo.InvariantCulture),
+                Height = Convert.ToInt32(episode.ThumbHeight, CultureInfo.InvariantCulture),
                 ProviderName = Name,
                 Url = TvdbUtils.BannerUrl + episode.Filename,
                 Type = ImageType.Primary
@@ -111,13 +115,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

@@ -7,6 +7,7 @@
  - [anthonylavado](https://github.com/anthonylavado)
  - [Artiume](https://github.com/Artiume)
  - [AThomsen](https://github.com/AThomsen)
+ - [barronpm](https://github.com/barronpm)
  - [bilde2910](https://github.com/bilde2910)
  - [bfayers](https://github.com/bfayers)
  - [BnMcG](https://github.com/BnMcG)
@@ -15,6 +16,7 @@
  - [bugfixin](https://github.com/bugfixin)
  - [chaosinnovator](https://github.com/chaosinnovator)
  - [ckcr4lyf](https://github.com/ckcr4lyf)
+ - [ConfusedPolarBear](https://github.com/ConfusedPolarBear)
  - [crankdoofus](https://github.com/crankdoofus)
  - [crobibero](https://github.com/crobibero)
  - [cromefire](https://github.com/cromefire)
@@ -55,6 +57,7 @@
  - [Larvitar](https://github.com/Larvitar)
  - [LeoVerto](https://github.com/LeoVerto)
  - [Liggy](https://github.com/Liggy)
+ - [lmaonator](https://github.com/lmaonator)
  - [LogicalPhallacy](https://github.com/LogicalPhallacy)
  - [loli10K](https://github.com/loli10K)
  - [lostmypillow](https://github.com/lostmypillow)
@@ -76,6 +79,7 @@
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
  - [oddstr13](https://github.com/oddstr13)
+ - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
  - [Phlogi](https://github.com/Phlogi)
  - [pjeanjean](https://github.com/pjeanjean)
@@ -130,6 +134,7 @@
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
+ - [Pusta](https://github.com/pusta)
 
 # Emby Contributors
 

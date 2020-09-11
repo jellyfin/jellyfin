@@ -7,11 +7,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.EntryPoints
     public class ExternalPortForwarding : IServerEntryPoint
     {
         private readonly IServerApplicationHost _appHost;
-        private readonly ILogger _logger;
+        private readonly ILogger<ExternalPortForwarding> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
 
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 .Append(config.PublicHttpsPort).Append(Separator)
                 .Append(_appHost.HttpPort).Append(Separator)
                 .Append(_appHost.HttpsPort).Append(Separator)
-                .Append(_appHost.EnableHttps).Append(Separator)
+                .Append(_appHost.ListenWithHttps).Append(Separator)
                 .Append(config.EnableRemoteAccess).Append(Separator)
                 .ToString();
         }
@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
 
-            if (_appHost.EnableHttps)
+            if (_appHost.ListenWithHttps)
             {
                 yield return CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
             }

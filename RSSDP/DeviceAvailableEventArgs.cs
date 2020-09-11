@@ -10,14 +10,9 @@ namespace Rssdp
     {
         public IPAddress LocalIpAddress { get; set; }
 
-        #region Fields
-
         private readonly DiscoveredSsdpDevice _DiscoveredDevice;
+
         private readonly bool _IsNewlyDiscovered;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Full constructor.
@@ -27,15 +22,14 @@ namespace Rssdp
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
         public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
         {
-            if (discoveredDevice == null) throw new ArgumentNullException(nameof(discoveredDevice));
+            if (discoveredDevice == null)
+            {
+                throw new ArgumentNullException(nameof(discoveredDevice));
+            }
 
             _DiscoveredDevice = discoveredDevice;
             _IsNewlyDiscovered = isNewlyDiscovered;
         }
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// Returns true if the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
@@ -52,8 +46,5 @@ namespace Rssdp
         {
             get { return _DiscoveredDevice; }
         }
-
-        #endregion
-
     }
 }

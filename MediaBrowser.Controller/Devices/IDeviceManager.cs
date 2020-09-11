@@ -1,9 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Devices;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 
@@ -11,10 +11,7 @@ namespace MediaBrowser.Controller.Devices
 {
     public interface IDeviceManager
     {
-        /// <summary>
-        /// Occurs when [camera image uploaded].
-        /// </summary>
-        event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
+        event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
 
         /// <summary>
         /// Saves the capabilities.
@@ -46,28 +43,12 @@ namespace MediaBrowser.Controller.Devices
         QueryResult<DeviceInfo> GetDevices(DeviceQuery query);
 
         /// <summary>
-        /// Gets the upload history.
-        /// </summary>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <returns>ContentUploadHistory.</returns>
-        ContentUploadHistory GetCameraUploadHistory(string deviceId);
-
-        /// <summary>
-        /// Accepts the upload.
-        /// </summary>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="stream">The stream.</param>
-        /// <param name="file">The file.</param>
-        /// <returns>Task.</returns>
-        Task AcceptCameraUpload(string deviceId, Stream stream, LocalFileInfo file);
-
-        /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.
         /// </summary>
         bool CanAccessDevice(User user, string deviceId);
 
         void UpdateDeviceOptions(string deviceId, DeviceOptions options);
+
         DeviceOptions GetDeviceOptions(string deviceId);
-        event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
     }
 }

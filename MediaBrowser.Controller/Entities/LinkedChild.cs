@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,14 +11,16 @@ namespace MediaBrowser.Controller.Entities
     public class LinkedChild
     {
         public string Path { get; set; }
+
         public LinkedChildType Type { get; set; }
+
         public string LibraryItemId { get; set; }
 
         [JsonIgnore]
         public string Id { get; set; }
 
         /// <summary>
-        /// Serves as a cache
+        /// Serves as a cache.
         /// </summary>
         public Guid? ItemId { get; set; }
 
@@ -63,6 +67,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return _fileSystem.AreEqual(x.Path, y.Path);
             }
+
             return false;
         }
 

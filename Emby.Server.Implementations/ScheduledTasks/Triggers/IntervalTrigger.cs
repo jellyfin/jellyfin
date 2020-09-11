@@ -7,10 +7,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Represents a task trigger that runs repeatedly on an interval
+    /// Represents a task trigger that runs repeatedly on an interval.
     /// </summary>
     public class IntervalTrigger : ITaskTrigger
     {
+        private DateTime _lastStartDate;
+
+        /// <summary>
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
         /// <summary>
         /// Gets or sets the interval.
         /// </summary>
@@ -28,12 +35,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <value>The timer.</value>
         private Timer Timer { get; set; }
 
-        private DateTime _lastStartDate;
-
         /// <summary>
-        /// Stars waiting for the trigger action
+        /// Stars waiting for the trigger action.
         /// </summary>
         /// <param name="lastResult">The last result.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="taskName">The name of the task.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         public void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
@@ -68,7 +75,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops waiting for the trigger action
+        /// Stops waiting for the trigger action.
         /// </summary>
         public void Stop()
         {
@@ -85,11 +92,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 Timer.Dispose();
             }
         }
-
-        /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
-        public event EventHandler<EventArgs> Triggered;
 
         /// <summary>
         /// Called when [triggered].

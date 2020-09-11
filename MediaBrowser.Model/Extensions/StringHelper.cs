@@ -12,9 +12,9 @@ namespace MediaBrowser.Model.Extensions
         /// <returns>The string with the first character as uppercase.</returns>
         public static string FirstToUpper(string str)
         {
-            if (string.IsNullOrEmpty(str))
+            if (str.Length == 0)
             {
-                return string.Empty;
+                return str;
             }
 
             if (char.IsUpper(str[0]))

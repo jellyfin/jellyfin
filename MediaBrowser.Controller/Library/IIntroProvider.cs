@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class BaseIntroProvider
+    /// Class BaseIntroProvider.
     /// </summary>
     public interface IIntroProvider
     {
@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        Task<IEnumerable<IntroInfo>> GetIntros(BaseItem item, User user);
+        Task<IEnumerable<IntroInfo>> GetIntros(BaseItem item, Jellyfin.Data.Entities.User user);
 
         /// <summary>
         /// Gets all intro files.

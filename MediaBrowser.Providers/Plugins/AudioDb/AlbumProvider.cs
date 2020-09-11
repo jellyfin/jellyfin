@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -24,16 +26,16 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     {
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _json;
 
         public static AudioDbAlbumProvider Current;
 
-        public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer json)
+        public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json)
         {
             _config = config;
             _fileSystem = fileSystem;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _json = json;
 
             Current = this;
@@ -104,11 +106,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 item.Genres = new[] { result.strGenre };
             }
 
-            item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
-            item.SetProviderId(MetadataProviders.AudioDbAlbum, result.idAlbum);
+            item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
+            item.SetProviderId(MetadataProvider.AudioDbAlbum, result.idAlbum);
 
-            item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
-            item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, result.strMusicBrainzID);
+            item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
+            item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, result.strMusicBrainzID);
 
             string overview = null;
 
@@ -172,18 +174,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            using (var httpResponse = await _httpClient.SendAsync(
-                new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var response = httpResponse.Content)
-            using (var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
-            {
-                await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
-            }
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 
         private static string GetAlbumDataPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
@@ -210,42 +204,79 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public class Album
         {
             public string idAlbum { get; set; }
+
             public string idArtist { get; set; }
+
             public string strAlbum { get; set; }
+
             public string strArtist { get; set; }
+
             public string intYearReleased { get; set; }
+
             public string strGenre { get; set; }
+
             public string strSubGenre { get; set; }
+
             public string strReleaseFormat { get; set; }
+
             public string intSales { get; set; }
+
             public string strAlbumThumb { get; set; }
+
             public string strAlbumCDart { get; set; }
+
             public string strDescriptionEN { get; set; }
+
             public string strDescriptionDE { get; set; }
+
             public string strDescriptionFR { get; set; }
+
             public string strDescriptionCN { get; set; }
+
             public string strDescriptionIT { get; set; }
+
             public string strDescriptionJP { get; set; }
+
             public string strDescriptionRU { get; set; }
+
             public string strDescriptionES { get; set; }
+
             public string strDescriptionPT { get; set; }
+
             public string strDescriptionSE { get; set; }
+
             public string strDescriptionNL { get; set; }
+
             public string strDescriptionHU { get; set; }
+
             public string strDescriptionNO { get; set; }
+
             public string strDescriptionIL { get; set; }
+
             public string strDescriptionPL { get; set; }
+
             public object intLoved { get; set; }
+
             public object intScore { get; set; }
+
             public string strReview { get; set; }
+
             public object strMood { get; set; }
+
             public object strTheme { get; set; }
+
             public object strSpeed { get; set; }
+
             public object strLocation { get; set; }
+
             public string strMusicBrainzID { get; set; }
+
             public string strMusicBrainzArtistID { get; set; }
+
             public object strItunesID { get; set; }
+
             public object strAmazonID { get; set; }
+
             public string strLocked { get; set; }
         }
 
@@ -255,7 +286,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         }
 
         /// <inheritdoc />
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

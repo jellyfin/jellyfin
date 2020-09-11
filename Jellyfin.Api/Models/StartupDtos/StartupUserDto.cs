@@ -8,11 +8,11 @@ namespace Jellyfin.Api.Models.StartupDtos
         /// <summary>
         /// Gets or sets the username.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the user's password.
         /// </summary>
-        public string Password { get; set; }
+        public string? Password { get; set; }
     }
 }

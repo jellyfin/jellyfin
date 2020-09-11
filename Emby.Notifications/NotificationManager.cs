@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -21,7 +23,7 @@ namespace Emby.Notifications
     /// </summary>
     public class NotificationManager : INotificationManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NotificationManager> _logger;
         private readonly IUserManager _userManager;
         private readonly IServerConfigurationManager _config;
 
@@ -101,7 +103,7 @@ namespace Emby.Notifications
                 switch (request.SendToUserMode.Value)
                 {
                     case SendToUserType.Admins:
-                        return _userManager.Users.Where(i => i.Policy.IsAdministrator)
+                        return _userManager.Users.Where(i => i.HasPermission(PermissionKind.IsAdministrator))
                                 .Select(i => i.Id);
                     case SendToUserType.All:
                         return _userManager.UsersIds;
@@ -117,7 +119,7 @@ namespace Emby.Notifications
                 var config = GetConfiguration();
 
                 return _userManager.Users
-                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N", CultureInfo.InvariantCulture), i.Policy))
+                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N", CultureInfo.InvariantCulture), i))
                     .Select(i => i.Id);
             }
 
@@ -142,7 +144,7 @@ namespace Emby.Notifications
                 User = user
             };
 
-            _logger.LogDebug("Sending notification via {0} to user {1}", service.Name, user.Name);
+            _logger.LogDebug("Sending notification via {0} to user {1}", service.Name, user.Username);
 
             try
             {

@@ -1,14 +1,16 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
@@ -35,21 +37,19 @@ namespace MediaBrowser.Providers.Music
             {
                 var url = "/ws/2/artist/?query=arid:{0}" + musicBrainzId.ToString(CultureInfo.InvariantCulture);
 
-                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-                using (var stream = response.Content)
-                {
-                    return GetResultsFromResponse(stream);
-                }
+                using var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                return GetResultsFromResponse(stream);
             }
             else
             {
                 // They seem to throw bad request failures on any term with a slash
                 var nameToSearch = searchInfo.Name.Replace('/', ' ');
 
-                var url = string.Format("/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
+                var url = string.Format(CultureInfo.InvariantCulture, "/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
 
                 using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-                using (var stream = response.Content)
+                await using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                 {
                     var results = GetResultsFromResponse(stream).ToList();
 
@@ -62,15 +62,11 @@ namespace MediaBrowser.Providers.Music
                 if (HasDiacritics(searchInfo.Name))
                 {
                     // Try again using the search with accent characters url
-                    url = string.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
+                    url = string.Format(CultureInfo.InvariantCulture, "/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                    using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-                    {
-                        using (var stream = response.Content)
-                        {
-                            return GetResultsFromResponse(stream);
-                        }
-                    }
+                    using var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    return GetResultsFromResponse(stream);
                 }
             }
 
@@ -108,11 +104,13 @@ namespace MediaBrowser.Providers.Music
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subReader = reader.ReadSubtree())
                                         {
                                             return ParseArtistList(subReader).ToList();
                                         }
                                     }
+
                                 default:
                                     {
                                         reader.Skip();
@@ -150,6 +148,7 @@ namespace MediaBrowser.Providers.Music
                                     reader.Read();
                                     continue;
                                 }
+
                                 var mbzId = reader.GetAttribute("id");
 
                                 using (var subReader = reader.ReadSubtree())
@@ -160,8 +159,10 @@ namespace MediaBrowser.Providers.Music
                                         yield return artist;
                                     }
                                 }
+
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -202,6 +203,7 @@ namespace MediaBrowser.Providers.Music
                                 result.Overview = reader.ReadElementContentAsString();
                                 break;
                             }
+
                         default:
                             {
                                 // there is sort-name if ever needed
@@ -216,7 +218,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            result.SetProviderId(MetadataProviders.MusicBrainzArtist, artistId);
+            result.SetProviderId(MetadataProvider.MusicBrainzArtist, artistId);
 
             if (string.IsNullOrWhiteSpace(artistId) || string.IsNullOrWhiteSpace(result.Name))
             {
@@ -249,7 +251,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (singleResult != null)
                 {
-                    musicBrainzId = singleResult.GetProviderId(MetadataProviders.MusicBrainzArtist);
+                    musicBrainzId = singleResult.GetProviderId(MetadataProvider.MusicBrainzArtist);
                     result.Item.Overview = singleResult.Overview;
 
                     if (Plugin.Instance.Configuration.ReplaceArtistName)
@@ -262,7 +264,7 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
                 result.HasMetadata = true;
-                result.Item.SetProviderId(MetadataProviders.MusicBrainzArtist, musicBrainzId);
+                result.Item.SetProviderId(MetadataProvider.MusicBrainzArtist, musicBrainzId);
             }
 
             return result;
@@ -290,7 +292,7 @@ namespace MediaBrowser.Providers.Music
 
         public string Name => "MusicBrainz";
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

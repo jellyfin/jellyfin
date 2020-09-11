@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Data
         /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        protected BaseSqliteRepository(ILogger logger)
+        protected BaseSqliteRepository(ILogger<BaseSqliteRepository> logger)
         {
             Logger = logger;
         }
@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; }
+        protected ILogger<BaseSqliteRepository> Logger { get; }
 
         /// <summary>
         /// Gets the default connection flags.
@@ -143,8 +143,17 @@ namespace Emby.Server.Implementations.Data
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
             => connection.PrepareStatement(sql);
 
-        public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
-            => sql.Select(connection.PrepareStatement);
+        public IStatement[] PrepareAll(IDatabaseConnection connection, IReadOnlyList<string> sql)
+        {
+            int len = sql.Count;
+            IStatement[] statements = new IStatement[len];
+            for (int i = 0; i < len; i++)
+            {
+                statements[i] = connection.PrepareStatement(sql[i]);
+            }
+
+            return statements;
+        }
 
         protected bool TableExists(ManagedConnection connection, string name)
         {
@@ -162,7 +171,6 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 return false;
-
             }, ReadTransactionMode);
         }
 
@@ -248,12 +256,12 @@ namespace Emby.Server.Implementations.Data
     public enum SynchronousMode
     {
         /// <summary>
-        /// SQLite continues without syncing as soon as it has handed data off to the operating system
+        /// SQLite continues without syncing as soon as it has handed data off to the operating system.
         /// </summary>
         Off = 0,
 
         /// <summary>
-        /// SQLite database engine will still sync at the most critical moments
+        /// SQLite database engine will still sync at the most critical moments.
         /// </summary>
         Normal = 1,
 
