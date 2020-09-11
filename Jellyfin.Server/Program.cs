@@ -527,6 +527,13 @@ namespace Jellyfin.Server
                 }
             }
 
+            // Normalize paths. Only possible with GetFullPath for now - https://github.com/dotnet/runtime/issues/2162
+            dataDir = Path.GetFullPath(dataDir);
+            logDir = Path.GetFullPath(logDir);
+            configDir = Path.GetFullPath(configDir);
+            cacheDir = Path.GetFullPath(cacheDir);
+            webDir = Path.GetFullPath(webDir);
+
             // Ensure the main folders exist before we continue
             try
             {
