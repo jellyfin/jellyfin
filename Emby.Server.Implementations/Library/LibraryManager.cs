@@ -960,8 +960,9 @@ namespace Emby.Server.Implementations.Library
 
             var path = getPathFn(name);
             var id = GetItemByNameId<T>(path);
+            var item = GetItemById(id) as T;
 
-            if (GetItemById(id) is T item)
+            if (item == null)
             {
                 item = new T
                 {
@@ -977,7 +978,7 @@ namespace Emby.Server.Implementations.Library
                 return item;
             }
 
-            return null;
+            return item;
         }
 
         private Guid GetItemByNameId<T>(string path)
