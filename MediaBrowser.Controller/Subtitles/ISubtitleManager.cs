@@ -56,6 +56,9 @@ namespace MediaBrowser.Controller.Subtitles
         /// <summary>
         /// Upload new subtitle.
         /// </summary>
+        /// <param name="video">The video the subtitle belongs to.</param>
+        /// <param name="response">The subtitle response.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task UploadSubtitle(Video video, SubtitleResponse response);
 
         /// <summary>
