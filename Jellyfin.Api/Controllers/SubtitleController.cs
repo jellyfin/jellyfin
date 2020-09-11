@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -315,6 +316,33 @@ namespace Jellyfin.Api.Controllers
 
             builder.AppendLine("#EXT-X-ENDLIST");
             return File(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
+        }
+
+        /// <summary>
+        /// Upload an external subtitle file.
+        /// </summary>
+        /// <param name="itemId">The item the subtitle belongs to.</param>
+        /// <param name="body">The request body.</param>
+        /// <response code="204">Subtitle uploaded.</response>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
+        [HttpPost("Videos/{itemId}/Subtitles")]
+        public async Task<ActionResult> UploadSubtitle(
+            [FromRoute, Required] Guid itemId,
+            [FromBody, Required] UploadSubtitleDto body)
+        {
+            var video = (Video)_libraryManager.GetItemById(itemId);
+            var data = Convert.FromBase64String(body.Data);
+            await using var memoryStream = new MemoryStream(data);
+            await _subtitleManager.UploadSubtitle(
+                video,
+                new SubtitleResponse
+                {
+                    Format = body.Format,
+                    Language = body.Language,
+                    IsForced = body.IsForced,
+                    Stream = memoryStream
+                }).ConfigureAwait(false);
+            return NoContent();
         }
 
         /// <summary>
