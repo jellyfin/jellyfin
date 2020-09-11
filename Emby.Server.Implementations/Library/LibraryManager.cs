@@ -961,7 +961,6 @@ namespace Emby.Server.Implementations.Library
             var path = getPathFn(name);
             var id = GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
-
             if (item == null)
             {
                 item = new T
@@ -974,8 +973,6 @@ namespace Emby.Server.Implementations.Library
                 };
 
                 CreateItem(item, null);
-
-                return item;
             }
 
             return item;
