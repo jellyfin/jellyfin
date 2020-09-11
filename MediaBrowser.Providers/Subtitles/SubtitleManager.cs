@@ -177,8 +177,7 @@ namespace MediaBrowser.Providers.Subtitles
         public async Task UploadSubtitle(Video video, SubtitleResponse response)
         {
             var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(video);
-
-            await TrySaveSubtitle(video, libraryOptions, response);
+            await TrySaveSubtitle(video, libraryOptions, response).ConfigureAwait(false);
         }
 
         private async Task TrySaveSubtitle(
