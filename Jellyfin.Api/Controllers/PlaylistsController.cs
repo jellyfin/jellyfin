@@ -103,8 +103,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{playlistId}/Items/{itemId}/Move/{newIndex}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> MoveItem(
-            [FromRoute, Required] string? playlistId,
-            [FromRoute, Required] string? itemId,
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] string itemId,
             [FromRoute, Required] int newIndex)
         {
             await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex).ConfigureAwait(false);
@@ -120,7 +120,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpDelete("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemoveFromPlaylist([FromRoute, Required] string? playlistId, [FromQuery] string? entryIds)
+        public async Task<ActionResult> RemoveFromPlaylist([FromRoute, Required] string playlistId, [FromQuery] string? entryIds)
         {
             await _playlistManager.RemoveFromPlaylistAsync(playlistId, RequestHelpers.Split(entryIds, ',', true)).ConfigureAwait(false);
             return NoContent();
@@ -144,14 +144,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{playlistId}/Items")]
         public ActionResult<QueryResult<BaseItemDto>> GetPlaylistItems(
             [FromRoute, Required] Guid playlistId,
-            [FromRoute, Required] Guid userId,
-            [FromRoute, Required] int? startIndex,
-            [FromRoute, Required] int? limit,
-            [FromRoute, Required] string? fields,
-            [FromRoute, Required] bool? enableImages,
-            [FromRoute, Required] bool? enableUserData,
-            [FromRoute, Required] int? imageTypeLimit,
-            [FromRoute, Required] string? enableImageTypes)
+            [FromQuery, Required] Guid userId,
+            [FromQuery] int? startIndex,
+            [FromQuery] int? limit,
+            [FromQuery] string? fields,
+            [FromQuery] bool? enableImages,
+            [FromQuery] bool? enableUserData,
+            [FromQuery] int? imageTypeLimit,
+            [FromQuery] string? enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
             if (playlist == null)

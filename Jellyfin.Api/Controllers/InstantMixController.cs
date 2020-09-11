@@ -175,7 +175,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("MusicGenres/{name}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenre(
-            [FromRoute, Required] string? name,
+            [FromRoute, Required] string name,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,

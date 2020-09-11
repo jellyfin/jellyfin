@@ -97,7 +97,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesAudioFile]
         public async Task<ActionResult> GetUniversalAudioStream(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? container,
+            [FromRoute] string? container,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] Guid? userId,

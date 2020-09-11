@@ -85,15 +85,15 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("{itemId}/stream.{container}", Name = "GetAudioStreamByContainer")]
+        [HttpGet("{itemId}/stream.{container:required}", Name = "GetAudioStreamByContainer")]
         [HttpGet("{itemId}/stream", Name = "GetAudioStream")]
-        [HttpHead("{itemId}/stream.{container}", Name = "HeadAudioStreamByContainer")]
+        [HttpHead("{itemId}/stream.{container:required}", Name = "HeadAudioStreamByContainer")]
         [HttpHead("{itemId}/stream", Name = "HeadAudioStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesAudioFile]
         public async Task<ActionResult> GetAudioStream(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? container,
+            [FromRoute] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,

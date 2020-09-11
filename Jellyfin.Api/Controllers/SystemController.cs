@@ -194,7 +194,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesFile(MediaTypeNames.Text.Plain)]
-        public ActionResult GetLogFile([FromQuery, Required] string? name)
+        public ActionResult GetLogFile([FromQuery, Required] string name)
         {
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));

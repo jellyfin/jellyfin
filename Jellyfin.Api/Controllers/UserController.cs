@@ -157,7 +157,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
             [FromRoute, Required] Guid userId,
-            [FromQuery, Required] string? pw,
+            [FromQuery, Required] string pw,
             [FromQuery] string? password)
         {
             var user = _userManager.GetUserById(userId);
