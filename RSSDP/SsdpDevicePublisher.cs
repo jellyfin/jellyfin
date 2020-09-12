@@ -5,7 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Net;
+using NetworkCollection;
 
 namespace Rssdp.Infrastructure
 {
@@ -300,16 +302,13 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        if (!_sendOnlyMatchedHost ||
-                            _networkManager.IsInSameSubnet(device.ToRootDevice().Address, remoteEndPoint.Address, device.ToRootDevice().SubnetMask))
+                        var ip1 = new IPNetAddress(device.ToRootDevice().Address, device.ToRootDevice().SubnetMask);
+                        var ip2 = new IPNetAddress(remoteEndPoint.Address, device.ToRootDevice().SubnetMask);
+                        if (!_sendOnlyMatchedHost || ip1.NetworkAddress.Equals(ip2.NetworkAddress))
                         {
                             SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                         }
                     }
-                }
-                else
-                {
-                    // WriteTrace(String.Format("Sending 0 search responses."));
                 }
             });
         }

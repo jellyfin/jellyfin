@@ -2,12 +2,14 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -25,6 +27,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
+using NetworkCollection;
 using Rssdp;
 using Rssdp.Infrastructure;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
@@ -134,20 +137,20 @@ namespace Emby.Dlna.Main
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
-            await ReloadComponents().ConfigureAwait(false);
+            ReloadComponents();
 
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                await ReloadComponents().ConfigureAwait(false);
+                ReloadComponents();
             }
         }
 
-        private async Task ReloadComponents()
+        private void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
 
@@ -155,7 +158,7 @@ namespace Emby.Dlna.Main
 
             if (options.EnableServer)
             {
-                await StartDevicePublisher(options).ConfigureAwait(false);
+                StartDevicePublisher(options);
             }
             else
             {
@@ -225,7 +228,7 @@ namespace Emby.Dlna.Main
             }
         }
 
-        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
+        public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
             if (!options.BlastAliveMessages)
             {
@@ -245,7 +248,7 @@ namespace Emby.Dlna.Main
                     SupportPnpRootDevice = false
                 };
 
-                await RegisterServerEndpoints().ConfigureAwait(false);
+                RegisterServerEndpoints();
 
                 _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
@@ -255,39 +258,46 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private async Task RegisterServerEndpoints()
+        private void RegisterServerEndpoints()
         {
-            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
+            var bindAddresses = _networkManager.GetInternalBindAddresses()
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0));
 
             var udn = CreateUuid(_appHost.SystemId);
 
-            foreach (var address in addresses)
+            if (!bindAddresses.Any())
             {
-                if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                // No interfaces returned, so use loopback.
+                bindAddresses = _networkManager.GetLoopbacks();
+            }
+
+            foreach (var addr in bindAddresses)
+            {
+                if (addr.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     // Not supporting IPv6 right now
                     continue;
                 }
 
                 // Limit to LAN addresses only
-                if (!_networkManager.IsAddressInSubnets(address, true, true))
+                if (!_networkManager.IsInLocalNetwork(addr))
                 {
                     continue;
                 }
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address,
-                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
+                    Address = addr.Address,
+                    SubnetMask = ((IPNetAddress)addr).Mask, // MIGRATION: This fields is going.
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",

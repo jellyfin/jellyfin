@@ -56,40 +56,26 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the system info.
         /// </summary>
+        /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+        SystemInfo GetSystemInfo(IPAddress source);
 
-        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request
-        /// to the API that should exist at the address.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
-        /// <returns>A list containing all the local IP addresses of the server.</returns>
-        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken);
+        PublicSystemInfo GetPublicSystemInfo(IPAddress address);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
-        /// IP address that can be found via <see cref="GetLocalIpAddresses"/>. HTTPS will be preferred when available.
+        /// HTTPS will be preferred when available.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
+        /// <param name="source">The source of the request.</param>
         /// <returns>The server URL.</returns>
-        Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
+        string GetSmartApiUrl(object source);
 
         /// <summary>
-        /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)
+        /// Gets a localhost URL that can be used to access the API using the loop-back IP address.
         /// over HTTP (not HTTPS).
         /// </summary>
         /// <returns>The API URL.</returns>
         string GetLoopbackHttpApiUrl();
-
-        /// <summary>
-        /// Gets a local (LAN) URL that can be used to access the API. HTTPS will be preferred when available.
-        /// </summary>
-        /// <param name="address">The IP address to use as the hostname in the URL.</param>
-        /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(IPAddress address);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
@@ -105,7 +91,7 @@ namespace MediaBrowser.Controller
         /// preferring the HTTPS port, if available.
         /// </param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(ReadOnlySpan<char> hostname, string scheme = null, int? port = null);
+        string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
 
         /// <summary>
         /// Open a URL in an external browser window.
