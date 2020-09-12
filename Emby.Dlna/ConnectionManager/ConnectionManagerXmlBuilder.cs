@@ -1,18 +1,28 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.ConnectionManager
 {
+    /// <summary>
+    /// Defines the <see cref="ConnectionManagerXmlBuilder" />.
+    /// </summary>
     public static class ConnectionManagerXmlBuilder
     {
+        /// <summary>
+        /// Gets the ConnectionManager:1 service template.
+        /// See http://upnp.org/specs/av/UPnP-av-ConnectionManager-v1-Service.pdf.
+        /// </summary>
+        /// <returns>An XML description of this service.</returns>
         public static string GetXml()
         {
             return ServiceXmlBuilder.GetXml(ServiceActionListBuilder.GetActions(), GetStateVariables());
         }
 
+        /// <summary>
+        /// Get the list of state variables for this invocation.
+        /// </summary>
+        /// <returns>The <see cref="IEnumerable{StateVariable}"/>.</returns>
         private static IEnumerable<StateVariable> GetStateVariables()
         {
             var list = new List<StateVariable>
@@ -68,10 +78,10 @@ namespace Emby.Dlna.ConnectionManager
                     SendsEvents = false,
 
                     AllowedValues = new[]
-                    {
-                        "Output",
-                        "Input"
-                    }
+                {
+                    "Output",
+                    "Input"
+                }
                 },
 
                 new StateVariable

@@ -1,6 +1,5 @@
-#pragma warning disable CS1591
-
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -39,6 +38,9 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Dlna.ContentDirectory
 {
+    /// <summary>
+    /// Defines the <see cref="ControlHandler" />.
+    /// </summary>
     public class ControlHandler : BaseControlHandler
     {
         private const string NsDc = "http://purl.org/dc/elements/1.1/";
@@ -59,6 +61,24 @@ namespace Emby.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ControlHandler"/> class.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="serverAddress">The server address to use in this instance> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="accessToken">The <see cref="string"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="imageProcessor">The <see cref="IImageProcessor"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="userDataManager">The <see cref="IUserDataManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="user">The <see cref="User"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="systemUpdateId">The system id for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="localization">The <see cref="ILocalizationManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="userViewManager">The <see cref="IUserViewManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="tvSeriesManager">The <see cref="ITVSeriesManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
         public ControlHandler(
             ILogger logger,
             ILibraryManager libraryManager,
@@ -103,6 +123,16 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
+            if (xmlWriter == null)
+            {
+                throw new ArgumentNullException(nameof(xmlWriter));
+            }
+
+            if (methodParams == null)
+            {
+                throw new ArgumentNullException(nameof(methodParams));
+            }
+
             const string DeviceId = "test";
 
             if (string.Equals(methodName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))
@@ -168,6 +198,10 @@ namespace Emby.Dlna.ContentDirectory
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
 
+        /// <summary>
+        /// Adds a "XSetBookmark" element to the xml document.
+        /// </summary>
+        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
         private void HandleXSetBookmark(IDictionary<string, string> sparams)
         {
             var id = sparams["ObjectID"];
@@ -190,6 +224,10 @@ namespace Emby.Dlna.ContentDirectory
                 CancellationToken.None);
         }
 
+        /// <summary>
+        /// Adds the "SearchCaps" element to the xml document.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private static void HandleGetSearchCapabilities(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString(
@@ -197,6 +235,10 @@ namespace Emby.Dlna.ContentDirectory
                 "res@resolution,res@size,res@duration,dc:title,dc:creator,upnp:actor,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:class,@id,@refID,@protocolInfo,upnp:author,dc:description,pv:avKeywords");
         }
 
+        /// <summary>
+        /// Adds the "SortCaps" element to the xml document.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private static void HandleGetSortCapabilities(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString(
@@ -204,6 +246,10 @@ namespace Emby.Dlna.ContentDirectory
                 "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating");
         }
 
+        /// <summary>
+        /// Adds the "SortExtensionCaps" element to the xml document.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private static void HandleGetSortExtensionCapabilities(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString(
@@ -211,19 +257,35 @@ namespace Emby.Dlna.ContentDirectory
                 "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating");
         }
 
+        /// <summary>
+        /// Adds the "Id" element to the xml document.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetSystemUpdateID(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString("Id", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Adds the "FeatureList" element to the xml document.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private static void HandleGetFeatureList(XmlWriter xmlWriter)
         {
             xmlWriter.WriteElementString("FeatureList", WriteFeatureListXml());
         }
 
+        /// <summary>
+        /// Adds the "FeatureList" element to the xml document.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private static void HandleXGetFeatureList(XmlWriter xmlWriter)
             => HandleGetFeatureList(xmlWriter);
 
+        /// <summary>
+        /// Builds a static feature list.
+        /// </summary>
+        /// <returns>The xml feature list.</returns>
         private static string WriteFeatureListXml()
         {
             // TODO: clean this up
@@ -243,6 +305,13 @@ namespace Emby.Dlna.ContentDirectory
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Returns the value in the key of the dictionary, or defaultValue if it doesn't exist.
+        /// </summary>
+        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="defaultValue">The defaultValue.</param>
+        /// <returns>The <see cref="string"/>.</returns>
         public static string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
         {
             if (sparams != null && sparams.TryGetValue(key, out string val))
@@ -253,6 +322,12 @@ namespace Emby.Dlna.ContentDirectory
             return defaultValue;
         }
 
+        /// <summary>
+        /// Builds the "Browse" xml response.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
+        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
+        /// <param name="deviceId">The device Id to use.</param>
         private void HandleBrowse(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
             var id = sparams["ObjectID"];
@@ -356,12 +431,24 @@ namespace Emby.Dlna.ContentDirectory
             xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Builds the response to the "X_BrowseByLetter request.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
+        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
+        /// <param name="deviceId">The device id.</param>
         private void HandleXBrowseByLetter(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
             // TODO: Implement this method
             HandleSearch(xmlWriter, sparams, deviceId);
         }
 
+        /// <summary>
+        /// Builds a response to the "Search" request.
+        /// </summary>
+        /// <param name="xmlWriter">The xmlWriter<see cref="XmlWriter"/>.</param>
+        /// <param name="sparams">The sparams<see cref="IDictionary"/>.</param>
+        /// <param name="deviceId">The deviceId<see cref="string"/>.</param>
         private void HandleSearch(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
             var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", string.Empty));
@@ -441,6 +528,16 @@ namespace Emby.Dlna.ContentDirectory
             xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Returns the child items meeting the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="search">The <see cref="SearchCriteria"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{BaseItem}"/>.</returns>
         private static QueryResult<BaseItem> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
             var folder = (Folder)item;
@@ -493,11 +590,25 @@ namespace Emby.Dlna.ContentDirectory
             });
         }
 
+        /// <summary>
+        /// Returns a new DtoOptions object.
+        /// </summary>
+        /// <returns>The <see cref="DtoOptions"/>.</returns>
         private static DtoOptions GetDtoOptions()
         {
             return new DtoOptions(true);
         }
 
+        /// <summary>
+        /// Returns the User items meeting the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="stubType">The <see cref="StubType"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             if (item is MusicGenre)
@@ -567,6 +678,14 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(queryResult);
         }
 
+        /// <summary>
+        /// Returns the Live Tv Channels meeting the criteria.
+        /// </summary>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetLiveTvChannels(User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -583,6 +702,16 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the music folders meeting the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="stubType">The <see cref="StubType"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -702,6 +831,16 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
+        /// <summary>
+        /// Returns the movie folders meeting the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="stubType">The <see cref="StubType"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -776,6 +915,13 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
+        /// <summary>
+        /// Returns the folders meeting the criteria.
+        /// </summary>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFolders(User user, int? startIndex, int? limit)
         {
             var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true)
@@ -796,6 +942,16 @@ namespace Emby.Dlna.ContentDirectory
                 limit);
         }
 
+        /// <summary>
+        /// Returns the TV folders meeting the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="stubType">The <see cref="StubType"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetTvFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -885,6 +1041,13 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
+        /// <summary>
+        /// Returns the Movies that are part watched that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieContinueWatching(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -905,6 +1068,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the series meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetSeries(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -918,6 +1088,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the Movie folders meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieMovies(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -931,6 +1108,12 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the Movie collections meeting the criteria.
+        /// </summary>
+        /// <param name="user">The see cref="User"/>.</param>
+        /// <param name="query">The see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieCollections(User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -944,6 +1127,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the Music albums meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicAlbums(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -957,6 +1147,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the Music songs meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicSongs(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -970,6 +1167,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the songs tagged as favourite that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFavoriteSongs(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -983,6 +1187,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the series tagged as favourite that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFavoriteSeries(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -996,6 +1207,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the episodes tagged as favourite that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFavoriteEpisodes(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -1009,6 +1227,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the movies tagged as favourite that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieFavorites(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -1022,6 +1247,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// /// Returns the albums tagged as favourite that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFavoriteAlbums(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
@@ -1035,6 +1267,14 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the genres meeting the criteria.
+        /// The GetGenres.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetGenres(BaseItem parent, User user, InternalItemsQuery query)
         {
             var genresResult = _libraryManager.GetGenres(new InternalItemsQuery(user)
@@ -1053,6 +1293,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the music genres meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicGenres(BaseItem parent, User user, InternalItemsQuery query)
         {
             var genresResult = _libraryManager.GetMusicGenres(new InternalItemsQuery(user)
@@ -1071,6 +1318,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the music albums by artist that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicAlbumArtists(BaseItem parent, User user, InternalItemsQuery query)
         {
             var artists = _libraryManager.GetAlbumArtists(new InternalItemsQuery(user)
@@ -1089,6 +1343,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the music artists meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicArtists(BaseItem parent, User user, InternalItemsQuery query)
         {
             var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
@@ -1107,6 +1368,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the artists tagged as favourite that meet the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFavoriteArtists(BaseItem parent, User user, InternalItemsQuery query)
         {
             var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
@@ -1126,6 +1394,12 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the music playlists meeting the criteria.
+        /// </summary>
+        /// <param name="user">The user<see cref="User"/>.</param>
+        /// <param name="query">The query<see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicPlaylists(User user, InternalItemsQuery query)
         {
             query.Parent = null;
@@ -1138,6 +1412,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the latest music meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
@@ -1156,6 +1437,12 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(items);
         }
 
+        /// <summary>
+        /// Returns the next up item meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetNextUp(BaseItem parent, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
@@ -1173,6 +1460,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the latest tv meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetTvLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
@@ -1191,6 +1485,13 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(items);
         }
 
+        /// <summary>
+        /// Returns the latest movies meeting the criteria.
+        /// </summary>
+        /// <param name="parent">The <see cref="BaseItem"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
@@ -1209,6 +1510,16 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(items);
         }
 
+        /// <summary>
+        /// Returns music artist items that meet the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="parentId">The <see cref="Guid"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicArtistItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -1229,6 +1540,16 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the genre items meeting the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="parentId">The <see cref="Guid"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetGenreItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -1253,6 +1574,16 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Returns the music genre items meeting the criteria.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="parentId">The <see cref="Guid"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
@@ -1273,6 +1604,11 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
+        /// <summary>
+        /// Converts a <see cref="BaseItem"/> array into a <see cref="QueryResult{ServerItem}"/>.
+        /// </summary>
+        /// <param name="result">An array of <see cref="BaseItem"/>.</param>
+        /// <returns>A <see cref="QueryResult{ServerItem}"/>.</returns>
         private static QueryResult<ServerItem> ToResult(BaseItem[] result)
         {
             var serverItems = result
@@ -1286,6 +1622,11 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
+        /// <summary>
+        /// Converts a <see cref="QueryResult{BaseItem}"/> to a <see cref="QueryResult{ServerItem}"/>.
+        /// </summary>
+        /// <param name="result">A <see cref="QueryResult{BaseItem}"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private static QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
         {
             var serverItems = result
@@ -1300,6 +1641,12 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
+        /// <summary>
+        /// Sets the sorting method on a query.
+        /// </summary>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <param name="sort">The <see cref="SortCriteria"/>.</param>
+        /// <param name="isPreSorted">True if pre-sorted.</param>
         private static void SetSorting(InternalItemsQuery query, SortCriteria sort, bool isPreSorted)
         {
             if (isPreSorted)
@@ -1312,6 +1659,13 @@ namespace Emby.Dlna.ContentDirectory
             }
         }
 
+        /// <summary>
+        /// Apply paging to a query.
+        /// </summary>
+        /// <param name="result">The <see cref="QueryResult{ServerItem}"/>.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The maximum number to return.</param>
+        /// <returns>A <see cref="QueryResult{ServerItem}"/>.</returns>
         private static QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)
         {
             result.Items = result.Items.Skip(startIndex ?? 0).Take(limit ?? int.MaxValue).ToArray();
@@ -1319,6 +1673,11 @@ namespace Emby.Dlna.ContentDirectory
             return result;
         }
 
+        /// <summary>
+        /// Retreives the ServerItem id.
+        /// </summary>
+        /// <param name="id">The id<see cref="string"/>.</param>
+        /// <returns>The <see cref="ServerItem"/>.</returns>
         private ServerItem GetItemFromObjectId(string id)
         {
             return DidlBuilder.IsIdRoot(id)
@@ -1327,6 +1686,11 @@ namespace Emby.Dlna.ContentDirectory
                  : ParseItemId(id);
         }
 
+        /// <summary>
+        /// Parses the item id into a <see cref="ServerItem"/>.
+        /// </summary>
+        /// <param name="id">The <see cref="string"/>.</param>
+        /// <returns>The corresponding <see cref="ServerItem"/>.</returns>
         private ServerItem ParseItemId(string id)
         {
             StubType? stubType = null;
