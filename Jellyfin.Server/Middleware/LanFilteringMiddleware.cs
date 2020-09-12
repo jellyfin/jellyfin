@@ -1,10 +1,13 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
+using NetworkCollection;
 
 namespace Jellyfin.Server.Middleware
 {
@@ -33,7 +36,7 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
-            var host = httpContext.Connection.RemoteIpAddress;
+            var host = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
             if (!networkManager.IsInLocalNetwork(host) && !serverConfigurationManager.Configuration.EnableRemoteAccess)
             {
