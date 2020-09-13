@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace Emby.Dlna
+namespace Emby.Dlna.Service
 {
     public interface IUpnpService
     {

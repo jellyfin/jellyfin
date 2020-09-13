@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#nullable enable
 
 using System;
 using System.Collections.Concurrent;
@@ -15,6 +15,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Eventing
 {
+    /// <summary>
+    /// Defines the <see cref="DlnaEventManager"/> class.
+    /// </summary>
     public class DlnaEventManager : IDlnaEventManager
     {
         private readonly ConcurrentDictionary<string, EventSubscription> _subscriptions =
@@ -25,12 +28,25 @@ namespace Emby.Dlna.Eventing
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DlnaEventManager"/> class.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> instance.</param>
         public DlnaEventManager(ILogger logger, IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
 
+        /// <summary>
+        /// Creates a new renewal subscription.
+        /// </summary>
+        /// <param name="subscriptionId">The subscription id previously assigned.</param>
+        /// <param name="notificationType">The notification type to renew.</param>
+        /// <param name="requestedTimeoutString">The timeout assigned.</param>
+        /// <param name="callbackUrl">The url which should be called at notifications.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the renewal information.</returns>
         public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string requestedTimeoutString, string callbackUrl)
         {
             var subscription = GetSubscription(subscriptionId, false);
@@ -56,6 +72,13 @@ namespace Emby.Dlna.Eventing
             };
         }
 
+        /// <summary>
+        /// Creates a new renewal subscription.
+        /// </summary>
+        /// <param name="notificationType">The notification type to renew.</param>
+        /// <param name="requestedTimeoutString">The timeout assigned.</param>
+        /// <param name="callbackUrl">The url which should be called at notifications.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the subscription information.</returns>
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
         {
             var timeout = ParseTimeout(requestedTimeoutString) ?? 300;
@@ -78,6 +101,11 @@ namespace Emby.Dlna.Eventing
             return GetEventSubscriptionResponse(id, requestedTimeoutString, timeout);
         }
 
+        /// <summary>
+        /// Parses a SSDP formatted time string.
+        /// </summary>
+        /// <param name="header">String to parse.</param>
+        /// <returns>The value, or null if no value found.</returns>
         private int? ParseTimeout(string header)
         {
             if (!string.IsNullOrEmpty(header))
@@ -94,6 +122,11 @@ namespace Emby.Dlna.Eventing
             return null;
         }
 
+        /// <summary>
+        /// Cancels a subscription.
+        /// </summary>
+        /// <param name="subscriptionId">The subscription id previously assigned.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the cancellation information.</returns>
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
             _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
@@ -107,6 +140,13 @@ namespace Emby.Dlna.Eventing
             };
         }
 
+        /// <summary>
+        /// Creates a event subscription response.
+        /// </summary>
+        /// <param name="subscriptionId">The subscription id previously assigned.</param>
+        /// <param name="requestedTimeoutString">The timeout assigned.</param>
+        /// <param name="timeoutSeconds">An alternative timeout to use, if requestedTimeoutString is empty.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the cancellation information.</returns>
         private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
             var response = new EventSubscriptionResponse
@@ -121,12 +161,23 @@ namespace Emby.Dlna.Eventing
             return response;
         }
 
-        public EventSubscription GetSubscription(string id)
+        /// <summary>
+        /// Returns the event subscription record for the id provided.
+        /// </summary>
+        /// <param name="id">The id of the subscription.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
+        public EventSubscription? GetSubscription(string id)
         {
             return GetSubscription(id, false);
         }
 
-        private EventSubscription GetSubscription(string id, bool throwOnMissing)
+        /// <summary>
+        /// Returns the event subscription record for the id provided.
+        /// </summary>
+        /// <param name="id">The id of the subscription.</param>
+        /// <param name="throwOnMissing">Set to true, if an exception is to be thrown if the id cannot be located.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
+        private EventSubscription? GetSubscription(string id, bool throwOnMissing)
         {
             if (!_subscriptions.TryGetValue(id, out EventSubscription e) && throwOnMissing)
             {
@@ -136,6 +187,12 @@ namespace Emby.Dlna.Eventing
             return e;
         }
 
+        /// <summary>
+        /// Triggers an event.
+        /// </summary>
+        /// <param name="notificationType">The event notification type.</param>
+        /// <param name="stateVariables">The state variables to include with the event.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
         public Task TriggerEvent(string notificationType, IDictionary<string, string> stateVariables)
         {
             var subs = _subscriptions.Values
@@ -147,6 +204,12 @@ namespace Emby.Dlna.Eventing
             return Task.WhenAll(tasks);
         }
 
+        /// <summary>
+        /// Triggers an event.
+        /// </summary>
+        /// <param name="subscription">The <see cref="EventSubscription"/> information to use to trigger an event.</param>
+        /// <param name="stateVariables">The state variables to include with the event.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
         private async Task TriggerEvent(EventSubscription subscription, IDictionary<string, string> stateVariables)
         {
             var builder = new StringBuilder();

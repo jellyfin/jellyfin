@@ -1,6 +1,9 @@
 #pragma warning disable CS1591
 
-namespace Emby.Dlna
+using Emby.Dlna.Eventing;
+using Emby.Dlna.Service;
+
+namespace Emby.Dlna.ContentDirectory
 {
     public interface IContentDirectory : IDlnaEventManager, IUpnpService
     {

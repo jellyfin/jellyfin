@@ -4,7 +4,7 @@ using System;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class PlaybackStartEventArgs : EventArgs
+    public class PlaybackStartEventArgs
     {
         public UBaseObject MediaInfo { get; set; }
     }

@@ -1,9 +1,8 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -19,6 +18,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
 {
+    /// <summary>
+    /// Defines the <see cref="ContentDirectoryService" />.
+    /// </summary>
     public class ContentDirectoryService : BaseService, IContentDirectory
     {
         private readonly ILibraryManager _libraryManager;
@@ -33,6 +35,22 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ITVSeriesManager _tvSeriesManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentDirectoryService"/> class.
+        /// </summary>
+        /// <param name="dlna">The <see cref="IDlnaManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="userDataManager">The <see cref="IUserDataManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="imageProcessor">The <see cref="IImageProcessor"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="userManager">The <see cref="IUserManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="logger">The <see cref="ILogger{ContentDirectoryService}"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="httpClient">The <see cref="IHttpClientFactory"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="localization">The <see cref="ILocalizationManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="userViewManager">The <see cref="IUserViewManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
+        /// <param name="tvSeriesManager">The <see cref="ITVSeriesManager"/> to use in the <see cref="ContentDirectoryService"/> instance.</param>
         public ContentDirectoryService(
             IDlnaManager dlna,
             IUserDataManager userDataManager,
@@ -62,7 +80,10 @@ namespace Emby.Dlna.ContentDirectory
             _tvSeriesManager = tvSeriesManager;
         }
 
-        private int SystemUpdateId
+        /// <summary>
+        /// Gets the system id. (A unique id which changes on when our definition changes.)
+        /// </summary>
+        private static int SystemUpdateId
         {
             get
             {
@@ -75,14 +96,18 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new ContentDirectoryXmlBuilder().GetXml();
+            return ContentDirectoryXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
-            var profile = _dlna.GetProfile(request.Headers) ??
-                          _dlna.GetDefaultProfile();
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var profile = _dlna.GetProfile(request.Headers) ?? _dlna.GetDefaultProfile();
 
             var serverAddress = request.RequestedUrl.Substring(0, request.RequestedUrl.IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
 
@@ -107,6 +132,11 @@ namespace Emby.Dlna.ContentDirectory
                 .ProcessControlRequestAsync(request);
         }
 
+        /// <summary>
+        /// Get the user stored in the device profile.
+        /// </summary>
+        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
+        /// <returns>The <see cref="User"/>.</returns>
         private User GetUser(DeviceProfile profile)
         {
             if (!string.IsNullOrEmpty(profile.UserId))

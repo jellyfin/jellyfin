@@ -506,7 +506,7 @@ namespace Emby.Dlna
 
             var serverId = _appHost.SystemId;
 
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
+            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId, _appHost.FriendlyName).GetXml();
         }
 
         public ImageStream GetIcon(string filename)

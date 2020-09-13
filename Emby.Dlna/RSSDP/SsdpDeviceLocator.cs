@@ -1,3 +1,5 @@
+#pragma warning disable SA1306 // Field names should begin with lower-case letter
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -353,7 +355,7 @@ namespace Rssdp.Infrastructure
             {
                 return;
             }
-            
+
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
             {

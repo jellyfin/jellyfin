@@ -1,10 +1,10 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
 using System;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class PlaybackProgressEventArgs : EventArgs
+    public class PlaybackProgressEventArgs
     {
         public UBaseObject MediaInfo { get; set; }
     }

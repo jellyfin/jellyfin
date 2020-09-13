@@ -6,6 +6,10 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Configuration;
+using Emby.Dlna.ConnectionManager;
+using Emby.Dlna.ContentDirectory;
+using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
@@ -227,11 +231,6 @@ namespace Emby.Dlna.Main
 
         public async Task StartDevicePublisher(Configuration.DlnaOptions options)
         {
-            if (!options.BlastAliveMessages)
-            {
-                return;
-            }
-
             if (_publisher != null)
             {
                 return;
@@ -239,7 +238,7 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, true)
                 {
                     LogFunction = LogMessage,
                     SupportPnpRootDevice = false

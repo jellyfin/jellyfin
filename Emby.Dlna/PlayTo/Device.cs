@@ -10,10 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Emby.Dlna.Common;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo

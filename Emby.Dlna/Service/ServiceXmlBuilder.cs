@@ -3,13 +3,13 @@
 using System.Collections.Generic;
 using System.Security;
 using System.Text;
-using Emby.Dlna.Common;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Service
 {
-    public class ServiceXmlBuilder
+    public static class ServiceXmlBuilder
     {
-        public string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
+        public static string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
         {
             var builder = new StringBuilder();
 

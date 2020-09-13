@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Emby.Dlna.Configuration;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;

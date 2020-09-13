@@ -1,3 +1,13 @@
+#pragma warning disable SA1121 // Use built-in type alias
+#pragma warning disable SA1306 // Field names should begin with lower-case letter
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
+#pragma warning disable SA1214 // Readonly fields should appear before non-readonly fields
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1611 // Element parameters should be documented
+#pragma warning disable MT1003 // Lock on non-readonly member
+#pragma warning disable SA1121 // Use built-in type alias
+#pragma warning disable CA1350
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -552,6 +562,7 @@ namespace Rssdp.Infrastructure
             var message = BuildMessage(header, values);
 
             var sendCount = IsDisposed ? 1 : 3;
+
             WriteTrace(String.Format("Sent byebye notification"), device);
             return _CommsServer.SendMulticastMessage(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null, cancellationToken);
         }
