@@ -1063,7 +1063,7 @@ namespace Emby.Server.Implementations
 
                     if (!Version.TryParse(manifest.Version, out var version))
                     {
-                        version = new Version("0.0.0.1");
+                        version = new Version(0, 0, 0, 1);
                     }
 
                     if (targetAbi <= ApplicationVersion)
