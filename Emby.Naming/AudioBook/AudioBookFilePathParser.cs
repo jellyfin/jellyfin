@@ -50,27 +50,14 @@ namespace Emby.Naming.AudioBook
                         {
                             if (int.TryParse(value.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
                             {
-                                result.ChapterNumber = intValue;
+                                result.PartNumber = intValue;
                             }
                         }
                     }
                 }
             }
 
-            /*var matches = _iRegexProvider.GetRegex("\\d+", RegexOptions.IgnoreCase).Matches(fileName);
-            if (matches.Count > 0)
-            {
-                if (!result.ChapterNumber.HasValue)
-                {
-                    result.ChapterNumber = int.Parse(matches[0].Groups[0].Value);
-                }
-
-                if (matches.Count > 1)
-                {
-                    result.PartNumber = int.Parse(matches[matches.Count - 1].Groups[0].Value);
-                }
-            }*/
-            result.Success = result.PartNumber.HasValue || result.ChapterNumber.HasValue;
+            result.Success = result.ChapterNumber.HasValue || result.PartNumber.HasValue;
 
             return result;
         }
