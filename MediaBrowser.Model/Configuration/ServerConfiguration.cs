@@ -111,7 +111,7 @@ namespace MediaBrowser.Model.Configuration
 
         /// <summary>
         /// Gets or sets a value indicating whether detailed ssdp logs are sent to the console/log.
-        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
+        /// "Emby.Dlna": "Debug" must be set in logging.default.json for this property to work.
         /// </summary>
         public bool EnableSSDPTracing { get; set; } = false;
 
