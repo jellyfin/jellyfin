@@ -1021,7 +1021,7 @@ namespace Emby.Server.Implementations
         protected abstract void RestartInternal();
 
         /// <summary>
-        /// Comparison function used in <see cref="GetLatestDLLVersion" />.
+        /// Comparison function used in <see cref="GetPlugins" />.
         /// </summary>
         /// <param name="a">Item to compare.</param>
         /// <param name="b">Item to compare with.</param>
@@ -1068,7 +1068,7 @@ namespace Emby.Server.Implementations
                         version = new Version(0, 0, 0, 1);
                     }
 
-                    if (targetAbi <= ApplicationVersion)
+                    if (targetAbi >= ApplicationVersion)
                     {
                         // Only load Plugins for this version or below.
                         versions.Add((version, manifest.Name, dir));
