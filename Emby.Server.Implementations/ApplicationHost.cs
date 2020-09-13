@@ -38,6 +38,7 @@ using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
@@ -1020,7 +1021,7 @@ namespace Emby.Server.Implementations
         /// Comparison function used in <see cref="GetLatestDLLVersion" />.
         /// </summary>
         private static int VersionCompare(
-            (Version PluginVersion, string Name, string Path) a, 
+            (Version PluginVersion, string Name, string Path) a,
             (Version PluginVersion, string Name, string Path) b)
         {
             int compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
@@ -1033,32 +1034,38 @@ namespace Emby.Server.Implementations
             return compare;
         }
 
-        /// <summary>
-        /// Only loads the latest version of each assembly based upon the folder name.
-        /// eg. MyAssembly_11.9.3.6  - will be ignored.
-        ///     MyAssembly_12.2.3.6  - will be loaded.
-        /// </summary>
-        /// <param name="path">Path to enumerate.</param>
-        /// <param name="cleanup">Set to true, to try and clean up earlier versions.</param>
-        /// <returns>IEnumerable{string} of filenames.</returns>
-        protected IEnumerable<string> GetLatestDLLVersion(string path, bool cleanup = true)
+        private IEnumerable<string> GetPlugins(string path, bool cleanup = true)
         {
             var dllList = new List<string>();
             var versions = new List<(Version PluginVersion, string Name, string Path)>();
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
 
+            var serializer = new JsonSerializer();
             foreach (var dir in directories)
             {
-                int underscoreIndex = dir.LastIndexOf('_');
-                if (underscoreIndex != -1 && Version.TryParse(dir.Substring(underscoreIndex + 1), out Version ver))
+                try
                 {
-                    // Versioned folder.
-                    versions.Add((ver, dir.Substring(0, underscoreIndex), dir));
+                    var manifest = serializer.DeserializeFromFile<PlugInManifest>(dir + "\\meta.json");
+
+                    if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                    {
+                        targetAbi = new Version("0.0.0.1");
+                    }
+
+                    if (!Version.TryParse(manifest.Version, out var version))
+                    {
+                        version = new Version("0.0.0.1");
+                    }
+
+                    if (targetAbi <= ApplicationVersion)
+                    {
+                        // Only load Plugins for this version or below.
+                        versions.Add((version, manifest.Name, dir));
+                    }
                 }
-                else
+                catch
                 {
-                    // Un-versioned folder.
-                    versions.Add((new Version(), dir, dir));
+                    continue;
                 }
             }
 
@@ -1101,7 +1108,7 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in GetLatestDLLVersion(ApplicationPaths.PluginsPath))
+                foreach (var file in GetPlugins(ApplicationPaths.PluginsPath))
                 {
                     Assembly plugAss;
                     try
