@@ -1020,6 +1020,9 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Comparison function used in <see cref="GetLatestDLLVersion" />.
         /// </summary>
+        /// <param name="a">Item to compare.</param>
+        /// <param name="b">Item to compare with.</param>
+        /// <returns>Boolean result of the operation.</returns>
         private static int VersionCompare(
             (Version PluginVersion, string Name, string Path) a,
             (Version PluginVersion, string Name, string Path) b)
@@ -1034,6 +1037,12 @@ namespace Emby.Server.Implementations
             return compare;
         }
 
+        /// <summary>
+        /// Returns a list of plugsin to install.
+        /// </summary>
+        /// <param name="path">Path to check.</param>
+        /// <param name="cleanup">True if an attempt should be made to delete old plugs.</param>
+        /// <returns>Enumerable list of dlls to load.</returns>
         private IEnumerable<string> GetPlugins(string path, bool cleanup = true)
         {
             var dllList = new List<string>();
