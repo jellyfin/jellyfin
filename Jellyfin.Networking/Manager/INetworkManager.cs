@@ -44,7 +44,7 @@ namespace Jellyfin.Networking.Manager
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
         /// <returns>Netcollection.</returns>
-        public NetCollection GetLoopbacks();
+        NetCollection GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
