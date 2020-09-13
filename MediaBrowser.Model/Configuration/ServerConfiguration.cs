@@ -158,7 +158,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets Autodiscovery tracing.
+        /// Gets or sets a value indicating whether Autodiscovery tracing is enabled.
         /// </summary>
         public bool AutoDiscoveryTracing { get; set; } = false;
 
