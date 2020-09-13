@@ -38,42 +38,34 @@ namespace Jellyfin.Server.Middleware
                 return;
             }
 
-            var remoteIp = httpContext.Request.RemoteIp();
+            var remoteIp = httpContext.Connection.RemoteIpAddress;
 
-            if (IPNetAddress.TryParse(remoteIp, out IPNetAddress remoteIPObj))
+            if (serverConfigurationManager.Configuration.EnableRemoteAccess)
             {
-                if (serverConfigurationManager.Configuration.EnableRemoteAccess)
+                // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                // If left blank, all remote addresses will be allowed.
+                NetCollection remoteAddressFilter = networkManager.RemoteAddressFilter;
+
+                if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIp))
                 {
-                    // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
-                    // If left blank, all remote addresses will be allowed.
-                    NetCollection remoteAddressFilter = networkManager.RemoteAddressFilter;
-
-                    if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIPObj))
+                    // remoteAddressFilter is a whitelist or blacklist.
+                    bool isListed = remoteAddressFilter.Contains(remoteIp);
+                    if (!serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
                     {
-                        // remoteAddressFilter is a whitelist or blacklist.
-                        bool isListed = remoteAddressFilter.Contains(remoteIPObj);
-                        if (!serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
-                        {
-                            // Black list, so flip over.
-                            isListed = !isListed;
-                        }
+                        // Black list, so flip over.
+                        isListed = !isListed;
+                    }
 
-                        if (!isListed)
-                        {
-                            // If your name isn't on the list, you arn't coming in.
-                            return;
-                        }
+                    if (!isListed)
+                    {
+                        // If your name isn't on the list, you arn't coming in.
+                        return;
                     }
                 }
-                else if (!networkManager.IsInLocalNetwork(remoteIPObj))
-                {
-                    // Remote not enabled. So everyone should be LAN.
-                    return;
-                }
             }
-            else
+            else if (!networkManager.IsInLocalNetwork(remoteIp))
             {
-                // Unable to parse remoteIp
+                // Remote not enabled. So everyone should be LAN.
                 return;
             }
 

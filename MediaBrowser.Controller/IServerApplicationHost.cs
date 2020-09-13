@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 
@@ -59,9 +58,9 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(string source);
+        SystemInfo GetSystemInfo(IPAddress source);
 
-        PublicSystemInfo GetPublicSystemInfo(string source);
+        PublicSystemInfo GetPublicSystemInfo(IPAddress source);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured

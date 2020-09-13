@@ -1,4 +1,4 @@
-#pragma warning disable SA1611
+#pragma warning disable SA1611 // Element parameters should be documented
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo.EventArgs;
 using Jellyfin.Data.Events;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -70,7 +71,7 @@ namespace Emby.Dlna.PlayTo
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             INotificationManager notificationManager,
-            IServerConfigurationManager configurationManager)
+            INetworkManager networkManager)
         {
             _logger = loggerFactory.CreateLogger<PlayToManager>();
             _sessionManager = sessionManager;
@@ -88,7 +89,7 @@ namespace Emby.Dlna.PlayTo
             _notificationManager = notificationManager;
 
             _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
-            _playToLocator = new SsdpPlayToLocator(loggerFactory.CreateLogger<SsdpPlayToLocator>(), configurationManager, appHost);
+            _playToLocator = new SsdpPlayToLocator(loggerFactory.CreateLogger<SsdpPlayToLocator>(), networkManager, config, appHost);
             _playToLocator.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
             _playToLocator.Start();
         }

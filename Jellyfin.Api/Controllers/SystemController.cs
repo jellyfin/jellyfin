@@ -66,20 +66,19 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<SystemInfo> GetSystemInfo()
         {
-            return _appHost.GetSystemInfo(Request.Host.Value);
+            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
         }
 
         /// <summary>
         /// Gets public information about the server.
         /// </summary>
-        /// <param name="chromecast">True if the request is for a cast.</param>
         /// <response code="200">Information retrieved.</response>
         /// <returns>A <see cref="PublicSystemInfo"/> with public info about the system.</returns>
         [HttpGet("Info/Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<PublicSystemInfo> GetPublicSystemInfo(bool chromecast = false)
+        public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
         {
-            return _appHost.GetPublicSystemInfo(chromecast ? "Chromecast" : Request.Host.Value);
+            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
         }
 
         /// <summary>

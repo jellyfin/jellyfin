@@ -2,7 +2,9 @@
 using System;
 using Emby.Dlna.Configuration;
 using Jellyfin.Data.Events;
+using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
@@ -18,12 +20,14 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpPlayToLocator"/> class.
         /// </summary>
-        /// <param name="logger">ILogger instance.</param>
-        /// <param name="configurationManager">Configuration manager instance.</param>
-        /// <param name="applicationHost">Application Host instance.</param>
-        public SsdpPlayToLocator(ILogger logger, IServerConfigurationManager configurationManager, IServerApplicationHost applicationHost)
+        /// <param name="logger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="networkManager">The <see cref="NetworkManager"/> instance.</param>
+        /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
+        /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
+        public SsdpPlayToLocator(ILogger logger, INetworkManager networkManager, IConfigurationManager configurationManager, IServerApplicationHost applicationHost)
         : base(
             logger,
+            networkManager,
             configurationManager,
             applicationHost,
             new string[] { "urn:schemas-upnp-org:device:MediaRenderer:",  "urn:schemas-upnp-org:device:InternetGatewayDevice:" },

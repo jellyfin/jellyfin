@@ -31,31 +31,11 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
-            var currentHost = httpContext.Request.Host.ToString() ?? string.Empty;
+            var host = httpContext.Connection.RemoteIpAddress;
 
-            if (IPHost.TryParse(currentHost, out IPHost h))
+            if (!networkManager.IsInLocalNetwork(host) && !serverConfigurationManager.Configuration.EnableRemoteAccess)
             {
-                if (h.HasAddress)
-                {
-                    if (!networkManager.IsInLocalNetwork(h))
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    // Host is not an IP address.
-                    // Can we make Assumption is that host names are not local.
-                    // Could attempt resolve, but do we want to do this on each request?
-                    if (!serverConfigurationManager.Configuration.EnableRemoteAccess)
-                    {
-                        // This will cause a dns resolve on the hostname.
-                        if (!networkManager.IsInLocalNetwork(h))
-                        {
-                            return;
-                        }
-                    }
-                }
+                return;
             }
 
             await _next(httpContext).ConfigureAwait(false);

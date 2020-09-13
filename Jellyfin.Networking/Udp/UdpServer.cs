@@ -60,8 +60,8 @@ namespace Jellyfin.Networking.Udp
 
             if (_internalInterface == null)
             {
-                _internalInterface = NetworkManager.Instance.GetInternalBindAddresses();
-                _allInterfaces = NetworkManager.Instance.GetAllBindInterfaces();
+                _internalInterface = networkManager.GetInternalBindAddresses();
+                _allInterfaces = networkManager.GetAllBindInterfaces();
             }
 
             NetManager.NetworkChanged += NetworkChanged;

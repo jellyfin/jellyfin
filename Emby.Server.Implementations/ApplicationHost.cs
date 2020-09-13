@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -1076,7 +1077,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(string source)
+        public SystemInfo GetSystemInfo(IPAddress source)
         {
             return new SystemInfo
             {
@@ -1112,7 +1113,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(string source)
+        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
         {
             return new PublicSystemInfo
             {
@@ -1122,7 +1123,7 @@ namespace Emby.Server.Implementations
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(source),
-                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted              
+                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
 

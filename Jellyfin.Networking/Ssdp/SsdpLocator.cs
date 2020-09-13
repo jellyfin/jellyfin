@@ -31,6 +31,7 @@ namespace Jellyfin.Networking.Ssdp
         private readonly object _timerLock;
         private readonly object _deviceLock;
         private readonly ISsdpServer _ssdpServer;
+        private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
         private readonly TimeSpan _defaultSearchWaitTime;
         private readonly TimeSpan _oneSecond;
@@ -43,18 +44,21 @@ namespace Jellyfin.Networking.Ssdp
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpLocator"/> class.
         /// </summary>
-        /// <param name="logger">ILogger instance.</param>
-        /// <param name="configurationManager">Configuration manager instance.</param>
-        /// <param name="applicationHost">Application Host instance.</param>
+        /// <param name="logger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="networkManager">The <see cref="NetworkManager"/> instance.</param>
+        /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
+        /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
         /// <param name="filter">Array of Ssdp types which this instance should process.</param>
         /// <param name="activelySearch">True if this instance actively uses broadcasts to locate devices.</param>
         public SsdpLocator(
             ILogger logger,
+            INetworkManager networkManager,
             IConfigurationManager configurationManager,
             IServerApplicationHost applicationHost,
             string[] filter,
             bool activelySearch)
         {
+            _networkManager = networkManager;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _defaultSearchWaitTime = TimeSpan.FromSeconds(4);
             _oneSecond = TimeSpan.FromSeconds(1);
@@ -62,7 +66,7 @@ namespace Jellyfin.Networking.Ssdp
             _deviceLock = new object();
             Configuration = configurationManager;
             Devices = new List<DiscoveredSsdpDevice>();
-            _ssdpServer = SsdpServer.GetOrCreateInstance(NetworkManager.Instance, configurationManager, logger, applicationHost);
+            _ssdpServer = SsdpServer.GetOrCreateInstance(_networkManager, configurationManager, logger, applicationHost);
             _ssdpFilter = filter;
             _ssdpServer.AddEvent("HTTP/1.1 200 OK", ProcessSearchResponseMessage);
             _ssdpServer.AddEvent("NOTIFY", ProcessNotificationMessage);

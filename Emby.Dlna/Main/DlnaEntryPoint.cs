@@ -308,7 +308,7 @@ namespace Emby.Dlna.Main
                             _mediaSourceManager,
                             _mediaEncoder,
                             _notificationManager,
-                            _configurationManager);
+                            _networkManager);
                     }
                 }
                 else if (PlayToManager != null)

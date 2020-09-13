@@ -17,23 +17,29 @@ namespace Emby.Dlna.Net
     /// </summary>
     public class ChromecastLocator : SsdpLocator
     {
+        private readonly INetworkManager _networkManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChromecastLocator"/> class.
         /// </summary>
-        /// <param name="logger">ILogger instance.</param>
-        /// <param name="configurationManager">Configuration manager instance.</param>
-        /// <param name="applicationHost">Application Host instance.</param>
+        /// <param name="logger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="networkManager">The <see cref="NetworkManager"/> instance.</param>
+        /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
+        /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
         public ChromecastLocator(
             ILogger logger,
+            INetworkManager networkManager,
             IConfigurationManager configurationManager,
             IServerApplicationHost applicationHost)
         : base(
             logger,
+            networkManager,
             configurationManager,
             applicationHost,
             new string[] { "urn:dial-multiscreen-org:device:dial:1", "urn:dial-multiscreen-org:service:dial:1" },
             false)
         {
+            _networkManager = networkManager;
         }
 
         /// <inheritdoc/>
@@ -44,7 +50,7 @@ namespace Emby.Dlna.Net
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var urls = NetworkManager.Instance.PublishedServerOverrides;
+            var urls = _networkManager.PublishedServerOverrides;
             // Find the defined external address.
             var externalAddress = urls.Where(i => i.Key.Equals(IPAddress.Any)).FirstOrDefault().Value;
 
@@ -67,7 +73,7 @@ namespace Emby.Dlna.Net
             }
 
             var key = new IPNetAddress(args.Argument.LocalIpAddress);
-            NetworkManager.Instance.PublishedServerOverrides.Remove(key);
+            _networkManager.PublishedServerOverrides.Remove(key);
         }
     }
 }
