@@ -121,6 +121,7 @@ namespace Emby.Server.Implementations
         private readonly IFileSystem _fileSystemManager;
         private readonly INetworkManager _networkManager;
         private readonly IXmlSerializer _xmlSerializer;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IStartupOptions _startupOptions;
 
         private IMediaEncoder _mediaEncoder;
@@ -251,6 +252,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
+            _jsonSerializer = new JsonSerializer();            
+            
             ServiceCollection = serviceCollection;
 
             _networkManager = networkManager;
@@ -1049,12 +1052,11 @@ namespace Emby.Server.Implementations
             var versions = new List<(Version PluginVersion, string Name, string Path)>();
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
 
-            var serializer = new JsonSerializer();
             foreach (var dir in directories)
             {
                 try
                 {
-                    var manifest = serializer.DeserializeFromFile<PlugInManifest>(Path.Combine(dir, "meta.json");
+                    var manifest = _jsonSerializer.DeserializeFromFile<PlugInManifest>(Path.Combine(dir, "meta.json");
 
                     if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                     {
