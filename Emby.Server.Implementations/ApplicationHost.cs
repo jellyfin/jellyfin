@@ -1056,7 +1056,7 @@ namespace Emby.Server.Implementations
             {
                 try
                 {
-                    var manifest = _jsonSerializer.DeserializeFromFile<PlugInManifest>(Path.Combine(dir, "meta.json");
+                    var manifest = _jsonSerializer.DeserializeFromFile<PlugInManifest>(Path.Combine(dir, "meta.json"));
 
                     if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                     {
