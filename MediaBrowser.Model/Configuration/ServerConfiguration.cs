@@ -137,7 +137,7 @@ namespace MediaBrowser.Model.Configuration
         public int GatewayMonitorPeriod { get; set; } = 60;
 
         /// <summary>
-        /// Gets a value indicating whether is multi-socket binding available.
+        /// Gets a value indicating whether multi-socket binding is available.
         /// </summary>
         public bool EnableMultiSocketBinding { get; } = true;
 
