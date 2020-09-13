@@ -19,8 +19,6 @@ namespace Jellyfin.Networking.Manager
     /// </summary>
     public class NetworkManager : INetworkManager, IDisposable
     {
-        private static NetworkManager? _instance;
-
         /// <summary>
         /// Contains the description of the interface along with its index.
         /// </summary>
@@ -117,8 +115,6 @@ namespace Jellyfin.Networking.Manager
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
-
-            Instance = this;
         }
 #pragma warning restore CS8618 // Non-nullable field is uninitialized.
 
@@ -126,19 +122,6 @@ namespace Jellyfin.Networking.Manager
         /// Event triggered on network changes.
         /// </summary>
         public event EventHandler? NetworkChanged;
-
-        /// <summary>
-        /// Gets the singleton of this object.
-        /// </summary>
-        public static NetworkManager Instance
-        {
-            get => GetInstance();
-
-            internal set
-            {
-                _instance = value;
-            }
-        }
 
         /// <summary>
         /// Gets the unique network location signature, which is updated on every network change.
@@ -769,16 +752,6 @@ namespace Jellyfin.Networking.Manager
 
                 _disposed = true;
             }
-        }
-
-        private static NetworkManager GetInstance()
-        {
-            if (_instance == null)
-            {
-                throw new ApplicationException("NetworkManager is not initialised.");
-            }
-
-            return _instance;
         }
 
         private void ConfigurationUpdated(object? sender, EventArgs args)

@@ -272,7 +272,7 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    NetCollection addresses = NetworkManager.Instance.GetAllBindInterfaces();
+                    NetCollection addresses = appHost.NetManager.GetAllBindInterfaces();
 
                     bool flagged = false;
                     foreach (IPObject netAdd in addresses)

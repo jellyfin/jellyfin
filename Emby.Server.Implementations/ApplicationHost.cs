@@ -187,11 +187,6 @@ namespace Emby.Server.Implementations
         public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
-        /// Gets the NetworkManager object.
-        /// </summary>
-        private readonly INetworkManager _networkManager;
-
-        /// <summary>
         /// Gets the logger factory.
         /// </summary>
         protected ILoggerFactory LoggerFactory { get; }
@@ -264,7 +259,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
-            _networkManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+            NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
@@ -285,6 +280,11 @@ namespace Emby.Server.Implementations
             };
             Certificate = GetCertificate(CertificateInfo);
         }
+
+        /// <summary>
+        /// Gets the NetworkManager instance.
+        /// </summary>
+        public INetworkManager NetManager { get; internal set; }
 
         public string ExpandVirtualPath(string path)
         {
@@ -517,7 +517,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TvdbClientManager>();
 
-            ServiceCollection.AddSingleton(_networkManager);
+            ServiceCollection.AddSingleton(NetManager);
             ServiceCollection.AddSingleton<GatewayMonitor>();
             ServiceCollection.AddSingleton<WhoIsJellyfinServer>();
             ServiceCollection.AddSingleton<ExternalPortForwarding>();
@@ -1109,7 +1109,7 @@ namespace Emby.Server.Implementations
         }
 
         public IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo()
-            => _networkManager.GetMacAddresses()
+            => NetManager.GetMacAddresses()
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
@@ -1140,7 +1140,7 @@ namespace Emby.Server.Implementations
                 return _startupOptions.PublishedServerUrl.ToString().Trim('/');
             }
 
-            string smart = _networkManager.GetBindInterface(source, out int? port);
+            string smart = NetManager.GetBindInterface(source, out int? port);
 
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))

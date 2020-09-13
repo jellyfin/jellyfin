@@ -373,31 +373,23 @@ namespace Jellyfin.Networking.Udp
         /// Creates a set of multicast clients, one for each internal network address.
         /// </summary>
         /// <param name="port">Port to listen upon.</param>
+        /// <param name="addresses">List of addresses to use.</param>
         /// <param name="processor">Optional processing function for incoming packets.</param>
         /// <param name="logger">Optional logger.</param>
         /// <param name="failure">Optional. Method to call in case of listening failure.</param>
-        /// <param name="restrictedToLAN">Create clients only for the internal LAN.</param>
         /// <param name="enableTracing">Enables tracing on the ports.</param>
         /// <returns>A list of UdpProcesss.</returns>
         public static List<UdpProcess> CreateMulticastClients(
             int port,
+            NetCollection addresses,
             UdpProcessor? processor = null,
             ILogger? logger = null,
             FailureFunction? failure = null,
-            bool restrictedToLAN = true,
             bool enableTracing = false)
         {
-            if (_internalInterface == null || _allInterfaces == null)
-            {
-                _internalInterface = NetworkManager.Instance.GetInternalBindAddresses();
-                _allInterfaces = NetworkManager.Instance.GetAllBindInterfaces();
-            }
-
             var clients = new List<UdpProcess>();
 
-            NetCollection ba = restrictedToLAN ? _internalInterface : _allInterfaces;
-
-            foreach (IPObject ip in ba)
+            foreach (IPObject ip in addresses)
             {
                 var client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
                 if (client != null)

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -32,12 +33,14 @@ namespace Jellyfin.Networking.Advertising
         /// <summary>
         /// Initializes a new instance of the <see cref="WhoIsJellyfinServer"/> class.
         /// </summary>
-        /// <param name="logger">Logger instance.</param>
-        /// <param name="appHost">Application Host instance.</param>
-        /// <param name="configurationManager">IServerConfigurationManager instance.</param>
+        /// <param name="logger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="appHost">The <see cref="IServerApplicationHost"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instace.</param>
+        /// <param name="configurationManager">The <see cref="IServerConfigurationManager"/> instance.</param>
         public WhoIsJellyfinServer(
             ILogger logger,
             IServerApplicationHost appHost,
+            INetworkManager networkManager,
             IServerConfigurationManager configurationManager)
         {
             _logger = logger ?? throw new NullReferenceException(nameof(logger));
@@ -48,9 +51,9 @@ namespace Jellyfin.Networking.Advertising
             {
                 _udpProcess = UdpServer.CreateMulticastClients(
                     PortNumber,
+                    networkManager.GetAllBindInterfaces(),
                     ProcessMessage,
                     _logger,
-                    restrictedToLAN: false,
                     enableTracing: _config.Configuration.AutoDiscoveryTracing);
 
                 if (_udpProcess.Count == 0)
