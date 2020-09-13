@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;

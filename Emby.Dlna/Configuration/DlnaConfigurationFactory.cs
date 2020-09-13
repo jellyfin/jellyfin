@@ -1,6 +1,5 @@
 #nullable enable
 using System.Collections.Generic;
-using Emby.Dlna.Configuration;
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Dlna.Configuration

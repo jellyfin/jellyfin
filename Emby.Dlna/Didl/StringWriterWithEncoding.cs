@@ -1,6 +1,5 @@
-#pragma warning disable CA1305
-
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -34,7 +33,7 @@ namespace Emby.Dlna.Didl
         /// </summary>
         /// <param name="sb">The <see cref="StringBuilder"/>.</param>
         public StringWriterWithEncoding(StringBuilder sb)
-            : base(sb)
+            : base(sb, CultureInfo.InvariantCulture)
         {
         }
 
@@ -74,7 +73,7 @@ namespace Emby.Dlna.Didl
         /// <param name="sb">The <see cref="StringBuilder"/>.</param>
         /// <param name="encoding">The <see cref="Encoding"/>.</param>
         public StringWriterWithEncoding(StringBuilder sb, Encoding encoding)
-            : base(sb)
+            : base(sb, CultureInfo.InvariantCulture)
         {
             _encoding = encoding;
         }

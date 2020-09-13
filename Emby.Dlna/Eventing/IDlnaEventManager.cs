@@ -1,10 +1,10 @@
-#pragma warning disable CS1591
-
-using Emby.Dlna.Eventing;
 using Emby.Dlna.Service;
 
 namespace Emby.Dlna.Eventing
 {
+    /// <summary>
+    /// Interface class for <seealso cref="DlnaEventManager"/> class.
+    /// </summary>
     public interface IDlnaEventManager
     {
         /// <summary>
