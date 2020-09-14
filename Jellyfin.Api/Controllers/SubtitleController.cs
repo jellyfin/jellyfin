@@ -164,7 +164,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesFile("text/*")]
-        public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string? id)
+        public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string id)
         {
             var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
 

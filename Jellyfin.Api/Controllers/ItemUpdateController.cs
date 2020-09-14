@@ -195,7 +195,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Items/{itemId}/ContentType")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateItemContentType([FromRoute, Required] Guid itemId, [FromQuery, Required] string? contentType)
+        public ActionResult UpdateItemContentType([FromRoute, Required] Guid itemId, [FromQuery] string contentType)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)

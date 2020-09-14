@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Keys")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CreateKey([FromQuery, Required] string? app)
+        public ActionResult CreateKey([FromQuery, Required] string app)
         {
             _authRepo.Create(new AuthenticationInfo
             {

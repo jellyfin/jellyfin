@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
-        public ActionResult GetGeneralImage([FromRoute, Required] string? name, [FromRoute, Required] string? type)
+        public ActionResult GetGeneralImage([FromRoute, Required] string name, [FromRoute, Required] string type)
         {
             var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
                 ? "folder"
@@ -114,8 +114,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
         public ActionResult GetRatingImage(
-            [FromRoute, Required] string? theme,
-            [FromRoute, Required] string? name)
+            [FromRoute, Required] string theme,
+            [FromRoute, Required] string name)
         {
             return GetImageFile(_applicationPaths.RatingsPath, theme, name);
         }
@@ -148,8 +148,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
         public ActionResult GetMediaInfoImage(
-            [FromRoute, Required] string? theme,
-            [FromRoute, Required] string? name)
+            [FromRoute, Required] string theme,
+            [FromRoute, Required] string name)
         {
             return GetImageFile(_applicationPaths.MediaInfoImagesPath, theme, name);
         }

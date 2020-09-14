@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
-            if (httpContext.Request.IsLocal())
+            if (httpContext.IsLocal())
             {
                 await _next(httpContext).ConfigureAwait(false);
                 return;

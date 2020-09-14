@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, Required] string? id)
+        public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, Required] string id)
         {
             var deviceInfo = _deviceManager.GetDevice(id);
             if (deviceInfo == null)
@@ -87,7 +87,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, Required] string? id)
+        public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, Required] string id)
         {
             var deviceInfo = _deviceManager.GetDeviceOptions(id);
             if (deviceInfo == null)
@@ -111,7 +111,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateDeviceOptions(
-            [FromQuery, Required] string? id,
+            [FromQuery, Required] string id,
             [FromBody, Required] DeviceOptions deviceOptions)
         {
             var existingDeviceOptions = _deviceManager.GetDeviceOptions(id);
@@ -134,7 +134,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteDevice([FromQuery, Required] string? id)
+        public ActionResult DeleteDevice([FromQuery, Required] string id)
         {
             var existingDevice = _deviceManager.GetDevice(id);
             if (existingDevice == null)

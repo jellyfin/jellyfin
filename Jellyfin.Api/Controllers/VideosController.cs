@@ -208,7 +208,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> MergeVersions([FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> MergeVersions([FromQuery, Required] string itemIds)
         {
             var items = RequestHelpers.Split(itemIds, ',', true)
                 .Select(i => _libraryManager.GetItemById(i))

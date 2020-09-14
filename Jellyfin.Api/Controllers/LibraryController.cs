@@ -556,7 +556,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Library/Movies/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedMovies([FromRoute, Required] string? tmdbId, [FromRoute, Required] string? imdbId)
+        public ActionResult PostUpdatedMovies([FromQuery] string? tmdbId, [FromQuery] string? imdbId)
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
