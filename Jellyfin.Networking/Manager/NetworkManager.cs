@@ -190,7 +190,7 @@ namespace Jellyfin.Networking.Manager
 
             lock (_intLock)
             {
-                return _internalInterfaces.Any(i => i.Address.Equals(address) && i.Tag < 0);
+                return _internalInterfaces.Where(i => i.Address.Equals(address) && (i.Tag < 0)).Any();
             }
         }
 
@@ -396,12 +396,12 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 // Get the first LAN interface address that isn't a loopback.
-                var interfaces = _interfaceAddresses
+                var interfaces = new NetCollection(_interfaceAddresses
                     .Exclude(_bindExclusions)
                     .Where(p => IsInLocalNetwork(p))
-                    .OrderBy(p => p.Tag);
+                    .OrderBy(p => p.Tag));
 
-                if (result.Any())
+                if (interfaces.Count > 0)
                 {
                     if (haveSource)
                     {
@@ -1126,10 +1126,10 @@ namespace Jellyfin.Networking.Manager
         private bool MatchesBindInterface(IPObject source, bool isExternal, out string result)
         {
             result = string.Empty;
-            var nc = _bindAddresses.Exclude(_bindExclusions).Where(p => !p.IsLoopback());
+            var nc = new NetCollection(_bindAddresses.Exclude(_bindExclusions).Where(p => !p.IsLoopback()));
 
-            int count = nc.Count();
-            if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses.Equals(IPAddress.IPv6Any)))
+            int count = nc.Count;
+            if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses[0].Equals(IPAddress.IPv6Any)))
             {
                 // Ignore IPAny addresses.
                 count = 0;
@@ -1139,25 +1139,34 @@ namespace Jellyfin.Networking.Manager
             {
                 // Check to see if any of the bind interfaces are in the same subnet.
 
-                IEnumerable<IPObject> bindResult;
+                NetCollection bindResult;
                 IPAddress? defaultGateway = null;
+                IPAddress? bindAddress;
 
                 if (isExternal)
                 {
                     // Find all external bind addresses. Store the default gateway, but check to see if there is a better match first.
-                    bindResult = nc.Where(p => !IsInLocalNetwork(p)).OrderBy(p => p.Tag);
+                    bindResult = new NetCollection(nc
+                        .Where(p => !IsInLocalNetwork(p))
+                        .OrderBy(p => p.Tag));
                     defaultGateway = bindResult.FirstOrDefault()?.Address;
-                    bindResult = bindResult.Where(p => p.Contains(source)).OrderBy(p => p.Tag);
+                    bindAddress = bindResult
+                        .Where(p => p.Contains(source))
+                        .OrderBy(p => p.Tag)
+                        .FirstOrDefault()?.Address;
                 }
                 else
                 {
                     // Look for the best internal address.
-                    bindResult = nc.Where(p => IsInLocalNetwork(p) && p.Contains(source)).OrderBy(p => p.Tag);
+                    bindAddress = nc
+                        .Where(p => IsInLocalNetwork(p) && (p.Contains(source) || p.Equals(IPAddress.None)))
+                        .OrderBy(p => p.Tag)
+                        .FirstOrDefault()?.Address;
                 }
 
-                if (bindResult.Any())
+                if (bindAddress != null)
                 {
-                    result = FormatIP6String(bindResult.First().Address);
+                    result = FormatIP6String(bindAddress);
                     _logger.LogDebug("{0}: GetBindInterface: Has source, found a match bind interface subnets. {1}", source, result);
                     return true;
                 }
@@ -1194,12 +1203,12 @@ namespace Jellyfin.Networking.Manager
         {
             result = string.Empty;
             // Get the first WAN interface address that isn't a loopback.
-            var extResult = _interfaceAddresses
+            var extResult = new NetCollection(_interfaceAddresses
                 .Exclude(_bindExclusions)
                 .Where(p => !IsInLocalNetwork(p))
-                .OrderBy(p => p.Tag);
+                .OrderBy(p => p.Tag));
 
-            if (extResult.Any())
+            if (extResult.Count > 0)
             {
                 // Does the request originate in one of the interface subnets?
                 // (For systems with multiple internal network cards, and multiple subnets)

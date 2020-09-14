@@ -29,7 +29,7 @@ namespace Jellyfin.Networking.Manager
         public bool TrustAllIP6Interfaces { get; }
 
         /// <summary>
-        /// Gets returns the remote address filter.
+        /// Gets the remote address filter.
         /// </summary>
         NetCollection RemoteAddressFilter { get; }
 
@@ -45,7 +45,7 @@ namespace Jellyfin.Networking.Manager
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
         /// <returns>Netcollection.</returns>
-        NetCollection GetLoopbacks();
+        public NetCollection GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -215,6 +215,6 @@ namespace Jellyfin.Networking.Manager
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
         /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
-        void UpdateSettings(ServerConfiguration config);
+        public void UpdateSettings(ServerConfiguration config);
     }
 }
