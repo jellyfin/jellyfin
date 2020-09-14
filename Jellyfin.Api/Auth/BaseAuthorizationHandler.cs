@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
-using Jellyfin.Networking.Manager;
+
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;

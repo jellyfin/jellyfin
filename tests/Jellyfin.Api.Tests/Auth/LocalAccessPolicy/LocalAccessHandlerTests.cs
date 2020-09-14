@@ -4,7 +4,7 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Constants;
-using Jellyfin.Networking.Manager;
+
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;

@@ -161,6 +161,11 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
+        /// Gets the <see cref="INetworkManager"/> singleton instance.
+        /// </summary>
+        public INetworkManager NetManager { get; internal set; }
+
+        /// <summary>
         /// Occurs when [has pending restart changed].
         /// </summary>
         public event EventHandler HasPendingRestartChanged;
@@ -188,11 +193,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The plugins.</value>
         public IReadOnlyList<IPlugin> Plugins => _plugins;
-
-        /// <summary>
-        /// Gets the NetworkManager object.
-        /// </summary>
-        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// Gets the logger factory.
@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
-            _networkManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+            NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
@@ -524,7 +524,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TvdbClientManager>();
 
-            ServiceCollection.AddSingleton(_networkManager);
+            ServiceCollection.AddSingleton(NetManager);
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
 
@@ -1116,7 +1116,7 @@ namespace Emby.Server.Implementations
         }
 
         public IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo()
-            => _networkManager.GetMacAddresses()
+            => NetManager.GetMacAddresses()
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
@@ -1138,7 +1138,7 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(object source)
+        public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
         {
             // Published server ends with a /
             if (_startupOptions.PublishedServerUrl != null)
@@ -1147,7 +1147,47 @@ namespace Emby.Server.Implementations
                 return _startupOptions.PublishedServerUrl.ToString().Trim('/');
             }
 
-            string smart = _networkManager.GetBindInterface(source, out int? port);
+            string smart = NetManager.GetBindInterface(ipAddress, out port);
+            // If the smartAPI doesn't start with http then treat it as a host or ip.
+            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return smart.Trim('/');
+            }
+
+            return GetLocalApiUrl(smart.Trim('/'), null, port);
+        }
+
+        /// <inheritdoc/>
+        public string GetSmartApiUrl(HttpRequest request, int? port = null)
+        {
+            // Published server ends with a /
+            if (_startupOptions.PublishedServerUrl != null)
+            {
+                // Published server ends with a '/', so we need to remove it.
+                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
+            }
+
+            string smart = NetManager.GetBindInterface(request, out port);
+            // If the smartAPI doesn't start with http then treat it as a host or ip.
+            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return smart.Trim('/');
+            }
+
+            return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
+        }
+
+        /// <inheritdoc/>
+        public string GetSmartApiUrl(string hostname, int? port = null)
+        {
+            // Published server ends with a /
+            if (_startupOptions.PublishedServerUrl != null)
+            {
+                // Published server ends with a '/', so we need to remove it.
+                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
+            }
+
+            string smart = NetManager.GetBindInterface(hostname, out port);
 
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -1155,7 +1195,7 @@ namespace Emby.Server.Implementations
                 return smart.Trim('/');
             }
 
-            return GetLocalApiUrl(smart.Trim('/'), source is HttpRequest request ? request.Scheme : null, port);
+            return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
         /// <inheritdoc/>

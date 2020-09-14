@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Networking.Manager;
+
 using MediaBrowser.Common.Net;
 using NetworkCollection;
 

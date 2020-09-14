@@ -5,7 +5,7 @@ using System.Reflection;
 using Emby.Drawing;
 using Emby.Server.Implementations;
 using Jellyfin.Drawing.Skia;
-using Jellyfin.Networking.Manager;
+
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Events;
