@@ -5,7 +5,7 @@ namespace Emby.Server.Implementations.Plugins
     /// <summary>
     /// Defines a Plugin manifest file.
     /// </summary>
-    public class PlugInManifest
+    public class PluginManifest
     {
         /// <summary>
         /// Gets or sets the category of the plugin.
