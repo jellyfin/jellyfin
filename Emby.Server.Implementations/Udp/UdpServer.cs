@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Udp
         {
             string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
                 ? _config[AddressOverrideConfigKey]
-                : await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+                : _appHost.GetSmartApiUrl(string.Empty); // MIGRATION: Temp value.
 
             if (!string.IsNullOrEmpty(localUrl))
             {

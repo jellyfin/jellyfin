@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jellyfin.Networking\Jellyfin.Networking.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
   </ItemGroup>
 

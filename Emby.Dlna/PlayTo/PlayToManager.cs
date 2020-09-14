@@ -177,15 +177,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress;
-                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IPAddress.Any) || info.LocalIpAddress.Equals(IPAddress.IPv6Any))
-                {
-                    serverAddress = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
-                }
+                string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
 
                 controller = new PlayToController(
                     sessionInfo,

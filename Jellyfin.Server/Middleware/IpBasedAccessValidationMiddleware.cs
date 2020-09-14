@@ -4,6 +4,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
+using NetworkCollection;
 
 namespace Jellyfin.Server.Middleware
 {
@@ -32,42 +33,42 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
-            if (httpContext.IsLocal())
+            if (httpContext.Connection.RemoteIpAddress == null)
             {
+                // Running locally.
                 await _next(httpContext).ConfigureAwait(false);
                 return;
             }
 
-            var remoteIp = httpContext.GetNormalizedRemoteIp();
+            var remoteIp = httpContext.Connection.RemoteIpAddress;
 
             if (serverConfigurationManager.Configuration.EnableRemoteAccess)
             {
-                var addressFilter = serverConfigurationManager.Configuration.RemoteIPFilter.Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                // If left blank, all remote addresses will be allowed.
+                NetCollection remoteAddressFilter = networkManager.RemoteAddressFilter;
 
-                if (addressFilter.Length > 0 && !networkManager.IsInLocalNetwork(remoteIp))
+                if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIp))
                 {
-                    if (serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
+                    // remoteAddressFilter is a whitelist or blacklist.
+                    bool isListed = remoteAddressFilter.Contains(remoteIp);
+                    if (!serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
                     {
-                        if (networkManager.IsAddressInSubnets(remoteIp, addressFilter))
-                        {
-                            return;
-                        }
+                        // Black list, so flip over.
+                        isListed = !isListed;
                     }
-                    else
+
+                    if (!isListed)
                     {
-                        if (!networkManager.IsAddressInSubnets(remoteIp, addressFilter))
-                        {
-                            return;
-                        }
+                        // If your name isn't on the list, you arn't coming in.
+                        return;
                     }
                 }
             }
-            else
+            else if (!networkManager.IsInLocalNetwork(remoteIp))
             {
-                if (!networkManager.IsInLocalNetwork(remoteIp))
-                {
-                    return;
-                }
+                // Remote not enabled. So everyone should be LAN.
+                return;
             }
 
             await _next(httpContext).ConfigureAwait(false);

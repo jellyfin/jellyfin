@@ -55,8 +55,8 @@ namespace Emby.Naming.AudioBook
             {
                 Path = path,
                 Container = container,
-                PartNumber = parsingResult.PartNumber,
                 ChapterNumber = parsingResult.ChapterNumber,
+                PartNumber = parsingResult.PartNumber,
                 IsDirectory = isDirectory
             };
         }

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
