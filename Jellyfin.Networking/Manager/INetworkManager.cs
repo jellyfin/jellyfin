@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using MediaBrowser.Model.Configuration;
+using Microsoft.AspNetCore.Http;
 using NetworkCollection;
 
 namespace Jellyfin.Networking.Manager
@@ -18,9 +19,9 @@ namespace Jellyfin.Networking.Manager
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets the Published server override list.
+        /// Gets the published server urls list.
         /// </summary>
-        Dictionary<IPNetAddress, string> PublishedServerOverrides { get; }
+        Dictionary<IPNetAddress, string> PublishedServerUrls { get; }
 
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
@@ -75,7 +76,37 @@ namespace Jellyfin.Networking.Manager
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(object? source, out int? port);
+        string GetBindInterface(IPObject source, out int? port);
+
+        /// <summary>
+        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+        /// If no bind addresses are specified, an internal interface address is selected.
+        /// (See above).
+        /// </summary>
+        /// <param name="source">Source of the request.</param>
+        /// <param name="port">Optional port returned, if it's part of an override.</param>
+        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
+        string GetBindInterface(HttpRequest source, out int? port);
+
+        /// <summary>
+        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+        /// If no bind addresses are specified, an internal interface address is selected.
+        /// (See above).
+        /// </summary>
+        /// <param name="source">IP address of the request.</param>
+        /// <param name="port">Optional port returned, if it's part of an override.</param>
+        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
+        string GetBindInterface(IPAddress source, out int? port);
+
+        /// <summary>
+        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+        /// If no bind addresses are specified, an internal interface address is selected.
+        /// (See above).
+        /// </summary>
+        /// <param name="source">Source of the request.</param>
+        /// <param name="port">Optional port returned, if it's part of an override.</param>
+        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
+        string GetBindInterface(string source, out int? port);
 
         /// <summary>
         /// Checks to see if the ip address is specifically excluded in LocalNetworkAddresses.

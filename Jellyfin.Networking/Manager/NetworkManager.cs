@@ -19,8 +19,6 @@ namespace Jellyfin.Networking.Manager
     /// </summary>
     public class NetworkManager : INetworkManager, IDisposable
     {
-        private static NetworkManager? _instance;
-
         /// <summary>
         /// Contains the description of the interface along with its index.
         /// </summary>
@@ -48,7 +46,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Holds the bind address overrides.
         /// </summary>
-        private readonly Dictionary<IPNetAddress, string> _overrideUrls;
+        private readonly Dictionary<IPNetAddress, string> _publishedServerUrls;
 
         /// <summary>
         /// Used to stop "event-racing conditions".
@@ -105,7 +103,7 @@ namespace Jellyfin.Networking.Manager
             _interfaceAddresses = new NetCollection(unique: false);
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new SortedList<string, int>();
-            _overrideUrls = new Dictionary<IPNetAddress, string>();
+            _publishedServerUrls = new Dictionary<IPNetAddress, string>();
 
             UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
             if (!IsIP6Enabled && !IsIP4Enabled)
@@ -117,8 +115,6 @@ namespace Jellyfin.Networking.Manager
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
-
-            Instance = this;
         }
 #pragma warning restore CS8618 // Non-nullable field is uninitialized.
 
@@ -126,19 +122,6 @@ namespace Jellyfin.Networking.Manager
         /// Event triggered on network changes.
         /// </summary>
         public event EventHandler? NetworkChanged;
-
-        /// <summary>
-        /// Gets the singleton of this object.
-        /// </summary>
-        public static NetworkManager Instance
-        {
-            get => GetInstance();
-
-            internal set
-            {
-                _instance = value;
-            }
-        }
 
         /// <summary>
         /// Gets the unique network location signature, which is updated on every network change.
@@ -176,7 +159,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Gets the Published server override list.
         /// </summary>
-        public Dictionary<IPNetAddress, string> PublishedServerOverrides => _overrideUrls;
+        public Dictionary<IPNetAddress, string> PublishedServerUrls => _publishedServerUrls;
 
         /// <inheritdoc/>
         public void Dispose()
@@ -198,9 +181,12 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsGatewayInterface(object? addressObj)
         {
-            var address = (addressObj is IPAddress addressIP) ?
-                addressIP : (addressObj is IPObject addressIPObj) ?
-                    addressIPObj.Address : IPAddress.None;
+            var address = addressObj switch
+            {
+                IPAddress addressIp => addressIp,
+                IPObject addressIpObj => addressIpObj.Address,
+                _ => IPAddress.None
+            };
 
             lock (_intLock)
             {
@@ -320,213 +306,97 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public string GetBindInterface(object? source, out int? port)
+        public string GetBindInterface(string source, out int? port)
         {
-            bool chromeCast = false;
-            port = null;
-            // Parse the source object in an attempt to discover where the request originated.
-            IPObject sourceAddr;
-            if (source is HttpRequest sourceReq)
+            if (!string.IsNullOrEmpty(source))
             {
-                port = sourceReq.Host.Port;
-                if (IPHost.TryParse(sourceReq.Host.Host, out IPHost host))
+                if (string.Equals(source, "chromecast", StringComparison.OrdinalIgnoreCase))
                 {
-                    sourceAddr = host;
-                }
-                else
-                {
-                    // Assume it's external, as we cannot resolve the host.
-                    sourceAddr = IPHost.None;
-                }
-            }
-            else if (source is string sourceStr && !string.IsNullOrEmpty(sourceStr))
-            {
-                if (string.Equals(sourceStr, "chromecast", StringComparison.OrdinalIgnoreCase))
-                {
-                    chromeCast = true;
                     // Just assign a variable so has source = true;
-                    sourceAddr = IPNetAddress.IP4Loopback;
+                    return GetBindInterface(IPNetAddress.IP4Loopback, out port);
                 }
 
-                if (IPHost.TryParse(sourceStr, out IPHost host))
+                if (IPHost.TryParse(source, out IPHost host))
                 {
-                    sourceAddr = host;
-                }
-                else
-                {
-                    // Assume it's external, as we cannot resolve the host.
-                    sourceAddr = IPHost.None;
+                    return GetBindInterface(host, out port);
                 }
             }
-            else if (source is IPAddress sourceIP)
+
+            return GetBindInterface(IPHost.None, out port);
+        }
+
+        /// <inheritdoc/>
+        public string GetBindInterface(IPAddress source, out int? port)
+        {
+            return GetBindInterface(new IPNetAddress(source), out port);
+        }
+
+        /// <inheritdoc/>
+        public string GetBindInterface(HttpRequest source, out int? port)
+        {
+            string result;
+
+            if (source != null && IPHost.TryParse(source.Host.Host, out IPHost host))
             {
-                sourceAddr = new IPNetAddress(sourceIP);
+                result = GetBindInterface(host, out port);
+                port ??= source.Host.Port;
             }
             else
             {
-                // If we have no idea, then assume it came from an external address.
-                sourceAddr = IPHost.None;
+                result = GetBindInterface(IPNetAddress.None, out port);
+                port ??= source?.Host.Port;
             }
 
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public string GetBindInterface(IPObject source, out int? port)
+        {
+            port = null;
+            bool isChromeCast = source == IPNetAddress.IP4Loopback;
             // Do we have a source?
-            bool haveSource = !sourceAddr.Address.Equals(IPAddress.None);
+            bool haveSource = !source.Address.Equals(IPAddress.None);
+            bool isExternal = false;
 
             if (haveSource)
             {
-                if (!IsIP6Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetworkV6)
+                if (!IsIP6Enabled && source.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     _logger.LogWarning("IPv6 is disabled in JellyFin, but enabled in the OS. This may affect how the interface is selected.");
                 }
 
-                if (!IsIP4Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetwork)
+                if (!IsIP4Enabled && source.AddressFamily == AddressFamily.InterNetwork)
                 {
                     _logger.LogWarning("IPv4 is disabled in JellyFin, but enabled in the OS. This may affect how the interface is selected.");
                 }
-            }
 
-            bool isExternal = haveSource && !IsInLocalNetwork(sourceAddr);
+                isExternal = !IsInLocalNetwork(source);
 
-            string bindPreference = string.Empty;
-            if (haveSource)
-            {
-                // Check for user override.
-                foreach (var addr in _overrideUrls)
+                if (MatchesPublishedServerUrl(source, isExternal, isChromeCast, out string result, out port))
                 {
-                    // Remaining. Match anything.
-                    if (addr.Key.Equals(IPAddress.Broadcast))
-                    {
-                        bindPreference = addr.Value;
-                        break;
-                    }
-                    else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && (isExternal || chromeCast))
-                    {
-                        // External.
-                        bindPreference = addr.Value;
-                        break;
-                    }
-                    else if (addr.Key.Contains(sourceAddr))
-                    {
-                        // Match ip address.
-                        bindPreference = addr.Value;
-                        break;
-                    }
+                    _logger.LogInformation("{0}: Using BindAddress {1}:{2}", source, result, port);
+                    return result;
                 }
             }
 
             _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
 
-            if (!string.IsNullOrEmpty(bindPreference))
-            {
-                // Has it got a port defined?
-                var parts = bindPreference.Split(':');
-                if (parts.Length > 1)
-                {
-                    if (int.TryParse(parts[1], out int p))
-                    {
-                        bindPreference = parts[0];
-                        port = p;
-                    }
-                }
-
-                _logger.LogInformation("{0}: Using BindAddress {1}:{2}", sourceAddr, bindPreference, port);
-                return bindPreference;
-            }
-
-            string ipresult;
-
             // No preference given, so move on to bind addresses.
             lock (_intLock)
             {
-                var nc = _bindAddresses.Exclude(_bindExclusions).Where(p => !p.IsLoopback());
-
-                int count = nc.Count();
-                if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses.Equals(IPAddress.IPv6Any)))
+                if (MatchesBindInterface(source, isExternal, out string result))
                 {
-                    // Ignore IPAny addresses.
-                    count = 0;
+                    return result;
                 }
 
-                if (count != 0)
+                if (isExternal && MatchesExternalInterface(source, out result))
                 {
-                    // Check to see if any of the bind interfaces are in the same subnet.
-
-                    IEnumerable<IPObject> bindResult;
-                    IPAddress? defaultGateway = null;
-
-                    if (isExternal)
-                    {
-                        // Find all external bind addresses. Store the default gateway, but check to see if there is a better match first.
-                        bindResult = nc.Where(p => !IsInLocalNetwork(p)).OrderBy(p => p.Tag);
-                        defaultGateway = bindResult.FirstOrDefault()?.Address;
-                        bindResult = bindResult.Where(p => p.Contains(sourceAddr)).OrderBy(p => p.Tag);
-                    }
-                    else
-                    {
-                        // Look for the best internal address.
-                        bindResult = nc.Where(p => IsInLocalNetwork(p) && p.Contains(sourceAddr)).OrderBy(p => p.Tag);
-                    }
-
-                    if (bindResult.Any())
-                    {
-                        ipresult = FormatIP6String(bindResult.First().Address);
-                        _logger.LogDebug("{0}: GetBindInterface: Has source, found a match bind interface subnets. {1}", sourceAddr, ipresult);
-                        return ipresult;
-                    }
-
-                    if (isExternal && defaultGateway != null)
-                    {
-                        ipresult = FormatIP6String(defaultGateway);
-                        _logger.LogDebug("{0}: GetBindInterface: Using first user defined external interface. {1}", sourceAddr, ipresult);
-                        return ipresult;
-                    }
-
-                    ipresult = FormatIP6String(nc.First().Address);
-                    _logger.LogDebug("{0}: GetBindInterface: Selected first user defined interface. {1}", sourceAddr, ipresult);
-
-                    if (isExternal)
-                    {
-                        // TODO: remove this after testing.
-                        _logger.LogWarning("{0}: External request received, however, only an internal interface bind found.", sourceAddr);
-                    }
-
-                    return ipresult;
-                }
-
-                if (isExternal)
-                {
-                    // Get the first WAN interface address that isn't a loopback.
-                    var extResult = _interfaceAddresses
-                        .Exclude(_bindExclusions)
-                        .Where(p => !IsInLocalNetwork(p))
-                        .OrderBy(p => p.Tag);
-
-                    if (extResult.Any())
-                    {
-                        // Does the request originate in one of the interface subnets?
-                        // (For systems with multiple internal network cards, and multiple subnets)
-                        foreach (var intf in extResult)
-                        {
-                            if (!IsInLocalNetwork(intf) && intf.Contains(sourceAddr))
-                            {
-                                ipresult = FormatIP6String(intf.Address);
-                                _logger.LogDebug("{0}: GetBindInterface: Selected best external on interface on range. {1}", sourceAddr, ipresult);
-                                return ipresult;
-                            }
-                        }
-
-                        ipresult = FormatIP6String(extResult.First().Address);
-                        _logger.LogDebug("{0}: GetBindInterface: Selected first external interface. {0}", sourceAddr, ipresult);
-                        return ipresult;
-                    }
-
-                    // Have to return something, so return an internal address
-
-                    // TODO: remove this after testing.
-                    _logger.LogWarning("{0}: External request received, however, no WAN interface found.", sourceAddr);
+                    return result;
                 }
 
                 // Get the first LAN interface address that isn't a loopback.
-                var result = _interfaceAddresses
+                var interfaces = _interfaceAddresses
                     .Exclude(_bindExclusions)
                     .Where(p => IsInLocalNetwork(p))
                     .OrderBy(p => p.Tag);
@@ -537,26 +407,26 @@ namespace Jellyfin.Networking.Manager
                     {
                         // Does the request originate in one of the interface subnets?
                         // (For systems with multiple internal network cards, and multiple subnets)
-                        foreach (var intf in result)
+                        foreach (var intf in interfaces)
                         {
-                            if (intf.Contains(sourceAddr))
+                            if (intf.Contains(source))
                             {
-                                ipresult = FormatIP6String(intf.Address);
-                                _logger.LogDebug("{0}: GetBindInterface: Has source, matched best internal interface on range. {1}", sourceAddr, ipresult);
-                                return ipresult;
+                                result = FormatIP6String(intf.Address);
+                                _logger.LogDebug("{0}: GetBindInterface: Has source, matched best internal interface on range. {1}", source, result);
+                                return result;
                             }
                         }
                     }
 
-                    ipresult = FormatIP6String(result.First().Address);
-                    _logger.LogDebug("{0}: GetBindInterface: Matched first internal interface. {1}", sourceAddr, ipresult);
-                    return ipresult;
+                    result = FormatIP6String(interfaces.First().Address);
+                    _logger.LogDebug("{0}: GetBindInterface: Matched first internal interface. {1}", source, result);
+                    return result;
                 }
 
                 // There isn't any others, so we'll use the loopback.
-                ipresult = IsIP6Enabled ? "::" : "127.0.0.1";
-                _logger.LogWarning("{0}: GetBindInterface: Loopback return.", sourceAddr, ipresult);
-                return ipresult;
+                result = IsIP6Enabled ? "::" : "127.0.0.1";
+                _logger.LogWarning("{0}: GetBindInterface: Loopback return.", source, result);
+                return result;
             }
         }
 
@@ -771,16 +641,6 @@ namespace Jellyfin.Networking.Manager
             }
         }
 
-        private static NetworkManager GetInstance()
-        {
-            if (_instance == null)
-            {
-                throw new ApplicationException("NetworkManager is not initialised.");
-            }
-
-            return _instance;
-        }
-
         private void ConfigurationUpdated(object? sender, EventArgs args)
         {
             UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
@@ -944,7 +804,7 @@ namespace Jellyfin.Networking.Manager
             {
                 lock (_intLock)
                 {
-                    _overrideUrls.Clear();
+                    _publishedServerUrls.Clear();
                 }
 
                 return;
@@ -952,7 +812,7 @@ namespace Jellyfin.Networking.Manager
 
             lock (_intLock)
             {
-                _overrideUrls.Clear();
+                _publishedServerUrls.Clear();
 
                 foreach (var entry in overrides)
                 {
@@ -966,15 +826,15 @@ namespace Jellyfin.Networking.Manager
                         var replacement = parts[1].Trim();
                         if (string.Equals(parts[0], "remaining", StringComparison.OrdinalIgnoreCase))
                         {
-                            _overrideUrls[new IPNetAddress(IPAddress.Broadcast)] = replacement;
+                            _publishedServerUrls[new IPNetAddress(IPAddress.Broadcast)] = replacement;
                         }
                         else if (string.Equals(parts[0], "external", StringComparison.OrdinalIgnoreCase))
                         {
-                            _overrideUrls[new IPNetAddress(IPAddress.Any)] = replacement;
+                            _publishedServerUrls[new IPNetAddress(IPAddress.Any)] = replacement;
                         }
                         else if (TryParseInterface(parts[0], out IPNetAddress address))
                         {
-                            _overrideUrls[address] = replacement;
+                            _publishedServerUrls[address] = replacement;
                         }
                         else
                         {
@@ -1198,6 +1058,171 @@ namespace Jellyfin.Networking.Manager
                     _logger.LogError(ex, "Error in InitialiseInterfaces.");
                 }
             }
+        }
+
+        /// <summary>
+        /// Attempts to match the source against a user defined bind interface.
+        /// </summary>
+        /// <param name="source">IP source address to use.</param>
+        /// <param name="isExternal">True if the source is in the external subnet.</param>
+        /// <param name="isChromeCast">True if the request is for a chromecast device.</param>
+        /// <param name="bindPreference">The published server url that matches the source address.</param>
+        /// <param name="port">The resultant port, if one exists.</param>
+        /// <returns>True if a match is found.</returns>
+        private bool MatchesPublishedServerUrl(IPObject source, bool isExternal, bool isChromeCast, out string bindPreference, out int? port)
+        {
+            bindPreference = string.Empty;
+            port = null;
+
+            // Check for user override.
+            foreach (var addr in _publishedServerUrls)
+            {
+                // Remaining. Match anything.
+                if (addr.Key.Equals(IPAddress.Broadcast))
+                {
+                    bindPreference = addr.Value;
+                    break;
+                }
+                else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && (isExternal || isChromeCast))
+                {
+                    // External.
+                    bindPreference = addr.Value;
+                    break;
+                }
+                else if (addr.Key.Contains(source))
+                {
+                    // Match ip address.
+                    bindPreference = addr.Value;
+                    break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(bindPreference))
+            {
+                // Has it got a port defined?
+                var parts = bindPreference.Split(':');
+                if (parts.Length > 1)
+                {
+                    if (int.TryParse(parts[1], out int p))
+                    {
+                        bindPreference = parts[0];
+                        port = p;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to match the source against a user defined bind interface.
+        /// </summary>
+        /// <param name="source">IP source address to use.</param>
+        /// <param name="isExternal">True if the source is in the external subnet.</param>
+        /// <param name="result">The result, if a match is found.</param>
+        /// <returns>True if a match is found.</returns>
+        private bool MatchesBindInterface(IPObject source, bool isExternal, out string result)
+        {
+            result = string.Empty;
+            var nc = _bindAddresses.Exclude(_bindExclusions).Where(p => !p.IsLoopback());
+
+            int count = nc.Count();
+            if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses.Equals(IPAddress.IPv6Any)))
+            {
+                // Ignore IPAny addresses.
+                count = 0;
+            }
+
+            if (count != 0)
+            {
+                // Check to see if any of the bind interfaces are in the same subnet.
+
+                IEnumerable<IPObject> bindResult;
+                IPAddress? defaultGateway = null;
+
+                if (isExternal)
+                {
+                    // Find all external bind addresses. Store the default gateway, but check to see if there is a better match first.
+                    bindResult = nc.Where(p => !IsInLocalNetwork(p)).OrderBy(p => p.Tag);
+                    defaultGateway = bindResult.FirstOrDefault()?.Address;
+                    bindResult = bindResult.Where(p => p.Contains(source)).OrderBy(p => p.Tag);
+                }
+                else
+                {
+                    // Look for the best internal address.
+                    bindResult = nc.Where(p => IsInLocalNetwork(p) && p.Contains(source)).OrderBy(p => p.Tag);
+                }
+
+                if (bindResult.Any())
+                {
+                    result = FormatIP6String(bindResult.First().Address);
+                    _logger.LogDebug("{0}: GetBindInterface: Has source, found a match bind interface subnets. {1}", source, result);
+                    return true;
+                }
+
+                if (isExternal && defaultGateway != null)
+                {
+                    result = FormatIP6String(defaultGateway);
+                    _logger.LogDebug("{0}: GetBindInterface: Using first user defined external interface. {1}", source, result);
+                    return true;
+                }
+
+                result = FormatIP6String(nc.First().Address);
+                _logger.LogDebug("{0}: GetBindInterface: Selected first user defined interface. {1}", source, result);
+
+                if (isExternal)
+                {
+                    // TODO: remove this after testing.
+                    _logger.LogWarning("{0}: External request received, however, only an internal interface bind found.", source);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to match the source against am external interface.
+        /// </summary>
+        /// <param name="source">IP source address to use.</param>
+        /// <param name="result">The result, if a match is found.</param>
+        /// <returns>True if a match is found.</returns>
+        private bool MatchesExternalInterface(IPObject source, out string result)
+        {
+            result = string.Empty;
+            // Get the first WAN interface address that isn't a loopback.
+            var extResult = _interfaceAddresses
+                .Exclude(_bindExclusions)
+                .Where(p => !IsInLocalNetwork(p))
+                .OrderBy(p => p.Tag);
+
+            if (extResult.Any())
+            {
+                // Does the request originate in one of the interface subnets?
+                // (For systems with multiple internal network cards, and multiple subnets)
+                foreach (var intf in extResult)
+                {
+                    if (!IsInLocalNetwork(intf) && intf.Contains(source))
+                    {
+                        result = FormatIP6String(intf.Address);
+                        _logger.LogDebug("{0}: GetBindInterface: Selected best external on interface on range. {1}", source, result);
+                        return true;
+                    }
+                }
+
+                result = FormatIP6String(extResult.First().Address);
+                _logger.LogDebug("{0}: GetBindInterface: Selected first external interface. {0}", source, result);
+                return true;
+            }
+
+            // Have to return something, so return an internal address
+
+            // TODO: remove this after testing.
+            _logger.LogWarning("{0}: External request received, however, no WAN interface found.", source);
+            return false;
         }
     }
 }
