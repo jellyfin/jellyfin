@@ -11,6 +11,7 @@ using Emby.Dlna.PlayTo.EventArgs;
 using Jellyfin.Data.Events;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;

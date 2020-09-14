@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -6,7 +7,7 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using NetworkCollection;
 
-namespace Jellyfin.Networking.Manager
+namespace MediaBrowser.Common.Net
 {
     /// <summary>
     /// Interface for the NetworkManager class.

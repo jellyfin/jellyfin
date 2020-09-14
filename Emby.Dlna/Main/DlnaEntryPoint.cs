@@ -17,6 +17,7 @@ using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;

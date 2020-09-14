@@ -13,6 +13,7 @@ using Emby.Dlna.Main;
 using Emby.Dlna.PlayTo.Devices;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
+using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
