@@ -111,7 +111,7 @@ namespace MediaBrowser.Model.Configuration
 
         /// <summary>
         /// Gets or sets a value indicating whether detailed ssdp logs are sent to the console/log.
-        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
+        /// "Emby.Dlna": "Debug" must be set in logging.default.json for this property to work.
         /// </summary>
         public bool EnableSSDPTracing { get; set; } = false;
 
@@ -137,7 +137,7 @@ namespace MediaBrowser.Model.Configuration
         public int GatewayMonitorPeriod { get; set; } = 60;
 
         /// <summary>
-        /// Gets a value indicating whether is multi-socket binding available.
+        /// Gets a value indicating whether multi-socket binding is available.
         /// </summary>
         public bool EnableMultiSocketBinding { get; } = true;
 
@@ -158,7 +158,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets Autodiscovery tracing.
+        /// Gets or sets a value indicating whether Autodiscovery tracing is enabled.
         /// </summary>
         public bool AutoDiscoveryTracing { get; set; } = false;
 
