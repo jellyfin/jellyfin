@@ -198,13 +198,16 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsGatewayInterface(object? addressObj)
         {
-            var address = (addressObj is IPAddress addressIP) ?
-                addressIP : (addressObj is IPObject addressIPObj) ?
-                    addressIPObj.Address : IPAddress.None;
+            var address = addressObj switch
+            {
+                IPAddress addressIp => addressIp,
+                IPObject addressIpObj => addressIpObj.Address,
+                _ => IPAddress.None
+            };
 
             lock (_intLock)
             {
-                return _internalInterfaces.Where(i => i.Address.Equals(address) && (i.Tag < 0)).Any();
+                return _internalInterfaces.Any(i => i.Address.Equals(address) && i.Tag < 0);
             }
         }
 
