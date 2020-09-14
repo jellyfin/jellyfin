@@ -1,6 +1,8 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
@@ -10,8 +12,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Manager;
-using MediaBrowser.Providers.Plugins.TheTvdb;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
@@ -19,7 +21,8 @@ namespace MediaBrowser.Providers.TV
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         private readonly ILocalizationManager _localization;
-        private readonly TvdbClientManager _tvdbClientManager;
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
         public SeriesMetadataService(
             IServerConfigurationManager serverConfigurationManager,
@@ -27,12 +30,12 @@ namespace MediaBrowser.Providers.TV
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
-            ILocalizationManager localization,
-            TvdbClientManager tvdbClientManager)
+            ILocalizationManager localization)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
             _localization = localization;
-            _tvdbClientManager = tvdbClientManager;
+            _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         /// <inheritdoc />
@@ -43,18 +46,40 @@ namespace MediaBrowser.Providers.TV
             var seasonProvider = new DummySeasonProvider(Logger, _localization, LibraryManager, FileSystem);
             await seasonProvider.Run(item, cancellationToken).ConfigureAwait(false);
 
-            // TODO why does it not register this itself omg
-            var provider = new MissingEpisodeProvider(
+            var libraryOptions = LibraryManager.GetLibraryOptions(item);
+
+            var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<Series>(item, libraryOptions)
+                .OfType<IMissingEpisodesProvider>().ToList();
+            var missingEpisodeProvider = new MissingEpisodeProvider(
                 Logger,
-                ServerConfigurationManager,
                 LibraryManager,
                 _localization,
-                FileSystem,
-                _tvdbClientManager);
+                FileSystem);
+
+            var episodes = new List<MissingEpisodeInfo>();
+            foreach (var provider in providers)
+            {
+                if (item.IsMetadataFetcherEnabled(LibraryManager.GetLibraryOptions(item), provider.Name))
+                {
+                    Logger.LogDebug("Running {0} for MissingEpisodeInfo", provider.GetType().Name);
+                    var providerEpisodes = await provider.GetAllEpisodes(item, cancellationToken).ConfigureAwait(false);
+
+                    episodes.AddRange(
+                        providerEpisodes
+                        .Where(
+                            i => !episodes.Any(p => p.episodeNumber == i.episodeNumber && p.seasonNumber == i.seasonNumber) // Ignore duplicates
+                            )
+                        );
+                }
+            }
+
+            episodes = episodes.OrderBy(i => i.seasonNumber)
+                               .ThenBy(i => i.episodeNumber)
+                               .ToList();
 
             try
             {
-                await provider.Run(item, true, CancellationToken.None).ConfigureAwait(false);
+                await missingEpisodeProvider.Run(item, episodes, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

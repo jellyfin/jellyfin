@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
@@ -23,5 +24,10 @@ namespace MediaBrowser.Controller.Providers
         where TLookupInfoType : ItemLookupInfo
     {
         Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
+    }
+
+    public interface IMissingEpisodesProvider : IRemoteMetadataProvider
+    {
+        Task<IEnumerable<MissingEpisodeInfo>> GetAllEpisodes(Series item, CancellationToken cancellationToken);
     }
 }

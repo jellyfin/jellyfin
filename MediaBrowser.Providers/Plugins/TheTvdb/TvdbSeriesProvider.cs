@@ -22,7 +22,7 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
-    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
+    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IMissingEpisodesProvider, IHasOrder
     {
         internal static TvdbSeriesProvider Current { get; private set; }
 
@@ -92,6 +92,32 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             }
 
             return result;
+        }
+
+        public async Task<IEnumerable<MissingEpisodeInfo>> GetAllEpisodes(Series series, CancellationToken cancellationToken)
+        {
+            var tvdbId = series.GetProviderId(MetadataProvider.Tvdb);
+            if (string.IsNullOrEmpty(tvdbId))
+            {
+                return new List<MissingEpisodeInfo>();
+            }
+
+            var episodes = await _tvdbClientManager.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
+
+            return episodes
+                .Select(i =>
+                {
+                    DateTime.TryParse(i.FirstAired, out var firstAired);
+                    return new MissingEpisodeInfo
+                    {
+                        seasonNumber = i.AiredSeason.GetValueOrDefault(-1),
+                        episodeNumber = i.AiredEpisodeNumber.GetValueOrDefault(-1),
+                        airDate = firstAired
+                    };
+                })
+                // tvdb has a lot of nearly blank episodes
+                .Where(i => i.seasonNumber != -1 && i.episodeNumber != -1)
+                .ToList();
         }
 
         private async Task FetchSeriesData(MetadataResult<Series> result, string metadataLanguage, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
