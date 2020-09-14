@@ -29,7 +29,7 @@ namespace Jellyfin.Networking.Manager
         public bool TrustAllIP6Interfaces { get; }
 
         /// <summary>
-        /// Gets returns the remote address filter.
+        /// Gets the remote address filter.
         /// </summary>
         NetCollection RemoteAddressFilter { get; }
 
