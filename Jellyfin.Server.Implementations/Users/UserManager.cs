@@ -1,3 +1,4 @@
+#nullable enable
 #pragma warning disable CA1307
 
 using System;
