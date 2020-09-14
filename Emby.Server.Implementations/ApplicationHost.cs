@@ -1041,7 +1041,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Returns a list of plugsin to install.
+        /// Returns a list of plugins to install.
         /// </summary>
         /// <param name="path">Path to check.</param>
         /// <param name="cleanup">True if an attempt should be made to delete old plugs.</param>
