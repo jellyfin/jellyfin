@@ -50,7 +50,7 @@ namespace Emby.Dlna.Net
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var urls = _networkManager.PublishedServerOverrides;
+            var urls = _networkManager.PublishedServerUrls;
             // Find the defined external address.
             var externalAddress = urls.Where(i => i.Key.Equals(IPAddress.Any)).FirstOrDefault().Value;
 
@@ -73,7 +73,7 @@ namespace Emby.Dlna.Net
             }
 
             var key = new IPNetAddress(args.Argument.LocalIpAddress);
-            _networkManager.PublishedServerOverrides.Remove(key);
+            _networkManager.PublishedServerUrls.Remove(key);
         }
     }
 }
