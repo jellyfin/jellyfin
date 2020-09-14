@@ -8,18 +8,18 @@ namespace MediaBrowser.Model.Providers
     public class MissingEpisodeInfo
     {
         /// <summary>
-        /// Episode's season index number.
+        /// Gets or sets the episode's season index number.
         /// </summary>
-        public int seasonNumber { get; set; }
+        public int SeasonNumber { get; set; }
 
         /// <summary>
-        /// Episode index number.
+        /// Gets or sets the episode index number.
         /// </summary>
-        public int episodeNumber { get; set; }
+        public int EpisodeNumber { get; set; }
 
         /// <summary>
-        /// Episode premiere date.
+        /// Gets or sets the episode premiere date.
         /// </summary>
-        public DateTime airDate { get; set; }
+        public DateTime AirDate { get; set; }
     }
 }

@@ -99,7 +99,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var tvdbId = series.GetProviderId(MetadataProvider.Tvdb);
             if (string.IsNullOrEmpty(tvdbId))
             {
-                return new List<MissingEpisodeInfo>();
+                return Enumerable.Empty<MissingEpisodeInfo>();
             }
 
             var episodes = await _tvdbClientManager.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
@@ -110,13 +110,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     DateTime.TryParse(i.FirstAired, out var firstAired);
                     return new MissingEpisodeInfo
                     {
-                        seasonNumber = i.AiredSeason.GetValueOrDefault(-1),
-                        episodeNumber = i.AiredEpisodeNumber.GetValueOrDefault(-1),
-                        airDate = firstAired
+                        SeasonNumber = i.AiredSeason.GetValueOrDefault(-1),
+                        EpisodeNumber = i.AiredEpisodeNumber.GetValueOrDefault(-1),
+                        AirDate = firstAired
                     };
                 })
                 // tvdb has a lot of nearly blank episodes
-                .Where(i => i.seasonNumber != -1 && i.episodeNumber != -1)
+                .Where(i => i.SeasonNumber != -1 && i.EpisodeNumber != -1)
                 .ToList();
         }
 

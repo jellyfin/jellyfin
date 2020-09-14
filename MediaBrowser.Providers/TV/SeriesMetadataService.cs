@@ -21,7 +21,6 @@ namespace MediaBrowser.Providers.TV
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         private readonly ILocalizationManager _localization;
-        private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
         public SeriesMetadataService(
@@ -34,7 +33,6 @@ namespace MediaBrowser.Providers.TV
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
             _localization = localization;
-            _logger = logger;
             _fileSystem = fileSystem;
         }
 
@@ -67,14 +65,14 @@ namespace MediaBrowser.Providers.TV
                     episodes.AddRange(
                         providerEpisodes
                         .Where(
-                            i => !episodes.Any(p => p.episodeNumber == i.episodeNumber && p.seasonNumber == i.seasonNumber) // Ignore duplicates
+                            i => !episodes.Any(p => p.EpisodeNumber == i.EpisodeNumber && p.SeasonNumber == i.SeasonNumber) // Ignore duplicates
                             )
                         );
                 }
             }
 
-            episodes = episodes.OrderBy(i => i.seasonNumber)
-                               .ThenBy(i => i.episodeNumber)
+            episodes = episodes.OrderBy(i => i.SeasonNumber)
+                               .ThenBy(i => i.EpisodeNumber)
                                .ToList();
 
             try

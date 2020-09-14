@@ -102,19 +102,19 @@ namespace MediaBrowser.Providers.TV
         {
             var existingEpisodes = allItems.OfType<Episode>().ToList();
 
-            var seasonCounts = episodeLookup.GroupBy(e => e.seasonNumber).ToDictionary(g => g.Key, g => g.Count());
+            var seasonCounts = episodeLookup.GroupBy(e => e.SeasonNumber).ToDictionary(g => g.Key, g => g.Count());
 
             var hasChanges = false;
 
-            foreach (var tuple in episodeLookup)
+            foreach (var missingEpisode in episodeLookup)
             {
-                if (tuple.seasonNumber <= 0 || tuple.episodeNumber <= 0)
+                if (missingEpisode.SeasonNumber <= 0 || missingEpisode.EpisodeNumber <= 0)
                 {
                     // Ignore episode/season zeros
                     continue;
                 }
 
-                var existingEpisode = GetExistingEpisode(existingEpisodes, seasonCounts, tuple);
+                var existingEpisode = GetExistingEpisode(existingEpisodes, seasonCounts, missingEpisode);
 
                 if (existingEpisode != null)
                 {
@@ -123,10 +123,10 @@ namespace MediaBrowser.Providers.TV
 
                 var now = DateTime.UtcNow.AddDays(-UnairedEpisodeThresholdDays);
 
-                if ((tuple.airDate < now && addMissingEpisodes) || tuple.airDate > now)
+                if ((missingEpisode.AirDate < now && addMissingEpisodes) || missingEpisode.AirDate > now)
                 {
-                    _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.seasonNumber, tuple.episodeNumber);
-                    await AddEpisode(series, tuple.seasonNumber, tuple.episodeNumber, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, missingEpisode.SeasonNumber, missingEpisode.EpisodeNumber);
+                    await AddEpisode(series, missingEpisode.SeasonNumber, missingEpisode.EpisodeNumber, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
                 }
@@ -179,7 +179,7 @@ namespace MediaBrowser.Providers.TV
                     }
 
                     // If the episode no longer exists in the remote lookup, delete it
-                    if (!episodeLookup.Any(e => e.seasonNumber == seasonNumber && e.episodeNumber == episodeNumber))
+                    if (!episodeLookup.Any(e => e.SeasonNumber == seasonNumber && e.EpisodeNumber == episodeNumber))
                     {
                         return true;
                     }
@@ -251,7 +251,7 @@ namespace MediaBrowser.Providers.TV
                         }
 
                         // If the season no longer exists in the remote lookup, delete it, but only if an existing episode doesn't require it
-                        return episodeLookup.All(e => e.seasonNumber != seasonNumber) && allEpisodes.All(s => s.ParentIndexNumber != seasonNumber || s.IsInSeasonFolder);
+                        return episodeLookup.All(e => e.SeasonNumber != seasonNumber) && allEpisodes.All(s => s.ParentIndexNumber != seasonNumber || s.IsInSeasonFolder);
                     }
 
                     // Season does not have a number
@@ -328,8 +328,8 @@ namespace MediaBrowser.Providers.TV
             IReadOnlyDictionary<int, int> seasonCounts,
             MissingEpisodeInfo episodeTuple)
         {
-            var seasonNumber = episodeTuple.seasonNumber;
-            var episodeNumber = episodeTuple.episodeNumber;
+            var seasonNumber = episodeTuple.SeasonNumber;
+            var episodeNumber = episodeTuple.EpisodeNumber;
 
             while (true)
             {
