@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
-
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
