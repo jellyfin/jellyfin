@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.13.0" />
-    <PackageReference Include="AutoFixture.AutoMoq" Version="4.13.0" />
+    <PackageReference Include="AutoFixture.AutoMoq" Version="4.14.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Moq" Version="4.14.5" />
     <PackageReference Include="xunit" Version="2.4.1" />

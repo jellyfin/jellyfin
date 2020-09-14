@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.13.0" />
-    <PackageReference Include="AutoFixture.AutoMoq" Version="4.13.0" />
+    <PackageReference Include="AutoFixture.AutoMoq" Version="4.14.0" />
     <PackageReference Include="AutoFixture.Xunit2" Version="4.13.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.7" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.7" />
