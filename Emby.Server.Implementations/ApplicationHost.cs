@@ -1072,7 +1072,7 @@ namespace Emby.Server.Implementations
                             version = new Version(0, 0, 0, 1);
                         }
 
-                        if (ApplicationVersion <= targetAbi)
+                        if (ApplicationVersion >= targetAbi)
                         {
                             // Only load Plugins if the plugin is built for this version or below.
                             versions.Add((version, manifest.Name, dir));
