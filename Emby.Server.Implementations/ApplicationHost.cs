@@ -1082,7 +1082,7 @@ namespace Emby.Server.Implementations
                     {
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1]);
                         // Add it under the path name and version 0.0.0.1.
-                        versions.Add(new Version(0, 0, 0, 1), metafile, dir));
+                        versions.Add(new Version(0, 0, 0, 1), metafile, dir);
                     }
                 }
                 catch
