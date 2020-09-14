@@ -13,7 +13,6 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.PlayTo.Devices;
-using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;

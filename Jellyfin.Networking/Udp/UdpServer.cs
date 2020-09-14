@@ -68,21 +68,6 @@ namespace Jellyfin.Networking.Udp
         }
 
         /// <summary>
-        /// Gets a value indicating whether is multi-socket binding available.
-        /// </summary>
-        public static bool EnableMultiSocketBinding => NetworkManager.EnableMultiSocketBinding;
-
-        /// <summary>
-        /// Gets a value indicating whether IP6 is enabled.
-        /// </summary>
-        public static bool IsIP6Enabled => NetworkManager.IsIP6Enabled;
-
-        /// <summary>
-        /// Gets a value indicating whether IP4 is enabled.
-        /// </summary>
-        public static bool IsIP4Enabled => NetworkManager.IsIP4Enabled;
-
-        /// <summary>
         /// Gets uDPPort range to use.
         /// </summary>
         protected static string UDPPortRange { get; private set; } = string.Empty;
@@ -207,7 +192,7 @@ namespace Jellyfin.Networking.Udp
         {
             if (localIPAddress == null)
             {
-                localIPAddress = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+                localIPAddress = NetworkManager.IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
             }
 
             return new IPEndPoint(
@@ -255,7 +240,7 @@ namespace Jellyfin.Networking.Udp
                 throw new ArgumentException("Port out of range", nameof(port));
             }
 
-            IPAddress address = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+            IPAddress address = NetworkManager.IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
             Socket retVal = PrepareSocket(address, logger);
             try
             {
@@ -428,7 +413,7 @@ namespace Jellyfin.Networking.Udp
             try
             {
                 UdpProcess listener = new UdpProcess(address, port, processor, logger, failure);
-                if (IsIP4Enabled && address.AddressFamily == AddressFamily.InterNetwork)
+                if (NetworkManager.IsIP4Enabled && address.AddressFamily == AddressFamily.InterNetwork)
                 {
                     try
                     {
@@ -450,7 +435,7 @@ namespace Jellyfin.Networking.Udp
                     listener.EnableBroadcast = true;
                     listener.JoinMulticastGroup(IPNetAddress.MulticastIPv4, address);
                 }
-                else if (IsIP6Enabled && address.AddressFamily == AddressFamily.InterNetworkV6)
+                else if (NetworkManager.IsIP6Enabled && address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     try
                     {
@@ -676,7 +661,7 @@ namespace Jellyfin.Networking.Udp
             {
                 // IPv6 is enabled so create a dual IP4/IP6 socket
                 retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                if (IsIP4Enabled)
+                if (NetworkManager.IsIP4Enabled)
                 {
                     retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0);
                 }
@@ -700,7 +685,7 @@ namespace Jellyfin.Networking.Udp
                 logger?.LogWarning(ex, "Error setting socket as non exclusive. {0}", address);
             }
 
-            if (IsIP4Enabled)
+            if (NetworkManager.IsIP4Enabled)
             {
                 try
                 {

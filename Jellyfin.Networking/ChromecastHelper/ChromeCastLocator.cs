@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Net;
 using Jellyfin.Data.Events;
-using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -24,7 +23,7 @@ namespace Emby.Dlna.Net
         /// Initializes a new instance of the <see cref="ChromecastLocator"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
-        /// <param name="networkManager">The <see cref="NetworkManager"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
         /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
         /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
         public ChromecastLocator(

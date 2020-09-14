@@ -189,8 +189,8 @@ namespace Jellyfin.Networking.Ssdp
             if (advertising != null)
             {
                 // Don't advertise an addressfamily which we aren't enabled for.
-                if ((advertising.AddressFamily == AddressFamily.InterNetwork && !IsIP4Enabled) ||
-                    (advertising.AddressFamily == AddressFamily.InterNetworkV6 && !IsIP6Enabled))
+                if ((advertising.AddressFamily == AddressFamily.InterNetwork && !NetworkManager.IsIP4Enabled) ||
+                    (advertising.AddressFamily == AddressFamily.InterNetworkV6 && !NetworkManager.IsIP6Enabled))
                 {
                     return;
                 }
@@ -526,7 +526,7 @@ namespace Jellyfin.Networking.Ssdp
                 _running = true;
                 NetManager.NetworkChanged += NetworkChanged;
 
-                Logger.LogDebug("EnableMultiSocketBinding : {0}", EnableMultiSocketBinding);
+                Logger.LogDebug("EnableMultiSocketBinding : {0}", NetworkManager.EnableMultiSocketBinding);
 
                 // if (IsUPnPActive)
                 // {
@@ -596,12 +596,12 @@ namespace Jellyfin.Networking.Ssdp
             IPAddress remote = ep.Address;
 
             // Only process the IP address family that we are configured for.
-            if (!IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
+            if (!NetworkManager.IsIP4Enabled && ep.AddressFamily == AddressFamily.InterNetwork)
             {
                 return;
             }
 
-            if (!IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
+            if (!NetworkManager.IsIP6Enabled && ep.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return;
             }

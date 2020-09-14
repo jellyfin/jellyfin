@@ -13,7 +13,6 @@ using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using Jellyfin.Api.Controllers;
-using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;

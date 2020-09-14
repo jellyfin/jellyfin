@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using Jellyfin.Networking.Manager;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Networking.Udp
@@ -30,7 +31,7 @@ namespace Jellyfin.Networking.Udp
             : base(localIpAddress?.AddressFamily ?? throw new NullReferenceException(nameof(localIpAddress)))
         {
             LocalEndPoint = new IPEndPoint(
-                UdpServer.EnableMultiSocketBinding ? localIpAddress :
+                NetworkManager.EnableMultiSocketBinding ? localIpAddress :
                     localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
                         IPAddress.Any : IPAddress.IPv6Any,
                 portNumber);
@@ -115,8 +116,8 @@ namespace Jellyfin.Networking.Udp
                        TracingFilter.Equals(localIpAddress) ||
                        ((remote != null) && TracingFilter.Equals(remote.Address)) ||
                        (localIpAddress != null &&
-                            ((UdpServer.IsIP4Enabled && localIpAddress.Equals(IPAddress.Any)) ||
-                            (UdpServer.IsIP6Enabled && localIpAddress.Equals(IPAddress.IPv6Any))));
+                            ((NetworkManager.IsIP4Enabled && localIpAddress.Equals(IPAddress.Any)) ||
+                            (NetworkManager.IsIP6Enabled && localIpAddress.Equals(IPAddress.IPv6Any))));
 
             if (log)
             {

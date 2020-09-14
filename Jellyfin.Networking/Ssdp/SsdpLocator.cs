@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
-using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -46,7 +45,7 @@ namespace Jellyfin.Networking.Ssdp
         /// Initializes a new instance of the <see cref="SsdpLocator"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
-        /// <param name="networkManager">The <see cref="NetworkManager"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
         /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
         /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
         /// <param name="filter">Array of Ssdp types which this instance should process.</param>

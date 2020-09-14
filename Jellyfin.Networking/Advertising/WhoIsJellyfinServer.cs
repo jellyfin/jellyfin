@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;

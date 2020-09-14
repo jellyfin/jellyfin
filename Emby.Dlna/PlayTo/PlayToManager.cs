@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo.EventArgs;
 using Jellyfin.Data.Events;
-using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;

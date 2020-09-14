@@ -2,7 +2,6 @@
 using System;
 using Emby.Dlna.Configuration;
 using Jellyfin.Data.Events;
-using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -22,7 +21,7 @@ namespace Emby.Dlna.PlayTo
         /// Initializes a new instance of the <see cref="SsdpPlayToLocator"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
-        /// <param name="networkManager">The <see cref="NetworkManager"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
         /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
         /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
         public SsdpPlayToLocator(ILogger logger, INetworkManager networkManager, IConfigurationManager configurationManager, IServerApplicationHost applicationHost)
