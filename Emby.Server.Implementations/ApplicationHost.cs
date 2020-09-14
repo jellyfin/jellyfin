@@ -1051,27 +1051,38 @@ namespace Emby.Server.Implementations
             var dllList = new List<string>();
             var versions = new List<(Version PluginVersion, string Name, string Path)>();
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
+            string metafile;
 
             foreach (var dir in directories)
             {
                 try
                 {
-                    var manifest = _jsonSerializer.DeserializeFromFile<PlugInManifest>(Path.Combine(dir, "meta.json"));
-
-                    if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                    metafile = Path.Combine(dir, "meta.json");
+                    if (File.Exists(metafile))
                     {
-                        targetAbi = new Version(0, 0, 0, 1);
+                        var manifest = _jsonSerializer.DeserializeFromFile<PluginManifest>(metafile);
+
+                        if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                        {
+                            targetAbi = new Version(0, 0, 0, 1);
+                        }
+
+                        if (!Version.TryParse(manifest.Version, out var version))
+                        {
+                            version = new Version(0, 0, 0, 1);
+                        }
+
+                        if (ApplicationVersion <= targetAbi)
+                        {
+                            // Only load Plugins if the plugin is built for this version or below.
+                            versions.Add((version, manifest.Name, dir));
+                        }
                     }
-
-                    if (!Version.TryParse(manifest.Version, out var version))
+                    else
                     {
-                        version = new Version(0, 0, 0, 1);
-                    }
-
-                    if (targetAbi >= ApplicationVersion)
-                    {
-                        // Only load Plugins for this version or below.
-                        versions.Add((version, manifest.Name, dir));
+                        metafile = dir.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries).Last();
+                        // Add it under the path name and version 0.0.0.1.
+                        versions.Add((new Version("0.0.0.1"), metafile, dir));
                     }
                 }
                 catch
