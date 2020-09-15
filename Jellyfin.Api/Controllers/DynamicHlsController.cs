@@ -338,7 +338,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromQuery, Required] string container
+            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
