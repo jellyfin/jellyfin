@@ -103,8 +103,7 @@ namespace NetworkTesting
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
-
-            };
+            };           
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
@@ -139,12 +138,34 @@ namespace NetworkTesting
         }
 
         [Theory]
+        [InlineData("127.0.0.1", "fd23:184f:2029:0:3139:7386:67d7:d517/64,fd23:184f:2029:0:c0f0:8a8a:7605:fffa/128,fe80::3139:7386:67d7:d517%16/64,192.168.1.208/24,::1/128,127.0.0.1/8", "127.0.0.1")]
+        [InlineData("127.0.0.1", "127.0.0.1/8", "127.0.0.1")]
+        public void UnionCheck(string settings, string compare, string result)
+        {
+            var conf = new ServerConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+            };
+
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
+
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+
+            NetCollection nc1 = nm.CreateIPCollection(settings.Split(","), false);
+            NetCollection nc2 = nm.CreateIPCollection(compare.Split(","), false);
+
+            Assert.True(nc1.Union(nc2).ToString() == result);
+        }
+
+        [Theory]
         [InlineData("192.168.5.85/24", "192.168.5.1")]
         [InlineData("192.168.5.85/24", "192.168.5.254")]
         [InlineData("10.128.240.50/30", "10.128.240.48")]
         [InlineData("10.128.240.50/30", "10.128.240.49")]
         [InlineData("10.128.240.50/30", "10.128.240.50")]
         [InlineData("10.128.240.50/30", "10.128.240.51")]
+        [InlineData("127.0.0.1/8", "127.0.0.1")]
         public void IpV4SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
         {
             var ipAddressObj = IPNetAddress.Parse(netMask);

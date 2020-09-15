@@ -175,7 +175,7 @@ namespace Jellyfin.Server
                             "The server is expected to host the web client, but the provided content directory is either " +
                             $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
                             "server, you may set the '--nowebclient' command line flag, or set" +
-                            $"'{MediaBrowser.Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
+                            $"'{ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
                     }
                 }
 

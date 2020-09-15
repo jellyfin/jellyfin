@@ -1214,6 +1214,9 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
+        /// <summary>
+        /// Gets the servers friendly name.
+        /// </summary>
         public string FriendlyName =>
             string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
                 ? Environment.MachineName

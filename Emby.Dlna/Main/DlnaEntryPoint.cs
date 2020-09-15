@@ -393,10 +393,11 @@ namespace Emby.Dlna.Main
 
             var udn = CreateUuid(_appHost.SystemId);
 
-            var ba = _networkManager.GetInternalBindAddresses()
-                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0));
+            var ba = new NetCollection(
+                _networkManager.GetInternalBindAddresses()
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
 
-            if (!ba.Any())
+            if (ba.Count == 0)
             {
                 // No interfaces returned, so use loopback.
                 ba = _networkManager.GetLoopbacks();

@@ -303,12 +303,12 @@ namespace Emby.Dlna.Net
                     {
                         var addr = e.ReceivedFrom.Address;
 
-                        if (_ssdpServer.Tracing)
+                        if (_ssdpServer.Tracing &&
+                               (_ssdpServer.TracingFilter == null ||
+                                _ssdpServer.TracingFilter.Equals(addr) ||
+                                _ssdpServer.TracingFilter.Equals(e.LocalIPAddress)))
                         {
-                            if (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(addr) || _ssdpServer.TracingFilter.Equals(e.LocalIPAddress))
-                            {
-                                _logger.LogDebug("<- M-SEARCH: {0} : {1}", addr, searchTarget);
-                            }
+                            _logger.LogDebug("<- M-SEARCH: {0} : {1}", addr, searchTarget);
                         }
 
                         // Response is sent only when the device in the same subnet, or the the message has come from one of our interfaces.

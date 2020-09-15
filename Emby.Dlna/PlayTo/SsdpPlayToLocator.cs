@@ -30,7 +30,7 @@ namespace Emby.Dlna.PlayTo
             networkManager,
             configurationManager,
             applicationHost,
-            new string[] { "urn:schemas-upnp-org:device:MediaRenderer:",  "urn:schemas-upnp-org:device:InternetGatewayDevice:" },
+            new string[] { "urn:schemas-upnp-org:device:MediaRenderer:" },
             true)
         {
         }

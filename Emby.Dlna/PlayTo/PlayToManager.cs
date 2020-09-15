@@ -28,7 +28,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Dlna.PlayTo
 {
     /// <summary>
-    /// PlayToManager class.
+    /// Definition for the <see cref="PlayToManager"/> class.
     /// </summary>
     public sealed class PlayToManager : IDisposable
     {

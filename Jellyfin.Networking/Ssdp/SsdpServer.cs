@@ -308,14 +308,14 @@ namespace Jellyfin.Networking.Ssdp
                            Configuration.EnableRemoteAccess &&
                            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && Configuration.UPnPCreateHttpPortMap));
 
-            // if (IsUPnPActive)
-            // {
-            //     NatUtility.UnknownDeviceFound += UnknownDeviceFound;
-            // }
-            // else
-            // {
-            //     NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
-            // }
+            if (IsUPnPActive)
+            {
+                 NatUtility.UnknownDeviceFound += UnknownDeviceFound;
+            }
+            else
+            {
+                 NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
+            }
         }
 
         /// <summary>
@@ -409,6 +409,7 @@ namespace Jellyfin.Networking.Ssdp
         /// <summary>
         /// Sends a packet via unicast.
         /// </summary>
+        /// <param name="data">Packet to send.</param>
         private SsdpMessage ParseMessage(string data)
         {
             var result = new SsdpMessage(StringComparer.OrdinalIgnoreCase);
@@ -521,6 +522,9 @@ namespace Jellyfin.Networking.Ssdp
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// initialises the server, and starts listening on all internal interfaces.
+        /// </summary>
         private void StartServer()
         {
             if (!_running)
@@ -530,10 +534,10 @@ namespace Jellyfin.Networking.Ssdp
 
                 Logger.LogDebug("EnableMultiSocketBinding : {0}", NetworkManager.EnableMultiSocketBinding);
 
-                // if (IsUPnPActive)
-                // {
-                //    NatUtility.UnknownDeviceFound += UnknownDeviceFound;
-                // }
+                if (IsUPnPActive)
+                {
+                    NatUtility.UnknownDeviceFound += UnknownDeviceFound;
+                }
 
                 foreach (IPObject ip in _interfaces)
                 {
@@ -556,6 +560,9 @@ namespace Jellyfin.Networking.Ssdp
             }
         }
 
+        /// <summary>
+        /// Stops the server and frees up resources.
+        /// </summary>
         private void StopServer()
         {
             if (_running)
@@ -625,7 +632,7 @@ namespace Jellyfin.Networking.Ssdp
                 return;
             }
 
-            // _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
+            Logger.LogDebug("Mono.NAT passed us SSDP information to process.");
             using var dummyUdp = UdpProcess.CreateIsolated(e.Address);
             ProcessMessage(dummyUdp, e.Data, ep);
         }

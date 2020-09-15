@@ -11,7 +11,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
-using Mono.Nat;
 
 namespace Jellyfin.Networking.Ssdp
 {
@@ -58,16 +57,16 @@ namespace Jellyfin.Networking.Ssdp
             string[] filter,
             bool activelySearch)
         {
-            _networkManager = networkManager;
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _defaultSearchWaitTime = TimeSpan.FromSeconds(4);
-            _oneSecond = TimeSpan.FromSeconds(1);
             _timerLock = new object();
             _deviceLock = new object();
             Configuration = configurationManager;
+            _networkManager = networkManager;
+            _ssdpFilter = filter;
+            _logger = logger;
+            _defaultSearchWaitTime = TimeSpan.FromSeconds(4);
+            _oneSecond = TimeSpan.FromSeconds(1);
             Devices = new List<DiscoveredSsdpDevice>();
             _ssdpServer = SsdpServer.GetOrCreateInstance(_networkManager, configurationManager, logger, applicationHost);
-            _ssdpFilter = filter;
             _ssdpServer.AddEvent("HTTP/1.1 200 OK", ProcessSearchResponseMessage);
             _ssdpServer.AddEvent("NOTIFY", ProcessNotificationMessage);
             _enableBroadcast = activelySearch;
@@ -166,6 +165,13 @@ namespace Jellyfin.Networking.Ssdp
         {
         }
 
+        /// <summary>
+        /// Searches the list of known devices and returns the one matching the criteria.
+        /// </summary>
+        /// <param name="devices">List of devices to search.</param>
+        /// <param name="notificationType">Notification type criteria.</param>
+        /// <param name="usn">USN criteria.</param>
+        /// <returns>Device if located, or null if not.</returns>
         private static DiscoveredSsdpDevice? FindExistingDevice(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
         {
             foreach (var d in devices)
@@ -180,6 +186,12 @@ namespace Jellyfin.Networking.Ssdp
             return null;
         }
 
+        /// <summary>
+        /// Searches the list of known devices and returns the one matching the criteria.
+        /// </summary>
+        /// <param name="devices">List of devices to search.</param>
+        /// <param name="usn">USN criteria.</param>
+        /// <returns>A <see cref="List{DiscoveredSsdpDevice}"/> containing the matching devices.</returns>
         private static List<DiscoveredSsdpDevice> FindExistingDevices(IList<DiscoveredSsdpDevice> devices, string usn)
         {
             var list = new List<DiscoveredSsdpDevice>();
@@ -195,6 +207,10 @@ namespace Jellyfin.Networking.Ssdp
             return list;
         }
 
+        /// <summary>
+        /// Removes old entries from the cache and transmits a discovery message.
+        /// </summary>
+        /// <param name="state">Not used.</param>
         private async void OnBroadcastTimerCallback(object? state)
         {
             try
@@ -214,6 +230,12 @@ namespace Jellyfin.Networking.Ssdp
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
+        /// <summary>
+        /// Adds or updates the discovered device list.
+        /// </summary>
+        /// <param name="device">Device to add.</param>
+        /// <param name="address">IP Address of the device.</param>
+        /// <returns>True if the device is a new discovery.</returns>
         private bool AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress address)
         {
             bool isNewDevice = false;
@@ -255,6 +277,10 @@ namespace Jellyfin.Networking.Ssdp
             return _ssdpFilter.Where(m => device.NotificationType.StartsWith(m, StringComparison.OrdinalIgnoreCase)).Any();
         }
 
+        /// <summary>
+        /// Broadcasts a SSDP M-SEARCH request.
+        /// </summary>
+        /// <param name="mxValue">Mx value for the packet.</param>
         private Task BroadcastDiscoverMessage(TimeSpan mxValue)
         {
             const string SsdpSearch = "M-SEARCH * HTTP/1.1";
@@ -269,6 +295,11 @@ namespace Jellyfin.Networking.Ssdp
             return _ssdpServer.SendMulticastSSDP(values, SsdpSearch);
         }
 
+        /// <summary>
+        /// Processes the seach response message.
+        /// </summary>
+        /// <param name="sender">Sender of the event.</param>
+        /// <param name="e">A <see cref="SsdpEventArgs"/> containing details of the event.</param>
         private void ProcessSearchResponseMessage(object? sender, SsdpEventArgs e)
         {
             if (!_listening || _disposed)
@@ -294,6 +325,11 @@ namespace Jellyfin.Networking.Ssdp
             }
         }
 
+        /// <summary>
+        /// Processes a notification message.
+        /// </summary>
+        /// <param name="sender">Sender of the event.</param>
+        /// <param name="e">A <see cref="SsdpEventArgs"/> containing details of the event.</param>
         private void ProcessNotificationMessage(object? sender, SsdpEventArgs e)
         {
             if (!e.Message.ContainsKey("LOCATION"))
@@ -317,12 +353,9 @@ namespace Jellyfin.Networking.Ssdp
                     // Process Alive Notification.
                     if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                     {
-                        if (_ssdpServer.Tracing)
+                        if (_ssdpServer.Tracing && (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress)))
                         {
-                            if (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress))
-                            {
-                                _logger.LogDebug("<- ssdpalive : {0} ", device.DescriptionLocation);
-                            }
+                            _logger.LogDebug("<- ssdpalive : {0} ", device.DescriptionLocation);
                         }
                     }
 
@@ -335,12 +368,9 @@ namespace Jellyfin.Networking.Ssdp
                 // Process ByeBye Notification.
                 if (!DeviceDied(device.Usn))
                 {
-                    if (_ssdpServer.Tracing)
+                    if (_ssdpServer.Tracing && (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress)))
                     {
-                        if (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress))
-                        {
-                            _logger.LogDebug("Byebye: {0}", device);
-                        }
+                        _logger.LogDebug("Byebye: {0}", device);
                     }
 
                     var args = new GenericEventArgs<UpnpDeviceInfo>(
@@ -356,6 +386,9 @@ namespace Jellyfin.Networking.Ssdp
             }
         }
 
+        /// <summary>
+        /// Removes expired devices from the cache.
+        /// </summary>
         private void RemoveExpiredDevicesFromCache()
         {
 #pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
@@ -379,6 +412,11 @@ namespace Jellyfin.Networking.Ssdp
             }
         }
 
+        /// <summary>
+        /// Removes a device from the cache.
+        /// </summary>
+        /// <param name="deviceUsn">USN of the device.</param>
+        /// <returns>True if the operation succeeded.</returns>
         private bool DeviceDied(string deviceUsn)
         {
             List<DiscoveredSsdpDevice>? existingDevices = null;
@@ -412,6 +450,11 @@ namespace Jellyfin.Networking.Ssdp
             return false;
         }
 
+        /// <summary>
+        /// Reduces the wait time by one.
+        /// </summary>
+        /// <param name="searchWaitTime">Timespan to reduce.</param>
+        /// <returns>The resultant timespan.</returns>
         private TimeSpan SearchTimeToMXValue(TimeSpan searchWaitTime)
         {
             if (searchWaitTime.TotalSeconds < 2 || searchWaitTime == TimeSpan.Zero)
