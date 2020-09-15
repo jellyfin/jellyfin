@@ -280,32 +280,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private static string GetUuid(string usn)
-        {
-            const string UuidStr = "uuid:";
-            const string UuidColonStr = "::";
-
-            var index = usn.IndexOf(UuidStr, StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
-            {
-                return usn.Substring(index + UuidStr.Length);
-            }
-
-            index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
-            {
-                usn = usn.Substring(0, index);
-            }
-
-            if (found)
-            {
-                return usn;
-            }
-
-            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-        }
-
-        private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
+        private async Task AddDevice(UpnpDeviceInfo info, string location)
         {
             var uri = info.Location;
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
@@ -337,7 +312,7 @@ namespace Emby.Dlna.PlayTo
                     serverAddress).ConfigureAwait(false);
                 if (device == null)
                 {
-                    return false;
+                    return;
                 }
 
                 _devices.Add(device);
@@ -392,10 +367,10 @@ namespace Emby.Dlna.PlayTo
 
                 _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
 
-                return true;
+                return;
             }
 
-            return false;
+            return;
         }
     }
 }
