@@ -43,6 +43,6 @@ namespace Jellyfin.Server.Middleware
             }
 
             await _next(httpContext).ConfigureAwait(false);
-        }        
+        }
     }
 }
