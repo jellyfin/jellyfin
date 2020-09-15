@@ -1,3 +1,4 @@
+using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -38,7 +39,7 @@ namespace Jellyfin.Server.Middleware
                 return;
             }
 
-            var remoteIp = httpContext.Connection.RemoteIpAddress;
+            var remoteIp = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
             if (serverConfigurationManager.Configuration.EnableRemoteAccess)
             {
