@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -33,14 +33,14 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
-            if (httpContext.Connection.RemoteIpAddress == null)
+            if (httpContext.IsLocal())
             {
                 // Running locally.
                 await _next(httpContext).ConfigureAwait(false);
                 return;
             }
 
-            var remoteIp = httpContext.Connection.RemoteIpAddress;
+            var remoteIp = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
             if (serverConfigurationManager.Configuration.EnableRemoteAccess)
             {
