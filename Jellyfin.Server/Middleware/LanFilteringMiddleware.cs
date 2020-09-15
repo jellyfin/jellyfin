@@ -43,18 +43,6 @@ namespace Jellyfin.Server.Middleware
             }
 
             await _next(httpContext).ConfigureAwait(false);
-        }
-
-        private static string NormalizeConfiguredLocalAddress(string address)
-        {
-            var add = address.AsSpan().Trim('/');
-            int index = add.IndexOf('/');
-            if (index != -1)
-            {
-                add = add.Slice(index + 1);
-            }
-
-            return add.TrimStart('/').ToString();
-        }
+        }        
     }
 }
