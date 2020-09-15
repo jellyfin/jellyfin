@@ -24,6 +24,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
+        private static int MaxSearchResults = 10;
         internal static TvdbSeriesProvider Current { get; private set; }
 
         private readonly IHttpClientFactory _httpClientFactory;
@@ -179,9 +180,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         /// <returns>True, if the dictionary contains a valid TV provider ID, otherwise false.</returns>
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            return seriesProviderIds.ContainsKey(MetadataProvider.Tvdb.ToString()) ||
-                   seriesProviderIds.ContainsKey(MetadataProvider.Imdb.ToString()) ||
-                   seriesProviderIds.ContainsKey(MetadataProvider.Zap2It.ToString());
+            return seriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId) ||
+                   seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(imdbId) ||
+                   seriesProviderIds.TryGetValue(MetadataProvider.Zap2It.ToString(), out var zap2ItId) && !string.IsNullOrEmpty(zap2ItId);
         }
 
         /// <summary>
@@ -194,18 +195,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         /// <returns>Task{System.String}.</returns>
         private async Task<IEnumerable<RemoteSearchResult>> FindSeries(string name, int? year, string language, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("TvdbSearch: Finding id for item: {0} ({1})", name, year);
             var results = await FindSeriesInternal(name, language, cancellationToken).ConfigureAwait(false);
-
-            if (results.Count == 0)
-            {
-                var parsedName = _libraryManager.ParseName(name);
-                var nameWithoutYear = parsedName.Name;
-
-                if (!string.IsNullOrWhiteSpace(nameWithoutYear) && !string.Equals(nameWithoutYear, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    results = await FindSeriesInternal(nameWithoutYear, language, cancellationToken).ConfigureAwait(false);
-                }
-            }
 
             return results.Where(i =>
             {
@@ -221,7 +212,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         private async Task<List<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
-            var comparableName = GetComparableName(name);
+            var parsedName = _libraryManager.ParseName(name);
+            var comparableName = GetComparableName(parsedName.Name);
+
             var list = new List<Tuple<List<string>, RemoteSearchResult>>();
             TvDbResponse<SeriesSearchResult[]> result;
             try
@@ -239,9 +232,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             {
                 var tvdbTitles = new List<string>
                 {
-                    GetComparableName(seriesSearchResult.SeriesName)
+                    seriesSearchResult.SeriesName
                 };
-                tvdbTitles.AddRange(seriesSearchResult.Aliases.Select(GetComparableName));
+                tvdbTitles.AddRange(seriesSearchResult.Aliases);
 
                 DateTime.TryParse(seriesSearchResult.FirstAired, out var firstAired);
                 var remoteSearchResult = new RemoteSearchResult
@@ -251,10 +244,10 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     SearchProviderName = Name
                 };
 
-                if (!string.IsNullOrEmpty(seriesSearchResult.Banner))
+                if (!string.IsNullOrEmpty(seriesSearchResult.Poster))
                 {
                     // Results from their Search endpoints already include the /banners/ part in the url, because reasons...
-                    remoteSearchResult.ImageUrl = TvdbUtils.TvdbImageBaseUrl + seriesSearchResult.Banner;
+                    remoteSearchResult.ImageUrl = TvdbUtils.TvdbImageBaseUrl + seriesSearchResult.Poster;
                 }
 
                 try
@@ -275,9 +268,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             }
 
             return list
-                .OrderBy(i => i.Item1.Contains(comparableName, StringComparer.OrdinalIgnoreCase) ? 0 : 1)
+                .OrderBy(i => i.Item1.Contains(name, StringComparer.OrdinalIgnoreCase) ? 0 : 1)
+                .ThenBy(i => i.Item1.Any(title => title.Contains(parsedName.Name, StringComparison.OrdinalIgnoreCase)) ? 0 : 1)
+                .ThenBy(i => i.Item2.ProductionYear.HasValue && i.Item2.ProductionYear.Equals(parsedName.Year) ? 0 : 1)
+                .ThenBy(i => i.Item1.Any(title => title.Contains(comparableName, StringComparison.OrdinalIgnoreCase)) ? 0 : 1)
                 .ThenBy(i => list.IndexOf(i))
                 .Select(i => i.Item2)
+                .Take(MaxSearchResults)   // TVDB returns a lot of unrelated results
                 .ToList();
         }
 
