@@ -450,7 +450,7 @@ namespace Jellyfin.Networking.Manager
                     return new NetCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
                 }
 
-                return new NetCollection(_bindAddresses.Where(p => !p.IsLoopback()));
+                return new NetCollection(_bindAddresses);
             }
         }
 
@@ -1127,7 +1127,7 @@ namespace Jellyfin.Networking.Manager
         private bool MatchesBindInterface(IPObject source, bool isExternal, out string result)
         {
             result = string.Empty;
-            var nc = new NetCollection(_bindAddresses.Exclude(_bindExclusions).Where(p => !p.IsLoopback()));
+            var nc = _bindAddresses.Exclude(_bindExclusions);
 
             int count = nc.Count;
             if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses[0].Equals(IPAddress.IPv6Any)))
