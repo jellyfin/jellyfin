@@ -32,6 +32,7 @@ namespace Jellyfin.Networking.Ssdp
         private static readonly string _hostName = $"{MediaBrowser.Common.System.OperatingSystem.Name}/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
         private static SsdpServer? _instance;
         private readonly object _synchroniser;
+        private readonly INetworkManager _networkManager;
         private readonly IServerApplicationHost _appHost;
         private readonly Hashtable _listeners;
         private readonly Hashtable _senders;
@@ -52,8 +53,9 @@ namespace Jellyfin.Networking.Ssdp
             IConfigurationManager configurationManager,
             ILogger logger,
             IServerApplicationHost appHost)
-            : base(networkManager, configurationManager, logger)
+            : base(configurationManager, logger)
         {
+            _networkManager = networkManager;
             _appHost = appHost;
             _synchroniser = new object();
             _listeners = new Hashtable();
@@ -254,7 +256,7 @@ namespace Jellyfin.Networking.Ssdp
         {
             base.UpdateArguments();
 
-            _interfaces = NetManager.GetInternalBindAddresses();
+            _interfaces = _networkManager.GetInternalBindAddresses();
 
             if (!string.IsNullOrEmpty(Configuration.SSDPTracingFilter))
             {
@@ -374,14 +376,14 @@ namespace Jellyfin.Networking.Ssdp
 
             if (restrict)
             {
-                if (!NetManager.IsInLocalNetwork(endPoint.Address))
+                if (!_networkManager.IsInLocalNetwork(endPoint.Address))
                 {
                     Logger.LogDebug("FILTERED: Sending to non-LAN address: {0}.", endPoint.Address);
                     return;
                 }
 
                 // Are we sending to Mono.Nat?
-                if (IsUPnPActive && endPoint.Port == 1900 && NetManager.IsGatewayInterface(endPoint.Address))
+                if (IsUPnPActive && endPoint.Port == 1900 && _networkManager.IsGatewayInterface(endPoint.Address))
                 {
                     return;
                 }
@@ -457,7 +459,7 @@ namespace Jellyfin.Networking.Ssdp
         /// <param name="receivedFrom">The remote endpoint.</param>
         private Task ProcessMessage(UdpProcess client, string data, IPEndPoint receivedFrom)
         {
-            if (!NetManager.IsInLocalNetwork(receivedFrom.Address))
+            if (!_networkManager.IsInLocalNetwork(receivedFrom.Address))
             {
                 // Not from the local LAN, so ignore it.
                 return Task.CompletedTask;
@@ -524,7 +526,7 @@ namespace Jellyfin.Networking.Ssdp
             if (!_running)
             {
                 _running = true;
-                NetManager.NetworkChanged += NetworkChanged;
+                _networkManager.NetworkChanged += NetworkChanged;
 
                 Logger.LogDebug("EnableMultiSocketBinding : {0}", NetworkManager.EnableMultiSocketBinding);
 
@@ -559,7 +561,7 @@ namespace Jellyfin.Networking.Ssdp
             if (_running)
             {
                 // NatUtility.UnknownDeviceFound -= UnknownDeviceFound;
-                NetManager.NetworkChanged -= NetworkChanged;
+                _networkManager.NetworkChanged -= NetworkChanged;
                 _listeners.Clear();
                 _senders.Clear();
                 _running = false;
@@ -606,12 +608,12 @@ namespace Jellyfin.Networking.Ssdp
                 return;
             }
 
-            if (NetManager.IsExcluded(remote))
+            if (_networkManager.IsExcluded(remote))
             {
                 return;
             }
 
-            if (!NetManager.IsInLocalNetwork(remote) && NetManager.IsValidInterfaceAddress(remote))
+            if (!_networkManager.IsInLocalNetwork(remote) && _networkManager.IsValidInterfaceAddress(remote))
             {
                 Logger.LogDebug("FILTERED: Sending to non-LAN address: {0}.", remote);
                 return;

@@ -41,30 +41,17 @@ namespace Jellyfin.Networking.Udp
     /// </summary>
     public class UdpServer : IDisposable
     {
-        private static NetCollection? _internalInterface;
-        private static NetCollection? _allInterfaces;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer"/> class.
         /// </summary>
-        /// <param name="networkManager">The networkManager<see cref="INetworkManager"/>.</param>
         /// <param name="configurationManager">The system configuration.</param>
         /// <param name="logger">The logger factory instance.<see cref="ILogger"/>.</param>
-        public UdpServer(INetworkManager networkManager, IConfigurationManager configurationManager, ILogger logger)
+        public UdpServer(IConfigurationManager configurationManager, ILogger logger)
         {
             ConfigurationManager = configurationManager ?? throw new NullReferenceException(nameof(configurationManager));
-            NetManager = networkManager ?? throw new NullReferenceException(nameof(networkManager));
             Logger = logger ?? throw new NullReferenceException(nameof(logger));
             ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
             UDPPortRange = ((ServerConfiguration)configurationManager.CommonConfiguration).UDPPortRange;
-
-            if (_internalInterface == null)
-            {
-                _internalInterface = networkManager.GetInternalBindAddresses();
-                _allInterfaces = networkManager.GetAllBindInterfaces();
-            }
-
-            NetManager.NetworkChanged += NetworkChanged;
         }
 
         /// <summary>
@@ -81,11 +68,6 @@ namespace Jellyfin.Networking.Udp
         /// Gets the logger instance.
         /// </summary>
         protected ILogger Logger { get; }
-
-        /// <summary>
-        /// Gets the NetworkManager instance.
-        /// </summary>
-        protected INetworkManager NetManager { get; }
 
         /// <summary>
         /// Gets the ConfigurationManager instance.
@@ -635,7 +617,6 @@ namespace Jellyfin.Networking.Udp
             {
                 if (disposing)
                 {
-                    NetManager.NetworkChanged -= NetworkChanged;
                     ConfigurationManager.ConfigurationUpdated -= ConfigurationUpdated;
                 }
 
@@ -745,12 +726,6 @@ namespace Jellyfin.Networking.Udp
             {
                 client.OnFailure?.Invoke(client, ex, $"Error listening to {client.LocalEndPoint}");
             }
-        }
-
-        private void NetworkChanged(object? sender, EventArgs args)
-        {
-            _internalInterface = NetManager.GetInternalBindAddresses();
-            _allInterfaces = NetManager.GetAllBindInterfaces();
         }
 
         /// <summary>
