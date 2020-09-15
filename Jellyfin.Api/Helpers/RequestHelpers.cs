@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Querying;
@@ -119,7 +120,7 @@ namespace Jellyfin.Api.Helpers
                 authorization.Version,
                 authorization.DeviceId,
                 authorization.Device,
-                request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                request.HttpContext.GetNormalizedRemoteIp(),
                 user);
 
             if (session == null)
@@ -171,11 +172,6 @@ namespace Jellyfin.Api.Helpers
                 }).Where(i => i.HasValue)
                 .Select(i => i!.Value)
                 .ToArray();
-        }
-
-        internal static IPAddress NormalizeIp(IPAddress ip)
-        {
-            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
         }
     }
 }

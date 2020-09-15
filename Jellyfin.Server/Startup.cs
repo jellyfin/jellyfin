@@ -53,7 +53,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies());
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.Configuration.KnownProxies);
 
             services.AddJellyfinApiSwagger();
 
@@ -104,6 +104,7 @@ namespace Jellyfin.Server
                     mainApp.UseDeveloperExceptionPage();
                 }
 
+                mainApp.UseForwardedHeaders();
                 mainApp.UseMiddleware<ExceptionMiddleware>();
 
                 mainApp.UseMiddleware<ResponseTimeMiddleware>();

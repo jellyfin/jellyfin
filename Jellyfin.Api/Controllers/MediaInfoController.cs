@@ -9,6 +9,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
 using Jellyfin.Api.Models.VideoDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -69,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback information.</returns>
         [HttpGet("Items/{itemId}/PlaybackInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery, Required] Guid? userId)
+        public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery, Required] Guid userId)
         {
             return await _mediaInfoHelper.GetPlaybackInfo(
                     itemId,
@@ -165,7 +166,7 @@ namespace Jellyfin.Api.Controllers
                         enableTranscoding,
                         allowVideoStreamCopy,
                         allowAudioStreamCopy,
-                        Request.HttpContext.Connection.RemoteIpAddress.ToString());
+                        Request.HttpContext.GetNormalizedRemoteIp());
                 }
 
                 _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
@@ -270,7 +271,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("LiveStreams/Close")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> CloseLiveStream([FromQuery, Required] string? liveStreamId)
+        public async Task<ActionResult> CloseLiveStream([FromQuery, Required] string liveStreamId)
         {
             await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
             return NoContent();

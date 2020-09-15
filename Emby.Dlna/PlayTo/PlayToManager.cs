@@ -280,7 +280,32 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async Task<bool> AddDevice(UpnpDeviceInfo info, string location)
+        private static string GetUuid(string usn)
+        {
+            const string UuidStr = "uuid:";
+            const string UuidColonStr = "::";
+
+            var index = usn.IndexOf(UuidStr, StringComparison.OrdinalIgnoreCase);
+            if (index != -1)
+            {
+                return usn.Substring(index + UuidStr.Length);
+            }
+
+            index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
+            if (index != -1)
+            {
+                usn = usn.Substring(0, index);
+            }
+
+            if (found)
+            {
+                return usn;
+            }
+
+            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        }
+
+        private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
         {
             var uri = info.Location;
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);

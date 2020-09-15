@@ -200,7 +200,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Creates the items.
         /// </summary>
-        void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken);
+        void CreateItems(IReadOnlyList<BaseItem> items, BaseItem parent, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the item.

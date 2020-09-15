@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -178,8 +179,8 @@ namespace Jellyfin.Api.Controllers
         {
             return new EndPointInfo
             {
-                IsLocal = Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress),
-                IsInNetwork = _network.IsInLocalNetwork(Request.HttpContext.Connection.RemoteIpAddress.ToString())
+                IsLocal = HttpContext.IsLocal(),
+                IsInNetwork = _network.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp())
             };
         }
 
@@ -193,7 +194,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesFile(MediaTypeNames.Text.Plain)]
-        public ActionResult GetLogFile([FromQuery, Required] string? name)
+        public ActionResult GetLogFile([FromQuery, Required] string name)
         {
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));

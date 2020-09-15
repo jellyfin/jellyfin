@@ -414,5 +414,10 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the cors hosts.
         /// </summary>
         public string[] CorsHosts { get; set; } = new[] { "*" };
+
+        /// <summary>
+        /// Gets or sets the known proxies.
+        /// </summary>
+        public string[] KnownProxies { get; set; } = Array.Empty<string>();
     }
 }

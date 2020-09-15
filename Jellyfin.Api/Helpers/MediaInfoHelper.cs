@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -498,7 +499,7 @@ namespace Jellyfin.Api.Helpers
                     true,
                     true,
                     true,
-                    httpRequest.HttpContext.Connection.RemoteIpAddress.ToString());
+                    httpRequest.HttpContext.GetNormalizedRemoteIp());
             }
             else
             {
