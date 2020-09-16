@@ -83,8 +83,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool QuickConnectAvailable { get; set; }
 
-        public bool AutoRunWebApp { get; set; }
-
         public bool EnableRemoteAccess { get; set; }
 
         /// <summary>
@@ -306,7 +304,6 @@ namespace MediaBrowser.Model.Configuration
             DisableLiveTvChannelUserDataName = true;
             EnableNewOmdbSupport = true;
 
-            AutoRunWebApp = true;
             EnableRemoteAccess = true;
             QuickConnectAvailable = false;
 

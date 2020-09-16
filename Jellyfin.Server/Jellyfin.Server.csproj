@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
   <PropertyGroup>
