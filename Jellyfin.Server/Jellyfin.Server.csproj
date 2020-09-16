@@ -13,6 +13,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <DisableImplicitAspNetCoreAnalyzers>true</DisableImplicitAspNetCoreAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,10 +22,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources/Configuration/*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <!-- Code Analyzers-->
