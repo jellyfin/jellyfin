@@ -1160,7 +1160,7 @@ namespace Jellyfin.Api.Controllers
             {
                 builder.Append("#EXTINF:")
                     .Append(length.ToString("0.0000", CultureInfo.InvariantCulture))
-                    .Append(", nodesc")
+                    .AppendLine(", nodesc")
                     .Append("hls1/")
                     .Append(name)
                     .Append('/')
