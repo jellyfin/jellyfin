@@ -1683,9 +1683,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 "scale"
             };
 
+            var isOpenClTonemap = false;
             var index = -1;
             foreach (var param in beginOfOutputSizeParam)
             {
+                isOpenClTonemap = outputSizeParam.IndexOf("tonemap_opencl", StringComparison.OrdinalIgnoreCase) > -1;
                 index = outputSizeParam.IndexOf(param, StringComparison.OrdinalIgnoreCase);
                 if (index != -1)
                 {
@@ -1694,6 +1696,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            var tonemapOpenCl = isOpenClTonemap ? "format=p010," : string.Empty;
             var videoSizeParam = string.Empty;
             var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options) ?? string.Empty;
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
@@ -1734,7 +1737,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Setup default filtergraph utilizing FFMpeg overlay() and FFMpeg scale() (see the return of this function for index reference)
             // Always put the scaler before the overlay for better performance
             var retStr = !outputSizeParam.IsEmpty
-                ? " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay\""
+                ? " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{5}{3}[base];[base][sub]overlay\""
                 : " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay\"";
 
             // When the input may or may not be hardware VAAPI decodable
@@ -1782,7 +1785,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 subtitleStreamIndex,
                 state.VideoStream.Index,
                 outputSizeParam.ToString(),
-                videoSizeParam);
+                videoSizeParam,
+                tonemapOpenCl);
         }
 
         private (int? width, int? height) GetFixedOutputSize(
@@ -2102,7 +2106,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             var inputHeight = videoStream?.Height;
             var threeDFormat = state.MediaSource.Video3DFormat;
 
-            var isVaapiDecoder = videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isVaapiH264Encoder = outputVideoCodec.IndexOf("h264_vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isQsvH264Encoder = outputVideoCodec.IndexOf("h264_qsv", StringComparison.OrdinalIgnoreCase) != -1;
             var isNvdecH264Decoder = videoDecoder.IndexOf("h264_cuvid", StringComparison.OrdinalIgnoreCase) != -1;
@@ -2117,10 +2120,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             // If double rate deinterlacing is enabled and the input framerate is 30fps or below, otherwise the output framerate will be too high for many devices
             var doubleRateDeinterlace = options.DeinterlaceDoubleRate && (videoStream?.RealFrameRate ?? 60) <= 30;
 
-            // Currently only with the use of NVENC decoder can we get a decent performance.
             // Currently only the HEVC/H265 format is supported.
-            // NVIDIA Pascal and Turing or higher are recommended.
-            if (isNvdecHevcDecoder && isColorDepth10
+            // NVIDIA Pascal and Turing or higher are recommended. AMD Polaris or higher are recommended.
+            if (isColorDepth10
                 && _mediaEncoder.SupportsHwaccel("opencl")
                 && options.EnableTonemapping
                 && !string.IsNullOrEmpty(videoStream.VideoRange)
@@ -2138,6 +2140,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     parameters += ":range={5}";
                 }
 
+                if (string.Equals(GetHwaccelType(state, options, state.OutputVideoCodec), "-hwaccel opencl", StringComparison.OrdinalIgnoreCase))
+                {
+                    filters.Add("format=p010");
+                }
+
                 // Upload the HDR10 or HLG data to the OpenCL device,
                 // use tonemap_opencl filter for tone mapping,
                 // and then download the SDR data to memory.
@@ -2153,12 +2160,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         options.TonemappingParam,
                         options.TonemappingRange));
                 filters.Add("hwdownload");
-
-                if (hasGraphicalSubs || state.DeInterlace("h265", true) || state.DeInterlace("hevc", true)
-                    || string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
-                {
-                    filters.Add("format=nv12");
-                }
+                filters.Add("format=nv12");
             }
 
             // When the input may or may not be hardware VAAPI decodable
@@ -2175,7 +2177,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
-            else if (IsVaapiSupported(state) && isVaapiDecoder && isLibX264Encoder)
+            else if (IsVaapiSupported(state) && isLibX264Encoder)
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
 
@@ -3074,6 +3076,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (isLinux)
                 {
                     return "-hwaccel vaapi";
+                }
+
+                if (isWindows && isWindows8orLater && _mediaEncoder.SupportsHwaccel("opencl"))
+                {
+                    return "-hwaccel opencl";
                 }
 
                 if (isWindows && isWindows8orLater)
