@@ -2106,6 +2106,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var inputHeight = videoStream?.Height;
             var threeDFormat = state.MediaSource.Video3DFormat;
 
+            var isVaapiDecoder = videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isVaapiH264Encoder = outputVideoCodec.IndexOf("h264_vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isQsvH264Encoder = outputVideoCodec.IndexOf("h264_qsv", StringComparison.OrdinalIgnoreCase) != -1;
             var isNvdecH264Decoder = videoDecoder.IndexOf("h264_cuvid", StringComparison.OrdinalIgnoreCase) != -1;
@@ -2177,7 +2178,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
-            else if (IsVaapiSupported(state) && isLibX264Encoder)
+            else if (IsVaapiSupported(state) && isVaapiDecoder && isLibX264Encoder)
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
 
