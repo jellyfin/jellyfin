@@ -15,7 +15,7 @@
       "launchUrl": "api-docs/swagger",
       "applicationUrl": "http://localhost:8096",
       "environmentVariables": {
-          "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "commandLineArgs": "--nowebclient"
     }
