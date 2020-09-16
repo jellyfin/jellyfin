@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Security;
 using System.Text;
-using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Server
@@ -20,8 +19,9 @@ namespace Emby.Dlna.Server
         private readonly string _serverAddress;
         private readonly string _serverName;
         private readonly string _serverId;
+        private readonly string _customName;
 
-        public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress, string serverName, string serverId)
+        public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress, string serverName, string serverId, string customName)
         {
             if (string.IsNullOrEmpty(serverUdn))
             {
@@ -38,6 +38,7 @@ namespace Emby.Dlna.Server
             _serverAddress = serverAddress;
             _serverName = serverName;
             _serverId = serverId;
+            _customName = customName;
         }
 
         private static bool EnableAbsoluteUrls => false;
@@ -168,7 +169,12 @@ namespace Emby.Dlna.Server
         {
             if (string.IsNullOrEmpty(_profile.FriendlyName))
             {
-                return "Jellyfin - " + _serverName;
+                if (string.IsNullOrEmpty(_customName))
+                {
+                    return "Jellyfin - " + _serverName;
+                }
+
+                return _customName;
             }
 
             var characterList = new List<char>();
@@ -235,13 +241,13 @@ namespace Emby.Dlna.Server
                     .Append(SecurityElement.Escape(service.ServiceId ?? string.Empty))
                     .Append("</serviceId>");
                 builder.Append("<SCPDURL>")
-                    .Append(BuildUrl(service.ScpdUrl))
+                    .Append(BuildUrl(service.ScpdUrl, true))
                     .Append("</SCPDURL>");
                 builder.Append("<controlURL>")
-                    .Append(BuildUrl(service.ControlUrl))
+                    .Append(BuildUrl(service.ControlUrl, true))
                     .Append("</controlURL>");
                 builder.Append("<eventSubURL>")
-                    .Append(BuildUrl(service.EventSubUrl))
+                    .Append(BuildUrl(service.EventSubUrl, true))
                     .Append("</eventSubURL>");
 
                 builder.Append("</service>");
@@ -250,7 +256,7 @@ namespace Emby.Dlna.Server
             builder.Append("</serviceList>");
         }
 
-        private string BuildUrl(string url)
+        private string BuildUrl(string url, bool absoluteUrl = false)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -261,7 +267,7 @@ namespace Emby.Dlna.Server
 
             url = "/dlna/" + _serverUdn + "/" + url;
 
-            if (EnableAbsoluteUrls)
+            if (EnableAbsoluteUrls || absoluteUrl)
             {
                 url = _serverAddress.TrimEnd('/') + url;
             }
@@ -269,7 +275,7 @@ namespace Emby.Dlna.Server
             return SecurityElement.Escape(url);
         }
 
-        private IEnumerable<DeviceIcon> GetIcons()
+        private static IEnumerable<DeviceIcon> GetIcons()
             => new[]
             {
                 new DeviceIcon
@@ -329,25 +335,26 @@ namespace Emby.Dlna.Server
 
         private IEnumerable<DeviceService> GetServices()
         {
-            var list = new List<DeviceService>();
-
-            list.Add(new DeviceService
+            var list = new List<DeviceService>
             {
-                ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
-                ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
-                ScpdUrl = "contentdirectory/contentdirectory.xml",
-                ControlUrl = "contentdirectory/control",
-                EventSubUrl = "contentdirectory/events"
-            });
+                new DeviceService
+                {
+                    ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
+                    ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
+                    ScpdUrl = "contentdirectory/contentdirectory.xml",
+                    ControlUrl = "contentdirectory/control",
+                    EventSubUrl = "contentdirectory/events"
+                },
 
-            list.Add(new DeviceService
-            {
-                ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
-                ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
-                ScpdUrl = "connectionmanager/connectionmanager.xml",
-                ControlUrl = "connectionmanager/control",
-                EventSubUrl = "connectionmanager/events"
-            });
+                new DeviceService
+                {
+                    ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
+                    ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
+                    ScpdUrl = "connectionmanager/connectionmanager.xml",
+                    ControlUrl = "connectionmanager/control",
+                    EventSubUrl = "connectionmanager/events"
+                }
+            };
 
             if (_profile.EnableMSMediaReceiverRegistrar)
             {
