@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Eventing;
@@ -274,19 +275,24 @@ namespace Jellyfin.Api.Controllers
 
         /// <summary>
         /// Processes device subscription events.
+        /// Has to be a url, as the XML content from devices can be corrupt.
         /// </summary>
         /// <param name="id">Id of the device.</param>
-        /// <param name="response">XML data stream.</param>
         /// <returns>Event subscription response.</returns>
-        [HttpNotify("Eventing/{id}")]
-        [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
-        public async Task<ActionResult> ProcessDeviceNotification([FromRoute] string id, [FromBody] string response)
+        [HttpNotify]
+        [Route("Eventing/{id}")]
+        [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs]
+        public async Task<ActionResult> ProcessDeviceNotification([FromRoute] string id)
         {
             try
             {
                 if (DlnaEntryPoint.PlayToManager != null)
                 {
-                    await DlnaEntryPoint.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);
+                    using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
+                    {
+                        var response = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        await DlnaEntryPoint.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);
+                    }
                 }
             }
             catch

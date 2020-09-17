@@ -168,6 +168,10 @@ namespace Jellyfin.Server.Extensions
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
                     opts.InputFormatters.Add(new XmlSerializerInputFormatter(opts));
+
+                    // Remove after https://github.com/jellyfin/jellyfin-web/issues/1930 fixed.
+                    opts.InputFormatters.Add(new NullInputFormatter());
+                    // End bug workaround.
                 })
 
                 // Clear app parts to avoid other assemblies being picked up

@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1801
+#pragma warning disable CA1801
 
 using System;
 using System.Collections.Generic;
@@ -150,25 +150,25 @@ namespace Jellyfin.Api.Controllers
         /// Instructs a session to play an item.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
+        /// <param name="playCommand">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
         /// <param name="itemIds">The ids of the items to play, comma delimited.</param>
         /// <param name="startPositionTicks">The starting position of the first item.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("Sessions/{sessionId}/Playing/{command}")]
+        [HttpPost("Sessions/{sessionId}/Playing")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] PlayCommand command,
-            [FromQuery] Guid[] itemIds,
+            [FromQuery, Required] PlayCommand playCommand,
+            [FromQuery] Guid itemIds,
             [FromQuery] long? startPositionTicks)
         {
             var playRequest = new PlayRequest
             {
-                ItemIds = itemIds,
+                ItemIds = new[] { itemIds },
                 StartPositionTicks = startPositionTicks,
-                PlayCommand = command
+                PlayCommand = playCommand
             };
 
             _sessionManager.SendPlayCommand(
@@ -187,7 +187,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playstateRequest">The <see cref="PlaystateRequest"/>.</param>
         /// <response code="204">Playstate command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("Sessions/{sessionId}/Playing")]
+        [HttpPost("Sessions/{sessionId}/Playing/{command}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
