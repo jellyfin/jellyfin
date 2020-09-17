@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -33,6 +34,7 @@ using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
@@ -117,6 +119,7 @@ namespace Emby.Server.Implementations
 
         private readonly IFileSystem _fileSystemManager;
         private readonly IXmlSerializer _xmlSerializer;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IStartupOptions _startupOptions;
 
         private IMediaEncoder _mediaEncoder;
@@ -251,6 +254,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
+            _jsonSerializer = new JsonSerializer();            
+            
             ServiceCollection = serviceCollection;
 
             ApplicationPaths = applicationPaths;
@@ -1006,6 +1011,108 @@ namespace Emby.Server.Implementations
         protected abstract void RestartInternal();
 
         /// <summary>
+        /// Comparison function used in <see cref="GetPlugins" />.
+        /// </summary>
+        /// <param name="a">Item to compare.</param>
+        /// <param name="b">Item to compare with.</param>
+        /// <returns>Boolean result of the operation.</returns>
+        private static int VersionCompare(
+            (Version PluginVersion, string Name, string Path) a,
+            (Version PluginVersion, string Name, string Path) b)
+        {
+            int compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
+
+            if (compare == 0)
+            {
+                return a.PluginVersion.CompareTo(b.PluginVersion);
+            }
+
+            return compare;
+        }
+
+        /// <summary>
+        /// Returns a list of plugins to install.
+        /// </summary>
+        /// <param name="path">Path to check.</param>
+        /// <param name="cleanup">True if an attempt should be made to delete old plugs.</param>
+        /// <returns>Enumerable list of dlls to load.</returns>
+        private IEnumerable<string> GetPlugins(string path, bool cleanup = true)
+        {
+            var dllList = new List<string>();
+            var versions = new List<(Version PluginVersion, string Name, string Path)>();
+            var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
+            string metafile;
+
+            foreach (var dir in directories)
+            {
+                try
+                {
+                    metafile = Path.Combine(dir, "meta.json");
+                    if (File.Exists(metafile))
+                    {
+                        var manifest = _jsonSerializer.DeserializeFromFile<PluginManifest>(metafile);
+
+                        if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                        {
+                            targetAbi = new Version(0, 0, 0, 1);
+                        }
+
+                        if (!Version.TryParse(manifest.Version, out var version))
+                        {
+                            version = new Version(0, 0, 0, 1);
+                        }
+
+                        if (ApplicationVersion >= targetAbi)
+                        {
+                            // Only load Plugins if the plugin is built for this version or below.
+                            versions.Add((version, manifest.Name, dir));
+                        }
+                    }
+                    else
+                    {
+                        metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
+                        // Add it under the path name and version 0.0.0.1.
+                        versions.Add((new Version(0, 0, 0, 1), metafile, dir));
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            string lastName = string.Empty;
+            versions.Sort(VersionCompare);
+            // Traverse backwards through the list.
+            // The first item will be the latest version.
+            for (int x = versions.Count - 1; x >= 0; x--)
+            {
+                if (!string.Equals(lastName, versions[x].Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    dllList.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
+                    lastName = versions[x].Name;
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(lastName) && cleanup)
+                {
+                    // Attempt a cleanup of old folders.
+                    try
+                    {
+                        Logger.LogDebug("Deleting {Path}", versions[x].Path);
+                        Directory.Delete(versions[x].Path, true);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
+                    }
+                }
+            }
+
+            return dllList;
+        }
+
+        /// <summary>
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
@@ -1013,7 +1120,7 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories))
+                foreach (var file in GetPlugins(ApplicationPaths.PluginsPath))
                 {
                     Assembly plugAss;
                     try
