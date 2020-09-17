@@ -278,6 +278,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets an audio hls playlist stream.
         /// </summary>
         /// <param name="itemId">The item id.</param>
+        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -334,6 +335,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
+            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -386,6 +388,7 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new HlsAudioRequestDto
             {
                 Id = itemId,
+                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -443,6 +446,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets a video stream using HTTP live streaming.
         /// </summary>
         /// <param name="itemId">The item id.</param>
+        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -497,6 +501,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
             [FromRoute, Required] Guid itemId,
+            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -549,6 +554,7 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
+                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -606,6 +612,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets an audio stream using HTTP live streaming.
         /// </summary>
         /// <param name="itemId">The item id.</param>
+        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -660,6 +667,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
+            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -712,6 +720,7 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new StreamingRequestDto
             {
                 Id = itemId,
+                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
