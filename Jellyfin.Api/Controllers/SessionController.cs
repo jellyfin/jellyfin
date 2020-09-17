@@ -155,13 +155,13 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startPositionTicks">The starting position of the first item.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("Sessions/{sessionId}/Playing/{command}")]
+        [HttpPost("Sessions/{sessionId}/Playing")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] PlayCommand command,
-            [FromQuery] Guid[] itemIds,
+            [FromQuery] Guid itemIds,
             [FromQuery] long? startPositionTicks)
         {
             var playRequest = new PlayRequest
@@ -187,7 +187,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playstateRequest">The <see cref="PlaystateRequest"/>.</param>
         /// <response code="204">Playstate command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("Sessions/{sessionId}/Playing")]
+        [HttpPost("Sessions/{sessionId}/Playing/{command}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
