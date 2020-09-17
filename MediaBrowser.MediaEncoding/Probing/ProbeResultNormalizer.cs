@@ -706,8 +706,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
 
-                // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
-                stream.IsAnamorphic = string.Equals(streamInfo.SampleAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase);
+                // if SAR is 1:1 then its not anamorphic.
+                // if SAR 64:45 or 205:141 or whatever then it is anamorphic for sure.
+                // 0:1 value of sar means not set, which is also not anamorphic (same as if SAR is null)
+                stream.IsAnamorphic = streamInfo.SampleAspectRatio != null &&
+                    !string.Equals(streamInfo.SampleAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.OrdinalIgnoreCase);
 
                 if (streamInfo.Refs > 0)
                 {
