@@ -164,8 +164,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
-        [HttpGet("Videos/{itemId}/master.m3u8")]
-        [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
+        [HttpGet("Videos/{itemId}/master.{container}")]
+        [HttpHead("Videos/{itemId}/master.{container}", Name = "HeadMasterHlsVideoPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
@@ -332,8 +332,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
-        [HttpGet("Audio/{itemId}/master.m3u8")]
-        [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
+        [HttpGet("Audio/{itemId}/master.{container}")]
+        [HttpHead("Audio/{itemId}/master.{container}", Name = "HeadMasterHlsAudioPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
@@ -499,7 +499,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("Videos/{itemId}/main.m3u8")]
+        [HttpGet("Videos/{itemId}/main.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
@@ -665,7 +665,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("Audio/{itemId}/main.m3u8")]
+        [HttpGet("Audio/{itemId}/main.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
