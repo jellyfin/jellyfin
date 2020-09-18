@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -32,7 +33,18 @@ namespace MediaBrowser.Common.Json.Converters
                 return null;
             }
 
-            return _baseJsonConverter.Read(ref reader, typeToConvert, options);
+            try
+            {
+                return _baseJsonConverter.Read(ref reader, typeToConvert, options);
+            }
+            catch
+            {
+                // This is a quoted number. Get the value as a string, then convert it manually.
+                var text = Uri.UnescapeDataString(reader.GetString());
+
+                var value = typeToConvert == typeof(long) ? long.Parse(text, CultureInfo.InvariantCulture) : int.Parse(text, CultureInfo.InvariantCulture);
+                return (T?)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
+            }
         }
 
         /// <inheritdoc />
