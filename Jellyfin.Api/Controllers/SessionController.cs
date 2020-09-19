@@ -184,6 +184,7 @@ namespace Jellyfin.Api.Controllers
         /// Issues a playstate command to a client.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The <see cref="PlayCommand"/>.</param>
         /// <param name="playstateRequest">The <see cref="PlaystateRequest"/>.</param>
         /// <response code="204">Playstate command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
@@ -192,7 +193,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
             [FromRoute, Required] string sessionId,
-            [FromBody] PlaystateRequest playstateRequest)
+            [FromRoute, Required] PlayCommand command,
+            [FromQuery] PlaystateRequest playstateRequest)
         {
             _sessionManager.SendPlaystateCommand(
                 RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,

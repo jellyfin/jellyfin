@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -26,13 +27,27 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            // Handle empty string.
-            if (reader.TokenType == JsonTokenType.String && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty))
+            if (reader.TokenType == JsonTokenType.String)
             {
-                return null;
-            }
+                // Handle empty string.
+                if ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty)
+                {
+                    return null;
+                }
 
-            return _baseJsonConverter.Read(ref reader, typeToConvert, options);
+                string numberString = Uri.UnescapeDataString(reader.GetString());
+
+                if (typeToConvert == typeof(long) || typeToConvert == typeof(long?))
+                {
+                    return (T)(IConvertible)long.Parse(numberString, CultureInfo.InvariantCulture);
+                }
+
+                return (T)(IConvertible)int.Parse(numberString, CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                return _baseJsonConverter.Read(ref reader, typeToConvert, options);
+            }
         }
 
         /// <inheritdoc />

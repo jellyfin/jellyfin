@@ -155,59 +155,7 @@ namespace Emby.Dlna
 
         private DeviceProfile AutoCreateProfile(PlayToDeviceInfo deviceInfo)
         {
-            const string dlnaOrgStr = "DLNA.ORG_PN=";
-
-            DeviceProfile profile = new DefaultProfile
-            {
-                Name = deviceInfo.Name,
-                Identification = new DeviceIdentification
-                {
-                    FriendlyName = deviceInfo.Name,
-                    Manufacturer = deviceInfo.Manufacturer,
-                    ModelName = deviceInfo.ModelName
-                },
-                Manufacturer = deviceInfo.Manufacturer,
-                FriendlyName = deviceInfo.Name,
-                ModelNumber = deviceInfo.ModelNumber,
-                ModelName = deviceInfo.ModelName,
-                ModelUrl = deviceInfo.ModelUrl,
-                ModelDescription = deviceInfo.ModelDescription,
-                ManufacturerUrl = deviceInfo.ManufacturerUrl,
-                SerialNumber = deviceInfo.SerialNumber
-            };
-
-            profile.ProtocolInfo = deviceInfo.Capabilities;
-            var supportedMediaTypes = new HashSet<string>();
-
-            foreach (var capability in deviceInfo
-                .Capabilities
-                .Split(',', StringSplitOptions.RemoveEmptyEntries))
-            {
-                var protocolInfo = capability.Split(':');
-                var protocolName = "*";
-                if (protocolInfo.Length == 4)
-                {
-                    string org_pn = protocolInfo[3];
-                    int index = org_pn.IndexOf(dlnaOrgStr, StringComparison.OrdinalIgnoreCase);
-                    if (index != -1)
-                    {
-                        int endIndex = org_pn.IndexOf(',', index + 1);
-                        if (endIndex != -1)
-                        {
-                            protocolName = org_pn.Substring(index + dlnaOrgStr.Length, endIndex);
-                        }
-                        else
-                        {
-                            protocolName = org_pn.Substring(index + dlnaOrgStr.Length);
-                        }
-                    }
-
-                    // Split video/mpg.
-                    supportedMediaTypes.Add(protocolInfo[2].Split('/')[0]);
-                }
-            }
-
-            profile.SupportedMediaTypes = supportedMediaTypes.Aggregate((i, j) => i + ',' + j);
+            DeviceProfile profile = ProtocolHelper.BuildProfile(deviceInfo);
 
             try
             {
