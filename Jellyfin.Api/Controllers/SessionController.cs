@@ -1,3 +1,5 @@
+#pragma warning disable CA1801
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
