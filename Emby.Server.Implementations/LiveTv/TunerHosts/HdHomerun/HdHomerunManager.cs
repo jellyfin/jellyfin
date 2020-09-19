@@ -111,7 +111,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
         {
-            using (var client = new TcpClient(new IPEndPoint(remoteIp, HdHomeRunPort)))
+            using (var client = new TcpClient(remoteIp.ToString(), HdHomeRunPort))
             using (var stream = client.GetStream())
             {
                 return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);
@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             _remoteEndPoint = new IPEndPoint(remoteIp, HdHomeRunPort);
 
-            _tcpClient = new TcpClient(_remoteEndPoint);
+            _tcpClient = new TcpClient(_remoteEndPoint.Address.ToString(), _remoteEndPoint.Port);
 
             if (!_lockkey.HasValue)
             {
@@ -221,7 +221,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 return;
             }
 
-            using (var tcpClient = new TcpClient(_remoteEndPoint))
+            using (var tcpClient = new TcpClient(_remoteEndPoint.Address.ToString(), _remoteEndPoint.Port))
             using (var stream = tcpClient.GetStream())
             {
                 var commandList = commands.GetCommands();
