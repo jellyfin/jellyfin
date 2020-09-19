@@ -504,6 +504,11 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
+            if (string.IsNullOrEmpty(_mediaEncoder.EncoderPath))
+            {
+                throw new ArgumentException("FFMPEG path not set.");
+            }
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
