@@ -27,23 +27,26 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            // Handle empty string.
-            if (reader.TokenType == JsonTokenType.String && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty))
+            if (reader.TokenType == JsonTokenType.String)
             {
-                return null;
-            }
+                // Handle empty string.
+                if ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty)
+                {
+                    return null;
+                }
 
-            try
+                string numberString = Uri.UnescapeDataString(reader.GetString());
+
+                if (typeToConvert == typeof(long) || typeToConvert == typeof(long?))
+                {
+                    return (T)(IConvertible)long.Parse(numberString, CultureInfo.InvariantCulture);
+                }
+
+                return (T)(IConvertible)int.Parse(numberString, CultureInfo.InvariantCulture);
+            }
+            else
             {
                 return _baseJsonConverter.Read(ref reader, typeToConvert, options);
-            }
-            catch
-            {
-                // This is a quoted number. Get the value as a string, then convert it manually.
-                var text = Uri.UnescapeDataString(reader.GetString());
-
-                var value = typeToConvert == typeof(long) ? long.Parse(text, CultureInfo.InvariantCulture) : int.Parse(text, CultureInfo.InvariantCulture);
-                return (T?)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
             }
         }
 
