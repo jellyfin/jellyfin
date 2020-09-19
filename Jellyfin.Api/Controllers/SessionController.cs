@@ -161,7 +161,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] PlayCommand command,
-            [FromQuery] Guid itemIds,
+            [FromQuery] string itemIds,
             [FromQuery] long? startPositionTicks)
         {
             var playRequest = new PlayRequest
