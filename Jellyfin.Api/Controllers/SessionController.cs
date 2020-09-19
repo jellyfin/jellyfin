@@ -161,12 +161,12 @@ namespace Jellyfin.Api.Controllers
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
             [FromQuery, Required] PlayCommand playCommand,
-            [FromQuery] Guid itemIds,
+            [FromQuery, Required] string itemIds,
             [FromQuery] long? startPositionTicks)
         {
             var playRequest = new PlayRequest
             {
-                ItemIds = new[] { itemIds },
+                ItemIds = itemIds.Split(',').Select(p => Guid.Parse(p)).ToArray(),
                 StartPositionTicks = startPositionTicks,
                 PlayCommand = playCommand
             };
