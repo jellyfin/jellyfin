@@ -212,7 +212,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (match.Success)
             {
-                return new Version(match.Groups[1].Value);
+                if (Version.TryParse(match.Groups[1].Value, out var result))
+                {
+                    return result;
+                }
             }
 
             var versionMap = GetFFmpegLibraryVersions(output);
