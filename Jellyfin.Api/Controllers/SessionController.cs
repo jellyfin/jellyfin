@@ -160,7 +160,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] PlayCommand command,
+            [FromQuery, Required] PlayRequest playRequest,
             [FromQuery] string itemIds,
             [FromQuery] long? startPositionTicks)
         {
