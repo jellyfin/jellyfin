@@ -1,5 +1,3 @@
-#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -184,8 +182,9 @@ namespace Jellyfin.Api.Controllers
         /// Issues a playstate command to a client.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The <see cref="PlayCommand"/>.</param>
-        /// <param name="playstateRequest">The <see cref="PlaystateRequest"/>.</param>
+        /// <param name="command">The <see cref="PlaystateCommand"/>.</param>
+        /// <param name="seekPositionTicks">The optional position ticks.</param>
+        /// <param name="controllingUserId">The optional controlling user id.</param>
         /// <response code="204">Playstate command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Playing/{command}")]
@@ -193,13 +192,19 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] PlayCommand command,
-            [FromQuery] PlaystateRequest playstateRequest)
+            [FromRoute, Required] PlaystateCommand command,
+            [FromQuery] long? seekPositionTicks,
+            [FromQuery] string? controllingUserId)
         {
             _sessionManager.SendPlaystateCommand(
                 RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
                 sessionId,
-                playstateRequest,
+                new PlaystateRequest()
+                {
+                    Command = command,
+                    ControllingUserId = controllingUserId,
+                    SeekPositionTicks = seekPositionTicks,
+                },
                 CancellationToken.None);
 
             return NoContent();
@@ -436,9 +441,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult ReportViewing(
             [FromQuery] string? sessionId,
-            [FromQuery] string? itemId)
+            [FromQuery, Required] string? itemId)
         {
-            string session = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            string session = sessionId ?? RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
 
             _sessionManager.ReportNowViewingItem(session, itemId);
             return NoContent();
