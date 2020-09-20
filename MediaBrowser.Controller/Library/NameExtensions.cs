@@ -1,3 +1,4 @@
+#nullable enable
 #pragma warning disable CS1591
 
 using System;
@@ -9,7 +10,7 @@ namespace MediaBrowser.Controller.Library
 {
     public static class NameExtensions
     {
-        private static string RemoveDiacritics(string name)
+        private static string RemoveDiacritics(string? name)
         {
             if (name == null)
             {
