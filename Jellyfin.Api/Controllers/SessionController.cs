@@ -166,7 +166,7 @@ namespace Jellyfin.Api.Controllers
         {
             var playRequest = new PlayRequest
             {
-                ItemIds = itemIds.Split(',').Select(p => Guid.Parse(p)).ToArray(),
+                ItemIds = RequestHelpers.GetGuids(itemIds),
                 StartPositionTicks = startPositionTicks,
                 PlayCommand = playCommand
             };
