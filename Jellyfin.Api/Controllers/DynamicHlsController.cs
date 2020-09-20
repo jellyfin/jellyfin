@@ -1453,7 +1453,7 @@ namespace Jellyfin.Api.Controllers
 
             var args = "-codec:v:0 " + codec;
 
-            // if (state.EnableMpegtsM2TsMode)
+            // if  (state.EnableMpegtsM2TsMode)
             // {
             //     args += " -mpegts_m2ts_mode 1";
             // }
