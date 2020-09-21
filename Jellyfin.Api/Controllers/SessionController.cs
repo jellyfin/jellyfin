@@ -217,16 +217,15 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] string command)
         {
-            var name = command;
-            if (Enum.TryParse(name, true, out GeneralCommandType commandType))
+            if (!Enum.TryParse(command, true, out GeneralCommandType commandType))
             {
-                name = commandType.ToString();
+                return BadRequest();
             }
 
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
             var generalCommand = new GeneralCommand
             {
-                Name = name,
+                Name = commandType,
                 ControllingUserId = currentSession.UserId
             };
 
@@ -249,11 +248,16 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] string command)
         {
+            if (!Enum.TryParse(command, true, out GeneralCommandType commandType))
+            {
+                return BadRequest();
+            }
+
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
 
             var generalCommand = new GeneralCommand
             {
-                Name = command,
+                Name = commandType,
                 ControllingUserId = currentSession.UserId
             };
 
