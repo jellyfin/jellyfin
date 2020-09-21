@@ -215,17 +215,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendSystemCommand(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] string command)
+            [FromRoute, Required] GeneralCommandType command)
         {
-            if (!Enum.TryParse(command, true, out GeneralCommandType commandType))
-            {
-                return BadRequest();
-            }
-
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
             var generalCommand = new GeneralCommand
             {
-                Name = commandType,
+                Name = command,
                 ControllingUserId = currentSession.UserId
             };
 
@@ -246,18 +241,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendGeneralCommand(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] string command)
+            [FromRoute, Required] GeneralCommandType command)
         {
-            if (!Enum.TryParse(command, true, out GeneralCommandType commandType))
-            {
-                return BadRequest();
-            }
-
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
 
             var generalCommand = new GeneralCommand
             {
-                Name = commandType,
+                Name = command,
                 ControllingUserId = currentSession.UserId
             };
 
