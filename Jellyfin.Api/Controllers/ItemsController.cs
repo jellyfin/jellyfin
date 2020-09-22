@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -529,7 +530,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Items/Resume")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetResumeItems(
-            [FromRoute] Guid userId,
+            [FromRoute, Required] Guid userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,

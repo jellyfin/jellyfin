@@ -44,14 +44,15 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Packages/{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
-            [FromRoute] [Required] string? name,
+            [FromRoute, Required] string name,
             [FromQuery] string? assemblyGuid)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             var result = _installationManager.FilterPackages(
-                packages,
-                name,
-                string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid)).FirstOrDefault();
+                    packages,
+                    name,
+                    string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid))
+                .FirstOrDefault();
 
             return result;
         }
@@ -84,7 +85,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = Policies.RequiresElevation)]
         public async Task<ActionResult> InstallPackage(
-            [FromRoute] [Required] string? name,
+            [FromRoute, Required] string name,
             [FromQuery] string? assemblyGuid,
             [FromQuery] string? version)
         {
@@ -93,7 +94,8 @@ namespace Jellyfin.Api.Controllers
                     packages,
                     name,
                     string.IsNullOrEmpty(assemblyGuid) ? Guid.Empty : Guid.Parse(assemblyGuid),
-                    string.IsNullOrEmpty(version) ? null : Version.Parse(version)).FirstOrDefault();
+                    specificVersion: string.IsNullOrEmpty(version) ? null : Version.Parse(version))
+                .FirstOrDefault();
 
             if (package == null)
             {
@@ -115,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CancelPackageInstallation(
-            [FromRoute] [Required] Guid packageId)
+            [FromRoute, Required] Guid packageId)
         {
             _installationManager.CancelInstallation(packageId);
             return NoContent();

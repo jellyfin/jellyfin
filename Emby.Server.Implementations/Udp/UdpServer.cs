@@ -68,12 +68,6 @@ namespace Emby.Server.Implementations.Udp
                 {
                     _logger.LogError(ex, "Error sending response message");
                 }
-
-                var parts = messageText.Split('|');
-                if (parts.Length > 1)
-                {
-                    _appHost.EnableLoopback(parts[1]);
-                }
             }
             else
             {

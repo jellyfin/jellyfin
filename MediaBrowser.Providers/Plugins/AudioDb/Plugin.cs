@@ -11,6 +11,12 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
+        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+            : base(applicationPaths, xmlSerializer)
+        {
+            Instance = this;
+        }
+
         public static Plugin Instance { get; private set; }
 
         public override Guid Id => new Guid("a629c0da-fac5-4c7e-931a-7174223f14c8");
@@ -21,12 +27,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         // TODO remove when plugin removed from server.
         public override string ConfigurationFileName => "Jellyfin.Plugin.AudioDb.xml";
-
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
-            : base(applicationPaths, xmlSerializer)
-        {
-            Instance = this;
-        }
 
         public IEnumerable<PluginPageInfo> GetPages()
         {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -115,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{itemId}/AdditionalParts")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute] Guid itemId, [FromQuery] Guid? userId)
+        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -160,9 +161,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success, or a <see cref="NotFoundResult"/> if the video doesn't exist.</returns>
         [HttpDelete("{itemId}/AlternateSources")]
         [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> DeleteAlternateSources([FromRoute] Guid itemId)
+        public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -202,7 +203,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> MergeVersions([FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> MergeVersions([FromQuery, Required] string itemIds)
         {
             var items = RequestHelpers.Split(itemIds, ',', true)
                 .Select(i => _libraryManager.GetItemById(i))
@@ -330,8 +331,9 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("{itemId}/{stream=stream}.{container?}", Name = "HeadVideoStream_2")]
         [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesVideoFile]
         public async Task<ActionResult> GetVideoStream(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromRoute] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,

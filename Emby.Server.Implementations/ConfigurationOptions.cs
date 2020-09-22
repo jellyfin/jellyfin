@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations
             { DefaultRedirectKey, "web/index.html" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
-            { PlaylistsAllowDuplicatesKey, bool.TrueString },
+            { PlaylistsAllowDuplicatesKey, bool.FalseString },
             { BindToUnixSocketKey, bool.FalseString }
         };
     }

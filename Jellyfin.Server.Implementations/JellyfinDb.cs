@@ -1,6 +1,5 @@
 #pragma warning disable CS1591
 
-using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Interfaces;
@@ -9,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Server.Implementations
 {
     /// <inheritdoc/>
-    public partial class JellyfinDb : DbContext
+    public class JellyfinDb : DbContext
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JellyfinDb"/> class.
@@ -140,51 +139,24 @@ namespace Jellyfin.Server.Implementations
             return base.SaveChanges();
         }
 
-        /// <inheritdoc/>
-        public override void Dispose()
-        {
-            foreach (var entry in ChangeTracker.Entries())
-            {
-                entry.State = EntityState.Detached;
-            }
-
-            GC.SuppressFinalize(this);
-            base.Dispose();
-        }
-
-        /// <inheritdoc />
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            CustomInit(optionsBuilder);
-        }
-
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            OnModelCreatingImpl(modelBuilder);
 
             modelBuilder.HasDefaultSchema("jellyfin");
+
+            modelBuilder.Entity<DisplayPreferences>()
+                .HasIndex(entity => entity.UserId)
+                .IsUnique(false);
+
+            modelBuilder.Entity<DisplayPreferences>()
+                .HasIndex(entity => new { entity.UserId, entity.Client })
+                .IsUnique();
 
             modelBuilder.Entity<UserItemData>()
                 .HasIndex(entry => new { entry.UserId, entry.ItemId })
                 .IsUnique();
-
-            /*modelBuilder.Entity<Artwork>().HasIndex(t => t.Kind);
-
-            modelBuilder.Entity<Genre>().HasIndex(t => t.Name)
-                        .IsUnique();
-
-            modelBuilder.Entity<LibraryItem>().HasIndex(t => t.UrlId)
-                        .IsUnique();*/
-
-            OnModelCreatedImpl(modelBuilder);
         }
-
-        partial void CustomInit(DbContextOptionsBuilder optionsBuilder);
-
-        partial void OnModelCreatingImpl(ModelBuilder modelBuilder);
-
-        partial void OnModelCreatedImpl(ModelBuilder modelBuilder);
     }
 }

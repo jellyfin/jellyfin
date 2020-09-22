@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -198,12 +199,12 @@ namespace Jellyfin.Api.Helpers
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
-                AddSubtitles(state, subtitleStreams, builder, _httpContextAccessor.HttpContext.Request.HttpContext.User);
+                AddSubtitles(state, subtitleStreams, builder, _httpContextAccessor.HttpContext.User);
             }
 
             AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
-            if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.Request.HttpContext.Connection.RemoteIpAddress))
+            if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIp()))
             {
                 var requestedVideoBitrate = state.VideoRequest == null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
 
@@ -334,11 +335,10 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, IPAddress ipAddress)
+        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, string ipAddress)
         {
             // Within the local network this will likely do more harm than good.
-            var ip = RequestHelpers.NormalizeIp(ipAddress).ToString();
-            if (_networkManager.IsInLocalNetwork(ip))
+            if (_networkManager.IsInLocalNetwork(ipAddress))
             {
                 return false;
             }

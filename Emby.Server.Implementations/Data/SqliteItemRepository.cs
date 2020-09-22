@@ -148,7 +148,6 @@ namespace Emby.Server.Implementations.Data
                 "pragma shrink_memory"
             };
 
-
             string[] postQueries =
             {
                 // obsolete
@@ -568,7 +567,7 @@ namespace Emby.Server.Implementations.Data
             {
                 SaveItemCommandText,
                 "delete from AncestorIds where ItemId=@ItemId"
-            }).ToList();
+            });
 
             using (var saveItemStatement = statements[0])
             using (var deleteAncestorsStatement = statements[1])
@@ -2933,7 +2932,7 @@ namespace Emby.Server.Implementations.Data
             {
                 connection.RunInTransaction(db =>
                 {
-                    var statements = PrepareAll(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts);
 
                     if (!isReturningZeroItems)
                     {
@@ -2971,7 +2970,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (query.EnableTotalRecordCount)
                     {
-                        using (var statement = statements[statements.Count - 1])
+                        using (var statement = statements[statements.Length - 1])
                         {
                             if (EnableJoinUserData(query))
                             {
@@ -3337,7 +3336,7 @@ namespace Emby.Server.Implementations.Data
             {
                 connection.RunInTransaction(db =>
                 {
-                    var statements = PrepareAll(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts);
 
                     if (!isReturningZeroItems)
                     {
@@ -3363,7 +3362,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (query.EnableTotalRecordCount)
                     {
-                        using (var statement = statements[statements.Count - 1])
+                        using (var statement = statements[statements.Length - 1])
                         {
                             if (EnableJoinUserData(query))
                             {
@@ -3726,26 +3725,31 @@ namespace Emby.Server.Implementations.Data
                 statement?.TryBind("@MaxPremiereDate", query.MaxPremiereDate.Value);
             }
 
+            StringBuilder clauseBuilder = new StringBuilder();
+            const string Or = " OR ";
+
             var trailerTypes = query.TrailerTypes;
             int trailerTypesLen = trailerTypes.Length;
             if (trailerTypesLen > 0)
             {
-                const string Or = " OR ";
-                StringBuilder clause = new StringBuilder("(", trailerTypesLen * 32);
+                clauseBuilder.Append('(');
+
                 for (int i = 0; i < trailerTypesLen; i++)
                 {
                     var paramName = "@TrailerTypes" + i;
-                    clause.Append("TrailerTypes like ")
+                    clauseBuilder.Append("TrailerTypes like ")
                         .Append(paramName)
                         .Append(Or);
                     statement?.TryBind(paramName, "%" + trailerTypes[i] + "%");
                 }
 
                 // Remove last " OR "
-                clause.Length -= Or.Length;
-                clause.Append(')');
+                clauseBuilder.Length -= Or.Length;
+                clauseBuilder.Append(')');
 
-                whereClauses.Add(clause.ToString());
+                whereClauses.Add(clauseBuilder.ToString());
+
+                clauseBuilder.Length = 0;
             }
 
             if (query.IsAiring.HasValue)
@@ -3765,23 +3769,35 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.PersonIds.Length > 0)
+            int personIdsLen = query.PersonIds.Length;
+            if (personIdsLen > 0)
             {
                 // TODO: Should this query with CleanName ?
 
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var personId in query.PersonIds)
-                {
-                    var paramName = "@PersonId" + index;
+                clauseBuilder.Append('(');
 
-                    clauses.Add("(guid in (select itemid from People where Name = (select Name from TypedBaseItems where guid=" + paramName + ")))");
-                    statement?.TryBind(paramName, personId.ToByteArray());
-                    index++;
+                Span<byte> idBytes = stackalloc byte[16];
+                for (int i = 0; i < personIdsLen; i++)
+                {
+                    string paramName = "@PersonId" + i;
+                    clauseBuilder.Append("(guid in (select itemid from People where Name = (select Name from TypedBaseItems where guid=")
+                        .Append(paramName)
+                        .Append("))) OR ");
+
+                    if (statement != null)
+                    {
+                        query.PersonIds[i].TryWriteBytes(idBytes);
+                        statement.TryBind(paramName, idBytes);
+                    }
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                // Remove last " OR "
+                clauseBuilder.Length -= Or.Length;
+                clauseBuilder.Append(')');
+
+                whereClauses.Add(clauseBuilder.ToString());
+
+                clauseBuilder.Length = 0;
             }
 
             if (!string.IsNullOrWhiteSpace(query.Person))
@@ -5157,7 +5173,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var itemIdBlob = itemId.ToByteArray();
+            Span<byte> itemIdBlob = stackalloc byte[16];
+            itemId.TryWriteBytes(itemIdBlob);
 
             // First delete
             deleteAncestorsStatement.Reset();
@@ -5173,16 +5190,14 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             for (var i = 0; i < ancestorIds.Count; i++)
             {
-                if (i > 0)
-                {
-                    insertText.Append(',');
-                }
-
                 insertText.AppendFormat(
                     CultureInfo.InvariantCulture,
-                    "(@ItemId, @AncestorId{0}, @AncestorIdText{0})",
+                    "(@ItemId, @AncestorId{0}, @AncestorIdText{0}),",
                     i.ToString(CultureInfo.InvariantCulture));
             }
+
+            // Remove last ,
+            insertText.Length--;
 
             using (var statement = PrepareStatement(db, insertText.ToString()))
             {
@@ -5193,8 +5208,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     var index = i.ToString(CultureInfo.InvariantCulture);
 
                     var ancestorId = ancestorIds[i];
+                    ancestorId.TryWriteBytes(itemIdBlob);
 
-                    statement.TryBind("@AncestorId" + index, ancestorId.ToByteArray());
+                    statement.TryBind("@AncestorId" + index, itemIdBlob);
                     statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
                 }
 
@@ -5474,7 +5490,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 connection.RunInTransaction(
                     db =>
                     {
-                        var statements = PrepareAll(db, statementTexts).ToList();
+                        var statements = PrepareAll(db, statementTexts);
 
                         if (!isReturningZeroItems)
                         {
@@ -5525,7 +5541,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                                         + GetJoinUserDataText(query)
                                         + whereText;
 
-                            using (var statement = statements[statements.Count - 1])
+                            using (var statement = statements[statements.Length - 1])
                             {
                                 statement.TryBind("@SelectType", returnType);
                                 if (EnableJoinUserData(query))

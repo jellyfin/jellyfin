@@ -42,8 +42,16 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var lang in languages)
             {
-                var downloaded = await DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent,
-                    skipIfAudioTrackMatches, requirePerfectMatch, lang, disabledSubtitleFetchers, subtitleFetcherOrder, cancellationToken).ConfigureAwait(false);
+                var downloaded = await DownloadSubtitles(
+                    video,
+                    mediaStreams,
+                    skipIfEmbeddedSubtitlesPresent,
+                    skipIfAudioTrackMatches,
+                    requirePerfectMatch,
+                    lang,
+                    disabledSubtitleFetchers,
+                    subtitleFetcherOrder,
+                    cancellationToken).ConfigureAwait(false);
 
                 if (downloaded)
                 {
@@ -54,7 +62,8 @@ namespace MediaBrowser.Providers.MediaInfo
             return downloadedLanguages;
         }
 
-        public Task<bool> DownloadSubtitles(Video video,
+        public Task<bool> DownloadSubtitles(
+            Video video,
             List<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
@@ -90,11 +99,21 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Task.FromResult(false);
             }
 
-            return DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent, skipIfAudioTrackMatches,
-                requirePerfectMatch, lang, disabledSubtitleFetchers, subtitleFetcherOrder, mediaType, cancellationToken);
+            return DownloadSubtitles(
+                video,
+                mediaStreams,
+                skipIfEmbeddedSubtitlesPresent,
+                skipIfAudioTrackMatches,
+                requirePerfectMatch,
+                lang,
+                disabledSubtitleFetchers,
+                subtitleFetcherOrder,
+                mediaType,
+                cancellationToken);
         }
 
-        private async Task<bool> DownloadSubtitles(Video video,
+        private async Task<bool> DownloadSubtitles(
+            Video video,
             List<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,

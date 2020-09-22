@@ -539,17 +539,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (enableSubtitleDownloading && enabled)
             {
-                var downloadedLanguages = await new SubtitleDownloader(_logger,
-                    _subtitleManager)
-                    .DownloadSubtitles(video,
-                    currentStreams.Concat(externalSubtitleStreams).ToList(),
-                    skipIfEmbeddedSubtitlesPresent,
-                    skipIfAudioTrackMatches,
-                    requirePerfectMatch,
-                    subtitleDownloadLanguages,
-                    libraryOptions.DisabledSubtitleFetchers,
-                    libraryOptions.SubtitleFetcherOrder,
-                    cancellationToken).ConfigureAwait(false);
+                var downloadedLanguages = await new SubtitleDownloader(
+                    _logger,
+                    _subtitleManager).DownloadSubtitles(
+                        video,
+                        currentStreams.Concat(externalSubtitleStreams).ToList(),
+                        skipIfEmbeddedSubtitlesPresent,
+                        skipIfAudioTrackMatches,
+                        requirePerfectMatch,
+                        subtitleDownloadLanguages,
+                        libraryOptions.DisabledSubtitleFetchers,
+                        libraryOptions.SubtitleFetcherOrder,
+                        cancellationToken).ConfigureAwait(false);
 
                 // Rescan
                 if (downloadedLanguages.Count > 0)

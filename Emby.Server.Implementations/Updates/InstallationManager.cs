@@ -15,12 +15,14 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Common.System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -183,7 +185,8 @@ namespace Emby.Server.Implementations.Updates
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null)
+            Version minVersion = null,
+            Version specificVersion = null)
         {
             var package = FilterPackages(availablePackages, name, guid).FirstOrDefault();
 
@@ -197,7 +200,11 @@ namespace Emby.Server.Implementations.Updates
             var availableVersions = package.versions
                 .Where(x => Version.Parse(x.targetAbi) <= appVer);
 
-            if (minVersion != null)
+            if (specificVersion != null)
+            {
+                availableVersions = availableVersions.Where(x => new Version(x.version) == specificVersion);
+            }
+            else if (minVersion != null)
             {
                 availableVersions = availableVersions.Where(x => new Version(x.version) >= minVersion);
             }
@@ -227,8 +234,8 @@ namespace Emby.Server.Implementations.Updates
         {
             foreach (var plugin in _applicationHost.Plugins)
             {
-                var compatibleversions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, plugin.Version);
-                var version = compatibleversions.FirstOrDefault(y => y.Version > plugin.Version);
+                var compatibleVersions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, minVersion: plugin.Version);
+                var version = compatibleVersions.FirstOrDefault(y => y.Version > plugin.Version);
                 if (version != null && CompletedInstallations.All(x => x.Guid != version.Guid))
                 {
                     yield return version;
@@ -372,11 +379,20 @@ namespace Emby.Server.Implementations.Updates
                 throw new InvalidDataException("The checksum of the received data doesn't match.");
             }
 
+            // Version folder as they cannot be overwritten in Windows.
+            targetDir += "_" + package.Version;
+
             if (Directory.Exists(targetDir))
             {
-                Directory.Delete(targetDir, true);
+                try
+                {
+                    Directory.Delete(targetDir, true);
+                }
+                catch
+                {
+                    // Ignore any exceptions.
+                }
             }
-
             stream.Position = 0;
             _zipClient.ExtractAllFromZip(stream, targetDir, true);
 
@@ -418,15 +434,22 @@ namespace Emby.Server.Implementations.Updates
                 path = file;
             }
 
-            if (isDirectory)
+            try
             {
-                _logger.LogInformation("Deleting plugin directory {0}", path);
-                Directory.Delete(path, true);
+                if (isDirectory)
+                {
+                    _logger.LogInformation("Deleting plugin directory {0}", path);
+                    Directory.Delete(path, true);
+                }
+                else
+                {
+                    _logger.LogInformation("Deleting plugin file {0}", path);
+                    _fileSystem.DeleteFile(path);
+                }
             }
-            else
+            catch
             {
-                _logger.LogInformation("Deleting plugin file {0}", path);
-                _fileSystem.DeleteFile(path);
+                // Ignore file errors.
             }
 
             var list = _config.Configuration.UninstalledPlugins.ToList();

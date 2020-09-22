@@ -101,7 +101,7 @@ namespace Emby.Dlna.PlayTo
                 LoadOptions.PreserveWhitespace);
         }
 
-        private Task<HttpResponseMessage> PostSoapDataAsync(
+        private async Task<HttpResponseMessage> PostSoapDataAsync(
             string url,
             string soapAction,
             string postData,
@@ -126,7 +126,7 @@ namespace Emby.Dlna.PlayTo
 
             options.Content = new StringContent(postData, Encoding.UTF8, MediaTypeNames.Text.Xml);
 
-            return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         }
     }
 }
