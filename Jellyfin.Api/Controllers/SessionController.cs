@@ -222,18 +222,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendSystemCommand(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] string command)
+            [FromRoute, Required] GeneralCommandType command)
         {
-            var name = command;
-            if (Enum.TryParse(name, true, out GeneralCommandType commandType))
-            {
-                name = commandType.ToString();
-            }
-
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
             var generalCommand = new GeneralCommand
             {
-                Name = name,
+                Name = command,
                 ControllingUserId = currentSession.UserId
             };
 
@@ -254,7 +248,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendGeneralCommand(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] string command)
+            [FromRoute, Required] GeneralCommandType command)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
 

@@ -1037,7 +1037,7 @@ namespace Emby.Server.Implementations.Session
 
             var generalCommand = new GeneralCommand
             {
-                Name = GeneralCommandType.DisplayMessage.ToString()
+                Name = GeneralCommandType.DisplayMessage
             };
 
             generalCommand.Arguments["Header"] = command.Header;
@@ -1268,7 +1268,7 @@ namespace Emby.Server.Implementations.Session
         {
             var generalCommand = new GeneralCommand
             {
-                Name = GeneralCommandType.DisplayContent.ToString(),
+                Name = GeneralCommandType.DisplayContent,
                 Arguments =
                 {
                     ["ItemId"] = command.ItemId,
