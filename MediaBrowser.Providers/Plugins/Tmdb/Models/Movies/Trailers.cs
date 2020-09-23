@@ -6,6 +6,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.Movies
 {
     public class Trailers
     {
-        public List<Youtube> Youtube { get; set; }
+        public IReadOnlyList<Youtube> Youtube { get; set; }
     }
 }

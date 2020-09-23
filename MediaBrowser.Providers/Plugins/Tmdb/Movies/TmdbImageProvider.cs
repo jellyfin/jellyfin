@@ -38,6 +38,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public static string ProviderName => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
+        public int Order => 0;
+
         public bool Supports(BaseItem item)
         {
             return item is Movie || item is MusicVideo || item is Trailer;
@@ -200,8 +203,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             return null;
         }
-
-        public int Order => 0;
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
