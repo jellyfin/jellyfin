@@ -1,5 +1,3 @@
-﻿#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -150,25 +148,25 @@ namespace Jellyfin.Api.Controllers
         /// Instructs a session to play an item.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
+        /// <param name="playCommand">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
         /// <param name="itemIds">The ids of the items to play, comma delimited.</param>
         /// <param name="startPositionTicks">The starting position of the first item.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("Sessions/{sessionId}/Playing/{command}")]
+        [HttpPost("Sessions/{sessionId}/Playing")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
-            [FromRoute, Required] PlayCommand command,
-            [FromQuery] Guid[] itemIds,
+            [FromQuery, Required] PlayCommand playCommand,
+            [FromQuery, Required] string itemIds,
             [FromQuery] long? startPositionTicks)
         {
             var playRequest = new PlayRequest
             {
-                ItemIds = itemIds,
+                ItemIds = RequestHelpers.GetGuids(itemIds),
                 StartPositionTicks = startPositionTicks,
-                PlayCommand = command
+                PlayCommand = playCommand
             };
 
             _sessionManager.SendPlayCommand(
@@ -184,20 +182,29 @@ namespace Jellyfin.Api.Controllers
         /// Issues a playstate command to a client.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="playstateRequest">The <see cref="PlaystateRequest"/>.</param>
+        /// <param name="command">The <see cref="PlaystateCommand"/>.</param>
+        /// <param name="seekPositionTicks">The optional position ticks.</param>
+        /// <param name="controllingUserId">The optional controlling user id.</param>
         /// <response code="204">Playstate command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("Sessions/{sessionId}/Playing")]
+        [HttpPost("Sessions/{sessionId}/Playing/{command}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
             [FromRoute, Required] string sessionId,
-            [FromBody] PlaystateRequest playstateRequest)
+            [FromRoute, Required] PlaystateCommand command,
+            [FromQuery] long? seekPositionTicks,
+            [FromQuery] string? controllingUserId)
         {
             _sessionManager.SendPlaystateCommand(
                 RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
                 sessionId,
-                playstateRequest,
+                new PlaystateRequest()
+                {
+                    Command = command,
+                    ControllingUserId = controllingUserId,
+                    SeekPositionTicks = seekPositionTicks,
+                },
                 CancellationToken.None);
 
             return NoContent();
@@ -434,9 +441,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult ReportViewing(
             [FromQuery] string? sessionId,
-            [FromQuery] string? itemId)
+            [FromQuery, Required] string? itemId)
         {
-            string session = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            string session = sessionId ?? RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
 
             _sessionManager.ReportNowViewingItem(session, itemId);
             return NoContent();
