@@ -48,18 +48,25 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
-            var tvdbId = series.GetProviderId(MetadataProvider.Tvdb);
-            if (string.IsNullOrEmpty(tvdbId))
+            var tvdbIdString = series.GetProviderId(MetadataProvider.Tvdb);
+            if (string.IsNullOrEmpty(tvdbIdString))
             {
                 return false;
             }
 
-            var episodes = await _tvdbClientManager.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
+            var episodes = await _tvdbClientManager.GetAllEpisodesAsync(
+                int.Parse(tvdbIdString, CultureInfo.InvariantCulture),
+                series.GetPreferredMetadataLanguage(),
+                cancellationToken).ConfigureAwait(false);
 
             var episodeLookup = episodes
                 .Select(i =>
                 {
-                    DateTime.TryParse(i.FirstAired, out var firstAired);
+                    if (!DateTime.TryParse(i.FirstAired, out var firstAired))
+                    {
+                        firstAired = default;
+                    }
+
                     var seasonNumber = i.AiredSeason.GetValueOrDefault(-1);
                     var episodeNumber = i.AiredEpisodeNumber.GetValueOrDefault(-1);
                     return (seasonNumber, episodeNumber, firstAired);

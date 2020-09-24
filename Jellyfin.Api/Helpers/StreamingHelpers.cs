@@ -169,7 +169,7 @@ namespace Jellyfin.Api.Helpers
 
             string? containerInternal = Path.GetExtension(state.RequestedUrl);
 
-            if (string.IsNullOrEmpty(streamingRequest.Container))
+            if (!string.IsNullOrEmpty(streamingRequest.Container))
             {
                 containerInternal = streamingRequest.Container;
             }

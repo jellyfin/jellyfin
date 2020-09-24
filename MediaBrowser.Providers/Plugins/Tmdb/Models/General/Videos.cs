@@ -6,6 +6,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.General
 {
     public class Videos
     {
-        public List<Video> Results { get; set; }
+        public IReadOnlyList<Video> Results { get; set; }
     }
 }

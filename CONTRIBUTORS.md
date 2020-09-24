@@ -135,6 +135,7 @@
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
+ - [nielsvanvelzen](https://github.com/nielsvanvelzen)
 
 # Emby Contributors
 
@@ -198,3 +199,4 @@
  - [tikuf](https://github.com/tikuf/)
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
+ - [olsh](https://github.com/olsh)

@@ -141,6 +141,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Name = episode.EpisodeName,
                     Overview = episode.Overview,
                     CommunityRating = (float?)episode.SiteRating,
+                    OfficialRating = episode.ContentRating,
                 }
             };
             result.ResetPeople();
