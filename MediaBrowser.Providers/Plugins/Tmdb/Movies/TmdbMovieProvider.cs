@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -16,7 +14,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
@@ -26,29 +23,23 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<TmdbMovieProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly TmdbClientManager _tmdbClientManager;
+
+        public TmdbMovieProvider(
+            ILibraryManager libraryManager,
+            TmdbClientManager tmdbClientManager,
+            IHttpClientFactory httpClientFactory)
+        {
+            _libraryManager = libraryManager;
+            _tmdbClientManager = tmdbClientManager;
+            _httpClientFactory = httpClientFactory;
+        }
 
         public string Name => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
         public int Order => 1;
-
-        internal static TmdbMovieProvider Current { get; private set; }
-
-        public TmdbMovieProvider(
-            ILogger<TmdbMovieProvider> logger,
-            ILibraryManager libraryManager,
-            TmdbClientManager tmdbClientManager,
-            IHttpClientFactory httpClientFactory)
-        {
-            _logger = logger;
-            _libraryManager = libraryManager;
-            _tmdbClientManager = tmdbClientManager;
-            _httpClientFactory = httpClientFactory;
-            Current = this;
-        }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
