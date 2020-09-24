@@ -44,14 +44,14 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Theory]
-        [InlineData(ExtraType.BehindTheScenes, "behind the scenes" )]
-        [InlineData(ExtraType.DeletedScene, "deleted scenes" )]
-        [InlineData(ExtraType.Interview, "interviews" )]
-        [InlineData(ExtraType.Scene, "scenes" )]
-        [InlineData(ExtraType.Sample, "samples" )]
-        [InlineData(ExtraType.Clip, "shorts" )]
-        [InlineData(ExtraType.Clip, "featurettes" )]
-        [InlineData(ExtraType.Unknown, "extras" )]
+        [InlineData(ExtraType.BehindTheScenes, "behind the scenes")]
+        [InlineData(ExtraType.DeletedScene, "deleted scenes")]
+        [InlineData(ExtraType.Interview, "interviews")]
+        [InlineData(ExtraType.Scene, "scenes")]
+        [InlineData(ExtraType.Sample, "samples")]
+        [InlineData(ExtraType.Clip, "shorts")]
+        [InlineData(ExtraType.Clip, "featurettes")]
+        [InlineData(ExtraType.Unknown, "extras")]
         public void TestDirectories(ExtraType type, string dirName)
         {
             Test(dirName + "/300.mp4", type, _videoOptions);
