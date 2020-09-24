@@ -155,7 +155,7 @@ namespace Emby.Dlna
 
         private DeviceProfile AutoCreateProfile(PlayToDeviceInfo deviceInfo)
         {
-            DeviceProfile profile = ProtocolHelper.BuildProfile(deviceInfo);
+            DeviceProfile profile = GetDefaultProfile();
 
             try
             {
