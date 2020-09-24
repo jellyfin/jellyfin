@@ -35,7 +35,7 @@ namespace MediaBrowser.Common.Json.Converters
                     return null;
                 }
 
-                string numberString = Uri.UnescapeDataString(reader.GetString());
+                string numberString = reader.GetString();
 
                 if (typeToConvert == typeof(long) || typeToConvert == typeof(long?))
                 {
