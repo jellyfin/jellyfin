@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Mime;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
 
@@ -19,11 +18,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public const string BaseTmdbUrl = "https://www.themoviedb.org/";
 
         /// <summary>
-        /// URL of the TMDB API instance to use.
-        /// </summary>
-        public const string BaseTmdbApiUrl = "https://api.themoviedb.org/";
-
-        /// <summary>
         /// Name of the provider.
         /// </summary>
         public const string ProviderName = "TheMovieDb";
@@ -37,11 +31,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Maximum number of cast members to pull.
         /// </summary>
         public const int MaxCastMembers = 15;
-
-        /// <summary>
-        /// Value of the Accept header for requests to the provider.
-        /// </summary>
-        public static readonly string[] AcceptHeaders = { MediaTypeNames.Application.Json, "image/*" };
 
         /// <summary>
         /// The crew types to keep.
@@ -77,9 +66,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return PersonType.Writer;
             }
 
-            return null;
+            return string.Empty;
         }
 
+        /// <summary>
+        /// Determines whether a video is a trailer.
+        /// </summary>
+        /// <param name="video">The TMDb video.</param>
+        /// <returns>A boolean indicating whether the video is a trailer.</returns>
         public static bool IsTrailerType(Video video)
         {
             return video.Site.Equals("youtube", StringComparison.OrdinalIgnoreCase)
@@ -87,6 +81,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                        || !video.Type.Equals("teaser", StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Normalizes a language string for use with TMDb's include image language parameter.
+        /// </summary>
+        /// <param name="preferredLanguage">The preferred language as either a 2 letter code with or without country code.</param>
+        /// <returns>The comma separated language string.</returns>
         public static string GetImageLanguagesParam(string preferredLanguage)
         {
             var languages = new List<string>();
@@ -116,6 +115,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             return string.Join(',', languages);
         }
 
+        /// <summary>
+        /// Normalizes a language string for use with TMDb's language parameter.
+        /// </summary>
+        /// <param name="language">The language code.</param>
+        /// <returns>The normalized language code.</returns>
         public static string NormalizeLanguage(string language)
         {
             if (string.IsNullOrEmpty(language))
@@ -136,6 +140,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             return language;
         }
 
+        /// <summary>
+        /// Adjusts the image's language code preferring the 5 letter language code eg. en-US.
+        /// </summary>
+        /// <param name="imageLanguage">The image's actual language code.</param>
+        /// <param name="requestLanguage">The requested language code.</param>
+        /// <returns>The language code.</returns>
         public static string AdjustImageLanguage(string imageLanguage, string requestLanguage)
         {
             if (!string.IsNullOrEmpty(imageLanguage)
