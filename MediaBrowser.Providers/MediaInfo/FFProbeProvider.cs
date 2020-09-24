@@ -150,11 +150,6 @@ namespace MediaBrowser.Providers.MediaInfo
         public Task<ItemUpdateType> FetchVideoInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Video
         {
-            if (item.VideoType == VideoType.Iso)
-            {
-                return _cachedTask;
-            }
-
             if (item.IsPlaceHolder)
             {
                 return _cachedTask;

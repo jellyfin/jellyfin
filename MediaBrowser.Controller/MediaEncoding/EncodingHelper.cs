@@ -379,25 +379,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetInputPathArgument(EncodingJobInfo state)
         {
-            var protocol = state.InputProtocol;
             var mediaPath = state.MediaPath ?? string.Empty;
 
-            string[] inputPath;
-            if (state.IsInputVideo
-                && !(state.VideoType == VideoType.Iso && state.IsoMount == null))
-            {
-                inputPath = MediaEncoderHelpers.GetInputArgument(
-                    _fileSystem,
-                    mediaPath,
-                    state.IsoMount,
-                    state.PlayableStreamFileNames);
-            }
-            else
-            {
-                inputPath = new[] { mediaPath };
-            }
-
-            return _mediaEncoder.GetInputArgument(inputPath, protocol);
+            return _mediaEncoder.GetInputArgument(mediaPath, state.MediaSource);
         }
 
         /// <summary>
@@ -2546,13 +2530,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 state.VideoType = mediaSource.VideoType.Value;
 
-                if (mediaSource.VideoType.Value == VideoType.BluRay || mediaSource.VideoType.Value == VideoType.Dvd)
+                if (mediaSource.VideoType.Value == VideoType.Dvd)
                 {
                     state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, mediaSource.VideoType.Value).Select(Path.GetFileName).ToArray();
-                }
-                else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.BluRay)
-                {
-                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.BluRay).Select(Path.GetFileName).ToArray();
                 }
                 else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.Dvd)
                 {

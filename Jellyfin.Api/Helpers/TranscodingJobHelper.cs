@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -762,7 +762,7 @@ namespace Jellyfin.Api.Helpers
 
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
         {
-            if (state.VideoType == VideoType.Iso && state.IsoType.HasValue && _isoManager.CanMount(state.MediaPath))
+            if (state.VideoType == VideoType.Iso && state.IsoType.HasValue && state.IsoType == IsoType.Dvd && _isoManager.CanMount(state.MediaPath))
             {
                 state.IsoMount = await _isoManager.Mount(state.MediaPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }

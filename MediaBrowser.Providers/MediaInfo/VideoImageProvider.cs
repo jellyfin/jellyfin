@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -50,7 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // No support for this
-            if (video.VideoType == VideoType.Iso || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.BluRay)
+            if (video.VideoType == VideoType.Dvd)
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
@@ -72,7 +73,6 @@ namespace MediaBrowser.Providers.MediaInfo
             var inputPath = MediaEncoderHelpers.GetInputArgument(
                 _fileSystem,
                 item.Path,
-                null,
                 item.GetPlayableStreamFileNames());
 
             var mediaStreams =
@@ -107,7 +107,14 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
+                MediaSourceInfo mediaSource = new MediaSourceInfo
+                {
+                    VideoType = item.VideoType,
+                    IsoType = item.IsoType,
+                    Protocol = item.PathProtocol.Value,
+                };
+
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -119,8 +126,14 @@ namespace MediaBrowser.Providers.MediaInfo
                                       : TimeSpan.FromSeconds(10);
 
                 var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+                var mediaSource = new MediaSourceInfo
+                {
+                    VideoType = item.VideoType,
+                    IsoType = item.IsoType,
+                    Protocol = item.PathProtocol.Value,
+                };
 
-                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
             }
 
             return new DynamicImageResponse

@@ -18,6 +18,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -319,7 +320,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
 
-            var inputFiles = MediaEncoderHelpers.GetInputArgument(_fileSystem, request.MediaSource.Path, request.MountedIso, request.PlayableStreamFileNames);
+            var inputFiles = MediaEncoderHelpers.GetInputArgument(_fileSystem, request.MediaSource.Path, request.PlayableStreamFileNames);
 
             var probeSize = EncodingHelper.GetProbeSizeArgument(inputFiles.Length);
             string analyzeDuration;
@@ -340,7 +341,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;
 
             return GetMediaInfoInternal(
-                GetInputArgument(inputFiles, request.MediaSource.Protocol),
+                GetInputArgument(inputFiles, request.MediaSource),
                 request.MediaSource.Path,
                 request.MediaSource.Protocol,
                 extractChapters,
@@ -355,11 +356,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the input argument.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
-        /// <param name="protocol">The protocol.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentException">Unrecognized InputType.</exception>
-        public string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol)
-            => EncodingUtils.GetInputArgument(inputFiles, protocol);
+        public string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource)
+        {
+            var prefix = "file";
+            if (mediaSource.VideoType == VideoType.BluRay || mediaSource.VideoType == VideoType.Iso)
+            {
+                prefix = "bluray";
+            }
+
+            return EncodingUtils.GetInputArgument(prefix, inputFiles, mediaSource.Protocol);
+        }
 
         /// <summary>
         /// Gets the media info internal.
@@ -457,17 +466,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Task<string> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
         {
-            return ExtractImage(new[] { path }, null, null, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
+            var mediaSource = new MediaSourceInfo
+            {
+                Protocol = MediaProtocol.File
+            };
+
+            return ExtractImage(new[] { path }, null, null, imageStreamIndex, mediaSource, true, null, null, cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, container, videoStream, null, protocol, false, threedFormat, offset, cancellationToken);
+            return ExtractImage(inputFiles, container, videoStream, null, mediaSource, false, threedFormat, offset, cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, container, imageStream, imageStreamIndex, protocol, false, null, null, cancellationToken);
+            return ExtractImage(inputFiles, container, imageStream, imageStreamIndex, mediaSource, false, null, null, cancellationToken);
         }
 
         private async Task<string> ExtractImage(
@@ -475,13 +489,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string container,
             MediaStream videoStream,
             int? imageStreamIndex,
-            MediaProtocol protocol,
+            MediaSourceInfo mediaSource,
             bool isAudio,
             Video3DFormat? threedFormat,
             TimeSpan? offset,
             CancellationToken cancellationToken)
         {
-            var inputArgument = GetInputArgument(inputFiles, protocol);
+            var inputArgument = GetInputArgument(inputFiles, mediaSource);
 
             if (isAudio)
             {
@@ -671,7 +685,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string[] inputFiles,
             string container,
             MediaStream videoStream,
-            MediaProtocol protocol,
+            MediaSourceInfo mediaSource,
             Video3DFormat? threedFormat,
             TimeSpan interval,
             string targetDirectory,
@@ -679,7 +693,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int? maxWidth,
             CancellationToken cancellationToken)
         {
-            var inputArgument = GetInputArgument(inputFiles, protocol);
+            var inputArgument = GetInputArgument(inputFiles, mediaSource);
 
             var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(_usCulture);
 
