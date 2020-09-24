@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var seriesTmdbId = Convert.ToInt32(series?.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
 
-            if (seriesTmdbId <= 0 || season?.IndexNumber != null)
+            if (seriesTmdbId <= 0 || season?.IndexNumber == null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
