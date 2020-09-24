@@ -1017,9 +1017,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool validateListings = false,
             [FromQuery] bool validateLogin = false)
         {
-            using var sha = SHA1.Create();
             if (!string.IsNullOrEmpty(pw))
             {
+                using var sha = SHA1.Create();
                 listingsProviderInfo.Password = Hex.Encode(sha.ComputeHash(Encoding.UTF8.GetBytes(pw)));
             }
 

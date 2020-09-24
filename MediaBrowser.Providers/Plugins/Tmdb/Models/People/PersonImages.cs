@@ -7,6 +7,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.People
 {
     public class PersonImages
     {
-        public List<Profile> Profiles { get; set; }
+        public IReadOnlyList<Profile> Profiles { get; set; }
     }
 }

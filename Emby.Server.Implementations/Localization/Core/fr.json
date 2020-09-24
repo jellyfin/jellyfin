@@ -107,7 +107,7 @@
     "TaskCleanLogsDescription": "Supprime les journaux de plus de {0} jours.",
     "TaskCleanLogs": "Nettoyer le répertoire des journaux",
     "TaskRefreshLibraryDescription": "Scanne toute les bibliothèques pour trouver les nouveaux fichiers et rafraîchit les métadonnées.",
-    "TaskRefreshLibrary": "Scanner toute les Bibliothèques",
+    "TaskRefreshLibrary": "Scanner toutes les Bibliothèques",
     "TaskRefreshChapterImagesDescription": "Crée des images de miniature pour les vidéos ayant des chapitres.",
     "TaskRefreshChapterImages": "Extraire les images de chapitre",
     "TaskCleanCacheDescription": "Supprime les fichiers de cache dont le système n'a plus besoin.",
