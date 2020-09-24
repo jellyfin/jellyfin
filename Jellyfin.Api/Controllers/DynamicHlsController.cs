@@ -1132,30 +1132,30 @@ namespace Jellyfin.Api.Controllers
 
             var builder = new StringBuilder();
 
-            builder.AppendLine("#EXTM3U");
-            builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
-            builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(CultureInfo.InvariantCulture));
-            builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+            builder.AppendLine("#EXTM3U")
+                .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
+                .AppendLine("#EXT-X-VERSION:3")
+                .Append("#EXT-X-TARGETDURATION:")
+                .Append(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength))
+                .AppendLine()
+                .AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
-            var queryString = Request.QueryString;
             var index = 0;
-
             var segmentExtension = GetSegmentFileExtension(streamingRequest.SegmentContainer);
+            var queryString = Request.QueryString;
 
             foreach (var length in segmentLengths)
             {
-                builder.AppendLine("#EXTINF:" + length.ToString("0.0000", CultureInfo.InvariantCulture) + ", nodesc");
-                builder.AppendLine(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "hls1/{0}/{1}{2}{3}",
-                        name,
-                        index.ToString(CultureInfo.InvariantCulture),
-                        segmentExtension,
-                        queryString));
-
-                index++;
+                builder.Append("#EXTINF:")
+                    .Append(length.ToString("0.0000", CultureInfo.InvariantCulture))
+                    .AppendLine(", nodesc")
+                    .Append("hls1/")
+                    .Append(name)
+                    .Append('/')
+                    .Append(index++)
+                    .Append(segmentExtension)
+                    .Append(queryString)
+                    .AppendLine();
             }
 
             builder.AppendLine("#EXT-X-ENDLIST");
@@ -1453,7 +1453,7 @@ namespace Jellyfin.Api.Controllers
 
             var args = "-codec:v:0 " + codec;
 
-            // if (state.EnableMpegtsM2TsMode)
+            // if  (state.EnableMpegtsM2TsMode)
             // {
             //     args += " -mpegts_m2ts_mode 1";
             // }

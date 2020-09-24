@@ -21,6 +21,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Trailers
             _httpClientFactory = httpClientFactory;
         }
 
+        public string Name => TmdbMovieProvider.Current.Name;
+
+        public int Order => 0;
+
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
         {
             return TmdbMovieProvider.Current.GetMovieSearchResults(searchInfo, cancellationToken);
@@ -30,10 +34,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Trailers
         {
             return TmdbMovieProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
-
-        public string Name => TmdbMovieProvider.Current.Name;
-
-        public int Order => 0;
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {

@@ -141,14 +141,14 @@ namespace Emby.Dlna
             var builder = new StringBuilder();
 
             builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.AppendFormat(CultureInfo.InvariantCulture, "FriendlyName:{0}", profile.Name ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "Manufacturer:{0}", profile.Manufacturer ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelDescription:{0}", profile.ModelDescription ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelName:{0}", profile.ModelName ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelNumber:{0}", profile.ModelNumber ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelUrl:{0}", profile.ModelUrl ?? string.Empty).AppendLine();
-            builder.AppendFormat(CultureInfo.InvariantCulture, "SerialNumber:{0}", profile.SerialNumber ?? string.Empty).AppendLine();
+            builder.Append("FriendlyName:").AppendLine(profile.Name);
+            builder.Append("Manufacturer:").AppendLine(profile.Manufacturer);
+            builder.Append("ManufacturerUrl:").AppendLine(profile.ManufacturerUrl);
+            builder.Append("ModelDescription:").AppendLine(profile.ModelDescription);
+            builder.Append("ModelName:").AppendLine(profile.ModelName);
+            builder.Append("ModelNumber:").AppendLine(profile.ModelNumber);
+            builder.Append("ModelUrl:").AppendLine(profile.ModelUrl);
+            builder.Append("SerialNumber:").AppendLine(profile.SerialNumber);
 
             _logger.LogInformation(builder.ToString());
         }

@@ -112,9 +112,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private async Task<List<Poster>> FetchImages(Season item, string tmdbId, string language, CancellationToken cancellationToken)
         {
-            await TmdbSeasonProvider.Current.EnsureSeasonInfo(tmdbId, item.IndexNumber.GetValueOrDefault(), language, cancellationToken).ConfigureAwait(false);
+            var seasonNumber = item.IndexNumber.GetValueOrDefault();
+            await TmdbSeasonProvider.Current.EnsureSeasonInfo(tmdbId, seasonNumber, language, cancellationToken).ConfigureAwait(false);
 
-            var path = TmdbSeriesProvider.Current.GetDataFilePath(tmdbId, language);
+            var path = TmdbSeasonProvider.Current.GetDataFilePath(tmdbId, seasonNumber, language);
 
             if (!string.IsNullOrEmpty(path))
             {

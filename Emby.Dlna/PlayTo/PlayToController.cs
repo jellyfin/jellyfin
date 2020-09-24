@@ -734,42 +734,40 @@ namespace Emby.Dlna.PlayTo
 
         private Task SendGeneralCommand(GeneralCommand command)
         {
-            if (Enum.TryParse(command.Name, true, out GeneralCommandType commandType))
+            switch (command.Name)
             {
-                switch (commandType)
-                {
-                    case GeneralCommandType.VolumeDown:
-                        return _device.VolumeDown();
-                    case GeneralCommandType.VolumeUp:
-                        return _device.VolumeUp();
-                    case GeneralCommandType.Mute:
-                        return _device.Mute();
-                    case GeneralCommandType.Unmute:
-                        return _device.Unmute();
-                    case GeneralCommandType.ToggleMute:
-                        return _device.ToggleMute();
-                    case GeneralCommandType.SetAudioStreamIndex:
-                        if (command.Arguments.TryGetValue("Index", out string index))
+                case GeneralCommandType.VolumeDown:
+                    return _device.VolumeDown();
+                case GeneralCommandType.VolumeUp:
+                    return _device.VolumeUp();
+                case GeneralCommandType.Mute:
+                    return _device.Mute();
+                case GeneralCommandType.Unmute:
+                    return _device.Unmute();
+                case GeneralCommandType.ToggleMute:
+                    return _device.ToggleMute();
+                case GeneralCommandType.SetAudioStreamIndex:
+                    if (command.Arguments.TryGetValue("Index", out string index))
+                    {
+                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
                         {
-                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
-                            {
-                                return SetAudioStreamIndex(val);
-                            }
-
-                            throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                            return SetAudioStreamIndex(val);
                         }
 
-                        throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
-                    case GeneralCommandType.SetSubtitleStreamIndex:
-                        if (command.Arguments.TryGetValue("Index", out index))
-                        {
-                            if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
-                            {
-                                return SetSubtitleStreamIndex(val);
-                            }
+                        throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                    }
 
-                            throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                    throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
+                case GeneralCommandType.SetSubtitleStreamIndex:
+                    if (command.Arguments.TryGetValue("Index", out index))
+                    {
+                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                        {
+                            return SetSubtitleStreamIndex(val);
                         }
+
+                        throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                    }
 
                         throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
                     case GeneralCommandType.SetVolume:
@@ -781,16 +779,13 @@ namespace Emby.Dlna.PlayTo
                                 return Task.CompletedTask;
                             }
 
-                            throw new ArgumentException("Unsupported volume value supplied.");
-                        }
+                        throw new ArgumentException("Unsupported volume value supplied.");
+                    }
 
-                        throw new ArgumentException("Volume argument cannot be null");
-                    default:
-                        return Task.CompletedTask;
-                }
+                    throw new ArgumentException("Volume argument cannot be null");
+                default:
+                    return Task.CompletedTask;
             }
-
-            return Task.CompletedTask;
         }
 
         private async Task SetAudioStreamIndex(int? newIndex)

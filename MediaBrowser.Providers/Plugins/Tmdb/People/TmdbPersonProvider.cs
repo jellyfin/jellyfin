@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 {
     public class TmdbPersonProvider : IRemoteMetadataProvider<Person, PersonLookupInfo>
     {
-        const string DataFileName = "info.json";
+        private const string DataFileName = "info.json";
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
@@ -39,20 +39,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<TmdbPersonProvider> _logger;
 
         public TmdbPersonProvider(
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             IJsonSerializer jsonSerializer,
-            IHttpClientFactory httpClientFactory,
-            ILogger<TmdbPersonProvider> logger)
+            IHttpClientFactory httpClientFactory)
         {
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
-            _logger = logger;
             Current = this;
         }
 
@@ -75,7 +72,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 var dataFilePath = GetPersonDataFilePath(_configurationManager.ApplicationPaths, tmdbId);
                 var info = _jsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
 
-                var images = (info.Images ?? new PersonImages()).Profiles ?? new List<Profile>();
+                IReadOnlyList<Profile> images = info.Images?.Profiles ?? Array.Empty<Profile>();
 
                 var result = new RemoteSearchResult
                 {
@@ -95,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             if (searchInfo.IsAutomated)
             {
                 // Don't hammer moviedb searching by name
-                return new List<RemoteSearchResult>();
+                return Array.Empty<RemoteSearchResult>();
             }
 
             var url = string.Format(

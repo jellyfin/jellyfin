@@ -1,3 +1,11 @@
 {
-    "Albums": "Álbumes"
+    "Albums": "Álbumes",
+    "Collections": "Colecións",
+    "ChapterNameValue": "Capítulos {0}",
+    "Channels": "Canles",
+    "CameraImageUploadedFrom": "Cargouse unha nova imaxe da cámara desde {0}",
+    "Books": "Libros",
+    "AuthenticationSucceededWithUserName": "{0} autenticouse correctamente",
+    "Artists": "Artistas",
+    "Application": "Aplicativo"
 }
