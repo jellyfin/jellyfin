@@ -413,6 +413,7 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("Swedish", "sv");
             yield return new LocalizationOption("Swiss German", "gsw");
             yield return new LocalizationOption("Turkish", "tr");
+            yield return new LocalizationOption("Tiếng Việt", "vi");
         }
     }
 }

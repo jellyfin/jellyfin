@@ -10,6 +10,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("Superman: Red Son [imdbid=tt10985510]", "imdbid", "tt10985510")]
         [InlineData("Superman: Red Son - tt10985510", "imdbid", "tt10985510")]
         [InlineData("Superman: Red Son", "imdbid", null)]
+        [InlineData("Superman: Red Son", "something", null)]
         public void GetAttributeValue_ValidArgs_Correct(string input, string attribute, string? expectedResult)
         {
             Assert.Equal(expectedResult, PathExtensions.GetAttributeValue(input, attribute));

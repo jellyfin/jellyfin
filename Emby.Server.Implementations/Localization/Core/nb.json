@@ -50,7 +50,7 @@
     "NotificationOptionAudioPlayback": "Lydavspilling startet",
     "NotificationOptionAudioPlaybackStopped": "Lydavspilling stoppet",
     "NotificationOptionCameraImageUploaded": "Kamerabilde lastet opp",
-    "NotificationOptionInstallationFailed": "Installasjonsfeil",
+    "NotificationOptionInstallationFailed": "Installasjonen feilet",
     "NotificationOptionNewLibraryContent": "Nytt innhold lagt til",
     "NotificationOptionPluginError": "Pluginfeil",
     "NotificationOptionPluginInstalled": "Plugin installert",

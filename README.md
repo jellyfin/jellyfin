@@ -124,7 +124,7 @@ To run the project with Visual Studio Code you will first need to open the repos
 
 Second, you need to [install the recommended extensions for the workspace](https://code.visualstudio.com/docs/editor/extension-gallery#_recommended-extensions). Note that extension recommendations are classified as either "Workspace Recommendations" or "Other Recommendations", but only the "Workspace Recommendations" are required.
 
-After the required extensions are installed, you can can run the server by pressing `F5`.
+After the required extensions are installed, you can run the server by pressing `F5`.
 
 #### Running From The Command Line
 

@@ -297,7 +297,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Befores the save.
+        /// Before the save.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
@@ -355,13 +355,12 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual IList<BaseItem> GetChildrenForMetadataUpdates(TItemType item)
         {
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 return folder.GetRecursiveChildren();
             }
 
-            return new List<BaseItem>();
+            return Array.Empty<BaseItem>();
         }
 
         protected virtual ItemUpdateType UpdateMetadataFromChildren(TItemType item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
@@ -814,7 +813,7 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
-                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
+                refreshResult.UpdateType |= await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -880,16 +879,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return refreshResult;
-        }
-
-        private string NormalizeLanguage(string language)
-        {
-            if (string.IsNullOrWhiteSpace(language))
-            {
-                return "en";
-            }
-
-            return language;
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)
