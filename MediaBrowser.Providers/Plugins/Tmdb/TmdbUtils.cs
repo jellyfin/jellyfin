@@ -1,7 +1,10 @@
+#nullable enable
+
 using System;
+using System.Collections.Generic;
 using System.Net.Mime;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
+using TMDbLib.Objects.General;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb
 {
@@ -31,9 +34,24 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
 
         /// <summary>
+        /// Maximum number of cast members to pull.
+        /// </summary>
+        public const int MaxCastMembers = 15;
+
+        /// <summary>
         /// Value of the Accept header for requests to the provider.
         /// </summary>
         public static readonly string[] AcceptHeaders = { MediaTypeNames.Application.Json, "image/*" };
+
+        /// <summary>
+        /// The crew types to keep.
+        /// </summary>
+        public static readonly string[] WantedCrewTypes =
+        {
+            PersonType.Director,
+            PersonType.Writer,
+            PersonType.Producer
+        };
 
         /// <summary>
         /// Maps the TMDB provided roles for crew members to Jellyfin roles.
@@ -60,6 +78,76 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             return null;
+        }
+
+        public static bool IsTrailerType(Video video)
+        {
+            return video.Site.Equals("youtube", StringComparison.OrdinalIgnoreCase)
+                   && (!video.Type.Equals("trailer", StringComparison.OrdinalIgnoreCase)
+                       || !video.Type.Equals("teaser", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static string GetImageLanguagesParam(string preferredLanguage)
+        {
+            var languages = new List<string>();
+
+            if (!string.IsNullOrEmpty(preferredLanguage))
+            {
+                preferredLanguage = NormalizeLanguage(preferredLanguage);
+
+                languages.Add(preferredLanguage);
+
+                if (preferredLanguage.Length == 5) // like en-US
+                {
+                    // Currenty, TMDB supports 2-letter language codes only
+                    // They are planning to change this in the future, thus we're
+                    // supplying both codes if we're having a 5-letter code.
+                    languages.Add(preferredLanguage.Substring(0, 2));
+                }
+            }
+
+            languages.Add("null");
+
+            if (!string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
+            {
+                languages.Add("en");
+            }
+
+            return string.Join(',', languages);
+        }
+
+        public static string NormalizeLanguage(string language)
+        {
+            if (string.IsNullOrEmpty(language))
+            {
+                return language;
+            }
+
+            // They require this to be uppercase
+            // Everything after the hyphen must be written in uppercase due to a way TMDB wrote their api.
+            // See here: https://www.themoviedb.org/talk/5119221d760ee36c642af4ad?page=3#56e372a0c3a3685a9e0019ab
+            var parts = language.Split('-');
+
+            if (parts.Length == 2)
+            {
+                language = parts[0] + "-" + parts[1].ToUpperInvariant();
+            }
+
+            return language;
+        }
+
+        public static string AdjustImageLanguage(string imageLanguage, string requestLanguage)
+        {
+            if (!string.IsNullOrEmpty(imageLanguage)
+                && !string.IsNullOrEmpty(requestLanguage)
+                && requestLanguage.Length > 2
+                && imageLanguage.Length == 2
+                && requestLanguage.StartsWith(imageLanguage, StringComparison.OrdinalIgnoreCase))
+            {
+                return requestLanguage;
+            }
+
+            return imageLanguage;
         }
     }
 }

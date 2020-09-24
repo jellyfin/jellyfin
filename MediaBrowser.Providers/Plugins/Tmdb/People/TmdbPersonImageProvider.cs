@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -11,31 +12,25 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.People;
-using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
 {
     public class TmdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly TmdbClientManager _tmdbClientManager;
 
-        public TmdbPersonImageProvider(IServerConfigurationManager config, IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory)
+        public TmdbPersonImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
-            _config = config;
-            _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
+            _tmdbClientManager = tmdbClientManager;
         }
 
-        public static string ProviderName => TmdbUtils.ProviderName;
-
         /// <inheritdoc />
-        public string Name => ProviderName;
+        public string Name => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
         public int Order => 0;
@@ -56,78 +51,37 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
-            var id = person.GetProviderId(MetadataProvider.Tmdb);
+            var personTmdbId = Convert.ToInt32(person.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
 
-            if (!string.IsNullOrEmpty(id))
+            if (personTmdbId > 0)
             {
-                await TmdbPersonProvider.Current.EnsurePersonInfo(id, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(personTmdbId, cancellationToken).ConfigureAwait(false);
+                if (personResult?.Images?.Profiles == null)
+                {
+                    return Enumerable.Empty<RemoteImageInfo>();
+                }
 
-                var dataFilePath = TmdbPersonProvider.GetPersonDataFilePath(_config.ApplicationPaths, id);
+                var remoteImages = new List<RemoteImageInfo>();
+                var language = item.GetPreferredMetadataLanguage();
 
-                var result = _jsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
+                for (var i = 0; i < personResult.Images.Profiles.Count; i++)
+                {
+                    var image = personResult.Images.Profiles[i];
+                    remoteImages.Add(new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Type = ImageType.Primary,
+                        Width = image.Width,
+                        Height = image.Height,
+                        Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
+                        Url = _tmdbClientManager.GetProfileUrl(image.FilePath)
+                    });
+                }
 
-                var images = result.Images ?? new PersonImages();
-
-                var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-                var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
-
-                return GetImages(images, item.GetPreferredMetadataLanguage(), tmdbImageUrl);
+                return remoteImages.OrderByLanguageDescending(language);
             }
 
             return new List<RemoteImageInfo>();
-        }
-
-        private IEnumerable<RemoteImageInfo> GetImages(PersonImages images, string preferredLanguage, string baseImageUrl)
-        {
-            var list = new List<RemoteImageInfo>();
-
-            if (images.Profiles != null)
-            {
-                list.AddRange(images.Profiles.Select(i => new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Type = ImageType.Primary,
-                    Width = i.Width,
-                    Height = i.Height,
-                    Language = GetLanguage(i),
-                    Url = baseImageUrl + i.File_Path
-                }));
-            }
-
-            var language = preferredLanguage;
-
-            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
-
-            return list.OrderByDescending(i =>
-            {
-                if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 3;
-                }
-
-                if (!isLanguageEn)
-                {
-                    if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 2;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(i.Language))
-                {
-                    return isLanguageEn ? 3 : 2;
-                }
-
-                return 0;
-            })
-                .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0);
-        }
-
-        private string GetLanguage(Profile profile)
-        {
-            return profile.Iso_639_1?.ToString();
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
