@@ -449,7 +449,7 @@ namespace Jellyfin.Networking.Manager
                     return new NetCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
                 }
 
-                return new NetCollection(_bindAddresses.Where(p => !p.IsLoopback()));
+                return new NetCollection(_bindAddresses);
             }
         }
 
