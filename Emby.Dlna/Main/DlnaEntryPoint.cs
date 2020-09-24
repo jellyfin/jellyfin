@@ -261,14 +261,14 @@ namespace Emby.Dlna.Main
         {
             var udn = CreateUuid(_appHost.SystemId);
 
-            var ba = new NetCollection(
+            var bindAddresses = new NetCollection(
                 _networkManager.GetInternalBindAddresses()
                 .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
 
-            if (ba.Count == 0)
+            if (bindAddresses.Count == 0)
             {
                 // No interfaces returned, so use loopback.
-                ba = _networkManager.GetLoopbacks();
+                bindAddresses = _networkManager.GetLoopbacks();
             }
 
             foreach (var addr in bindAddresses)
