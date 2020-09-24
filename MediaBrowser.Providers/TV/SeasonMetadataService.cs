@@ -28,6 +28,9 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
+
+        /// <inheritdoc />
         protected override ItemUpdateType BeforeSaveInternal(Season item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
@@ -66,9 +69,6 @@ namespace MediaBrowser.Providers.TV
 
             return updateType;
         }
-
-        /// <inheritdoc />
-        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
         /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)

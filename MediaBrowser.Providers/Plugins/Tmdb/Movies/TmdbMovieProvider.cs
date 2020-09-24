@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         private const string TmdbConfigUrl = TmdbUtils.BaseTmdbApiUrl + "3/configuration?api_key={0}";
         private const string GetMovieInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
 
-        internal static TmdbMovieProvider Current { get; private set; }
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -44,7 +44,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationHost _appHost;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        /// <summary>
+        /// The _TMDB settings task.
+        /// </summary>
+        private TmdbSettingsResult _tmdbSettings;
 
         public TmdbMovieProvider(
             IJsonSerializer jsonSerializer,
@@ -64,6 +67,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             _appHost = appHost;
             Current = this;
         }
+
+        internal static TmdbMovieProvider Current { get; private set; }
+
+        /// <inheritdoc />
+        public string Name => TmdbUtils.ProviderName;
+
+        /// <inheritdoc />
+        public int Order => 1;
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -130,13 +141,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             return movieDb.GetMetadata(id, cancellationToken);
         }
-
-        public string Name => TmdbUtils.ProviderName;
-
-        /// <summary>
-        /// The _TMDB settings task.
-        /// </summary>
-        private TmdbSettingsResult _tmdbSettings;
 
         /// <summary>
         /// Gets the TMDB settings.
@@ -272,7 +276,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 languages.Add("en");
             }
 
-            return string.Join(",", languages);
+            return string.Join(',', languages);
         }
 
         public static string NormalizeLanguage(string language)
@@ -381,14 +385,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message, CancellationToken cancellationToken = default)
         {
             message.Headers.UserAgent.ParseAdd(_appHost.ApplicationUserAgent);
             return _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(message, cancellationToken);
         }
-
-        /// <inheritdoc />
-        public int Order => 1;
 
         /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
