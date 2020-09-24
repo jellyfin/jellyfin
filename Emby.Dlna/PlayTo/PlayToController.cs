@@ -769,15 +769,15 @@ namespace Emby.Dlna.PlayTo
                         throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
                     }
 
-                        throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
-                    case GeneralCommandType.SetVolume:
-                        if (command.Arguments.TryGetValue("Volume", out string vol))
+                    throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
+                case GeneralCommandType.SetVolume:
+                    if (command.Arguments.TryGetValue("Volume", out string vol))
+                    {
+                        if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
                         {
-                            if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
-                            {
-                                _device.Volume = volume;
-                                return Task.CompletedTask;
-                            }
+                            _device.Volume = volume;
+                            return Task.CompletedTask;
+                        }
 
                         throw new ArgumentException("Unsupported volume value supplied.");
                     }
