@@ -12,13 +12,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Gets the playback request type.
         /// </summary>
-        /// <value>The playback request type.</value>
-        PlaybackRequestType Type();
+        /// <returns>The playback request type.</returns>
+        PlaybackRequestType GetRequestType();
 
         /// <summary>
         /// Applies the request to a group.
         /// </summary>
-        /// <value>The operation completion status.</value>
-        bool Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken);
+        void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken);
     }
 }

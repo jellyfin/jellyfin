@@ -43,14 +43,20 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Create a new SyncPlay group.
         /// </summary>
+        /// <param name="groupName">The name of the new group.</param>
         /// <response code="204">New group created.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("New")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayCreateGroup()
+        public ActionResult SyncPlayCreateGroup(
+            [FromQuery, Required] string groupName)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            _syncPlayManager.NewGroup(currentSession, CancellationToken.None);
+            var newGroupRequest = new NewGroupRequest()
+            {
+                GroupName = groupName
+            };
+            _syncPlayManager.NewGroup(currentSession, newGroupRequest, CancellationToken.None);
             return NoContent();
         }
 
@@ -62,15 +68,14 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayJoinGroup([FromQuery, Required] Guid groupId)
+        public ActionResult SyncPlayJoinGroup(
+            [FromQuery, Required] Guid groupId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-
             var joinRequest = new JoinGroupRequest()
             {
                 GroupId = groupId
             };
-
             _syncPlayManager.JoinGroup(currentSession, groupId, joinRequest, CancellationToken.None);
             return NoContent();
         }
@@ -92,31 +97,139 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets all SyncPlay groups.
         /// </summary>
-        /// <param name="filterItemId">Optional. Filter by item id.</param>
         /// <response code="200">Groups returned.</response>
         /// <returns>An <see cref="IEnumerable{GroupInfoView}"/> containing the available SyncPlay groups.</returns>
         [HttpGet("List")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<GroupInfoView>> SyncPlayGetGroups([FromQuery] Guid? filterItemId)
+        public ActionResult<IEnumerable<GroupInfoDto>> SyncPlayGetGroups()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            return Ok(_syncPlayManager.ListGroups(currentSession, filterItemId.HasValue ? filterItemId.Value : Guid.Empty));
+            return Ok(_syncPlayManager.ListGroups(currentSession));
         }
 
         /// <summary>
         /// Request play in SyncPlay group.
         /// </summary>
+        /// <param name="playingQueue">The playing queue. Item ids in the playing queue, comma delimited.</param>
+        /// <param name="playingItemPosition">The playing item position from the queue.</param>
+        /// <param name="startPositionTicks">The start position ticks.</param>
         /// <response code="204">Play request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Play")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayPlay()
+        public ActionResult SyncPlayPlay(
+            [FromQuery, Required] string playingQueue,
+            [FromQuery, Required] int playingItemPosition,
+            [FromQuery, Required] long startPositionTicks)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PlaybackRequest()
+            var syncPlayRequest = new PlayGroupRequest()
             {
-                Type = PlaybackRequestType.Play
+                PlayingQueue = RequestHelpers.GetGuids(playingQueue),
+                PlayingItemPosition = playingItemPosition,
+                StartPositionTicks = startPositionTicks
             };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request to change playlist item in SyncPlay group.
+        /// </summary>
+        /// <param name="playlistItemId">The playlist id of the item.</param>
+        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("SetPlaylistItem")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlaySetPlaylistItem(
+            [FromQuery, Required] string playlistItemId)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new SetPlaylistItemGroupRequest()
+            {
+                PlaylistItemId = playlistItemId
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request to remove items from the playlist in SyncPlay group.
+        /// </summary>
+        /// <param name="playlistItemIds">The playlist ids of the items to remove.</param>
+        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("RemoveFromPlaylist")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlayRemoveFromPlaylist(
+            [FromQuery, Required] string[] playlistItemIds)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new RemoveFromPlaylistGroupRequest()
+            {
+                PlaylistItemIds = playlistItemIds
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request to move an item in the playlist in SyncPlay group.
+        /// </summary>
+        /// <param name="playlistItemId">The playlist id of the item to move.</param>
+        /// <param name="newIndex">The new position.</param>
+        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("MovePlaylistItem")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlayMovePlaylistItem(
+            [FromQuery, Required] string playlistItemId,
+            [FromQuery, Required] int newIndex)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new MovePlaylistItemGroupRequest()
+            {
+                PlaylistItemId = playlistItemId,
+                NewIndex = newIndex
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request to queue items to the playlist of a SyncPlay group.
+        /// </summary>
+        /// <param name="itemIds">The items to add. Item ids, comma delimited.</param>
+        /// <param name="mode">The mode in which to queue items.</param>
+        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("Queue")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlayQueue(
+            [FromQuery, Required] string itemIds,
+            [FromQuery, Required] string mode)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new QueueGroupRequest()
+            {
+                ItemIds = RequestHelpers.GetGuids(itemIds),
+                Mode = mode
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request unpause in SyncPlay group.
+        /// </summary>
+        /// <response code="204">Unpause request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("Unpause")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlayUnpause()
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new UnpauseGroupRequest();
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -131,10 +244,22 @@ namespace Jellyfin.Api.Controllers
         public ActionResult SyncPlayPause()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PlaybackRequest()
-            {
-                Type = PlaybackRequestType.Pause
-            };
+            var syncPlayRequest = new PauseGroupRequest();
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request stop in SyncPlay group.
+        /// </summary>
+        /// <response code="204">Stop request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("Stop")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlayStop()
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new StopGroupRequest();
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -147,12 +272,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Seek")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlaySeek([FromQuery] long positionTicks)
+        public ActionResult SyncPlaySeek(
+            [FromQuery, Required] long positionTicks)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PlaybackRequest()
+            var syncPlayRequest = new SeekGroupRequest()
             {
-                Type = PlaybackRequestType.Seek,
                 PositionTicks = positionTicks
             };
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
@@ -164,19 +289,142 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="when">When the request has been made by the client.</param>
         /// <param name="positionTicks">The playback position in ticks.</param>
+        /// <param name="isPlaying">Whether the client's playback is playing or not.</param>
+        /// <param name="playlistItemId">The playlist item id.</param>
         /// <param name="bufferingDone">Whether the buffering is done.</param>
         /// <response code="204">Buffering request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Buffering")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayBuffering([FromQuery] DateTime when, [FromQuery] long positionTicks, [FromQuery] bool bufferingDone)
+        public ActionResult SyncPlayBuffering(
+            [FromQuery, Required] DateTime when,
+            [FromQuery, Required] long positionTicks,
+            [FromQuery, Required] bool isPlaying,
+            [FromQuery, Required] string playlistItemId,
+            [FromQuery, Required] bool bufferingDone)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PlaybackRequest()
+            IPlaybackGroupRequest syncPlayRequest;
+            if (!bufferingDone)
             {
-                Type = bufferingDone ? PlaybackRequestType.Ready : PlaybackRequestType.Buffer,
-                When = when,
-                PositionTicks = positionTicks
+                syncPlayRequest = new BufferGroupRequest()
+                {
+                    When = when,
+                    PositionTicks = positionTicks,
+                    IsPlaying = isPlaying,
+                    PlaylistItemId = playlistItemId
+                };
+            }
+            else
+            {
+                syncPlayRequest = new ReadyGroupRequest()
+                {
+                    When = when,
+                    PositionTicks = positionTicks,
+                    IsPlaying = isPlaying,
+                    PlaylistItemId = playlistItemId
+                };
+            }
+
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request SyncPlay group to ignore member during group-wait.
+        /// </summary>
+        /// <param name="ignoreWait">Whether to ignore the member.</param>
+        /// <response code="204">Member state updated.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("SetIgnoreWait")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlaySetIgnoreWait(
+            [FromQuery, Required] bool ignoreWait)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new IgnoreWaitGroupRequest()
+            {
+                IgnoreWait = ignoreWait
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request next track in SyncPlay group.
+        /// </summary>
+        /// <param name="playlistItemId">The playing item id.</param>
+        /// <response code="204">Next track request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("NextTrack")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlayNextTrack(
+            [FromQuery, Required] string playlistItemId)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new NextTrackGroupRequest()
+            {
+                PlaylistItemId = playlistItemId
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request previous track in SyncPlay group.
+        /// </summary>
+        /// <param name="playlistItemId">The playing item id.</param>
+        /// <response code="204">Previous track request sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("PreviousTrack")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlayPreviousTrack(
+            [FromQuery, Required] string playlistItemId)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new PreviousTrackGroupRequest()
+            {
+                PlaylistItemId = playlistItemId
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request to set repeat mode in SyncPlay group.
+        /// </summary>
+        /// <param name="mode">The repeat mode.</param>
+        /// <response code="204">Play queue update sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("SetRepeatMode")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlaySetRepeatMode(
+            [FromQuery, Required] string mode)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new SetRepeatModeGroupRequest()
+            {
+                Mode = mode
+            };
+            _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request to set shuffle mode in SyncPlay group.
+        /// </summary>
+        /// <param name="mode">The shuffle mode.</param>
+        /// <response code="204">Play queue update sent to all group members.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("SetShuffleMode")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SyncPlaySetShuffleMode(
+            [FromQuery, Required] string mode)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new SetShuffleModeGroupRequest()
+            {
+                Mode = mode
             };
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
@@ -190,12 +438,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayPing([FromQuery] double ping)
+        public ActionResult SyncPlayPing(
+            [FromQuery, Required] double ping)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PlaybackRequest()
+            var syncPlayRequest = new PingGroupRequest()
             {
-                Type = PlaybackRequestType.Ping,
                 Ping = Convert.ToInt64(ping)
             };
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);

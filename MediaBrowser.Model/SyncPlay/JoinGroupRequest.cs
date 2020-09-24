@@ -8,9 +8,9 @@ namespace MediaBrowser.Model.SyncPlay
     public class JoinGroupRequest
     {
         /// <summary>
-        /// Gets or sets the Group id.
+        /// Gets or sets the group id.
         /// </summary>
-        /// <value>The Group id to join.</value>
+        /// <value>The id of the group to join.</value>
         public Guid GroupId { get; set; }
     }
 }

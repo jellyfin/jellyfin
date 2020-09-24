@@ -5,20 +5,14 @@ using MediaBrowser.Controller.Session;
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Class SeekGroupRequest.
+    /// Class UnpauseGroupRequest.
     /// </summary>
-    public class SeekGroupRequest : IPlaybackGroupRequest
+    public class UnpauseGroupRequest : IPlaybackGroupRequest
     {
-        /// <summary>
-        /// Gets or sets the position ticks.
-        /// </summary>
-        /// <value>The position ticks.</value>
-        public long PositionTicks { get; set; }
-
         /// <inheritdoc />
         public PlaybackRequestType GetRequestType()
         {
-            return PlaybackRequestType.Seek;
+            return PlaybackRequestType.Unpause;
         }
 
         /// <inheritdoc />

@@ -15,8 +15,9 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Creates a new group.
         /// </summary>
         /// <param name="session">The session that's creating the group.</param>
+        /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void NewGroup(SessionInfo session, CancellationToken cancellationToken);
+        void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to a group.
@@ -38,9 +39,8 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Gets list of available groups for a session.
         /// </summary>
         /// <param name="session">The session.</param>
-        /// <param name="filterItemId">The item id to filter by.</param>
-        /// <value>The list of available groups.</value>
-        List<GroupInfoDto> ListGroups(SessionInfo session, Guid filterItemId);
+        /// <returns>The list of available groups.</returns>
+        List<GroupInfoDto> ListGroups(SessionInfo session);
 
         /// <summary>
         /// Handle a request by a session in a group.
@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void AddSessionToGroup(SessionInfo session, ISyncPlayController group);
+        void AddSessionToGroup(SessionInfo session, ISyncPlayGroupController group);
 
         /// <summary>
         /// Unmaps a session from a group.
@@ -64,6 +64,6 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void RemoveSessionFromGroup(SessionInfo session, ISyncPlayController group);
+        void RemoveSessionFromGroup(SessionInfo session, ISyncPlayGroupController group);
     }
 }

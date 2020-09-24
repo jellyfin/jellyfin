@@ -1,39 +1,41 @@
 using System;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Interface ISyncPlayController.
+    /// Interface ISyncPlayGroupController.
     /// </summary>
-    public interface ISyncPlayController
+    public interface ISyncPlayGroupController
     {
         /// <summary>
-        /// Gets the group id.
+        /// Gets the group identifier.
         /// </summary>
-        /// <value>The group id.</value>
-        Guid GetGroupId();
+        /// <value>The group identifier.</value>
+        Guid GroupId { get; }
 
         /// <summary>
-        /// Gets the playing item id.
+        /// Gets the play queue.
         /// </summary>
-        /// <value>The playing item id.</value>
-        Guid GetPlayingItemId();
+        /// <value>The play queue.</value>
+        PlayQueueManager PlayQueue { get; }
 
         /// <summary>
         /// Checks if the group is empty.
         /// </summary>
-        /// <value>If the group is empty.</value>
+        /// <returns>If the group is empty.</returns>
         bool IsGroupEmpty();
 
         /// <summary>
         /// Initializes the group with the session's info.
         /// </summary>
         /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void CreateGroup(SessionInfo session, CancellationToken cancellationToken);
+        void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to the group.
@@ -42,6 +44,14 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Restores the state of a session that already joined the group.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void SessionRestore(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the session from the group.
@@ -61,7 +71,15 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Gets the info about the group for the clients.
         /// </summary>
-        /// <value>The group info for the clients.</value>
+        /// <returns>The group info for the clients.</returns>
         GroupInfoDto GetInfo();
+
+        /// <summary>
+        /// Checks if a user has access to all content in the play queue.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns><c>true</c> if the user can access the play queue; <c>false</c> otherwise.</returns>
+        bool HasAccessToPlayQueue(User user);
+
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
@@ -5,20 +6,26 @@ using MediaBrowser.Controller.Session;
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Class SeekGroupRequest.
+    /// Class QueueGroupRequest.
     /// </summary>
-    public class SeekGroupRequest : IPlaybackGroupRequest
+    public class QueueGroupRequest : IPlaybackGroupRequest
     {
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Gets or sets the items to queue.
         /// </summary>
-        /// <value>The position ticks.</value>
-        public long PositionTicks { get; set; }
+        /// <value>The items to queue.</value>
+        public Guid[] ItemIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mode in which to add the new items.
+        /// </summary>
+        /// <value>The mode.</value>
+        public string Mode { get; set; }
 
         /// <inheritdoc />
         public PlaybackRequestType GetRequestType()
         {
-            return PlaybackRequestType.Seek;
+            return PlaybackRequestType.Queue;
         }
 
         /// <inheritdoc />

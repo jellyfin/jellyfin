@@ -5,20 +5,20 @@ using MediaBrowser.Controller.Session;
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Class SeekGroupRequest.
+    /// Class IgnoreWaitGroupRequest.
     /// </summary>
-    public class SeekGroupRequest : IPlaybackGroupRequest
+    public class IgnoreWaitGroupRequest : IPlaybackGroupRequest
     {
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Gets or sets the client group-wait status.
         /// </summary>
-        /// <value>The position ticks.</value>
-        public long PositionTicks { get; set; }
+        /// <value>The client group-wait status.</value>
+        public bool IgnoreWait { get; set; }
 
         /// <inheritdoc />
         public PlaybackRequestType GetRequestType()
         {
-            return PlaybackRequestType.Seek;
+            return PlaybackRequestType.IgnoreWait;
         }
 
         /// <inheritdoc />

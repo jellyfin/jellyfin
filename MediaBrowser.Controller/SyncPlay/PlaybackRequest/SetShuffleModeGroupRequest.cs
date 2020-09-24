@@ -5,20 +5,20 @@ using MediaBrowser.Controller.Session;
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Class SeekGroupRequest.
+    /// Class SetShuffleModeGroupRequest.
     /// </summary>
-    public class SeekGroupRequest : IPlaybackGroupRequest
+    public class SetShuffleModeGroupRequest : IPlaybackGroupRequest
     {
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Gets or sets the shuffle mode.
         /// </summary>
-        /// <value>The position ticks.</value>
-        public long PositionTicks { get; set; }
+        /// <value>The shuffle mode.</value>
+        public string Mode { get; set; }
 
         /// <inheritdoc />
         public PlaybackRequestType GetRequestType()
         {
-            return PlaybackRequestType.Seek;
+            return PlaybackRequestType.SetShuffleMode;
         }
 
         /// <inheritdoc />

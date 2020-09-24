@@ -14,6 +14,12 @@ namespace MediaBrowser.Model.SyncPlay
         public string GroupId { get; set; }
 
         /// <summary>
+        /// Gets or sets the playlist id of the playing item.
+        /// </summary>
+        /// <value>The playlist id of the playing item.</value>
+        public string PlaylistItemId { get; set; }
+
+        /// <summary>
         /// Gets or sets the UTC time when to execute the command.
         /// </summary>
         /// <value>The UTC time when to execute the command.</value>

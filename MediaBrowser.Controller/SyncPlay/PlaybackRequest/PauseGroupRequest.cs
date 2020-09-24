@@ -10,15 +10,15 @@ namespace MediaBrowser.Controller.SyncPlay
     public class PauseGroupRequest : IPlaybackGroupRequest
     {
         /// <inheritdoc />
-        public PlaybackRequestType Type()
+        public PlaybackRequestType GetRequestType()
         {
             return PlaybackRequestType.Pause;
         }
 
         /// <inheritdoc />
-        public bool Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            return state.HandleRequest(context, false, this, session, cancellationToken);
+            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
         }
     }
 }

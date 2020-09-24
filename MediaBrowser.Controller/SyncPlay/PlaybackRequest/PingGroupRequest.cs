@@ -2,7 +2,6 @@ using System.Threading;
 using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
 
-// FIXME: not really group related, can be moved up to SyncPlayController maybe?
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
@@ -17,15 +16,15 @@ namespace MediaBrowser.Controller.SyncPlay
         public long Ping { get; set; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type()
+        public PlaybackRequestType GetRequestType()
         {
             return PlaybackRequestType.Ping;
         }
 
         /// <inheritdoc />
-        public bool Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            return state.HandleRequest(context, false, this, session, cancellationToken);
+            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
         }
     }
 }

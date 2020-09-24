@@ -23,21 +23,27 @@ namespace MediaBrowser.Controller.SyncPlay
         public long PositionTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the playing item id.
+        /// Gets or sets the client playback status.
         /// </summary>
-        /// <value>The playing item id.</value>
-        public Guid PlayingItemId { get; set; }
+        /// <value>The client playback status.</value>
+        public bool IsPlaying { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playlist item id of the playing item.
+        /// </summary>
+        /// <value>The playlist item id.</value>
+        public string PlaylistItemId { get; set; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type()
+        public PlaybackRequestType GetRequestType()
         {
             return PlaybackRequestType.Buffer;
         }
 
         /// <inheritdoc />
-        public bool Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            return state.HandleRequest(context, false, this, session, cancellationToken);
+            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
         }
     }
 }
