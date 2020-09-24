@@ -259,12 +259,13 @@ namespace Emby.Dlna.Main
 
         private void RegisterServerEndpoints()
         {
-            var bindAddresses = _networkManager.GetInternalBindAddresses()
-                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0));
-
             var udn = CreateUuid(_appHost.SystemId);
 
-            if (!bindAddresses.Any())
+            var bindAddresses = new NetCollection(
+                _networkManager.GetInternalBindAddresses()
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
+
+            if (bindAddresses.Count == 0)
             {
                 // No interfaces returned, so use loopback.
                 bindAddresses = _networkManager.GetLoopbacks();
