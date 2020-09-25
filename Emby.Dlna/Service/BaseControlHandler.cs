@@ -188,7 +188,7 @@ namespace Emby.Dlna.Service
                 }
             }
 
-           if (localName != null && namespaceURI != null)
+            if (localName != null && namespaceURI != null)
             {
                 return new ControlRequestInfo(localName, namespaceURI);
             }
