@@ -249,8 +249,8 @@ namespace Emby.Dlna.Server
 
             builder.Append("</serviceList>");
         }
-        
-        private string BuildUrl(string ure)
+
+        private string BuildUrl(string url)
         {
             if (string.IsNullOrEmpty(url))
             {
