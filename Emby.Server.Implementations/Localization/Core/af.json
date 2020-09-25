@@ -1,7 +1,7 @@
 {
     "Artists": "Kunstenare",
     "Channels": "Kanale",
-    "Folders": "Fouers",
+    "Folders": "Lêergidse",
     "Favorites": "Gunstellinge",
     "HeaderFavoriteShows": "Gunsteling Vertonings",
     "ValueSpecialEpisodeName": "Spesiale - {0}",
@@ -23,7 +23,7 @@
     "DeviceOfflineWithName": "{0} is ontkoppel",
     "Collections": "Versamelings",
     "Inherit": "Ontvang",
-    "HeaderLiveTV": "Live TV",
+    "HeaderLiveTV": "Lewendige TV",
     "Application": "Program",
     "AppDeviceValues": "App: {0}, Toestel: {1}",
     "VersionNumber": "Weergawe {0}",
