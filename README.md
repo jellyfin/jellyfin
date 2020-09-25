@@ -53,7 +53,7 @@ Jellyfin is a Free Software Media System that puts you in control of managing an
 For further details, please see [our documentation page](https://docs.jellyfin.org/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels](https://docs.jellyfin.org/general/getting-help.html). For more information about the project, please see our [about page](https://docs.jellyfin.org/general/about.html).
 
 <strong>Want to get started?</strong><br/>
-Check out our <a href="https://jellyfin.org/downloads">downloads page</a> or our <a href="https://docs.jellyfin.org/general/administration/installing.html">installation guide</a>, then see our <a href="https://docs.jellyfin.org/general/quick-start.html">quick start guide</a>.<br/> You can also <a href="https://docs.jellyfin.org/general/administration/building.html">build from source</a>,
+Check out our <a href="https://jellyfin.org/downloads">downloads page</a> or our <a href="https://docs.jellyfin.org/general/administration/installing.html">installation guide</a>, then see our <a href="https://docs.jellyfin.org/general/quick-start.html">quick start guide</a>. You can also <a href="https://docs.jellyfin.org/general/administration/building.html">build from source</a>.<br/>
 
 <strong>Something not working right?</strong><br/>
 Open an <a href="https://docs.jellyfin.org/general/contributing/issues.html">Issue</a> on GitHub.<br/>
@@ -65,7 +65,7 @@ Check out our <a href="https://jellyfin.org/contribute">contributing choose-your
 Check out our <a href="https://features.jellyfin.org/?view=most-wanted">feature request hub</a>.<br/>
 
 <strong>Don't hae Jellyfin in your language?</strong><br/>
-Check out our <a href="https://translate.jellyfin.org">Weblate instance</a> to help translate Jellyfin and its subprojects.
+Check out our <a href="https://translate.jellyfin.org">Weblate instance</a> to help translate Jellyfin and its subprojects.<br/>
 
 <a href="https://translate.jellyfin.org/engage/jellyfin/?utm_source=widget">
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
