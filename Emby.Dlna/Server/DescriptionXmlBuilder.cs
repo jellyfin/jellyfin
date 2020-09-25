@@ -249,14 +249,8 @@ namespace Emby.Dlna.Server
 
             builder.Append("</serviceList>");
         }
-
-        /// <summary>
-        /// Builds a valid url for inclusion in the xml.
-        /// </summary>
-        /// <param name="url">Url to include.</param>
-        /// <param name="absoluteUrl">Optional. When set to true, the absolute url is always used.</param>
-        /// <returns>The url to use for the element.</returns>
-        private string BuildUrl(string url, bool absoluteUrl = false)
+        
+        private string BuildUrl(string ure)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -267,7 +261,7 @@ namespace Emby.Dlna.Server
 
             url = "/dlna/" + _serverUdn + "/" + url;
 
-            if (EnableAbsoluteUrls || absoluteUrl)
+            if (EnableAbsoluteUrls)
             {
                 url = _serverAddress.TrimEnd('/') + url;
             }
