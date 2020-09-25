@@ -150,7 +150,7 @@ namespace Emby.Dlna.Service
                 }
             }
 
-            return new ControlRequestInfo();
+            throw new EndOfStreamException("Stream ended but no body tag found.");
         }
 
         private async Task<ControlRequestInfo> ParseBodyTagAsync(XmlReader reader)
