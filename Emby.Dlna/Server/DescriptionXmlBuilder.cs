@@ -235,13 +235,13 @@ namespace Emby.Dlna.Server
                     .Append(SecurityElement.Escape(service.ServiceId ?? string.Empty))
                     .Append("</serviceId>");
                 builder.Append("<SCPDURL>")
-                    .Append(BuildUrl(service.ScpdUrl, true))
+                    .Append(BuildUrl(service.ScpdUrl))
                     .Append("</SCPDURL>");
                 builder.Append("<controlURL>")
-                    .Append(BuildUrl(service.ControlUrl, true))
+                    .Append(BuildUrl(service.ControlUrl))
                     .Append("</controlURL>");
                 builder.Append("<eventSubURL>")
-                    .Append(BuildUrl(service.EventSubUrl, true))
+                    .Append(BuildUrl(service.EventSubUrl))
                     .Append("</eventSubURL>");
 
                 builder.Append("</service>");
