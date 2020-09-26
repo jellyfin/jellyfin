@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Models;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -26,37 +29,19 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly ILogger<DashboardController> _logger;
         private readonly IServerApplicationHost _appHost;
-        private readonly IConfiguration _appConfig;
-        private readonly IServerConfigurationManager _serverConfigurationManager;
-        private readonly IResourceFileManager _resourceFileManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardController"/> class.
         /// </summary>
         /// <param name="logger">Instance of <see cref="ILogger{DashboardController}"/> interface.</param>
         /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
-        /// <param name="appConfig">Instance of <see cref="IConfiguration"/> interface.</param>
-        /// <param name="resourceFileManager">Instance of <see cref="IResourceFileManager"/> interface.</param>
-        /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
         public DashboardController(
             ILogger<DashboardController> logger,
-            IServerApplicationHost appHost,
-            IConfiguration appConfig,
-            IResourceFileManager resourceFileManager,
-            IServerConfigurationManager serverConfigurationManager)
+            IServerApplicationHost appHost)
         {
             _logger = logger;
             _appHost = appHost;
-            _appConfig = appConfig;
-            _resourceFileManager = resourceFileManager;
-            _serverConfigurationManager = serverConfigurationManager;
         }
-
-        /// <summary>
-        /// Gets the path of the directory containing the static web interface content, or null if the server is not
-        /// hosting the web client.
-        /// </summary>
-        private string? WebClientUiPath => GetWebClientUiPath(_appConfig, _serverConfigurationManager);
 
         /// <summary>
         /// Gets the configuration pages.
@@ -123,6 +108,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("web/ConfigurationPage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesFile(MediaTypeNames.Text.Html, "application/x-javascript")]
         public ActionResult GetDashboardConfigurationPage([FromQuery] string? name)
         {
             IPlugin? plugin = null;
@@ -167,87 +153,6 @@ namespace Jellyfin.Api.Controllers
             }
 
             return NotFound();
-        }
-
-        /// <summary>
-        /// Gets the robots.txt.
-        /// </summary>
-        /// <response code="200">Robots.txt returned.</response>
-        /// <returns>The robots.txt.</returns>
-        [HttpGet("robots.txt")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult GetRobotsTxt()
-        {
-            return GetWebClientResource("robots.txt");
-        }
-
-        /// <summary>
-        /// Gets a resource from the web client.
-        /// </summary>
-        /// <param name="resourceName">The resource name.</param>
-        /// <response code="200">Web client returned.</response>
-        /// <response code="404">Server does not host a web client.</response>
-        /// <returns>The resource.</returns>
-        [HttpGet("web/{*resourceName}")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult GetWebClientResource([FromRoute] string resourceName)
-        {
-            if (!_appConfig.HostWebClient() || WebClientUiPath == null)
-            {
-                return NotFound("Server does not host a web client.");
-            }
-
-            var path = resourceName;
-            var basePath = WebClientUiPath;
-
-            var requestPathAndQuery = Request.GetEncodedPathAndQuery();
-            // Bounce them to the startup wizard if it hasn't been completed yet
-            if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted
-                && !requestPathAndQuery.Contains("wizard", StringComparison.OrdinalIgnoreCase)
-                && requestPathAndQuery.Contains("index", StringComparison.OrdinalIgnoreCase))
-            {
-                return Redirect("index.html?start=wizard#!/wizardstart.html");
-            }
-
-            var stream = new FileStream(_resourceFileManager.GetResourcePath(basePath, path), FileMode.Open, FileAccess.Read);
-            return File(stream, MimeTypes.GetMimeType(path));
-        }
-
-        /// <summary>
-        /// Gets the favicon.
-        /// </summary>
-        /// <response code="200">Favicon.ico returned.</response>
-        /// <returns>The favicon.</returns>
-        [HttpGet("favicon.ico")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult GetFavIcon()
-        {
-            return GetWebClientResource("favicon.ico");
-        }
-
-        /// <summary>
-        /// Gets the path of the directory containing the static web interface content.
-        /// </summary>
-        /// <param name="appConfig">The app configuration.</param>
-        /// <param name="serverConfigManager">The server configuration manager.</param>
-        /// <returns>The directory path, or null if the server is not hosting the web client.</returns>
-        public static string? GetWebClientUiPath(IConfiguration appConfig, IServerConfigurationManager serverConfigManager)
-        {
-            if (!appConfig.HostWebClient())
-            {
-                return null;
-            }
-
-            if (!string.IsNullOrEmpty(serverConfigManager.Configuration.DashboardSourcePath))
-            {
-                return serverConfigManager.Configuration.DashboardSourcePath;
-            }
-
-            return serverConfigManager.ApplicationPaths.WebPath;
         }
 
         private IEnumerable<ConfigurationPageInfo> GetConfigPages(IPlugin plugin)

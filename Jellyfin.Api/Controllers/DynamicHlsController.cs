@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
@@ -112,7 +113,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets a video hls playlist stream.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -166,9 +166,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/master.m3u8")]
         [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -177,7 +177,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? segmentContainer,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
-            [FromQuery, Required] string? mediaSourceId,
+            [FromQuery, Required] string mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] string? audioCodec,
             [FromQuery] bool? enableAutoStreamCopy,
@@ -221,7 +221,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new HlsVideoRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -279,7 +278,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets an audio hls playlist stream.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -333,9 +331,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Audio/{itemId}/master.m3u8")]
         [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -344,7 +342,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? segmentContainer,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
-            [FromQuery, Required] string? mediaSourceId,
+            [FromQuery, Required] string mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] string? audioCodec,
             [FromQuery] bool? enableAutoStreamCopy,
@@ -388,7 +386,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new HlsAudioRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -446,7 +443,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets a video stream using HTTP live streaming.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -498,9 +494,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Videos/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -553,7 +549,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -611,7 +606,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets an audio stream using HTTP live streaming.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -663,9 +657,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Audio/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -718,7 +712,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new StreamingRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -830,11 +823,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesVideoFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsVideoSegment(
-            [FromRoute] Guid itemId,
-            [FromRoute] string playlistId,
-            [FromRoute] int segmentId,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] int segmentId,
             [FromRoute] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
@@ -999,11 +993,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesAudioFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsAudioSegment(
-            [FromRoute] Guid itemId,
-            [FromRoute] string playlistId,
-            [FromRoute] int segmentId,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] int segmentId,
             [FromRoute] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
@@ -1137,30 +1132,30 @@ namespace Jellyfin.Api.Controllers
 
             var builder = new StringBuilder();
 
-            builder.AppendLine("#EXTM3U");
-            builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
-            builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(CultureInfo.InvariantCulture));
-            builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+            builder.AppendLine("#EXTM3U")
+                .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
+                .AppendLine("#EXT-X-VERSION:3")
+                .Append("#EXT-X-TARGETDURATION:")
+                .Append(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength))
+                .AppendLine()
+                .AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
-            var queryString = Request.QueryString;
             var index = 0;
-
             var segmentExtension = GetSegmentFileExtension(streamingRequest.SegmentContainer);
+            var queryString = Request.QueryString;
 
             foreach (var length in segmentLengths)
             {
-                builder.AppendLine("#EXTINF:" + length.ToString("0.0000", CultureInfo.InvariantCulture) + ", nodesc");
-                builder.AppendLine(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "hls1/{0}/{1}{2}{3}",
-                        name,
-                        index.ToString(CultureInfo.InvariantCulture),
-                        segmentExtension,
-                        queryString));
-
-                index++;
+                builder.Append("#EXTINF:")
+                    .Append(length.ToString("0.0000", CultureInfo.InvariantCulture))
+                    .AppendLine(", nodesc")
+                    .Append("hls1/")
+                    .Append(name)
+                    .Append('/')
+                    .Append(index++)
+                    .Append(segmentExtension)
+                    .Append(queryString)
+                    .AppendLine();
             }
 
             builder.AppendLine("#EXT-X-ENDLIST");
@@ -1354,15 +1349,20 @@ namespace Jellyfin.Api.Controllers
                 segmentFormat = "mpegts";
             }
 
+            var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize > 128
+                ? encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
+                : "128";
+
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size 2048 -f hls -max_delay 5000000 -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -individual_header_trailer 0 -hls_segment_type {8} -start_number {9} -hls_segment_filename \"{10}\" -hls_playlist_type vod -hls_list_size 0 -y \"{11}\"",
                 inputModifier,
                 _encodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
                 mapArgs,
                 GetVideoArguments(state, encodingOptions, startNumber),
                 GetAudioArguments(state, encodingOptions),
+                maxMuxingQueueSize,
                 state.SegmentLength.ToString(CultureInfo.InvariantCulture),
                 segmentFormat,
                 startNumberParam,
@@ -1453,7 +1453,7 @@ namespace Jellyfin.Api.Controllers
 
             var args = "-codec:v:0 " + codec;
 
-            // if (state.EnableMpegtsM2TsMode)
+            // if  (state.EnableMpegtsM2TsMode)
             // {
             //     args += " -mpegts_m2ts_mode 1";
             // }

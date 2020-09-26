@@ -198,7 +198,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var searchResults = await _json.DeserializeFromStreamAsync<TmdbSearchResult<MovieResult>>(stream).ConfigureAwait(false);
 
@@ -207,7 +207,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return results
                 .Select(i =>
                 {
-                    var remoteResult = new RemoteSearchResult {SearchProviderName = TmdbMovieProvider.Current.Name, Name = i.Title ?? i.Name ?? i.Original_Title, ImageUrl = string.IsNullOrWhiteSpace(i.Poster_Path) ? null : baseImageUrl + i.Poster_Path};
+                    var remoteResult = new RemoteSearchResult
+                    {
+                        SearchProviderName = TmdbMovieProvider.Current.Name,
+                        Name = i.Title ?? i.Name ?? i.Original_Title,
+                        ImageUrl = string.IsNullOrWhiteSpace(i.Poster_Path) ? null : baseImageUrl + i.Poster_Path
+                    };
 
                     if (!string.IsNullOrWhiteSpace(i.Release_Date))
                     {
@@ -261,7 +266,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var searchResults = await _json.DeserializeFromStreamAsync<TmdbSearchResult<TvResult>>(stream).ConfigureAwait(false);
 

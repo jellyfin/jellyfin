@@ -20,6 +20,8 @@ namespace MediaBrowser.Controller
 
         IServiceProvider ServiceProvider { get; }
 
+        bool CoreStartupHasCompleted { get; }
+
         bool CanLaunchWebBrowser { get; }
 
         /// <summary>
@@ -112,13 +114,10 @@ namespace MediaBrowser.Controller
         /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
         void LaunchUrl(string url);
 
-        void EnableLoopback(string appName);
-
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
-        string ReverseVirtualPath(string path);
 
-        Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
+        string ReverseVirtualPath(string path);
     }
 }

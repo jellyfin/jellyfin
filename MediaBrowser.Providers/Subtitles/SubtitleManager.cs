@@ -303,7 +303,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private ISubtitleProvider GetProvider(string id)
         {
-            return _subtitleProviders.First(i => string.Equals(id, GetProviderId(i.Name)));
+            return _subtitleProviders.First(i => string.Equals(id, GetProviderId(i.Name), StringComparison.Ordinal));
         }
 
         /// <inheritdoc />

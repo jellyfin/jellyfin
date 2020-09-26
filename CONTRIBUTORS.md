@@ -57,6 +57,7 @@
  - [Larvitar](https://github.com/Larvitar)
  - [LeoVerto](https://github.com/LeoVerto)
  - [Liggy](https://github.com/Liggy)
+ - [lmaonator](https://github.com/lmaonator)
  - [LogicalPhallacy](https://github.com/LogicalPhallacy)
  - [loli10K](https://github.com/loli10K)
  - [lostmypillow](https://github.com/lostmypillow)
@@ -78,6 +79,7 @@
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
  - [oddstr13](https://github.com/oddstr13)
+ - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
  - [Phlogi](https://github.com/Phlogi)
  - [pjeanjean](https://github.com/pjeanjean)
@@ -133,6 +135,7 @@
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
+ - [nielsvanvelzen](https://github.com/nielsvanvelzen)
 
 # Emby Contributors
 
@@ -196,3 +199,4 @@
  - [tikuf](https://github.com/tikuf/)
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
+ - [olsh](https://github.com/olsh)

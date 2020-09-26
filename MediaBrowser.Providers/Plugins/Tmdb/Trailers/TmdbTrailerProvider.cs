@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Providers;
@@ -20,6 +21,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Trailers
             _httpClientFactory = httpClientFactory;
         }
 
+        public string Name => TmdbMovieProvider.Current.Name;
+
+        public int Order => 0;
+
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
         {
             return TmdbMovieProvider.Current.GetMovieSearchResults(searchInfo, cancellationToken);
@@ -30,13 +35,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Trailers
             return TmdbMovieProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
 
-        public string Name => TmdbMovieProvider.Current.Name;
-
-        public int Order => 0;
-
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

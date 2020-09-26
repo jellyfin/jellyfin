@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
@@ -33,7 +34,7 @@ namespace Emby.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
@@ -46,7 +47,7 @@ namespace Emby.Dlna.PlayTo
         private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClientFactory httpClientFactory, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -56,7 +57,7 @@ namespace Emby.Dlna.PlayTo
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _deviceDiscovery = deviceDiscovery;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _config = config;
             _userDataManager = userDataManager;
             _localization = localization;
@@ -129,25 +130,21 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private string GetUuid(string usn)
+        private static string GetUuid(string usn)
         {
-            var found = false;
-            var index = usn.IndexOf("uuid:", StringComparison.OrdinalIgnoreCase);
+            const string UuidStr = "uuid:";
+            const string UuidColonStr = "::";
+
+            var index = usn.IndexOf(UuidStr, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                usn = usn.Substring(index);
-                found = true;
+                return usn.Substring(index + UuidStr.Length);
             }
 
-            index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
+            index = usn.IndexOf(UuidColonStr, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                usn = usn.Substring(0, index);
-            }
-
-            if (found)
-            {
-                return usn;
+                usn = usn.Substring(0, index + UuidColonStr.Length);
             }
 
             return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
@@ -174,7 +171,7 @@ namespace Emby.Dlna.PlayTo
 
             if (controller == null)
             {
-                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _logger, cancellationToken).ConfigureAwait(false);
+                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClientFactory, _logger, cancellationToken).ConfigureAwait(false);
 
                 string deviceName = device.Properties.Name;
 

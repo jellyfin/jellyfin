@@ -38,12 +38,6 @@ namespace MediaBrowser.Model.Dlna
         public string ModelDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the device description.
-        /// </summary>
-        /// <value>The device description.</value>
-        public string DeviceDescription { get; set; }
-
-        /// <summary>
         /// Gets or sets the model URL.
         /// </summary>
         /// <value>The model URL.</value>

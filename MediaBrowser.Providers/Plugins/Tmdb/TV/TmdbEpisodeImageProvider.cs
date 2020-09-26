@@ -28,7 +28,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     {
         public TmdbEpisodeImageProvider(IHttpClientFactory httpClientFactory, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
             : base(httpClientFactory, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
-        { }
+        {
+        }
+
+        public string Name => TmdbUtils.ProviderName;
+
+        // After TheTvDb
+        public int Order => 1;
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
@@ -43,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var episode = (Controller.Entities.TV.Episode)item;
             var series = episode.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProvider.Tmdb) : null;
+            var seriesId = series?.GetProviderId(MetadataProvider.Tmdb);
 
             var list = new List<RemoteImageInfo>();
 
@@ -62,8 +68,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var language = item.GetPreferredMetadataLanguage();
 
-            var response = await GetEpisodeInfo(seriesId, seasonNumber.Value, episodeNumber.Value,
-                        language, cancellationToken).ConfigureAwait(false);
+            var response = await GetEpisodeInfo(
+                seriesId,
+                seasonNumber.Value,
+                episodeNumber.Value,
+                language,
+                cancellationToken).ConfigureAwait(false);
 
             var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -120,14 +130,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return GetResponse(url, cancellationToken);
         }
 
-        public string Name => TmdbUtils.ProviderName;
-
         public bool Supports(BaseItem item)
         {
             return item is Controller.Entities.TV.Episode;
         }
-
-        // After TheTvDb
-        public int Order => 1;
     }
 }

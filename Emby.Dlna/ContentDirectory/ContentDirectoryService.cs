@@ -2,11 +2,11 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -41,7 +41,7 @@ namespace Emby.Dlna.ContentDirectory
             IServerConfigurationManager config,
             IUserManager userManager,
             ILogger<ContentDirectoryService> logger,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
             IUserViewManager userViewManager,

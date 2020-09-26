@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -37,11 +38,11 @@ using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
-using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
@@ -50,6 +51,7 @@ using Jellyfin.Api.Helpers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -90,7 +92,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
@@ -98,12 +99,12 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
+using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
 {
@@ -120,17 +121,22 @@ namespace Emby.Server.Implementations
         private readonly IFileSystem _fileSystemManager;
         private readonly INetworkManager _networkManager;
         private readonly IXmlSerializer _xmlSerializer;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IStartupOptions _startupOptions;
 
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
-        private IHttpServer _httpServer;
-        private IHttpClient _httpClient;
+        private IHttpClientFactory _httpClientFactory;
+        private IWebSocketManager _webSocketManager;
+
+        private string[] _urlPrefixes;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
+
+        public bool CoreStartupHasCompleted { get; private set; }
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -235,8 +241,14 @@ namespace Emby.Server.Implementations
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
+        /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
+        /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
+        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+        /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
         public ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
@@ -246,6 +258,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
+            _jsonSerializer = new JsonSerializer();            
+            
             ServiceCollection = serviceCollection;
 
             _networkManager = networkManager;
@@ -277,6 +291,10 @@ namespace Emby.Server.Implementations
                 Password = ServerConfigurationManager.Configuration.CertificatePassword
             };
             Certificate = GetCertificate(CertificateInfo);
+
+            ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
+            ApplicationVersionString = ApplicationVersion.ToString(3);
+            ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
         }
 
         public string ExpandVirtualPath(string path)
@@ -306,16 +324,16 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public Version ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version;
+        public Version ApplicationVersion { get; }
 
         /// <inheritdoc />
-        public string ApplicationVersionString { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
+        public string ApplicationVersionString { get; }
 
         /// <summary>
         /// Gets the current application user agent.
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersionString;
+        public string ApplicationUserAgent { get; }
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -446,8 +464,7 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
-            _httpServer.GlobalResponse = null;
-
+            CoreStartupHasCompleted = true;
             stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
@@ -502,9 +519,6 @@ namespace Emby.Server.Implementations
             RegisterServices();
         }
 
-        public Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
-            => _httpServer.RequestHandler(context);
-
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
@@ -524,8 +538,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TvdbClientManager>();
 
-            ServiceCollection.AddSingleton<IHttpClient, HttpClientManager.HttpClientManager>();
-
             ServiceCollection.AddSingleton(_networkManager);
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
@@ -543,8 +555,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
             ServiceCollection.AddSingleton<IZipClient, ZipClient>();
-
-            ServiceCollection.AddSingleton<IHttpResultFactory, HttpResultFactory>();
 
             ServiceCollection.AddSingleton<IServerApplicationHost>(this);
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
@@ -581,8 +591,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
-            ServiceCollection.AddSingleton<ServiceController>();
-            ServiceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
+            ServiceCollection.AddSingleton<IWebSocketManager, WebSocketManager>();
 
             ServiceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
 
@@ -655,8 +664,8 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
-            _httpServer = Resolve<IHttpServer>();
-            _httpClient = Resolve<IHttpClient>();
+            _httpClientFactory = Resolve<IHttpClientFactory>();
+            _webSocketManager = Resolve<IWebSocketManager>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -757,7 +766,6 @@ namespace Emby.Server.Implementations
             CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
-            AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
         }
 
         /// <summary>
@@ -777,7 +785,8 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            _httpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            _urlPrefixes = GetUrlPrefixes().ToArray();
+            _webSocketManager.Init(GetExports<IWebSocketListener>());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -943,7 +952,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            if (!_httpServer.UrlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
+            if (!_urlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
             {
                 requiresRestart = true;
             }
@@ -1018,6 +1027,119 @@ namespace Emby.Server.Implementations
         protected abstract void RestartInternal();
 
         /// <summary>
+        /// Comparison function used in <see cref="GetPlugins" />.
+        /// </summary>
+        /// <param name="a">Item to compare.</param>
+        /// <param name="b">Item to compare with.</param>
+        /// <returns>Boolean result of the operation.</returns>
+        private static int VersionCompare(
+            (Version PluginVersion, string Name, string Path) a,
+            (Version PluginVersion, string Name, string Path) b)
+        {
+            int compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
+
+            if (compare == 0)
+            {
+                return a.PluginVersion.CompareTo(b.PluginVersion);
+            }
+
+            return compare;
+        }
+
+        /// <summary>
+        /// Returns a list of plugins to install.
+        /// </summary>
+        /// <param name="path">Path to check.</param>
+        /// <param name="cleanup">True if an attempt should be made to delete old plugs.</param>
+        /// <returns>Enumerable list of dlls to load.</returns>
+        private IEnumerable<string> GetPlugins(string path, bool cleanup = true)
+        {
+            var dllList = new List<string>();
+            var versions = new List<(Version PluginVersion, string Name, string Path)>();
+            var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
+            string metafile;
+
+            foreach (var dir in directories)
+            {
+                try
+                {
+                    metafile = Path.Combine(dir, "meta.json");
+                    if (File.Exists(metafile))
+                    {
+                        var manifest = _jsonSerializer.DeserializeFromFile<PluginManifest>(metafile);
+
+                        if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                        {
+                            targetAbi = new Version(0, 0, 0, 1);
+                        }
+
+                        if (!Version.TryParse(manifest.Version, out var version))
+                        {
+                            version = new Version(0, 0, 0, 1);
+                        }
+
+                        if (ApplicationVersion >= targetAbi)
+                        {
+                            // Only load Plugins if the plugin is built for this version or below.
+                            versions.Add((version, manifest.Name, dir));
+                        }
+                    }
+                    else
+                    {
+                        // No metafile, so lets see if the folder is versioned.
+                        metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
+                        
+                        int versionIndex = dir.LastIndexOf('_');
+                        if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
+                        {
+                            // Versioned folder.
+                            versions.Add((ver, metafile, dir));
+                        }
+                        else
+                        {
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
+                            versions.Add((new Version(0, 0, 0, 1), metafile, dir));
+                        }   
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            string lastName = string.Empty;
+            versions.Sort(VersionCompare);
+            // Traverse backwards through the list.
+            // The first item will be the latest version.
+            for (int x = versions.Count - 1; x >= 0; x--)
+            {
+                if (!string.Equals(lastName, versions[x].Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    dllList.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
+                    lastName = versions[x].Name;
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(lastName) && cleanup)
+                {
+                    // Attempt a cleanup of old folders.
+                    try
+                    {
+                        Logger.LogDebug("Deleting {Path}", versions[x].Path);
+                        Directory.Delete(versions[x].Path, true);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
+                    }
+                }
+            }
+
+            return dllList;
+        }
+
+        /// <summary>
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
@@ -1025,7 +1147,7 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories))
+                foreach (var file in GetPlugins(ApplicationPaths.PluginsPath))
                 {
                     Assembly plugAss;
                     try
@@ -1139,7 +1261,8 @@ namespace Emby.Server.Implementations
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = localAddress
+                LocalAddress = localAddress,
+                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
 
@@ -1301,25 +1424,17 @@ namespace Emby.Server.Implementations
 
             try
             {
-                using (var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        Url = apiUrl,
-                        LogErrorResponseBody = false,
-                        BufferContent = false,
-                        CancellationToken = cancellationToken
-                    }, HttpMethod.Post).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(response.Content))
-                    {
-                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
+                using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-                        _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
-                        Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
-                        return valid;
-                    }
-                }
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                var result = await System.Text.Json.JsonSerializer.DeserializeAsync<string>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
+
+                _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
+                Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
+                return valid;
             }
             catch (OperationCanceledException)
             {
@@ -1406,7 +1521,7 @@ namespace Emby.Server.Implementations
 
             foreach (var assembly in assemblies)
             {
-                Logger.LogDebug("Found API endpoints in plugin {name}", assembly.FullName);
+                Logger.LogDebug("Found API endpoints in plugin {Name}", assembly.FullName);
                 yield return assembly;
             }
         }
@@ -1439,10 +1554,6 @@ namespace Emby.Server.Implementations
                 Logger.LogError(ex, "Error launching url: {url}", url);
                 throw;
             }
-        }
-
-        public virtual void EnableLoopback(string appName)
-        {
         }
 
         private bool _disposed = false;

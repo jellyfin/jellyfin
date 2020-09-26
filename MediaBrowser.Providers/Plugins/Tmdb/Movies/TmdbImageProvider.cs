@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
@@ -36,6 +37,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         public string Name => ProviderName;
 
         public static string ProviderName => TmdbUtils.ProviderName;
+
+        /// <inheritdoc />
+        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {
@@ -200,11 +204,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return null;
         }
 
-        public int Order => 0;
-
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

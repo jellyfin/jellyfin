@@ -54,7 +54,7 @@ The Jellyfin media server backend.
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
-    "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
+    "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/jellyfin/LICENSE
 %{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
@@ -84,6 +84,10 @@ EOF
 %{_libdir}/jellyfin/*.so
 %{_libdir}/jellyfin/*.a
 %{_libdir}/jellyfin/createdump
+%{_libdir}/jellyfin/*.xml
+%{_libdir}/jellyfin/wwwroot/api-docs/*
+%{_libdir}/jellyfin/wwwroot/api-docs/redoc/*
+%{_libdir}/jellyfin/wwwroot/api-docs/swagger/*
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
 %{_libdir}/jellyfin/SOS_README.md

@@ -6,11 +6,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -114,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{itemId}/AdditionalParts")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute] Guid itemId, [FromQuery] Guid? userId)
+        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -159,9 +161,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success, or a <see cref="NotFoundResult"/> if the video doesn't exist.</returns>
         [HttpDelete("{itemId}/AlternateSources")]
         [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> DeleteAlternateSources([FromRoute] Guid itemId)
+        public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -201,7 +203,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> MergeVersions([FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> MergeVersions([FromQuery, Required] string itemIds)
         {
             var items = RequestHelpers.Split(itemIds, ',', true)
                 .Select(i => _libraryManager.GetItemById(i))
@@ -233,7 +235,7 @@ namespace Jellyfin.Api.Controllers
                     .First();
             }
 
-            var list = primaryVersion.LinkedAlternateVersions.ToList();
+            var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
 
             foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
@@ -241,17 +243,20 @@ namespace Jellyfin.Api.Controllers
 
                 await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-                list.Add(new LinkedChild
+                if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Path = item.Path,
-                    ItemId = item.Id
-                });
+                    alternateVersionsOfPrimary.Add(new LinkedChild
+                    {
+                        Path = item.Path,
+                        ItemId = item.Id
+                    });
+                }
 
                 foreach (var linkedItem in item.LinkedAlternateVersions)
                 {
-                    if (!list.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
+                    if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
                     {
-                        list.Add(linkedItem);
+                        alternateVersionsOfPrimary.Add(linkedItem);
                     }
                 }
 
@@ -262,7 +267,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            primaryVersion.LinkedAlternateVersions = list.ToArray();
+            primaryVersion.LinkedAlternateVersions = alternateVersionsOfPrimary.ToArray();
             await primaryVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
@@ -321,13 +326,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("{itemId}/{stream=stream}.{container?}", Name = "GetVideoStream_2")]
+        [HttpGet("{itemId}/{stream=stream}.{container?}", Name = "GetVideoStreamWithExt")]
         [HttpGet("{itemId}/stream")]
-        [HttpHead("{itemId}/{stream=stream}.{container?}", Name = "HeadVideoStream_2")]
+        [HttpHead("{itemId}/{stream=stream}.{container?}", Name = "HeadVideoStreamWithExt")]
         [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesVideoFile]
         public async Task<ActionResult> GetVideoStream(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromRoute] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
@@ -470,7 +476,7 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                var httpClient = _httpClientFactory.CreateClient();
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
                 return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, HttpContext).ConfigureAwait(false);
             }
 

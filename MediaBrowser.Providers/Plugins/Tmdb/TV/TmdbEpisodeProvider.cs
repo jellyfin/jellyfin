@@ -29,7 +29,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     {
         public TmdbEpisodeProvider(IHttpClientFactory httpClientFactory, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
             : base(httpClientFactory, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
-        { }
+        {
+        }
+
+        // After TheTvDb
+        public int Order => 1;
+
+        public string Name => TmdbUtils.ProviderName;
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -41,7 +47,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return list;
             }
 
-            var metadataResult = await GetMetadata(searchInfo, cancellationToken);
+            var metadataResult = await GetMetadata(searchInfo, cancellationToken).ConfigureAwait(false);
 
             if (metadataResult.HasMetadata)
             {
@@ -109,7 +115,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 item.ParentIndexNumber = info.ParentIndexNumber;
                 item.IndexNumberEnd = info.IndexNumberEnd;
 
-                if (response.External_Ids.Tvdb_Id > 0)
+                if (response.External_Ids != null && response.External_Ids.Tvdb_Id > 0)
                 {
                     item.SetProviderId(MetadataProvider.Tvdb, response.External_Ids.Tvdb_Id.Value.ToString(CultureInfo.InvariantCulture));
                 }
@@ -205,10 +211,5 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             return GetResponse(url, cancellationToken);
         }
-
-        // After TheTvDb
-        public int Order => 1;
-
-        public string Name => TmdbUtils.ProviderName;
     }
 }

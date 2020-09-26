@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Helpers
                 return new NoContentResult();
             }
 
-            return new PhysicalFileResult(path, contentType);
+            return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
         }
 
         /// <summary>
@@ -123,10 +123,9 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                var memoryStream = new MemoryStream();
-                await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
-                memoryStream.Position = 0;
-                return new FileStreamResult(memoryStream, contentType);
+                await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None)
+                    .WriteToAsync(httpContext.Response.Body, CancellationToken.None).ConfigureAwait(false);
+                return new FileStreamResult(httpContext.Response.Body, contentType);
             }
             finally
             {

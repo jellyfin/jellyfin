@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
-using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
@@ -16,18 +16,20 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Configuration;
+using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
-using Jellyfin.Server.Models;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -135,23 +137,30 @@ namespace Jellyfin.Server.Extensions
         /// Extension method for adding the jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
-        /// <param name="baseUrl">The base url for the API.</param>
-        /// <param name="pluginAssemblies">An IEnumberable containing all plugin assemblies with API controllers.</param>
+        /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
+        /// <param name="knownProxies">A list of all known proxies to trust for X-Forwarded-For.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl, IEnumerable<Assembly> pluginAssemblies)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, IReadOnlyList<string> knownProxies)
         {
             IMvcBuilder mvcBuilder = serviceCollection
-                .AddCors(options =>
-                {
-                    options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
-                })
+                .AddCors()
+                .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    for (var i = 0; i < knownProxies.Count; i++)
+                    {
+                        if (IPAddress.TryParse(knownProxies[i], out var address))
+                        {
+                            options.KnownProxies.Add(address);
+                        }
+                    }
                 })
                 .AddMvc(opts =>
                 {
-                    opts.UseGeneralRoutePrefix(baseUrl);
+                    // Allow requester to change between camelCase and PascalCase
+                    opts.RespectBrowserAcceptHeader = true;
+
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
 
@@ -249,6 +258,8 @@ namespace Jellyfin.Server.Extensions
 
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
+
+                c.OperationFilter<FileResponseFilter>();
             });
         }
 

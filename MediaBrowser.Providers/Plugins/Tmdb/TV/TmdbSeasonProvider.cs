@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -27,25 +28,31 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     public class TmdbSeasonProvider : IRemoteMetadataProvider<Season, SeasonInfo>
     {
         private const string GetTvInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/tv/{0}/season/{1}?api_key={2}&append_to_response=images,keywords,external_ids,credits,videos";
+
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
-        private readonly ILocalizationManager _localization;
         private readonly ILogger<TmdbSeasonProvider> _logger;
 
         internal static TmdbSeasonProvider Current { get; private set; }
 
-        public TmdbSeasonProvider(IHttpClientFactory httpClientFactory, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILogger<TmdbSeasonProvider> logger)
+        public TmdbSeasonProvider(
+            IHttpClientFactory httpClientFactory,
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem,
+            IJsonSerializer jsonSerializer,
+            ILogger<TmdbSeasonProvider> logger)
         {
             _httpClientFactory = httpClientFactory;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
-            _localization = localization;
             _jsonSerializer = jsonSerializer;
             _logger = logger;
             Current = this;
         }
+
+        public string Name => TmdbUtils.ProviderName;
 
         public async Task<MetadataResult<Season>> GetMetadata(SeasonInfo info, CancellationToken cancellationToken)
         {
@@ -74,7 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     result.Item.Overview = seasonInfo.Overview;
 
-                    if (seasonInfo.External_Ids.Tvdb_Id > 0)
+                    if (seasonInfo.External_Ids != null && seasonInfo.External_Ids.Tvdb_Id > 0)
                     {
                         result.Item.SetProviderId(MetadataProvider.Tvdb, seasonInfo.External_Ids.Tvdb_Id.Value.ToString(CultureInfo.InvariantCulture));
                     }
@@ -115,8 +122,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return result;
         }
 
-        public string Name => TmdbUtils.ProviderName;
-
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeasonInfo searchInfo, CancellationToken cancellationToken)
         {
             return Task.FromResult<IEnumerable<RemoteSearchResult>>(new List<RemoteSearchResult>());
@@ -124,10 +129,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
-        private async Task<SeasonResult> GetSeasonInfo(string seriesTmdbId, int season, string preferredMetadataLanguage,
+        private async Task<SeasonResult> GetSeasonInfo(
+            string seriesTmdbId,
+            int season,
+            string preferredMetadataLanguage,
             CancellationToken cancellationToken)
         {
             await EnsureSeasonInfo(seriesTmdbId, season, preferredMetadataLanguage, cancellationToken)
@@ -180,7 +188,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var path = TmdbSeriesProvider.GetSeriesDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
-            var filename = string.Format(CultureInfo.InvariantCulture, "season-{0}-{1}.json",
+            var filename = string.Format(
+                CultureInfo.InvariantCulture,
+                "season-{0}-{1}.json",
                 seasonNumber.ToString(CultureInfo.InvariantCulture),
                 preferredLanguage);
 
@@ -199,7 +209,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         internal async Task<SeasonResult> FetchMainResult(string id, int seasonNumber, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetTvInfo3, id, seasonNumber.ToString(CultureInfo.InvariantCulture), TmdbUtils.ApiKey);
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                GetTvInfo3,
+                id,
+                seasonNumber.ToString(CultureInfo.InvariantCulture),
+                TmdbUtils.ApiKey);
 
             if (!string.IsNullOrEmpty(language))
             {
@@ -218,7 +233,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
             }
 
-            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage).ConfigureAwait(false);
+            using var response = await TmdbMovieProvider.Current.GetMovieDbResponse(requestMessage, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             return await _jsonSerializer.DeserializeFromStreamAsync<SeasonResult>(stream).ConfigureAwait(false);
         }

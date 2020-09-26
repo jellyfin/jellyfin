@@ -14,6 +14,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Music
 {
     public class TmdbMusicVideoProvider : IRemoteMetadataProvider<MusicVideo, MusicVideoInfo>
     {
+        public string Name => TmdbMovieProvider.Current.Name;
+
         public Task<MetadataResult<MusicVideo>> GetMetadata(MusicVideoInfo info, CancellationToken cancellationToken)
         {
             return TmdbMovieProvider.Current.GetItemMetadata<MusicVideo>(info, cancellationToken);
@@ -23,8 +25,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Music
         {
             return Task.FromResult((IEnumerable<RemoteSearchResult>)new List<RemoteSearchResult>());
         }
-
-        public string Name => TmdbMovieProvider.Current.Name;
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {

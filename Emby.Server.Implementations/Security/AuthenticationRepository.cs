@@ -257,8 +257,7 @@ namespace Emby.Server.Implementations.Security
                 connection.RunInTransaction(
                     db =>
                     {
-                        var statements = PrepareAll(db, statementTexts)
-                            .ToList();
+                        var statements = PrepareAll(db, statementTexts);
 
                         using (var statement = statements[0])
                         {
@@ -282,7 +281,7 @@ namespace Emby.Server.Implementations.Security
                     ReadTransactionMode);
             }
 
-            result.Items = list.ToArray();
+            result.Items = list;
             return result;
         }
 

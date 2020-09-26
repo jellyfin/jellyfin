@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -38,7 +39,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
@@ -111,9 +112,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private async Task<List<Poster>> FetchImages(Season item, string tmdbId, string language, CancellationToken cancellationToken)
         {
-            await TmdbSeasonProvider.Current.EnsureSeasonInfo(tmdbId, item.IndexNumber.GetValueOrDefault(), language, cancellationToken).ConfigureAwait(false);
+            var seasonNumber = item.IndexNumber.GetValueOrDefault();
+            await TmdbSeasonProvider.Current.EnsureSeasonInfo(tmdbId, seasonNumber, language, cancellationToken).ConfigureAwait(false);
 
-            var path = TmdbSeriesProvider.Current.GetDataFilePath(tmdbId, language);
+            var path = TmdbSeasonProvider.Current.GetDataFilePath(tmdbId, seasonNumber, language);
 
             if (!string.IsNullOrEmpty(path))
             {

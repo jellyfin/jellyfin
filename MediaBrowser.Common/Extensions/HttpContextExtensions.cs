@@ -1,4 +1,4 @@
-using MediaBrowser.Model.Services;
+using System.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Common.Extensions
@@ -8,26 +8,34 @@ namespace MediaBrowser.Common.Extensions
     /// </summary>
     public static class HttpContextExtensions
     {
-        private const string ServiceStackRequest = "ServiceStackRequest";
-
         /// <summary>
-        /// Set the ServiceStack request.
+        /// Checks the origin of the HTTP context.
         /// </summary>
-        /// <param name="httpContext">The HttpContext instance.</param>
-        /// <param name="request">The service stack request instance.</param>
-        public static void SetServiceStackRequest(this HttpContext httpContext, IRequest request)
+        /// <param name="context">The incoming HTTP context.</param>
+        /// <returns><c>true</c> if the request is coming from LAN, <c>false</c> otherwise.</returns>
+        public static bool IsLocal(this HttpContext context)
         {
-            httpContext.Items[ServiceStackRequest] = request;
+            return (context.Connection.LocalIpAddress == null
+                    && context.Connection.RemoteIpAddress == null)
+                   || context.Connection.LocalIpAddress.Equals(context.Connection.RemoteIpAddress);
         }
 
         /// <summary>
-        /// Get the ServiceStack request.
+        /// Extracts the remote IP address of the caller of the HTTP context.
         /// </summary>
-        /// <param name="httpContext">The HttpContext instance.</param>
-        /// <returns>The service stack request instance.</returns>
-        public static IRequest GetServiceStackRequest(this HttpContext httpContext)
+        /// <param name="context">The HTTP context.</param>
+        /// <returns>The remote caller IP address.</returns>
+        public static string GetNormalizedRemoteIp(this HttpContext context)
         {
-            return (IRequest)httpContext.Items[ServiceStackRequest];
+            // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
+            var ip = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;
+
+            if (ip.IsIPv4MappedToIPv6)
+            {
+                ip = ip.MapToIPv4();
+            }
+
+            return ip.ToString();
         }
     }
 }

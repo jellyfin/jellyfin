@@ -167,12 +167,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDashboardResponseCaching { get; set; }
 
         /// <summary>
-        /// Gets or sets a custom path to serve the dashboard from.
-        /// </summary>
-        /// <value>The dashboard source path, or null if the default path should be used.</value>
-        public string DashboardSourcePath { get; set; }
-
-        /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
         /// <value>The image saving convention.</value>
@@ -268,6 +262,16 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the threshold for the slow response time warning in ms.
         /// </summary>
         public long SlowResponseThresholdMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cors hosts.
+        /// </summary>
+        public string[] CorsHosts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the known proxies.
+        /// </summary>
+        public string[] KnownProxies { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -378,6 +382,8 @@ namespace MediaBrowser.Model.Configuration
 
             EnableSlowResponseWarning = true;
             SlowResponseThresholdMs = 500;
+            CorsHosts = new[] { "*" };
+            KnownProxies = Array.Empty<string>();
         }
     }
 

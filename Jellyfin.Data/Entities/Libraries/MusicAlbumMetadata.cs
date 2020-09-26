@@ -1,3 +1,5 @@
+#pragma warning disable CA2227
+
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,7 +8,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity holding the metadata for a music album.
     /// </summary>
-    public class MusicAlbumMetadata : Metadata
+    public class MusicAlbumMetadata : ItemMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MusicAlbumMetadata"/> class.

@@ -2,6 +2,7 @@
 
 using System;
 using System.Globalization;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace Emby.Dlna.Main
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly ISessionManager _sessionManager;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -61,7 +62,7 @@ namespace Emby.Dlna.Main
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDlnaManager dlnaManager,
@@ -79,7 +80,7 @@ namespace Emby.Dlna.Main
             _config = config;
             _appHost = appHost;
             _sessionManager = sessionManager;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
@@ -101,7 +102,7 @@ namespace Emby.Dlna.Main
                 config,
                 userManager,
                 loggerFactory.CreateLogger<ContentDirectory.ContentDirectoryService>(),
-                httpClient,
+                httpClientFactory,
                 localizationManager,
                 mediaSourceManager,
                 userViewManager,
@@ -112,11 +113,11 @@ namespace Emby.Dlna.Main
                 dlnaManager,
                 config,
                 loggerFactory.CreateLogger<ConnectionManager.ConnectionManagerService>(),
-                httpClient);
+                httpClientFactory);
 
             MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
                 loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
-                httpClient,
+                httpClientFactory,
                 config);
             Current = this;
         }
@@ -364,7 +365,7 @@ namespace Emby.Dlna.Main
                         _appHost,
                         _imageProcessor,
                         _deviceDiscovery,
-                        _httpClient,
+                        _httpClientFactory,
                         _config,
                         _userDataManager,
                         _localization,

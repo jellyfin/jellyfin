@@ -14,17 +14,17 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="Rating"/> class.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <param name="metadata">The metadata.</param>
-        public Rating(double value, Metadata metadata)
+        /// <param name="itemMetadata">The metadata.</param>
+        public Rating(double value, ItemMetadata itemMetadata)
         {
             Value = value;
 
-            if (metadata == null)
+            if (itemMetadata == null)
             {
-                throw new ArgumentNullException(nameof(metadata));
+                throw new ArgumentNullException(nameof(itemMetadata));
             }
 
-            metadata.Ratings.Add(this);
+            itemMetadata.Ratings.Add(this);
         }
 
         /// <summary>

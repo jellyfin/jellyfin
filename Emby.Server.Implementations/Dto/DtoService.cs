@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.Dto
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {itemName}", item.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {ItemName}", item.Name);
                 }
             }
 
@@ -1431,7 +1431,7 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            return width / height;
+            return (double)width / height;
         }
     }
 }
