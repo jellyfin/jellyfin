@@ -15,8 +15,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
-using Emby.Dlna.Main;
-using Emby.Dlna.PlayTo;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -45,6 +43,7 @@ using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Networking.Advertising;
+using Jellyfin.Networking.Dlna;
 using Jellyfin.Networking.Gateway;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.UPnP;
@@ -60,7 +59,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -525,8 +523,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<GatewayMonitor>();
             ServiceCollection.AddSingleton<WhoIsJellyfinServer>();
             ServiceCollection.AddSingleton<ExternalPortForwarding>();
-            ServiceCollection.AddSingleton<IDlnaServerManager, DlnaServerManager>();
-            ServiceCollection.AddSingleton<IPlayToManager, PlayToManager>();
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
 
@@ -1169,9 +1165,6 @@ namespace Emby.Server.Implementations
 
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
-
-            // Include composable parts in the Emby.Dlna assembly.
-            yield return typeof(DlnaServerManager).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

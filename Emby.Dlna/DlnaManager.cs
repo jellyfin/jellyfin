@@ -9,14 +9,12 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Emby.Dlna.Configuration;
 using Emby.Dlna.Profiles;
-using Emby.Dlna.Server;
+using Jellyfin.Networking.Dlna;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -106,10 +104,7 @@ namespace Emby.Dlna
 
         public DeviceProfile GetDefaultProfile(PlayToDeviceInfo playToDeviceInfo)
         {
-            if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
-            {
-                return AutoCreateProfile(playToDeviceInfo);
-            }
+            // return AutoCreateProfile(playToDeviceInfo);
 
             return new DeviceProfile();
         }
@@ -270,49 +265,6 @@ namespace Emby.Dlna
             }
             else
             {
-                if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
-                {
-                    if (headers.TryGetValue("User-Agent", out StringValues value) && value.Count > 0)
-                    {
-                        string userAgent = value[0];
-                        profile = new DefaultProfile
-                        {
-                            Name = userAgent,
-                            Identification = new DeviceIdentification
-                            {
-                                FriendlyName = userAgent,
-                                Headers = new[]
-                            {
-                                new HttpHeaderInfo()
-                                {
-                                    Match = HeaderMatchType.Equals,
-                                    Name = "User-Agent",
-                                    Value = userAgent
-                                }
-                            }
-                            },
-
-                            Manufacturer = userAgent.Split(' ')[0],
-                            FriendlyName = userAgent,
-                            ModelName = userAgent
-                        };
-
-                        try
-                        {
-                            CreateProfile(profile);
-                            return profile;
-                        }
-                        catch (IOException ex)
-                        {
-                            _logger.LogError(ex.Message);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error saving default profile for {0}.", userAgent);
-                        }
-                    }
-                }
-
                 var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
                 _logger.LogDebug("No matching device profile found. {0}", headerString);
             }
@@ -570,17 +522,6 @@ namespace Emby.Dlna
             var json = _jsonSerializer.SerializeToString(profile);
 
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
-        }
-
-        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request)
-        {
-            var profile = GetDefaultProfile();
-
-            var serverId = _appHost.SystemId;
-
-            var serverAddress = _appHost.GetSmartApiUrl(request);
-
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId, _configurationManager.Configuration.ServerName).GetXml();
         }
 
         public ImageStream GetIcon(string filename)

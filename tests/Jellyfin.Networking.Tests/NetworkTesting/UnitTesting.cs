@@ -9,7 +9,6 @@ using Xunit;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Data.Events;
 using Jellyfin.Networking.Udp;
-using Emby.Dlna.PlayTo;
 using NetworkCollection;
 
 namespace NetworkTesting
@@ -431,17 +430,6 @@ namespace NetworkTesting
         {
             UdpServer.TryParseRange(rangeStr, out (int Min, int Max) range);
             Assert.True((range.Min == min) && (range.Max == max));
-        }
-
-        [Theory]
-        [InlineData("<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><u:GetTransportInfoResponse xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><CurrentTransportState>NO_MEDIA_PRESENT</CurrentTransportState><CurrentTransportStatus>OK</CurrentTransportStatus><CurrentSpeed>1</CurrentSpeed></u:GetTransportInfoResponse></s:Body></s:Envelope>")]
-        public void TestXMLParser(string xml)
-        {
-            XMLUtilities.ParseXML(xml, out XMLProperties properties);
-
-            bool res = properties.TryGetValue("CurrentTransportState", out string? value);
-            Assert.True(res);
-            Assert.True(value?.Equals("NO_MEDIA_PRESENT", System.StringComparison.Ordinal));
         }
     }
 }

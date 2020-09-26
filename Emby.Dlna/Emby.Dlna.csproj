@@ -6,8 +6,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Common\**" />
+    <Compile Remove="Images\**" />
     <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="Images\**" />
     <None Remove="Common\**" />
+    <None Remove="Images\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,19 +43,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Images\logo120.jpg" />
-    <EmbeddedResource Include="Images\logo120.png" />
-    <EmbeddedResource Include="Images\logo240.jpg" />
-    <EmbeddedResource Include="Images\logo240.png" />
-    <EmbeddedResource Include="Images\logo48.jpg" />
-    <EmbeddedResource Include="Images\logo48.png" />
-    <EmbeddedResource Include="Images\people48.jpg" />
-    <EmbeddedResource Include="Images\people48.png" />
-    <EmbeddedResource Include="Images\people480.jpg" />
-    <EmbeddedResource Include="Images\people480.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Default.xml" />
