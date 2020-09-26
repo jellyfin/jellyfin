@@ -79,13 +79,10 @@ namespace Jellyfin.Api.Helpers
         /// <inheritdoc />
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var eofCount = 0;
-            const int EmptyReadLimit = 20;
-
             int totalBytesRead = 0;
             int remainingBytesToRead = count;
 
-            while (eofCount < EmptyReadLimit && remainingBytesToRead > 0)
+            while (remainingBytesToRead > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 int bytesRead;
@@ -109,19 +106,14 @@ namespace Jellyfin.Api.Helpers
                         _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
                     }
                 }
-
-                if (bytesRead == 0)
+                else
                 {
                     if (_job == null || _job.HasExited)
                     {
-                        eofCount++;
+                        break;
                     }
 
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    eofCount = 0;
                 }
             }
 
@@ -148,17 +140,23 @@ namespace Jellyfin.Api.Helpers
                 return;
             }
 
-            if (disposing)
+            try
             {
-                _fileStream.Dispose();
-
-                if (_job != null)
+                if (disposing)
                 {
-                    _transcodingJobHelper.OnTranscodeEndRequest(_job);
+                    _fileStream.Dispose();
+
+                    if (_job != null)
+                    {
+                        _transcodingJobHelper.OnTranscodeEndRequest(_job);
+                    }
                 }
             }
-
-            _disposed = true;
+            finally
+            {
+                _disposed = true;
+                base.Dispose(disposing);
+            }
         }
     }
 }
