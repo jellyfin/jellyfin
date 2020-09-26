@@ -3,13 +3,19 @@
     "Jellyfin.Server": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "web",
       "applicationUrl": "http://localhost:8096",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "Jellyfin.Server (nowebclient)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "commandLineArgs": "--nowebclient"
+    },
+    "Jellyfin.Server (API Docs)": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api-docs/swagger",
