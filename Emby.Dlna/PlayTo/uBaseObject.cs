@@ -7,25 +7,25 @@ namespace Emby.Dlna.PlayTo
 {
     public class UBaseObject
     {
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
-        public string ParentId { get; set; }
+        public string? ParentId { get; set; }
 
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
-        public string SecondText { get; set; }
+        public string? SecondText { get; set; }
 
-        public string IconUrl { get; set; }
+        public string? IconUrl { get; set; }
 
-        public string MetaData { get; set; }
+        public string? MetaData { get; set; }
 
-        public string Url { get; set; }
+        public string Url { get; set; } = string.Empty;
 
-        public IReadOnlyList<string> ProtocolInfo { get; set; }
+        public IReadOnlyList<string>? ProtocolInfo { get; set; }
 
-        public string UpnpClass { get; set; }
+        public string? UpnpClass { get; set; }
 
-        public string MediaType
+        public string? MediaType
         {
             get
             {

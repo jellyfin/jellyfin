@@ -1,4 +1,3 @@
-#nullable enable
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Dlna.Configuration

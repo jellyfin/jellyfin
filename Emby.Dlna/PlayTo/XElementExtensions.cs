@@ -11,14 +11,14 @@ namespace Emby.Dlna.PlayTo
         {
             var node = container?.Element(name);
 
-            return node?.Value;
+            return node?.Value ?? string.Empty;
         }
 
         public static string GetAttributeValue(this XElement container, XName name)
         {
             var node = container?.Attribute(name);
 
-            return node?.Value;
+            return node?.Value ?? string.Empty;
         }
 
         public static string GetDescendantValue(this XElement container, XName name)

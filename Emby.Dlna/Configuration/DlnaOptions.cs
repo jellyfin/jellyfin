@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace Emby.Dlna.Configuration
 {
     /// <summary>

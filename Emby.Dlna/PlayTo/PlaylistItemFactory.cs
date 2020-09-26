@@ -12,17 +12,14 @@ namespace Emby.Dlna.PlayTo
     {
         public PlaylistItem Create(Photo item, DeviceProfile profile)
         {
-            var playlistItem = new PlaylistItem
-            {
-                StreamInfo = new StreamInfo
+            var playlistItem = new PlaylistItem(
+                new StreamInfo
                 {
                     ItemId = item.Id,
                     MediaType = DlnaProfileType.Photo,
                     DeviceProfile = profile
                 },
-
-                Profile = profile
-            };
+                profile);
 
             var directPlay = profile.DirectPlayProfiles
                 .FirstOrDefault(i => i.Type == DlnaProfileType.Photo && IsSupported(i, item));

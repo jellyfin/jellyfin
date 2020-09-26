@@ -48,7 +48,7 @@ namespace Emby.Dlna.PlayTo
 
         private readonly ISsdpPlayToLocator _deviceDiscovery;
         private readonly string _serverAddress;
-        private readonly string _accessToken;
+        private readonly string? _accessToken;
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
         private PlayToDevice _device;
@@ -65,13 +65,14 @@ namespace Emby.Dlna.PlayTo
             IUserManager userManager,
             IImageProcessor imageProcessor,
             string serverAddress,
-            string accessToken,
+            string? accessToken,
             ISsdpPlayToLocator deviceDiscovery,
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager config,
-            IMediaEncoder mediaEncoder)
+            IMediaEncoder mediaEncoder,
+            PlayToDevice device)
         {
             _session = session;
             _sessionManager = sessionManager;
@@ -88,14 +89,6 @@ namespace Emby.Dlna.PlayTo
             _mediaSourceManager = mediaSourceManager;
             _config = config;
             _mediaEncoder = mediaEncoder;
-        }
-
-        public bool IsSessionActive => !_disposed && _device != null;
-
-        public bool SupportsMediaControl => IsSessionActive;
-
-        public void Init(PlayToDevice device)
-        {
             _device = device;
             _device.OnDeviceUnavailable = OnDeviceUnavailable;
             _device.PlaybackStart += OnDevicePlaybackStart;
@@ -105,6 +98,10 @@ namespace Emby.Dlna.PlayTo
 
             _deviceDiscovery.DeviceLeft += OnDeviceDiscoveryDeviceLeft;
         }
+
+        public bool IsSessionActive => !_disposed && _device != null;
+
+        public bool SupportsMediaControl => IsSessionActive;
 
         private void OnDeviceUnavailable()
         {
@@ -524,12 +521,12 @@ namespace Emby.Dlna.PlayTo
 
         private PlaylistItem CreatePlaylistItem(
             BaseItem item,
-            User user,
+            User? user,
             long startPostionTicks,
-            string mediaSourceId,
+            string? mediaSourceId,
             int? audioStreamIndex,
             int? subtitleStreamIndex,
-            DeviceProfile profile = null)
+            DeviceProfile? profile = null)
         {
             var mediaSources = item is IHasMediaSources
                 ? _mediaSourceManager.GetStaticMediaSources(item, true, user)
@@ -613,19 +610,18 @@ namespace Emby.Dlna.PlayTo
                         streamInfo.TargetVideoCodecTag,
                         streamInfo.IsTargetAVC);
 
-                return list.Count == 0 ? null : list[0];
+                return list.Count == 0 ? string.Empty : list[0];
             }
 
-            return null;
+            return string.Empty;
         }
 
-        private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string? mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
-                return new PlaylistItem
-                {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
+                return new PlaylistItem(
+                    new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources.ToArray(),
@@ -636,16 +632,13 @@ namespace Emby.Dlna.PlayTo
                         AudioStreamIndex = audioStreamIndex,
                         SubtitleStreamIndex = subtitleStreamIndex
                     }),
-
-                    Profile = profile
-                };
+                    profile);
             }
 
             if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
-                return new PlaylistItem
-                {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
+                return new PlaylistItem(
+                    new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources.ToArray(),
@@ -654,9 +647,7 @@ namespace Emby.Dlna.PlayTo
                         MaxBitrate = profile.MaxStreamingBitrate,
                         MediaSourceId = mediaSourceId
                     }),
-
-                    Profile = profile
-                };
+                    profile);
             }
 
             if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
@@ -820,7 +811,7 @@ namespace Emby.Dlna.PlayTo
         {
             var media = _device.CurrentMediaInfo;
 
-            if (media != null)
+            if (media != null && media.Url != null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
 
@@ -904,19 +895,19 @@ namespace Emby.Dlna.PlayTo
             // Ensure the device is initialised.
             _device.DeviceInitialise().ConfigureAwait(false);
 
-            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase) && data is PlayRequest dPlayRequest)
             {
-                return SendPlayCommand(data as PlayRequest);
+                return SendPlayCommand(dPlayRequest);
             }
 
-            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase) && data is PlaystateRequest dPlayStateRequest)
             {
-                return SendPlaystateCommand(data as PlaystateRequest);
+                return SendPlaystateCommand(dPlayStateRequest);
             }
 
-            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase) && data is GeneralCommand dGeneralCommand)
             {
-                return SendGeneralCommand(data as GeneralCommand);
+                return SendGeneralCommand(dGeneralCommand);
             }
 
             // Not supported or needed right now
@@ -925,8 +916,8 @@ namespace Emby.Dlna.PlayTo
 
         private class StreamParams
         {
-            private MediaSourceInfo _mediaSource;
-            private IMediaSourceManager _mediaSourceManager;
+            private MediaSourceInfo? _mediaSource;
+            private IMediaSourceManager? _mediaSourceManager;
 
             public Guid ItemId { get; set; }
 
@@ -938,29 +929,34 @@ namespace Emby.Dlna.PlayTo
 
             public int? SubtitleStreamIndex { get; set; }
 
-            public string DeviceProfileId { get; set; }
+            public string? DeviceProfileId { get; set; }
 
-            public string DeviceId { get; set; }
+            public string? DeviceId { get; set; }
 
-            public string MediaSourceId { get; set; }
+            public string? MediaSourceId { get; set; }
 
-            public string LiveStreamId { get; set; }
+            public string? LiveStreamId { get; set; }
 
-            public BaseItem Item { get; set; }
+            public BaseItem? Item { get; set; }
 
-            public async Task<MediaSourceInfo> GetMediaSource(CancellationToken cancellationToken)
+            public async Task<MediaSourceInfo?> GetMediaSource(CancellationToken cancellationToken)
             {
                 if (_mediaSource != null)
                 {
                     return _mediaSource;
                 }
 
-                if (!(Item is IHasMediaSources))
+                var hasMediaSources = Item as IHasMediaSources;
+
+                if (hasMediaSources == null)
                 {
                     return null;
                 }
 
-                _mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                if (_mediaSourceManager != null)
+                {
+                    _mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                }
 
                 return _mediaSource;
             }

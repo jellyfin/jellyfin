@@ -26,6 +26,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <nullable>enable</nullable>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

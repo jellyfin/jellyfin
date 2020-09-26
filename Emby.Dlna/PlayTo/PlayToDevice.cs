@@ -2430,10 +2430,7 @@ namespace Emby.Dlna.PlayTo
                         if (TransportState != TransportState.Stopped && !string.IsNullOrWhiteSpace(mediaInfo.Url))
                         {
                             _logger.LogDebug("{0}: Firing playback started event.", Properties.Name);
-                            PlaybackStart?.Invoke(this, new PlaybackEventArgs
-                            {
-                                MediaInfo = mediaInfo
-                            });
+                            PlaybackStart?.Invoke(this, new PlaybackEventArgs(mediaInfo));
                         }
                     }
                     else if (mediaInfo.Equals(previousMediaInfo))
@@ -2441,29 +2438,19 @@ namespace Emby.Dlna.PlayTo
                         if (!string.IsNullOrWhiteSpace(mediaInfo?.Url))
                         {
                             _logger.LogDebug("{0}: Firing playback progress event.", Properties.Name);
-                            PlaybackProgress?.Invoke(this, new PlaybackEventArgs
-                            {
-                                MediaInfo = mediaInfo
-                            });
+                            PlaybackProgress?.Invoke(this, new PlaybackEventArgs(mediaInfo));
                         }
                     }
                     else
                     {
                         _logger.LogDebug("{0}: Firing media change event.", Properties.Name);
-                        MediaChanged?.Invoke(this, new MediaChangedEventArgs
-                        {
-                            OldMediaInfo = previousMediaInfo,
-                            NewMediaInfo = mediaInfo
-                        });
+                        MediaChanged?.Invoke(this, new MediaChangedEventArgs(previousMediaInfo, mediaInfo));
                     }
                 }
                 else if (previousMediaInfo != null)
                 {
                     _logger.LogDebug("{0}: Firing playback stopped event.", Properties.Name);
-                    PlaybackStopped?.Invoke(this, new PlaybackEventArgs
-                    {
-                        MediaInfo = previousMediaInfo
-                    });
+                    PlaybackStopped?.Invoke(this, new PlaybackEventArgs(previousMediaInfo));
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types : Don't let errors in the events affect us.

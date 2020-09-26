@@ -48,7 +48,7 @@ namespace Emby.Dlna.Service
 
         private async Task<ControlResponse> ProcessControlRequestInternalAsync(ControlRequest request)
         {
-            ControlRequestInfo requestInfo = null;
+            ControlRequestInfo? requestInfo = null;
 
             using (var streamReader = new StreamReader(request.InputXml))
             {
@@ -96,11 +96,7 @@ namespace Emby.Dlna.Service
 
             var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=", StringComparison.Ordinal);
 
-            var controlResponse = new ControlResponse
-            {
-                Xml = xml,
-                IsSuccessful = true
-            };
+            var controlResponse = new ControlResponse(xml, true);
 
             controlResponse.Headers.Add("EXT", string.Empty);
 
@@ -147,12 +143,12 @@ namespace Emby.Dlna.Service
                 }
             }
 
-            return new ControlRequestInfo();
+            throw new EndOfStreamException("Stream ended but no body tag found.");
         }
 
         private async Task<ControlRequestInfo> ParseBodyTagAsync(XmlReader reader)
         {
-            var result = new ControlRequestInfo();
+            string? namespaceURI = null, localName = null;
 
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);
@@ -162,11 +158,12 @@ namespace Emby.Dlna.Service
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    result.LocalName = reader.LocalName;
-                    result.NamespaceURI = reader.NamespaceURI;
+                    localName = reader.LocalName;
+                    namespaceURI = reader.NamespaceURI;
 
                     if (!reader.IsEmptyElement)
                     {
+                        var result = new ControlRequestInfo(localName, namespaceURI);
                         using var subReader = reader.ReadSubtree();
                         await ParseFirstBodyChildAsync(subReader, result.Headers).ConfigureAwait(false);
                         return result;
@@ -182,7 +179,12 @@ namespace Emby.Dlna.Service
                 }
             }
 
-            return result;
+            if (localName != null && namespaceURI != null)
+            {
+                return new ControlRequestInfo(localName, namespaceURI);
+            }
+
+            throw new EndOfStreamException("Stream ended but no control found.");
         }
 
         private async Task ParseFirstBodyChildAsync(XmlReader reader, IDictionary<string, string> headers)
@@ -229,11 +231,18 @@ namespace Emby.Dlna.Service
 
         private class ControlRequestInfo
         {
-            public string LocalName { get; set; }
+            public ControlRequestInfo(string localName, string namespaceUri)
+            {
+                LocalName = localName;
+                NamespaceURI = namespaceUri;
+                Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
 
-            public string NamespaceURI { get; set; }
+            public string LocalName { get; }
 
-            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            public string NamespaceURI { get; }
+
+            public Dictionary<string, string> Headers { get; }
         }
     }
 }

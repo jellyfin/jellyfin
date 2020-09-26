@@ -1,5 +1,3 @@
-#pragma warning disable SA1611 // Element parameters should be documented
-#nullable enable
 using System;
 using System.Globalization;
 using System.Linq;
@@ -11,7 +9,6 @@ using Emby.Dlna.ConnectionManager;
 using Emby.Dlna.ContentDirectory;
 using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Net;
-using Emby.Dlna.PlayTo;
 using Emby.Dlna.PlayTo.Devices;
 using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Configuration;
@@ -23,9 +20,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Notifications;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
@@ -34,23 +28,20 @@ using NetworkCollection;
 namespace Emby.Dlna.Main
 {
     /// <summary>
-    /// Manages all DLNA functionality.
+    /// Defines the <see cref="DlnaServerManager"/> class.
     /// </summary>
-    public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
+    public class DlnaServerManager : IDisposable, IDlnaServerManager
     {
-        private static DlnaEntryPoint? _instance;
         private readonly object _syncLock = new object();
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly ILogger<DlnaEntryPoint> _logger;
+        private readonly ILogger<DlnaServerManager> _logger;
         private readonly IServerApplicationHost _appHost;
-        private readonly ISessionManager _sessionManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
-        private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly INetworkManager _networkManager;
@@ -58,20 +49,32 @@ namespace Emby.Dlna.Main
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly INotificationManager _notificationManager;
-        private readonly ISsdpServer _ssdpServer;
 
         private SsdpServerPublisher? _publisher;
         private bool _isDisposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DlnaEntryPoint"/> class.
+        /// Initializes a new instance of the <see cref="DlnaServerManager"/> class.
         /// </summary>
-        public DlnaEntryPoint(
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> instance.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> instance.</param>
+        /// <param name="appHost">The apHost<see cref="IServerApplicationHost"/> instance.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> instance.</param>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/> instance.</param>
+        /// <param name="userManager">The <see cref="IUserManager"/> instance.</param>
+        /// <param name="dlnaManager">The <see cref="IDlnaManager"/> instance.</param>
+        /// <param name="imageProcessor">The <see cref="IImageProcessor"/> instance.</param>
+        /// <param name="userDataManager">The <see cref="IUserDataManager"/> instance.</param>
+        /// <param name="localizationManager">The <see cref="ILocalizationManager"/> instance.</param>
+        /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/> instance.</param>
+        /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
+        /// <param name="userViewManager">The <see cref="IUserViewManager"/> instance.</param>
+        /// <param name="tvSeriesManager">The <see cref="ITVSeriesManager"/> instance.</param>
+        public DlnaServerManager(
             IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
-            ISessionManager sessionManager,
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -83,19 +86,16 @@ namespace Emby.Dlna.Main
             IMediaEncoder mediaEncoder,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
-            ITVSeriesManager tvSeriesManager,
-            INotificationManager notificationManager)
+            ITVSeriesManager tvSeriesManager)
         {
             _configurationManager = config;
             _appHost = appHost;
-            _sessionManager = sessionManager;
             _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
             _imageProcessor = imageProcessor;
             _userDataManager = userDataManager;
-            _localization = localizationManager;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _networkManager = networkManager;
@@ -103,77 +103,32 @@ namespace Emby.Dlna.Main
             _localizationManager = localizationManager;
             _userViewManager = userViewManager;
             _tvSeriesManager = tvSeriesManager;
-            _notificationManager = notificationManager;
-            _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-            _ssdpServer = SsdpServer.GetOrCreateInstance(_networkManager, config, loggerFactory.CreateLogger<SsdpServer>(), appHost);
-            Instance = this;
-
+            _logger = loggerFactory.CreateLogger<DlnaServerManager>();
             _networkManager.NetworkChanged += NetworkChanged;
-        }
-
-        /// <summary>
-        /// Gets the singleton instance of this object.
-        /// </summary>
-        public static DlnaEntryPoint Instance
-        {
-            get
-            {
-                return GetInstance();
-            }
-
-            internal set
-            {
-                _instance = value;
-            }
+            _configurationManager.NamedConfigurationUpdated += NamedConfigurationUpdated;
+            _ = _dlnaManager.InitProfilesAsync();
+            CheckComponents();
         }
 
         /// <summary>
         /// Gets the DLNA server' ContentDirectory instance.
         /// </summary>
-        public static IContentDirectory? ContentDirectory { get; private set; }
+        public IContentDirectory? ContentDirectory { get; private set; }
 
         /// <summary>
         /// Gets the DLNA server' ConnectionManager instance.
         /// </summary>
-        public static IConnectionManager? ConnectionManager { get; private set; }
+        public IConnectionManager? ConnectionManager { get; private set; }
 
         /// <summary>
         /// Gets the DLNA server's MediaReceiverRegistrar instance.
         /// </summary>
-        public static IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
-
-        /// <summary>
-        /// Gets the PlayToManager instance.
-        /// </summary>
-        public static PlayToManager? PlayToManager { get; internal set; }
+        public IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the DLNA server is active.
         /// </summary>
-        public bool IsDLNAServerEnabled => _configurationManager.GetDlnaConfiguration().EnableServer;
-
-        /// <summary>
-        /// Gets a value indicating whether DLNA PlayTo is enabled.
-        /// </summary>
-        public bool IsPlayToEnabled => _configurationManager.GetDlnaConfiguration().EnablePlayTo;
-
-        /// <summary>
-        /// Gets the unqiue user agent used in ssdp communications.
-        /// </summary>
-        public string SsdpUserAgent => $"UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2 /{_appHost.SystemId}";
-
-        /// <summary>
-        /// Executes DlnaEntryPoint's functionality.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task RunAsync()
-        {
-            await _dlnaManager.InitProfilesAsync().ConfigureAwait(false);
-
-            CheckComponents();
-
-            _configurationManager.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
-        }
+        public bool IsDLNAServerEnabled { get; private set; }
 
         /// <inheritdoc/>
         public void Dispose()
@@ -198,34 +153,22 @@ namespace Emby.Dlna.Main
                 _publisher?.Dispose();
                 _publisher = null;
 
-                lock (_syncLock)
-                {
-                    PlayToManager?.Dispose();
-                    PlayToManager = null;
-                }
-
                 _networkManager.NetworkChanged -= NetworkChanged;
-                _configurationManager.NamedConfigurationUpdated -= OnNamedConfigurationUpdated;
+                _configurationManager.NamedConfigurationUpdated -= NamedConfigurationUpdated;
 
                 ContentDirectory = null;
                 ConnectionManager = null;
                 MediaReceiverRegistrar = null;
-                _instance = null;
             }
 
             _isDisposed = true;
         }
 
-        private static DlnaEntryPoint GetInstance()
-        {
-            if (_instance == null)
-            {
-                throw new ApplicationException("DlnaEntryPoint is not initialised.");
-            }
-
-            return _instance;
-        }
-
+        /// <summary>
+        /// The CreateUuid.
+        /// </summary>
+        /// <param name="text">The text<see cref="string"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
         private static string CreateUuid(string text)
         {
             if (!Guid.TryParse(text, out var guid))
@@ -236,6 +179,11 @@ namespace Emby.Dlna.Main
             return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// The SetProperies.
+        /// </summary>
+        /// <param name="device">The device<see cref="SsdpDevice"/>.</param>
+        /// <param name="fullDeviceType">The fullDeviceType<see cref="string"/>.</param>
         private static void SetProperies(SsdpDevice device, string fullDeviceType)
         {
             var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -254,16 +202,11 @@ namespace Emby.Dlna.Main
         /// </summary>
         /// <param name="sender">Configuration instance.</param>
         /// <param name="e">Configuration that was updated.</param>
-        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
                 CheckComponents();
-
-                if (_publisher != null)
-                {
-                    _publisher.AliveMessageInterval = _configurationManager.GetDlnaConfiguration().AliveMessageIntervalSeconds;
-                }
             }
         }
 
@@ -287,43 +230,9 @@ namespace Emby.Dlna.Main
             lock (_syncLock)
             {
                 var options = _configurationManager.GetDlnaConfiguration();
+                IsDLNAServerEnabled = options.EnableServer;
 
-                if (options.EnablePlayTo)
-                {
-                    if (PlayToManager == null)
-                    {
-                        _logger.LogDebug("DLNA PlayTo: Starting Service.");
-                        PlayToManager = new PlayToManager(
-                            _loggerFactory,
-                            _sessionManager,
-                            _libraryManager,
-                            _userManager,
-                            _dlnaManager,
-                            _appHost,
-                            _imageProcessor,
-                            _httpClientFactory,
-                            _configurationManager,
-                            _userDataManager,
-                            _localization,
-                            _mediaSourceManager,
-                            _mediaEncoder,
-                            _notificationManager,
-                            _networkManager);
-                    }
-                }
-                else if (PlayToManager != null)
-                {
-                    _logger.LogDebug("DLNA PlayTo: Stopping Service.");
-                    lock (_syncLock)
-                    {
-                        PlayToManager?.Dispose();
-                        PlayToManager = null;
-                    }
-
-                    GC.Collect();
-                }
-
-                if (options.EnableServer)
+                if (IsDLNAServerEnabled)
                 {
                     if (ContentDirectory == null)
                     {
@@ -367,8 +276,20 @@ namespace Emby.Dlna.Main
                     if (_publisher == null)
                     {
                         _logger.LogDebug("DLNA Server : Starting DLNA advertisements.");
-                        _publisher = new SsdpServerPublisher(_ssdpServer, _loggerFactory, _networkManager, options.AliveMessageIntervalSeconds);
+                        _publisher = new SsdpServerPublisher(
+                            SsdpServer.GetOrCreateInstance(
+                                _networkManager,
+                                _configurationManager,
+                                _loggerFactory.CreateLogger<SsdpServer>(),
+                                _appHost),
+                            _loggerFactory,
+                            _networkManager,
+                            options.AliveMessageIntervalSeconds);
                         RegisterDLNAServerEndpoints();
+                    }
+                    else
+                    {
+                        _publisher.AliveMessageInterval = options.AliveMessageIntervalSeconds;
                     }
                 }
                 else if (_publisher != null)
@@ -411,13 +332,13 @@ namespace Emby.Dlna.Main
                 var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
 
                 SsdpRootDevice device = new SsdpRootDevice(
-                    TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
-                    uri, // Must point to the URL that serves your devices UPnP description document.
-                    addr,
-                    "Jellyfin",
-                    "Jellyfin",
-                    "Jellyfin Server",
-                    udn); // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
+                    cacheLifetime: TimeSpan.FromSeconds(1800),
+                    location: uri,
+                    address: addr,
+                    friendlyName: "Jellyfin",
+                    manufacturer: "Jellyfin",
+                    modelName: "Jellyfin Server",
+                    uuid: udn);
 
                 SetProperies(device, FullService);
 
@@ -427,7 +348,6 @@ namespace Emby.Dlna.Main
                 {
                     "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
-                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1" // Windows WMDRM.
                 };
 
                 foreach (var subDevice in embeddedDevices)

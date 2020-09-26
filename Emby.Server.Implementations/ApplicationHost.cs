@@ -16,7 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
-using Emby.Dlna.Net;
+using Emby.Dlna.PlayTo;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -51,7 +51,6 @@ using Jellyfin.Networking.UPnP;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -254,8 +253,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();            
-            
+            _jsonSerializer = new JsonSerializer();
+
             ServiceCollection = serviceCollection;
 
             ApplicationPaths = applicationPaths;
@@ -526,7 +525,8 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<GatewayMonitor>();
             ServiceCollection.AddSingleton<WhoIsJellyfinServer>();
             ServiceCollection.AddSingleton<ExternalPortForwarding>();
-            // ServiceCollection.AddSingleton<ChromecastLocator>();
+            ServiceCollection.AddSingleton<IDlnaServerManager, DlnaServerManager>();
+            ServiceCollection.AddSingleton<IPlayToManager, PlayToManager>();
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
 
@@ -1072,7 +1072,7 @@ namespace Emby.Server.Implementations
                     {
                         // No metafile, so lets see if the folder is versioned.
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
-                        
+
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
                         {
@@ -1081,9 +1081,9 @@ namespace Emby.Server.Implementations
                         }
                         else
                         {
-                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
                             versions.Add((new Version(0, 0, 0, 1), metafile, dir));
-                        }   
+                        }
                     }
                 }
                 catch
@@ -1170,8 +1170,8 @@ namespace Emby.Server.Implementations
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
-            // Dlna
-            yield return typeof(DlnaEntryPoint).Assembly;
+            // Include composable parts in the Emby.Dlna assembly.
+            yield return typeof(DlnaServerManager).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

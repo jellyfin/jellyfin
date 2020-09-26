@@ -11,9 +11,9 @@ namespace Emby.Dlna.Service
             Headers = new Dictionary<string, string>();
         }
 
-        public string Content { get; set; }
+        public string? Content { get; set; }
 
-        public string ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; }
     }

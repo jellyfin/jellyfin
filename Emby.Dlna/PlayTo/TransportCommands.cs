@@ -159,16 +159,11 @@ namespace Emby.Dlna.PlayTo
             return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamespace, stateString);
         }
 
-        public string BuildPost(ServiceAction action, string xmlNamesapce, object value, string commandParameter = "")
+        public string BuildPost(ServiceAction action, string xmlNamesapce, object? value, string commandParameter = "")
         {
             if (action == null)
             {
                 throw new ArgumentNullException(nameof(action));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
             }
 
             var stateString = string.Empty;
@@ -186,14 +181,14 @@ namespace Emby.Dlna.PlayTo
                 }
                 else
                 {
-                    stateString += BuildArgumentXml(arg, value.ToString(), commandParameter);
+                    stateString += BuildArgumentXml(arg, value?.ToString(), commandParameter);
                 }
             }
 
             return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
-        public string BuildPost(ServiceAction action, string xmlNamesapce, object value, Dictionary<string, string> dictionary)
+        public string BuildPost(ServiceAction action, string xmlNamesapce, object? value, Dictionary<string, string> dictionary)
         {
             if (action == null)
             {
@@ -203,11 +198,6 @@ namespace Emby.Dlna.PlayTo
             if (dictionary == null)
             {
                 throw new ArgumentNullException(nameof(dictionary));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
             }
 
             var stateString = string.Empty;
@@ -224,14 +214,14 @@ namespace Emby.Dlna.PlayTo
                 }
                 else
                 {
-                    stateString += BuildArgumentXml(arg, value.ToString());
+                    stateString += BuildArgumentXml(arg, value?.ToString());
                 }
             }
 
             return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
-        private string BuildArgumentXml(Argument argument, string value, string commandParameter = "")
+        private string BuildArgumentXml(Argument argument, string? value, string commandParameter = "")
         {
             var state = StateVariables.FirstOrDefault(a => string.Equals(a.Name, argument.RelatedStateVariable, StringComparison.OrdinalIgnoreCase));
 

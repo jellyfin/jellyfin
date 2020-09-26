@@ -6,12 +6,14 @@ namespace Emby.Dlna.Service
 {
     public class ControlResponse
     {
-        public ControlResponse()
+        public ControlResponse(string xml, bool isSuccessful)
         {
+            Xml = xml;
+            IsSuccessful = isSuccessful;
             Headers = new Dictionary<string, string>();
         }
 
-        public IDictionary<string, string> Headers { get; }
+        public Dictionary<string, string> Headers { get; }
 
         public string Xml { get; set; }
 

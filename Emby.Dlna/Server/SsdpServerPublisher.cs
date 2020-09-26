@@ -42,6 +42,7 @@ namespace Emby.Dlna.Net
         private readonly IDictionary<string, SearchRequest> _recentSearchRequests;
         private Timer? _rebroadcastAliveNotificationsTimer;
         private bool _disposed;
+        private int _aliveMessageInterval;
 
         public SsdpServerPublisher(
             ISsdpServer ssdpServer,
@@ -56,14 +57,30 @@ namespace Emby.Dlna.Net
             _readOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_devices);
             _recentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _random = new Random();
+            _aliveMessageInterval = aliveMessageInterval;
             SupportPnpRootDevice = false;
-            AliveMessageInterval = aliveMessageInterval;
         }
 
         /// <summary>
         /// Gets or sets the frequency of the SSDP alive messages (in seconds).
         /// </summary>
-        public int AliveMessageInterval { get; set; }
+        public int AliveMessageInterval
+        {
+            get
+            {
+                return _aliveMessageInterval;
+            }
+
+            set
+            {
+                _aliveMessageInterval = value;
+
+                if (_rebroadcastAliveNotificationsTimer != null)
+                {
+                    _rebroadcastAliveNotificationsTimer.Change(5000, _aliveMessageInterval);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets returns a read only list of devices being published by this instance.

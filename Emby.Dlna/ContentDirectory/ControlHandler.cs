@@ -84,7 +84,7 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             DeviceProfile profile,
             string serverAddress,
-            string accessToken,
+            string? accessToken,
             IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
             User user,

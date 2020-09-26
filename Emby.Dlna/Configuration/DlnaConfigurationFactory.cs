@@ -1,4 +1,3 @@
-#nullable enable
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 

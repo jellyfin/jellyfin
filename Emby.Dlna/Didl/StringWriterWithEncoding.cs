@@ -10,7 +10,7 @@ namespace Emby.Dlna.Didl
     /// </summary>
     public class StringWriterWithEncoding : StringWriter
     {
-        private readonly Encoding _encoding;
+        private readonly Encoding? _encoding;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringWriterWithEncoding"/> class.

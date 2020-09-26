@@ -1,5 +1,3 @@
-#pragma warning disable SA1611 // Element parameters should be documented
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,8 +5,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.PlayTo.EventArgs;
 using Jellyfin.Data.Events;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -30,32 +30,50 @@ namespace Emby.Dlna.PlayTo
     /// <summary>
     /// Definition for the <see cref="PlayToManager"/> class.
     /// </summary>
-    public sealed class PlayToManager : IDisposable
+    public sealed class PlayToManager : IDisposable, IPlayToManager
     {
+        private readonly object _syncLock;
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
-
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IServerConfigurationManager _config;
+        private readonly IServerConfigurationManager _configurationManager;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
-        private readonly ISsdpPlayToLocator _playToLocator;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly INotificationManager _notificationManager;
+        private readonly INetworkManager _networkManager;
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private readonly List<PlayToDevice> _devices = new List<PlayToDevice>();
+        private readonly ILoggerFactory _loggerFactory;
+
+        private ISsdpPlayToLocator? _playToLocator;
         private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayToManager"/> class.
         /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> instance.</param>
+        /// <param name="sessionManager">The <see cref="ISessionManager"/> instance.</param>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/> instance.</param>
+        /// <param name="userManager">The <see cref="IUserManager"/> instance.</param>
+        /// <param name="dlnaManager">The <see cref="IDlnaManager"/> instance.</param>
+        /// <param name="appHost">The <see cref="IServerApplicationHost"/> instance.</param>
+        /// <param name="imageProcessor">The <see cref="IImageProcessor"/> instance.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> instance.</param>
+        /// <param name="configurationManager">The <see cref="IServerConfigurationManager"/> instance.</param>
+        /// <param name="userDataManager">The <see cref="IUserDataManager"/> instance.</param>
+        /// <param name="localization">The <see cref="ILocalizationManager"/> instance.</param>
+        /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/> instance.</param>
+        /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/> instance.</param>
+        /// <param name="notificationManager">The <see cref="INotificationManager"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
         public PlayToManager(
             ILoggerFactory loggerFactory,
             ISessionManager sessionManager,
@@ -65,7 +83,7 @@ namespace Emby.Dlna.PlayTo
             IServerApplicationHost appHost,
             IImageProcessor imageProcessor,
             IHttpClientFactory httpClientFactory,
-            IServerConfigurationManager config,
+            IServerConfigurationManager configurationManager,
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
@@ -74,6 +92,7 @@ namespace Emby.Dlna.PlayTo
             INetworkManager networkManager)
         {
             _logger = loggerFactory.CreateLogger<PlayToManager>();
+            _loggerFactory = loggerFactory;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -81,23 +100,27 @@ namespace Emby.Dlna.PlayTo
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _httpClientFactory = httpClientFactory;
-            _config = config;
+            _configurationManager = configurationManager ?? throw new NullReferenceException(nameof(configurationManager));
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _notificationManager = notificationManager;
-
-            _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
-            _playToLocator = new SsdpPlayToLocator(loggerFactory.CreateLogger<SsdpPlayToLocator>(), networkManager, config, appHost);
-            _playToLocator.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
-            _playToLocator.Start();
+            _networkManager = networkManager;
+            _syncLock = new object();
+            _configurationManager.NamedConfigurationUpdated += NamedConfigurationUpdated;
+            CheckComponents();
         }
 
         /// <summary>
         /// An event handler that is triggered on reciept of a PlayTo client subscription event.
         /// </summary>
-        public event EventHandler<DlnaEventArgs> DLNAEvents;
+        public event EventHandler<DlnaEventArgs>? DLNAEvents;
+
+        /// <summary>
+        /// Gets a value indicating whether gets the current status of DLNA playTo is enabled.
+        /// </summary>
+        public bool IsPlayToEnabled => _configurationManager.GetDlnaConfiguration().EnablePlayTo;
 
         /// <summary>
         /// Method that triggers a DLNAEvents event.
@@ -139,6 +162,11 @@ namespace Emby.Dlna.PlayTo
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// The GetUuid.
+        /// </summary>
+        /// <param name="usn">The usn<see cref="string"/>.</param>
+        /// <returns>The <see cref="string"/>.</returns>
         private static string GetUuid(string usn)
         {
             const string UuidStr = "uuid:";
@@ -160,9 +188,53 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
+        /// Triggerer every time the configuration is updated.
+        /// </summary>
+        /// <param name="sender">Configuration instance.</param>
+        /// <param name="e">Configuration that was updated.</param>
+        private void NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        {
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                CheckComponents();
+            }
+        }
+
+        /// <summary>
+        /// The CheckComponents.
+        /// </summary>
+        private void CheckComponents()
+        {
+            lock (_syncLock)
+            {
+                if (IsPlayToEnabled)
+                {
+                    if (_playToLocator == null)
+                    {
+                        _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
+                        _playToLocator = new SsdpPlayToLocator(_loggerFactory.CreateLogger<SsdpPlayToLocator>(), _networkManager, _configurationManager, _appHost);
+                        _playToLocator.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
+                        _playToLocator.Start();
+                    }
+                }
+                else if (_playToLocator != null)
+                {
+                    _logger.LogDebug("DLNA PlayTo: Stopping Service.");
+                    lock (_syncLock)
+                    {
+                        _playToLocator.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
+                        _playToLocator?.Dispose();
+                        _playToLocator = null;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Override this method and dispose any objects you own the lifetime of if disposing is true.
         /// </summary>
         /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
+        /// <returns>The <see cref="Task"/>.</returns>
         private async Task Dispose(bool disposing)
         {
             if (!_disposed)
@@ -171,7 +243,14 @@ namespace Emby.Dlna.PlayTo
                 {
                     _logger.LogDebug("Disposing instance.");
 
-                    _playToLocator.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
+                    _configurationManager.NamedConfigurationUpdated -= NamedConfigurationUpdated;
+
+                    if (_playToLocator != null)
+                    {
+                        _playToLocator.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
+                        _playToLocator?.Dispose();
+                        _playToLocator = null;
+                    }
 
                     var cancellationToken = _disposeCancellationTokenSource.Token;
                     await _sessionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -220,6 +299,11 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        /// <summary>
+        /// The OnDeviceDiscoveryDeviceDiscovered.
+        /// </summary>
+        /// <param name="sender">The sender<see cref="object"/>.</param>
+        /// <param name="e">The e<see cref="GenericEventArgs{UpnpDeviceInfo}"/>.</param>
         private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             if (_disposed)
@@ -280,6 +364,12 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        /// <summary>
+        /// The AddDevice.
+        /// </summary>
+        /// <param name="info">The info<see cref="UpnpDeviceInfo"/>.</param>
+        /// <param name="location">The location<see cref="string"/>.</param>
+        /// <returns>The <see cref="Task"/>.</returns>
         private async Task AddDevice(UpnpDeviceInfo info, string location)
         {
             var uri = info.Location;
@@ -308,7 +398,7 @@ namespace Emby.Dlna.PlayTo
                     uri,
                     _httpClientFactory,
                     _logger,
-                    _config,
+                    _configurationManager,
                     serverAddress).ConfigureAwait(false);
                 if (device == null)
                 {
@@ -330,17 +420,16 @@ namespace Emby.Dlna.PlayTo
                     _imageProcessor,
                     serverAddress,
                     null,
-                    _playToLocator,
+                    _playToLocator ?? throw new NullReferenceException(nameof(_playToLocator)),
                     _userDataManager,
                     _localization,
                     _mediaSourceManager,
-                    _config,
-                    _mediaEncoder);
+                    _configurationManager,
+                    _mediaEncoder,
+                    device);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 sessionInfo.AddController(controller);
-
-                controller.Init(device);
 
                 var profile = _dlnaManager.GetProfile(device.Properties) ??
                               _dlnaManager.GetDefaultProfile(device.Properties);

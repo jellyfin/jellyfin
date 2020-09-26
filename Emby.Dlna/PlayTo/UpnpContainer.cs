@@ -14,7 +14,7 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(container));
             }
 
-            return new UBaseObject
+            return new UBaseObject()
             {
                 Id = container.GetAttributeValue(UPnpNamespaces.Id),
                 ParentId = container.GetAttributeValue(UPnpNamespaces.ParentId),

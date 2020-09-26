@@ -91,13 +91,11 @@ namespace Emby.Dlna.Eventing
                 timeout,
                 callbackUrl);
 
-            _subscriptions.TryAdd(id, new EventSubscription
-            {
-                Id = id,
-                CallbackUrl = callbackUrl,
-                SubscriptionTime = DateTime.UtcNow,
-                TimeoutSeconds = timeout
-            });
+            _subscriptions.TryAdd(id, new EventSubscription(
+                id,
+                callbackUrl,
+                DateTime.UtcNow,
+                timeout));
 
             return GetEventSubscriptionResponse(id, requestedTimeoutString, timeout);
         }
