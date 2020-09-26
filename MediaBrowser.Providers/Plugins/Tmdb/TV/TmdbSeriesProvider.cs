@@ -17,8 +17,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Plugins.Tmdb.Models.Search;
@@ -33,37 +31,34 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         private const string GetTvInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
 
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<TmdbSeriesProvider> _logger;
-        private readonly ILocalizationManager _localization;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        internal static TmdbSeriesProvider Current { get; private set; }
-
         public TmdbSeriesProvider(
             IJsonSerializer jsonSerializer,
-            IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             ILogger<TmdbSeriesProvider> logger,
-            ILocalizationManager localization,
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager)
         {
             _jsonSerializer = jsonSerializer;
-            _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _logger = logger;
-            _localization = localization;
             _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             Current = this;
         }
 
+        internal static TmdbSeriesProvider Current { get; private set; }
+
         public string Name => TmdbUtils.ProviderName;
+
+        // After TheTVDB
+        public int Order => 1;
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -129,8 +124,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Series>();
-            result.QueriedById = true;
+            var result = new MetadataResult<Series>
+            {
+                QueriedById = true
+            };
 
             var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
 
@@ -206,9 +203,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
 
-            var result = new MetadataResult<Series>();
-            result.Item = new Series();
-            result.ResultLanguage = seriesInfo.ResultLanguage;
+            var result = new MetadataResult<Series>
+            {
+                Item = new Series(),
+                ResultLanguage = seriesInfo.ResultLanguage
+            };
 
             var settings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -474,12 +473,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var path = GetDataFilePath(tmdbId, language);
 
-            var fileInfo = _fileSystem.GetFileSystemInfo(path);
-
+            var fileInfo = new FileInfo(path);
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
+                if ((DateTime.UtcNow - fileInfo.LastWriteTimeUtc).TotalDays <= 2)
                 {
                     return Task.CompletedTask;
                 }
@@ -548,9 +546,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             return null;
         }
-
-        // After TheTVDB
-        public int Order => 1;
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {

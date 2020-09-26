@@ -43,13 +43,13 @@ namespace Rssdp.Infrastructure
         {
             var builder = new StringBuilder();
 
-            const string argFormat = "{0}: {1}\r\n";
+            const string ArgFormat = "{0}: {1}\r\n";
 
             builder.AppendFormat("{0}\r\n", header);
 
             foreach (var pair in values)
             {
-                builder.AppendFormat(argFormat, pair.Key, pair.Value);
+                builder.AppendFormat(ArgFormat, pair.Key, pair.Value);
             }
 
             builder.Append("\r\n");

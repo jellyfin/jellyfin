@@ -84,6 +84,10 @@ EOF
 %{_libdir}/jellyfin/*.so
 %{_libdir}/jellyfin/*.a
 %{_libdir}/jellyfin/createdump
+%{_libdir}/jellyfin/*.xml
+%{_libdir}/jellyfin/wwwroot/api-docs/*
+%{_libdir}/jellyfin/wwwroot/api-docs/redoc/*
+%{_libdir}/jellyfin/wwwroot/api-docs/swagger/*
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
 %{_libdir}/jellyfin/SOS_README.md

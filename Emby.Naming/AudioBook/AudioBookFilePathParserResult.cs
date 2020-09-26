@@ -1,8 +1,9 @@
+#nullable enable
 #pragma warning disable CS1591
 
 namespace Emby.Naming.AudioBook
 {
-    public class AudioBookFilePathParserResult
+    public struct AudioBookFilePathParserResult
     {
         public int? PartNumber { get; set; }
 

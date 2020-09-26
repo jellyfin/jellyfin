@@ -135,6 +135,7 @@
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
+ - [nielsvanvelzen](https://github.com/nielsvanvelzen)
 
 # Emby Contributors
 

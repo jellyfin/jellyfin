@@ -26,7 +26,7 @@
     "DeviceOnlineWithName": "{0} இணைக்கப்பட்டது",
     "DeviceOfflineWithName": "{0} துண்டிக்கப்பட்டது",
     "Collections": "தொகுப்புகள்",
-    "CameraImageUploadedFrom": "{0} இலிருந்து புதிய புகைப்படம் பதிவேற்றப்பட்டது",
+    "CameraImageUploadedFrom": "{0} இல் இருந்து புதிய புகைப்படம் பதிவேற்றப்பட்டது",
     "AppDeviceValues": "செயலி: {0}, சாதனம்: {1}",
     "TaskDownloadMissingSubtitles": "விடுபட்டுபோன வசன வரிகளைப் பதிவிறக்கு",
     "TaskRefreshChannels": "சேனல்களை புதுப்பி",
