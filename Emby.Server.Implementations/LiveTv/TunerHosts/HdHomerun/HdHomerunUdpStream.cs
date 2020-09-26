@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -19,6 +18,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Udp;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            var localPort = UdpServer.GetRandomUnusedUdpPort();
+            var localPort = UdpHelper.GetRandomUnusedUdpPort();
             Logger.LogDebug("Using udp port {0}", localPort);
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));

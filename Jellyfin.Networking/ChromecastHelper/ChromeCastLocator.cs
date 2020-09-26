@@ -1,14 +1,11 @@
 using System;
 using System.Linq;
 using System.Net;
-using Jellyfin.Data.Events;
-using Jellyfin.Networking.Ssdp;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Ssdp;
+using NetworkCollection.SSDP;
 
 namespace Emby.Dlna.Net
 {
@@ -24,18 +21,12 @@ namespace Emby.Dlna.Net
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
         /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
-        /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
-        /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
         public ChromecastLocator(
             ILogger logger,
-            INetworkManager networkManager,
-            IConfigurationManager configurationManager,
-            IServerApplicationHost applicationHost)
+            INetworkManager networkManager)
         : base(
             logger,
-            networkManager,
-            configurationManager,
-            applicationHost,
+            networkManager.GetInternalBindAddresses(),
             new string[] { "urn:dial-multiscreen-org:device:dial:1", "urn:dial-multiscreen-org:service:dial:1" },
             false)
         {
@@ -43,7 +34,7 @@ namespace Emby.Dlna.Net
         }
 
         /// <inheritdoc/>
-        protected override void DeviceDiscoveredEvent(bool isNewDevice, GenericEventArgs<UpnpDeviceInfo> args)
+        protected override void DeviceDiscoveredEvent(bool isNewDevice, SsdpDeviceInfo args)
         {
             if (args == null)
             {
@@ -56,7 +47,7 @@ namespace Emby.Dlna.Net
 
             if (externalAddress != null)
             {
-                var key = new IPNetAddress(args.Argument.LocalIpAddress);
+                var key = new IPNetAddress(args.LocalIpAddress);
                 if (!urls.ContainsKey(key))
                 {
                     urls[key] = externalAddress;
@@ -65,14 +56,14 @@ namespace Emby.Dlna.Net
         }
 
         /// <inheritdoc/>
-        protected override void DeviceLeftEvent(GenericEventArgs<UpnpDeviceInfo> args)
+        protected override void DeviceLeftEvent(SsdpDeviceInfo args)
         {
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var key = new IPNetAddress(args.Argument.LocalIpAddress);
+            var key = new IPNetAddress(args.LocalIpAddress);
             _networkManager.PublishedServerUrls.Remove(key);
         }
     }

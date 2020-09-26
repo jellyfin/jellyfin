@@ -13,7 +13,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -31,6 +30,7 @@ using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Udp;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -716,14 +716,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
             try
             {
-                using var udpSocket = UdpServer.CreateUdpBroadcastSocket(
-                    UdpServer.GetPort(Config.Configuration.HDHomerunPortRange ?? Config.Configuration.UDPPortRange),
+                using var udpSocket = UdpHelper.CreateUdpBroadcastSocket(
+                    UdpHelper.GetPort(Config.Configuration.HDHomerunPortRange ?? Config.Configuration.UDPPortRange),
                     Logger);
 
                 await udpSocket.SendToAsync(
                     discBytes,
                     SocketFlags.None,
-                    UdpServer.GetMulticastEndPoint(HdHomeRunPort)).ConfigureAwait(false);
+                    UdpHelper.GetMulticastEndPoint(HdHomeRunPort)).ConfigureAwait(false);
                 var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 
                 try

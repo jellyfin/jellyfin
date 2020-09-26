@@ -47,12 +47,12 @@ namespace Jellyfin.Networking.Gateway
         /// <summary>
         /// Set if disposed.
         /// </summary>
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Set if the internet resolver is running.
         /// </summary>
-        private bool _active = false;
+        private bool _active;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GatewayMonitor"/> class.

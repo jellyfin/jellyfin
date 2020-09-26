@@ -125,11 +125,6 @@ namespace Jellyfin.Networking.Manager
         public event EventHandler? NetworkChanged;
 
         /// <summary>
-        /// Gets the unique network location signature, which is updated on every network change.
-        /// </summary>
-        public static string NetworkLocationSignature { get; internal set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
         /// Gets a value indicating whether IP6 is enabled.
         /// </summary>
         public static bool IsIP6Enabled { get; internal set; }
@@ -143,11 +138,6 @@ namespace Jellyfin.Networking.Manager
         /// Gets a value indicating whether is multi-socket binding available.
         /// </summary>
         public static bool EnableMultiSocketBinding { get; internal set; } = true;
-
-        /// <summary>
-        /// Gets the number of times the network address has changed.
-        /// </summary>
-        public static int NetworkChangeCount { get; internal set; } = 1;
 
         /// <inheritdoc/>
         public NetCollection RemoteAddressFilter { get; private set; }
@@ -653,7 +643,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="address">Address to convert.</param>
         /// <returns>URI save conversion of the address.</returns>
-        private string FormatIP6String(IPAddress address)
+        private static string FormatIP6String(IPAddress address)
         {
             var str = address.ToString();
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -774,14 +764,6 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void OnNetworkChanged()
         {
-            // As per UPnP Device Architecture v1.0 Annex A - IPv6 Support.
-            NetworkLocationSignature = Guid.NewGuid().ToString();
-            NetworkChangeCount++;
-            if (NetworkChangeCount > 99)
-            {
-                NetworkChangeCount = 1;
-            }
-
             if (!_eventfire)
             {
                 _logger.LogDebug("Network Address Change Event.");

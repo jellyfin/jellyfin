@@ -7,9 +7,8 @@ using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Data.Events;
-using Jellyfin.Networking.Udp;
 using NetworkCollection;
+using NetworkCollection.Udp;
 
 namespace NetworkTesting
 {
@@ -428,7 +427,7 @@ namespace NetworkTesting
         [InlineData("0      - 1202020", 1, 65535)]
         public void TestRange(string rangeStr, int min, int max)
         {
-            UdpServer.TryParseRange(rangeStr, out (int Min, int Max) range);
+            UdpHelper.TryParseRange(rangeStr, out (int Min, int Max) range);
             Assert.True((range.Min == min) && (range.Max == max));
         }
     }

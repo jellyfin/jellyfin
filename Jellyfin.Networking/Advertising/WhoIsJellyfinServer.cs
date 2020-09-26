@@ -4,13 +4,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
+using NetworkCollection.Udp;
 
 namespace Jellyfin.Networking.Advertising
 {
@@ -48,7 +47,7 @@ namespace Jellyfin.Networking.Advertising
 
             if (_config.Configuration.AutoDiscovery)
             {
-                _udpProcess = UdpServer.CreateMulticastClients(
+                _udpProcess = UdpHelper.CreateMulticastClients(
                     PortNumber,
                     networkManager.GetAllBindInterfaces(),
                     ProcessMessage,
@@ -80,7 +79,7 @@ namespace Jellyfin.Networking.Advertising
 
                 try
                 {
-                    await UdpServer.SendUnicast(client, reply, receivedFrom).ConfigureAwait(false);
+                    await UdpHelper.SendUnicast(client, reply, receivedFrom).ConfigureAwait(false);
                 }
                 catch (SocketException ex)
                 {
