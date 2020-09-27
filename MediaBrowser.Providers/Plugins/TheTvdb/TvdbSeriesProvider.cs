@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -342,9 +343,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 {
                     var episodeSummary = await _tvdbClientManager.GetSeriesEpisodeSummaryAsync(tvdbSeries.Id, metadataLanguage, CancellationToken.None).ConfigureAwait(false);
 
-                    if (episodeSummary.Data.AiredSeasons.Length > 0)
+                    if (episodeSummary.Data.AiredSeasons.Length != 0)
                     {
-                        var maxSeasonNumber = episodeSummary.Data.AiredSeasons.Select(s => Convert.ToInt32(s)).Max();
+                        var maxSeasonNumber = episodeSummary.Data.AiredSeasons.Max(s => Convert.ToInt32(s, CultureInfo.InvariantCulture));
                         var episodeQuery = new EpisodeQuery
                         {
                             AiredSeason = maxSeasonNumber
@@ -353,10 +354,11 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
                         var episodeDates = episodesPage.Data
                             .Select(e => DateTime.TryParse(e.FirstAired, out var firstAired) ? firstAired : (DateTime?)null)
-                            .Where(dt => dt.HasValue);
-                        if (episodeDates.Any())
+                            .Where(dt => dt.HasValue)
+                            .ToList();
+                        if (episodeDates.Count != 0)
                         {
-                            result.Item.EndDate = episodeDates.Max().Value;
+                            result.Item.EndDate = episodeDates.Max();
                         }
                     }
                 }
