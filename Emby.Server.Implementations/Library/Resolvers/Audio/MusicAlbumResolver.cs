@@ -117,10 +117,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             ILibraryManager libraryManager)
         {
             // check for audio files before digging down into directories
-            var firstAudioFile = list
-                .Where(fileSystemInfo => !fileSystemInfo.IsDirectory)
-                .FirstOrDefault(fileSystemInfo => libraryManager.IsAudioFile(fileSystemInfo.FullName));
-            if (firstAudioFile != null)
+            var foundAudioFile = list.Any(fileSystemInfo => !fileSystemInfo.IsDirectory && libraryManager.IsAudioFile(fileSystemInfo.FullName));
+            if (foundAudioFile)
             {
                 // at least one audio file exists
                 return true;
