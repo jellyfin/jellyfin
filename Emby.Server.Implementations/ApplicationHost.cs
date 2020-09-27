@@ -499,21 +499,6 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            if (Plugins != null)
-            {
-                var pluginBuilder = new StringBuilder();
-
-                foreach (var plugin in Plugins)
-                {
-                    pluginBuilder.Append(plugin.Name)
-                        .Append(' ')
-                        .Append(plugin.Version)
-                        .AppendLine();
-                }
-
-                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
-            }
-
             DiscoverTypes();
 
             RegisterServices();
@@ -785,6 +770,21 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
+            if (Plugins != null)
+            {
+                var pluginBuilder = new StringBuilder();
+
+                foreach (var plugin in Plugins)
+                {
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
+                }
+
+                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
+            }
+            
             _urlPrefixes = GetUrlPrefixes().ToArray();
             _webSocketManager.Init(GetExports<IWebSocketListener>());
 
