@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Audio;
 using MediaBrowser.Controller.Entities.Audio;
@@ -132,7 +133,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             }
 
             var discSubfolderCount = 0;
-            var notMultiDisc = false;
 
             var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
             var parser = new AlbumParser(namingOptions);
@@ -149,18 +149,17 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     if (parser.IsMultiPart(path))
                     {
                         logger.LogDebug("Found multi-disc folder: " + path);
-                        discSubfolderCount++;
+                        Interlocked.Increment(ref discSubfolderCount);
                     }
                     else
                     {
                         // If there are folders underneath with music that are not multidisc, then this can't be a multi-disc album
-                        notMultiDisc = true;
                         state.Stop();
                     }
                 }
             });
 
-            if (notMultiDisc)
+            if (!result.IsCompleted)
             {
                 return false;
             }
