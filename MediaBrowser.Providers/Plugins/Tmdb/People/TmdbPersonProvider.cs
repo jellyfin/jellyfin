@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             if (searchInfo.IsAutomated)
             {
                 // Don't hammer moviedb searching by name
-                return new List<RemoteSearchResult>();
+                return Enumerable.Empty<RemoteSearchResult>();
             }
 
             var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken).ConfigureAwait(false);

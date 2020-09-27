@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (series?.Images == null)
             {
-                return Array.Empty<RemoteImageInfo>();
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var remoteImages = new List<RemoteImageInfo>();

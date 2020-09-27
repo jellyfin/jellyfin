@@ -103,6 +103,5 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             return item is Controller.Entities.TV.Episode;
         }
-
     }
 }

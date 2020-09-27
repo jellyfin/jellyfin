@@ -79,7 +79,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return remoteImages.OrderByLanguageDescending(language);
             }
 
-            return new List<RemoteImageInfo>();
+            return Enumerable.Empty<RemoteImageInfo>();
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
