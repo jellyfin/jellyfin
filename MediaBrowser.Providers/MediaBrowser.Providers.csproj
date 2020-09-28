@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.8" />
     <PackageReference Include="OptimizedPriorityQueue" Version="4.2.0" />
     <PackageReference Include="PlaylistsNET" Version="1.1.2" />
-    <PackageReference Include="TvDbSharper" Version="3.2.1" />
+    <PackageReference Include="TvDbSharper" Version="3.2.2" />
   </ItemGroup>
 
   <PropertyGroup>
