@@ -44,10 +44,10 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             // First time authenticating if the token was never updated or if it's empty in the client
             if (tvDbClientInfo.TokenUpdatedAt == DateTime.MinValue || string.IsNullOrEmpty(tvDbClient.Authentication.Token))
             {
+                await tvDbClientInfo.TokenUpdateLock.WaitAsync().ConfigureAwait(false);
+
                 try
                 {
-                    await tvDbClientInfo.TokenUpdateLock.WaitAsync().ConfigureAwait(false);
-
                     if (string.IsNullOrEmpty(tvDbClient.Authentication.Token))
                     {
                         await tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey).ConfigureAwait(false);
@@ -63,10 +63,10 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             // Refresh if necessary
             if (tvDbClientInfo.TokenUpdatedAt < DateTime.UtcNow.Subtract(TimeSpan.FromHours(20)))
             {
+                await tvDbClientInfo.TokenUpdateLock.WaitAsync().ConfigureAwait(false);
+
                 try
                 {
-                    await tvDbClientInfo.TokenUpdateLock.WaitAsync().ConfigureAwait(false);
-
                     if (tvDbClientInfo.TokenUpdatedAt < DateTime.UtcNow.Subtract(TimeSpan.FromHours(20)))
                     {
                         try
