@@ -160,7 +160,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                throw new HttpException($"Invalid image received ({response.StatusCode}).")
+                throw new HttpException("Invalid image received.")
                 {
                     StatusCode = response.StatusCode
                 };
