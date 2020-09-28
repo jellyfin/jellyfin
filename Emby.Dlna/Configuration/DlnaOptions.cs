@@ -85,7 +85,7 @@ namespace Emby.Dlna.Configuration
         public bool BlastAliveMessages { get; set; } = true;
 
         /// <summary>
-        /// gets or sets a value indicating whether OBSOLETE.
+        /// gets or sets a value indicating whether to send only matched host.
         /// </summary>
         public bool SendOnlyMatchedHost { get; set; } = true;
     }
