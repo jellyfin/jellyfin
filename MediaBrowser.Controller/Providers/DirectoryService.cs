@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Providers
         {
             var result = _fileCache.GetOrAdd(path, p =>
             {
-                var file = _fileSystem.GetFileInfo(path);
+                var file = _fileSystem.GetFileInfo(p);
                 return file != null && file.Exists ? file : null;
             });
 
@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.Providers
                 _filePathCache.TryRemove(path, out _);
             }
 
-            return _filePathCache.GetOrAdd(path, p => _fileSystem.GetFilePaths(path).ToList());
+            return _filePathCache.GetOrAdd(path, p => _fileSystem.GetFilePaths(p).ToList());
         }
     }
 }
