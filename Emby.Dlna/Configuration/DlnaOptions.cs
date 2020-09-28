@@ -80,7 +80,7 @@ namespace Emby.Dlna.Configuration
         public bool AutoCreatePlayToProfiles { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether OBSOLETE.
+        /// Gets or sets a value indicating whether to blast alive messages.
         /// </summary>
         public bool BlastAliveMessages { get; set; } = true;
 
