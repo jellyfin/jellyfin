@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, (p) => _fileSystem.GetFileSystemEntries(p).ToArray());
+            return _cache.GetOrAdd(path, p => _fileSystem.GetFileSystemEntries(p).ToArray());
         }
 
         public List<FileSystemMetadata> GetFiles(string path)
@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata GetFile(string path)
         {
-            var result = _fileCache.GetOrAdd(path, (p) =>
+            var result = _fileCache.GetOrAdd(path, p =>
             {
                 var file = _fileSystem.GetFileInfo(path);
                 return (file != null && file.Exists) ? file : null;
@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Providers
             if (result == null)
             {
                 // lets not store null results in the cache
-                _fileCache.TryRemove(path, out FileSystemMetadata removed);
+                _fileCache.TryRemove(path, out _);
             }
 
             return result;
@@ -67,10 +67,10 @@ namespace MediaBrowser.Controller.Providers
         {
             if (clearCache)
             {
-                _filePathCache.TryRemove(path, out List<string> removed);
+                _filePathCache.TryRemove(path, out _);
             }
 
-            return _filePathCache.GetOrAdd(path, (p) => _fileSystem.GetFilePaths(path).ToList());
+            return _filePathCache.GetOrAdd(path, p => _fileSystem.GetFilePaths(path).ToList());
         }
     }
 }
