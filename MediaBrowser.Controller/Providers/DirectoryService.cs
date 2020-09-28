@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Providers
             var result = _fileCache.GetOrAdd(path, p =>
             {
                 var file = _fileSystem.GetFileInfo(path);
-                return (file != null && file.Exists) ? file : null;
+                return file != null && file.Exists ? file : null;
             });
 
             if (result == null)
