@@ -77,6 +77,7 @@ namespace MediaBrowser.Controller.Library
         MusicArtist GetArtist(string name);
 
         MusicArtist GetArtist(string name, DtoOptions options);
+
         /// <summary>
         /// Gets a Studio.
         /// </summary>
@@ -234,6 +235,7 @@ namespace MediaBrowser.Controller.Library
         /// Occurs when [item updated].
         /// </summary>
         event EventHandler<ItemChangeEventArgs> ItemUpdated;
+
         /// <summary>
         /// Occurs when [item removed].
         /// </summary>

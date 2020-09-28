@@ -100,6 +100,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;Guid&gt;.</returns>
         QueryResult<Guid> GetItemIds(InternalItemsQuery query);
+
         /// <summary>
         /// Gets the items.
         /// </summary>
