@@ -352,14 +352,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                         };
                         var episodesPage = await _tvdbClientManager.GetEpisodesPageAsync(tvdbSeries.Id, episodeQuery, metadataLanguage, CancellationToken.None).ConfigureAwait(false);
 
-                        var episodeDates = episodesPage.Data
+                        result.Item.EndDate = episodesPage.Data
                             .Select(e => DateTime.TryParse(e.FirstAired, out var firstAired) ? firstAired : (DateTime?)null)
-                            .Where(dt => dt.HasValue)
-                            .ToList();
-                        if (episodeDates.Count != 0)
-                        {
-                            result.Item.EndDate = episodeDates.Max();
-                        }
+                            .Max();
                     }
                 }
                 catch (TvDbServerException e)
