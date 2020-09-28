@@ -438,7 +438,13 @@ namespace Emby.Server.Implementations.Networking
             {
                 var ipProperties = network.GetIPProperties();
 
-                // Exclude any addresses if they appear in the LAN list in [ ]
+                // Try to exclude virtual adapters
+                // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
+                var addr = ipProperties.GatewayAddresses.FirstOrDefault();
+                if (addr == null || (addr.Address.Equals(IPAddress.Any) || addr.Address.Equals(IPAddress.IPv6Any)))
+                {
+                    return Enumerable.Empty<IPAddress>();
+                }
 
                 return ipProperties.UnicastAddresses
                     .Select(i => i.Address)
