@@ -11,7 +11,11 @@
             "cwd": "${workspaceFolder}/Jellyfin.Server",
             "console": "internalConsole",
             "stopAtEntry": false,
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "openOnSessionStart",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "Overriding address\\(es\\) \\'(https?:\\S+)\\'",
+            }
         },
         {
             "name": ".NET Core Launch (nowebclient)",
