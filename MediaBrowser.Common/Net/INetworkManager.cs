@@ -166,9 +166,9 @@ namespace MediaBrowser.Common.Net
         /// eg. "eth1", or "TP-LINK Wireless USB Adapter".
         /// </summary>
         /// <param name="token">Token to parse.</param>
-        /// <param name="result">Resultant object if successful.</param>
+        /// <param name="result">Resultant object's ip addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string token, out IPNetAddress result);
+        bool TryParseInterface(string token, out NetCollection? result);
 
         /// <summary>
         /// Parses an array of strings into a NetCollection.
