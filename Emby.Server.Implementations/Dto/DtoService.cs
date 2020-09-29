@@ -1431,7 +1431,7 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            return width / height;
+            return (double)width / height;
         }
     }
 }
