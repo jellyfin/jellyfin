@@ -11,6 +11,7 @@ using Jellyfin.Data.Events;
 using Jellyfin.Networking.Udp;
 using Emby.Dlna.PlayTo;
 using NetworkCollection;
+using System.Net.NetworkInformation;
 
 namespace NetworkTesting
 {
@@ -18,6 +19,7 @@ namespace NetworkTesting
 
     public class NetTesting
     {
+
         [Theory]
         [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
         public void TextIsInNetwork(string network, string value)
@@ -341,7 +343,9 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
 
             _ = nm.TryParseInterface(result, out NetCollection? resultObj);
 
@@ -350,8 +354,7 @@ namespace NetworkTesting
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
                 var intf = nm.GetBindInterface(source, out int? port);
 
-                // This will fail except on my pc.
-                // Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
+                Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -399,7 +402,9 @@ namespace NetworkTesting
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
 
             if (nm.TryParseInterface(result, out NetCollection? resultObj) && resultObj != null)
             {
@@ -409,7 +414,7 @@ namespace NetworkTesting
 
             var intf = nm.GetBindInterface(source, out int? port);
 
-            // Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
+            Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
         }
 
         [Theory]

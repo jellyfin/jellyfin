@@ -145,6 +145,11 @@ namespace Jellyfin.Networking.Manager
         public static bool EnableMultiSocketBinding { get; internal set; } = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether testing is taking place.
+        /// </summary>
+        public static string MockNetworkSettings { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets the number of times the network address has changed.
         /// </summary>
         public static int NetworkChangeCount { get; internal set; } = 1;
@@ -613,7 +618,25 @@ namespace Jellyfin.Networking.Manager
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
             EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
-            InitialiseInterfaces();
+            if (string.IsNullOrEmpty(MockNetworkSettings))
+            {
+                InitialiseInterfaces();
+            }
+            else // Used in testing only.
+            {
+                // Format is <IPAddress>,<Index>,<Name>: <next interface>. Set index to -ve to simulate a gateway.
+                var interfaceList = MockNetworkSettings.Split(':');
+                foreach (var details in interfaceList)
+                {
+                    var parts = details.Split(',');
+                    var address = IPNetAddress.Parse(parts[0]);
+                    var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                    address.Tag = index;
+                    _interfaceAddresses.Add(address);
+                    _interfaceNames.Add(parts[2], Math.Abs(index));
+                }
+            }
+
             InitialiseLAN(config);
             InitialiseBind(config);
             InitialiseRemote(config);
