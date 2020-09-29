@@ -7,11 +7,10 @@ using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Data.Events;
 using Jellyfin.Networking.Udp;
 using Emby.Dlna.PlayTo;
 using NetworkCollection;
-using System.Net.NetworkInformation;
+using System;
 
 namespace NetworkTesting
 {
@@ -19,6 +18,28 @@ namespace NetworkTesting
 
     public class NetTesting
     {
+
+        [Theory]
+        [InlineData("192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
+        [InlineData("192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
+        [InlineData("192.168.1.208/24,-16,vEthernet1:192.168.1.208/24,-16,vEthernet212;200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
+        public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
+        {
+            var conf = new ServerConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+                LocalNetworkSubnets = lan.Split(';')
+            };
+
+            NetworkManager.MockNetworkSettings = interfaces;
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
+
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            Assert.True(string.Equals(nm.GetInternalBindAddresses().ToString(), value, StringComparison.Ordinal));
+        }
 
         [Theory]
         [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
@@ -34,7 +55,7 @@ namespace NetworkTesting
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
 
             var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
-            
+
             Assert.True(!nm.IsInLocalNetwork(value));
         }
 

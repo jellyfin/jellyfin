@@ -915,15 +915,15 @@ namespace Jellyfin.Networking.Manager
             // TODO: end fix.
 
             // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
-            var virtualInterfaces = new NetCollection();
-
             if (config.IgnoreVirtualInterfaces)
             {
-                virtualInterfaces = CreateIPCollection(config.VirtualInterfaceNames.Split(','));
+                var newList = ba.ToList();
+                newList.AddRange(config.VirtualInterfaceNames.Split(',').ToList());
+                ba = newList.ToArray();
             }
 
             // Read and parse bind addresses and exclusions, removing ones that don't exist.
-            _bindAddresses = CreateIPCollection(ba).Exclude(virtualInterfaces).Union(_interfaceAddresses);
+            _bindAddresses = CreateIPCollection(ba).Union(_interfaceAddresses);
             _bindExclusions = CreateIPCollection(ba, true).Union(_interfaceAddresses);
             _logger.LogInformation("Using bind addresses: {0}", _bindAddresses);
             _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);

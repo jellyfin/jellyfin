@@ -139,7 +139,7 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating the interfaces that should be ignored. The list can be comma separated. <seealso cref="IgnoreVirtualInterfaces"/>.
         /// </summary>
-        public string VirtualInterfaceNames { get; set; } = "!vEthernet*";
+        public string VirtualInterfaceNames { get; set; } = "vEthernet*";
 
         /// <summary>
         /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
