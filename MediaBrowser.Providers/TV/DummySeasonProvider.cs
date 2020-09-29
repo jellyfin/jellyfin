@@ -217,7 +217,6 @@ namespace MediaBrowser.Providers.TV
                     new DeleteOptions
                     {
                         DeleteFileLocation = true
-
                     },
                     false);
 

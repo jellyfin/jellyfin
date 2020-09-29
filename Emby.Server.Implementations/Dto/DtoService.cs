@@ -468,7 +468,6 @@ namespace Emby.Server.Implementations.Dto
                     IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
                     Name = item.Album,
                     Limit = 1
-
                 });
 
                 if (parentAlbumIds.Count > 0)

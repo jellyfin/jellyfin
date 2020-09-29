@@ -444,6 +444,7 @@ namespace MediaBrowser.Providers.Music
                                     result.Title = reader.ReadElementContentAsString();
                                     break;
                                 }
+
                             case "date":
                                 {
                                     var val = reader.ReadElementContentAsString();
@@ -454,17 +455,20 @@ namespace MediaBrowser.Providers.Music
 
                                     break;
                                 }
+
                             case "annotation":
                                 {
                                     result.Overview = reader.ReadElementContentAsString();
                                     break;
                                 }
+
                             case "release-group":
                                 {
                                     result.ReleaseGroupId = reader.GetAttribute("id");
                                     reader.Skip();
                                     break;
                                 }
+
                             case "artist-credit":
                                 {
                                     using (var subReader = reader.ReadSubtree())

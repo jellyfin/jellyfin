@@ -451,11 +451,13 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The method.</value>
         public SubtitleDeliveryMethod? DeliveryMethod { get; set; }
+
         /// <summary>
         /// Gets or sets the delivery URL.
         /// </summary>
         /// <value>The delivery URL.</value>
         public string DeliveryUrl { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is external URL.
         /// </summary>
