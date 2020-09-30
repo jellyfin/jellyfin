@@ -45,8 +45,7 @@ namespace Jellyfin.Api.Tests
             // Specify the startup command line options
             var commandLineOpts = new StartupOptions
             {
-                NoWebClient = true,
-                NoAutoRunWebApp = true
+                NoWebClient = true
             };
 
             // Use a temporary directory for the application paths

@@ -292,7 +292,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="NoContentResult"/>.
         /// </returns>
-        [HttpPost("Items/RemoteSearch/Apply/{id}")]
+        [HttpPost("Items/RemoteSearch/Apply/{itemId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ApplySearchCriteria(

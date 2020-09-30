@@ -109,7 +109,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return _mediaEncoder.SupportsHwaccel("vaapi");
-
         }
 
         /// <summary>
@@ -508,6 +507,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 arg.Append("-hwaccel qsv ");
                             }
                         }
+
                         // While using SW decoder
                         else
                         {
@@ -1440,7 +1440,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var codec = outputAudioCodec ?? string.Empty;
-
 
             int? transcoderChannelLimit;
             if (codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
@@ -2510,7 +2509,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return inputModifier;
         }
-
 
         public void AttachMediaSourceInfo(
             EncodingJobInfo state,

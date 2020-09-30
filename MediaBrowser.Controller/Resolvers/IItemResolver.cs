@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// <param name="args">The args.</param>
         /// <returns>BaseItem.</returns>
         BaseItem ResolvePath(ItemResolveArgs args);
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
