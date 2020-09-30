@@ -155,7 +155,12 @@ namespace Emby.Server.Implementations.Updates
             var result = new List<PackageInfo>();
             foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
             {
-                result.AddRange(await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true));
+                foreach (var package in await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true))
+                {
+                    package.repositoryName = repository.Name;
+                    package.repositoryUrl = repository.Url;
+                    result.Add(package);
+                }
             }
 
             return result;
@@ -393,6 +398,7 @@ namespace Emby.Server.Implementations.Updates
                     // Ignore any exceptions.
                 }
             }
+
             stream.Position = 0;
             _zipClient.ExtractAllFromZip(stream, targetDir, true);
 

@@ -697,10 +697,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// The progressive.
         /// </summary>
         Progressive,
+
         /// <summary>
         /// The HLS.
         /// </summary>
         Hls,
+
         /// <summary>
         /// The dash.
         /// </summary>

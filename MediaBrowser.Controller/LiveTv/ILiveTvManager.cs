@@ -231,6 +231,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Saves the tuner host.
         /// </summary>
         Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true);
+
         /// <summary>
         /// Saves the listing provider.
         /// </summary>

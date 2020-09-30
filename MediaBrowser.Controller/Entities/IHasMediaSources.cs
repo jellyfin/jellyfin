@@ -21,7 +21,5 @@ namespace MediaBrowser.Controller.Entities
         List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution);
 
         List<MediaStream> GetMediaStreams();
-
-
     }
 }

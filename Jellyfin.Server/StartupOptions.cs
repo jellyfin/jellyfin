@@ -64,10 +64,6 @@ namespace Jellyfin.Server
         public bool IsService { get; set; }
 
         /// <inheritdoc />
-        [Option("noautorunwebapp", Required = false, HelpText = "Run headless if startup wizard is complete.")]
-        public bool NoAutoRunWebApp { get; set; }
-
-        /// <inheritdoc />
         [Option("package-name", Required = false, HelpText = "Used when packaging Jellyfin (example, synology).")]
         public string? PackageName { get; set; }
 
