@@ -1319,7 +1319,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLoopbackHttpApiUrl()
         {
-            if (NetworkManager.IsIP6Enabled)
+            if (NetManager.IsIP6Enabled)
             {
                 return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
             }
