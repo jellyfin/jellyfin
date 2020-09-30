@@ -13,7 +13,6 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.PlayTo.Devices;
-using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -30,6 +29,7 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Udp;
 
 namespace Emby.Dlna.Main
 {
@@ -59,7 +59,6 @@ namespace Emby.Dlna.Main
         private readonly ILocalizationManager _localizationManager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly INotificationManager _notificationManager;
-        private readonly ISsdpServer _ssdpServer;
 
         private SsdpServerPublisher? _publisher;
         private bool _isDisposed;
@@ -105,7 +104,6 @@ namespace Emby.Dlna.Main
             _tvSeriesManager = tvSeriesManager;
             _notificationManager = notificationManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-            _ssdpServer = SsdpServer.GetOrCreateInstance(_networkManager, config, loggerFactory.CreateLogger<SsdpServer>(), appHost);
             Instance = this;
 
             _networkManager.NetworkChanged += NetworkChanged;
@@ -367,7 +365,7 @@ namespace Emby.Dlna.Main
                     if (_publisher == null)
                     {
                         _logger.LogDebug("DLNA Server : Starting DLNA advertisements.");
-                        _publisher = new SsdpServerPublisher(_ssdpServer, _loggerFactory, _networkManager, options.AliveMessageIntervalSeconds);
+                        _publisher = new SsdpServerPublisher(_loggerFactory, _networkManager, options.AliveMessageIntervalSeconds);
                         RegisterDLNAServerEndpoints();
                     }
                 }

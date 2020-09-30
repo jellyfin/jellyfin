@@ -24,6 +24,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
+using NetworkCollection.SSDP;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -89,7 +90,7 @@ namespace Emby.Dlna.PlayTo
             _notificationManager = notificationManager;
 
             _logger.LogDebug("DLNA PlayTo: Starting Device Discovery.");
-            _playToLocator = new SsdpPlayToLocator(loggerFactory.CreateLogger<SsdpPlayToLocator>(), networkManager, config, appHost);
+            _playToLocator = new SsdpPlayToLocator(loggerFactory.CreateLogger<SsdpPlayToLocator>(), networkManager, config);
             _playToLocator.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
             _playToLocator.Start();
         }
@@ -220,26 +221,24 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private async void OnDeviceDiscoveryDeviceDiscovered(object sender, SsdpDeviceInfo e)
         {
             if (_disposed)
             {
                 return;
             }
 
-            var info = e.Argument;
-
-            if (!info.Headers.TryGetValue("USN", out string usn))
+            if (!e.Headers.TryGetValue("USN", out string usn))
             {
                 usn = string.Empty;
             }
 
-            if (!info.Headers.TryGetValue("NT", out string nt))
+            if (!e.Headers.TryGetValue("NT", out string nt))
             {
                 nt = string.Empty;
             }
 
-            string location = info.Location.ToString();
+            string location = e.Location.ToString();
 
             // It has to report that it's a media renderer
             if (!usn.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase) && !nt.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase))
@@ -264,8 +263,8 @@ namespace Emby.Dlna.PlayTo
                     return;
                 }
 
-                _logger.LogDebug("Adding device found at {0} : ", info.LocalIpAddress);
-                await AddDevice(info, location).ConfigureAwait(false);
+                _logger.LogDebug("Adding device found at {0} : ", e.LocalIpAddress);
+                await AddDevice(e, location).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -280,7 +279,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async Task AddDevice(UpnpDeviceInfo info, string location)
+        private async Task AddDevice(SsdpDeviceInfo info, string location)
         {
             var uri = info.Location;
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);

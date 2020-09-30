@@ -1,24 +1,31 @@
-#pragma warning disable CS1591
 using System;
-using Jellyfin.Data.Events;
-using MediaBrowser.Model.Dlna;
+using NetworkCollection.SSDP;
 
 namespace Emby.Dlna.PlayTo
 {
+    /// <summary>
+    /// Defines the <see cref="ISsdpPlayToLocator" />.
+    /// </summary>
     public interface ISsdpPlayToLocator
     {
-         /// <summary>
+        /// <summary>
         /// Raised when a new device is discovered.
         /// </summary>
-        event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered;
+        event EventHandler<SsdpDeviceInfo> DeviceDiscovered;
 
         /// <summary>
         /// Raised when a notification is received that indicates a device has shutdown or otherwise become unavailable.
         /// </summary>
-        event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
+        event EventHandler<SsdpDeviceInfo> DeviceLeft;
 
+        /// <summary>
+        /// Disposes the listener.
+        /// </summary>
         void Dispose();
 
+        /// <summary>
+        /// Starts the listener.
+        /// </summary>
         void Start();
     }
 }

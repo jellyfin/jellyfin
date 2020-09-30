@@ -40,7 +40,8 @@ namespace MediaBrowser.Common.Net
         /// <returns>A NetCollection object containing all the interfaces to bind.
         /// If all the interfaces are specified, and none are excluded, it returns zero items
         /// to represent any address.</returns>
-        NetCollection GetAllBindInterfaces();
+        /// <param name="individualInterfaces">When false, return <see cref="IPAddress.Any"/> or <see cref="IPAddress.IPv6Any"/> for all interfaces.</param>
+        NetCollection GetAllBindInterfaces(bool individualInterfaces = false);
 
         /// <summary>
         /// Returns a collection containing the loopback interfaces.

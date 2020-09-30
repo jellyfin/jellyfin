@@ -1,14 +1,11 @@
 #nullable enable
 using System;
 using Emby.Dlna.Configuration;
-using Jellyfin.Data.Events;
-using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
+using NetworkCollection.Ssdp;
+using NetworkCollection.SSDP;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -17,49 +14,49 @@ namespace Emby.Dlna.PlayTo
     /// </summary>
     public class SsdpPlayToLocator : SsdpLocator, ISsdpPlayToLocator
     {
+        private readonly IConfigurationManager _configuration;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpPlayToLocator"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
         /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
         /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
-        /// <param name="applicationHost">The <see cref="IServerApplicationHost"/> instance.</param>
-        public SsdpPlayToLocator(ILogger logger, INetworkManager networkManager, IConfigurationManager configurationManager, IServerApplicationHost applicationHost)
+        public SsdpPlayToLocator(ILogger logger, INetworkManager networkManager, IConfigurationManager configurationManager)
         : base(
             logger,
-            networkManager,
-            configurationManager,
-            applicationHost,
+            networkManager.GetInternalBindAddresses(),
             new string[] { "urn:schemas-upnp-org:device:MediaRenderer:" },
             true)
         {
+            _configuration = configurationManager;
         }
 
         /// <summary>
         /// Raised when a new device is discovered.
         /// </summary>
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscovered;
+        public event EventHandler<SsdpDeviceInfo>? DeviceDiscovered;
 
         /// <summary>
         /// Raised when a notification is received that indicates a device has shutdown or otherwise become unavailable.
         /// </summary>
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
+        public event EventHandler<SsdpDeviceInfo>? DeviceLeft;
 
         /// <inheritdoc/>
         public override void Start()
         {
-            Interval = Configuration.GetDlnaConfiguration().AliveMessageIntervalSeconds;
+            Interval = _configuration.GetDlnaConfiguration().AliveMessageIntervalSeconds;
             base.Start();
         }
 
         /// <inheritdoc/>
-        protected override void DeviceDiscoveredEvent(bool isNewDevice, GenericEventArgs<UpnpDeviceInfo> args)
+        protected override void DeviceDiscoveredEvent(bool isNewDevice, SsdpDeviceInfo args)
         {
             DeviceDiscovered?.Invoke(this, args);
         }
 
         /// <inheritdoc/>
-        protected override void DeviceLeftEvent(GenericEventArgs<UpnpDeviceInfo> args)
+        protected override void DeviceLeftEvent(SsdpDeviceInfo args)
         {
             DeviceLeft?.Invoke(this, args);
         }

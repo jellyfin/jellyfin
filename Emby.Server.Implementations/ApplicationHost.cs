@@ -254,8 +254,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();            
-            
+            _jsonSerializer = new JsonSerializer();
+
             ServiceCollection = serviceCollection;
 
             ApplicationPaths = applicationPaths;

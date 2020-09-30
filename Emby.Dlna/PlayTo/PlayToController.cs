@@ -25,6 +25,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using NetworkCollection.SSDP;
 using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Dlna.PlayTo
@@ -120,15 +121,13 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private void OnDeviceDiscoveryDeviceLeft(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private void OnDeviceDiscoveryDeviceLeft(object sender, SsdpDeviceInfo e)
         {
-            var info = e.Argument;
-
             if (!_disposed
-                && info.Headers.TryGetValue("USN", out string usn)
+                && e.Headers.TryGetValue("USN", out string usn)
                 && usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1
                 && (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1
-                    || (info.Headers.TryGetValue("NT", out string nt)
+                    || (e.Headers.TryGetValue("NT", out string nt)
                         && nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)))
             {
                 OnDeviceUnavailable();

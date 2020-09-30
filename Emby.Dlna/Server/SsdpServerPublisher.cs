@@ -9,12 +9,11 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.Main;
 using Emby.Dlna.PlayTo.Devices;
-using Jellyfin.Networking.Ssdp;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
-using Mono.Nat;
+using NetworkCollection.Ssdp;
+using NetworkCollection.Udp;
 
 namespace Emby.Dlna.Net
 {
@@ -44,13 +43,12 @@ namespace Emby.Dlna.Net
         private bool _disposed;
 
         public SsdpServerPublisher(
-            ISsdpServer ssdpServer,
             ILoggerFactory loggerFactory,
             INetworkManager networkManager,
             int aliveMessageInterval)
         {
+            _ssdpServer = SsdpServer.GetOrCreateInstance(loggerFactory.CreateLogger<SsdpServer>(), networkManager.GetInternalBindAddresses());
             _networkManager = networkManager ?? throw new NullReferenceException(nameof(networkManager));
-            _ssdpServer = ssdpServer ?? throw new NullReferenceException(nameof(ssdpServer));
             _logger = loggerFactory.CreateLogger<SsdpServerPublisher>();
             _devices = new List<SsdpRootDevice>();
             _readOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_devices);
@@ -513,23 +511,9 @@ namespace Emby.Dlna.Net
 
         private async void RequestReceived(object sender, SsdpEventArgs e)
         {
-            const string SsdpInternetGateway = "ssdp:urn:schemas-upnp-org:device:InternetGatewayDevice:";
-
             ThrowIfDisposed();
 
             var searchTarget = e.Message["ST"];
-
-            if (searchTarget.StartsWith(SsdpInternetGateway, StringComparison.OrdinalIgnoreCase))
-            {
-                // If uPNP is running and the message didn't originate from mono - pass these messages to mono.nat. It might want them.
-                if (_ssdpServer.IsUPnPActive && !e.Internal)
-                {
-                    _logger.LogDebug("Passing notify message to Mono.Nat.");
-                    NatUtility.ParseMessage(NatProtocol.Upnp, e.LocalIPAddress, e.Raw(), e.ReceivedFrom);
-                }
-
-                return;
-            }
 
             if (string.IsNullOrEmpty(searchTarget))
             {

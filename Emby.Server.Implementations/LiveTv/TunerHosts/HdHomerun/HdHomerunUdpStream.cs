@@ -8,17 +8,18 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Udp;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -26,6 +27,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     {
         private const int RtpHeaderBytes = 12;
 
+        private readonly string _portRange;
         private readonly IServerApplicationHost _appHost;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
@@ -45,6 +47,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
+            _portRange = ((ServerConfiguration)configurationManager).UDPPortRange;
             _appHost = appHost;
             _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
@@ -60,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            var localPort = UdpServer.GetRandomUnusedUdpPort();
+            var localPort = UdpHelper.GetPort(_portRange);
             Logger.LogDebug("Using udp port {0}", localPort);
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));

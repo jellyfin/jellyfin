@@ -12,6 +12,7 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Udp;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -125,11 +126,6 @@ namespace Jellyfin.Networking.Manager
         public event EventHandler? NetworkChanged;
 
         /// <summary>
-        /// Gets the unique network location signature, which is updated on every network change.
-        /// </summary>
-        public static string NetworkLocationSignature { get; internal set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
         /// Gets a value indicating whether IP6 is enabled.
         /// </summary>
         public static bool IsIP6Enabled { get; internal set; }
@@ -140,19 +136,9 @@ namespace Jellyfin.Networking.Manager
         public static bool IsIP4Enabled { get; internal set; } = true;
 
         /// <summary>
-        /// Gets a value indicating whether is multi-socket binding available.
-        /// </summary>
-        public static bool EnableMultiSocketBinding { get; internal set; } = true;
-
-        /// <summary>
         /// Gets or sets a value indicating whether testing is taking place.
         /// </summary>
         public static string MockNetworkSettings { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets the number of times the network address has changed.
-        /// </summary>
-        public static int NetworkChangeCount { get; internal set; } = 1;
 
         /// <inheritdoc/>
         public NetCollection RemoteAddressFilter { get; private set; }
@@ -276,7 +262,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public NetCollection GetAllBindInterfaces()
+        public NetCollection GetAllBindInterfaces(bool individualInterfaces = false)
         {
             lock (_intLock)
             {
@@ -288,6 +274,11 @@ namespace Jellyfin.Networking.Manager
                     {
                         // Return all the interfaces except the ones specifically excluded.
                         return _interfaceAddresses.Exclude(_bindExclusions);
+                    }
+
+                    if (individualInterfaces)
+                    {
+                        return new NetCollection(_interfaceAddresses);
                     }
 
                     // No bind address and no exclusions, so listen on all interfaces.
@@ -616,7 +607,7 @@ namespace Jellyfin.Networking.Manager
             IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
-            EnableMultiSocketBinding = config.EnableMultiSocketBinding;
+            UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
             if (string.IsNullOrEmpty(MockNetworkSettings))
             {
@@ -828,14 +819,6 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void OnNetworkChanged()
         {
-            // As per UPnP Device Architecture v1.0 Annex A - IPv6 Support.
-            NetworkLocationSignature = Guid.NewGuid().ToString();
-            NetworkChangeCount++;
-            if (NetworkChangeCount > 99)
-            {
-                NetworkChangeCount = 1;
-            }
-
             if (!_eventfire)
             {
                 _logger.LogDebug("Network Address Change Event.");
