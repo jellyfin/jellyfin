@@ -53,6 +53,16 @@ namespace MediaBrowser.Model.Updates
         public IReadOnlyList<VersionInfo> versions { get; set; }
 
         /// <summary>
+        /// Gets or sets the repository name.
+        /// </summary>
+        public string repositoryName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the repository url.
+        /// </summary>
+        public string repositoryUrl { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PackageInfo"/> class.
         /// </summary>
         public PackageInfo()

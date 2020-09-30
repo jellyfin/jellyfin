@@ -564,6 +564,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo info, ChannelInfo channelInfo, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
+            var tunerCount = info.TunerCount;
+
+            if (tunerCount > 0)
+            {
+                var tunerHostId = info.Id;
+                var liveStreams = currentLiveStreams.Where(i => string.Equals(i.TunerHostId, tunerHostId, StringComparison.OrdinalIgnoreCase));
+
+                if (liveStreams.Count() >= tunerCount)
+                {
+                    throw new LiveTvConflictException("HDHomeRun simultaneous stream limit has been reached.");
+                }
+            }
+
             var profile = streamId.Split('_')[0];
 
             Logger.LogInformation("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelInfo.Id, streamId, profile);

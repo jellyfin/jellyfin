@@ -959,7 +959,10 @@ namespace Emby.Dlna.PlayTo
                     return null;
                 }
 
-                _mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                if (_mediaSourceManager != null)
+                {
+                    mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                }
 
                 return _mediaSource;
             }

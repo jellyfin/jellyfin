@@ -498,7 +498,6 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-
             if (playMethods.Count > 0)
             {
                 transcodeReasons.Clear();
@@ -1431,6 +1430,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.AudioChannels:
                         {
                             if (string.IsNullOrEmpty(qualifier))
@@ -1466,6 +1466,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.IsAvc:
                         {
                             if (!enableNonQualifiedConditions)
@@ -1487,6 +1488,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.IsAnamorphic:
                         {
                             if (!enableNonQualifiedConditions)
@@ -1508,6 +1510,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.IsInterlaced:
                         {
                             if (string.IsNullOrEmpty(qualifier))
@@ -1539,6 +1542,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.PacketLength:
@@ -1550,6 +1554,7 @@ namespace MediaBrowser.Model.Dlna
                             // Not supported yet
                             break;
                         }
+
                     case ProfileConditionValue.RefFrames:
                         {
                             if (string.IsNullOrEmpty(qualifier))
@@ -1585,6 +1590,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.VideoBitDepth:
                         {
                             if (string.IsNullOrEmpty(qualifier))
@@ -1620,6 +1626,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.VideoProfile:
                         {
                             if (string.IsNullOrEmpty(qualifier))
@@ -1643,6 +1650,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.Height:
                         {
                             if (!enableNonQualifiedConditions)
@@ -1668,6 +1676,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.VideoBitrate:
                         {
                             if (!enableNonQualifiedConditions)
@@ -1693,6 +1702,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.VideoFramerate:
                         {
                             if (!enableNonQualifiedConditions)
@@ -1718,6 +1728,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.VideoLevel:
                         {
                             if (string.IsNullOrEmpty(qualifier))
@@ -1743,6 +1754,7 @@ namespace MediaBrowser.Model.Dlna
 
                             break;
                         }
+
                     case ProfileConditionValue.Width:
                         {
                             if (!enableNonQualifiedConditions)
