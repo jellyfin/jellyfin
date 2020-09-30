@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Main;
 using Emby.Dlna.PlayTo.Devices;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
@@ -47,8 +48,14 @@ namespace Emby.Dlna.Net
             INetworkManager networkManager,
             int aliveMessageInterval)
         {
-            _ssdpServer = SsdpServer.GetOrCreateInstance(loggerFactory.CreateLogger<SsdpServer>(), networkManager.GetInternalBindAddresses());
             _networkManager = networkManager ?? throw new NullReferenceException(nameof(networkManager));
+            _ssdpServer = SsdpServer.GetOrCreateInstance(
+                loggerFactory.CreateLogger<SsdpServer>(),
+                networkManager.GetInternalBindAddresses(),
+                networkManager.IsInLocalNetwork,
+                networkManager.IsIP4Enabled,
+                networkManager.IsIP6Enabled);
+            _ssdpServer.SetTracingFilter(DlnaEntryPoint.Instance.IsDLNADebuggingEnabled);
             _logger = loggerFactory.CreateLogger<SsdpServerPublisher>();
             _devices = new List<SsdpRootDevice>();
             _readOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_devices);

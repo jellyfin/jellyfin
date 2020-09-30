@@ -6,6 +6,7 @@ using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 using NetworkCollection.Ssdp;
 using NetworkCollection.SSDP;
+using static NetworkCollection.Ssdp.SsdpServer;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -27,7 +28,10 @@ namespace Emby.Dlna.PlayTo
             logger,
             networkManager.GetInternalBindAddresses(),
             new string[] { "urn:schemas-upnp-org:device:MediaRenderer:" },
-            true)
+            true,
+            networkManager.IsInLocalNetwork,
+            networkManager.IsIP4Enabled,
+            networkManager.IsIP6Enabled)
         {
             _configuration = configurationManager;
         }

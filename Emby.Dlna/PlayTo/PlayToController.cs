@@ -961,7 +961,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (_mediaSourceManager != null)
                 {
-                    mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                    _mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
                 }
 
                 return _mediaSource;

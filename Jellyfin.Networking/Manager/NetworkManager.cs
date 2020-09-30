@@ -126,19 +126,19 @@ namespace Jellyfin.Networking.Manager
         public event EventHandler? NetworkChanged;
 
         /// <summary>
-        /// Gets a value indicating whether IP6 is enabled.
-        /// </summary>
-        public static bool IsIP6Enabled { get; internal set; }
-
-        /// <summary>
-        /// Gets a value indicating whether IP4 is enabled.
-        /// </summary>
-        public static bool IsIP4Enabled { get; internal set; } = true;
-
-        /// <summary>
         /// Gets or sets a value indicating whether testing is taking place.
         /// </summary>
         public static string MockNetworkSettings { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether IP6 is enabled.
+        /// </summary>
+        public bool IsIP6Enabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether IP4 is enabled.
+        /// </summary>
+        public bool IsIP4Enabled { get; set; }
 
         /// <inheritdoc/>
         public NetCollection RemoteAddressFilter { get; private set; }

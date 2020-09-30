@@ -732,13 +732,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using var udpSocket = UdpHelper.CreateUdpBroadcastSocket(
                     UdpHelper.GetPort(Config.Configuration.HDHomerunPortRange ?? Config.Configuration.UDPPortRange),
                     Logger,
-                    NetworkManager.IsIP4Enabled,
-                    NetworkManager.IsIP6Enabled);
+                    _networkManager.IsIP4Enabled,
+                    _networkManager.IsIP6Enabled);
 
                 await udpSocket.SendToAsync(
                     discBytes,
                     SocketFlags.None,
-                    UdpHelper.GetMulticastEndPoint(HdHomeRunPort, isIP6Enabled: NetworkManager.IsIP6Enabled)).ConfigureAwait(false);
+                    UdpHelper.GetMulticastEndPoint(HdHomeRunPort, isIP6Enabled: _networkManager.IsIP6Enabled)).ConfigureAwait(false);
                 var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 
                 try
@@ -748,7 +748,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var response = await udpSocket.ReceiveFromAsync(
                             receiveBuffer,
                             SocketFlags.None,
-                            new IPEndPoint(NetworkManager.IsIP6Enabled ? IPAddress.Any : IPAddress.IPv6Any, 0))
+                            new IPEndPoint(_networkManager.IsIP6Enabled ? IPAddress.Any : IPAddress.IPv6Any, 0))
                             .ConfigureAwait(false);
 
                         // Ignore excluded devices/ranges.

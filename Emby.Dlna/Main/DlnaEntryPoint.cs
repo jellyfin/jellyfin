@@ -29,6 +29,7 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Ssdp;
 using NetworkCollection.Udp;
 
 namespace Emby.Dlna.Main
@@ -106,6 +107,7 @@ namespace Emby.Dlna.Main
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
             Instance = this;
 
+            SsdpServer.HostName = _appHost.FriendlyName + SsdpServer.HostName.Substring(2);
             _networkManager.NetworkChanged += NetworkChanged;
         }
 
@@ -149,6 +151,11 @@ namespace Emby.Dlna.Main
         /// Gets a value indicating whether the DLNA server is active.
         /// </summary>
         public bool IsDLNAServerEnabled => _configurationManager.GetDlnaConfiguration().EnableServer;
+
+        /// <summary>
+        /// Gets a value indicating whether DLNA log debugging is enabled.
+        /// </summary>
+        public bool IsDLNADebuggingEnabled => _configurationManager.GetDlnaConfiguration().EnableDebugLog;
 
         /// <summary>
         /// Gets a value indicating whether DLNA PlayTo is enabled.

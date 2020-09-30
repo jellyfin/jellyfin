@@ -35,6 +35,16 @@ namespace MediaBrowser.Common.Net
         NetCollection RemoteAddressFilter { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether iP6 is enabled.
+        /// </summary>
+        public bool IsIP6Enabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether iP4 is enabled.
+        /// </summary>
+        public bool IsIP4Enabled { get; set; }
+
+        /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
         /// <returns>A NetCollection object containing all the interfaces to bind.
