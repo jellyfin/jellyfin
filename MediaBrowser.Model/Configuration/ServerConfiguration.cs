@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 #pragma warning disable CS1591
 #pragma warning disable CA1819
 
@@ -132,6 +132,16 @@ namespace MediaBrowser.Model.Configuration
         public int UDPSendDelay { get; set; } = 100;
 
         /// <summary>
+        /// Gets or sets a value indicating whether address names that match <see cref="VirtualInterfaceNames"/> should be Ignore for the purposes of binding.
+        /// </summary>
+        public bool IgnoreVirtualInterfaces { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating the interfaces that should be ignored. The list can be comma separated. <seealso cref="IgnoreVirtualInterfaces"/>.
+        /// </summary>
+        public string VirtualInterfaceNames { get; set; } = "vEthernet*";
+
+        /// <summary>
         /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
         /// </summary>
         public int GatewayMonitorPeriod { get; set; } = 60;
@@ -216,9 +226,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether quick connect is available for use on this server.
         /// </summary>
         public bool QuickConnectAvailable { get; set; } = false;
-
-        public bool AutoRunWebApp { get; set; } = true;
-
+       
         /// <summary>
         /// Gets or sets a value indicating whether access outside of the LAN is permitted.
         /// </summary>
@@ -419,6 +427,5 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the known proxies.
         /// </summary>
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
-
     }
 }
