@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
+using Emby.Dlna.Common;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -43,7 +44,6 @@ using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Networking.Advertising;
-using Jellyfin.Networking.Dlna;
 using Jellyfin.Networking.Gateway;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.UPnP;
@@ -799,38 +799,6 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                if (plugin is IPluginAssembly assemblyPlugin)
-                {
-                    var assembly = plugin.GetType().Assembly;
-                    var assemblyName = assembly.GetName();
-                    var assemblyFilePath = assembly.Location;
-
-                    var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-
-                    assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
-
-                    try
-                    {
-                        var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-                        if (idAttributes.Length > 0)
-                        {
-                            var attribute = (GuidAttribute)idAttributes[0];
-                            var assemblyId = new Guid(attribute.Value);
-
-                            assemblyPlugin.SetId(assemblyId);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
-                    }
-                }
-
-                if (plugin is IHasPluginConfiguration hasPluginConfiguration)
-                {
-                    hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
-                }
-
                 plugin.RegisterServices(ServiceCollection);
             }
             catch (Exception ex)
@@ -1303,7 +1271,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLoopbackHttpApiUrl()
         {
-            if (NetworkManager.IsIP6Enabled)
+            if (NetManager.IsIP6Enabled)
             {
                 return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
             }

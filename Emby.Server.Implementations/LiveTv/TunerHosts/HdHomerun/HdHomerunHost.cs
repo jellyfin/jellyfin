@@ -733,7 +733,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var response = await udpSocket.ReceiveFromAsync(
                             receiveBuffer,
                             SocketFlags.None,
-                            new IPEndPoint(NetworkManager.IsIP6Enabled ? IPAddress.Any : IPAddress.IPv6Any, 0))
+                            new IPEndPoint(_networkManager.IsIP6Enabled ? IPAddress.Any : IPAddress.IPv6Any, 0))
                             .ConfigureAwait(false);
 
                         // Ignore excluded devices/ranges.

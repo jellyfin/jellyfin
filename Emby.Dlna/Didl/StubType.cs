@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1602
 
-namespace Jellyfin.Networking.Dlna.Didl
+namespace Emby.Dlna.Didl
 {
     /// <summary>
     /// Defines the DLNA item types.

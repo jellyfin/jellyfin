@@ -49,7 +49,7 @@ namespace Jellyfin.Networking.Advertising
             {
                 _udpProcess = UdpHelper.CreateMulticastClients(
                     PortNumber,
-                    networkManager.GetAllBindInterfaces(),
+                    networkManager.GetAllBindInterfaces(true),
                     ProcessMessage,
                     _logger,
                     enableTracing: _config.Configuration.AutoDiscoveryTracing);

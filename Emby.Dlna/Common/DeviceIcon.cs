@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Jellyfin.Networking.Dlna
+namespace Emby.Dlna.Common
 {
     /// <summary>
     /// Defines the <see cref="DeviceIcon" />.

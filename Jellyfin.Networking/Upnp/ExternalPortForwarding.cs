@@ -24,7 +24,7 @@ namespace Jellyfin.Networking.UPnP
         private readonly IGatewayMonitor _gatewayMonitor;
         private readonly object _lock;
         private readonly List<INatDevice> _devices;
-        private bool _disposed;
+        private bool _disposed = false;
         private bool _stopped = true;
         private string _configIdentifier;
 

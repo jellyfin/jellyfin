@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
-namespace Jellyfin.Networking.Dlna
+namespace Emby.Dlna.Common
 {
     /// <summary>
     /// Base class representing the common details of a (root or embedded) device, either to be published or that has been located.

@@ -12,6 +12,7 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
+using NetworkCollection.Udp;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -125,19 +126,19 @@ namespace Jellyfin.Networking.Manager
         public event EventHandler? NetworkChanged;
 
         /// <summary>
-        /// Gets a value indicating whether IP6 is enabled.
+        /// Gets or sets a value indicating whether testing is taking place.
         /// </summary>
-        public static bool IsIP6Enabled { get; internal set; }
+        public static string MockNetworkSettings { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets a value indicating whether IP4 is enabled.
+        /// Gets or sets a value indicating whether IP6 is enabled.
         /// </summary>
-        public static bool IsIP4Enabled { get; internal set; } = true;
+        public bool IsIP6Enabled { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether is multi-socket binding available.
+        /// Gets or sets a value indicating whether IP4 is enabled.
         /// </summary>
-        public static bool EnableMultiSocketBinding { get; internal set; } = true;
+        public bool IsIP4Enabled { get; set; }
 
         /// <inheritdoc/>
         public NetCollection RemoteAddressFilter { get; private set; }
@@ -261,7 +262,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public NetCollection GetAllBindInterfaces()
+        public NetCollection GetAllBindInterfaces(bool individualInterfaces = false)
         {
             lock (_intLock)
             {
@@ -273,6 +274,11 @@ namespace Jellyfin.Networking.Manager
                     {
                         // Return all the interfaces except the ones specifically excluded.
                         return _interfaceAddresses.Exclude(_bindExclusions);
+                    }
+
+                    if (individualInterfaces)
+                    {
+                        return new NetCollection(_interfaceAddresses);
                     }
 
                     // No bind address and no exclusions, so listen on all interfaces.
@@ -301,12 +307,6 @@ namespace Jellyfin.Networking.Manager
         {
             if (!string.IsNullOrEmpty(source))
             {
-                if (string.Equals(source, "chromecast", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Just assign a variable so has source = true;
-                    return GetBindInterface(IPNetAddress.IP4Loopback, out port);
-                }
-
                 if (IPHost.TryParse(source, out IPHost host))
                 {
                     return GetBindInterface(host, out port);
@@ -562,16 +562,18 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public bool TryParseInterface(string token, out IPNetAddress result)
+        public bool TryParseInterface(string token, out NetCollection? result)
         {
+            result = null;
             if (string.IsNullOrEmpty(token))
             {
-                result = IPNetAddress.None;
                 return false;
             }
 
             if (_interfaceNames != null && _interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
             {
+                result = new NetCollection();
+
                 _logger.LogInformation("Interface {0} used in settings. Using its interface addresses.", token);
 
                 // Replace interface tags with the interface IP's.
@@ -581,13 +583,14 @@ namespace Jellyfin.Networking.Manager
                         ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) ||
                          (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
-                        result = iface;
-                        return true;
+                        result.Add(iface);
                     }
                 }
+
+                return true;
             }
 
-            return IPNetAddress.TryParse(token, out result);
+            return false;
         }
 
         /// <summary>
@@ -604,9 +607,27 @@ namespace Jellyfin.Networking.Manager
             IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
-            EnableMultiSocketBinding = config.EnableMultiSocketBinding;
+            UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
-            InitialiseInterfaces();
+            if (string.IsNullOrEmpty(MockNetworkSettings))
+            {
+                InitialiseInterfaces();
+            }
+            else // Used in testing only.
+            {
+                // Format is <IPAddress>,<Index>,<Name>: <next interface>. Set index to -ve to simulate a gateway.
+                var interfaceList = MockNetworkSettings.Split(':');
+                foreach (var details in interfaceList)
+                {
+                    var parts = details.Split(',');
+                    var address = IPNetAddress.Parse(parts[0]);
+                    var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                    address.Tag = index;
+                    _interfaceAddresses.Add(address);
+                    _interfaceNames.Add(parts[2], Math.Abs(index));
+                }
+            }
+
             InitialiseLAN(config);
             InitialiseBind(config);
             InitialiseRemote(config);
@@ -643,7 +664,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="address">Address to convert.</param>
         /// <returns>URI save conversion of the address.</returns>
-        private static string FormatIP6String(IPAddress address)
+        private string FormatIP6String(IPAddress address)
         {
             var str = address.ToString();
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -662,6 +683,40 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
+        /// Checks the string to see if it matches any interface names.
+        /// </summary>
+        /// <param name="token">String to check.</param>
+        /// <param name="index">Interface index number.</param>
+        /// <returns>True if an interface name matches the token.</returns>
+        private bool IsInterface(string token, out int index)
+        {
+            index = -1;
+
+            // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
+            // Null check required here for automated testing.
+            if (_interfaceNames != null && token.Length > 1)
+            {
+                bool partial = token[^1] == '*';
+                if (partial)
+                {
+                    token = token[0..^1];
+                }
+
+                foreach ((string interfc, int interfcIndex) in _interfaceNames)
+                {
+                    if ((!partial && string.Equals(interfc, token, StringComparison.OrdinalIgnoreCase)) ||
+                       (partial && interfc.StartsWith(token, true, CultureInfo.InvariantCulture)))
+                    {
+                        index = interfcIndex;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Parses strings into the collection, replacing any interface references.
         /// </summary>
         /// <param name="col">Collection.</param>
@@ -670,7 +725,7 @@ namespace Jellyfin.Networking.Manager
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
-            if (_interfaceNames != null && _interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
+            if (IsInterface(token, out int index))
             {
                 _logger.LogInformation("Interface {0} used in settings. Using its interface addresses.", token);
 
@@ -782,20 +837,14 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void InitialiseOverrides(ServerConfiguration config)
         {
-            string[] overrides = config.PublishedServerUriBySubnet;
-            if (overrides == null)
-            {
-                lock (_intLock)
-                {
-                    _publishedServerUrls.Clear();
-                }
-
-                return;
-            }
-
             lock (_intLock)
             {
                 _publishedServerUrls.Clear();
+                string[] overrides = config.PublishedServerUriBySubnet;
+                if (overrides == null)
+                {
+                    return;
+                }
 
                 foreach (var entry in overrides)
                 {
@@ -815,9 +864,16 @@ namespace Jellyfin.Networking.Manager
                         {
                             _publishedServerUrls[new IPNetAddress(IPAddress.Any)] = replacement;
                         }
-                        else if (TryParseInterface(parts[0], out IPNetAddress address))
+                        else if (TryParseInterface(parts[0], out NetCollection? addresses) && addresses != null)
                         {
-                            _publishedServerUrls[address] = replacement;
+                            foreach (IPNetAddress na in addresses)
+                            {
+                                _publishedServerUrls[na] = replacement;
+                            }
+                        }
+                        else if (IPNetAddress.TryParse(parts[0], out IPNetAddress result))
+                        {
+                            _publishedServerUrls[result] = replacement;
                         }
                         else
                         {
@@ -840,6 +896,14 @@ namespace Jellyfin.Networking.Manager
             }
 
             // TODO: end fix.
+
+            // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
+            if (config.IgnoreVirtualInterfaces)
+            {
+                var newList = ba.ToList();
+                newList.AddRange(config.VirtualInterfaceNames.Split(',').ToList());
+                ba = newList.ToArray();
+            }
 
             // Read and parse bind addresses and exclusions, removing ones that don't exist.
             _bindAddresses = CreateIPCollection(ba).Union(_interfaceAddresses);

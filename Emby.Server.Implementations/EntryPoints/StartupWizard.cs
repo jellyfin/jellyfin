@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             // Do nothing if the web app is configured to not run automatically
-            if (!_config.Configuration.AutoRunWebApp || _startupOptions.NoAutoRunWebApp)
+            if (_startupOptions.NoAutoRunWebApp)
             {
                 return;
             }

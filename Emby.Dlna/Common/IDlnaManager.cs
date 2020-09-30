@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Networking.Dlna
+namespace Emby.Dlna.Common
 {
     public interface IDlnaManager
     {

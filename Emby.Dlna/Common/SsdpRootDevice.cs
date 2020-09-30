@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using NetworkCollection;
 
-namespace Jellyfin.Networking.Dlna
+namespace Emby.Dlna.Common
 {
     /// <summary>
     /// Represents a 'root' device, a device that has no parent. Used for publishing devices and for the root device in a tree of discovered devices.

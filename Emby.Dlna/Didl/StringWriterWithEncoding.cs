@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace Jellyfin.Networking.Dlna.Didl
+namespace Emby.Dlna.Didl
 {
     /// <summary>
     /// Defines the <see cref="StringWriterWithEncoding" />.

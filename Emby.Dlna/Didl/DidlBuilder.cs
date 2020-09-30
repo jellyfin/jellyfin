@@ -29,7 +29,7 @@ using Season = MediaBrowser.Controller.Entities.TV.Season;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
 using XmlAttribute = MediaBrowser.Model.Dlna.XmlAttribute;
 
-namespace Jellyfin.Networking.Dlna.Didl
+namespace Emby.Dlna.Didl
 {
     /// <summary>
     /// Defines the <see cref="DidlBuilder" />.

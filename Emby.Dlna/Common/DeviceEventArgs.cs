@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Networking.Dlna
+namespace Emby.Dlna.Common
 {
     /// <summary>
     /// Event arguments for the <see cref="SsdpDevice.DeviceAdded"/> and <see cref="SsdpDevice.DeviceRemoved"/> events.

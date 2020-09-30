@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 using System;
 
-namespace Jellyfin.Networking.Dlna
+namespace Emby.Dlna.Common
 {
     /// <summary>
     /// Represents a device that is a descendant of a <see cref="SsdpRootDevice"/> instance.

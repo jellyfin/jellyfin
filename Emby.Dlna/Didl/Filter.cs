@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Networking.Dlna.Didl
+namespace Emby.Dlna.Didl
 {
     /// <summary>
     /// Defines the <see cref="Filter" />.

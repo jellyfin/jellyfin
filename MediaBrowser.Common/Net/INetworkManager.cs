@@ -35,12 +35,23 @@ namespace MediaBrowser.Common.Net
         NetCollection RemoteAddressFilter { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether iP6 is enabled.
+        /// </summary>
+        public bool IsIP6Enabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether iP4 is enabled.
+        /// </summary>
+        public bool IsIP4Enabled { get; set; }
+
+        /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
         /// <returns>A NetCollection object containing all the interfaces to bind.
         /// If all the interfaces are specified, and none are excluded, it returns zero items
         /// to represent any address.</returns>
-        NetCollection GetAllBindInterfaces();
+        /// <param name="individualInterfaces">When false, return <see cref="IPAddress.Any"/> or <see cref="IPAddress.IPv6Any"/> for all interfaces.</param>
+        NetCollection GetAllBindInterfaces(bool individualInterfaces = false);
 
         /// <summary>
         /// Returns a collection containing the loopback interfaces.
@@ -166,9 +177,9 @@ namespace MediaBrowser.Common.Net
         /// eg. "eth1", or "TP-LINK Wireless USB Adapter".
         /// </summary>
         /// <param name="token">Token to parse.</param>
-        /// <param name="result">Resultant object if successful.</param>
+        /// <param name="result">Resultant object's ip addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string token, out IPNetAddress result);
+        bool TryParseInterface(string token, out NetCollection? result);
 
         /// <summary>
         /// Parses an array of strings into a NetCollection.
