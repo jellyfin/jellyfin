@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 #pragma warning disable CS1591
 #pragma warning disable CA1819
 
@@ -111,7 +111,7 @@ namespace MediaBrowser.Model.Configuration
 
         /// <summary>
         /// Gets or sets a value indicating whether detailed ssdp logs are sent to the console/log.
-        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
+        /// "Emby.Dlna": "Debug" must be set in logging.default.json for this property to work.
         /// </summary>
         public bool EnableSSDPTracing { get; set; } = false;
 
@@ -132,12 +132,22 @@ namespace MediaBrowser.Model.Configuration
         public int UDPSendDelay { get; set; } = 100;
 
         /// <summary>
+        /// Gets or sets a value indicating whether address names that match <see cref="VirtualInterfaceNames"/> should be Ignore for the purposes of binding.
+        /// </summary>
+        public bool IgnoreVirtualInterfaces { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating the interfaces that should be ignored. The list can be comma separated. <seealso cref="IgnoreVirtualInterfaces"/>.
+        /// </summary>
+        public string VirtualInterfaceNames { get; set; } = "vEthernet*";
+
+        /// <summary>
         /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
         /// </summary>
         public int GatewayMonitorPeriod { get; set; } = 60;
 
         /// <summary>
-        /// Gets a value indicating whether is multi-socket binding available.
+        /// Gets a value indicating whether multi-socket binding is available.
         /// </summary>
         public bool EnableMultiSocketBinding { get; } = true;
 
@@ -158,7 +168,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets Autodiscovery tracing.
+        /// Gets or sets a value indicating whether Autodiscovery tracing is enabled.
         /// </summary>
         public bool AutoDiscoveryTracing { get; set; } = false;
 
@@ -216,9 +226,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether quick connect is available for use on this server.
         /// </summary>
         public bool QuickConnectAvailable { get; set; } = false;
-
-        public bool AutoRunWebApp { get; set; } = true;
-
+       
         /// <summary>
         /// Gets or sets a value indicating whether access outside of the LAN is permitted.
         /// </summary>
@@ -419,6 +427,5 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the known proxies.
         /// </summary>
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
-
     }
 }
