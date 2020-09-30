@@ -15,14 +15,13 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Common.System;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -45,7 +44,7 @@ namespace Emby.Server.Implementations.Updates
         /// Gets the application host.
         /// </summary>
         /// <value>The application host.</value>
-        private readonly IApplicationHost _applicationHost;
+        private readonly IServerApplicationHost _applicationHost;
 
         private readonly IZipClient _zipClient;
 
@@ -63,7 +62,7 @@ namespace Emby.Server.Implementations.Updates
 
         public InstallationManager(
             ILogger<InstallationManager> logger,
-            IApplicationHost appHost,
+            IServerApplicationHost appHost,
             IApplicationPaths appPaths,
             IHttpClientFactory httpClientFactory,
             IJsonSerializer jsonSerializer,
@@ -237,7 +236,8 @@ namespace Emby.Server.Implementations.Updates
 
         private IEnumerable<InstallationInfo> GetAvailablePluginUpdates(IReadOnlyList<PackageInfo> pluginCatalog)
         {
-            foreach (var plugin in _applicationHost.Plugins)
+            var plugins = _applicationHost.GetLocalPlugins(_appPaths.PluginsPath);
+            foreach (var plugin in plugins)
             {
                 var compatibleVersions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, minVersion: plugin.Version);
                 var version = compatibleVersions.FirstOrDefault(y => y.Version > plugin.Version);
