@@ -5,8 +5,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 using NetworkCollection.Ssdp;
-using NetworkCollection.SSDP;
-using static NetworkCollection.Ssdp.SsdpServer;
 
 namespace Emby.Dlna.PlayTo
 {

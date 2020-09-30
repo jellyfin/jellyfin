@@ -25,7 +25,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.SSDP;
+using NetworkCollection.Ssdp;
 using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Dlna.PlayTo

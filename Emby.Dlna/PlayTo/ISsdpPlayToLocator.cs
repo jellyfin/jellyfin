@@ -1,5 +1,5 @@
 using System;
-using NetworkCollection.SSDP;
+using NetworkCollection.Ssdp;
 
 namespace Emby.Dlna.PlayTo
 {

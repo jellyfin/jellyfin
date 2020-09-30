@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo.EventArgs;
-using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -19,12 +18,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.SSDP;
+using NetworkCollection.Ssdp;
 
 namespace Emby.Dlna.PlayTo
 {
