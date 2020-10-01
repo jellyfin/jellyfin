@@ -15,25 +15,42 @@ namespace Jellyfin.Api.ModelBinders
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-            var input = valueProviderResult.FirstValue;
             var elementType = bindingContext.ModelType.GetElementType();
+            var converter = TypeDescriptor.GetConverter(elementType);
 
-            if (input != null)
+            if (valueProviderResult.Length > 1)
             {
-                var converter = TypeDescriptor.GetConverter(elementType);
-                var values = Array.ConvertAll(
-                    input.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                    x => { return converter.ConvertFromString(x != null ? x.Trim() : x); });
+                var result = Array.CreateInstance(elementType, valueProviderResult.Length);
 
-                var typedValues = Array.CreateInstance(elementType, values.Length);
-                values.CopyTo(typedValues, 0);
+                for (int i = 0; i < valueProviderResult.Length; i++)
+                {
+                    var value = converter.ConvertFromString(valueProviderResult.Values[i].Trim());
 
-                bindingContext.Result = ModelBindingResult.Success(typedValues);
+                    result.SetValue(value, i);
+                }
+
+                bindingContext.Result = ModelBindingResult.Success(result);
             }
             else
             {
-                var emptyResult = Array.CreateInstance(elementType, 0);
-                bindingContext.Result = ModelBindingResult.Success(emptyResult);
+                var value = valueProviderResult.FirstValue;
+
+                if (value != null)
+                {
+                    var values = Array.ConvertAll(
+                        value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
+                        x => { return converter.ConvertFromString(x != null ? x.Trim() : x); });
+
+                    var typedValues = Array.CreateInstance(elementType, values.Length);
+                    values.CopyTo(typedValues, 0);
+
+                    bindingContext.Result = ModelBindingResult.Success(typedValues);
+                }
+                else
+                {
+                    var emptyResult = Array.CreateInstance(elementType, 0);
+                    bindingContext.Result = ModelBindingResult.Success(emptyResult);
+                }
             }
 
             return Task.CompletedTask;
