@@ -758,7 +758,6 @@ namespace Emby.Server.Implementations
             BaseItem.FileSystem = _fileSystemManager;
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
-            TaskMethods.ConfigurationManager = ServerConfigurationManager;
             Video.LiveTvManager = Resolve<ILiveTvManager>();
             Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = Resolve<ITVSeriesManager>();

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
@@ -35,45 +36,16 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        /// <summary>
-        /// Contains constants used when reporting scan progress.
-        /// </summary>
-        private static class ProgressHelpers
-        {
-            /// <summary>
-            /// Reported after the folders immediate children are retrieved.
-            /// </summary>
-            public const int RetrievedChildren = 5;
+        private static Lazy<SemaphoreSlim> _metadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => {
+            var concurrency = ConfigurationManager.Configuration.LibraryMetadataRefreshConcurrency;
 
-            /// <summary>
-            /// Reported after add, updating, or deleting child items from the LibraryManager.
-            /// </summary>
-            public const int UpdatedChildItems = 10;
-
-            /// <summary>
-            /// Reported once subfolders are scanned.
-            /// When scanning subfolders, the progress will be between [UpdatedItems, ScannedSubfolders].
-            /// </summary>
-            public const int ScannedSubfolders = 50;
-
-            /// <summary>
-            /// Reported once metadata is refreshed.
-            /// When refreshing metadata, the progress will be between [ScannedSubfolders, MetadataRefreshed].
-            /// </summary>
-            public const int RefreshedMetadata = 100;
-
-            /// <summary>
-            /// Gets the current progress given the previous step, next step, and progress in between.
-            /// </summary>
-            /// <param name="previousProgressStep">The previous progress step.</param>
-            /// <param name="nextProgressStep">The next progress step.</param>
-            /// <param name="currentProgress">The current progress step.</param>
-            /// <returns>The progress.</returns>
-            public static double GetProgress(int previousProgressStep, int nextProgressStep, double currentProgress)
+            if (concurrency <= 0)
             {
-                return previousProgressStep + ((nextProgressStep - previousProgressStep) * (currentProgress / 100));
+                concurrency = Environment.ProcessorCount;
             }
-        }
+
+            return new SemaphoreSlim(concurrency);
+        });
 
         public static IUserViewManager UserViewManager { get; set; }
 
@@ -508,19 +480,17 @@ namespace MediaBrowser.Controller.Entities
 
         private Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var progressableTasks = children
-                .Select<BaseItem, Func<IProgress<double>, Task>>(child =>
-                    innerProgress => RefreshChildMetadata(child, refreshOptions, recursive && child.IsFolder, innerProgress, cancellationToken))
-                .ToList();
-
-            return RunTasks(progressableTasks, progress, cancellationToken);
+            return RunTasks(
+                (baseItem, innerProgress) => RefreshChildMetadata(baseItem, refreshOptions, recursive && baseItem.IsFolder, innerProgress, cancellationToken),
+                children,
+                progress,
+                cancellationToken);
         }
 
         private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // limit the amount of concurrent metadata refreshes
-            await TaskMethods.RunThrottled(
-                TaskMethods.SharedThrottleId.RefreshMetadata,
+            await RunMetadataRefresh(
                 async () =>
                 {
                     var series = container as Series;
@@ -547,8 +517,7 @@ namespace MediaBrowser.Controller.Entities
                 if (refreshOptions.RefreshItem(child))
                 {
                     // limit the amount of concurrent metadata refreshes
-                    await TaskMethods.RunThrottled(
-                        TaskMethods.SharedThrottleId.RefreshMetadata,
+                    await RunMetadataRefresh(
                         async () => await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false),
                         cancellationToken).ConfigureAwait(false);
                 }
@@ -570,38 +539,33 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         private Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var progressableTasks = children
-                .Select<Folder, Func<IProgress<double>, Task>>(child =>
-                    innerProgress => child.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService))
-                .ToList();
-
-            return RunTasks(progressableTasks, progress, cancellationToken);
+            return RunTasks(
+                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService),
+                children,
+                progress,
+                cancellationToken);
         }
 
         /// <summary>
-        /// Runs a set of tasks concurrently with progress.
+        /// Runs an action block on a list of children.
         /// </summary>
-        /// <param name="tasks">A list of tasks.</param>
+        /// <param name="task">The task to run for each child.</param>
+        /// <param name="children">The list of children.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task RunTasks(IList<Func<IProgress<double>, Task>> tasks, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task RunTasks<T>(Func<T, IProgress<double>, Task> task, IList<T> children, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var childrenCount = tasks.Count;
+            var childrenCount = children.Count;
             var childrenProgress = new double[childrenCount];
-            var actions = new Func<Task>[childrenCount];
 
             void UpdateProgress()
             {
                 progress.Report(childrenProgress.Average());
             }
 
-            for (var i = 0; i < childrenCount; i++)
-            {
-                var childIndex = i;
-                var child = tasks[childIndex];
-
-                actions[childIndex] = async () =>
+            var actionBlock = new ActionBlock<int>(
+                async i =>
                 {
                     var innerProgress = new ActionableProgress<double>();
 
@@ -609,22 +573,33 @@ namespace MediaBrowser.Controller.Entities
                     {
                         // round the percent and only update progress if it changed to prevent excessive UpdateProgress calls
                         var innerPercentRounded = Math.Round(innerPercent);
-                        if (childrenProgress[childIndex] != innerPercentRounded)
+                        if (childrenProgress[i] != innerPercentRounded)
                         {
-                            childrenProgress[childIndex] = innerPercentRounded;
+                            childrenProgress[i] = innerPercentRounded;
                             UpdateProgress();
                         }
                     });
 
-                    await tasks[childIndex](innerProgress).ConfigureAwait(false);
+                    await task(children[i], innerProgress).ConfigureAwait(false);
 
-                    childrenProgress[childIndex] = 100;
+                    childrenProgress[i] = 100;
 
                     UpdateProgress();
-                };
+                },
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency,
+                    CancellationToken = cancellationToken,
+                });
+
+            for (var i = 0; i < childrenCount; i++)
+            {
+                actionBlock.Post(i);
             }
 
-            await TaskMethods.WhenAllThrottled(TaskMethods.SharedThrottleId.ScanFanout, actions, cancellationToken).ConfigureAwait(false);
+            actionBlock.Complete();
+
+            await actionBlock.Completion.ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1272,6 +1247,26 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
+        /// <summary>
+        /// Runs multiple metadata refreshes concurrently.
+        /// </summary>
+        /// <param name="action">The action to run.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        private static async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
+        {
+            await _metadataRefreshThrottler.Value.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                _metadataRefreshThrottler.Value.Release();
+            }
+        }
+
         public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             if (user == null)
@@ -1817,6 +1812,46 @@ namespace MediaBrowser.Controller.Entities
                 {
                     dto.Played = (dto.UnplayedItemCount ?? 0) == 0;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Contains constants used when reporting scan progress.
+        /// </summary>
+        private static class ProgressHelpers
+        {
+            /// <summary>
+            /// Reported after the folders immediate children are retrieved.
+            /// </summary>
+            public const int RetrievedChildren = 5;
+
+            /// <summary>
+            /// Reported after add, updating, or deleting child items from the LibraryManager.
+            /// </summary>
+            public const int UpdatedChildItems = 10;
+
+            /// <summary>
+            /// Reported once subfolders are scanned.
+            /// When scanning subfolders, the progress will be between [UpdatedItems, ScannedSubfolders].
+            /// </summary>
+            public const int ScannedSubfolders = 50;
+
+            /// <summary>
+            /// Reported once metadata is refreshed.
+            /// When refreshing metadata, the progress will be between [ScannedSubfolders, MetadataRefreshed].
+            /// </summary>
+            public const int RefreshedMetadata = 100;
+
+            /// <summary>
+            /// Gets the current progress given the previous step, next step, and progress in between.
+            /// </summary>
+            /// <param name="previousProgressStep">The previous progress step.</param>
+            /// <param name="nextProgressStep">The next progress step.</param>
+            /// <param name="currentProgress">The current progress step.</param>
+            /// <returns>The progress.</returns>
+            public static double GetProgress(int previousProgressStep, int nextProgressStep, double currentProgress)
+            {
+                return previousProgressStep + ((nextProgressStep - previousProgressStep) * (currentProgress / 100));
             }
         }
     }
