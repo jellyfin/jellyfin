@@ -272,6 +272,16 @@ namespace MediaBrowser.Model.Configuration
         public string[] KnownProxies { get; set; }
 
         /// <summary>
+        /// Gets or sets the how the library scan fans out.
+        /// </summary>
+        public int LibraryScanFanoutConcurrency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the how many metadata refreshes can run concurrently.
+        /// </summary>
+        public int LibraryMetadataRefreshConcurrency { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -381,6 +391,8 @@ namespace MediaBrowser.Model.Configuration
             SlowResponseThresholdMs = 500;
             CorsHosts = new[] { "*" };
             KnownProxies = Array.Empty<string>();
+            LibraryMetadataRefreshConcurrency = 0;
+            LibraryScanFanoutConcurrency = 0;
         }
     }
 
