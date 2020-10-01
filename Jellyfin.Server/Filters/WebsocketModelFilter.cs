@@ -24,7 +24,7 @@ namespace Jellyfin.Server.Filters
             context.SchemaGenerator.GenerateSchema(typeof(SendCommand), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(GeneralCommandType), context.SchemaRepository);
 
-            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<>), context.SchemaRepository);
+            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<object>), context.SchemaRepository);
         }
     }
 }
