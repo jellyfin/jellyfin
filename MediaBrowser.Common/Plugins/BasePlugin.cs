@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -150,20 +151,13 @@ namespace MediaBrowser.Common.Plugins
 
                 assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
 
-                try
+                var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
+                if (idAttributes.Length > 0)
                 {
-                    var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-                    if (idAttributes.Length > 0)
-                    {
-                        var attribute = (GuidAttribute)idAttributes[0];
-                        var assemblyId = new Guid(attribute.Value);
+                    var attribute = (GuidAttribute)idAttributes[0];
+                    var assemblyId = new Guid(attribute.Value);
 
-                        assemblyPlugin.SetId(assemblyId);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
+                    assemblyPlugin.SetId(assemblyId);
                 }
             }
 
