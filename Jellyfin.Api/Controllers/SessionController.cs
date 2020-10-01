@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -366,7 +367,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="id">The session id.</param>
         /// <param name="playableMediaTypes">A list of playable media types, comma delimited. Audio, Video, Book, Photo.</param>
-        /// <param name="supportedCommands">A list of supported remote control commands.</param>
+        /// <param name="supportedCommands">A list of supported remote control commands, comma delimited.</param>
         /// <param name="supportsMediaControl">Determines whether media can be played remotely..</param>
         /// <param name="supportsSync">Determines whether sync is supported.</param>
         /// <param name="supportsPersistentIdentifier">Determines whether the device supports a unique identifier.</param>
@@ -378,7 +379,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult PostCapabilities(
             [FromQuery] string? id,
             [FromQuery] string? playableMediaTypes,
-            [FromQuery] GeneralCommandType[] supportedCommands,
+            [FromQuery][ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
             [FromQuery] bool supportsSync = false,
             [FromQuery] bool supportsPersistentIdentifier = true)
