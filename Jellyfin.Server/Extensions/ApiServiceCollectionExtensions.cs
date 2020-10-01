@@ -260,6 +260,7 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.OperationFilter<FileResponseFilter>();
+                c.DocumentFilter<WebsocketModelFilter>();
             });
         }
 
