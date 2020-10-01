@@ -19,13 +19,12 @@ namespace Jellyfin.Server.Filters
             context.SchemaGenerator.GenerateSchema(typeof(LibraryUpdateInfo), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(IPlugin), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(PlayRequest), context.SchemaRepository);
+            context.SchemaGenerator.GenerateSchema(typeof(PlaystateRequest), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(TimerEventInfo), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(SendCommand), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(GeneralCommandType), context.SchemaRepository);
 
-            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<string>), context.SchemaRepository);
-            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<PlayRequest>), context.SchemaRepository);
-            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<long>), context.SchemaRepository);
+            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<>), context.SchemaRepository);
         }
     }
 }
