@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
         private readonly List<BaseItem> _itemsRemoved = new List<BaseItem>();
         private readonly List<BaseItem> _itemsUpdated = new List<BaseItem>();
-        private readonly Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
+        private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new ConcurrentDictionary<Guid, DateTime>();
 
         public LibraryChangedNotifier(
             ILibraryManager libraryManager,
@@ -97,7 +98,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
             }
 
-            _lastProgressMessageTimes[item.Id] = DateTime.UtcNow;
+            _lastProgressMessageTimes.AddOrUpdate(item.Id, key => DateTime.UtcNow, (key, existing) => DateTime.UtcNow);
 
             var dict = new Dictionary<string, string>();
             dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
@@ -139,6 +140,8 @@ namespace Emby.Server.Implementations.EntryPoints
         private void OnProviderRefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
         {
             OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
+
+            _lastProgressMessageTimes.TryRemove(e.Argument.Id, out DateTime removed);
         }
 
         private static bool EnableRefreshMessage(BaseItem item)
