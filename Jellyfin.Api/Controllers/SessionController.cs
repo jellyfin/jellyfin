@@ -366,7 +366,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="id">The session id.</param>
         /// <param name="playableMediaTypes">A list of playable media types, comma delimited. Audio, Video, Book, Photo.</param>
-        /// <param name="supportedCommands">A list of supported remote control commands, comma delimited.</param>
+        /// <param name="supportedCommands">A list of supported remote control commands.</param>
         /// <param name="supportsMediaControl">Determines whether media can be played remotely..</param>
         /// <param name="supportsSync">Determines whether sync is supported.</param>
         /// <param name="supportsPersistentIdentifier">Determines whether the device supports a unique identifier.</param>
@@ -378,7 +378,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult PostCapabilities(
             [FromQuery] string? id,
             [FromQuery] string? playableMediaTypes,
-            [FromQuery] string? supportedCommands,
+            [FromQuery] GeneralCommandType[] supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
             [FromQuery] bool supportsSync = false,
             [FromQuery] bool supportsPersistentIdentifier = true)
@@ -391,7 +391,7 @@ namespace Jellyfin.Api.Controllers
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
             {
                 PlayableMediaTypes = RequestHelpers.Split(playableMediaTypes, ',', true),
-                SupportedCommands = RequestHelpers.Split(supportedCommands, ',', true),
+                SupportedCommands = supportedCommands == null ? Array.Empty<GeneralCommandType>() : supportedCommands,
                 SupportsMediaControl = supportsMediaControl,
                 SupportsSync = supportsSync,
                 SupportsPersistentIdentifier = supportsPersistentIdentifier
