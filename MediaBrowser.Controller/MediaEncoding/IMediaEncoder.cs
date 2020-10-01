@@ -62,14 +62,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Extracts the video image.
         /// </summary>
-        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
 
-        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
-        Task ExtractVideoImagesOnInterval(string[] inputFiles,
+        Task ExtractVideoImagesOnInterval(string inputFile,
             string container,
             MediaStream videoStream,
             MediaSourceInfo mediaSource,
@@ -91,10 +91,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the input argument.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
+        /// <param name="inputFile">The input file.</param>
         /// <param name="mediaSource">The mediaSource.</param>
         /// <returns>System.String.</returns>
-        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource);
+        string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
 
         /// <summary>
         /// Gets the time parameter.

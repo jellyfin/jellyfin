@@ -168,18 +168,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            string[] inputFiles;
-
-            if (mediaSource.VideoType.HasValue
-                && (mediaSource.VideoType.Value == VideoType.BluRay || mediaSource.VideoType.Value == VideoType.Dvd))
-            {
-                var mediaSourceItem = (Video)_libraryManager.GetItemById(new Guid(mediaSource.Id));
-                inputFiles = mediaSourceItem.GetPlayableStreamFileNames();
-            }
-            else
-            {
-                inputFiles = new[] { mediaSource.Path };
-            }
+            var inputFile = mediaSource.Path;
 
             var protocol = mediaSource.Protocol;
             if (subtitleStream.IsExternal)
@@ -187,7 +176,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path);
             }
 
-            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource, subtitleStream, cancellationToken).ConfigureAwait(false);
+            var fileInfo = await GetReadableFile(mediaSource.Path, inputFile, mediaSource, subtitleStream, cancellationToken).ConfigureAwait(false);
 
             var stream = await GetSubtitleStream(fileInfo.Path, fileInfo.Protocol, fileInfo.IsExternal, cancellationToken).ConfigureAwait(false);
 
@@ -220,7 +209,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private async Task<SubtitleInfo> GetReadableFile(
             string mediaPath,
-            string[] inputFiles,
+            string inputFile,
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
@@ -254,7 +243,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 // Extract
                 var outputPath = GetSubtitleCachePath(mediaPath, mediaSource, subtitleStream.Index, "." + outputFormat);
 
-                await ExtractTextSubtitle(inputFiles, mediaSource, subtitleStream.Index, outputCodec, outputPath, cancellationToken)
+                await ExtractTextSubtitle(inputFile, mediaSource, subtitleStream.Index, outputCodec, outputPath, cancellationToken)
                         .ConfigureAwait(false);
 
                 return new SubtitleInfo(outputPath, MediaProtocol.File, outputFormat, false);
@@ -515,7 +504,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <summary>
         /// Extracts the text subtitle.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
+        /// <param name="inputFile">The input file.</param>
         /// <param name="mediaSource">The mediaSource.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
         /// <param name="outputCodec">The output codec.</param>
@@ -524,7 +513,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentException">Must use inputPath list overload.</exception>
         private async Task ExtractTextSubtitle(
-            string[] inputFiles,
+            string inputFile,
             MediaSourceInfo mediaSource,
             int subtitleStreamIndex,
             string outputCodec,
@@ -540,7 +529,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 if (!File.Exists(outputPath))
                 {
                     await ExtractTextSubtitleInternal(
-                        _mediaEncoder.GetInputArgument(inputFiles, mediaSource),
+                        _mediaEncoder.GetInputArgument(inputFile, mediaSource),
                         subtitleStreamIndex,
                         outputCodec,
                         outputPath,

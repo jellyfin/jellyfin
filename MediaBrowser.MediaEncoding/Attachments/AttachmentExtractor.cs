@@ -121,7 +121,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 if (!File.Exists(outputPath))
                 {
                     await ExtractAttachmentInternal(
-                        _mediaEncoder.GetInputArgument(new[] { inputFile }, mediaSource),
+                        _mediaEncoder.GetInputArgument(inputFile, mediaSource),
                         attachmentStreamIndex,
                         outputPath,
                         cancellationToken).ConfigureAwait(false);

@@ -143,26 +143,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
 
-        public string[] GetPlayableStreamFileNames()
-        {
-            var videoType = VideoType;
-
-            if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.BluRay)
-            {
-                videoType = VideoType.BluRay;
-            }
-            else if (videoType == VideoType.Iso && IsoType == Model.Entities.IsoType.Dvd)
-            {
-                videoType = VideoType.Dvd;
-            }
-            else
-            {
-                return Array.Empty<string>();
-            }
-
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Gets or sets the aspect ratio.
         /// </summary>
@@ -413,31 +393,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return updateType;
-        }
-
-        public static string[] QueryPlayableStreamFiles(string rootPath, VideoType videoType)
-        {
-            if (videoType == VideoType.Dvd)
-            {
-                return FileSystem.GetFiles(rootPath, new[] { ".vob" }, false, true)
-                    .OrderByDescending(i => i.Length)
-                    .ThenBy(i => i.FullName)
-                    .Take(1)
-                    .Select(i => i.FullName)
-                    .ToArray();
-            }
-
-            if (videoType == VideoType.BluRay)
-            {
-                return FileSystem.GetFiles(rootPath, new[] { ".m2ts" }, false, true)
-                    .OrderByDescending(i => i.Length)
-                    .ThenBy(i => i.FullName)
-                    .Take(1)
-                    .Select(i => i.FullName)
-                    .ToArray();
-            }
-
-            return Array.Empty<string>();
         }
 
         /// <summary>

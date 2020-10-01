@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                             // Add some time for the first chapter to make sure we don't end up with a black image
                             var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(_firstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
 
-                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, Array.Empty<string>());
+                            var inputPath = video.Path;
 
                             Directory.CreateDirectory(Path.GetDirectoryName(path));
 

@@ -1,46 +1,35 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     public static class EncodingUtils
     {
-        public static string GetInputArgument(string inputPrefix, IReadOnlyList<string> inputFiles, MediaProtocol protocol)
+        public static string GetInputArgument(string inputPrefix, string inputFile, MediaProtocol protocol)
         {
             if (protocol != MediaProtocol.File)
             {
-                var url = inputFiles[0];
-
-                return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", url);
+                return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", inputFile);
             }
 
-            return GetConcatInputArgument(inputFiles, inputPrefix);
+            return GetConcatInputArgument(inputFile, inputPrefix);
         }
 
         /// <summary>
         /// Gets the concat input argument.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
+        /// <param name="inputFile">The input file.</param>
         /// <param name="inputPrefix">The input prefix.</param>
         /// <returns>System.String.</returns>
-        private static string GetConcatInputArgument(IReadOnlyList<string> inputFiles, string inputPrefix)
+        private static string GetConcatInputArgument(string inputFile, string inputPrefix)
         {
             // Get all streams
             // If there's more than one we'll need to use the concat command
-            if (inputFiles.Count > 1)
-            {
-                var files = string.Join("|", inputFiles.Select(NormalizePath));
-
-                return string.Format(CultureInfo.InvariantCulture, "concat:\"{0}\"", files);
-            }
-
             // Determine the input path for video files
-            return GetFileInputArgument(inputFiles[0], inputPrefix);
+            return GetFileInputArgument(inputFile, inputPrefix);
         }
 
         /// <summary>
