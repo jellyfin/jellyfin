@@ -17,13 +17,11 @@ jobs:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download OpenAPI Spec Artifact'
       inputs:
-        source: "specific"
+        source: 'current'
         artifact: "OpenAPI Spec"
-        path: "$(System.ArtifactsDirectory)/openapi"
-        project: "$(System.TeamProjectId)"
-        pipeline: "29" # The main server CI build
-        runVersion: "latestFromBranch"
-        runBranch: "refs/heads/$(System.PullRequest.TargetBranch)"
+        path: "$(System.ArtifactsDirectory)/openapispec"
+        runVersion: "latest"
+        dependsOn: Test
 
     - task: CmdLine@2
     displayName: 'Download OpenApi Generator'
@@ -68,5 +66,5 @@ jobs:
     inputs:
       command: publish
       publishRegistry: useExternalRegistry
-      publishEndpoint: 
+      publishEndpoint:
       workingDir: ./apiclient/generated/typescript/axios
