@@ -392,7 +392,7 @@ namespace Jellyfin.Api.Controllers
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
             {
                 PlayableMediaTypes = RequestHelpers.Split(playableMediaTypes, ',', true),
-                SupportedCommands = supportedCommands == null ? Array.Empty<GeneralCommandType>() : supportedCommands,
+                SupportedCommands = supportedCommands,
                 SupportsMediaControl = supportsMediaControl,
                 SupportsSync = supportsSync,
                 SupportsPersistentIdentifier = supportsPersistentIdentifier

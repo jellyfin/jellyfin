@@ -39,7 +39,7 @@ namespace Jellyfin.Api.ModelBinders
                 {
                     var values = Array.ConvertAll(
                         value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                        x => { return converter.ConvertFromString(x != null ? x.Trim() : x); });
+                        x => converter.ConvertFromString(x?.Trim()));
 
                     var typedValues = Array.CreateInstance(elementType, values.Length);
                     values.CopyTo(typedValues, 0);
