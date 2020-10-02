@@ -6,4 +6,4 @@ java -jar openapi-generator-cli.jar generate \
     --output ./apiclient/generated/typescript/axios  \
     --template-dir ./apiclient/templates/typescript/axios \
     --ignore-file-override ./apiclient/.openapi-generator-ignore \
-    --additional-properties=useSingleRequestParameter="true",npmName="axios"
+    --additional-properties=useSingleRequestParameter="true",withSeparateModelsAndApi="true",npmName="axios"
