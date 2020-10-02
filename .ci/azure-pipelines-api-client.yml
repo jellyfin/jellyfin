@@ -38,7 +38,7 @@ jobs:
     displayName: 'Build unstable typescript axios client'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
-      script: 'bash ./apiclient/templates/typescript/unstable.sh axios'
+      script: 'bash ./apiclient/templates/typescript/axios/unstable.sh'
 
     - task: Npm@1
     displayName: 'Publish unstable typescript axios client'
@@ -58,7 +58,7 @@ jobs:
     displayName: 'Build stable typescript axios client'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
-      script: 'bash ./apiclient/templates/typescript/stable.sh axios'
+      script: 'bash ./apiclient/templates/typescript/axios/stable.sh'
 
     - task: Npm@1
     displayName: 'Publish stable typescript axios client'
