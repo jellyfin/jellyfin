@@ -394,6 +394,50 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
+        public void HandleWebRTC(SessionInfo session, WebRTCGroupRequest request, CancellationToken cancellationToken)
+        {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request is null!");
+            }
+
+            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
+            {
+                // Group lock required as Group is not thread-safe.
+                lock (group)
+                {
+                    // Make sure that session still belongs to this group.
+                    if (_sessionToGroupMap.TryGetValue(session.Id, out var checkGroup) && !checkGroup.GroupId.Equals(group.GroupId))
+                    {
+                        // Drop request.
+                        return;
+                    }
+
+                    // Drop message if group is empty.
+                    if (group.IsGroupEmpty())
+                    {
+                        return;
+                    }
+
+                    // Handle WebRTC signaling message.
+                    group.HandleWebRTC(session, request, cancellationToken);
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
+
+                var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
+                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+            }
+        }
+
+        /// <inheritdoc />
         public bool IsUserActive(Guid userId)
         {
             if (_activeUsers.TryGetValue(userId, out var sessionsCounter))

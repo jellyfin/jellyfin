@@ -465,5 +465,29 @@ namespace Jellyfin.Api.Controllers
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
+
+        /// <summary>
+        /// Request related to WebRTC signaling in SyncPlay group.
+        /// </summary>
+        /// <param name="requestData">The WebRTC message.</param>
+        /// <response code="204">Message has been forwarded.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("WebRTC")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+        public ActionResult SyncPlayWebRTC(
+            [FromBody, Required] WebRTCRequestDto requestData)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new WebRTCGroupRequest(
+                requestData.To,
+                requestData.NewSession ?? false,
+                requestData.SessionLeaving ?? false,
+                requestData.ICECandidate,
+                requestData.Offer,
+                requestData.Answer);
+            _syncPlayManager.HandleWebRTC(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
     }
 }

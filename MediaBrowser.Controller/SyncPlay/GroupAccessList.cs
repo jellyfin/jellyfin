@@ -52,7 +52,8 @@ namespace Emby.Server.Implementations.SyncPlay
             PlaybackRequestType.Buffer,
             PlaybackRequestType.Ready,
             PlaybackRequestType.Ping,
-            PlaybackRequestType.IgnoreWait
+            PlaybackRequestType.IgnoreWait,
+            PlaybackRequestType.WebRTC
         };
 
         /// <summary>

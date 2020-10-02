@@ -430,6 +430,11 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             _state.SessionLeaving(this, _state.Type, session, cancellationToken);
 
+            // Notify WebRTC peers
+            var webRTCUpdate = new WebRTCUpdate(session.Id, false, true, string.Empty, string.Empty, string.Empty);
+            var webRTCGroupUpdate = NewSyncPlayGroupUpdate(GroupUpdateType.WebRTC, webRTCUpdate);
+            SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, webRTCGroupUpdate, cancellationToken);
+
             RemoveSession(session);
 
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupLeft, GroupId.ToString());
@@ -510,6 +515,38 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             var items = PlayQueue.GetPlaylist().Select(item => item.ItemId).ToList();
             return HasAccessToQueue(user, items);
+        }
+
+        /// <summary>
+        /// Handles a WebRTC related message sent by a session.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The requested action.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public void HandleWebRTC(SessionInfo session, WebRTCGroupRequest request, CancellationToken cancellationToken)
+        {
+            var webRTCUpdate = new WebRTCUpdate(
+                session.Id,
+                request.NewSession,
+                request.SessionLeaving,
+                request.ICECandidate,
+                request.Offer,
+                request.Answer);
+
+            var groupUpdate = NewSyncPlayGroupUpdate(GroupUpdateType.WebRTC, webRTCUpdate);
+            if (string.IsNullOrEmpty(request.To))
+            {
+                SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, groupUpdate, cancellationToken);
+            }
+            else if (_participants.ContainsKey(request.To))
+            {
+                var toSession = _participants[request.To].Session;
+                SendGroupUpdate(toSession, SyncPlayBroadcastType.CurrentSession, groupUpdate, cancellationToken);
+            }
+            else
+            {
+                _logger.LogWarning("Cannot send WebRTC message from session {SessionId} in group {GroupId}. Recipient {Recipient} not found.", session.Id, GroupId.ToString(), request.To);
+            }
         }
 
         /// <inheritdoc />
