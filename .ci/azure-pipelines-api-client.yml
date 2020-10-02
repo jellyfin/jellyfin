@@ -30,10 +30,6 @@ jobs:
 
 # Generate npm api client
 # Unstable
-    - task: npmAuthenticate@0
-    displayName: 'Authenticate to unstable npm feed'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
-
     - task: CmdLine@2
     displayName: 'Build unstable typescript axios client'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
@@ -46,14 +42,10 @@ jobs:
     inputs:
       command: publish
       publishRegistry: useFeed
-      publishFeed: jellyfin/unstable
+      publishFeed: unstable
       workingDir: ./apiclient/generated/typescript/axios
 
 # Stable
-    - task: npmAuthenticate@0
-    displayName: 'Authenticate to stable npm feed'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-
     - task: CmdLine@2
     displayName: 'Build stable typescript axios client'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
@@ -66,5 +58,5 @@ jobs:
     inputs:
       command: publish
       publishRegistry: useExternalRegistry
-      publishEndpoint:
+      publishEndpoint: 'jellyfin-bot for NPM'
       workingDir: ./apiclient/generated/typescript/axios
