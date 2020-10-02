@@ -379,7 +379,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult PostCapabilities(
             [FromQuery] string? id,
             [FromQuery] string? playableMediaTypes,
-            [FromQuery][ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
+            [FromQuery] GeneralCommandType[] supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
             [FromQuery] bool supportsSync = false,
             [FromQuery] bool supportsPersistentIdentifier = true)
