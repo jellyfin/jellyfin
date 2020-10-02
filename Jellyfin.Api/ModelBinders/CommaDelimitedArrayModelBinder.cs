@@ -18,6 +18,11 @@ namespace Jellyfin.Api.ModelBinders
             var elementType = bindingContext.ModelType.GetElementType();
             var converter = TypeDescriptor.GetConverter(elementType);
 
+            if (valueProviderResult == ValueProviderResult.None)
+            {
+                return Task.CompletedTask;
+            }
+
             if (valueProviderResult.Length > 1)
             {
                 var result = Array.CreateInstance(elementType, valueProviderResult.Length);
