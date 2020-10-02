@@ -34,6 +34,12 @@ jobs:
         Linux: 'ubuntu-latest'
         Windows: 'windows-latest'
         macOS: 'macos-latest'
+        
+- ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
+  - template: azure-pipelines-test.yml
+    parameters:
+      ImageNames:
+        Linux: 'ubuntu-latest'
 
 - ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
   - template: azure-pipelines-abi.yml
