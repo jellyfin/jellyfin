@@ -770,6 +770,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _plugins = GetExports<IPlugin>()
+                        .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
 
@@ -1540,7 +1541,6 @@ namespace Emby.Server.Implementations
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {
             var assemblies = _allConcreteTypes
-                .Select(LoadPlugin)
                 .Where(i => typeof(ControllerBase).IsAssignableFrom(i))
                 .Select(i => i.Assembly)
                 .Distinct();
