@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Test.
+    /// A library post scan/refresh task for pre-fetching remote images.
     /// </summary>
     public class ImageFetcherPostScanTask : ILibraryPostScanTask
     {
