@@ -55,10 +55,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            // TODO include image language
             movie = await _tmDbClient.GetMovieAsync(
                 tmdbId,
                 TmdbUtils.NormalizeLanguage(language),
+                imageLanguages,
                 MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Keywords | MovieMethods.Videos,
                 cancellationToken).ConfigureAwait(false);
 
@@ -121,10 +121,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            // TODO include image language
             series = await _tmDbClient.GetTvShowAsync(
                 tmdbId,
                 language: TmdbUtils.NormalizeLanguage(language),
+                includeImageLanguage: imageLanguages,
                 extraMethods: TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.Keywords | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -155,11 +155,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            // TODO include image language
             season = await _tmDbClient.GetTvSeasonAsync(
                 tvShowId,
                 seasonNumber,
                 language: TmdbUtils.NormalizeLanguage(language),
+                includeImageLanguage: imageLanguages,
                 extraMethods: TvSeasonMethods.Credits | TvSeasonMethods.Images | TvSeasonMethods.ExternalIds | TvSeasonMethods.Videos,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -191,12 +191,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            // TODO include image language
             episode = await _tmDbClient.GetTvEpisodeAsync(
                 tvShowId,
                 seasonNumber,
                 episodeNumber,
                 language: TmdbUtils.NormalizeLanguage(language),
+                includeImageLanguage: imageLanguages,
                 extraMethods: TvEpisodeMethods.Credits | TvEpisodeMethods.Images | TvEpisodeMethods.ExternalIds | TvEpisodeMethods.Videos,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -259,10 +259,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            // TODO language
             result = await _tmDbClient.FindAsync(
                 source,
                 externalId,
+                TmdbUtils.NormalizeLanguage(language),
                 cancellationToken).ConfigureAwait(false);
 
             if (result != null)
