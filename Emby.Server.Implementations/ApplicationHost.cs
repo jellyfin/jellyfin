@@ -903,7 +903,7 @@ namespace Emby.Server.Implementations
                     Type reg = (Type)exportedTypes.Where(p => string.Equals(p.Name, "PluginRegistration", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     if (reg != null)
                     {
-                        _pluginRegistrations.Add(ass, reg);
+                        _pluginRegistrations.Add(reg, ass);
                     }
                 }
                 catch (FileNotFoundException ex)
