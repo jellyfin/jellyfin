@@ -859,29 +859,44 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase))
             {
-                switch (encodingOptions.EncoderPreset)
+                var videoStream = state.VideoStream;
+                var isColorDepth10 = IsColorDepth10(state);
+
+                if (isColorDepth10
+                    && _mediaEncoder.SupportsHwaccel("opencl")
+                    && encodingOptions.EnableTonemapping
+                    && !string.IsNullOrEmpty(videoStream.VideoRange)
+                    && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase))
                 {
-                    case "veryslow":
-                    case "slow":
-                    case "slower":
-                        param += "-quality quality";
-                        break;
+                    // Enhance quality and workload when tone mapping with AMF
+                    param += "-quality quality -preanalysis true";
+                }
+                else
+                {
+                    switch (encodingOptions.EncoderPreset)
+                    {
+                        case "veryslow":
+                        case "slow":
+                        case "slower":
+                            param += "-quality quality";
+                            break;
 
-                    case "medium":
-                        param += "-quality balanced";
-                        break;
+                        case "medium":
+                            param += "-quality balanced";
+                            break;
 
-                    case "fast":
-                    case "faster":
-                    case "veryfast":
-                    case "superfast":
-                    case "ultrafast":
-                        param += "-quality speed";
-                        break;
+                        case "fast":
+                        case "faster":
+                        case "veryfast":
+                        case "superfast":
+                        case "ultrafast":
+                            param += "-quality speed";
+                            break;
 
-                    default:
-                        param += "-quality speed";
-                        break;
+                        default:
+                            param += "-quality speed";
+                            break;
+                    }
                 }
             }
             else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // webm
@@ -2123,19 +2138,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (isSwDecoder || isD3d11vaDecoder)
                     {
                         isScalingInAdvance = true;
-                        // Add scaling filter before tonemapping filter for performance.
-                        filters.AddRange(
-                            GetScalingFilters(
-                                state,
-                                inputWidth,
-                                inputHeight,
-                                threeDFormat,
-                                videoDecoder,
-                                outputVideoCodec,
-                                request.Width,
-                                request.Height,
-                                request.MaxWidth,
-                                request.MaxHeight));
+                        // Add zscale filter before tone mapping filter for performance.
+                        var (width, height) = GetFixedOutputSize(inputWidth, inputHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
+                        if (width.HasValue && height.HasValue)
+                        {
+                            filters.Add(
+                                string.Format(
+                                    CultureInfo.InvariantCulture,
+                                    "zscale=s={0}x{1}",
+                                    width.Value,
+                                    height.Value));
+                        }
+
                         // Convert to hardware pixel format p010 when using SW decoder.
                         filters.Add("format=p010");
                     }
