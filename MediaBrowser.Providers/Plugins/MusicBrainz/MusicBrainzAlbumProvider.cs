@@ -46,6 +46,7 @@ namespace MediaBrowser.Providers.Music
 
         private readonly string _musicBrainzBaseUrl;
 
+        private SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
         private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
 
         public MusicBrainzAlbumProvider(
@@ -742,45 +743,55 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         internal async Task<HttpResponseMessage> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
-            using var options = new HttpRequestMessage(HttpMethod.Get, _musicBrainzBaseUrl.TrimEnd('/') + url);
-
-            // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
-            // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
-            options.Headers.UserAgent.ParseAdd(string.Format(
-                CultureInfo.InvariantCulture,
-                "{0} ( {1} )",
-                _appHost.ApplicationUserAgent,
-                _appHost.ApplicationUserAgentAddress));
-
             HttpResponseMessage response;
             var attempts = 0u;
+            var requestUrl = _musicBrainzBaseUrl.TrimEnd('/') + url;
 
-            do
+            await _apiRequestLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
-                attempts++;
-
-                if (_stopWatchMusicBrainz.ElapsedMilliseconds < _musicBrainzQueryIntervalMs)
+                do
                 {
-                    // MusicBrainz is extremely adamant about limiting to one request per second
-                    var delayMs = _musicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
-                    await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
+                    attempts++;
+
+                    if (_stopWatchMusicBrainz.ElapsedMilliseconds < _musicBrainzQueryIntervalMs)
+                    {
+                        // MusicBrainz is extremely adamant about limiting to one request per second
+                        var delayMs = _musicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
+                        await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    // Write time since last request to debug log as evidence we're meeting rate limit
+                    // requirement, before resetting stopwatch back to zero.
+                    _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
+                    _stopWatchMusicBrainz.Restart();
+
+                    using var request = new HttpRequestMessage(HttpMethod.Get, _musicBrainzBaseUrl.TrimEnd('/') + url);
+
+                    // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
+                    // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
+                    request.Headers.UserAgent.ParseAdd(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0} ( {1} )",
+                        _appHost.ApplicationUserAgent,
+                        _appHost.ApplicationUserAgentAddress));
+
+                    response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(request).ConfigureAwait(false);
+
+                    // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
                 }
-
-                // Write time since last request to debug log as evidence we're meeting rate limit
-                // requirement, before resetting stopwatch back to zero.
-                _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
-                _stopWatchMusicBrainz.Restart();
-
-                response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options).ConfigureAwait(false);
-
-                // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
+                while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
             }
-            while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
+            finally
+            {
+                _apiRequestLock.Release();
+            }
 
             // Log error if unable to query MB database due to throttling
             if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
             {
-                _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, options.RequestUri);
+                _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, requestUrl);
             }
 
             return response;
