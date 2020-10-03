@@ -333,7 +333,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
         /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
