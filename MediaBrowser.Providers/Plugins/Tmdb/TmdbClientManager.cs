@@ -88,10 +88,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            // TODO include image language
             collection = await _tmDbClient.GetCollectionAsync(
                 tmdbId,
                 TmdbUtils.NormalizeLanguage(language),
+                imageLanguages,
                 CollectionMethods.Images,
                 cancellationToken).ConfigureAwait(false);
 
