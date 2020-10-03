@@ -93,7 +93,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
         }
 
         [Fact]
-        public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedEnumArrayQuery2()
+        public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedEnumArrayQueryWithDoubleCommas()
         {
             var queryParamName = "test";
             var queryParamValues = new TestType[] { TestType.How, TestType.Much };
@@ -148,7 +148,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
         }
 
         [Fact]
-        public async Task BindModelAsync_CorrectlyBindsValidEnumArrayQuery2()
+        public async Task BindModelAsync_CorrectlyBindsEmptyEnumArrayQuery()
         {
             var queryParamName = "test";
             var queryParamValues = Array.Empty<TestType>();
