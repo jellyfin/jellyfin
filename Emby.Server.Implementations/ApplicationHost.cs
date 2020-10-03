@@ -1540,6 +1540,7 @@ namespace Emby.Server.Implementations
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {
             var assemblies = _allConcreteTypes
+                .Select(LoadPlugin)
                 .Where(i => typeof(ControllerBase).IsAssignableFrom(i))
                 .Select(i => i.Assembly)
                 .Distinct();
