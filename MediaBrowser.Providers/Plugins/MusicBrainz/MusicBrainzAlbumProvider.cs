@@ -782,16 +782,16 @@ namespace MediaBrowser.Providers.Music
                     // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
                 }
                 while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
+
+                // Log error if unable to query MB database due to throttling
+                if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                {
+                    _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, requestUrl);
+                }
             }
             finally
             {
                 _apiRequestLock.Release();
-            }
-
-            // Log error if unable to query MB database due to throttling
-            if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
-            {
-                _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, requestUrl);
             }
 
             return response;
