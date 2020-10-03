@@ -564,6 +564,9 @@ namespace MediaBrowser.Controller.Entities
                 progress.Report(childrenProgress.Average());
             }
 
+            var fanoutConcurrency = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+            var parallelism = fanoutConcurrency == 0 ? Environment.ProcessorCount : fanoutConcurrency;
+
             var actionBlock = new ActionBlock<int>(
                 async i =>
                 {
@@ -588,7 +591,7 @@ namespace MediaBrowser.Controller.Entities
                 },
                 new ExecutionDataflowBlockOptions
                 {
-                    MaxDegreeOfParallelism = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency,
+                    MaxDegreeOfParallelism = parallelism,
                     CancellationToken = cancellationToken,
                 });
 
