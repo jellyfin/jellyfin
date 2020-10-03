@@ -27,7 +27,9 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageFetcherPostScanTask"/> class.
         /// </summary>
-        /// <param name="libraryManager">Some stuff.</param>
+        /// <param name="libraryManager">An instance of <see cref="ILibraryManager"/>.</param>
+        /// <param name="providerManager">An instance of <see cref="IProviderManager"/>.</param>
+        /// <param name="logger">An instance of <see cref="ILogger{ImageFetcherPostScanTask}"/>.</param>
         public ImageFetcherPostScanTask(
             ILibraryManager libraryManager,
             IProviderManager providerManager,
