@@ -743,14 +743,14 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         internal async Task<HttpResponseMessage> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
-            HttpResponseMessage response;
-            var attempts = 0u;
-            var requestUrl = _musicBrainzBaseUrl.TrimEnd('/') + url;
-
             await _apiRequestLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
+                HttpResponseMessage response;
+                var attempts = 0u;
+                var requestUrl = _musicBrainzBaseUrl.TrimEnd('/') + url;
+
                 do
                 {
                     attempts++;
@@ -767,7 +767,7 @@ namespace MediaBrowser.Providers.Music
                     _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
                     _stopWatchMusicBrainz.Restart();
 
-                    using var request = new HttpRequestMessage(HttpMethod.Get, _musicBrainzBaseUrl.TrimEnd('/') + url);
+                    using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
 
                     // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
                     // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
@@ -788,13 +788,13 @@ namespace MediaBrowser.Providers.Music
                 {
                     _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, requestUrl);
                 }
+
+                return response;
             }
             finally
             {
                 _apiRequestLock.Release();
             }
-
-            return response;
         }
 
         /// <inheritdoc />
