@@ -859,6 +859,31 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase))
             {
+                switch (encodingOptions.EncoderPreset)
+                {
+                    case "veryslow":
+                    case "slow":
+                    case "slower":
+                        param += "-quality quality";
+                        break;
+
+                    case "medium":
+                        param += "-quality balanced";
+                        break;
+
+                    case "fast":
+                    case "faster":
+                    case "veryfast":
+                    case "superfast":
+                    case "ultrafast":
+                        param += "-quality speed";
+                        break;
+
+                    default:
+                        param += "-quality speed";
+                        break;
+                }
+
                 var videoStream = state.VideoStream;
                 var isColorDepth10 = IsColorDepth10(state);
 
@@ -868,35 +893,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && !string.IsNullOrEmpty(videoStream.VideoRange)
                     && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Enhance quality and workload when tone mapping with AMF
-                    param += "-quality quality -preanalysis true";
-                }
-                else
-                {
-                    switch (encodingOptions.EncoderPreset)
-                    {
-                        case "veryslow":
-                        case "slow":
-                        case "slower":
-                            param += "-quality quality";
-                            break;
-
-                        case "medium":
-                            param += "-quality balanced";
-                            break;
-
-                        case "fast":
-                        case "faster":
-                        case "veryfast":
-                        case "superfast":
-                        case "ultrafast":
-                            param += "-quality speed";
-                            break;
-
-                        default:
-                            param += "-quality speed";
-                            break;
-                    }
+                    // Enhance workload when tone mapping with AMF on some APUs
+                    param += " -preanalysis true";
                 }
             }
             else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // webm
