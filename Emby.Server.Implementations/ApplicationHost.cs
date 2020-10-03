@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations
         private ISessionManager _sessionManager;
         private IHttpClientFactory _httpClientFactory;
         private IWebSocketManager _webSocketManager;
-
+        private Dictionary<Type, Assembly> _pluginRegistrations;
         private string[] _urlPrefixes;
 
         /// <summary>
@@ -258,9 +258,11 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();            
-            
+            _jsonSerializer = new JsonSerializer();
+
             ServiceCollection = serviceCollection;
+
+            _pluginRegistrations = new Dictionary<Type, Assembly>();
 
             _networkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
@@ -499,24 +501,11 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            if (Plugins != null)
-            {
-                var pluginBuilder = new StringBuilder();
-
-                foreach (var plugin in Plugins)
-                {
-                    pluginBuilder.Append(plugin.Name)
-                        .Append(' ')
-                        .Append(plugin.Version)
-                        .AppendLine();
-                }
-
-                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
-            }
-
             DiscoverTypes();
 
             RegisterServices();
+
+            RegisterPlugIns();
         }
 
         /// <summary>
@@ -781,9 +770,23 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _plugins = GetExports<IPlugin>()
-                        .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
+
+            if (Plugins != null)
+            {
+                var pluginBuilder = new StringBuilder();
+
+                foreach (var plugin in Plugins)
+                {
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
+                }
+
+                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
+            }
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
             _webSocketManager.Init(GetExports<IWebSocketListener>());
@@ -850,8 +853,6 @@ namespace Emby.Server.Implementations
                 {
                     hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
                 }
-
-                plugin.RegisterServices(ServiceCollection);
             }
             catch (Exception ex)
             {
@@ -872,6 +873,24 @@ namespace Emby.Server.Implementations
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
         }
 
+        private void RegisterPlugIns()
+        {
+            foreach ((var pluginType, var assembly) in _pluginRegistrations)
+            {
+                try
+                {
+                    var pluginRegistration = Activator.CreateInstance(pluginType);
+                    pluginType.InvokeMember("RegisterServices", BindingFlags.InvokeMethod, null, pluginRegistration, new object[] { ServiceCollection }, CultureInfo.InvariantCulture);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error registering {Assembly} with D.I.", assembly);
+                }
+            }
+
+            _pluginRegistrations.Clear();
+        }
+
         private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
         {
             foreach (var ass in assemblies)
@@ -880,20 +899,11 @@ namespace Emby.Server.Implementations
                 try
                 {
                     exportedTypes = ass.GetExportedTypes();
-                    
-                    try
+
+                    Type reg = (Type)exportedTypes.Where(p => string.Equals(p.Name, "PluginRegistration", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    if (reg != null)
                     {
-                        Type reg = (Type)exportedTypes.Where(p => string.Equals(p.Name, "PluginRegistration", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                        if (reg != null)
-                        {
-                            var pluginRegistration = Activator.CreateInstance(reg);
-                            reg.InvokeMember("RegisterServices", BindingFlags.InvokeMethod, null, pluginRegistration, new object[] { ServiceCollection }, CultureInfo.InvariantCulture);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error registering {Assembly} with D.I.", ass.FullName);
-                        continue;
+                        _pluginRegistrations.Add(ass, reg);
                     }
                 }
                 catch (FileNotFoundException ex)
@@ -1103,7 +1113,7 @@ namespace Emby.Server.Implementations
                     {
                         // No metafile, so lets see if the folder is versioned.
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
-                        
+
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
                         {
@@ -1114,7 +1124,7 @@ namespace Emby.Server.Implementations
                         {
                             // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
                             versions.Add((new Version(0, 0, 0, 1), metafile, dir));
-                        }   
+                        }
                     }
                 }
                 catch
