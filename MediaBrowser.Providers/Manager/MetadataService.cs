@@ -231,14 +231,14 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
         {
+            var personsToSave = new List<BaseItem>();
+
             foreach (var person in people)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
                 {
-                    var updateType = ItemUpdateType.MetadataDownload;
-
                     var saveEntity = false;
                     var personEntity = LibraryManager.GetPerson(person.Name);
                     foreach (var id in person.ProviderIds)
@@ -255,15 +255,17 @@ namespace MediaBrowser.Providers.Manager
                         await AddPersonImageAsync(personEntity, libraryOptions, person.ImageUrl, cancellationToken).ConfigureAwait(false);
 
                         saveEntity = true;
-                        updateType |= ItemUpdateType.ImageUpdate;
                     }
 
                     if (saveEntity)
                     {
-                        await personEntity.UpdateToRepositoryAsync(updateType, cancellationToken).ConfigureAwait(false);
+                        personsToSave.Add(personEntity);
                     }
                 }
             }
+
+            LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload);
+            LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
         }
 
         private async Task AddPersonImageAsync(Person personEntity, LibraryOptions libraryOptions, string imageUrl, CancellationToken cancellationToken)

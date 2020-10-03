@@ -567,5 +567,7 @@ namespace MediaBrowser.Controller.Library
         void AddExternalSubtitleStreams(List<MediaStream> streams,
             string videoPath,
             string[] files);
+
+        void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason);
     }
 }

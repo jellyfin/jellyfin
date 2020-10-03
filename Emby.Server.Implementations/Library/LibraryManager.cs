@@ -857,7 +857,21 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         public Person GetPerson(string name)
         {
-            return CreateItemByName<Person>(Person.GetPath, name, new DtoOptions(true));
+            var path = Person.GetPath(name);
+            var id = GetItemByNameId<Person>(path);
+            if (!(GetItemById(id) is Person item))
+            {
+                item = new Person
+                {
+                    Name = name,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    DateModified = DateTime.UtcNow,
+                    Path = path
+                };
+            }
+
+            return item;
         }
 
         /// <summary>
@@ -1940,19 +1954,9 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            foreach (var item in items)
-            {
-                if (item.IsFileProtocol)
-                {
-                    ProviderManager.SaveMetadata(item, updateReason);
-                }
-
-                item.DateLastSaved = DateTime.UtcNow;
-
-                await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
-            }
+            RunMetadataSavers(items, updateReason);
 
             _itemRepository.SaveItems(items, cancellationToken);
 
@@ -1983,11 +1987,26 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
+
+        public void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason)
+        {
+            foreach (var item in items)
+            {
+                if (item.IsFileProtocol)
+                {
+                    ProviderManager.SaveMetadata(item, updateReason);
+                }
+
+                item.DateLastSaved = DateTime.UtcNow;
+            }
+        }
 
         /// <summary>
         /// Reports the item removed.
