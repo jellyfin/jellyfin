@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.7" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.7" />
-    <PackageReference Include="NetworkCollection" Version="1.0.3" />
+    <PackageReference Include="NetworkCollection" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>

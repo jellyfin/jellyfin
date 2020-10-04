@@ -352,7 +352,7 @@ namespace Rssdp.Infrastructure
 
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetAllBindInterfaces())
+                foreach (var address in _networkManager.GetInternalBindAddresses())
                 {
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {

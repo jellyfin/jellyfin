@@ -271,33 +271,33 @@ namespace Emby.Dlna.Main
                 bindAddresses = _networkManager.GetLoopbacks();
             }
 
-            foreach (var addr in bindAddresses)
+            foreach (IPNetAddress address in bindAddresses)
             {
-                if (addr.AddressFamily == AddressFamily.InterNetworkV6)
+                if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     // Not supporting IPv6 right now
                     continue;
                 }
 
                 // Limit to LAN addresses only
-                if (!_networkManager.IsInLocalNetwork(addr))
+                if (!_networkManager.IsInLocalNetwork(address))
                 {
                     continue;
                 }
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr);
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
+                var uri = new Uri(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = addr.Address,
-                    SubnetMask = ((IPNetAddress)addr).Mask, // MIGRATION: This fields is going.
+                    Address = address.Address,
+                    SubnetMask = address.Mask,
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",

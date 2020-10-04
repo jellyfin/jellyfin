@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Udp
         {
             string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
                 ? _config[AddressOverrideConfigKey]
-                : _appHost.GetSmartApiUrl(string.Empty); // MIGRATION: Temp value.
+                : _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
 
             if (!string.IsNullOrEmpty(localUrl))
             {

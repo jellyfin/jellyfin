@@ -262,8 +262,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();            
-            
+            _jsonSerializer = new JsonSerializer();
+
             ServiceCollection = serviceCollection;
 
             ApplicationPaths = applicationPaths;
@@ -1079,7 +1079,7 @@ namespace Emby.Server.Implementations
                     {
                         // No metafile, so lets see if the folder is versioned.
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
-                        
+
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
                         {
@@ -1248,7 +1248,7 @@ namespace Emby.Server.Implementations
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(source),
-                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted              
+                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
 

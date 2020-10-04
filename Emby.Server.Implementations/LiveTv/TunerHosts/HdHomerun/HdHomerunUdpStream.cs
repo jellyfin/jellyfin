@@ -16,6 +16,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using NetworkCollection.Udp;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -57,7 +58,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            var localPort = 50000; // Will return to random after next PR.
+            var localPort = UdpHelper.GetRandomUnusedUdpPort();
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 

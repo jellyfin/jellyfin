@@ -301,9 +301,10 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        var ip1 = new IPNetAddress(device.ToRootDevice().Address, device.ToRootDevice().SubnetMask);
-                        var ip2 = new IPNetAddress(remoteEndPoint.Address, device.ToRootDevice().SubnetMask);
-                        if (!_sendOnlyMatchedHost || ip1.NetworkAddress.Equals(ip2.NetworkAddress))
+                        var root = device.ToRootDevice();
+                        var source = new IPNetAddress(root.Address, root.SubnetMask);
+                        var destination = new IPNetAddress(remoteEndPoint.Address, root.SubnetMask);
+                        if (!_sendOnlyMatchedHost || source.NetworkAddress.Equals(destination.NetworkAddress))
                         {
                             SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                         }
