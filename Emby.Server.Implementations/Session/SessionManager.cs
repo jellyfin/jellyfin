@@ -1487,7 +1487,7 @@ namespace Emby.Server.Implementations.Session
             var sessionsCount = Sessions.Where(i => string.Equals(i.UserId, user.Id)).ToList().Count;
             int maxActiveSessions = user.MaxActiveSessions;
             _logger.LogInformation("Current/Max sessions for user {User}: {Sessions}/{Max}", user.Username, sessionsCount, maxActiveSessions);
-            if (maxActiveSessions >= 0 && sessionsCount >= maxActiveSessions)
+            if (maxActiveSessions >= 1 && sessionsCount >= maxActiveSessions)
             {
                 throw new SecurityException("User is at their maximum number of sessions.");
             }
