@@ -18,5 +18,15 @@ namespace Jellyfin.Common.Tests.Extensions
             value = JsonSerializer.Deserialize<Guid>(@"""e9b2dcaa-529c-426e-9433-5e9981f27f2e""", options);
             Assert.Equal(new Guid("e9b2dcaa-529c-426e-9433-5e9981f27f2e"), value);
         }
+
+        [Fact]
+        public static void Roundtrip_Valid_Success()
+        {
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new JsonGuidConverter());
+            Guid guid = new Guid("a852a27afe324084ae66db579ee3ee18");
+            string value = JsonSerializer.Serialize(guid, options);
+            Assert.Equal(guid, JsonSerializer.Deserialize<Guid>(value, options));
+        }
     }
 }
