@@ -92,6 +92,10 @@ namespace MediaBrowser.Model.Users
 
         public int LoginAttemptsBeforeLockout { get; set; }
 
+        public int ActiveSessionCount { get; set; }
+
+        public int MaxActiveSessions { get; set; }
+
         public bool EnablePublicSharing { get; set; }
 
         public Guid[] BlockedMediaFolders { get; set; }
@@ -143,6 +147,8 @@ namespace MediaBrowser.Model.Users
             AccessSchedules = Array.Empty<AccessSchedule>();
 
             LoginAttemptsBeforeLockout = -1;
+
+            MaxActiveSessions = -1;
 
             EnableAllChannels = true;
             EnabledChannels = Array.Empty<Guid>();
