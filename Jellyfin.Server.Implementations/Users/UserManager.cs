@@ -379,7 +379,7 @@ namespace Jellyfin.Server.Implementations.Users
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout ?? -1,
-                    MaxActiveSessions = user.MaxActiveSessions ?? -1,
+                    MaxActiveSessions = user.MaxActiveSessions,
                     IsAdministrator = user.HasPermission(PermissionKind.IsAdministrator),
                     IsHidden = user.HasPermission(PermissionKind.IsHidden),
                     IsDisabled = user.HasPermission(PermissionKind.IsDisabled),
