@@ -1,0 +1,910 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<modelRoot xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="2.0.0.6" Id="cba47279-0950-4257-bb2c-e4d5e72a52a4" entityContainerName="JellyfinDb" namespace="Jellyfin.Data" connectionString="Data Source=jellyfin.db" automaticMigrationsEnabled="false" entityOutputDirectory="Entities" contextOutputDirectory="DbContext" enumOutputDirectory="Enums" databaseSchema="jellyfin" concurrencyDefault="Optimistic" fileNameMarker="g" entityFrameworkVersion="EFCore" showCascadeDeletes="true" databaseType="None" warnOnMissingDocumentation="false" structOutputDirectory="Structs" exposeForeignKeys="false" xmlns="http://schemas.microsoft.com/dsltools/EFModel">
+  <comments>
+    <comment Id="ce1017ce-8e00-4174-97ed-1c322b40f550" text="This allows multiversion" />
+    <comment Id="21a9ee76-5f8d-43f8-abc7-72220419aea0" text="This allows multiformat and multidisc&#xD;&#xA;All these files should have the same internal timestamps for chapters etc." />
+    <comment Id="e44ea76e-4cb5-46e8-8492-2873c74fcbaa" text="Audiobooks are supported in the same entities but the Releases will dictate whenever or not this is an audio book vs a normal book." />
+    <comment Id="c83d4e1a-563e-4e18-bc43-3b23d2fbeed0" text="Music videos are supported in the same entities but the Releases will dictate whenever or not this is a video just plain audio. Also track number is the chapter number for single file albums and for example concert blurays." />
+    <comment Id="deebc55a-12e2-4d7e-9441-19461787c6b3" text="Main file would be the one with the highest quality." />
+  </comments>
+  <enums>
+    <modelRootHasEnums Id="98a7111f-533e-43f9-b668-ccf42465ed39">
+      <modelEnum Id="58618590-007d-4854-9580-3c22a496875b" namespace="Jellyfin.Data" name="PersonRoleType" outputDirectory="Enums">
+        <values>
+          <modelEnumHasValues Id="f50b82b7-5640-4674-916e-a6bb2c578bb5">
+            <modelEnumValue Id="78aae8ba-d039-4de1-b05e-12aa823e305e" name="Other" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="6d423a14-f1b3-468f-aa59-7d14c660647d">
+            <modelEnumValue Id="7a41821a-9cb6-4d18-92db-624b5d020b13" name="Director" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="a591f800-7dff-481f-9cdd-f244e210a25b">
+            <modelEnumValue Id="0fb59a2b-3424-4a31-a7e3-04ae31aee294" name="Artist" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="a7dc3f97-0591-4a81-9b83-1d78cb99a5d4">
+            <modelEnumValue Id="65a43391-87ac-4490-92c8-362c31d0836b" name="OriginalArtist" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="ec0cc5ff-95a1-43dd-9c7b-8cd415066c9e">
+            <modelEnumValue Id="bff73fd7-1c60-4f20-9ef6-4e987d67f3d2" name="Actor" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="d8e260b8-dc28-49c4-9226-3112d01b1e43">
+            <modelEnumValue Id="88cb8b1c-5020-4188-9e8f-5eb1440836ea" name="VoiceActor" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="6cda3f6d-92d6-4287-8574-0c857e5d5dc5">
+            <modelEnumValue Id="9eb1f215-5e5a-4688-a4fc-ded65f582392" name="Producer" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="209a9a5f-3adc-4779-9cd7-a0b9d41ce87f">
+            <modelEnumValue Id="451ec3e3-3cc3-4b90-b4ef-53e120e54f3a" name="Remixer" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="31e0c122-5b64-44b3-a65a-343481555c7c">
+            <modelEnumValue Id="b3f34e2b-9309-40f8-9862-6d205319f7bc" name="Conductor" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="2037c96b-a90b-4506-a58f-16ac72ff20f0">
+            <modelEnumValue Id="c9f2e529-9a37-4a24-815e-67fc25f87094" name="Composer" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="e95f1a61-4efd-4f2b-90d3-f82128043bff">
+            <modelEnumValue Id="5245a1c1-b3b4-40fe-ad0b-1eab58c7326d" name="Author" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="3bddaa11-c907-4a2e-9ba7-df086430fb72">
+            <modelEnumValue Id="654b1cd2-963b-4cd6-b79a-4b4daa1ec62c" name="Editor" />
+          </modelEnumHasValues>
+        </values>
+      </modelEnum>
+    </modelRootHasEnums>
+    <modelRootHasEnums Id="e48ca47d-3adb-406e-a86d-6b8f13e11d6d">
+      <modelEnum Id="6031fdbf-aa4e-4c08-8763-1f4e4dba7583" namespace="Jellyfin.Data" name="ArtKind" outputDirectory="Enums">
+        <values>
+          <modelEnumHasValues Id="e8717340-47a1-4e19-9df5-d31839aef332">
+            <modelEnumValue Id="1c2b3084-a49b-499c-9a89-88ded00acf2f" name="Other" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="8c44acf7-4dfd-4072-9959-9203f77a8931">
+            <modelEnumValue Id="cd289b78-67f2-4a79-8b42-a3b40b7b22ed" name="Poster" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="f4a6072d-c848-4591-8f4d-7405561ea554">
+            <modelEnumValue Id="bd0e1d70-e4f3-4703-9900-de284d4966ea" name="Banner" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="c95912aa-086f-4e72-af9d-a899fd2b81b3">
+            <modelEnumValue Id="5f1719c4-3552-4959-b5e2-2faa5add8f11" name="Thumbnail" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="5a6fb569-d5ad-4917-99c3-531a0b8e2b50">
+            <modelEnumValue Id="5e1c0db7-b6e5-4066-8dc5-f5d6c2e5c7be" name="Logo" />
+          </modelEnumHasValues>
+        </values>
+      </modelEnum>
+    </modelRootHasEnums>
+    <modelRootHasEnums Id="3d0eaa96-485b-4ed1-aa71-a840566f3399">
+      <modelEnum Id="bb544d7b-c09a-45ee-aa12-d9137221aadc" namespace="Jellyfin.Data" name="MediaFileKind" outputDirectory="Enums">
+        <values>
+          <modelEnumHasValues Id="ff65d1db-f2dd-4ea2-a7fe-84ecaf9f13e7">
+            <modelEnumValue Id="fcb9a6f0-c152-489f-abb4-17ded0af320b" name="Main" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="2def88ef-2f88-4aaa-810e-22cd1f5e7867">
+            <modelEnumValue Id="15dfbe5b-b8a3-4c86-b113-56438c48c420" name="Sidecar" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="beafd016-619f-486d-acea-5b5d0c1bada9">
+            <modelEnumValue Id="2c7b77ec-e251-4ce0-8ebe-c6c1126f5402" name="AdditionalPart" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="823863f2-2586-4958-9f47-1d32244b3b9a">
+            <modelEnumValue Id="153c966d-6077-42cf-b4cf-71a131b85f88" name="AlternativeFormat" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="956cd4bd-6d94-4857-b139-597f58dcbb11">
+            <modelEnumValue Id="96afc8b3-f9ce-476e-8242-99f0ce6a0b68" name="AdditionalStream" />
+          </modelEnumHasValues>
+        </values>
+      </modelEnum>
+    </modelRootHasEnums>
+    <modelRootHasEnums Id="45850641-0e3b-47c5-b37e-152c80ea4665">
+      <modelEnum Id="bf8527d2-0d18-4ee8-862d-79eb1b672731" namespace="Jellyfin.Data" name="Weekday" outputDirectory="Enums">
+        <values>
+          <modelEnumHasValues Id="1b3de187-c41e-466d-8012-ca33f7735b63">
+            <modelEnumValue Id="49fd13f6-18d1-4545-a0e6-bd2a94769503" name="Sunday" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="3a134a58-f3d0-4940-b85c-6506ddacba20">
+            <modelEnumValue Id="22ad3f85-80c0-4fe7-b9e2-72e63db68459" name="Monday" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="4c005588-fe96-46bf-a0c7-3c2e783d4f66">
+            <modelEnumValue Id="ff0d052a-7654-4c87-bf55-292867356a19" name="Tuesday" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="5c9a9842-0f08-4ad7-bcbf-0d3f7e46d533">
+            <modelEnumValue Id="b52e6f2a-1f7b-42fb-bfdf-a9e4f2ca0e48" name="Wednesday" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="05280c67-d428-493e-8933-ab7d51b1e5bd">
+            <modelEnumValue Id="65d0e0dd-d866-471a-8183-6c5ac30b06bf" name="Thursday" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="f5019d09-f545-4082-8daa-14b64f36fd99">
+            <modelEnumValue Id="a78e2827-457c-4e99-8b48-7e64e21a12ba" name="Friday" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="2dd45022-0f4b-43d6-ad44-59cf7c7d1003">
+            <modelEnumValue Id="c3948dbf-ed84-40d0-806d-11cf983e9120" name="Saturday" />
+          </modelEnumHasValues>
+        </values>
+      </modelEnum>
+    </modelRootHasEnums>
+    <modelRootHasEnums Id="a6a0abc0-a333-4ee7-a29f-45a48c91c1c4">
+      <modelEnum Id="502dac00-7820-462f-be13-287af043b7e4" namespace="Jellyfin.Data" name="PermissionKind" outputDirectory="Entities" isOutputDirectoryTracking="false">
+        <values>
+          <modelEnumHasValues Id="2d0b6b97-5aca-470d-81bc-1757ec498592">
+            <modelEnumValue Id="610aba4e-4035-49a9-b246-7897243acc21" name="IsAdministrator" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="6164a850-81da-4d5e-9199-a1efa2cca1cd">
+            <modelEnumValue Id="085f8d80-5cbb-437c-be7e-ecb39fde64be" name="IsHidden" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="c1ac1bae-ef0d-4152-acfb-906b3da11c14">
+            <modelEnumValue Id="ad0474eb-37d7-432d-a6b1-e4cd9a6492c5" name="IsDisabled" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="fa0f2cd2-e277-45e4-a191-4a39720a269d">
+            <modelEnumValue Id="f3616c76-42a5-43f6-85ef-7dab7933bd1e" name="BlockUnrateditems" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="bcedfefb-a4e7-49fe-be81-8493d461a2cd">
+            <modelEnumValue Id="62f76d88-6583-44e4-8a83-a46e44294525" name="EnbleSharedDeviceControl" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="90e86939-7f48-47a7-8d1b-d4f91c152b0e">
+            <modelEnumValue Id="ed5d150f-7f82-4c11-9f7c-4274c5666c11" name="EnableRemoteAccess" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="26da9993-1dd6-4591-8759-9b891625e106">
+            <modelEnumValue Id="95ce4c9a-a4ad-41e4-b2e3-b43f8aeb32b7" name="EnableLiveTvManagement" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="64c52c8d-d279-48dc-90fc-aed63ca73c5a">
+            <modelEnumValue Id="f2d6f093-6fa8-4723-b517-ebafb24424d4" name="EnableLiveTvAccess" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="79cd6976-ab46-43c2-a504-cf4026a51c7a">
+            <modelEnumValue Id="1f22e17c-a08e-4cf3-acd0-5c9a676545c1" name="EnableMediaPlayback" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="2d50263d-0084-4c51-ad27-b4cc10ed3439">
+            <modelEnumValue Id="51a12d0a-1aff-4727-b026-c70d6dad53e4" name="EnableAudioPlaybackTranscoding" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="e098862a-bbf9-438c-83aa-801357df4e2b">
+            <modelEnumValue Id="62c3eb73-1ade-47aa-a791-09ecd962705b" name="EnableVideoPlaybackTranscoding" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="e4aa8b29-72dd-4abd-b89a-c0a64486653b">
+            <modelEnumValue Id="8df243f2-cbec-475d-b263-98221fedb40e" name="EnableContentDeletion" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="72e1a75a-b451-414a-9325-e14574cffbc3">
+            <modelEnumValue Id="192ed5d4-dff6-4d3d-ae3f-89338733a6e4" name="EnableContentDownloading" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="c8de75ab-1beb-4528-8aaa-03df87d6be6f">
+            <modelEnumValue Id="e86f6ec5-112f-499b-9aab-07bfa8c156d9" name="EnableSyncTranscoding" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="1d990f7d-be4d-453b-b479-a4a07629e1f7">
+            <modelEnumValue Id="0b1084e6-59bc-4298-bbfc-4ae1e188fb23" name="EnableMediaConversion" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="7a283077-d090-4085-a80f-dbe64db30d47">
+            <modelEnumValue Id="c573761b-9c80-4c3d-bf2f-cd7a5bc84aed" name="EnableAllDevices" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="30076817-36e2-4b44-b332-037f35a0ab15">
+            <modelEnumValue Id="f4092780-cd8b-4789-a95e-032086b06420" name="EnableAllChannels" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="e7c9244d-0f42-480e-99d5-fac066d29327">
+            <modelEnumValue Id="2a18ed2d-2e8d-4f2a-ad0d-5989eae511a4" name="EnableAllFolders" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="d32944ea-93e5-4aff-8301-a69af0b9eb17">
+            <modelEnumValue Id="75ead7f7-7d21-489c-89af-f9481e85cb1d" name="EnablePublicSharing" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="36ac9fe5-b5e1-4dc8-8c0a-3320e1e0e95b">
+            <modelEnumValue Id="633cf151-b0db-41a1-9492-21fac56cf63a" name="AccessSchedules" />
+          </modelEnumHasValues>
+        </values>
+      </modelEnum>
+    </modelRootHasEnums>
+    <modelRootHasEnums Id="13d8c898-fc97-4502-9d46-dd6482a7982d">
+      <modelEnum Id="3343e6a2-8103-45d8-8614-941e1c3d6e24" namespace="Jellyfin.Data" name="PreferenceKind" outputDirectory="Entities" isOutputDirectoryTracking="false">
+        <values>
+          <modelEnumHasValues Id="ed9659a5-ba91-4640-9aea-e57e1024e589">
+            <modelEnumValue Id="c07baf2b-5de6-4083-98d9-43899bad1fde" name="MaxParentalRating" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="e468e20a-011a-40af-9a83-fb1380cd1d75">
+            <modelEnumValue Id="71b3f5fa-e279-42f9-af6c-62344eb26a80" name="BlockedTags" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="b8cb610f-7834-4d1e-9b3f-6f913db7182e">
+            <modelEnumValue Id="ab05359f-f546-4524-87cf-a47cf13e57b3" name="RemoteClientBitrateLimit" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="e683c96e-0d41-4730-9abe-8e3a8ddd4d63">
+            <modelEnumValue Id="1ce941c2-8b10-4c21-9ede-e5524b1df048" name="EnabledDevices" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="0ebb3372-e9d8-4b84-9f27-cd2676450310">
+            <modelEnumValue Id="61d8e50a-1a97-4acb-a178-cb3a26480ca3" name="EnabledChannels" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="2874ae84-7968-4035-8468-8801c6a1cd03">
+            <modelEnumValue Id="e716956a-d87d-4ae2-9e91-f1b9b4784d55" name="EnabledFolders" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="82e2a8e6-a2ec-41a4-ab32-b4cac0080635">
+            <modelEnumValue Id="f1ee02fa-a73d-4199-a2dd-b91853f37bab" name="EnableContentDeletionFromFolders" />
+          </modelEnumHasValues>
+        </values>
+      </modelEnum>
+    </modelRootHasEnums>
+    <modelRootHasEnums Id="a9f96fd9-ea8d-4fc2-aac4-a6f23adf802b">
+      <modelEnum Id="94e13236-8873-4f4d-83d6-d4b9740d3e03" namespace="Microsoft.Extensions.Logging" isNamespaceTracking="false" name="LogLevel" outputDirectory="Enums" generateCode="false">
+        <values>
+          <modelEnumHasValues Id="31b7ec29-67d2-4287-8004-5c6d532a4d48">
+            <modelEnumValue Id="69594495-9f60-4796-ba0a-1a82a0981642" name="Trace" value="0" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="4ebc6d9d-786a-4ad4-b3ab-1e75e70578e3">
+            <modelEnumValue Id="a1b6b1bd-e9fe-42e1-84d9-7befa7030257" name="Debug" value="1" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="8cec3b47-2ab4-4555-861f-33aeb8f2e351">
+            <modelEnumValue Id="802c6199-2fd9-42bc-b115-ef9c94134fb3" name="Information" value="2" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="3d269c7f-0e66-431e-941b-f0d0354ca623">
+            <modelEnumValue Id="e2aa3245-cf3e-421e-9181-b0ac19f3d6ec" name="Warning" value="3" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="6df0c2d7-1e32-4f92-8489-edb61d7509b1">
+            <modelEnumValue Id="d1fa1557-9608-428c-b353-14081b25bc4e" name="Error" value="4" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="d51aeee9-775b-4783-ade3-e0de40405c6c">
+            <modelEnumValue Id="dec9fb85-0781-4e56-962c-8479ea440eab" name="Critical" value="5" />
+          </modelEnumHasValues>
+        </values>
+      </modelEnum>
+    </modelRootHasEnums>
+  </enums>
+  <classes>
+    <modelRootHasClasses Id="2c32f8c8-a79d-4741-ade3-c524235bb2a1">
+      <modelClass Id="bea1bf20-f256-4b95-928d-80dee291ec9d" tableName="Movie" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Movies" name="Movie" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="52949eac-d598-4584-84f0-ec63d7987679" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="34cea30e-958b-446e-8ff9-8d4795d11d00" targetPropertyName="MovieMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="2736560a-088d-4546-bb08-2ec58cde6ef7" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="adfbbc1f-987c-4a54-b3b1-a5df1615921e">
+      <modelClass Id="2736560a-088d-4546-bb08-2ec58cde6ef7" tableName="MovieMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MovieMetadata" name="MovieMetadata" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="b6438061-b44e-4302-9a68-77ee983816aa" targetPropertyName="Studios" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="95550229-18f2-4285-8b35-283c49e1a62b" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="8ef48e28-7dd8-4780-82b2-57790af55231" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" autoProperty="false" minLength="0" columnName="Outline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="f4be0442-ab47-4d53-b6d9-c702834e17dc" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Plot" autoProperty="false" minLength="0" columnName="Plot" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="9e6c7293-ede2-4a1a-9b8b-31facabe9d13" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Tagline" autoProperty="false" minLength="0" columnName="Tagline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="917646d0-4842-4f25-bfb8-b73555e29591" maxLength="2" indexed="false" indexedUnique="false" stringType="None" name="Country" autoProperty="false" minLength="0" columnName="Country" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="01df47f7-7457-4591-aa25-f173d846e31d">
+      <modelClass Id="ac1f2894-5bcf-47b0-9e53-6835d024881e" tableName="Series" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Series" name="Series" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="edc8e36e-5707-4a06-b1da-c6b168375bc1" targetPropertyName="SeriesMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="1856fbb6-16c6-47d4-baaf-6dcd8b5e0b50" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="5f9ff3ba-ae66-422f-9090-50b68397e6c4" targetPropertyName="Seasons" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="fbf358b0-540d-4215-a93a-4197340ea821" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="28dc5696-8269-49e9-ba86-295209b5713c" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" autoProperty="false" minLength="0" columnName="Outline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="51f43043-b500-4e36-8ccc-377139c3863b" type="Weekday" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="AirsDayOfWeek" autoProperty="false" minLength="0" columnName="AirsDayOfWeek" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="ffeffc23-87fe-4111-a9d4-e1fa5fd90293" type="DateTimeOffset" maxLength="" indexed="false" indexedUnique="false" stringType="None" summary="The time the show airs, ignore the date portion" name="AirsTime" autoProperty="false" minLength="0" columnName="AirsTime" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="2db1c47e-92fc-4bd2-ba5a-ce820ca9f7c9" type="DateTimeOffset" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="FirstAired" autoProperty="false" minLength="0" columnName="FirstAired" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="903b8e45-f6ea-4ac5-b332-bf6bc12fb237">
+      <modelClass Id="1856fbb6-16c6-47d4-baaf-6dcd8b5e0b50" tableName="SeriesMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="SeriesMetadata" name="SeriesMetadata" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="7e86cc59-7436-4ae7-9430-fce6bba46d69" targetPropertyName="Networks" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="95550229-18f2-4285-8b35-283c49e1a62b" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="f53e40d1-4b2e-4b4c-8068-73ffbaabda85" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" autoProperty="false" minLength="0" columnName="Outline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="f3ec0eac-de21-4ab9-8237-f79fd4f4cb5b" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Plot" autoProperty="false" minLength="0" columnName="Plot" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="352def7d-1e94-466f-9fc7-840de709140e" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Tagline" autoProperty="false" minLength="0" columnName="Tagline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="6c2ef4a2-68a8-4f1a-8e5f-e18b68adc22d" maxLength="2" indexed="false" indexedUnique="false" stringType="None" name="Country" autoProperty="false" minLength="0" columnName="Country" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="24a4a1ed-384d-4877-a385-2665aa54e45c">
+      <modelClass Id="e7524125-fbc5-4767-8351-eec6bb5957d3" tableName="Release" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Releases" name="Release" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="64e8abc2-1d4b-4c4c-96d9-037ec5f9a706" targetPropertyName="MediaFiles" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="4f2c20cf-c5f0-4592-8888-aff4f27986a0" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="07771b42-d7b5-48b8-841c-5c96cb320ddd" targetPropertyName="Chapters" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="a8c50148-d182-4e10-8d63-c2ef2aa3ad66" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="5bf8b66a-7144-47a7-9468-77fbe237414b" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="1b464d54-0291-4d2b-aec7-986b05879bac" required="true" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="18465742-4473-4d2b-806b-8022a209f4ac" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="3cb6313a-45a6-4157-b23d-35b4dae6f3d2">
+      <modelClass Id="443c920c-ba7c-4ab8-b2e5-42b46668399a" isAbstract="true" tableName="LibraryItem" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="LibraryItems" name="LibraryItem" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="99987bf5-16cd-4dfe-8ce3-bc03bc3fc9a0" targetMultiplicity="One" targetPropertyName="LibraryRoot" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="a9e1df16-11a1-4e3d-86b5-f281c4bfa96b" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="328267f9-f084-401e-bc7e-46dd546e4d55" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c73286d8-57cb-45db-8be5-8160f9bd3e26" type="Guid" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" summary="This is whats gets displayed in the Urls and APi requests. This could also be a string." name="UrlId" autoProperty="false" minLength="0" columnName="UrlId" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="3634c058-dc62-44e4-8fa7-b48eecbd7c9c" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="DateAdded" setterVisibility="Internal" autoProperty="false" minLength="0" columnName="DateAdded" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="f8a343e0-471c-4029-a557-554ae01a7ab7" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+        <subclasses>
+          <generalization Id="78dcd0a7-fd82-405d-b8f4-5f59e3fa8f75">
+            <modelClassMoniker Id="bea1bf20-f256-4b95-928d-80dee291ec9d" />
+          </generalization>
+          <generalization Id="3ca5372d-9f86-4eba-a2e1-a8907b23db3c">
+            <modelClassMoniker Id="ac1f2894-5bcf-47b0-9e53-6835d024881e" />
+          </generalization>
+          <generalization Id="fcb3ce34-2bf5-4d8b-9a1b-f9a5c947c953">
+            <modelClassMoniker Id="aae43516-5dc1-4e8b-9d49-767646006865" />
+          </generalization>
+          <generalization Id="39b037bd-b03f-425f-9a55-2369d329c37e">
+            <modelClassMoniker Id="e9cb5b65-ef8c-4021-a2c1-fa5600f98b50" />
+          </generalization>
+          <generalization Id="787e8ac9-b559-4a37-9e2f-0a05740fd05a">
+            <modelClassMoniker Id="2518ea14-6282-4da5-b4ae-43b3dbdfe198" />
+          </generalization>
+          <generalization Id="7dc62774-c7ec-43a1-8f19-6f0b6c8e2d38">
+            <modelClassMoniker Id="fbf358b0-540d-4215-a93a-4197340ea821" />
+          </generalization>
+          <generalization Id="ab7a2948-54dc-4cec-a91a-782ffd973563">
+            <modelClassMoniker Id="a32f3f8c-3434-41b7-9957-c839c520eda7" />
+          </generalization>
+          <generalization Id="fc29232f-1838-4eb2-b490-71af887e4796">
+            <modelClassMoniker Id="cf9b1363-d1a2-46b7-a1ec-56a7b0a418da" />
+          </generalization>
+          <generalization Id="fff3f1a4-58b5-4a1f-8cdd-f440fb563002">
+            <modelClassMoniker Id="d9db9cdb-1e90-479c-9383-bc7ce2eab1b4" />
+          </generalization>
+        </subclasses>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4d27205d-01ac-41c6-82b7-f86d7fc5f710">
+      <modelClass Id="68c60175-eab8-4d70-bb11-0bf48d3a27b7" tableName="Library" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Libraries" name="Library" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="41935993-fd7c-48f3-adc8-d2f56f8d3716" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="eb4277c6-fbcc-4771-9218-bb330da5817f" required="true" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="a31ab8cf-a117-48b8-b3a2-e0695065cddf" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="f0822126-cb61-44f6-8fcf-26d7c693582f">
+      <modelClass Id="445ce9a4-3da0-4cdd-9456-e58d12ceef38" isAbstract="true" tableName="Metadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Metadata" name="Metadata" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="cc7945c2-4b52-42dc-80b4-7d4b15cc30a0" targetPropertyName="PersonRoles" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="dbaeac30-cef5-4f13-ac8f-553f72cce29e" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="4352236a-9106-4d2c-9c8b-c917fb5bdf93" targetPropertyName="Genres" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="54c385f0-904f-4070-a30f-0a53c3d1f21c" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="46a9684d-293a-4a9c-af3b-c3f6bbad46ee" targetPropertyName="Artwork" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="4f3e230d-cb8f-47e8-bfc5-93d80151cc9e" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="f8244d7b-58a0-44d9-9c37-d0da7c535d0c" targetPropertyName="Ratings" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="6363388b-d07e-4e8d-a70e-aa8f4b5d1a31" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="746acdad-571e-48ee-972e-1d2a03640a34" targetPropertyName="Sources" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="b1483c5c-f2a3-4151-8e25-cede46fbab0d" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="e267cf1e-7f30-4d01-ad1f-58837338902f" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="6848848e-7ea1-4600-8bc7-77d06594fce8" required="true" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" summary="The title or name of the object" name="Title" autoProperty="false" minLength="0" columnName="Title" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="dbb4b743-2ef2-4835-958d-7cad6f6feb41" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="OriginalTitle" autoProperty="false" minLength="0" columnName="OriginalTitle" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="9e867bd7-7e5a-42e3-8853-e74c8eac756d" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="SortTitle" autoProperty="false" minLength="0" columnName="SortTitle" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="0b04d87f-a608-4322-b80e-600f7f35c949" required="true" maxLength="3" indexed="false" indexedUnique="false" stringType="None" summary="ISO-639-3 3-character language codes" name="Language" autoProperty="false" minLength="3" columnName="Language" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="b3a84933-f760-443e-bea7-4bc8ffdcabde" type="DateTimeOffset" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="ReleaseDate" autoProperty="false" minLength="0" columnName="ReleaseDate" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="4d2c0c2b-401d-42d8-bcc2-d229dbdee61b" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="DateAdded" setterVisibility="Internal" autoProperty="false" minLength="0" columnName="DateAdded" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="7e72f954-dbbd-418a-8cae-ab0095149685" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" setterVisibility="Internal" autoProperty="false" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+        <subclasses>
+          <generalization Id="ae561ada-fcc0-4295-8ae8-d9ec07907b77">
+            <modelClassMoniker Id="2736560a-088d-4546-bb08-2ec58cde6ef7" />
+          </generalization>
+          <generalization Id="c488c083-7693-4a5c-95d3-8bb81bdd5e62">
+            <modelClassMoniker Id="1856fbb6-16c6-47d4-baaf-6dcd8b5e0b50" />
+          </generalization>
+          <generalization Id="7594ac4f-93a1-4308-9549-46cf9fae05af">
+            <modelClassMoniker Id="c92a5225-512d-43a7-9197-b30a10c50f45" />
+          </generalization>
+          <generalization Id="dac3eb21-39b7-41f7-9da0-e0102c43738d">
+            <modelClassMoniker Id="c8943a8b-d7ce-4b3c-8eb0-2517cb098bdf" />
+          </generalization>
+          <generalization Id="0a3fb566-5647-4e38-b73b-be6eae27917f">
+            <modelClassMoniker Id="c7ce359f-434d-4516-8682-d5ad16d74625" />
+          </generalization>
+          <generalization Id="526f4aa4-be33-4bbe-884d-cc8a980f9f8a">
+            <modelClassMoniker Id="0ac0aaf9-2d80-4486-830f-8bae4dea7124" />
+          </generalization>
+          <generalization Id="9e197bd4-59e9-4e46-929e-e25415afa162">
+            <modelClassMoniker Id="9690b77b-4fcc-4811-bb56-fed005e6da73" />
+          </generalization>
+          <generalization Id="bb7b7f13-882a-440b-a162-0c1479415389">
+            <modelClassMoniker Id="f2238a16-e071-444b-8ae0-7d5ea623c9e9" />
+          </generalization>
+          <generalization Id="41a65cc2-1698-4c5d-a653-9cb7f24bf1b3">
+            <modelClassMoniker Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" />
+          </generalization>
+          <generalization Id="0dd7f6bd-aa49-4537-8643-8b8790ffce04">
+            <modelClassMoniker Id="6a8430f6-0aaf-438f-ad96-65078d80e3b8" />
+          </generalization>
+        </subclasses>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="1405670e-3a1a-4271-a5e4-5eaa682ab8f5">
+      <modelClass Id="67ffe714-b86d-496a-8e99-de20c8d245fc" tableName="MetadataProvider" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MetadataProviders" name="MetadataProvider" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="138e2cc3-9d20-47b4-ab6f-a18269d296f4" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="cb728d0a-485c-4ef1-91c2-715944d626ba" required="true" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="8080ebd6-72fe-4e44-8a43-1f81fffd007e" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="a628d308-646b-4f3c-af7d-24408b6063d3">
+      <modelClass Id="1cfe89ae-4c7f-4cfa-a939-56adc75be715" tableName="Person" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="People" name="Person" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="05ba027f-426f-4cbf-8ffd-2de20899b2b3" targetPropertyName="Sources" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="b1483c5c-f2a3-4151-8e25-cede46fbab0d" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="e03a1110-4276-4b3c-a4bf-6b78a08bec0d" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="25cd60b4-f614-4b93-a03c-60ff84484329" type="Guid" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="UrlId" autoProperty="false" minLength="0" columnName="UrlId" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="0751671b-5a41-460b-8afd-bc9e71756343" required="true" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="cfeec3b7-9d1d-4192-9bff-f53351248ef0" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="SourceId" autoProperty="false" minLength="0" columnName="SourceId" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="01e01d27-4607-48c6-8ada-3e6586914147" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="DateAdded" setterVisibility="Internal" autoProperty="false" minLength="0" columnName="DateAdded" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="a312b93e-85b1-4e1b-9419-5076b771b5c9" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" setterVisibility="Internal" autoProperty="false" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="ada575f8-af53-4f28-af04-f68917808665">
+      <modelClass Id="aae43516-5dc1-4e8b-9d49-767646006865" tableName="Episode" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Episodes" name="Episode" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="3e69679a-7226-4c39-9cf4-abb630aa0a99" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="d3d50f76-d4bb-46c6-b5ea-afac0765ce07" targetPropertyName="EpisodeMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="c92a5225-512d-43a7-9197-b30a10c50f45" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="da09990a-51d2-43fa-a6eb-3f135b503dc7" type="Int32" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="EpisodeNumber" autoProperty="false" minLength="0" columnName="EpisodeNumber" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="249c64dc-a08b-4458-b60e-a2a42d17a271">
+      <modelClass Id="c92a5225-512d-43a7-9197-b30a10c50f45" tableName="EpisodeMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="EpisodeMetadata" name="EpisodeMetadata" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="aafb5bb1-8fbb-4160-810b-0ea2f73cf35d" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" autoProperty="false" minLength="0" columnName="Outline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="8fe55bea-4312-4e77-9e1c-ff945e3ad69a" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Plot" autoProperty="false" minLength="0" columnName="Plot" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="793ff57b-16cb-4942-8220-b5ee0935f5dd" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Tagline" autoProperty="false" minLength="0" columnName="Tagline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="789e2a8b-9853-4a0d-aa7b-8a46d4a97291">
+      <modelClass Id="4f2c20cf-c5f0-4592-8888-aff4f27986a0" tableName="MediaFile" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MediaFiles" name="MediaFile" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="54664044-bf08-4c60-8ad1-e0c4d45b02ae" targetPropertyName="MediaFileStreams" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="44a483c3-8aa2-439f-8f11-9a931bfd0975" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="da2d6b55-095c-4f09-acc4-11e51606a09a" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="5858862b-db1e-4909-84ce-d2be36a4102b" required="true" maxLength="65535" indexed="false" indexedUnique="false" stringType="URl" summary="Relative to the LibraryRoot" name="Path" autoProperty="false" minLength="0" columnName="Path" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="815cbced-46d0-42b4-9cfc-279af6a79c89" type="MediaFileKind" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="Kind" autoProperty="false" minLength="0" columnName="Kind" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c4a73942-b57a-45f7-9fa9-47e95cd024f3" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="721527ca-a859-4864-b53d-2b89ab15c4c7">
+      <modelClass Id="44a483c3-8aa2-439f-8f11-9a931bfd0975" tableName="MediaFileStream" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MediaFileStream" name="MediaFileStream" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="49f5a8e4-4c0a-4a7a-b5a5-95804c733212" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="bcb9f2b9-93be-4ae0-95df-2cdb1781cfe9" type="Int32" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="StreamNumber" autoProperty="false" minLength="0" columnName="StreamNumber" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="f4304af2-b6e8-41e6-98e8-c89545bea49b" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4e8d3f45-b30c-427a-bee0-8eb66e0975f9">
+      <modelClass Id="dbaeac30-cef5-4f13-ac8f-553f72cce29e" tableName="PersonRole" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="PersonRoles" name="PersonRole" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="5cd5ab10-66a9-492e-b903-a1b7a19c48f8" targetMultiplicity="One" targetPropertyName="Person" targetDeleteAction="Cascade" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="1cfe89ae-4c7f-4cfa-a939-56adc75be715" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="d4728109-0b10-4e38-aafe-f471da9e2fa0" targetMultiplicity="ZeroOne" targetPropertyName="Artwork" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="4f3e230d-cb8f-47e8-bfc5-93d80151cc9e" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="e3a709e3-f555-436a-abab-c3c955d6bf65" targetPropertyName="Sources" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="b1483c5c-f2a3-4151-8e25-cede46fbab0d" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="e8300c3c-6a74-41da-8061-81edb937082c" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="a4e90162-d425-480c-97b0-dffad0452499" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Role" autoProperty="false" minLength="0" columnName="Role" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="8fd670c9-41fe-4a1f-9e11-3df73062722c" type="PersonRoleType" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="Type" autoProperty="false" minLength="0" columnName="Type" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="7b07fb66-4f93-4376-83b7-01e99f74462c" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4d96e675-c347-43ba-82dd-1e018787522c">
+      <modelClass Id="e9cb5b65-ef8c-4021-a2c1-fa5600f98b50" tableName="MusicAlbum" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MusicAlbums" name="MusicAlbum" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="8a1d099b-9df8-4ef2-8a1d-8dd7c230009c" targetPropertyName="MusicAlbumMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="c8943a8b-d7ce-4b3c-8eb0-2517cb098bdf" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="52705234-e7fe-4c6e-8bb9-e4345ae206aa" targetPropertyName="Tracks" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="2518ea14-6282-4da5-b4ae-43b3dbdfe198" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="ef0ca3f9-557e-4b3d-b7cf-eee93360cc4a">
+      <modelClass Id="2518ea14-6282-4da5-b4ae-43b3dbdfe198" tableName="Track" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Tracks" name="Track" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="8ef88860-0a57-42d3-a51e-ae11ed8e8998" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="c395059d-0d0e-4944-bce5-7eb49cc6ca72" targetPropertyName="TrackMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="c7ce359f-434d-4516-8682-d5ad16d74625" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="9be6e82d-0d37-4aa8-8f6f-920d04d43035" type="Int32" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="TrackNumber" autoProperty="false" minLength="0" columnName="TrackNumber" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="100a696b-75b7-4ab2-9604-4a07d22abb46">
+      <modelClass Id="c8943a8b-d7ce-4b3c-8eb0-2517cb098bdf" tableName="MusicAlbumMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MusicAlbumMetadata" name="MusicAlbumMetadata" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="2033c929-15f7-49be-860c-379ea1f57c22" targetPropertyName="Labels" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="95550229-18f2-4285-8b35-283c49e1a62b" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="8b1cd193-76a1-4a29-bd17-06ec5121a7fe" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="Barcode" autoProperty="false" minLength="0" columnName="Barcode" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c6973220-6694-4f72-b8f8-6404bebbf9b8" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="LabelNumber" autoProperty="false" minLength="0" columnName="LabelNumber" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="9c6c46d7-6ed8-4f11-bf33-f46dd13b9b44" maxLength="2" indexed="false" indexedUnique="false" stringType="None" name="Country" autoProperty="false" minLength="0" columnName="Country" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="aae1e835-3382-44ce-a2d5-577b0e7d2ea5">
+      <modelClass Id="c7ce359f-434d-4516-8682-d5ad16d74625" tableName="TrackMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="TrackMetadata" name="TrackMetadata" isOutputDirectoryTracking="false" />
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="2aba11b2-b406-4555-ba70-1538e3f16a0e">
+      <modelClass Id="54c385f0-904f-4070-a30f-0a53c3d1f21c" tableName="Genre" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Genres" name="Genre" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="f6521083-c58e-4054-a8e8-c1b439b10298" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="05aaacea-5f11-4d6f-b48c-2c39cf425080" required="true" maxLength="255" indexed="true" indexedUnique="true" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="ba230185-c40e-453a-980a-40fcb3cb8a8d" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="9fce3d2b-e0f3-4c71-b651-4b0b4de31bd7">
+      <modelClass Id="fbf358b0-540d-4215-a93a-4197340ea821" tableName="Season" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Seasons" name="Season" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="b128884f-3552-4e25-86a1-59b656aca482" targetPropertyName="SeasonMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="0ac0aaf9-2d80-4486-830f-8bae4dea7124" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="63d23a21-0ce2-4924-88e7-b9c006779668" targetPropertyName="Episodes" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="aae43516-5dc1-4e8b-9d49-767646006865" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="15f9cfa9-49b9-4ce4-8b97-347e894434ab" type="Int32" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="SeasonNumber" autoProperty="false" minLength="0" columnName="SeasonNumber" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="1ade3c1c-aa77-4def-ac71-3d3e6b3fef5c">
+      <modelClass Id="0ac0aaf9-2d80-4486-830f-8bae4dea7124" tableName="SeasonMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="SeasonMetadata" name="SeasonMetadata" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="4f800dfe-eae1-44f1-9c36-017189005a11" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" autoProperty="false" minLength="0" columnName="Outline" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="deefa572-b6ae-4ad9-a749-a22eaa3aa4da">
+      <modelClass Id="4f3e230d-cb8f-47e8-bfc5-93d80151cc9e" tableName="Artwork" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Artwork" name="Artwork" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="74be7103-1b68-4e22-a1d3-1ee3c40fcd0d" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="0ce31902-d387-4980-9f65-de0b1435680a" required="true" maxLength="65535" indexed="false" indexedUnique="false" stringType="URl" name="Path" autoProperty="false" minLength="0" columnName="Path" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="3dd60b2d-8e70-4c83-a1ab-1a9e322fd5e9" type="ArtKind" required="true" maxLength="" indexed="true" indexedUnique="false" stringType="None" name="Kind" autoProperty="false" minLength="0" columnName="Kind" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="75476c23-0e4f-432c-b6af-b457adf398fa" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4e940cb2-792f-4a19-940c-1a8f0c80d68e">
+      <modelClass Id="a32f3f8c-3434-41b7-9957-c839c520eda7" tableName="CustomItem" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CustomItems" name="CustomItem" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="b8374825-8e92-4a91-9208-389d1821e85e" targetPropertyName="CustomItemMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="9690b77b-4fcc-4811-bb56-fed005e6da73" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="28c5b191-9f13-41d5-8469-a6fba8a0118b" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="54e03653-b902-4cf5-896a-dc4c3d2aaa9e">
+      <modelClass Id="9690b77b-4fcc-4811-bb56-fed005e6da73" tableName="CustomItemMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CustomItemMetadata" name="CustomItemMetadata" isOutputDirectoryTracking="false" />
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="5d0aa8cc-4b1e-4cce-a186-183da9bb1077">
+      <modelClass Id="cf9b1363-d1a2-46b7-a1ec-56a7b0a418da" tableName="Book" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Books" name="Book" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="9226fcf7-7a1e-44ec-81e4-f04a3caf6fdd" targetPropertyName="BookMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="f2238a16-e071-444b-8ae0-7d5ea623c9e9" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="498db0be-cab5-422f-9122-1bc21f2db1ac" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="7fc23d51-c59d-443e-8ba9-c166d5d6b8ba">
+      <modelClass Id="f2238a16-e071-444b-8ae0-7d5ea623c9e9" tableName="BookMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="BookMetadata" name="BookMetadata" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="ec482df9-81a6-4640-8cc7-36adb12cd553" targetPropertyName="Publishers" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="95550229-18f2-4285-8b35-283c49e1a62b" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="56b04b73-19fc-4cce-8c20-587b9882aa42" type="Int64" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="ISBN" autoProperty="false" minLength="0" columnName="ISBN" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="5478ce64-a457-45b6-b32a-9b7e622836f9">
+      <modelClass Id="f32f0559-16a8-49b1-b286-b5457536ba3f" tableName="Collection" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Collections" name="Collection" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="670d174c-475c-4b07-a2be-45ea05a389f4" targetPropertyName="CollectionItem" collectionClass="LinkedList" isCollectionClassTracking="false" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="2c9d2573-9e84-4c13-8b98-e5d7807b609e" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="475d51b7-476f-48dc-a8a8-865406883c61" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="6f2fda80-5c5f-4548-a332-81a32f03b664" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="3e1fa05f-c786-47db-ba22-16b267968780" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="94cfb234-3719-4a3f-bbc9-75d3c6dc5cce">
+      <modelClass Id="2c9d2573-9e84-4c13-8b98-e5d7807b609e" tableName="CollectionItem" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CollectionItems" name="CollectionItem" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="34ea1af3-6b25-42e9-909b-17584c2eacce" targetMultiplicity="One" targetPropertyName="LibraryItem" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="443c920c-ba7c-4ab8-b2e5-42b46668399a" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="0c5ee1eb-cebc-4fc0-a3f2-04ea65f9f58b" targetMultiplicity="ZeroOne" targetPropertyName="Next" collectionClass="HashSet" targetDescription="TODO check if this properly updated dependant and has the proper principal relationship" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="2c9d2573-9e84-4c13-8b98-e5d7807b609e" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="56b19748-c9ed-4490-8a9b-8d73ff240cb1" targetMultiplicity="ZeroOne" targetPropertyName="Previous" collectionClass="HashSet" targetDescription="TODO check if this properly updated dependant and has the proper principal relationship" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="2c9d2573-9e84-4c13-8b98-e5d7807b609e" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="06b791a8-fa57-4098-9b54-40a0222f00a5" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="6eb00226-5f0a-4f54-8214-ef9f9d67d5e3" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4e6c1a98-dc25-49d2-8787-e456f6515a30">
+      <modelClass Id="a8c50148-d182-4e10-8d63-c2ef2aa3ad66" tableName="Chapter" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Chapters" name="Chapter" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="c09b3c24-5d61-4c71-8d47-f6cd3b990f0c" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="614ae84a-a5c6-460e-8370-2e9ba001a3e4" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="766c7a8f-6c6a-48bf-ba80-b15c0d4f7a4b" required="true" maxLength="3" indexed="false" indexedUnique="false" stringType="None" summary="ISO-639-3 3-character language codes" name="Language" autoProperty="false" minLength="3" columnName="Language" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="522817e9-dbbe-4cb6-a5b4-da72e14276bf" type="Int64" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="TimeStart" autoProperty="false" minLength="0" columnName="TimeStart" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c7ef71cc-b776-4e79-9801-ad89b474e31e" type="Int64" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="TimeEnd" autoProperty="false" minLength="0" columnName="TimeEnd" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="852a1dcb-cb70-43f7-86af-979a7a7e8903" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="b778b610-3683-43c5-bb22-9670ceca9ace">
+      <modelClass Id="d9db9cdb-1e90-479c-9383-bc7ce2eab1b4" tableName="Photo" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Photo" name="Photo" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="70c87b90-3b60-4a33-899b-37d7d90869df" targetPropertyName="PhotoMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="3038ac78-5930-4994-a407-8704d5dfa0ef" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="72623ce9-0142-49a6-a7bb-ff5a1797cb15">
+      <modelClass Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" tableName="PhotoMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="PhotoMetadata" name="PhotoMetadata" isOutputDirectoryTracking="false" />
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4351dc65-faec-40c0-8f88-efedf286e0f6">
+      <modelClass Id="6363388b-d07e-4e8d-a70e-aa8f4b5d1a31" tableName="Rating" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Ratings" name="Rating" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="68ff0fe6-460e-451b-be6e-801bfd3cd022" targetMultiplicity="ZeroOne" targetPropertyName="RatingType" collectionClass="HashSet" targetSummary="If this is NULL it's the internal user rating." sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="dba03cea-aba7-4ea0-b139-663bd5fb89dd" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="a8495ba4-a45b-47b9-beeb-39790a97b542" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="e1f79680-55a6-4459-a706-3281676a6696" type="Double" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="Value" autoProperty="false" minLength="0" columnName="Value" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="5370167e-20b6-44ca-922f-5e87225904f2" type="Int32" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="Votes" autoProperty="false" minLength="0" columnName="Votes" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="8ba4e4ca-de1b-4d82-9225-596b6456df80" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="15ce70e5-15da-4230-b2fe-8c9d7ebe66a9">
+      <modelClass Id="dba03cea-aba7-4ea0-b139-663bd5fb89dd" tableName="RatingType" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="RatingSources" name="RatingSource" isOutputDirectoryTracking="false" summary="This is the entity to store review ratings, not age ratings">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="3aa8df33-e69c-46ee-bc16-233ea5922645" targetMultiplicity="ZeroOne" targetPropertyName="Source" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="b1483c5c-f2a3-4151-8e25-cede46fbab0d" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="149de4e0-96e1-418b-8381-22750c25c9c5" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="4e8e2579-dd56-4023-8e16-02f35aca9481" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="false" minLength="0" columnName="Name" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="dcbd782e-7462-485c-90b8-ded35aa22c8e" type="Double" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="MaximumValue" autoProperty="false" minLength="0" columnName="MaximumValue" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c9bed595-d7e1-4bdc-96e9-054f1059a7e0" type="Double" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="MinimumValue" autoProperty="false" minLength="0" columnName="MinimumValue" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="082279cd-90b5-4959-8898-072b9983c458" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="c04face8-8ec9-4a09-b37c-d1c903428a50">
+      <modelClass Id="b1483c5c-f2a3-4151-8e25-cede46fbab0d" tableName="MetadataProviderId" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MetadataProviderIds" name="MetadataProviderId" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="3e12d1b2-3d2a-4257-bdc4-35d3f7ccc235" targetMultiplicity="One" targetPropertyName="MetadataProvider" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="67ffe714-b86d-496a-8e99-de20c8d245fc" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="e987635b-ec27-4b43-84cc-cfd765107772" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="fda4a600-818d-4c49-ae16-b398cca79e93" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="ProviderId" autoProperty="false" minLength="0" columnName="ProviderId" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="0d311029-a547-447b-ad25-5dbe3e6ce9ec" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="c2d9ac16-29c2-470b-92a2-37093e8ca0ab">
+      <modelClass Id="95550229-18f2-4285-8b35-283c49e1a62b" tableName="Company" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Companies" name="Company" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="378c08aa-8065-4c11-ad1a-561b822096a3" targetPropertyName="CompanyMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="6a8430f6-0aaf-438f-ad96-65078d80e3b8" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="20ef9724-6301-4d73-8b80-56a241a27f3a" targetMultiplicity="ZeroOne" targetPropertyName="Parent" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="95550229-18f2-4285-8b35-283c49e1a62b" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="db06623c-801a-4ebe-aab4-c74104f23d74" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="a5e6d012-2e91-4a2c-a28a-dfe0e13bc25d" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="b95b94f7-1eb1-4a1a-a32b-72c73657e03f">
+      <modelClass Id="6a8430f6-0aaf-438f-ad96-65078d80e3b8" tableName="CompanyMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CompanyMetadata" name="CompanyMetadata" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="2b62e8eb-ee4f-46ab-8acf-f05f9f202aa1" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Description" autoProperty="false" minLength="0" columnName="Description" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="7f6b15f9-4426-4feb-a501-12067a8d484a" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="Headquarters" autoProperty="false" minLength="0" columnName="Headquarters" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c12c2895-8454-49a9-a755-26e866a34d62" maxLength="2" indexed="false" indexedUnique="false" stringType="None" name="Country" autoProperty="false" minLength="0" columnName="Country" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="146fc54b-0bb0-42c1-a766-db77b3daf0f9" maxLength="1024" indexed="false" indexedUnique="false" stringType="URl" name="Homepage" autoProperty="false" minLength="0" columnName="Homepage" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="8a3ebc6a-e676-44a0-9c69-d331e1d0739d">
+      <modelClass Id="a9e1df16-11a1-4e3d-86b5-f281c4bfa96b" tableName="LibraryRoot" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="LibraryRoot" name="LibraryRoot" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="c81a4808-e4ff-4db9-8282-bb8c1ba3747a" targetMultiplicity="One" targetPropertyName="Library" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="68c60175-eab8-4d70-bb11-0bf48d3a27b7" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="46770a6a-5fdd-40f5-bd00-40c4e725d9e0" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="false" minLength="0" columnName="Id" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="97863f0a-6e2d-4048-8f88-b3066d370480" required="true" maxLength="65535" indexed="false" indexedUnique="false" stringType="URl" summary="Absolute Path" name="Path" autoProperty="false" minLength="0" columnName="Path" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="ee42d063-bdc7-4f1f-a63b-1e93f938b13a" maxLength="65535" indexed="false" indexedUnique="false" stringType="URl" summary="Absolute network path, for example for transcoding sattelites." name="NetworkPath" autoProperty="false" minLength="0" columnName="NetworkPath" columnType="default" implementNotify="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="3f0f1192-10e6-4a03-be28-51a0e5587a9f" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LastModified" autoProperty="true" minLength="0" columnName="LastModified" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4273d508-3e2f-4b0c-be31-2168500176f7">
+      <modelClass Id="451f1bd2-c5ca-4968-9720-94f4c71774ec" tableName="Users" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Users" name="User" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="2113d8f9-45da-4160-bfea-83cc31cd4024" targetPropertyName="Groups" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="6cdc7d21-91ba-4048-aadd-7d113c74b680" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="19d16826-2c34-4ca4-9be3-0cbfdc01c23b" targetPropertyName="Permissions" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="d73ceb76-2caf-48f2-be8f-61bbfd5bf8f0" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="27f101de-0ccf-48d8-8475-0a97bb14c677" targetPropertyName="ProviderMappings" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="462f5852-9997-4453-900b-d848a6d93c28" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="fce32921-3893-49ea-b38d-b4c532f875d7" targetPropertyName="Preferences" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="4a1abb00-ed19-4597-a0f3-c51bc9e897b9" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="e85b4071-d254-42be-8863-9cad9869f2d3" type="Guid" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="true" minLength="0" columnName="Id" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="7a89a466-9e3f-4005-9bdd-8e3b5be46291" type="Binary" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="LastLoginTimestamp" autoProperty="true" minLength="0" columnName="LastLoginTimestamp" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="90dc0c43-3058-440a-9059-d56e8a66996e" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="Username" autoProperty="true" minLength="0" columnName="Username" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="64a771d8-3689-4b2c-a84a-24e7cefe8477" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Password" autoProperty="true" minLength="0" columnName="Password" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="f255abde-e880-41e3-adca-87b6f3c94501" type="Boolean" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="MustUpdatePassword" autoProperty="true" minLength="0" columnName="MustUpdatePassword" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="84b1362d-ec79-45b9-96dc-c5b1da244e62" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="AudioLanguagePreference" autoProperty="true" minLength="0" columnName="AudioLanguagePreference" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="2c44ed42-1077-4cf0-ad9a-fcc97fed6547" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="AuthenticationProviderId" autoProperty="true" minLength="0" columnName="AuthenticationProviderId" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="2c5ed6d0-18af-4750-972f-85304514aedc" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="GroupedFolders" autoProperty="true" minLength="0" columnName="GroupedFolders" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="8ab77f98-6151-4643-9dc8-0ddc59ba3d7e" type="Int32" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="InvalidLoginAttemptCount" autoProperty="true" minLength="0" columnName="InvalidLoginAttemptCount" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="de21178d-b7ba-4823-87b2-707a4a2389ae" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="LatestItemExcludes" autoProperty="true" minLength="0" columnName="LatestItemExcludes" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="004713c3-d0e6-4b75-a632-f3a458fea29e" type="Int32" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LoginAttemptsBeforeLockout" autoProperty="true" minLength="0" columnName="LoginAttemptsBeforeLockout" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="be99e8a5-77e0-442e-b8a4-60cbc664d321" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="MyMediaExcludes" autoProperty="true" minLength="0" columnName="MyMediaExcludes" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="a6c1cbd2-8d66-4ab5-a009-b5c4e339bb57" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="OrderedViews" autoProperty="true" minLength="0" columnName="OrderedViews" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="23d47bfa-c941-4d5e-8eb2-bd7f2b8ac2f3" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="SubtitleMode" autoProperty="true" minLength="0" columnName="SubtitleMode" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="1ea880da-356a-4f92-822d-e5645a39d44b" type="Boolean" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="PlayDefaultAudioTrack" autoProperty="true" minLength="0" columnName="PlayDefaultAudioTrack" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="b496d8e9-9fa4-437b-8762-5cf00db2717e" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="SubtitleLanguagePrefernce" autoProperty="true" minLength="0" columnName="SubtitleLanguagePrefernce" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c180b240-761b-4b51-85d4-f8e1aeac47cb" type="Boolean" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="DisplayMissingEpisodes" autoProperty="true" minLength="0" columnName="DisplayMissingEpisodes" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="50b4282d-76a2-476c-9876-2922f7413839" type="Boolean" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="DisplayCollectionsView" autoProperty="true" minLength="0" columnName="DisplayCollectionsView" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="36e4200b-3e28-4daa-8b43-3117766788a5" type="Boolean" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="HidePlayedInLatest" autoProperty="true" minLength="0" columnName="HidePlayedInLatest" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="fc82dc02-02f7-47d7-a769-3a75567aeca7" type="Boolean" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="RememberAudioSelections" autoProperty="true" minLength="0" columnName="RememberAudioSelections" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="a9fae895-d53b-4081-a65c-8bd201f20f06" type="Boolean" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="RememberSubtitleSelections" autoProperty="true" minLength="0" columnName="RememberSubtitleSelections" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="365ed02a-eaff-423d-abf4-f65871bea6b9" type="Boolean" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="EnableNextEpisodeAutoPlay" autoProperty="true" minLength="0" columnName="EnableNextEpisodeAutoPlay" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="e3977ea2-b8c5-4317-b2c5-c783417aa556" type="Boolean" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="EnableUserPreferenceAccess" autoProperty="true" minLength="0" columnName="EnableUserPreferenceAccess" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="aec69260-53ae-4d16-bf1b-f5b2d8bd22b8">
+      <modelClass Id="6cdc7d21-91ba-4048-aadd-7d113c74b680" tableName="Groups" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Groups" name="Group" isOutputDirectoryTracking="false">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="23d5d283-cab6-4948-8046-a2a6e14697d9" targetPropertyName="GroupPermissions" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="d73ceb76-2caf-48f2-be8f-61bbfd5bf8f0" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="3570898a-8a50-4250-9727-96b48b52f79a" targetPropertyName="ProviderMappings" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="462f5852-9997-4453-900b-d848a6d93c28" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="01a6fae5-6e78-458e-b32e-e192f49f6437" targetPropertyName="Preferences" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None" targetImplementNotify="false">
+            <modelClassMoniker Id="4a1abb00-ed19-4597-a0f3-c51bc9e897b9" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="7ac0913d-56b6-4fff-ac56-7991b3f869d2" type="Guid" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="true" minLength="0" columnName="Id" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="4c270d50-4aa0-4559-bd7c-332f1a0ff6e8" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="true" minLength="0" columnName="Name" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="aa95f48f-9af0-49dc-b4a0-242f91dd3d22">
+      <modelClass Id="d73ceb76-2caf-48f2-be8f-61bbfd5bf8f0" tableName="Permissions" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Permissions" name="Permission" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="18421e07-5135-41ef-ae52-29e2a9fbf9b3" type="Guid" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="true" minLength="0" columnName="Id" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="2b828ea1-b699-4e5d-a23c-ba988ac305f6" type="PermissionKind" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="Kind" autoProperty="false" minLength="0" columnName="Kind" columnType="default" implementNotify="true" isImplementNotifyTracking="false" isAutoPropertyTracking="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="53b44096-73a5-48ab-9c91-2a863b80e3cb" type="Boolean" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="Value" autoProperty="true" minLength="0" columnName="Value" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="dfb6b0de-a607-4816-bda2-e586b09b045b">
+      <modelClass Id="4a1abb00-ed19-4597-a0f3-c51bc9e897b9" tableName="Preferences" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Preferences" name="Preference" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="8d02968d-6db0-457e-816f-a9681d30e2b8" type="Guid" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="true" minLength="0" columnName="Id" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="fed8ea5e-96c5-4ecc-8950-91a27ce581eb" type="PreferenceKind" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="Kind" autoProperty="true" minLength="0" columnName="Kind" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="2eadd53d-7c3e-4ce3-a1ce-772700551146" required="true" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Value" autoProperty="true" minLength="0" columnName="Value" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4b681023-75da-44e0-a67f-02729a136b17">
+      <modelClass Id="462f5852-9997-4453-900b-d848a6d93c28" tableName="ProviderMappings" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="ProviderMappings" name="ProviderMapping" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="236657c5-5cee-46cf-b79f-182485447338" type="Guid" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="true" minLength="0" columnName="Id" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="f59fe8ac-50bd-4f0e-a861-d72356f1cd5c" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="ProviderName" autoProperty="true" minLength="0" columnName="ProviderName" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="5966bfbe-3d4c-4803-9537-4927304ea9cb" required="true" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="ProviderSecrets" autoProperty="true" minLength="0" columnName="ProviderSecrets" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="6f7ad55e-f851-48fd-8b26-53e383767db1" required="true" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="ProviderData" autoProperty="true" minLength="0" columnName="ProviderData" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="cbad992c-3778-416f-8b25-556317123cd3">
+      <modelClass Id="03a49541-1ba4-4feb-b29d-e3f25541ee1b" tableName="ActivityLogs" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="ActivityLogs" name="ActivityLog" isOutputDirectoryTracking="false">
+        <attributes>
+          <modelAttribute Id="f0ffd3a5-1533-4055-9777-4092e66aee28" type="Int32" isIdentity="true" required="true" maxLength="" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" autoProperty="true" minLength="0" columnName="Id" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="06ef3527-7b64-4c1f-a6dd-fcf193a1c45f" required="true" maxLength="512" indexed="false" indexedUnique="false" stringType="None" name="Name" autoProperty="true" minLength="0" columnName="Name" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="679a67bf-d76c-49a1-9681-ea5671c360a3" maxLength="512" indexed="false" indexedUnique="false" stringType="None" name="Overview" autoProperty="true" minLength="0" columnName="Overview" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="d86b1a30-df99-4e1e-9768-9f5d6927b696" maxLength="512" indexed="false" indexedUnique="false" stringType="None" name="ShortOverview" autoProperty="true" minLength="0" columnName="ShortOverview" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="b0b8f688-d408-43d6-ab04-39619ecef845" required="true" maxLength="256" indexed="false" indexedUnique="false" stringType="None" name="Type" autoProperty="true" minLength="0" columnName="Type" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="838108ad-2723-4a2e-b85a-7541f02eaf6d" type="Guid" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="UserId" autoProperty="true" minLength="0" columnName="UserId" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="c13ec836-a080-4625-b981-afc7c1205522" maxLength="256" indexed="false" indexedUnique="false" stringType="None" name="ItemId" autoProperty="true" minLength="0" columnName="ItemId" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="d8ef8195-139d-41be-9552-6bf66e09ca14" type="DateTime" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="DateCreated" autoProperty="true" minLength="0" columnName="DateCreated" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+          <modelAttribute Id="8cfcf78c-72be-4ab1-816e-9978ec6750f3" type="LogLevel" required="true" maxLength="" indexed="false" indexedUnique="false" stringType="None" name="LogSeverity" autoProperty="true" minLength="0" columnName="LogSeverity" columnType="default" implementNotify="false" isForeignKeyFor="00000000-0000-0000-0000-000000000000" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+  </classes>
+  <diagrams>
+    <modelRootHasModelDiagrams Id="e0fcc4ca-d1ff-47e0-a5ee-a2d9c1f9eac2">
+      <modelDiagramData name="Jellyfin.Data" />
+    </modelRootHasModelDiagrams>
+  </diagrams>
+</modelRoot>

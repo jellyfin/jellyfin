@@ -16,14 +16,9 @@ namespace Jellyfin.Server.Migrations
         /// </summary>
         private static readonly Type[] _migrationTypes =
         {
-            typeof(Routines.DisableTranscodingThrottling),
-            typeof(Routines.CreateUserLoggingConfigFile),
-            typeof(Routines.MigrateActivityLogDb),
-            typeof(Routines.RemoveDuplicateExtras),
-            typeof(Routines.AddDefaultPluginRepository),
-            typeof(Routines.MigrateUserDb),
-            typeof(Routines.ReaddDefaultPluginRepository),
-            typeof(Routines.MigrateDisplayPreferencesDb)
+            new Routines.DisableTranscodingThrottling(),
+            new Routines.CreateUserLoggingConfigFile(),
+            new Routines.MigrateActivityLogDb()
         };
 
         /// <summary>

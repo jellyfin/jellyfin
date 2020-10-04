@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
     "MessageServerConfigurationUpdated": "Tenar konfigurasjonen har blitt oppdatert",
     "MessageNamedServerConfigurationUpdatedWithValue": "Tenar konfigurasjon seksjon {0} har blitt oppdatert",
@@ -115,3 +116,6 @@
     "NotificationOptionUserLockedOut": "Brukar er utestengd",
     "NotificationOptionTaskFailed": "Planlagt oppgåve feila"
 }
+=======
+{}
+>>>>>>> master

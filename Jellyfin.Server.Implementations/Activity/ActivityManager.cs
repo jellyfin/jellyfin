@@ -1,8 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
+using Jellyfin.Data;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
 
@@ -13,10 +12,13 @@ namespace Jellyfin.Server.Implementations.Activity
     /// </summary>
     public class ActivityManager : IActivityManager
     {
-        private readonly JellyfinDbProvider _provider;
+        /// <inheritdoc/>
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+
+        private JellyfinDbProvider _provider;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityManager"/> class.
+        /// Creates a new instance of the <see cref="ActivityManager"/> class.
         /// </summary>
         /// <param name="provider">The Jellyfin database provider.</param>
         public ActivityManager(JellyfinDbProvider provider)
@@ -25,53 +27,64 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
-
-        /// <inheritdoc/>
-        public async Task CreateAsync(ActivityLog entry)
+        public void Create(ActivityLog entry)
         {
-            await using var dbContext = _provider.CreateContext();
-
+            using var dbContext = _provider.GetConnection();
             dbContext.ActivityLogs.Add(entry);
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            dbContext.SaveChanges();
 
             EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
         }
 
         /// <inheritdoc/>
-        public QueryResult<ActivityLogEntry> GetPagedResult(
-            Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>> func,
-            int? startIndex,
-            int? limit)
+        public async Task CreateAsync(ActivityLog entry)
         {
-            using var dbContext = _provider.CreateContext();
+            using var dbContext = _provider.GetConnection();
+            await dbContext.ActivityLogs.AddAsync(entry);
+            await dbContext.SaveChangesAsync();
 
-            var query = func(dbContext.ActivityLogs.OrderByDescending(entry => entry.DateCreated));
+            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
+        }
+
+        /// <inheritdoc/>
+        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
+        {
+            using var dbConnection = _provider.GetConnection();
+            var result = dbConnection.ActivityLogs.AsQueryable();
+
+            if (minDate.HasValue)
+            {
+                result = result.Where(entry => entry.DateCreated >= minDate.Value);
+            }
+
+            if (hasUserId.HasValue)
+            {
+                result = result.Where(entry => hasUserId.Value != Equals(entry.UserId, Guid.Empty));
+            }
 
             if (startIndex.HasValue)
             {
-                query = query.Skip(startIndex.Value);
+                result = result.Where(entry => entry.Id >= startIndex.Value);
             }
 
-            if (limit.HasValue)
+            if (limit.HasValue && limit.Value > 0)
             {
-                query = query.Take(limit.Value);
+                result = result.OrderByDescending(entry => entry.DateCreated).Take(limit.Value);
             }
 
             // This converts the objects from the new database model to the old for compatibility with the existing API.
-            var list = query.Select(ConvertToOldModel).ToList();
+            var list = result.Select(entry => ConvertToOldModel(entry)).ToList();
 
-            return new QueryResult<ActivityLogEntry>
+            return new QueryResult<ActivityLogEntry>()
             {
-                Items = list,
-                TotalRecordCount = func(dbContext.ActivityLogs).Count()
+                Items = list
             };
         }
 
         /// <inheritdoc/>
-        public QueryResult<ActivityLogEntry> GetPagedResult(int? startIndex, int? limit)
+        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
         {
-            return GetPagedResult(logs => logs, startIndex, limit);
+            return GetActivityLogEntries(minDate, null, startIndex, limit);
         }
 
         private static ActivityLogEntry ConvertToOldModel(ActivityLog entry)
@@ -82,7 +95,7 @@ namespace Jellyfin.Server.Implementations.Activity
                 Name = entry.Name,
                 Overview = entry.Overview,
                 ShortOverview = entry.ShortOverview,
-                Type = entry.Type,
+                Type = entry.Type.ToString(),
                 ItemId = entry.ItemId,
                 UserId = entry.UserId,
                 Date = entry.DateCreated,

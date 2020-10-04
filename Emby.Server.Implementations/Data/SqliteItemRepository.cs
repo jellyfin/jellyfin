@@ -2988,30 +2988,33 @@ namespace Emby.Server.Implementations.Data
         private string GetOrderByText(InternalItemsQuery query)
         {
             var orderBy = query.OrderBy;
-            bool hasSimilar = query.SimilarTo != null;
-            bool hasSearch = !string.IsNullOrEmpty(query.SearchTerm);
-
-            if (hasSimilar || hasSearch)
+            if (string.IsNullOrEmpty(query.SearchTerm))
             {
-                List<(string, SortOrder)> prepend = new List<(string, SortOrder)>(4);
-                if (hasSearch)
+                int oldLen = orderBy.Count;
+                if (oldLen == 0 && query.SimilarTo != null)
                 {
-                    prepend.Add(("SearchScore", SortOrder.Descending));
-                    prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
+                    var arr = new (string, SortOrder)[oldLen + 2];
+                    orderBy.CopyTo(arr, 0);
+                    arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
+                    arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
+                    query.OrderBy = arr;
                 }
 
                 if (hasSimilar)
-                {
-                    prepend.Add(("SimilarityScore", SortOrder.Descending));
-                    prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
-                }
-
-                var arr = new (string, SortOrder)[prepend.Count + orderBy.Count];
-                prepend.CopyTo(arr, 0);
-                orderBy.CopyTo(arr, prepend.Count);
-                orderBy = query.OrderBy = arr;
+=======
             }
-            else if (orderBy.Count == 0)
+            else
+            {
+                query.OrderBy = new[]
+>>>>>>> master
+                {
+                    ("SearchScore", SortOrder.Descending),
+                    (ItemSortBy.SortName, SortOrder.Ascending)
+                };
+            }
+
+
+            if (orderBy.Count == 0)
             {
                 return string.Empty;
             }

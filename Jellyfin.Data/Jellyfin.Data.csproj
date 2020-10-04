@@ -1,52 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Stability)'=='Unstable'">
-    <!-- Include all symbols in the main nupkg until Azure Artifact Feed starts supporting ingesting NuGet symbol packages. -->
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Authors>Jellyfin Contributors</Authors>
-    <PackageId>Jellyfin.Data</PackageId>
-    <VersionPrefix>10.7.0</VersionPrefix>
-    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-  </ItemGroup>
-
-  <!-- Code analysers-->
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
-    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
-    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.8" />
+    <None Update="Jellyfin.Data.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Jellyfin.Data.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Jellyfin.Data.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Jellyfin.Data.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\" />
+    <Folder Include="Enums\" />
+    <Folder Include="Structs\" />
   </ItemGroup>
 
 </Project>

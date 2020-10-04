@@ -1774,7 +1774,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return string.Format(
+            var output = string.Empty;
+
+            if (allowTimeStampCopy)
+            {
+                output += " -copyts";
+            }
+
+            output += string.Format(
                 CultureInfo.InvariantCulture,
                 retStr,
                 mapPrefix,
@@ -1782,6 +1789,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 state.VideoStream.Index,
                 outputSizeParam.ToString(),
                 videoSizeParam);
+
+            return output;
         }
 
         private (int? width, int? height) GetFixedOutputSize(
@@ -2247,6 +2256,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isVaapiH264Encoder)
             {
                 if (hasTextSubs)
+                {
+                    // Test passed on Intel and AMD gfx
+                    filters.Add("hwmap=mode=read+write");
+                    filters.Add("format=nv12");
+                }
+            }
+
+            // Add parameters to use VAAPI with burn-in text subttiles (GH issue #642)
+            if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase) && options.EnableHardwareEncoding)
+            {
+                if (state.SubtitleStream != null
+                    && state.SubtitleStream.IsTextSubtitleStream
+                    && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
                 {
                     // Test passed on Intel and AMD gfx
                     filters.Add("hwmap=mode=read+write");

@@ -47,7 +47,9 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using Jellyfin.Api.Helpers;
+using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Activity;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -99,7 +101,9 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
@@ -241,7 +245,12 @@ namespace Emby.Server.Implementations
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
+        /// Gets the database provider.
+        /// </summary>
+        public JellyfinDbProvider DatabaseProvider { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
@@ -535,8 +544,15 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
 
-            ServiceCollection.AddSingleton(_fileSystemManager);
-            ServiceCollection.AddSingleton<TvdbClientManager>();
+            // TODO: Remove support for injecting ILogger completely
+            serviceCollection.AddSingleton((provider) =>
+            {
+                Logger.LogWarning("Injecting ILogger directly is deprecated and should be replaced with ILogger<T>");
+                return Logger;
+            });
+
+            serviceCollection.AddSingleton(_fileSystemManager);
+            serviceCollection.AddSingleton<TvdbClientManager>();
 
             ServiceCollection.AddSingleton(_networkManager);
 
@@ -632,7 +648,11 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
-            ServiceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
+            serviceCollection.AddSingleton<IActivityRepository, ActivityRepository>();
+            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
+
+            serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
+            serviceCollection.AddSingleton<ISessionContext, SessionContext>();
 
             ServiceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
             ServiceCollection.AddSingleton<ISessionContext, SessionContext>();
