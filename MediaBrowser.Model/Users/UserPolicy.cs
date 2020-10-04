@@ -92,8 +92,6 @@ namespace MediaBrowser.Model.Users
 
         public int LoginAttemptsBeforeLockout { get; set; }
 
-        public int ActiveSessionCount { get; set; }
-
         public int MaxActiveSessions { get; set; }
 
         public bool EnablePublicSharing { get; set; }
