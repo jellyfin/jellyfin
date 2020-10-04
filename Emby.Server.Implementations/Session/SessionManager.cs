@@ -1484,7 +1484,7 @@ namespace Emby.Server.Implementations.Session
                 throw new SecurityException("User is not allowed access from this device.");
             }
 
-            int sessionsCount = Sessions.Where(i => string.Equals(i.UserId, user.Id)).ToList().Count;
+            int sessionsCount = Sessions.Count(i => string.Equals(i.UserId, user.Id, StringComparison.OrdinalIgnoreCase));
             int maxActiveSessions = user.MaxActiveSessions;
             _logger.LogInformation("Current/Max sessions for user {User}: {Sessions}/{Max}", user.Username, sessionsCount, maxActiveSessions);
             if (maxActiveSessions >= 1 && sessionsCount >= maxActiveSessions)
