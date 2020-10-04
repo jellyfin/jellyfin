@@ -1494,7 +1494,7 @@ namespace Emby.Server.Implementations.Session
                     user.Username,
                     sessionsCount,
                     maxActiveSessions
-                )
+                );
             }
 
             var token = GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);
