@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
