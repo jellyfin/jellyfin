@@ -1489,12 +1489,7 @@ namespace Emby.Server.Implementations.Session
             _logger.LogDebug("Current/Max sessions for user {User}: {Sessions}/{Max}", user.Username, sessionsCount, maxActiveSessions);
             if (maxActiveSessions >= 0 && sessionsCount >= maxActiveSessions)
             {
-                throw new SecurityException(
-                    "User {User} is at their maximum number of sessions ({Sessions}/{Max}).",
-                    user.Username,
-                    sessionsCount,
-                    maxActiveSessions
-                );
+                throw new SecurityException("User is at their maximum number of sessions.");
             }
 
             var token = GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);
