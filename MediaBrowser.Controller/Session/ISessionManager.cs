@@ -188,16 +188,16 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToAdminSessions<T>(SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user sessions.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken);
 
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, Func<T> dataFn, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.
@@ -208,7 +208,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserDeviceSessions<T>(string deviceId, SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the restart required message.
