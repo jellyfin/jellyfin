@@ -27,7 +27,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
         /// </summary>
-        public bool TrustAllIP6Interfaces { get; }
+        bool TrustAllIP6Interfaces { get; }
 
         /// <summary>
         /// Gets the remote address filter.
@@ -37,12 +37,12 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Gets or sets a value indicating whether iP6 is enabled.
         /// </summary>
-        public bool IsIP6Enabled { get; set; }
+        bool IsIP6Enabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether iP4 is enabled.
         /// </summary>
-        public bool IsIP4Enabled { get; set; }
+        bool IsIP4Enabled { get; set; }
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
@@ -57,7 +57,7 @@ namespace Jellyfin.Networking.Manager
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
         /// <returns>Netcollection.</returns>
-        public NetCollection GetLoopbacks();
+        NetCollection GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -138,7 +138,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
         /// <returns>Result of the check.</returns>
-        public bool IsGatewayInterface(object? addressObj);
+        bool IsGatewayInterface(object? addressObj);
 
         /// <summary>
         /// Returns true if the address is a private address.
@@ -227,6 +227,6 @@ namespace Jellyfin.Networking.Manager
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
         /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
-        public void UpdateSettings(ServerConfiguration config);
+        void UpdateSettings(ServerConfiguration config);
     }
 }
