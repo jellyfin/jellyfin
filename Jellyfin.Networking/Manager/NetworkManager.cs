@@ -211,12 +211,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsExcluded(EndPoint ip)
         {
-            if (ip != null)
-            {
-                return _excludedSubnets.Contains(((IPEndPoint)ip).Address);
-            }
-
-            return false;
+            return ip != null && IsExcluded(((IPEndPoint)ip).Address);
         }
 
         /// <inheritdoc/>
