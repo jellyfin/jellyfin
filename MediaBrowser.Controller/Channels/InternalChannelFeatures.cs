@@ -42,6 +42,7 @@ namespace MediaBrowser.Controller.Channels
         /// Indicates if a sort ascending/descending toggle is supported or not.
         /// </summary>
         public bool SupportsSortOrderToggle { get; set; }
+
         /// <summary>
         /// Gets or sets the automatic refresh levels.
         /// </summary>
@@ -53,6 +54,7 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <value>The daily download limit.</value>
         public int? DailyDownloadLimit { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports downloading].
         /// </summary>

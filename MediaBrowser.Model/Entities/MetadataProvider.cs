@@ -11,18 +11,22 @@ namespace MediaBrowser.Model.Entities
         /// The imdb.
         /// </summary>
         Imdb = 2,
+
         /// <summary>
         /// The TMDB.
         /// </summary>
         Tmdb = 3,
+
         /// <summary>
         /// The TVDB.
         /// </summary>
         Tvdb = 4,
+
         /// <summary>
         /// The tvcom.
         /// </summary>
         Tvcom = 5,
+
         /// <summary>
         /// Tmdb Collection Id.
         /// </summary>

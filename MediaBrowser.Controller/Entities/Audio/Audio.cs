@@ -90,7 +90,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
 
-
             if (ParentIndexNumber.HasValue)
             {
                 songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;

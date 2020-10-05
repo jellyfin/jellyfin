@@ -28,7 +28,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly object _syncLock = new object();
         private Timer _updateTimer;
 
-
         public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IUserManager userManager)
         {
             _userDataManager = userDataManager;

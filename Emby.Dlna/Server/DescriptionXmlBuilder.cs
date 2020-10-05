@@ -235,13 +235,13 @@ namespace Emby.Dlna.Server
                     .Append(SecurityElement.Escape(service.ServiceId ?? string.Empty))
                     .Append("</serviceId>");
                 builder.Append("<SCPDURL>")
-                    .Append(BuildUrl(service.ScpdUrl))
+                    .Append(BuildUrl(service.ScpdUrl, true))
                     .Append("</SCPDURL>");
                 builder.Append("<controlURL>")
-                    .Append(BuildUrl(service.ControlUrl))
+                    .Append(BuildUrl(service.ControlUrl, true))
                     .Append("</controlURL>");
                 builder.Append("<eventSubURL>")
-                    .Append(BuildUrl(service.EventSubUrl))
+                    .Append(BuildUrl(service.EventSubUrl, true))
                     .Append("</eventSubURL>");
 
                 builder.Append("</service>");
@@ -250,7 +250,13 @@ namespace Emby.Dlna.Server
             builder.Append("</serviceList>");
         }
 
-        private string BuildUrl(string url)
+        /// <summary>
+        /// Builds a valid url for inclusion in the xml.
+        /// </summary>
+        /// <param name="url">Url to include.</param>
+        /// <param name="absoluteUrl">Optional. When set to true, the absolute url is always used.</param>
+        /// <returns>The url to use for the element.</returns>
+        private string BuildUrl(string url, bool absoluteUrl = false)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -261,7 +267,7 @@ namespace Emby.Dlna.Server
 
             url = "/dlna/" + _serverUdn + "/" + url;
 
-            if (EnableAbsoluteUrls)
+            if (EnableAbsoluteUrls || absoluteUrl)
             {
                 url = _serverAddress.TrimEnd('/') + url;
             }

@@ -258,7 +258,6 @@ namespace MediaBrowser.Controller.Entities
                 IncludeItemTypes = new[] { typeof(Movie).Name },
                 Recursive = true,
                 EnableTotalRecordCount = false
-
             }).Items
                 .SelectMany(i => i.Genres)
                 .DistinctNames()
