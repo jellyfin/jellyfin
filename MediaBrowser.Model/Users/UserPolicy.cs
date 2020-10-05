@@ -146,7 +146,7 @@ namespace MediaBrowser.Model.Users
 
             LoginAttemptsBeforeLockout = -1;
 
-            MaxActiveSessions = -1;
+            MaxActiveSessions = 0;
 
             EnableAllChannels = true;
             EnabledChannels = Array.Empty<Guid>();
