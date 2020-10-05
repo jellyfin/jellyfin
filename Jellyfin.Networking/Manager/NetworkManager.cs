@@ -1232,7 +1232,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Attempts to match the source against am external interface.
+        /// Attempts to match the source against an external interface.
         /// </summary>
         /// <param name="source">IP source address to use.</param>
         /// <param name="result">The result, if a match is found.</param>
