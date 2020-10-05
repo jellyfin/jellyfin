@@ -93,7 +93,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See above).
+        /// (See GetBindInterface(IPObject souce, out int? port)).
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
