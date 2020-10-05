@@ -13,7 +13,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                 name: "MaxActiveSessions",
                 schema: "jellyfin",
                 table: "Users",
-                nullable: false);
+                nullable: false,
+                defaultValue: 0);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
