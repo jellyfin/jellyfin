@@ -218,37 +218,39 @@ namespace Jellyfin.Networking.Manager
         public NetCollection CreateIPCollection(string[] values, bool bracketed = false)
         {
             NetCollection col = new NetCollection();
-            if (values != null)
+            if (values == null)
             {
-                for (int a = 0; a < values.Length; a++)
-                {
-                    string v = values[a].Trim();
+                return col;
+            }
 
-                    try
+            for (int a = 0; a < values.Length; a++)
+            {
+                string v = values[a].Trim();
+
+                try
+                {
+                    if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) && v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) && v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
+                        if (bracketed)
                         {
-                            if (bracketed)
-                            {
-                                AddToCollection(col, v.Remove(v.Length - 1).Substring(1));
-                            }
-                        }
-                        else if (v.StartsWith("!", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (bracketed)
-                            {
-                                AddToCollection(col, v.Substring(1));
-                            }
-                        }
-                        else if (!bracketed)
-                        {
-                            AddToCollection(col, v);
+                            AddToCollection(col, v.Remove(v.Length - 1).Substring(1));
                         }
                     }
-                    catch (ArgumentException e)
+                    else if (v.StartsWith("!", StringComparison.OrdinalIgnoreCase))
                     {
-                        _logger.LogInformation("Ignoring LAN value {value}. Reason : {reason}", v, e.Message);
+                        if (bracketed)
+                        {
+                            AddToCollection(col, v.Substring(1));
+                        }
                     }
+                    else if (!bracketed)
+                    {
+                        AddToCollection(col, v);
+                    }
+                }
+                catch (ArgumentException e)
+                {
+                    _logger.LogInformation("Ignoring LAN value {value}. Reason : {reason}", v, e.Message);
                 }
             }
 
