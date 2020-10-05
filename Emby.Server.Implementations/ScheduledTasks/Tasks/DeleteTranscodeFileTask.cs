@@ -45,7 +45,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         {
             return new[]
             {
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerDaily, TimeOfDayTicks = TimeSpan.FromHours(0).Ticks}
+                new TaskTriggerInfo
+                {
+                    Type = TaskTriggerInfo.TriggerDaily,
+                    TimeOfDayTicks = 0
+                }
             };
         }
 
