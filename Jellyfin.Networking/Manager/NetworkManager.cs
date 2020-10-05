@@ -336,7 +336,6 @@ namespace Jellyfin.Networking.Manager
         public string GetBindInterface(IPObject source, out int? port)
         {
             port = null;
-            bool isChromeCast = source == IPNetAddress.IP4Loopback;
             // Do we have a source?
             bool haveSource = !source.Address.Equals(IPAddress.None);
             bool isExternal = false;
@@ -355,7 +354,7 @@ namespace Jellyfin.Networking.Manager
 
                 isExternal = !IsInLocalNetwork(source);
 
-                if (MatchesPublishedServerUrl(source, isExternal, isChromeCast, out string result, out port))
+                if (MatchesPublishedServerUrl(source, isExternal, out string result, out port))
                 {
                     _logger.LogInformation("{0}: Using BindAddress {1}:{2}", source, result, port);
                     return result;
@@ -1020,8 +1019,7 @@ namespace Jellyfin.Networking.Manager
                                     };
 
                                     int tag = nw.Tag;
-                                    /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
-                                    if ((ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0) && !nw.IsLoopback())
+                                    if ((ipProperties.GatewayAddresses.Count > 0) && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1042,8 +1040,7 @@ namespace Jellyfin.Networking.Manager
                                     };
 
                                     int tag = nw.Tag;
-                                    /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
-                                    if ((ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0) && !nw.IsLoopback())
+                                    if ((ipProperties.GatewayAddresses.Count > 0) && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1103,11 +1100,10 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="source">IP source address to use.</param>
         /// <param name="isExternal">True if the source is in the external subnet.</param>
-        /// <param name="isChromeCast">True if the request is for a chromecast device.</param>
         /// <param name="bindPreference">The published server url that matches the source address.</param>
         /// <param name="port">The resultant port, if one exists.</param>
         /// <returns>True if a match is found.</returns>
-        private bool MatchesPublishedServerUrl(IPObject source, bool isExternal, bool isChromeCast, out string bindPreference, out int? port)
+        private bool MatchesPublishedServerUrl(IPObject source, bool isExternal, out string bindPreference, out int? port)
         {
             bindPreference = string.Empty;
             port = null;
@@ -1121,7 +1117,7 @@ namespace Jellyfin.Networking.Manager
                     bindPreference = addr.Value;
                     break;
                 }
-                else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && (isExternal || isChromeCast))
+                else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && isExternal)
                 {
                     // External.
                     bindPreference = addr.Value;
