@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDb))]
-    [Migration("20201004171403_MaxActiveSessions")]
-    partial class MaxActiveSessions
+    [Migration("20201004171403_AddMaxActiveSessions")]
+    partial class AddMaxActiveSessions
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

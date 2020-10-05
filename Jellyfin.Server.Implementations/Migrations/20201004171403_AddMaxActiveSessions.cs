@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Server.Implementations.Migrations
 {
-    public partial class MaxActiveSessions : Migration
+    public partial class AddMaxActiveSessions : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
