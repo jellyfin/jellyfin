@@ -41,17 +41,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
-        {
-            return new[]
-            {
-                new TaskTriggerInfo
-                {
-                    Type = TaskTriggerInfo.TriggerDaily,
-                    TimeOfDayTicks = 0
-                }
-            };
-        }
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => new List<TaskTriggerInfo>();
 
         /// <summary>
         /// Returns the task to be executed.
@@ -158,7 +148,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public bool IsHidden => false;
 
         /// <inheritdoc />
-        public bool IsEnabled => false;
+        public bool IsEnabled => true;
 
         /// <inheritdoc />
         public bool IsLogged => true;
