@@ -9,34 +9,34 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
+using TMDbLib.Objects.Find;
 
-namespace MediaBrowser.Providers.Plugins.Tmdb.TV
+namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
-    public class TmdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
+    public class TmdbMovieImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
 
-        public TmdbSeriesImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
+        public TmdbMovieImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
         }
 
-        public string Name => TmdbUtils.ProviderName;
+        public int Order => 0;
 
-        // After tvdb and fanart
-        public int Order => 2;
+        public string Name => TmdbUtils.ProviderName;
 
         public bool Supports(BaseItem item)
         {
-            return item is Series;
+            return item is Movie || item is Trailer;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
@@ -50,29 +50,43 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
-
-            if (string.IsNullOrEmpty(tmdbId))
-            {
-                return null;
-            }
-
             var language = item.GetPreferredMetadataLanguage();
 
-            var series = await _tmdbClientManager
-                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
+            var movieTmdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            if (movieTmdbId <= 0)
+            {
+                var movieImdbId = item.GetProviderId(MetadataProvider.Imdb);
+                if (string.IsNullOrEmpty(movieImdbId))
+                {
+                    return Enumerable.Empty<RemoteImageInfo>();
+                }
+
+                var movieResult = await _tmdbClientManager.FindByExternalIdAsync(movieImdbId, FindExternalSource.Imdb, language, cancellationToken).ConfigureAwait(false);
+                if (movieResult?.MovieResults != null && movieResult.MovieResults.Count > 0)
+                {
+                    movieTmdbId = movieResult.MovieResults[0].Id;
+                }
+            }
+
+            if (movieTmdbId <= 0)
+            {
+                return Enumerable.Empty<RemoteImageInfo>();
+            }
+
+            var movie = await _tmdbClientManager
+                .GetMovieAsync(movieTmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
                 .ConfigureAwait(false);
 
-            if (series?.Images == null)
+            if (movie?.Images == null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var remoteImages = new List<RemoteImageInfo>();
 
-            for (var i = 0; i < series.Images.Posters.Count; i++)
+            for (var i = 0; i < movie.Images.Posters.Count; i++)
             {
-                var poster = series.Images.Posters[i];
+                var poster = movie.Images.Posters[i];
                 remoteImages.Add(new RemoteImageInfo
                 {
                     Url = _tmdbClientManager.GetPosterUrl(poster.FilePath),
@@ -87,12 +101,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 });
             }
 
-            for (var i = 0; i < series.Images.Backdrops.Count; i++)
+            for (var i = 0; i < movie.Images.Backdrops.Count; i++)
             {
-                var backdrop = series.Images.Backdrops[i];
+                var backdrop = movie.Images.Backdrops[i];
                 remoteImages.Add(new RemoteImageInfo
                 {
-                    Url = _tmdbClientManager.GetBackdropUrl(backdrop.FilePath),
+                    Url = _tmdbClientManager.GetPosterUrl(backdrop.FilePath),
                     CommunityRating = backdrop.VoteAverage,
                     VoteCount = backdrop.VoteCount,
                     Width = backdrop.Width,
