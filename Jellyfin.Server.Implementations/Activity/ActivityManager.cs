@@ -45,7 +45,9 @@ namespace Jellyfin.Server.Implementations.Activity
         {
             await using var dbContext = _provider.CreateContext();
 
-            IQueryable<ActivityLog> entries = dbContext.ActivityLogs.OrderByDescending(entry => entry.DateCreated);
+            IQueryable<ActivityLog> entries = dbContext.ActivityLogs
+                .AsQueryable()
+                .OrderByDescending(entry => entry.DateCreated);
 
             if (query.MinDate.HasValue)
             {
@@ -59,10 +61,11 @@ namespace Jellyfin.Server.Implementations.Activity
 
             return new QueryResult<ActivityLogEntry>
             {
-                Items = await entries.Skip(query.StartIndex ?? 0)
+                Items = await entries
+                    .Skip(query.StartIndex ?? 0)
                     .Take(query.Limit ?? 100)
+                    .AsAsyncEnumerable()
                     .Select(ConvertToOldModel)
-                    .AsQueryable()
                     .ToListAsync()
                     .ConfigureAwait(false),
                 TotalRecordCount = await entries.CountAsync().ConfigureAwait(false)
