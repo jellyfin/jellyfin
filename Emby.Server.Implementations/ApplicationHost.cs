@@ -132,7 +132,6 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpClientFactory _httpClientFactory;
-        private IWebSocketManager _webSocketManager;
 
         private string[] _urlPrefixes;
 
@@ -680,7 +679,6 @@ namespace Emby.Server.Implementations
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpClientFactory = Resolve<IHttpClientFactory>();
-            _webSocketManager = Resolve<IWebSocketManager>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -801,7 +799,6 @@ namespace Emby.Server.Implementations
                         .ToArray();
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
-            _webSocketManager.Init(GetExports<IWebSocketListener>());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -1081,7 +1078,7 @@ namespace Emby.Server.Implementations
                         }
                         else
                         {
-                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
                             versions.Add((new Version(0, 0, 0, 1), metafile, dir));
                         }
                     }
