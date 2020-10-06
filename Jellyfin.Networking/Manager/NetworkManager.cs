@@ -596,7 +596,7 @@ namespace Jellyfin.Networking.Manager
                 throw new ArgumentNullException(nameof(config));
             }
 
-            IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
+            IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
             UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
