@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Emby.Server.Implementations.HttpServer;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using static MediaBrowser.Providers.Plugins.Tmdb.TmdbConfigurationExtensions;
 
 namespace Emby.Server.Implementations
 {
@@ -19,7 +19,8 @@ namespace Emby.Server.Implementations
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
             { PlaylistsAllowDuplicatesKey, bool.FalseString },
-            { BindToUnixSocketKey, bool.FalseString }
+            { BindToUnixSocketKey, bool.FalseString },
+            { TmdbApiKeyKey, "4219e299c89411838049ab0dab19ebd5" }
         };
     }
 }

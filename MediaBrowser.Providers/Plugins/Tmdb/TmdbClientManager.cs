@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using TMDbLib.Client;
 using TMDbLib.Objects.Collections;
 using TMDbLib.Objects.Find;
@@ -29,10 +30,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Initializes a new instance of the <see cref="TmdbClientManager"/> class.
         /// </summary>
         /// <param name="memoryCache">An instance of <see cref="IMemoryCache"/>.</param>
-        public TmdbClientManager(IMemoryCache memoryCache)
+        /// <param name="configuration">An instance of <see cref="IConfiguration"/>.</param>
+        public TmdbClientManager(IMemoryCache memoryCache, IConfiguration configuration)
         {
             _memoryCache = memoryCache;
-            _tmDbClient = new TMDbClient(TmdbUtils.ApiKey);
+            _tmDbClient = new TMDbClient(configuration.GetTmdbApiKey());
             // Not really interested in NotFoundException
             _tmDbClient.ThrowApiExceptions = false;
         }
