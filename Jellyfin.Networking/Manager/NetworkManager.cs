@@ -401,7 +401,7 @@ namespace Jellyfin.Networking.Manager
                         }
                     }
 
-                    result = FormatIP6String(interfaces.First().Address);
+                    result = FormatIP6String(interfaces[0].Address);
                     _logger.LogDebug("{0}: GetBindInterface: Matched first internal interface. {1}", source, result);
                     return result;
                 }
