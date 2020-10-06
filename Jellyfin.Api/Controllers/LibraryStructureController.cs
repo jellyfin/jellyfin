@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -75,15 +76,16 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> AddVirtualFolder(
             [FromQuery] string? name,
             [FromQuery] string? collectionType,
-            [FromQuery] string[] paths,
+            [FromQuery] string? paths,
             [FromBody] AddVirtualFolderDto? libraryOptionsDto,
             [FromQuery] bool refreshLibrary = false)
         {
             var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
 
-            if (paths != null && paths.Length > 0)
+            var pathArrays = RequestHelpers.Split(paths, ',', true);
+            if (pathArrays.Length > 0)
             {
-                libraryOptions.PathInfos = paths.Select(i => new MediaPathInfo { Path = i }).ToArray();
+                libraryOptions.PathInfos = pathArrays.Select(i => new MediaPathInfo { Path = i }).ToArray();
             }
 
             await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
