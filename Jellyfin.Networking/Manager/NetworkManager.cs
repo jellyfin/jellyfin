@@ -767,7 +767,7 @@ namespace Jellyfin.Networking.Manager
         /// Handler for network change events.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Network availablity information.</param>
+        /// <param name="e">Network availability information.</param>
         private void OnNetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
         {
             _logger.LogDebug("Network availability changed.");
