@@ -363,7 +363,7 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
+            _logger.LogDebug("GetBindInterface: Source: {0}, External: {1}:", haveSource, isExternal);
 
             // No preference given, so move on to bind addresses.
             lock (_intLock)
