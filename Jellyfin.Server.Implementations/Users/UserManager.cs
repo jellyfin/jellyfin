@@ -801,7 +801,7 @@ namespace Jellyfin.Server.Implementations.Users
 
         private IList<IPasswordResetProvider> GetPasswordResetProviders(User user)
         {
-            var passwordResetProviderId = user?.PasswordResetProviderId;
+            var passwordResetProviderId = user.PasswordResetProviderId;
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();
 
             if (!string.IsNullOrEmpty(passwordResetProviderId))
