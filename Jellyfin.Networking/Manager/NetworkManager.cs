@@ -181,7 +181,7 @@ namespace Jellyfin.Networking.Manager
 
             lock (_intLock)
             {
-                return _internalInterfaces.Where(i => i.Address.Equals(address) && i.Tag < 0).Any();
+                return _internalInterfaces.Any(i => i.Address.Equals(address) && i.Tag < 0);
             }
         }
 
