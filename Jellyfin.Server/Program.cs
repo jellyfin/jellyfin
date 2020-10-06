@@ -340,7 +340,7 @@ namespace Jellyfin.Server
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
-                    services.TryAdd(serviceCollection);
+                    services.Add(serviceCollection);
                 })
                 .UseStartup<Startup>();
         }
