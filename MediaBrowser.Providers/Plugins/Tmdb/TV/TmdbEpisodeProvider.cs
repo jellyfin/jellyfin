@@ -40,30 +40,29 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteSearchResult>();
             }
 
-            var metadataResult = await GetMetadata(searchInfo, cancellationToken);
+            var metadataResult = await GetMetadata(searchInfo, cancellationToken).ConfigureAwait(false);
 
             if (!metadataResult.HasMetadata)
             {
                 return Enumerable.Empty<RemoteSearchResult>();
             }
 
-            var list = new List<RemoteSearchResult>();
-
             var item = metadataResult.Item;
 
-            list.Add(new RemoteSearchResult
+            return new[]
             {
-                IndexNumber = item.IndexNumber,
-                Name = item.Name,
-                ParentIndexNumber = item.ParentIndexNumber,
-                PremiereDate = item.PremiereDate,
-                ProductionYear = item.ProductionYear,
-                ProviderIds = item.ProviderIds,
-                SearchProviderName = Name,
-                IndexNumberEnd = item.IndexNumberEnd
-            });
-
-            return list;
+                new RemoteSearchResult
+                {
+                    IndexNumber = item.IndexNumber,
+                    Name = item.Name,
+                    ParentIndexNumber = item.ParentIndexNumber,
+                    PremiereDate = item.PremiereDate,
+                    ProductionYear = item.ProductionYear,
+                    ProviderIds = item.ProviderIds,
+                    SearchProviderName = Name,
+                    IndexNumberEnd = item.IndexNumberEnd
+                }
+            };
         }
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
@@ -137,8 +136,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 {
                     if (TmdbUtils.IsTrailerType(video))
                     {
-                        var videoUrl = string.Format(CultureInfo.InvariantCulture, "http://www.youtube.com/watch?v={0}", video.Key);
-                        item.AddTrailerUrl(videoUrl);
+                        item.AddTrailerUrl("https://www.youtube.com/watch?v=" + video.Key);
                     }
                 }
             }
