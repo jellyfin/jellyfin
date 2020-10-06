@@ -8,6 +8,7 @@ using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
@@ -63,11 +64,20 @@ namespace Emby.Server.Implementations.Library
                         continue;
                     }
 
+                    var itemId = queuedItem.item.Id.ToString("N", CultureInfo.InvariantCulture);
+                    var itemType = queuedItem.item.GetType();
                     _logger.LogDebug(
                         "Updating remote images for item {ItemId} with media type {ItemMediaType}",
-                        queuedItem.item.Id.ToString("N", CultureInfo.InvariantCulture),
-                        queuedItem.item.GetType());
-                    await _libraryManager.UpdateImagesAsync(queuedItem.item, queuedItem.updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+                        itemId,
+                        itemType);
+                    try
+                    {
+                        await _libraryManager.UpdateImagesAsync(queuedItem.item, queuedItem.updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        _logger.LogError(ex, "Failed to fetch images for {Type} item with id {ItemId}", itemType, itemId);
+                    }
 
                     _queuedItems.TryRemove(queuedItem.item.Id, out _);
                 }
