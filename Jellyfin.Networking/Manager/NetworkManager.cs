@@ -980,7 +980,7 @@ namespace Jellyfin.Networking.Manager
 
         /// <summary>
         /// Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
-        /// Generate a list of all active mac addresses that aren't loopback addreses.
+        /// Generate a list of all active mac addresses that aren't loopback addresses.
         /// </summary>
         private void InitialiseInterfaces()
         {
