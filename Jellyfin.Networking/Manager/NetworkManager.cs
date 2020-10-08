@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -106,7 +107,7 @@ namespace Jellyfin.Networking.Manager
             _interfaceNames = new SortedList<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
 
-            UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
+            UpdateSettings(_configurationManager.GetNetworkConfiguration());
             if (!IsIP6Enabled && !IsIP4Enabled)
             {
                 throw new ApplicationException("IPv4 and IPv6 cannot both be disabled.");
@@ -181,7 +182,7 @@ namespace Jellyfin.Networking.Manager
 
             lock (_intLock)
             {
-                return _internalInterfaces.Any(i => i.Address.Equals(address) && i.Tag < 0);
+                return _internalInterfaces.Where(i => i.Address.Equals(address) && i.Tag < 0).Any();
             }
         }
 
@@ -363,7 +364,7 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            _logger.LogDebug("GetBindInterface: Source: {0}, External: {1}:", haveSource, isExternal);
+            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
 
             // No preference given, so move on to bind addresses.
             lock (_intLock)
@@ -401,7 +402,7 @@ namespace Jellyfin.Networking.Manager
                         }
                     }
 
-                    result = FormatIP6String(interfaces[0].Address);
+                    result = FormatIP6String(interfaces.First().Address);
                     _logger.LogDebug("{0}: GetBindInterface: Matched first internal interface. {1}", source, result);
                     return result;
                 }
@@ -589,14 +590,14 @@ namespace Jellyfin.Networking.Manager
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
         /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
-        public void UpdateSettings(ServerConfiguration config)
+        public void UpdateSettings(NetworkConfiguration config)
         {
             if (config == null)
             {
                 throw new ArgumentNullException(nameof(config));
             }
 
-            IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
+            IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
             UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
@@ -647,7 +648,7 @@ namespace Jellyfin.Networking.Manager
 
         private void ConfigurationUpdated(object? sender, EventArgs args)
         {
-            UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
+            UpdateSettings(_configurationManager.GetNetworkConfiguration());
         }
 
         /// <summary>
@@ -767,7 +768,7 @@ namespace Jellyfin.Networking.Manager
         /// Handler for network change events.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Network availability information.</param>
+        /// <param name="e">Network availablity information.</param>
         private void OnNetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
         {
             _logger.LogDebug("Network availability changed.");
@@ -796,7 +797,7 @@ namespace Jellyfin.Networking.Manager
                 await Task.Delay(2000).ConfigureAwait(false);
                 InitialiseInterfaces();
                 // Recalculate LAN caches.
-                InitialiseLAN((ServerConfiguration)_configurationManager.CommonConfiguration);
+                InitialiseLAN(_configurationManager.GetNetworkConfiguration());
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -827,7 +828,7 @@ namespace Jellyfin.Networking.Manager
         /// format is subnet=ipaddress|host|uri
         /// when subnet = 0.0.0.0, any external address matches.
         /// </summary>
-        private void InitialiseOverrides(ServerConfiguration config)
+        private void InitialiseOverrides(NetworkConfiguration config)
         {
             lock (_intLock)
             {
@@ -876,7 +877,7 @@ namespace Jellyfin.Networking.Manager
             }
         }
 
-        private void InitialiseBind(ServerConfiguration config)
+        private void InitialiseBind(NetworkConfiguration config)
         {
             string[] ba = config.LocalNetworkAddresses;
 
@@ -904,7 +905,7 @@ namespace Jellyfin.Networking.Manager
             _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
         }
 
-        private void InitialiseRemote(ServerConfiguration config)
+        private void InitialiseRemote(NetworkConfiguration config)
         {
             RemoteAddressFilter = CreateIPCollection(config.RemoteIPFilter);
         }
@@ -912,7 +913,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Initialises internal LAN cache settings.
         /// </summary>
-        private void InitialiseLAN(ServerConfiguration config)
+        private void InitialiseLAN(NetworkConfiguration config)
         {
             lock (_intLock)
             {
@@ -980,7 +981,7 @@ namespace Jellyfin.Networking.Manager
 
         /// <summary>
         /// Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
-        /// Generate a list of all active mac addresses that aren't loopback addresses.
+        /// Generate a list of all active mac addresses that aren't loopback addreses.
         /// </summary>
         private void InitialiseInterfaces()
         {
