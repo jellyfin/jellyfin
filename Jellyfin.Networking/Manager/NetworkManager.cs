@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Configuration;
+using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
@@ -96,7 +96,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="configurationManager">IServerConfigurationManager instance.</param>
         /// <param name="logger">Logger to use for messages.</param>
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in InitialiseLAN function. Compiler doesn't yet recognise this.
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in UpdateSettings function. Compiler doesn't yet recognise this.
         public NetworkManager(IConfigurationManager configurationManager, ILogger<NetworkManager> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -106,12 +106,6 @@ namespace Jellyfin.Networking.Manager
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new Dictionary<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
-
-            UpdateSettings(_configurationManager.GetNetworkConfiguration());
-            if (!IsIP6Enabled && !IsIP4Enabled)
-            {
-                throw new ApplicationException("IPv4 and IPv6 cannot both be disabled.");
-            }
 
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
@@ -591,6 +585,13 @@ namespace Jellyfin.Networking.Manager
 
             IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
+
+            if (!IsIP6Enabled && !IsIP4Enabled)
+            {
+                _logger.LogError("IPv4 and IPv6 cannot both be disabled.");
+                IsIP4Enabled = true;
+            }
+
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
             UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
