@@ -1,6 +1,7 @@
 #pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
+using MediaBrowser.Model.Configuration;
 
 namespace Jellyfin.Networking.Configuration
 {
@@ -9,6 +10,89 @@ namespace Jellyfin.Networking.Configuration
     /// </summary>
     public class NetworkConfiguration
     {
+        private string _baseUrl = string.Empty;
+
+        /// <summary>
+        /// Gets the default http port.
+        /// </summary>
+        public const int DefaultHttpPort = 8096;
+
+        /// <summary>
+        /// Gets the default https port.
+        /// </summary>
+        public const int DefaultHttpsPort = 8920;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the server should force connections over HTTPS.
+        /// </summary>
+        public bool RequireHttps { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value used to specify the URL prefix that your Jellyfin instance can be accessed at.
+        /// </summary>
+        public string BaseUrl
+        {
+            get => _baseUrl;
+            set
+            {
+                // Normalize the start of the string
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    // If baseUrl is empty, set an empty prefix string
+                    _baseUrl = string.Empty;
+                    return;
+                }
+
+                if (value[0] != '/')
+                {
+                    // If baseUrl was not configured with a leading slash, append one for consistency
+                    value = "/" + value;
+                }
+
+                // Normalize the end of the string
+                if (value[value.Length - 1] == '/')
+                {
+                    // If baseUrl was configured with a trailing slash, remove it for consistency
+                    value = value.Remove(value.Length - 1);
+                }
+
+                _baseUrl = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the public HTTPS port.
+        /// </summary>
+        /// <value>The public HTTPS port.</value>
+        public int PublicHttpsPort { get; set; } = DefaultHttpsPort;
+
+        /// <summary>
+        /// Gets or sets the HTTP server port number.
+        /// </summary>
+        /// <value>The HTTP server port number.</value>
+        public int HttpServerPortNumber { get; set; } = DefaultHttpPort;
+
+        /// <summary>
+        /// Gets or sets the HTTPS server port number.
+        /// </summary>
+        /// <value>The HTTPS server port number.</value>
+        public int HttpsPortNumber { get; set; } = DefaultHttpsPort;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use HTTPS.
+        /// </summary>
+        /// <remarks>
+        /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
+        /// provided for <see cref="ServerConfiguration.CertificatePath"/> and <see cref="ServerConfiguration.CertificatePassword"/>.
+        /// </remarks>
+        public bool EnableHttps { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the public mapped port.
+        /// </summary>
+        /// <value>The public mapped port.</value>
+        public int PublicPort { get; set; } = DefaultHttpPort;
+
         /// <summary>
         /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding..
         /// </summary>
@@ -130,5 +214,10 @@ namespace Jellyfin.Networking.Configuration
         /// Gets or sets the interface addresses which Jellyfin will bind to. If empty, all interfaces will be used..
         /// </summary>
         public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets the known proxies.
+        /// </summary>
+        public string[] KnownProxies { get; set; } = Array.Empty<string>();
     }
 }
