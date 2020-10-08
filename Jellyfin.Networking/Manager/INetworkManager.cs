@@ -1,8 +1,8 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using Jellyfin.Networking.Configuration;
 using Microsoft.AspNetCore.Http;
 using NetworkCollection;
 
@@ -225,7 +225,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
-        /// <param name="config"><seealso cref="NetworkConfiguration"/> to use.</param>
-        void UpdateSettings(NetworkConfiguration config);
+        /// <param name="configuration">The configuration to use.</param>
+        void UpdateSettings(object configuration);
     }
 }
