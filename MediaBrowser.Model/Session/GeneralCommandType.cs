@@ -45,7 +45,7 @@ namespace MediaBrowser.Model.Session
         PlayMediaSource = 34,
         PlayTrailers = 35,
         SetShuffleQueue = 36,
-        Playstate = 37,
+        PlayState = 37,
         PlayNext = 38,
         ToggleOsdMenu = 39,
         Play = 40
