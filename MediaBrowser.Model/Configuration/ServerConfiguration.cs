@@ -99,12 +99,12 @@ namespace MediaBrowser.Model.Configuration
         public string UDPPortRange { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets IPV6 capability.
+        /// Gets or sets a value indicating whether IPV6 capability is enabled.
         /// </summary>
         public bool EnableIPV6 { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets IPV4 capability.
+        /// Gets or sets a value indicating whether IPV4 capability is enabled.
         /// </summary>
         public bool EnableIPV4 { get; set; } = true;
 

@@ -346,7 +346,7 @@ namespace Jellyfin.Networking.Manager
 
                 if (!IsIP4Enabled && source.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    _logger.LogWarning("IPv4 is disabled in JellyFin, but enabled in the OS. This may affect how the interface is selected.");
+                    _logger.LogWarning("IPv4 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
                 }
 
                 isExternal = !IsInLocalNetwork(source);
@@ -872,28 +872,29 @@ namespace Jellyfin.Networking.Manager
 
         private void InitialiseBind(NetworkConfiguration config)
         {
-            string[] ba = config.LocalNetworkAddresses;
+            string[] lanAddresses = config.LocalNetworkAddresses;
 
             // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
 
-            if (ba.Length == 1 && ba[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
+            if (lanAddresses.Length == 1 && lanAddresses[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
             {
-                ba = ba[0].Split(',');
+                lanAddresses = lanAddresses[0].Split(',');
             }
 
+            // TODO: end fix.
             // TODO: end fix.
 
             // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
             if (config.IgnoreVirtualInterfaces)
             {
-                var newList = ba.ToList();
+                var newList = lanAddresses.ToList();
                 newList.AddRange(config.VirtualInterfaceNames.Split(',').ToList());
-                ba = newList.ToArray();
+                lanAddresses = newList.ToArray();
             }
 
             // Read and parse bind addresses and exclusions, removing ones that don't exist.
-            _bindAddresses = CreateIPCollection(ba).Union(_interfaceAddresses);
-            _bindExclusions = CreateIPCollection(ba, true).Union(_interfaceAddresses);
+            _bindAddresses = CreateIPCollection(lanAddresses).Union(_interfaceAddresses);
+            _bindExclusions = CreateIPCollection(lanAddresses, true).Union(_interfaceAddresses);
             _logger.LogInformation("Using bind addresses: {0}", _bindAddresses);
             _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
         }
@@ -923,7 +924,7 @@ namespace Jellyfin.Networking.Manager
                 // If no LAN addresses are specified - all private subnets are deemed to be the LAN
                 _usingPrivateAddresses = _lanSubnets.Count == 0;
 
-                // NOTE: The order of the commands in this statement matters.
+                // NOTE: The order of the commands in this statement matters, otherwise the lists won't initialise correctly.
                 if (_usingPrivateAddresses)
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
