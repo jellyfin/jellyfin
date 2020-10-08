@@ -522,12 +522,7 @@ namespace Jellyfin.Networking.Manager
         {
             lock (_intLock)
             {
-                if (_bindExclusions.Count > 0)
-                {
-                    return _bindExclusions.Contains(address);
-                }
-
-                return false;
+                return _bindExclusions.Contains(address);
             }
         }
 
