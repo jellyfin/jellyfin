@@ -810,7 +810,7 @@ namespace Jellyfin.Networking.Manager
                 _logger.LogDebug("Network Address Change Event.");
                 // As network events tend to fire one after the other only fire once every second.
                 _eventfire = true;
-                _ = OnNetworkChangeAsync();
+                _ = OnNetworkChangeAsync().GetAwaiter().GetResult();
             }
         }
 
