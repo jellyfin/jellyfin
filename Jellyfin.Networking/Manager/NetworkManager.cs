@@ -6,9 +6,9 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
@@ -24,7 +24,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Contains the description of the interface along with its index.
         /// </summary>
-        private readonly SortedList<string, int> _interfaceNames;
+        private readonly Dictionary<string, int> _interfaceNames;
 
         /// <summary>
         /// Threading lock for network interfaces.
@@ -96,7 +96,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="configurationManager">IServerConfigurationManager instance.</param>
         /// <param name="logger">Logger to use for messages.</param>
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in InitialiseLAN function. Compiler doesn't yet recognise this.
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in UpdateSettings function. Compiler doesn't yet recognise this.
         public NetworkManager(IConfigurationManager configurationManager, ILogger<NetworkManager> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -104,14 +104,8 @@ namespace Jellyfin.Networking.Manager
 
             _interfaceAddresses = new NetCollection(unique: false);
             _macAddresses = new List<PhysicalAddress>();
-            _interfaceNames = new SortedList<string, int>();
+            _interfaceNames = new Dictionary<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
-
-            UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
-            if (!IsIP6Enabled && !IsIP4Enabled)
-            {
-                throw new ApplicationException("IPv4 and IPv6 cannot both be disabled.");
-            }
 
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
@@ -182,7 +176,7 @@ namespace Jellyfin.Networking.Manager
 
             lock (_intLock)
             {
-                return _internalInterfaces.Where(i => i.Address.Equals(address) && (i.Tag < 0)).Any();
+                return _internalInterfaces.Where(i => i.Address.Equals(address) && i.Tag < 0).Any();
             }
         }
 
@@ -212,49 +206,46 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsExcluded(EndPoint ip)
         {
-            if (ip != null)
-            {
-                return _excludedSubnets.Contains(((IPEndPoint)ip).Address);
-            }
-
-            return false;
+            return ip != null && IsExcluded(((IPEndPoint)ip).Address);
         }
 
         /// <inheritdoc/>
         public NetCollection CreateIPCollection(string[] values, bool bracketed = false)
         {
             NetCollection col = new NetCollection();
-            if (values != null)
+            if (values == null)
             {
-                for (int a = 0; a < values.Length; a++)
-                {
-                    string v = values[a].Trim();
+                return col;
+            }
 
-                    try
+            for (int a = 0; a < values.Length; a++)
+            {
+                string v = values[a].Trim();
+
+                try
+                {
+                    if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) && v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) && v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
+                        if (bracketed)
                         {
-                            if (bracketed)
-                            {
-                                AddToCollection(col, v.Remove(v.Length - 1).Substring(1));
-                            }
-                        }
-                        else if (v.StartsWith("!", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (bracketed)
-                            {
-                                AddToCollection(col, v.Substring(1));
-                            }
-                        }
-                        else if (!bracketed)
-                        {
-                            AddToCollection(col, v);
+                            AddToCollection(col, v.Remove(v.Length - 1).Substring(1));
                         }
                     }
-                    catch (ArgumentException e)
+                    else if (v.StartsWith("!", StringComparison.OrdinalIgnoreCase))
                     {
-                        _logger.LogInformation("Ignoring LAN value {value}. Reason : {reason}", v, e.Message);
+                        if (bracketed)
+                        {
+                            AddToCollection(col, v.Substring(1));
+                        }
                     }
+                    else if (!bracketed)
+                    {
+                        AddToCollection(col, v);
+                    }
+                }
+                catch (ArgumentException e)
+                {
+                    _logger.LogInformation("Ignoring LAN value {value}. Reason : {reason}", v, e.Message);
                 }
             }
 
@@ -305,12 +296,9 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public string GetBindInterface(string source, out int? port)
         {
-            if (!string.IsNullOrEmpty(source))
+            if (!string.IsNullOrEmpty(source) && IPHost.TryParse(source, out IPHost host))
             {
-                if (IPHost.TryParse(source, out IPHost host))
-                {
-                    return GetBindInterface(host, out port);
-                }
+                return GetBindInterface(host, out port);
             }
 
             return GetBindInterface(IPHost.None, out port);
@@ -345,7 +333,6 @@ namespace Jellyfin.Networking.Manager
         public string GetBindInterface(IPObject source, out int? port)
         {
             port = null;
-            bool isChromeCast = source == IPNetAddress.IP4Loopback;
             // Do we have a source?
             bool haveSource = !source.Address.Equals(IPAddress.None);
             bool isExternal = false;
@@ -354,7 +341,7 @@ namespace Jellyfin.Networking.Manager
             {
                 if (!IsIP6Enabled && source.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    _logger.LogWarning("IPv6 is disabled in JellyFin, but enabled in the OS. This may affect how the interface is selected.");
+                    _logger.LogWarning("IPv6 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
                 }
 
                 if (!IsIP4Enabled && source.AddressFamily == AddressFamily.InterNetwork)
@@ -364,7 +351,7 @@ namespace Jellyfin.Networking.Manager
 
                 isExternal = !IsInLocalNetwork(source);
 
-                if (MatchesPublishedServerUrl(source, isExternal, isChromeCast, out string result, out port))
+                if (MatchesPublishedServerUrl(source, isExternal, out string result, out port))
                 {
                     _logger.LogInformation("{0}: Using BindAddress {1}:{2}", source, result, port);
                     return result;
@@ -529,12 +516,7 @@ namespace Jellyfin.Networking.Manager
         {
             lock (_intLock)
             {
-                if (_bindExclusions.Count > 0)
-                {
-                    return _bindExclusions.Contains(address);
-                }
-
-                return false;
+                return _bindExclusions.Contains(address);
             }
         }
 
@@ -596,16 +578,20 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
-        /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
-        public void UpdateSettings(ServerConfiguration config)
+        /// <param name="configuration">The configuration to use.</param>
+        public void UpdateSettings(object configuration)
         {
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
+            NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
+
+            if (!IsIP6Enabled && !IsIP4Enabled)
+            {
+                _logger.LogError("IPv4 and IPv6 cannot both be disabled.");
+                IsIP4Enabled = true;
+            }
+
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
             UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
@@ -655,7 +641,7 @@ namespace Jellyfin.Networking.Manager
 
         private void ConfigurationUpdated(object? sender, EventArgs args)
         {
-            UpdateSettings((ServerConfiguration)_configurationManager.CommonConfiguration);
+            UpdateSettings(_configurationManager.GetNetworkConfiguration());
         }
 
         /// <summary>
@@ -804,7 +790,7 @@ namespace Jellyfin.Networking.Manager
                 await Task.Delay(2000).ConfigureAwait(false);
                 InitialiseInterfaces();
                 // Recalculate LAN caches.
-                InitialiseLAN((ServerConfiguration)_configurationManager.CommonConfiguration);
+                InitialiseLAN(_configurationManager.GetNetworkConfiguration());
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -835,7 +821,7 @@ namespace Jellyfin.Networking.Manager
         /// format is subnet=ipaddress|host|uri
         /// when subnet = 0.0.0.0, any external address matches.
         /// </summary>
-        private void InitialiseOverrides(ServerConfiguration config)
+        private void InitialiseOverrides(NetworkConfiguration config)
         {
             lock (_intLock)
             {
@@ -884,7 +870,7 @@ namespace Jellyfin.Networking.Manager
             }
         }
 
-        private void InitialiseBind(ServerConfiguration config)
+        private void InitialiseBind(NetworkConfiguration config)
         {
             string[] ba = config.LocalNetworkAddresses;
 
@@ -912,7 +898,7 @@ namespace Jellyfin.Networking.Manager
             _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
         }
 
-        private void InitialiseRemote(ServerConfiguration config)
+        private void InitialiseRemote(NetworkConfiguration config)
         {
             RemoteAddressFilter = CreateIPCollection(config.RemoteIPFilter);
         }
@@ -920,7 +906,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Initialises internal LAN cache settings.
         /// </summary>
-        private void InitialiseLAN(ServerConfiguration config)
+        private void InitialiseLAN(NetworkConfiguration config)
         {
             lock (_intLock)
             {
@@ -1029,8 +1015,7 @@ namespace Jellyfin.Networking.Manager
                                     };
 
                                     int tag = nw.Tag;
-                                    /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
-                                    if ((ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0) && !nw.IsLoopback())
+                                    if ((ipProperties.GatewayAddresses.Count > 0) && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1051,8 +1036,7 @@ namespace Jellyfin.Networking.Manager
                                     };
 
                                     int tag = nw.Tag;
-                                    /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
-                                    if ((ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0) && !nw.IsLoopback())
+                                    if ((ipProperties.GatewayAddresses.Count > 0) && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1112,11 +1096,10 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="source">IP source address to use.</param>
         /// <param name="isExternal">True if the source is in the external subnet.</param>
-        /// <param name="isChromeCast">True if the request is for a chromecast device.</param>
         /// <param name="bindPreference">The published server url that matches the source address.</param>
         /// <param name="port">The resultant port, if one exists.</param>
         /// <returns>True if a match is found.</returns>
-        private bool MatchesPublishedServerUrl(IPObject source, bool isExternal, bool isChromeCast, out string bindPreference, out int? port)
+        private bool MatchesPublishedServerUrl(IPObject source, bool isExternal, out string bindPreference, out int? port)
         {
             bindPreference = string.Empty;
             port = null;
@@ -1130,7 +1113,7 @@ namespace Jellyfin.Networking.Manager
                     bindPreference = addr.Value;
                     break;
                 }
-                else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && (isExternal || isChromeCast))
+                else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && isExternal)
                 {
                     // External.
                     bindPreference = addr.Value;
@@ -1241,7 +1224,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Attempts to match the source against am external interface.
+        /// Attempts to match the source against an external interface.
         /// </summary>
         /// <param name="source">IP source address to use.</param>
         /// <param name="result">The result, if a match is found.</param>

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using NetworkCollection;
 
@@ -27,7 +26,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
         /// </summary>
-        public bool TrustAllIP6Interfaces { get; }
+        bool TrustAllIP6Interfaces { get; }
 
         /// <summary>
         /// Gets the remote address filter.
@@ -37,12 +36,12 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets or sets a value indicating whether iP6 is enabled.
         /// </summary>
-        public bool IsIP6Enabled { get; set; }
+        bool IsIP6Enabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether iP4 is enabled.
         /// </summary>
-        public bool IsIP4Enabled { get; set; }
+        bool IsIP4Enabled { get; set; }
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
@@ -57,7 +56,7 @@ namespace MediaBrowser.Common.Net
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
         /// <returns>Netcollection.</returns>
-        public NetCollection GetLoopbacks();
+        NetCollection GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -93,7 +92,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See above).
+        /// (See <see cref="GetBindInterface(IPObject, out int?)"/>.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
@@ -103,7 +102,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See above).
+        /// (See <see cref="GetBindInterface(IPObject, out int?)"/>.
         /// </summary>
         /// <param name="source">IP address of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
@@ -113,7 +112,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See above).
+        /// (See <see cref="GetBindInterface(IPObject, out int?)"/>.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
@@ -138,7 +137,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
         /// <returns>Result of the check.</returns>
-        public bool IsGatewayInterface(object? addressObj);
+        bool IsGatewayInterface(object? addressObj);
 
         /// <summary>
         /// Returns true if the address is a private address.
@@ -226,7 +225,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
-        /// <param name="config"><seealso cref="ServerConfiguration"/> to use.</param>
-        public void UpdateSettings(ServerConfiguration config);
+        /// <param name="configuration">The configuration to use.</param>
+        void UpdateSettings(object configuration);
     }
 }
