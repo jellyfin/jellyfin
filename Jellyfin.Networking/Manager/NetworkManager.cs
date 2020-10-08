@@ -230,7 +230,7 @@ namespace Jellyfin.Networking.Manager
                     {
                         if (bracketed)
                         {
-                            AddToCollection(col, v.Remove(v.Length - 1).Substring(1));
+                            AddToCollection(col, v.Substring(1, v.Length - 2));
                         }
                     }
                     else if (v.StartsWith("!", StringComparison.OrdinalIgnoreCase))
