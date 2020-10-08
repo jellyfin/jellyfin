@@ -226,7 +226,7 @@ namespace Jellyfin.Networking.Manager
 
                 try
                 {
-                    if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) && v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
+                    if (v.StartsWith('[') && v.EndsWith(']'))
                     {
                         if (bracketed)
                         {
