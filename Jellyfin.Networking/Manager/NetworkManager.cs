@@ -176,7 +176,7 @@ namespace Jellyfin.Networking.Manager
 
             lock (_intLock)
             {
-                return _internalInterfaces.Where(i => i.Address.Equals(address) && i.Tag < 0).Any();
+                return _internalInterfaces.Any(i => i.Address.Equals(address) && i.Tag < 0);
             }
         }
 
@@ -358,7 +358,7 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
+            _logger.LogDebug("GetBindInterface: Source: {0}, External: {1}:", haveSource, isExternal);
 
             // No preference given, so move on to bind addresses.
             lock (_intLock)
@@ -583,7 +583,7 @@ namespace Jellyfin.Networking.Manager
         {
             NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            IsIP4Enabled = Socket.OSSupportsIPv6 && config.EnableIPV4;
+            IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
 
             if (!IsIP6Enabled && !IsIP4Enabled)
@@ -761,7 +761,7 @@ namespace Jellyfin.Networking.Manager
         /// Handler for network change events.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Network availablity information.</param>
+        /// <param name="e">Network availability information.</param>
         private void OnNetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
         {
             _logger.LogDebug("Network availability changed.");
@@ -881,7 +881,7 @@ namespace Jellyfin.Networking.Manager
                 ba = ba[0].Split(',');
             }
 
-            // TODO: end fix.
+            // TODO: end fix: https://github.com/jellyfin/jellyfin-web/issues/1334
 
             // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
             if (config.IgnoreVirtualInterfaces)
@@ -974,7 +974,7 @@ namespace Jellyfin.Networking.Manager
 
         /// <summary>
         /// Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
-        /// Generate a list of all active mac addresses that aren't loopback addreses.
+        /// Generate a list of all active mac addresses that aren't loopback addresses.
         /// </summary>
         private void InitialiseInterfaces()
         {
