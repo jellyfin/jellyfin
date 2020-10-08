@@ -4,7 +4,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Migrations;
 using Jellyfin.Api.Models.ConfigurationDtos;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
@@ -49,6 +51,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<ServerConfiguration> GetConfiguration()
         {
+            // TODO: Temp workaround until the web can be changed.
+            var net = _configurationManager.GetNetworkConfiguration();
+            ClassMigrationHelper.CopyProperties(net, _configurationManager.Configuration);
+
             return _configurationManager.Configuration;
         }
 
@@ -64,6 +70,12 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UpdateConfiguration([FromBody, Required] ServerConfiguration configuration)
         {
             _configurationManager.ReplaceConfiguration(configuration);
+
+            // TODO: Temp workaround until the web can be changed.
+            var network = _configurationManager.GetNetworkConfiguration();
+            ClassMigrationHelper.CopyProperties(configuration, network);
+            _configurationManager.SaveConfiguration("Network", network);
+
             return NoContent();
         }
 

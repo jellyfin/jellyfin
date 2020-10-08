@@ -50,8 +50,9 @@ namespace MediaBrowser.Common.Configuration
         /// Gets the configuration.
         /// </summary>
         /// <param name="key">The key.</param>
+        /// <param name="objectType">Optional parameter containing the key object to create, if it hasn't been registered.</param>
         /// <returns>System.Object.</returns>
-        object GetConfiguration(string key);
+        object GetConfiguration(string key, Type objectType = null);
 
         /// <summary>
         /// Gets the type of the configuration.

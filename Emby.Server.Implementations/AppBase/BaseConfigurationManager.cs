@@ -10,6 +10,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.AppBase
@@ -268,7 +269,7 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <inheritdoc />
-        public object GetConfiguration(string key)
+        public object GetConfiguration(string key, Type objectType = null)
         {
             return _configurations.GetOrAdd(key, k =>
             {
@@ -277,12 +278,12 @@ namespace Emby.Server.Implementations.AppBase
                 var configurationInfo = _configurationStores
                     .FirstOrDefault(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
 
-                if (configurationInfo == null)
+                if (configurationInfo == null && objectType == null)
                 {
                     throw new ResourceNotFoundException("Configuration with key " + key + " not found.");
                 }
 
-                var configurationType = configurationInfo.ConfigurationType;
+                var configurationType = configurationInfo?.ConfigurationType ?? objectType;
 
                 lock (_configurationSyncLock)
                 {

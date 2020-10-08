@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Net.Http.Headers;
 using Jellyfin.Api.TypeConverters;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
@@ -52,7 +53,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.Configuration.KnownProxies);
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration().KnownProxies);
 
             services.AddJellyfinApiSwagger();
 
@@ -96,7 +97,7 @@ namespace Jellyfin.Server
             app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
-            app.Map(_serverConfigurationManager.Configuration.BaseUrl, mainApp =>
+            app.Map(_serverConfigurationManager.GetNetworkConfiguration().BaseUrl, mainApp =>
             {
                 if (env.IsDevelopment())
                 {
