@@ -24,7 +24,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Contains the description of the interface along with its index.
         /// </summary>
-        private readonly SortedList<string, int> _interfaceNames;
+        private readonly Dictionary<string, int> _interfaceNames;
 
         /// <summary>
         /// Threading lock for network interfaces.
@@ -104,7 +104,7 @@ namespace Jellyfin.Networking.Manager
 
             _interfaceAddresses = new NetCollection(unique: false);
             _macAddresses = new List<PhysicalAddress>();
-            _interfaceNames = new SortedList<string, int>();
+            _interfaceNames = new Dictionary<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
 
             UpdateSettings(_configurationManager.GetNetworkConfiguration());
