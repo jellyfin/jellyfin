@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NetworkCollection;
@@ -44,6 +43,8 @@ namespace Jellyfin.Networking.Manager
         private readonly ILogger<NetworkManager> _logger;
 
         private readonly IConfigurationManager _configurationManager;
+
+        private readonly object _eventFireLock;
 
         /// <summary>
         /// Holds the bind address overrides.
@@ -106,6 +107,7 @@ namespace Jellyfin.Networking.Manager
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new Dictionary<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
+            _eventFireLock = new object();
 
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
@@ -805,12 +807,15 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void OnNetworkChanged()
         {
-            if (!_eventfire)
+            lock (_eventFireLock)
             {
-                _logger.LogDebug("Network Address Change Event.");
-                // As network events tend to fire one after the other only fire once every second.
-                _eventfire = true;
-                _ = OnNetworkChangeAsync().GetAwaiter().GetResult();
+                if (!_eventfire)
+                {
+                    _logger.LogDebug("Network Address Change Event.");
+                    // As network events tend to fire one after the other only fire once every second.
+                    _eventfire = true;
+                    OnNetworkChangeAsync().GetAwaiter().GetResult();
+                }
             }
         }
 

@@ -6,7 +6,7 @@ using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Http;
 using NetworkCollection;
 
-namespace MediaBrowser.Common.Net
+namespace Jellyfin.Networking.Manager
 {
     /// <summary>
     /// Interface for the NetworkManager class.
