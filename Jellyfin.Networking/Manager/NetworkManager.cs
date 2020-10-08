@@ -346,7 +346,7 @@ namespace Jellyfin.Networking.Manager
 
                 if (!IsIP4Enabled && source.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    _logger.LogWarning("IPv4 is disabled in JellyFin, but enabled in the OS. This may affect how the interface is selected.");
+                    _logger.LogWarning("IPv4 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
                 }
 
                 isExternal = !IsInLocalNetwork(source);
