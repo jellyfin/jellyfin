@@ -1,6 +1,7 @@
 ﻿using System;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -149,7 +150,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
-            [FromQuery] string? imageTypes,
+            [FromQuery] ImageType[] imageTypes,
             [FromQuery] string? sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery] string? genres,
@@ -158,7 +159,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? person,
             [FromQuery] string? personIds,
             [FromQuery] string? personTypes,
