@@ -6,6 +6,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
@@ -154,6 +155,32 @@ namespace Jellyfin.Api.Helpers
                     if (Enum.TryParse(v, true, out ItemFields value))
                     {
                         return (ItemFields?)value;
+                    }
+
+                    return null;
+                }).Where(i => i.HasValue)
+                .Select(i => i!.Value)
+                .ToArray();
+        }
+        
+        /// <summary>
+        /// Gets the item fields.
+        /// </summary>
+        /// <param name="imageTypes">The image types string.</param>
+        /// <returns>IEnumerable{ItemFields}.</returns>
+        internal static ImageType[] GetImageTypes(string? imageTypes)
+        {
+            if (string.IsNullOrEmpty(imageTypes))
+            {
+                return Array.Empty<ImageType>();
+            }
+
+            return Split(imageTypes, ',', true)
+                .Select(v =>
+                {
+                    if (Enum.TryParse(v, true, out ImageType value))
+                    {
+                        return (ImageType?)value;
                     }
 
                     return null;

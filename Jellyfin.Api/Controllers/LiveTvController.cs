@@ -26,6 +26,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
@@ -145,7 +146,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isDisliked,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy,
@@ -262,7 +263,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? seriesTimerId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool? isMovie,
@@ -349,7 +350,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? seriesTimerId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
@@ -560,7 +561,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? genreIds,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? seriesTimerId,
             [FromQuery] Guid? librarySeriesId,
@@ -661,10 +662,11 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
+            var imageTypes = RequestHelpers.GetImageTypes(body.EnableImageTypes);
             var dtoOptions = new DtoOptions()
                 .AddItemFields(body.Fields)
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
+                .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, imageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -704,7 +706,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSports,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? genreIds,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
