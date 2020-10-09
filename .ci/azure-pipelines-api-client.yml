@@ -28,6 +28,12 @@ jobs:
       inputs:
         script: "wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/${{ parameters.GeneratorVersion }}/openapi-generator-cli-${{ parameters.GeneratorVersion }}.jar -O openapi-generator-cli.jar"
 
+    - task: Npm@1
+      displayName: 'Install npm dependencies'
+      inputs:
+        command: install
+        workingDir: ./apiclient/generated/typescript/axios
+
 # Generate npm api client
 # Unstable
     - task: CmdLine@2
@@ -42,7 +48,7 @@ jobs:
       inputs:
         command: publish
         publishRegistry: useFeed
-        publishFeed: 'unstable@Local'
+        publishFeed: 'jellyfin/unstable'
         workingDir: ./apiclient/generated/typescript/axios
 
 # Stable
