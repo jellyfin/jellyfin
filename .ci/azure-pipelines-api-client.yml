@@ -42,7 +42,7 @@ jobs:
       inputs:
         command: publish
         publishRegistry: useFeed
-        publishFeed: unstable
+        publishFeed: 'unstable@Local'
         workingDir: ./apiclient/generated/typescript/axios
 
 # Stable
