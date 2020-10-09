@@ -1,17 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
-using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Api.ModelBinders;
-using MediaBrowser.Controller.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Jellyfin.Api.Tests.ModelBinders
 {
@@ -21,14 +17,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedStringArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new string[] { "lol", "xd" };
+            var queryParamValues = new[] { "lol", "xd" };
             var queryParamString = "lol,xd";
             var queryParamType = typeof(string[]);
 
             var modelBinder = new CommaDelimitedArrayModelBinder();
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>() { { queryParamName, new StringValues(queryParamString) } }),
+                    new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
                     CultureInfo.InvariantCulture);
             var bindingContextMock = new Mock<ModelBindingContext>();
             bindingContextMock.Setup(b => b.ValueProvider).Returns(valueProvider);
@@ -46,14 +42,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedIntArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new int[] { 42, 0 };
+            var queryParamValues = new[] { 42, 0 };
             var queryParamString = "42,0";
             var queryParamType = typeof(int[]);
 
             var modelBinder = new CommaDelimitedArrayModelBinder();
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>() { { queryParamName, new StringValues(queryParamString) } }),
+                    new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
                     CultureInfo.InvariantCulture);
             var bindingContextMock = new Mock<ModelBindingContext>();
             bindingContextMock.Setup(b => b.ValueProvider).Returns(valueProvider);
@@ -71,14 +67,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedEnumArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new TestType[] { TestType.How, TestType.Much };
+            var queryParamValues = new[] { TestType.How, TestType.Much };
             var queryParamString = "How,Much";
             var queryParamType = typeof(TestType[]);
 
             var modelBinder = new CommaDelimitedArrayModelBinder();
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>() { { queryParamName, new StringValues(queryParamString) } }),
+                    new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
                     CultureInfo.InvariantCulture);
             var bindingContextMock = new Mock<ModelBindingContext>();
             bindingContextMock.Setup(b => b.ValueProvider).Returns(valueProvider);
@@ -96,14 +92,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedEnumArrayQueryWithDoubleCommas()
         {
             var queryParamName = "test";
-            var queryParamValues = new TestType[] { TestType.How, TestType.Much };
+            var queryParamValues = new[] { TestType.How, TestType.Much };
             var queryParamString = "How,,Much";
             var queryParamType = typeof(TestType[]);
 
             var modelBinder = new CommaDelimitedArrayModelBinder();
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>() { { queryParamName, new StringValues(queryParamString) } }),
+                    new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
                     CultureInfo.InvariantCulture);
             var bindingContextMock = new Mock<ModelBindingContext>();
             bindingContextMock.Setup(b => b.ValueProvider).Returns(valueProvider);
@@ -121,7 +117,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
         public async Task BindModelAsync_CorrectlyBindsValidEnumArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new TestType[] { TestType.How, TestType.Much };
+            var queryParamValues = new[] { TestType.How, TestType.Much };
             var queryParamString1 = "How";
             var queryParamString2 = "Much";
             var queryParamType = typeof(TestType[]);
@@ -130,9 +126,9 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>()
+                    new QueryCollection(new Dictionary<string, StringValues>
                     {
-                        { queryParamName, new StringValues(new string[] { queryParamString1, queryParamString2 }) },
+                        { queryParamName, new StringValues(new[] { queryParamString1, queryParamString2 }) },
                     }),
                     CultureInfo.InvariantCulture);
             var bindingContextMock = new Mock<ModelBindingContext>();
@@ -158,7 +154,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>()
+                    new QueryCollection(new Dictionary<string, StringValues>
                     {
                         { queryParamName, new StringValues(value: null) },
                     }),
@@ -171,7 +167,8 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             await modelBinder.BindModelAsync(bindingContextMock.Object);
 
-            Assert.False(bindingContextMock.Object.Result.IsModelSet);
+            Assert.True(bindingContextMock.Object.Result.IsModelSet);
+            Assert.Equal((TestType[])bindingContextMock.Object.Result.Model, queryParamValues);
         }
 
         [Fact]
@@ -184,7 +181,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var modelBinder = new CommaDelimitedArrayModelBinder();
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>() { { queryParamName, new StringValues(queryParamString) } }),
+                    new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
                     CultureInfo.InvariantCulture);
             var bindingContextMock = new Mock<ModelBindingContext>();
             bindingContextMock.Setup(b => b.ValueProvider).Returns(valueProvider);
@@ -201,7 +198,6 @@ namespace Jellyfin.Api.Tests.ModelBinders
         public async Task BindModelAsync_ThrowsIfCommaDelimitedEnumArrayQueryIsInvalid2()
         {
             var queryParamName = "test";
-            var queryParamValues = new TestType[] { TestType.How, TestType.Much };
             var queryParamString1 = "How";
             var queryParamString2 = "😱";
             var queryParamType = typeof(TestType[]);
@@ -210,9 +206,9 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
-                    new QueryCollection(new Dictionary<string, StringValues>()
+                    new QueryCollection(new Dictionary<string, StringValues>
                     {
-                        { queryParamName, new StringValues(new string[] { queryParamString1, queryParamString2 }) },
+                        { queryParamName, new StringValues(new[] { queryParamString1, queryParamString2 }) },
                     }),
                     CultureInfo.InvariantCulture);
             var bindingContextMock = new Mock<ModelBindingContext>();
