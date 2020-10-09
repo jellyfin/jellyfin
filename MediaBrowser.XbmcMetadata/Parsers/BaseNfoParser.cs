@@ -250,7 +250,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && !tvdbId.IsWhiteSpace()
                         && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                     {
-                        item.SetProviderId(MetadataProvider.Tvdb, value.ToString(UsCulture));
+                        item.SetProviderId("Tvdb", value.ToString(UsCulture));
                     }
                 }
             }

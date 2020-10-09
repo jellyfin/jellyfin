@@ -535,7 +535,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     EnableImages = false
                 }
-            }).Where(i => string.Equals(tvdbId, i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }).Where(i => string.Equals(tvdbId, i.GetProviderId("Tvdb"), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             foreach (var item in series)
             {

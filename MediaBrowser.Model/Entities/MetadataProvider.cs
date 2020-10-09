@@ -18,11 +18,6 @@ namespace MediaBrowser.Model.Entities
         Tmdb = 3,
 
         /// <summary>
-        /// The TVDB.
-        /// </summary>
-        Tvdb = 4,
-
-        /// <summary>
         /// The tvcom.
         /// </summary>
         Tvcom = 5,

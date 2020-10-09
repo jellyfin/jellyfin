@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var tvdbId = searchInfo.GetProviderId(MetadataProvider.Tvdb);
+            var tvdbId = searchInfo.GetProviderId("Tvdb");
 
             if (!string.IsNullOrEmpty(tvdbId))
             {
@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     for (var i = 0; i < findResult.TvResults.Count; i++)
                     {
                         var remoteResult = MapSearchTvToRemoteSearchResult(findResult.TvResults[i]);
-                        remoteResult.SetProviderId(MetadataProvider.Tvdb, tvdbId);
+                        remoteResult.SetProviderId("Tvdb", tvdbId);
                         tvIdResults.Add(remoteResult);
                     }
 
@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (!string.IsNullOrEmpty(series.ExternalIds.TvdbId))
                 {
-                    remoteResult.SetProviderId(MetadataProvider.Tvdb, series.ExternalIds.TvdbId);
+                    remoteResult.SetProviderId("Tvdb", series.ExternalIds.TvdbId);
                 }
             }
 
@@ -185,7 +185,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                var tvdbId = info.GetProviderId(MetadataProvider.Tvdb);
+                var tvdbId = info.GetProviderId("Tvdb");
 
                 if (!string.IsNullOrEmpty(tvdbId))
                 {
@@ -293,7 +293,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (!string.IsNullOrEmpty(ids.TvdbId))
                 {
-                    series.SetProviderId(MetadataProvider.Tvdb, ids.TvdbId);
+                    series.SetProviderId("Tvdb", ids.TvdbId);
                 }
             }
 

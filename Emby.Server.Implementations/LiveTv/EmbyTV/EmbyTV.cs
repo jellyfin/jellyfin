@@ -1874,7 +1874,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     writer.WriteStartDocument(true);
                     writer.WriteStartElement("tvshow");
                     string id;
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out id))
+                    if (timer.SeriesProviderIds.TryGetValue("Tvdb".ToString(), out id))
                     {
                         writer.WriteElementString("id", id);
                     }
@@ -2077,7 +2077,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         lockData = false;
                     }
 
-                    var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
+                    var tvdb = item.GetProviderId("Tvdb");
                     if (!string.IsNullOrEmpty(tvdb))
                     {
                         writer.WriteElementString("tvdbid", tvdb);

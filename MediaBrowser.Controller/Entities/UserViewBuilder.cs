@@ -646,7 +646,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasTvdbId.Value;
 
-                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProvider.Tvdb));
+                var hasValue = !string.IsNullOrEmpty(item.GetProviderId("Tvdb"));
 
                 if (hasValue != filterValue)
                 {

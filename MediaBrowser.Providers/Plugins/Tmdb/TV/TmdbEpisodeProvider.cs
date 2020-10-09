@@ -120,7 +120,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (!string.IsNullOrEmpty(episodeResult.ExternalIds?.TvdbId))
             {
-                item.SetProviderId(MetadataProvider.Tvdb, episodeResult.ExternalIds.TvdbId);
+                item.SetProviderId("Tvdb", episodeResult.ExternalIds.TvdbId);
             }
 
             item.PremiereDate = episodeResult.AirDate;

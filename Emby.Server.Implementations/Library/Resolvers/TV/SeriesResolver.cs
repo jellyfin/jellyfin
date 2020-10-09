@@ -217,7 +217,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
             if (!string.IsNullOrEmpty(id))
             {
-                item.SetProviderId(MetadataProvider.Tvdb, id);
+                item.SetProviderId("Tvdb", id);
             }
         }
     }

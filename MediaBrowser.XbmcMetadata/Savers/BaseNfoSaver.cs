@@ -569,11 +569,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             // Series xml saver already saves this
             if (!(item is Series))
             {
-                var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
+                var tvdb = item.GetProviderId("Tvdb");
                 if (!string.IsNullOrEmpty(tvdb))
                 {
                     writer.WriteElementString("tvdbid", tvdb);
-                    writtenProviderIds.Add(MetadataProvider.Tvdb.ToString());
+                    writtenProviderIds.Add("Tvdb");
                 }
             }
 

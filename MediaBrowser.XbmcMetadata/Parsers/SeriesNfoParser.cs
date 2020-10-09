@@ -61,7 +61,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(tvdbId))
                         {
-                            item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
+                            item.SetProviderId("Tvdb", tvdbId);
                         }
 
                         break;

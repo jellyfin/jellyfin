@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (!string.IsNullOrEmpty(seasonResult.ExternalIds?.TvdbId))
             {
-                result.Item.SetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
+                result.Item.SetProviderId("Tvdb", seasonResult.ExternalIds.TvdbId);
             }
 
             // TODO why was this disabled?

@@ -175,7 +175,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 list.Insert(0, key);
             }
 
-            key = this.GetProviderId(MetadataProvider.Tvdb);
+            key = this.GetProviderId("Tvdb");
             if (!string.IsNullOrEmpty(key))
             {
                 list.Insert(0, key);
