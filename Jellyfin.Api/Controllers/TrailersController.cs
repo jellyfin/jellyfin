@@ -146,7 +146,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? parentId,
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? imageTypes,

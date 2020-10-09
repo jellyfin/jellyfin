@@ -182,7 +182,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? imageTypes,
@@ -365,7 +365,7 @@ namespace Jellyfin.Api.Controllers
                     query.CollapseBoxSetItems = false;
                 }
 
-                foreach (var filter in RequestHelpers.GetFilters(filters!))
+                foreach (var filter in filters)
                 {
                     switch (filter)
                     {
