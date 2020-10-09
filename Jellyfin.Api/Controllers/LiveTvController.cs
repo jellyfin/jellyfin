@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">"Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="sortBy">Optional. Key to sort by.</param>
         /// <param name="sortOrder">Optional. Sort order.</param>
@@ -146,7 +146,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy,
             [FromQuery] SortOrder? sortOrder,
@@ -238,7 +238,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="isMovie">Optional. Filter for movies.</param>
         /// <param name="isSeries">Optional. Filter for series.</param>
@@ -263,7 +263,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSeries,
@@ -295,7 +295,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 IsLibraryItem = isLibraryItem,
-                Fields = RequestHelpers.GetItemFields(fields),
+                Fields = fields,
                 ImageTypeLimit = imageTypeLimit,
                 EnableImages = enableImages
             }, dtoOptions);
@@ -315,7 +315,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="enableTotalRecordCount">Optional. Return total record count.</param>
         /// <response code="200">Live tv recordings returned.</response>
@@ -350,7 +350,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -529,7 +529,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="seriesTimerId">Optional. Filter by series timer id.</param>
         /// <param name="librarySeriesId">Optional. Filter by library series id.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
         /// <response code="200">Live tv epgs returned.</response>
         /// <returns>
@@ -564,7 +564,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] string? seriesTimerId,
             [FromQuery] Guid? librarySeriesId,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -661,8 +661,9 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
+            var fields = RequestHelpers.GetItemFields(body.Fields);
             var dtoOptions = new DtoOptions()
-                .AddItemFields(body.Fields)
+                .AddItemFields(fields)
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
@@ -684,7 +685,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="genreIds">The genres to return guide information for.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. include user data.</param>
         /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
         /// <response code="200">Recommended epgs returned.</response>
@@ -706,7 +707,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,
             [FromQuery] string? genreIds,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {

@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? searchTerm,
             [FromQuery] string? sortOrder,
             [FromQuery] string? parentId,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? filters,
             [FromQuery] bool? isFavorite,

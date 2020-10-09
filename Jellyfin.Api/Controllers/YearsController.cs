@@ -50,7 +50,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be excluded based on item type. This allows multiple, comma delimited.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be included based on item type. This allows multiple, comma delimited.</param>
         /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
@@ -70,7 +70,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] string? sortOrder,
             [FromQuery] string? parentId,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
             [FromQuery] string? mediaTypes,

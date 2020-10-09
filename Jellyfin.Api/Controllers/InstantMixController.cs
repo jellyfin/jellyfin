@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">The item id.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -91,7 +91,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">The item id.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -104,7 +104,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -128,7 +128,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">The item id.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -141,7 +141,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -165,7 +165,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="name">The genre name.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -178,7 +178,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -201,7 +201,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">The item id.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -214,7 +214,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -238,7 +238,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">The item id.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -251,7 +251,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -275,7 +275,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">The item id.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -288,7 +288,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,

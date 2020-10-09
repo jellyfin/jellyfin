@@ -693,7 +693,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? excludeArtistIds,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields)
+            [FromQuery] ItemFields[] fields)
         {
             var item = itemId.Equals(Guid.Empty)
                 ? (!userId.Equals(Guid.Empty)
@@ -885,7 +885,7 @@ namespace Jellyfin.Api.Controllers
             string? excludeArtistIds,
             Guid? userId,
             int? limit,
-            string? fields,
+            ItemFields[] fields,
             string[] includeItemTypes,
             bool isMovie)
         {

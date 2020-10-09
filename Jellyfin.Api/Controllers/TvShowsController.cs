@@ -57,7 +57,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id of the user to get the next up episodes for.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="seriesId">Optional. Filter by series id.</param>
         /// <param name="parentId">Optional. Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="enableImges">Optional. Include image information in output.</param>
@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] string? seriesId,
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
@@ -82,7 +82,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var options = new DtoOptions()
-                .AddItemFields(fields!)
+                .AddItemFields(fields)
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
 
@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id of the user to get the upcoming episodes for.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="parentId">Optional. Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="enableImges">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -130,7 +130,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
             [FromQuery] int? imageTypeLimit,
@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
             [FromRoute, Required] string seriesId,
             [FromQuery] Guid? userId,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] int? season,
             [FromQuery] string? seasonId,
             [FromQuery] bool? isMissing,
@@ -319,7 +319,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
             [FromRoute, Required] string seriesId,
             [FromQuery] Guid? userId,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
             [FromQuery] string? adjacentTo,

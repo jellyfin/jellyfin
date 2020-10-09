@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<RecommendationDto>> GetMovieRecommendations(
             [FromQuery] Guid? userId,
             [FromQuery] string? parentId,
-            [FromQuery] string? fields,
+            [FromQuery] ItemFields[] fields,
             [FromQuery] int categoryLimit = 5,
             [FromQuery] int itemLimit = 8)
         {

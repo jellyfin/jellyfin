@@ -21,31 +21,11 @@ namespace Jellyfin.Api.Extensions
         /// Legacy order: 1.
         /// </remarks>
         /// <param name="dtoOptions">DtoOptions object.</param>
-        /// <param name="fields">Comma delimited string of fields.</param>
+        /// <param name="fields">Array of item fields.</param>
         /// <returns>Modified DtoOptions object.</returns>
-        internal static DtoOptions AddItemFields(this DtoOptions dtoOptions, string? fields)
+        internal static DtoOptions AddItemFields(this DtoOptions dtoOptions, ItemFields[] fields)
         {
-            if (string.IsNullOrEmpty(fields))
-            {
-                dtoOptions.Fields = Array.Empty<ItemFields>();
-            }
-            else
-            {
-                dtoOptions.Fields = fields.Split(',')
-                    .Select(v =>
-                    {
-                        if (Enum.TryParse(v, true, out ItemFields value))
-                        {
-                            return (ItemFields?)value;
-                        }
-
-                        return null;
-                    })
-                    .Where(i => i.HasValue)
-                    .Select(i => i!.Value)
-                    .ToArray();
-            }
-
+            dtoOptions.Fields = fields;
             return dtoOptions;
         }
 
