@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using Jellyfin.Api.TypeConverters;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
@@ -12,6 +13,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -124,10 +126,15 @@ namespace Jellyfin.Server
                 mainApp.UseStaticFiles();
                 if (appConfig.HostWebClient())
                 {
+                    var extensionProvider = new FileExtensionContentTypeProvider();
+
+                    // subtitles octopus requires .data files.
+                    extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
-                        RequestPath = "/web"
+                        RequestPath = "/web",
+                        ContentTypeProvider = extensionProvider
                     });
                 }
 

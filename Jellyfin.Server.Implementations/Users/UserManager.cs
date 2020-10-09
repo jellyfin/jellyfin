@@ -379,6 +379,7 @@ namespace Jellyfin.Server.Implementations.Users
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout ?? -1,
+                    MaxActiveSessions = user.MaxActiveSessions,
                     IsAdministrator = user.HasPermission(PermissionKind.IsAdministrator),
                     IsHidden = user.HasPermission(PermissionKind.IsHidden),
                     IsDisabled = user.HasPermission(PermissionKind.IsDisabled),
@@ -701,6 +702,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.PasswordResetProviderId = policy.PasswordResetProviderId;
             user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
             user.LoginAttemptsBeforeLockout = maxLoginAttempts;
+            user.MaxActiveSessions = policy.MaxActiveSessions;
             user.SyncPlayAccess = policy.SyncPlayAccess;
             user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
             user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
@@ -799,7 +801,7 @@ namespace Jellyfin.Server.Implementations.Users
 
         private IList<IPasswordResetProvider> GetPasswordResetProviders(User user)
         {
-            var passwordResetProviderId = user?.PasswordResetProviderId;
+            var passwordResetProviderId = user.PasswordResetProviderId;
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();
 
             if (!string.IsNullOrEmpty(passwordResetProviderId))

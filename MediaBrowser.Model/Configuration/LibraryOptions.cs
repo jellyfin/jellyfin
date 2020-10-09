@@ -25,8 +25,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableInternetProviders { get; set; }
 
-        public bool ImportMissingEpisodes { get; set; }
-
         public bool EnableAutomaticSeriesGrouping { get; set; }
 
         public bool EnableEmbeddedTitles { get; set; }

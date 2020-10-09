@@ -455,9 +455,10 @@ namespace MediaBrowser.Model.Dlna
 
             if (directPlayProfile == null)
             {
-                _logger.LogInformation("Profile: {0}, No direct play profiles found for Path: {1}",
+                _logger.LogInformation("Profile: {0}, No audio direct play profiles found for {1} with codec {2}",
                     options.Profile.Name ?? "Unknown Profile",
-                    item.Path ?? "Unknown path");
+                    item.Path ?? "Unknown path",
+                    audioStream.Codec ?? "Unknown codec");
 
                 return (Enumerable.Empty<PlayMethod>(), GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
             }
@@ -972,9 +973,10 @@ namespace MediaBrowser.Model.Dlna
 
             if (directPlay == null)
             {
-                _logger.LogInformation("Profile: {0}, No direct play profiles found for Path: {1}",
+                _logger.LogInformation("Profile: {0}, No video direct play profiles found for {1} with codec {2}",
                     profile.Name ?? "Unknown Profile",
-                    mediaSource.Path ?? "Unknown path");
+                    mediaSource.Path ?? "Unknown path",
+                    videoStream.Codec ?? "Unknown codec");
 
                 return (null, GetTranscodeReasonsFromDirectPlayProfile(mediaSource, videoStream, audioStream, profile.DirectPlayProfiles));
             }

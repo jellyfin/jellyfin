@@ -137,6 +137,7 @@
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
+ - [skyfrk](https://github.com/skyfrk)
 
 # Emby Contributors
 
