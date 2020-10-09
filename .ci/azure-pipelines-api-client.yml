@@ -48,7 +48,7 @@ jobs:
       inputs:
         command: publish
         publishRegistry: useFeed
-        publishFeed: 'unstable@Local'
+        publishFeed: 'jellyfin/unstable'
         workingDir: ./apiclient/generated/typescript/axios
 
 # Stable
