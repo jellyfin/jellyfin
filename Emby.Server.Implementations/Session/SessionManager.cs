@@ -666,7 +666,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            var eventArgs = new PlaybackProgressEventArgs
+            var eventArgs = new PlaybackStartEventArgs
             {
                 Item = libraryItem,
                 Users = users,
