@@ -888,7 +888,7 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <inheritdoc />
-        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
+        public Task SendMessage<T>(SessionMessageType name, Guid messageId, T data, CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -902,18 +902,17 @@ namespace Emby.Dlna.PlayTo
 
             // Ensure the device is initialised.
             _device.DeviceInitialise().ConfigureAwait(false);
-
-            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
+            if (name == SessionMessageType.Play)
             {
                 return SendPlayCommand(data as PlayRequest);
             }
 
-            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
+            if (name == SessionMessageType.PlayState)
             {
                 return SendPlaystateCommand(data as PlaystateRequest);
             }
 
-            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
+            if (name == SessionMessageType.GeneralCommand)
             {
                 return SendGeneralCommand(data as GeneralCommand);
             }

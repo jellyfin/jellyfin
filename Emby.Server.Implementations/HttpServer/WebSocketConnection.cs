@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -227,7 +228,7 @@ namespace Emby.Server.Implementations.HttpServer
                 Connection = this
             };
 
-            if (info.MessageType.Equals("KeepAlive", StringComparison.Ordinal))
+            if (info.MessageType == SessionMessageType.KeepAlive)
             {
                 await SendKeepAliveResponse().ConfigureAwait(false);
             }
@@ -244,7 +245,7 @@ namespace Emby.Server.Implementations.HttpServer
                 new WebSocketMessage<string>
                 {
                     MessageId = Guid.NewGuid(),
-                    MessageType = "KeepAlive"
+                    MessageType = SessionMessageType.KeepAlive
                 }, CancellationToken.None);
         }
 

@@ -230,8 +230,8 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
-        public string[] SupportedCommands
-            => Capabilities == null ? Array.Empty<string>() : Capabilities.SupportedCommands;
+        public GeneralCommandType[] SupportedCommands
+            => Capabilities == null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {
