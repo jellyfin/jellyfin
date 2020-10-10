@@ -68,12 +68,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var remoteImages = new List<RemoteImageInfo>();
+            var posters = series.Images.Posters;
+            var backdrops = series.Images.Backdrops;
 
-            for (var i = 0; i < series.Images.Posters.Count; i++)
+            var remoteImages = new RemoteImageInfo[posters.Count + backdrops.Count];
+
+            for (var i = 0; i < posters.Count; i++)
             {
-                var poster = series.Images.Posters[i];
-                remoteImages.Add(new RemoteImageInfo
+                var poster = posters[i];
+                remoteImages[i] = new RemoteImageInfo
                 {
                     Url = _tmdbClientManager.GetPosterUrl(poster.FilePath),
                     CommunityRating = poster.VoteAverage,
@@ -84,13 +87,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     ProviderName = Name,
                     Type = ImageType.Primary,
                     RatingType = RatingType.Score
-                });
+                };
             }
 
-            for (var i = 0; i < series.Images.Backdrops.Count; i++)
+            for (var i = 0; i < backdrops.Count; i++)
             {
                 var backdrop = series.Images.Backdrops[i];
-                remoteImages.Add(new RemoteImageInfo
+                remoteImages[posters.Count + i] = new RemoteImageInfo
                 {
                     Url = _tmdbClientManager.GetBackdropUrl(backdrop.FilePath),
                     CommunityRating = backdrop.VoteAverage,
@@ -100,7 +103,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     ProviderName = Name,
                     Type = ImageType.Backdrop,
                     RatingType = RatingType.Score
-                });
+                };
             }
 
             return remoteImages.OrderByLanguageDescending(language);
