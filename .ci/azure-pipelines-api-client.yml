@@ -28,13 +28,7 @@ jobs:
       inputs:
         script: "wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/${{ parameters.GeneratorVersion }}/openapi-generator-cli-${{ parameters.GeneratorVersion }}.jar -O openapi-generator-cli.jar"
 
-    - task: Npm@1
-      displayName: 'Install npm dependencies'
-      inputs:
-        command: install
-        workingDir: ./apiclient/generated/typescript/axios
-
-# Generate npm api client
+## Generate npm api client
 # Unstable
     - task: CmdLine@2
       displayName: 'Build unstable typescript axios client'
@@ -42,6 +36,22 @@ jobs:
       inputs:
         script: "bash ./apiclient/templates/typescript/axios/generate.sh $(System.ArtifactsDirectory) $(Build.BuildNumber)"
 
+# Stable
+    - task: CmdLine@2
+      displayName: 'Build stable typescript axios client'
+      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+      inputs:
+        script: "bash ./apiclient/templates/typescript/axios/generate.sh $(System.ArtifactsDirectory)"
+
+## Run npm install
+    - task: Npm@1
+      displayName: 'Install npm dependencies'
+      inputs:
+        command: install
+        workingDir: ./apiclient/generated/typescript/axios
+
+## Publish npm packages
+# Unstable
     - task: Npm@1
       displayName: 'Publish unstable typescript axios client'
       condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
@@ -52,12 +62,6 @@ jobs:
         workingDir: ./apiclient/generated/typescript/axios
 
 # Stable
-    - task: CmdLine@2
-      displayName: 'Build stable typescript axios client'
-      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-      inputs:
-        script: "bash ./apiclient/templates/typescript/axios/generate.sh $(System.ArtifactsDirectory)"
-
     - task: Npm@1
       displayName: 'Publish stable typescript axios client'
       condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
