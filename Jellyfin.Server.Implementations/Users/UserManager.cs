@@ -108,6 +108,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 using var dbContext = _dbProvider.CreateContext();
                 return dbContext.Users
+                    .AsQueryable()
                     .Select(user => user.Id)
                     .ToList();
             }
@@ -200,8 +201,8 @@ namespace Jellyfin.Server.Implementations.Users
         internal async Task<User> CreateUserInternalAsync(string name, JellyfinDb dbContext)
         {
             // TODO: Remove after user item data is migrated.
-            var max = await dbContext.Users.AnyAsync().ConfigureAwait(false)
-                ? await dbContext.Users.Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
+            var max = await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false)
+                ? await dbContext.Users.AsQueryable().Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
                 : 0;
 
             return new User(
@@ -221,7 +222,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
             }
 
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
 
             var newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
 
@@ -588,9 +589,9 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task InitializeAsync()
         {
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
 
-            if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
+            if (await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false))
             {
                 return;
             }

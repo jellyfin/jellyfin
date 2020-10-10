@@ -147,12 +147,12 @@ namespace Emby.Dlna.Service
                 }
             }
 
-            return new ControlRequestInfo();
+            throw new EndOfStreamException("Stream ended but no body tag found.");
         }
 
         private async Task<ControlRequestInfo> ParseBodyTagAsync(XmlReader reader)
         {
-            var result = new ControlRequestInfo();
+            string namespaceURI = null, localName = null;
 
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);
@@ -162,8 +162,8 @@ namespace Emby.Dlna.Service
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    result.LocalName = reader.LocalName;
-                    result.NamespaceURI = reader.NamespaceURI;
+                    localName = reader.LocalName;
+                    namespaceURI = reader.NamespaceURI;
 
                     if (!reader.IsEmptyElement)
                     {
@@ -182,7 +182,12 @@ namespace Emby.Dlna.Service
                 }
             }
 
-            return result;
+            if (localName != null && namespaceURI != null)
+            {
+                return new ControlRequestInfo(localName, namespaceURI);
+            }
+
+            throw new EndOfStreamException("Stream ended but no control found.");
         }
 
         private async Task ParseFirstBodyChildAsync(XmlReader reader, IDictionary<string, string> headers)
@@ -229,11 +234,18 @@ namespace Emby.Dlna.Service
 
         private class ControlRequestInfo
         {
+            public ControlRequestInfo(string localName, string namespaceUri)
+            {
+                LocalName = localName;
+                NamespaceURI = namespaceUri;
+                Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+
             public string LocalName { get; set; }
 
             public string NamespaceURI { get; set; }
 
-            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            public Dictionary<string, string> Headers { get; }
         }
     }
 }

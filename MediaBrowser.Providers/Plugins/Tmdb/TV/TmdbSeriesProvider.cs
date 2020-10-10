@@ -66,14 +66,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     .FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, searchInfo.MetadataLanguage, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (findResult?.TvResults != null)
+                var tvResults = findResult?.TvResults;
+                if (tvResults != null)
                 {
-                    var imdbIdResults = new List<RemoteSearchResult>();
-                    for (var i = 0; i < findResult.TvResults.Count; i++)
+                    var imdbIdResults = new RemoteSearchResult[tvResults.Count];
+                    for (var i = 0; i < tvResults.Count; i++)
                     {
-                        var remoteResult = MapSearchTvToRemoteSearchResult(findResult.TvResults[i]);
+                        var remoteResult = MapSearchTvToRemoteSearchResult(tvResults[i]);
                         remoteResult.SetProviderId(MetadataProvider.Imdb, imdbId);
-                        imdbIdResults.Add(remoteResult);
+                        imdbIdResults[i] = remoteResult;
                     }
 
                     return imdbIdResults;
@@ -88,14 +89,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     .FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, searchInfo.MetadataLanguage, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (findResult?.TvResults != null)
+                var tvResults = findResult?.TvResults;
+                if (tvResults != null)
                 {
-                    var tvIdResults = new List<RemoteSearchResult>();
-                    for (var i = 0; i < findResult.TvResults.Count; i++)
+                    var tvIdResults = new RemoteSearchResult[tvResults.Count];
+                    for (var i = 0; i < tvResults.Count; i++)
                     {
-                        var remoteResult = MapSearchTvToRemoteSearchResult(findResult.TvResults[i]);
+                        var remoteResult = MapSearchTvToRemoteSearchResult(tvResults[i]);
                         remoteResult.SetProviderId(MetadataProvider.Tvdb, tvdbId);
-                        tvIdResults.Add(remoteResult);
+                        tvIdResults[i] = remoteResult;
                     }
 
                     return tvIdResults;
@@ -105,10 +107,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken)
                 .ConfigureAwait(false);
 
-            var remoteResults = new List<RemoteSearchResult>();
+            var remoteResults = new RemoteSearchResult[tvSearchResults.Count];
             for (var i = 0; i < tvSearchResults.Count; i++)
             {
-                remoteResults.Add(MapSearchTvToRemoteSearchResult(tvSearchResults[i]));
+                remoteResults[i] = MapSearchTvToRemoteSearchResult(tvSearchResults[i]);
             }
 
             return remoteResults;
@@ -236,7 +238,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
         {
-            var series = new Series {Name = seriesResult.Name, OriginalTitle = seriesResult.OriginalName};
+            var series = new Series
+            {
+                Name = seriesResult.Name,
+                OriginalTitle = seriesResult.OriginalName
+            };
 
             series.SetProviderId(MetadataProvider.Tmdb, seriesResult.Id.ToString(CultureInfo.InvariantCulture));
 
@@ -322,7 +328,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 {
                     if (TmdbUtils.IsTrailerType(video))
                     {
-                        series.AddTrailerUrl($"http://www.youtube.com/watch?v={video.Key}");
+                        series.AddTrailerUrl("https://www.youtube.com/watch?v=" + video.Key);
                     }
                 }
             }
