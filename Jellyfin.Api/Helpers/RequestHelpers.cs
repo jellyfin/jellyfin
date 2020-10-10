@@ -174,7 +174,7 @@ namespace Jellyfin.Api.Helpers
                 .Select(i => i!.Value)
                 .ToArray();
         }
-        
+
         /// <summary>
         /// Gets the item fields.
         /// </summary>
