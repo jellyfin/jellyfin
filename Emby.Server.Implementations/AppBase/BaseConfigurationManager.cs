@@ -134,6 +134,35 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <summary>
+        /// Manually pre-loads a factory so that it is available pre system initialisation.
+        /// </summary>
+        /// <typeparam name="T">Class to register.</typeparam>
+        public virtual void RegisterConfiguration<T>()
+        {
+            if (!typeof(IConfigurationFactory).IsAssignableFrom(typeof(T)))
+            {
+                throw new ArgumentException("Parameter does not implement IConfigurationFactory");
+            }
+
+            IConfigurationFactory factory = (IConfigurationFactory)Activator.CreateInstance(typeof(T));
+
+            if (_configurationFactories == null)
+            {
+                _configurationFactories = new IConfigurationFactory[] { factory };
+            }
+            else
+            {
+                var list = _configurationFactories.ToList<IConfigurationFactory>();
+                list.Add(factory);
+                _configurationFactories = list.ToArray();
+            }
+
+            _configurationStores = _configurationFactories
+                .SelectMany(i => i.GetConfigurations())
+                .ToArray();
+        }
+
+        /// <summary>
         /// Adds parts.
         /// </summary>
         /// <param name="factories">The configuration factories.</param>
@@ -308,7 +337,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading configuration file: {path}", path);
+                Logger.LogError(ex, "Error loading configuration file: {Path}", path);
 
                 return Activator.CreateInstance(configurationType);
             }
