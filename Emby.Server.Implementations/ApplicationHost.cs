@@ -314,7 +314,7 @@ namespace Emby.Server.Implementations
                 var networkSettings = new NetworkConfiguration();
                 ClassMigrationHelper.CopyProperties(ServerConfigurationManager.Configuration, networkSettings);
                 _xmlSerializer.SerializeToFile(networkSettings, path);
-                Logger.LogDebug("Successfully migrated network settings.");
+                Logger?.LogDebug("Successfully migrated network settings.");
             }
         }
 
