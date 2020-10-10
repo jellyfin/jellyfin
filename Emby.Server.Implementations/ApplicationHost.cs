@@ -1111,9 +1111,9 @@ namespace Emby.Server.Implementations
                         }
                         else
                         {
-                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
                             versions.Add((new Version(0, 0, 0, 1), metafile, dir));
-                        }   
+                        }
                     }
                 }
                 catch
@@ -1211,6 +1211,9 @@ namespace Emby.Server.Implementations
 
             // Xbmc
             yield return typeof(ArtistNfoProvider).Assembly;
+
+            // Network
+            yield return typeof(NetworkManager).Assembly;
 
             foreach (var i in GetAssembliesWithPartsInternal())
             {
