@@ -13,7 +13,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.Udp;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Configuration;
@@ -65,8 +66,8 @@ namespace Jellyfin.Networking.Gateway
             _logger = loggerFactory.CreateLogger<GatewayMonitor>();
             _configurationManager = config ?? throw new ArgumentException("config cannot be null.");
             _gwAddress = new List<IPAddress>();
-            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
-            _every = ((ServerConfiguration)_configurationManager.CommonConfiguration).GatewayMonitorPeriod;
+            _configurationManager.NamedConfigurationUpdated += ConfigurationUpdated;
+            _every = _configurationManager.GetNetworkConfiguration().GatewayMonitorPeriod;
         }
 
         /// <summary>
@@ -137,7 +138,7 @@ namespace Jellyfin.Networking.Gateway
                 return;
             }
 
-            _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
+            _configurationManager.NamedConfigurationUpdated -= ConfigurationUpdated;
             _pinger?.Dispose();
             _disposed = true;
         }
@@ -154,11 +155,14 @@ namespace Jellyfin.Networking.Gateway
             return result.Status == IPStatus.Success;
         }
 
-        private void ConfigurationUpdated(object? sender, EventArgs args)
+        private void ConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs args)
         {
-            lock (_gwLock)
+            if (args.Key.Equals("network", StringComparison.Ordinal))
             {
-                _every = ((ServerConfiguration)_configurationManager.CommonConfiguration).GatewayMonitorPeriod;
+                lock (_gwLock)
+                {
+                    _every = _configurationManager.GetNetworkConfiguration().GatewayMonitorPeriod;
+                }
             }
         }
 

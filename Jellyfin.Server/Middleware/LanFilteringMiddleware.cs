@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +35,7 @@ namespace Jellyfin.Server.Middleware
         {
             var host = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
-            if (!networkManager.IsInLocalNetwork(host) && !serverConfigurationManager.Configuration.EnableRemoteAccess)
+            if (!networkManager.IsInLocalNetwork(host) && !serverConfigurationManager.GetNetworkConfiguration().EnableRemoteAccess)
             {
                 return;
             }

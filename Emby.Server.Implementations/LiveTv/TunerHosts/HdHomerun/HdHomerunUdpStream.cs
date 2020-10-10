@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -47,7 +48,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
-            _portRange = ((ServerConfiguration)configurationManager).UDPPortRange;
+            _portRange = configurationManager.GetNetworkConfiguration().UDPPortRange;
             _appHost = appHost;
             _networkManager = networkManager;
             OriginalStreamId = originalStreamId;

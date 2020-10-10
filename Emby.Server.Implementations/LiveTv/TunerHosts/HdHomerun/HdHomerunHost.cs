@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -726,11 +727,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var list = new List<TunerHostInfo>();
 
+            // Create udp broadcast discovery message
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
             try
             {
                 using var udpSocket = UdpHelper.CreateUdpBroadcastSocket(
-                    UdpHelper.GetPort(Config.Configuration.HDHomerunPortRange ?? Config.Configuration.UDPPortRange),
+                    UdpHelper.GetPort(Config.GetNetworkConfiguration().HDHomerunPortRange ?? Config.GetNetworkConfiguration().UDPPortRange),
                     Logger,
                     _networkManager.IsIP4Enabled,
                     _networkManager.IsIP6Enabled);

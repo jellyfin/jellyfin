@@ -14,9 +14,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Emby.Dlna;
 using Emby.Dlna.Main;
-using Emby.Dlna.Net;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -28,6 +28,7 @@ using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
+using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
@@ -44,6 +45,8 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Migrations;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Advertising;
 using Jellyfin.Networking.Gateway;
 using Jellyfin.Networking.Manager;
@@ -86,9 +89,11 @@ using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
@@ -98,6 +103,7 @@ using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -160,6 +166,11 @@ namespace Emby.Server.Implementations
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets the <see cref="INetworkManager"/> singleton instance.
+        /// </summary>
+        public INetworkManager NetManager { get; internal set; }
 
         /// <summary>
         /// Occurs when [has pending restart changed].
@@ -264,7 +275,10 @@ namespace Emby.Server.Implementations
             _fileSystemManager = fileSystem;
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+            MigrateNetworkConfiguration();
 
+            // Have to pre-register the NetworkConfigurationFactory.
+            ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
             NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
@@ -285,12 +299,23 @@ namespace Emby.Server.Implementations
                 Password = ServerConfigurationManager.Configuration.CertificatePassword
             };
             Certificate = GetCertificate(CertificateInfo);
+
+            ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
+            ApplicationVersionString = ApplicationVersion.ToString(3);
+            ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
         }
 
-        /// <summary>
-        /// Gets the NetworkManager instance.
-        /// </summary>
-        public INetworkManager NetManager { get; internal set; }
+        private void MigrateNetworkConfiguration()
+        {
+            string path = Path.Combine(ConfigurationManager.CommonApplicationPaths.ConfigurationDirectoryPath, "network.xml");
+            if (!File.Exists(path))
+            {
+                var networkSettings = new NetworkConfiguration();
+                ClassMigrationHelper.CopyProperties(ServerConfigurationManager.Configuration, networkSettings);
+                _xmlSerializer.SerializeToFile(networkSettings, path);
+                Logger?.LogDebug("Successfully migrated network settings.");
+            }
+        }
 
         public string ExpandVirtualPath(string path)
         {
@@ -309,16 +334,16 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public Version ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version;
+        public Version ApplicationVersion { get; }
 
         /// <inheritdoc />
-        public string ApplicationVersionString { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
+        public string ApplicationVersionString { get; }
 
         /// <summary>
         /// Gets the current application user agent.
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersionString;
+        public string ApplicationUserAgent { get; }
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -474,14 +499,18 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public void Init()
         {
-            HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
-            HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
+            var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
+            HttpPort = networkConfiguration.HttpServerPortNumber;
+            HttpsPort = networkConfiguration.HttpsPortNumber;
 
             // Safeguard against invalid configuration
             if (HttpPort == HttpsPort)
             {
-                HttpPort = ServerConfiguration.DefaultHttpPort;
-                HttpsPort = ServerConfiguration.DefaultHttpsPort;
+                networkConfiguration.HttpServerPortNumber = NetworkConfiguration.DefaultHttpPort;
+                networkConfiguration.HttpsPortNumber = NetworkConfiguration.DefaultHttpsPort;
+                HttpPort = NetworkConfiguration.DefaultHttpPort;
+                HttpsPort = NetworkConfiguration.DefaultHttpsPort;
+                ServerConfigurationManager.SaveConfiguration("network", networkConfiguration);
             }
 
             if (Plugins != null)
@@ -924,9 +953,10 @@ namespace Emby.Server.Implementations
             // Don't do anything if these haven't been set yet
             if (HttpPort != 0 && HttpsPort != 0)
             {
+                var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
                 // Need to restart if ports have changed
-                if (ServerConfigurationManager.Configuration.HttpServerPortNumber != HttpPort ||
-                    ServerConfigurationManager.Configuration.HttpsPortNumber != HttpsPort)
+                if (networkConfiguration.HttpServerPortNumber != HttpPort ||
+                    networkConfiguration.HttpsPortNumber != HttpsPort)
                 {
                     if (ServerConfigurationManager.Configuration.IsPortAuthorized)
                     {
@@ -1074,7 +1104,7 @@ namespace Emby.Server.Implementations
                     {
                         // No metafile, so lets see if the folder is versioned.
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
-                        
+
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
                         {
@@ -1085,7 +1115,7 @@ namespace Emby.Server.Implementations
                         {
                             // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
                             versions.Add((new Version(0, 0, 0, 1), metafile, dir));
-                        }   
+                        }
                     }
                 }
                 catch
@@ -1184,6 +1214,9 @@ namespace Emby.Server.Implementations
             // Xbmc
             yield return typeof(ArtistNfoProvider).Assembly;
 
+            // Network
+            yield return typeof(NetworkManager).Assembly;
+
             foreach (var i in GetAssembliesWithPartsInternal())
             {
                 yield return i;
@@ -1248,7 +1281,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
+        public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
@@ -1270,6 +1303,7 @@ namespace Emby.Server.Implementations
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
+        /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request, int? port = null)
         {
             // Published server ends with a /
@@ -1289,6 +1323,7 @@ namespace Emby.Server.Implementations
             return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
         }
 
+        /// <inheritdoc/>
         public string GetSmartApiUrl(string hostname, int? port = null)
         {
             // Published server ends with a /
@@ -1330,7 +1365,7 @@ namespace Emby.Server.Implementations
                 Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 Host = host,
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
-                Path = ServerConfigurationManager.Configuration.BaseUrl
+                Path = ServerConfigurationManager.GetNetworkConfiguration().BaseUrl
             }.ToString().TrimEnd('/');
         }
 
@@ -1408,7 +1443,7 @@ namespace Emby.Server.Implementations
 
             foreach (var assembly in assemblies)
             {
-                Logger.LogDebug("Found API endpoints in plugin {name}", assembly.FullName);
+                Logger.LogDebug("Found API endpoints in plugin {Name}", assembly.FullName);
                 yield return assembly;
             }
         }

@@ -227,7 +227,7 @@ namespace Jellyfin.Networking.Manager
                     {
                         if (bracketed)
                         {
-                            AddToCollection(col, v.Substring(1, v.Length - 2));
+                            AddToCollection(col, v[1..^1]);
                         }
                     }
                     else if (v.StartsWith('!'))

@@ -11,6 +11,9 @@ using Emby.Dlna.PlayTo;
 using NetworkCollection;
 using System;
 using NetworkCollection.Udp;
+using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Configuration;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace NetworkTesting
 {
@@ -18,6 +21,15 @@ namespace NetworkTesting
 
     public class NetTesting
     {
+        private IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        {
+            var configManager = new Mock<IConfigurationManager>
+            {
+                CallBase = true
+            };
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            return (IConfigurationManager)configManager.Object;
+        }
 
         [Theory]
         [InlineData("192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
@@ -25,7 +37,7 @@ namespace NetworkTesting
         [InlineData("192.168.1.208/24,-16,vEthernet1:192.168.1.208/24,-16,vEthernet212;200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
         public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
         {
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
@@ -33,9 +45,7 @@ namespace NetworkTesting
             };
 
             NetworkManager.MockNetworkSettings = interfaces;
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             Assert.True(string.Equals(nm.GetInternalBindAddresses().ToString(), value, StringComparison.Ordinal));
@@ -45,16 +55,14 @@ namespace NetworkTesting
         [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
         public void TextIsInNetwork(string network, string value)
         {
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
                 LocalNetworkSubnets = network.Split(',')
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             Assert.True(!nm.IsInLocalNetwork(value));
         }
@@ -122,15 +130,13 @@ namespace NetworkTesting
             "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
             };           
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
             NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);
@@ -165,15 +171,13 @@ namespace NetworkTesting
         [InlineData("127.0.0.1", "127.0.0.1/8", "[127.0.0.1/32]")]
         public void UnionCheck(string settings, string compare, string result)
         {
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             NetCollection nc1 = nm.CreateIPCollection(settings.Split(","), false);
             NetCollection nc2 = nm.CreateIPCollection(compare.Split(","), false);
@@ -266,15 +270,13 @@ namespace NetworkTesting
 
         public void TestMatches(string source, string dest, string result)
         {
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
@@ -308,15 +310,13 @@ namespace NetworkTesting
         public void TestCallback(string source)
         {
 
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
 
@@ -355,17 +355,15 @@ namespace NetworkTesting
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
         {
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 LocalNetworkAddresses = bindAddresses.Split(','),
                 EnableIPV6 = ipv6enabled,
                 EnableIPV4 = true
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
             NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             _ = nm.TryParseInterface(result, out NetCollection? resultObj);
@@ -373,7 +371,7 @@ namespace NetworkTesting
             if (resultObj != null)
             {
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
-                var intf = nm.GetBindInterface(source, out int? port);
+                var intf = nm.GetBindInterface(source, out int? _);
 
                 Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
             }
@@ -412,7 +410,7 @@ namespace NetworkTesting
 
         public void TestBindInterfaceOverrides(string source, string lan, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
         {
-            var conf = new ServerConfiguration()
+            var conf = new NetworkConfiguration()
             {
                 LocalNetworkSubnets = lan.Split(','),
                 LocalNetworkAddresses = bindAddresses.Split(','),
@@ -421,10 +419,8 @@ namespace NetworkTesting
                 PublishedServerUriBySubnet = new string[] { publishedServers }
             };
 
-            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.CommonConfiguration == conf);
-
             NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
-            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             if (nm.TryParseInterface(result, out NetCollection? resultObj) && resultObj != null)
@@ -433,7 +429,7 @@ namespace NetworkTesting
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
             }
 
-            var intf = nm.GetBindInterface(source, out int? port);
+            var intf = nm.GetBindInterface(source, out int? _);
 
             Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
         }

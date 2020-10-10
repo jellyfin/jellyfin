@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 using NATLogger = Mono.Nat.Logging.ILogger;
@@ -24,6 +27,7 @@ namespace Jellyfin.Networking.UPnP
         private readonly IGatewayMonitor _gatewayMonitor;
         private readonly object _lock;
         private readonly List<INatDevice> _devices;
+        private NetworkConfiguration _networkConfig;
         private bool _disposed = false;
         private bool _stopped = true;
         private string _configIdentifier;
@@ -53,16 +57,17 @@ namespace Jellyfin.Networking.UPnP
             _devices = new List<INatDevice>();
             _configIdentifier = GetConfigIdentifier();
             Mono.Nat.Logging.Logger.Factory = GetLogger;
-            _config.ConfigurationUpdated += OnConfigurationUpdated;
+            _config.NamedConfigurationUpdated += OnConfigurationUpdated;
+            _networkConfig = _config.GetNetworkConfiguration();
             Start();
         }
 
         /// <summary>
-        /// Gets a value indicating whether uPNP port forwarding is active.
+        /// Gets a value indicating whether uPnP is active.
         /// </summary>
-        public bool IsUPnPActive => _config.Configuration.EnableUPnP &&
-            _config.Configuration.EnableRemoteAccess &&
-            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _config.Configuration.UPnPCreateHttpPortMap));
+        public bool IsUPnPActive => _networkConfig.EnableUPnP &&
+            _networkConfig.EnableRemoteAccess &&
+            (_appHost.ListenWithHttps || (!_appHost.ListenWithHttps && _networkConfig.UPnPCreateHttpPortMap));
 
         /// <inheritdoc />
         public void Dispose()
@@ -82,7 +87,7 @@ namespace Jellyfin.Networking.UPnP
                 return;
             }
 
-            _config.ConfigurationUpdated -= OnConfigurationUpdated;
+            _config.NamedConfigurationUpdated -= OnConfigurationUpdated;
 
             Stop();
 
@@ -106,16 +111,14 @@ namespace Jellyfin.Networking.UPnP
         private string GetConfigIdentifier()
         {
             const char Separator = '|';
-            var config = _config.Configuration;
-
             return new StringBuilder(32)
-                .Append(config.EnableUPnP).Append(Separator)
-                .Append(config.PublicPort).Append(Separator)
-                .Append(config.PublicHttpsPort).Append(Separator)
-                .Append(_appHost.HttpPort).Append(Separator)
-                .Append(_appHost.HttpsPort).Append(Separator)
+                .Append(_networkConfig.EnableUPnP).Append(Separator)
+                .Append(_networkConfig.PublicPort).Append(Separator)
+                .Append(_networkConfig.PublicHttpsPort).Append(Separator)
+                .Append(_networkConfig.HttpServerPortNumber).Append(Separator)
+                .Append(_networkConfig.HttpsPortNumber).Append(Separator)
                 .Append(_appHost.ListenWithHttps).Append(Separator)
-                .Append(config.EnableRemoteAccess).Append(Separator)
+                .Append(_networkConfig.EnableRemoteAccess).Append(Separator)
                 .ToString();
         }
 
@@ -124,21 +127,25 @@ namespace Jellyfin.Networking.UPnP
         /// </summary>
         /// <param name="sender">Owner of the event.</param>
         /// <param name="e">Event parameters.</param>
-        private void OnConfigurationUpdated(object sender, EventArgs e)
+        private void OnConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
-            var oldConfigIdentifier = _configIdentifier;
-            _configIdentifier = GetConfigIdentifier();
-
-            if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
+            if (e.Key.Equals("Network", StringComparison.Ordinal))
             {
-                Stop();
-                if (IsUPnPActive)
-                {
-                    Start();
-                }
-            }
+                _networkConfig = (NetworkConfiguration)e.NewConfiguration;
+                var oldConfigIdentifier = _configIdentifier;
+                _configIdentifier = GetConfigIdentifier();
 
-            // TODO: check !_networkManager.UPnPActive for changes and remove port mappings if they have.
+                if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
+                {
+                    Stop();
+                    if (IsUPnPActive)
+                    {
+                        Start();
+                    }
+                }
+
+                // TODO: check !_networkManager.UPnPActive for changes and remove port mappings if they have.
+            }
         }
 
         /// <summary>
@@ -288,14 +295,14 @@ namespace Jellyfin.Networking.UPnP
         /// <returns>IEnumerable.</returns>
         private IEnumerable<Task> CreatePortMaps(INatDevice device)
         {
-            if (!_config.Configuration.UPnPCreateHttpPortMap)
+            if (!_networkConfig.UPnPCreateHttpPortMap)
             {
-                yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+                yield return CreatePortMap(device, _networkConfig.HttpServerPortNumber, _networkConfig.PublicPort);
             }
 
             if (_appHost.ListenWithHttps)
             {
-                yield return CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
+                yield return CreatePortMap(device, _networkConfig.HttpsPortNumber, _networkConfig.PublicHttpsPort);
             }
         }
 
@@ -354,14 +361,14 @@ namespace Jellyfin.Networking.UPnP
         /// <returns>IEnumerable.</returns>
         private IEnumerable<Task> RemovePortMaps(INatDevice device)
         {
-            if (_config.Configuration.UPnPCreateHttpPortMap)
+            if (_networkConfig.UPnPCreateHttpPortMap)
             {
-                yield return RemovePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+                yield return RemovePortMap(device, _networkConfig.HttpServerPortNumber, _networkConfig.PublicPort);
             }
 
             if (_appHost.ListenWithHttps)
             {
-                yield return RemovePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
+                yield return RemovePortMap(device, _networkConfig.HttpsPortNumber, _networkConfig.PublicHttpsPort);
             }
         }
 
