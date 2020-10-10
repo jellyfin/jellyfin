@@ -110,10 +110,12 @@ namespace Jellyfin.Networking.Manager
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
             _eventFireLock = new object();
 
+            UpdateSettings(_configurationManager.GetNetworkConfiguration());
+
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
-            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+            _configurationManager.NamedConfigurationUpdated += ConfigurationUpdated;
         }
 #pragma warning restore CS8618 // Non-nullable field is uninitialized.
 
@@ -600,7 +602,7 @@ namespace Jellyfin.Networking.Manager
             {
                 if (disposing)
                 {
-                    _configurationManager.ConfigurationUpdated -= ConfigurationUpdated;
+                    _configurationManager.NamedConfigurationUpdated -= ConfigurationUpdated;
                     NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
                     NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
                 }
@@ -609,9 +611,12 @@ namespace Jellyfin.Networking.Manager
             }
         }
 
-        private void ConfigurationUpdated(object? sender, EventArgs args)
+        private void ConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs evt)
         {
-            UpdateSettings(_configurationManager.GetNetworkConfiguration());
+            if (evt.Key.Equals("network", StringComparison.Ordinal))
+            {
+                UpdateSettings(evt.NewConfiguration);
+            }
         }
 
         /// <summary>

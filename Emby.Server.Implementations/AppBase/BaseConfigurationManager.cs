@@ -135,6 +135,35 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <summary>
+        /// Manually pre-loads a factory so that it is available pre system initialisation.
+        /// </summary>
+        /// <typeparam name="T">Class to register.</typeparam>
+        public virtual void RegisterConfiguration<T>()
+        {
+            if (!typeof(IConfigurationFactory).IsAssignableFrom(typeof(T)))
+            {
+                throw new ArgumentException("Parameter does not implement IConfigurationFactory");
+            }
+
+            IConfigurationFactory factory = (IConfigurationFactory)Activator.CreateInstance(typeof(T));
+
+            if (_configurationFactories == null)
+            {
+                _configurationFactories = new IConfigurationFactory[] { factory };
+            }
+            else
+            {
+                var list = _configurationFactories.ToList<IConfigurationFactory>();
+                list.Add(factory);
+                _configurationFactories = list.ToArray();
+            }
+
+            _configurationStores = _configurationFactories
+                .SelectMany(i => i.GetConfigurations())
+                .ToArray();
+        }
+
+        /// <summary>
         /// Adds parts.
         /// </summary>
         /// <param name="factories">The configuration factories.</param>
@@ -269,7 +298,7 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <inheritdoc />
-        public object GetConfiguration(string key, Type objectType = null)
+        public object GetConfiguration(string key)
         {
             return _configurations.GetOrAdd(key, k =>
             {
@@ -278,12 +307,12 @@ namespace Emby.Server.Implementations.AppBase
                 var configurationInfo = _configurationStores
                     .FirstOrDefault(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
 
-                if (configurationInfo == null && objectType == null)
+                if (configurationInfo == null)
                 {
                     throw new ResourceNotFoundException("Configuration with key " + key + " not found.");
                 }
 
-                var configurationType = configurationInfo?.ConfigurationType ?? objectType;
+                var configurationType = configurationInfo.ConfigurationType;
 
                 lock (_configurationSyncLock)
                 {

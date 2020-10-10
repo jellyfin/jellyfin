@@ -47,12 +47,12 @@ namespace MediaBrowser.Common.Configuration
         void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration);
 
         /// <summary>
-        /// Gets the configuration.
+        /// Manually pre-loads a factory so that it is available pre system initialisation.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="objectType">Optional parameter containing the key object to create, if it hasn't been registered.</param>
-        /// <returns>System.Object.</returns>
-        object GetConfiguration(string key, Type objectType = null);
+        /// <typeparam name="T">Class to register.</typeparam>
+        void RegisterConfiguration<T>();
+
+        object GetConfiguration(string key);
 
         /// <summary>
         /// Gets the type of the configuration.

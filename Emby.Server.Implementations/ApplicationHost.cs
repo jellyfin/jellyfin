@@ -276,9 +276,11 @@ namespace Emby.Server.Implementations
             _fileSystemManager = fileSystem;
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+            MigrateNetworkConfiguration();
 
+            // Have to pre-register the NetworkConfigurationFactory.
+            ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
             NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
-            NetManager.UpdateSettings(GetNetworkConfiguration());
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
@@ -304,7 +306,7 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
         }
 
-        private NetworkConfiguration GetNetworkConfiguration()
+        private void MigrateNetworkConfiguration()
         {
             string path = Path.Combine(ConfigurationManager.CommonApplicationPaths.ConfigurationDirectoryPath, "network.xml");
             if (!File.Exists(path))
@@ -312,11 +314,8 @@ namespace Emby.Server.Implementations
                 var networkSettings = new NetworkConfiguration();
                 ClassMigrationHelper.CopyProperties(ServerConfigurationManager.Configuration, networkSettings);
                 _xmlSerializer.SerializeToFile(networkSettings, path);
-
-                return networkSettings;
+                Logger.LogDebug("Successfully migrated network settings.");
             }
-
-            return (NetworkConfiguration)ConfigurationManager.GetConfiguration("network", typeof(NetworkConfiguration));
         }
 
         public string ExpandVirtualPath(string path)
