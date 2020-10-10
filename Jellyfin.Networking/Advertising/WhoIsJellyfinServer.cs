@@ -43,6 +43,10 @@ namespace Jellyfin.Networking.Advertising
         {
             _logger = logger ?? throw new NullReferenceException(nameof(logger));
             _appHost = appHost ?? throw new NullReferenceException(nameof(appHost));
+            if (networkManager == null)
+            {
+                throw new NullReferenceException(nameof(networkManager));
+            }
 
             var config = configurationManager?.GetNetworkConfiguration() ?? throw new NullReferenceException(nameof(configurationManager));
             if (config.AutoDiscovery)

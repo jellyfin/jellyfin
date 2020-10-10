@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool EnableMetrics { get; set; } = false;
 
-#if BACKWARDSCOMPAT
+// #if BACKWARDSCOMPAT
         public const int DefaultHttpPort = 8096;
         public const int DefaultHttpsPort = 8920;
         private string _baseUrl = string.Empty;
@@ -210,7 +210,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool EnableRemoteAccess { get; set; } = true;
 
-        
         public string BaseUrl
         {
             get => _baseUrl;
@@ -271,7 +270,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool IsRemoteIPFilterBlacklist { get; set; } = false;
 
-#endif
+// #endif
 
         public bool EnableNormalizedItemByNameIds { get; set; } = true;
 
