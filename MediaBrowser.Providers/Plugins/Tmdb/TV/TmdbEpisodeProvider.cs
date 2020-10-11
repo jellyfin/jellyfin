@@ -40,29 +40,30 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteSearchResult>();
             }
 
-            var metadataResult = await GetMetadata(searchInfo, cancellationToken).ConfigureAwait(false);
+            var metadataResult = await GetMetadata(searchInfo, cancellationToken);
 
             if (!metadataResult.HasMetadata)
             {
                 return Enumerable.Empty<RemoteSearchResult>();
             }
 
+            var list = new List<RemoteSearchResult>();
+
             var item = metadataResult.Item;
 
-            return new[]
+            list.Add(new RemoteSearchResult
             {
-                new RemoteSearchResult
-                {
-                    IndexNumber = item.IndexNumber,
-                    Name = item.Name,
-                    ParentIndexNumber = item.ParentIndexNumber,
-                    PremiereDate = item.PremiereDate,
-                    ProductionYear = item.ProductionYear,
-                    ProviderIds = item.ProviderIds,
-                    SearchProviderName = Name,
-                    IndexNumberEnd = item.IndexNumberEnd
-                }
-            };
+                IndexNumber = item.IndexNumber,
+                Name = item.Name,
+                ParentIndexNumber = item.ParentIndexNumber,
+                PremiereDate = item.PremiereDate,
+                ProductionYear = item.ProductionYear,
+                ProviderIds = item.ProviderIds,
+                SearchProviderName = Name,
+                IndexNumberEnd = item.IndexNumberEnd
+            });
+
+            return list;
         }
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
@@ -136,7 +137,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 {
                     if (TmdbUtils.IsTrailerType(video))
                     {
-                        item.AddTrailerUrl("https://www.youtube.com/watch?v=" + video.Key);
+                        var videoUrl = string.Format(CultureInfo.InvariantCulture, "http://www.youtube.com/watch?v={0}", video.Key);
+                        item.AddTrailerUrl(videoUrl);
                     }
                 }
             }

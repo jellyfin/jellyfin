@@ -56,17 +56,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetSeasonAsync(seriesTmdbId, season.IndexNumber.Value, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
                 .ConfigureAwait(false);
 
-            var posters = seasonResult?.Images?.Posters;
-            if (posters == null)
+            if (seasonResult?.Images?.Posters == null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var remoteImages = new RemoteImageInfo[posters.Count];
-            for (var i = 0; i < posters.Count; i++)
+            var remoteImages = new List<RemoteImageInfo>();
+            for (var i = 0; i < seasonResult.Images.Posters.Count; i++)
             {
-                var image = posters[i];
-                remoteImages[i] = new RemoteImageInfo
+                var image = seasonResult.Images.Posters[i];
+                remoteImages.Add(new RemoteImageInfo
                 {
                     Url = _tmdbClientManager.GetPosterUrl(image.FilePath),
                     CommunityRating = image.VoteAverage,
@@ -77,7 +76,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     ProviderName = Name,
                     Type = ImageType.Primary,
                     RatingType = RatingType.Score
-                };
+                });
             }
 
             return remoteImages.OrderByLanguageDescending(language);

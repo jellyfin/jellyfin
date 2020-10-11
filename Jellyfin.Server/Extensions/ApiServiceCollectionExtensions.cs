@@ -27,7 +27,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -168,7 +167,6 @@ namespace Jellyfin.Server.Extensions
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
-                    opts.InputFormatters.Add(new XmlSerializerInputFormatter(opts));
 
                     opts.ModelBinderProviders.Insert(0, new CommaDelimitedArrayModelBinderProvider());
                 })
@@ -265,7 +263,6 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.OperationFilter<FileResponseFilter>();
-                c.DocumentFilter<WebsocketModelFilter>();
             });
         }
 

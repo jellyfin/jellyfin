@@ -63,7 +63,38 @@ jobs:
       sshEndpoint: repository
       sourceFolder: '$(Build.SourcesDirectory)/deployment/dist'
       contents: '**'
-      targetFolder: '/srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
+
+- job: OpenAPISpec
+  dependsOn: Test
+  condition: or(startsWith(variables['Build.SourceBranch'], 'refs/heads/master'),startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  displayName: 'Push OpenAPI Spec to repository'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download OpenAPI Spec'
+    inputs:
+      source: 'current'
+      artifact: "OpenAPI Spec"
+      path: "$(System.ArtifactsDirectory)/openapispec"
+      runVersion: "latest"
+
+  - task: SSH@0
+    displayName: 'Create target directory on repository server'
+    inputs:
+      sshEndpoint: repository
+      runOptions: 'inline'
+      inline: 'mkdir -p /srv/repository/incoming/azure/$(Build.BuildNumber)'
+
+  - task: CopyFilesOverSSH@0
+    displayName: 'Upload artifacts to repository server'
+    inputs:
+      sshEndpoint: repository
+      sourceFolder: '$(System.ArtifactsDirectory)/openapispec'
+      contents: 'openapi.json'
+      targetFolder: '/srv/repository/incoming/azure/$(Build.BuildNumber)'
 
 - job: BuildDocker
   displayName: 'Build Docker'
