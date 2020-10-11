@@ -530,6 +530,8 @@ namespace Emby.Server.Implementations
             DiscoverTypes();
 
             RegisterServices();
+
+            RegisterPlugInServices();
         }
 
         /// <summary>
@@ -795,9 +797,24 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _plugins = GetExports<IPlugin>()
-                        .Select(LoadPlugin)
+
                         .Where(i => i != null)
                         .ToArray();
+
+            if (Plugins != null)
+            {
+                var pluginBuilder = new StringBuilder();
+
+                foreach (var plugin in Plugins)
+                {
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
+                }
+
+                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
+            }
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
             _webSocketManager.Init(GetExports<IWebSocketListener>());
@@ -829,52 +846,7 @@ namespace Emby.Server.Implementations
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
 
-        private IPlugin LoadPlugin(IPlugin plugin)
-        {
-            try
-            {
-                if (plugin is IPluginAssembly assemblyPlugin)
-                {
-                    var assembly = plugin.GetType().Assembly;
-                    var assemblyName = assembly.GetName();
-                    var assemblyFilePath = assembly.Location;
 
-                    var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-
-                    assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
-
-                    try
-                    {
-                        var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-                        if (idAttributes.Length > 0)
-                        {
-                            var attribute = (GuidAttribute)idAttributes[0];
-                            var assemblyId = new Guid(attribute.Value);
-
-                            assemblyPlugin.SetId(assemblyId);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
-                    }
-                }
-
-                if (plugin is IHasPluginConfiguration hasPluginConfiguration)
-                {
-                    hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
-                }
-
-                plugin.RegisterServices(ServiceCollection);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
-                return null;
-            }
-
-            return plugin;
-        }
 
         /// <summary>
         /// Discovers the types.
@@ -884,6 +856,22 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Loading assemblies");
 
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
+        }
+
+        private void RegisterPlugInServices()
+        {
+            foreach (var pluginServiceRegistrar in GetExportTypes<IPluginRegistrar>())
+            {
+                try
+                {
+                    var instance = (IPluginRegistrar)Activator.CreateInstance(pluginServiceRegistrar);
+                    instance.RegisterServices(ServiceCollection);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error registering {Assembly} with D.I.", pluginServiceRegistrar.Assembly);
+                }
+            }
         }
 
         private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
