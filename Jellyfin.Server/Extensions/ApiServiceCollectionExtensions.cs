@@ -16,6 +16,7 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -169,9 +170,7 @@ namespace Jellyfin.Server.Extensions
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
                     opts.InputFormatters.Add(new XmlSerializerInputFormatter(opts));
 
-                    // Remove after https://github.com/jellyfin/jellyfin-web/issues/1930 fixed.
-                    opts.InputFormatters.Add(new NullInputFormatter());
-                    // End bug workaround.
+                    opts.ModelBinderProviders.Insert(0, new CommaDelimitedArrayModelBinderProvider());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
@@ -266,6 +265,7 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.OperationFilter<FileResponseFilter>();
+                c.DocumentFilter<WebsocketModelFilter>();
             });
         }
 

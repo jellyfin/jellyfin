@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using Jellyfin.Api.TypeConverters;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
@@ -11,6 +13,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -53,7 +56,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.Configuration.KnownProxies);
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration().KnownProxies);
 
             services.AddJellyfinApiSwagger();
 
@@ -97,7 +100,7 @@ namespace Jellyfin.Server
             app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
-            app.Map(_serverConfigurationManager.Configuration.BaseUrl, mainApp =>
+            app.Map(_serverConfigurationManager.GetNetworkConfiguration().BaseUrl, mainApp =>
             {
                 if (env.IsDevelopment())
                 {
@@ -115,7 +118,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
-                if (_serverConfigurationManager.Configuration.RequireHttps
+                if (_serverConfigurationManager.GetNetworkConfiguration().RequireHttps
                     && _serverApplicationHost.ListenWithHttps)
                 {
                     mainApp.UseHttpsRedirection();
@@ -124,10 +127,15 @@ namespace Jellyfin.Server
                 mainApp.UseStaticFiles();
                 if (appConfig.HostWebClient())
                 {
+                    var extensionProvider = new FileExtensionContentTypeProvider();
+
+                    // subtitles octopus requires .data files.
+                    extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
-                        RequestPath = "/web"
+                        RequestPath = "/web",
+                        ContentTypeProvider = extensionProvider
                     });
                 }
 

@@ -15,7 +15,7 @@
     "ValueSpecialEpisodeName": "Đặc Biệt - {0}",
     "Albums": "Albums",
     "Artists": "Các Nghệ Sĩ",
-    "TaskDownloadMissingSubtitlesDescription": "Tìm kiếm phụ đề bị thiếu trên Internet dựa trên cấu hình thông tin chi tiết.",
+    "TaskDownloadMissingSubtitlesDescription": "Tìm kiếm phụ đề bị thiếu trên Internet dựa trên cấu hình dữ liệu mô tả.",
     "TaskDownloadMissingSubtitles": "Tải xuống phụ đề bị thiếu",
     "TaskRefreshChannelsDescription": "Làm mới thông tin kênh internet.",
     "TaskRefreshChannels": "Làm Mới Kênh",

@@ -4,9 +4,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
 using NetworkCollection.Udp;
@@ -24,7 +25,6 @@ namespace Jellyfin.Networking.Advertising
         public const int PortNumber = 7359;
 
         private readonly IServerApplicationHost _appHost;
-        private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly List<UdpProcess>? _udpProcess;
 
@@ -34,25 +34,29 @@ namespace Jellyfin.Networking.Advertising
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
         /// <param name="appHost">The <see cref="IServerApplicationHost"/> instance.</param>
         /// <param name="networkManager">The <see cref="INetworkManager"/> instace.</param>
-        /// <param name="configurationManager">The <see cref="IServerConfigurationManager"/> instance.</param>
+        /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
         public WhoIsJellyfinServer(
             ILogger logger,
             IServerApplicationHost appHost,
             INetworkManager networkManager,
-            IServerConfigurationManager configurationManager)
+            IConfigurationManager configurationManager)
         {
             _logger = logger ?? throw new NullReferenceException(nameof(logger));
             _appHost = appHost ?? throw new NullReferenceException(nameof(appHost));
-            _config = configurationManager ?? throw new NullReferenceException(nameof(configurationManager));
+            if (networkManager == null)
+            {
+                throw new NullReferenceException(nameof(networkManager));
+            }
 
-            if (_config.Configuration.AutoDiscovery)
+            var config = configurationManager?.GetNetworkConfiguration() ?? throw new NullReferenceException(nameof(configurationManager));
+            if (config.AutoDiscovery)
             {
                 _udpProcess = UdpHelper.CreateMulticastClients(
                     PortNumber,
                     networkManager.GetAllBindInterfaces(true),
                     ProcessMessage,
                     _logger,
-                    enableTracing: _config.Configuration.AutoDiscoveryTracing);
+                    enableTracing: config.AutoDiscoveryTracing);
 
                 if (_udpProcess.Count == 0)
                 {

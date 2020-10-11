@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -41,7 +42,7 @@ namespace Jellyfin.Server.Middleware
 
             var remoteIp = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
-            if (serverConfigurationManager.Configuration.EnableRemoteAccess)
+            if (serverConfigurationManager.GetNetworkConfiguration().EnableRemoteAccess)
             {
                 // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
                 // If left blank, all remote addresses will be allowed.
@@ -51,7 +52,7 @@ namespace Jellyfin.Server.Middleware
                 {
                     // remoteAddressFilter is a whitelist or blacklist.
                     bool isListed = remoteAddressFilter.Contains(remoteIp);
-                    if (!serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
+                    if (!serverConfigurationManager.GetNetworkConfiguration().IsRemoteIPFilterBlacklist)
                     {
                         // Black list, so flip over.
                         isListed = !isListed;

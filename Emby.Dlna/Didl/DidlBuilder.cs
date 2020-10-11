@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Emby.Dlna.ContentDirectory;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -45,8 +46,8 @@ namespace Emby.Dlna.Didl
         private readonly DeviceProfile _profile;
         private readonly IImageProcessor _imageProcessor;
         private readonly string _serverAddress;
-        private readonly string? _accessToken;
-        private readonly User? _user;
+        private readonly string _accessToken;
+        private readonly User _user;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -70,10 +71,10 @@ namespace Emby.Dlna.Didl
         /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
         public DidlBuilder(
             DeviceProfile profile,
-            User? user,
+            User user,
             IImageProcessor imageProcessor,
             string serverAddress,
-            string? accessToken,
+            string accessToken,
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
@@ -114,7 +115,7 @@ namespace Emby.Dlna.Didl
         /// <param name="filter">The <see cref="Filter"/>.</param>
         /// <param name="streamInfo">The <see cref="StreamInfo"/>.</param>
         /// <returns>The XML representation.</returns>
-        public string GetItemDidl(BaseItem item, User? user, BaseItem? context, string deviceId, Filter filter, StreamInfo streamInfo)
+        public string GetItemDidl(BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
             {
@@ -192,12 +193,12 @@ namespace Emby.Dlna.Didl
         public void WriteItemElement(
             XmlWriter writer,
             BaseItem item,
-            User? user,
-            BaseItem? context,
+            User user,
+            BaseItem context,
             StubType? contextStubType,
             string deviceId,
             Filter filter,
-            StreamInfo? streamInfo = null)
+            StreamInfo streamInfo = null)
         {
             if (item == null)
             {
@@ -265,7 +266,7 @@ namespace Emby.Dlna.Didl
         /// <param name="deviceId">The deviceId<see cref="string"/>.</param>
         /// <param name="filter">The filter<see cref="Filter"/>.</param>
         /// <param name="streamInfo">The streamInfo<see cref="StreamInfo"/>.</param>
-        private void AddVideoResource(XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo? streamInfo = null)
+        private void AddVideoResource(XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
             {
@@ -502,7 +503,7 @@ namespace Emby.Dlna.Didl
         /// <param name="itemStubType">The <see cref="StubType"/>.</param>
         /// <param name="context">The <see cref="BaseItem"/>.</param>
         /// <returns>The <see cref="string"/>.</returns>
-        private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem? context)
+        private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem context)
         {
             if (itemStubType.HasValue)
             {
@@ -544,7 +545,7 @@ namespace Emby.Dlna.Didl
         /// <param name="episode">The <see cref="Episode"/>.</param>
         /// <param name="context">Current context <see cref="BaseItem"/>.</param>
         /// <returns>Formatted name of the episode.</returns>
-        private string GetEpisodeDisplayName(Episode episode, BaseItem? context)
+        private string GetEpisodeDisplayName(Episode episode, BaseItem context)
         {
             string[] components;
 
@@ -635,7 +636,7 @@ namespace Emby.Dlna.Didl
         /// <param name="deviceId">The <see cref="string"/>.</param>
         /// <param name="filter">The <see cref="Filter"/>.</param>
         /// <param name="streamInfo">The <see cref="StreamInfo"/>.</param>
-        private void AddAudioResource(XmlWriter writer, BaseItem audio, string deviceId, Filter filter, StreamInfo? streamInfo = null)
+        private void AddAudioResource(XmlWriter writer, BaseItem audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             writer.WriteStartElement(string.Empty, "res", NsDidl);
 
@@ -753,7 +754,7 @@ namespace Emby.Dlna.Didl
         /// <param name="childCount">The <see cref="int"/>.</param>
         /// <param name="filter">The <see cref="Filter"/>.</param>
         /// <param name="requestedId">The requested id.</param>
-        public void WriteFolderElement(XmlWriter writer, BaseItem folder, StubType? stubType, BaseItem? context, int childCount, Filter filter, string? requestedId = null)
+        public void WriteFolderElement(XmlWriter writer, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
         {
             if (writer == null)
             {
@@ -814,14 +815,14 @@ namespace Emby.Dlna.Didl
         /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="writer">The <see cref="XmlWriter"/>.</param>
         /// <param name="streamInfo">The <see cref="StreamInfo"/>.</param>
-        private void AddSamsungBookmarkInfo(BaseItem item, User? user, XmlWriter writer, StreamInfo? streamInfo)
+        private void AddSamsungBookmarkInfo(BaseItem item, User user, XmlWriter writer, StreamInfo streamInfo)
         {
             if (!item.SupportsPositionTicksResume || item is Folder)
             {
                 return;
             }
 
-            XmlAttribute? secAttribute = null;
+            XmlAttribute secAttribute = null;
             foreach (var attribute in _profile.XmlRootAttributes)
             {
                 if (string.Equals(attribute.Name, "xmlns:sec", StringComparison.OrdinalIgnoreCase))
@@ -858,7 +859,7 @@ namespace Emby.Dlna.Didl
         /// <param name="context">The <see cref="BaseItem"/>.</param>
         /// <param name="writer">The <see cref="XmlWriter"/>.</param>
         /// <param name="filter">The <see cref="Filter"/>.</param>
-        private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem? context, XmlWriter writer, Filter filter)
+        private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {
             // Don't filter on dc:title because not all devices will include it in the filter
             // MediaMonkey for example won't display content without a title
@@ -942,7 +943,7 @@ namespace Emby.Dlna.Didl
 
             if (item.IsDisplayedAsFolder || stubType.HasValue)
             {
-                string? classType = null;
+                string classType = null;
 
                 if (!_profile.RequiresPlainFolders)
                 {
@@ -1056,7 +1057,7 @@ namespace Emby.Dlna.Didl
         /// <param name="context">The <see cref="BaseItem"/>.</param>
         /// <param name="writer">The <see cref="XmlWriter"/>.</param>
         /// <param name="filter">The <see cref="Filter"/>.</param>
-        private void AddGeneralProperties(BaseItem item, StubType? itemStubType, BaseItem? context, XmlWriter writer, Filter filter)
+        private void AddGeneralProperties(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {
             AddCommonFields(item, itemStubType, context, writer, filter);
 
@@ -1151,7 +1152,7 @@ namespace Emby.Dlna.Didl
         /// <param name="writer">The <see cref="XmlWriter"/>.</param>
         private void AddCover(BaseItem item, StubType? stubType, XmlWriter writer)
         {
-            ImageDownloadInfo? imageInfo = GetImageInfo(item);
+            ImageDownloadInfo imageInfo = GetImageInfo(item);
 
             if (imageInfo == null)
             {
@@ -1251,7 +1252,7 @@ namespace Emby.Dlna.Didl
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
         /// <returns>A <see cref="ImageDownloadInfo"/> containing the information.</returns>
-        private ImageDownloadInfo? GetImageInfo(BaseItem item)
+        private ImageDownloadInfo GetImageInfo(BaseItem item)
         {
             if (item.HasImage(ImageType.Primary))
             {
@@ -1301,7 +1302,7 @@ namespace Emby.Dlna.Didl
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
         /// <returns>A <see cref="BaseItem"/>, or null if one does not exist.</returns>
-        private BaseItem? GetFirstParentWithImageBelowUserRoot(BaseItem item)
+        private BaseItem GetFirstParentWithImageBelowUserRoot(BaseItem item)
         {
             if (item == null)
             {
@@ -1337,7 +1338,7 @@ namespace Emby.Dlna.Didl
         private ImageDownloadInfo GetImageInfo(BaseItem item, ImageType type)
         {
             var imageInfo = item.GetImageInfo(type, 0);
-            string? tag = null;
+            string tag = null;
 
             try
             {
@@ -1474,7 +1475,7 @@ namespace Emby.Dlna.Didl
             /// <summary>
             /// Gets or sets the image Tag.
             /// </summary>
-            internal string? ImageTag { get; set; }
+            internal string ImageTag { get; set; }
 
             /// <summary>
             /// Gets or sets the type of the image.
@@ -1499,12 +1500,12 @@ namespace Emby.Dlna.Didl
             /// <summary>
             /// Gets or sets the format of the image.
             /// </summary>
-            internal string? Format { get; set; }
+            internal string Format { get; set; }
 
             /// <summary>
             /// Gets or sets information about the image.
             /// </summary>
-            internal ItemImageInfo? ItemImageInfo { get; set; }
+            internal ItemImageInfo ItemImageInfo { get; set; }
         }
     }
 }

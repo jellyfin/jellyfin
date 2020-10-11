@@ -1386,7 +1386,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-
         /// <summary>
         /// Gets the linked children.
         /// </summary>

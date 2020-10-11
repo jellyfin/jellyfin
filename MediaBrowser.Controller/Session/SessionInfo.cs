@@ -22,7 +22,6 @@ namespace MediaBrowser.Controller.Session
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
 
-
         private readonly object _progressLock = new object();
         private Timer _progressTimer;
         private PlaybackProgressInfo _lastProgressInfo;
@@ -231,8 +230,8 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
-        public string[] SupportedCommands
-            => Capabilities == null ? Array.Empty<string>() : Capabilities.SupportedCommands;
+        public GeneralCommandType[] SupportedCommands
+            => Capabilities == null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {

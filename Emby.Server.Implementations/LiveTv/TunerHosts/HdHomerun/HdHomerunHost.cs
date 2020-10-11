@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -564,6 +565,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo info, ChannelInfo channelInfo, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
+            var tunerCount = info.TunerCount;
+
+            if (tunerCount > 0)
+            {
+                var tunerHostId = info.Id;
+                var liveStreams = currentLiveStreams.Where(i => string.Equals(i.TunerHostId, tunerHostId, StringComparison.OrdinalIgnoreCase));
+
+                if (liveStreams.Count() >= tunerCount)
+                {
+                    throw new LiveTvConflictException("HDHomeRun simultaneous stream limit has been reached.");
+                }
+            }
+
             var profile = streamId.Split('_')[0];
 
             Logger.LogInformation("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelInfo.Id, streamId, profile);
@@ -713,17 +727,20 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var list = new List<TunerHostInfo>();
 
+            // Create udp broadcast discovery message
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
             try
             {
                 using var udpSocket = UdpHelper.CreateUdpBroadcastSocket(
-                    UdpHelper.GetPort(Config.Configuration.HDHomerunPortRange ?? Config.Configuration.UDPPortRange),
-                    Logger);
+                    UdpHelper.GetPort(Config.GetNetworkConfiguration().HDHomerunPortRange ?? Config.GetNetworkConfiguration().UDPPortRange),
+                    Logger,
+                    _networkManager.IsIP4Enabled,
+                    _networkManager.IsIP6Enabled);
 
                 await udpSocket.SendToAsync(
                     discBytes,
                     SocketFlags.None,
-                    UdpHelper.GetMulticastEndPoint(HdHomeRunPort)).ConfigureAwait(false);
+                    UdpHelper.GetMulticastEndPoint(HdHomeRunPort, isIP6Enabled: _networkManager.IsIP6Enabled)).ConfigureAwait(false);
                 var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 
                 try

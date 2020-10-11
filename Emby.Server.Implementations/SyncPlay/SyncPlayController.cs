@@ -301,8 +301,7 @@ namespace Emby.Server.Implementations.SyncPlay
             if (_group.IsPaused)
             {
                 // Pick a suitable time that accounts for latency
-                var delay = _group.GetHighestPing() * 2;
-                delay = delay < _group.DefaultPing ? _group.DefaultPing : delay;
+                var delay = Math.Max(_group.GetHighestPing() * 2, GroupInfo.DefaultPing);
 
                 // Unpause group and set starting point in future
                 // Clients will start playback at LastActivity (datetime) from PositionTicks (playback position)
@@ -452,8 +451,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     else
                     {
                         // Client, that was buffering, resumed playback but did not update others in time
-                        delay = _group.GetHighestPing() * 2;
-                        delay = delay < _group.DefaultPing ? _group.DefaultPing : delay;
+                        delay = Math.Max(_group.GetHighestPing() * 2, GroupInfo.DefaultPing);
 
                         _group.LastActivity = currentTime.AddMilliseconds(
                             delay);
@@ -497,7 +495,7 @@ namespace Emby.Server.Implementations.SyncPlay
         private void HandlePingUpdateRequest(SessionInfo session, PlaybackRequest request)
         {
             // Collected pings are used to account for network latency when unpausing playback
-            _group.UpdatePing(session, request.Ping ?? _group.DefaultPing);
+            _group.UpdatePing(session, request.Ping ?? GroupInfo.DefaultPing);
         }
 
         /// <inheritdoc />

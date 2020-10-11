@@ -1,5 +1,4 @@
-using System;
-using System.Globalization;
+﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -9,51 +8,38 @@ namespace MediaBrowser.Common.Json.Converters
     /// Converts a nullable struct or value to/from JSON.
     /// Required - some clients send an empty string.
     /// </summary>
-    /// <typeparam name="T">The struct type.</typeparam>
-    public class JsonNullableStructConverter<T> : JsonConverter<T?>
-        where T : struct
+    /// <typeparam name="TStruct">The struct type.</typeparam>
+    public class JsonNullableStructConverter<TStruct> : JsonConverter<TStruct?>
+        where TStruct : struct
     {
-        private readonly JsonConverter<T?> _baseJsonConverter;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonNullableStructConverter{T}"/> class.
-        /// </summary>
-        /// <param name="baseJsonConverter">The base json converter.</param>
-        public JsonNullableStructConverter(JsonConverter<T?> baseJsonConverter)
+        /// <inheritdoc />
+        public override TStruct? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            _baseJsonConverter = baseJsonConverter;
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            // Token is empty string.
+            if (reader.TokenType == JsonTokenType.String && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<TStruct>(ref reader, options);
         }
 
         /// <inheritdoc />
-        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, TStruct? value, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.String)
+            if (value.HasValue)
             {
-                // Handle empty string.
-                if ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty)
-                {
-                    return null;
-                }
-
-                string numberString = reader.GetString();
-
-                if (typeToConvert == typeof(long) || typeToConvert == typeof(long?))
-                {
-                    return (T)(IConvertible)long.Parse(numberString, CultureInfo.InvariantCulture);
-                }
-
-                return (T)(IConvertible)int.Parse(numberString, CultureInfo.InvariantCulture);
+                JsonSerializer.Serialize(writer, value.Value, options);
             }
             else
             {
-                return _baseJsonConverter.Read(ref reader, typeToConvert, options);
+                writer.WriteNullValue();
             }
-        }
-
-        /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
-        {
-            _baseJsonConverter.Write(writer, value, options);
         }
     }
 }

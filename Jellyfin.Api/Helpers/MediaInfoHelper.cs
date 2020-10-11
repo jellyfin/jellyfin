@@ -554,7 +554,7 @@ namespace Jellyfin.Api.Helpers
         private long? GetMaxBitrate(long? clientMaxBitrate, User user, string ipAddress)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user?.RemoteClientBitrateLimit ?? 0;
+            var remoteClientMaxBitrate = user.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {

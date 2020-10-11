@@ -9,12 +9,14 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Emby.Dlna.Common;
+using Emby.Dlna.Configuration;
 using Emby.Dlna.Profiles;
+using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -104,12 +106,15 @@ namespace Emby.Dlna
 
         public DeviceProfile GetDefaultProfile(PlayToDeviceInfo playToDeviceInfo)
         {
-            // return AutoCreateProfile(playToDeviceInfo);
+            if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
+            {
+                return AutoCreateProfile(playToDeviceInfo);
+            }
 
             return new DeviceProfile();
         }
 
-        public DeviceProfile? GetProfile(PlayToDeviceInfo playToDeviceInfo)
+        public DeviceProfile GetProfile(PlayToDeviceInfo playToDeviceInfo)
         {
             if (playToDeviceInfo == null)
             {
@@ -250,7 +255,7 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile? GetProfile(IHeaderDictionary headers)
+        public DeviceProfile GetProfile(IHeaderDictionary headers)
         {
             if (headers == null)
             {
@@ -265,6 +270,49 @@ namespace Emby.Dlna
             }
             else
             {
+                if (_configurationManager.GetDlnaConfiguration().AutoCreatePlayToProfiles)
+                {
+                    if (headers.TryGetValue("User-Agent", out StringValues value) && value.Count > 0)
+                    {
+                        string userAgent = value[0];
+                        profile = new DefaultProfile
+                        {
+                            Name = userAgent,
+                            Identification = new DeviceIdentification
+                            {
+                                FriendlyName = userAgent,
+                                Headers = new[]
+                            {
+                                new HttpHeaderInfo()
+                                {
+                                    Match = HeaderMatchType.Equals,
+                                    Name = "User-Agent",
+                                    Value = userAgent
+                                }
+                            }
+                            },
+
+                            Manufacturer = userAgent.Split(' ')[0],
+                            FriendlyName = userAgent,
+                            ModelName = userAgent
+                        };
+
+                        try
+                        {
+                            CreateProfile(profile);
+                            return profile;
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.LogError(ex.Message);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error saving default profile for {0}.", userAgent);
+                        }
+                    }
+                }
+
                 var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
                 _logger.LogDebug("No matching device profile found. {0}", headerString);
             }
@@ -309,15 +357,14 @@ namespace Emby.Dlna
         {
             try
             {
-                var xmlFiles = _fileSystem.GetFilePaths(path)
+                var xmlFies = _fileSystem.GetFilePaths(path)
                     .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-                // Had to ! this for nullable. See: https://github.com/dotnet/roslyn/issues/37468.
-                return xmlFiles
+                return xmlFies
                     .Select(i => ParseProfileFile(i, type))
                     .Where(i => i != null)
-                    .ToList()!;
+                    .ToList();
             }
             catch (IOException)
             {
@@ -325,7 +372,7 @@ namespace Emby.Dlna
             }
         }
 
-        private DeviceProfile? ParseProfileFile(string path, DeviceProfileType type)
+        private DeviceProfile ParseProfileFile(string path, DeviceProfileType type)
         {
             lock (_profiles)
             {
@@ -357,7 +404,7 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile? GetProfile(string id)
+        public DeviceProfile GetProfile(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -388,14 +435,17 @@ namespace Emby.Dlna
 
         private InternalProfileInfo GetInternalProfileInfo(FileSystemMetadata file, DeviceProfileType type)
         {
-            return new InternalProfileInfo(
-                path: file.FullName,
-                info: new DeviceProfileInfo
+            return new InternalProfileInfo
+            {
+                Path = file.FullName,
+
+                Info = new DeviceProfileInfo
                 {
                     Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture),
                     Name = _fileSystem.GetFileNameWithoutExtension(file),
                     Type = type
-                });
+                }
+            };
         }
 
         private async Task ExtractSystemProfilesAsync()
@@ -524,6 +574,17 @@ namespace Emby.Dlna
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
+        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, HttpRequest request)
+        {
+            var profile = GetDefaultProfile();
+
+            var serverId = _appHost.SystemId;
+
+            var serverAddress = _appHost.GetSmartApiUrl(request);
+
+            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId, _configurationManager.Configuration.ServerName).GetXml();
+        }
+
         public ImageStream GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
@@ -541,12 +602,6 @@ namespace Emby.Dlna
 
         private class InternalProfileInfo
         {
-            internal InternalProfileInfo(string path, DeviceProfileInfo info)
-            {
-                Info = info;
-                Path = path;
-            }
-
             internal DeviceProfileInfo Info { get; set; }
 
             internal string Path { get; set; }
