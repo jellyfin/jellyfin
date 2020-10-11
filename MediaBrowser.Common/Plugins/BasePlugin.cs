@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
