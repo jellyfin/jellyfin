@@ -139,11 +139,6 @@ namespace Emby.Server.Implementations.AppBase
         /// <typeparam name="T">Class to register.</typeparam>
         public virtual void RegisterConfiguration<T>() where T : IConfigurationFactory
         {
-            if (!typeof(IConfigurationFactory).IsAssignableFrom(typeof(T)))
-            {
-                throw new ArgumentException("Parameter does not implement IConfigurationFactory");
-            }
-
             IConfigurationFactory factory = (IConfigurationFactory)Activator.CreateInstance(typeof(T));
 
             if (_configurationFactories == null)
