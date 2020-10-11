@@ -797,7 +797,6 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _plugins = GetExports<IPlugin>()
-
                         .Where(i => i != null)
                         .ToArray();
 

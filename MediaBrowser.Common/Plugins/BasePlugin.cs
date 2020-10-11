@@ -176,6 +176,11 @@ namespace MediaBrowser.Common.Plugins
         public Type ConfigurationType => typeof(TConfigurationType);
 
         /// <summary>
+        /// Gets or sets the event handler that is triggered when this configuration changes.
+        /// </summary>
+        public EventHandler<BasePluginConfiguration> ConfigurationChanged { get; set; }
+
+        /// <summary>
         /// Gets the name the assembly file.
         /// </summary>
         /// <value>The name of the assembly file.</value>
@@ -270,6 +275,8 @@ namespace MediaBrowser.Common.Plugins
             Configuration = (TConfigurationType)configuration;
 
             SaveConfiguration();
+
+            ConfigurationChanged.Invoke(this, configuration);
         }
 
         /// <inheritdoc />
