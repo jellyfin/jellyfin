@@ -110,7 +110,7 @@ namespace Jellyfin.Networking.Manager
             _eventFireLock = new object();
 
             UpdateSettings(_configurationManager.GetNetworkConfiguration());
-            
+
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
