@@ -275,7 +275,7 @@ namespace MediaBrowser.Common.Plugins
             Configuration = (TConfigurationType)configuration;
 
             SaveConfiguration();
-            
+
             ConfigurationChanged.Invoke(this, configuration);
         }
 
