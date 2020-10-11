@@ -5,7 +5,7 @@ namespace MediaBrowser.Common.Plugins
     /// <summary>
     /// Defines the <see cref="IPluginRegistrar" />.
     /// </summary>
-    public interface IPluginRegistrar
+    public interface IPluginServiceRegistrator
     {
         /// <summary>
         /// Registers the plugin's services with the service collection.
