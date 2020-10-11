@@ -128,7 +128,6 @@ namespace Emby.Server.Implementations
         private ISessionManager _sessionManager;
         private IHttpClientFactory _httpClientFactory;
         private IWebSocketManager _webSocketManager;
-        private Dictionary<Type, Assembly> _pluginRegistrations;
         private string[] _urlPrefixes;
 
         /// <summary>
@@ -261,8 +260,6 @@ namespace Emby.Server.Implementations
             _jsonSerializer = new JsonSerializer();
 
             ServiceCollection = serviceCollection;
-
-            _pluginRegistrations = new Dictionary<Type, Assembly>();
 
             _networkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
@@ -505,7 +502,7 @@ namespace Emby.Server.Implementations
 
             RegisterServices();
 
-            RegisterPlugIns();
+            RegisterPlugInServices();
         }
 
         /// <summary>
@@ -770,7 +767,6 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _plugins = GetExports<IPlugin>()
-                        .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
 
@@ -819,51 +815,6 @@ namespace Emby.Server.Implementations
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
 
-        private IPlugin LoadPlugin(IPlugin plugin)
-        {
-            try
-            {
-                if (plugin is IPluginAssembly assemblyPlugin)
-                {
-                    var assembly = plugin.GetType().Assembly;
-                    var assemblyName = assembly.GetName();
-                    var assemblyFilePath = assembly.Location;
-
-                    var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-
-                    assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
-
-                    try
-                    {
-                        var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-                        if (idAttributes.Length > 0)
-                        {
-                            var attribute = (GuidAttribute)idAttributes[0];
-                            var assemblyId = new Guid(attribute.Value);
-
-                            assemblyPlugin.SetId(assemblyId);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
-                    }
-                }
-
-                if (plugin is IHasPluginConfiguration hasPluginConfiguration)
-                {
-                    hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
-                return null;
-            }
-
-            return plugin;
-        }
-
         /// <summary>
         /// Discovers the types.
         /// </summary>
@@ -874,22 +825,20 @@ namespace Emby.Server.Implementations
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
         }
 
-        private void RegisterPlugIns()
+        private void RegisterPlugInServices()
         {
-            foreach ((var pluginType, var assembly) in _pluginRegistrations)
+            foreach (var pluginServiceRegistrar in GetExportTypes<IPluginRegistrar>())
             {
                 try
                 {
-                    var pluginRegistration = Activator.CreateInstance(pluginType);
-                    pluginType.InvokeMember("RegisterServices", BindingFlags.InvokeMethod, null, pluginRegistration, new object[] { ServiceCollection }, CultureInfo.InvariantCulture);
+                    var instance = (IPluginRegistrar)Activator.CreateInstance(pluginServiceRegistrar);
+                    instance.RegisterServices(ServiceCollection);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error registering {Assembly} with D.I.", assembly);
+                    Logger.LogError(ex, "Error registering {Assembly} with D.I.", pluginServiceRegistrar.Assembly);
                 }
             }
-
-            _pluginRegistrations.Clear();
         }
 
         private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
@@ -900,12 +849,6 @@ namespace Emby.Server.Implementations
                 try
                 {
                     exportedTypes = ass.GetExportedTypes();
-
-                    Type reg = (Type)exportedTypes.Where(p => string.Equals(p.Name, "PluginRegistration", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                    if (reg != null)
-                    {
-                        _pluginRegistrations.Add(reg, ass);
-                    }
                 }
                 catch (FileNotFoundException ex)
                 {
