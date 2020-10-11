@@ -168,6 +168,7 @@ namespace MediaBrowser.Model.Querying
         Studios,
 
         BasicSyncInfo,
+
         /// <summary>
         /// The synchronize information.
         /// </summary>

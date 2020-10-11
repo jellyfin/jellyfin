@@ -2263,7 +2263,6 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Contains("Trailer", StringComparer.OrdinalIgnoreCase);
         }
 
-
         private static readonly HashSet<string> _artistExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Series",
@@ -3290,7 +3289,6 @@ namespace Emby.Server.Implementations.Data
                     commandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
                 }
             }
-
 
             var isReturningZeroItems = query.Limit.HasValue && query.Limit <= 0;
 
@@ -6005,7 +6003,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 insertText.Length = _mediaStreamSaveColumnsInsertQuery.Length;
             }
         }
-
 
         /// <summary>
         /// Gets the chapter.

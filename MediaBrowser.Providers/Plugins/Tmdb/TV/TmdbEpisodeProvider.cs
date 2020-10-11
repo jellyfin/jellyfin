@@ -4,32 +4,27 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
-    public class TmdbEpisodeProvider :
-            TmdbEpisodeProviderBase,
-            IRemoteMetadataProvider<Episode, EpisodeInfo>,
-            IHasOrder
+    public class TmdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
-        public TmdbEpisodeProvider(IHttpClientFactory httpClientFactory, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
-            : base(httpClientFactory, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly TmdbClientManager _tmdbClientManager;
+
+        public TmdbEpisodeProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
+            _httpClientFactory = httpClientFactory;
+            _tmdbClientManager = tmdbClientManager;
         }
 
         // After TheTvDb
@@ -39,21 +34,24 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            var list = new List<RemoteSearchResult>();
-
             // The search query must either provide an episode number or date
             if (!searchInfo.IndexNumber.HasValue || !searchInfo.ParentIndexNumber.HasValue)
             {
-                return list;
+                return Enumerable.Empty<RemoteSearchResult>();
             }
 
             var metadataResult = await GetMetadata(searchInfo, cancellationToken).ConfigureAwait(false);
 
-            if (metadataResult.HasMetadata)
+            if (!metadataResult.HasMetadata)
             {
-                var item = metadataResult.Item;
+                return Enumerable.Empty<RemoteSearchResult>();
+            }
 
-                list.Add(new RemoteSearchResult
+            var item = metadataResult.Item;
+
+            return new[]
+            {
+                new RemoteSearchResult
                 {
                     IndexNumber = item.IndexNumber,
                     Name = item.Name,
@@ -63,27 +61,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     ProviderIds = item.ProviderIds,
                     SearchProviderName = Name,
                     IndexNumberEnd = item.IndexNumberEnd
-                });
-            }
-
-            return list;
+                }
+            };
         }
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Episode>();
+            var metadataResult = new MetadataResult<Episode>();
 
             // Allowing this will dramatically increase scan times
             if (info.IsMissingEpisode)
             {
-                return result;
+                return metadataResult;
             }
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string tmdbId);
 
-            if (string.IsNullOrEmpty(seriesTmdbId))
+            var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
+            if (seriesTmdbId <= 0)
             {
-                return result;
+                return metadataResult;
             }
 
             var seasonNumber = info.ParentIndexNumber;
@@ -91,125 +88,120 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (!seasonNumber.HasValue || !episodeNumber.HasValue)
             {
-                return result;
+                return metadataResult;
             }
 
-            try
+            var episodeResult = await _tmdbClientManager
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .ConfigureAwait(false);
+
+            if (episodeResult == null)
             {
-                var response = await GetEpisodeInfo(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-                result.HasMetadata = true;
-                result.QueriedById = true;
-
-                if (!string.IsNullOrEmpty(response.Overview))
-                {
-                    // if overview is non-empty, we can assume that localized data was returned
-                    result.ResultLanguage = info.MetadataLanguage;
-                }
-
-                var item = new Episode();
-                result.Item = item;
-
-                item.Name = info.Name;
-                item.IndexNumber = info.IndexNumber;
-                item.ParentIndexNumber = info.ParentIndexNumber;
-                item.IndexNumberEnd = info.IndexNumberEnd;
-
-                if (response.External_Ids != null && response.External_Ids.Tvdb_Id > 0)
-                {
-                    item.SetProviderId(MetadataProvider.Tvdb, response.External_Ids.Tvdb_Id.Value.ToString(CultureInfo.InvariantCulture));
-                }
-
-                item.PremiereDate = response.Air_Date;
-                item.ProductionYear = result.Item.PremiereDate.Value.Year;
-
-                item.Name = response.Name;
-                item.Overview = response.Overview;
-
-                item.CommunityRating = (float)response.Vote_Average;
-
-                if (response.Videos?.Results != null)
-                {
-                    foreach (var video in response.Videos.Results)
-                    {
-                        if (video.Type.Equals("trailer", System.StringComparison.OrdinalIgnoreCase)
-                            || video.Type.Equals("clip", System.StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (video.Site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
-                            {
-                                var videoUrl = string.Format(CultureInfo.InvariantCulture, "http://www.youtube.com/watch?v={0}", video.Key);
-                                item.AddTrailerUrl(videoUrl);
-                            }
-                        }
-                    }
-                }
-
-                result.ResetPeople();
-
-                var credits = response.Credits;
-                if (credits != null)
-                {
-                    // Actors, Directors, Writers - all in People
-                    // actors come from cast
-                    if (credits.Cast != null)
-                    {
-                        foreach (var actor in credits.Cast.OrderBy(a => a.Order))
-                        {
-                            result.AddPerson(new PersonInfo { Name = actor.Name.Trim(), Role = actor.Character, Type = PersonType.Actor, SortOrder = actor.Order });
-                        }
-                    }
-
-                    // guest stars
-                    if (credits.Guest_Stars != null)
-                    {
-                        foreach (var guest in credits.Guest_Stars.OrderBy(a => a.Order))
-                        {
-                            result.AddPerson(new PersonInfo { Name = guest.Name.Trim(), Role = guest.Character, Type = PersonType.GuestStar, SortOrder = guest.Order });
-                        }
-                    }
-
-                    // and the rest from crew
-                    if (credits.Crew != null)
-                    {
-                        var keepTypes = new[]
-                        {
-                            PersonType.Director,
-                            PersonType.Writer,
-                            PersonType.Producer
-                        };
-
-                        foreach (var person in credits.Crew)
-                        {
-                            // Normalize this
-                            var type = TmdbUtils.MapCrewToPersonType(person);
-
-                            if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase) &&
-                                !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                            {
-                                continue;
-                            }
-
-                            result.AddPerson(new PersonInfo { Name = person.Name.Trim(), Role = person.Job, Type = type });
-                        }
-                    }
-                }
+                return metadataResult;
             }
-            catch (HttpException ex)
+
+            metadataResult.HasMetadata = true;
+            metadataResult.QueriedById = true;
+
+            if (!string.IsNullOrEmpty(episodeResult.Overview))
             {
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
-                {
-                    return result;
-                }
-
-                throw;
+                // if overview is non-empty, we can assume that localized data was returned
+                metadataResult.ResultLanguage = info.MetadataLanguage;
             }
 
-            return result;
+            var item = new Episode
+            {
+                Name = info.Name,
+                IndexNumber = info.IndexNumber,
+                ParentIndexNumber = info.ParentIndexNumber,
+                IndexNumberEnd = info.IndexNumberEnd
+            };
+
+            if (!string.IsNullOrEmpty(episodeResult.ExternalIds?.TvdbId))
+            {
+                item.SetProviderId(MetadataProvider.Tvdb, episodeResult.ExternalIds.TvdbId);
+            }
+
+            item.PremiereDate = episodeResult.AirDate;
+            item.ProductionYear = episodeResult.AirDate?.Year;
+
+            item.Name = episodeResult.Name;
+            item.Overview = episodeResult.Overview;
+
+            item.CommunityRating = Convert.ToSingle(episodeResult.VoteAverage);
+
+            if (episodeResult.Videos?.Results != null)
+            {
+                foreach (var video in episodeResult.Videos.Results)
+                {
+                    if (TmdbUtils.IsTrailerType(video))
+                    {
+                        item.AddTrailerUrl("https://www.youtube.com/watch?v=" + video.Key);
+                    }
+                }
+            }
+
+            var credits = episodeResult.Credits;
+
+            if (credits?.Cast != null)
+            {
+                foreach (var actor in credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                {
+                    metadataResult.AddPerson(new PersonInfo
+                    {
+                        Name = actor.Name.Trim(),
+                        Role = actor.Character,
+                        Type = PersonType.Actor,
+                        SortOrder = actor.Order
+                    });
+                }
+            }
+
+            if (credits?.GuestStars != null)
+            {
+                foreach (var guest in credits.GuestStars.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                {
+                    metadataResult.AddPerson(new PersonInfo
+                    {
+                        Name = guest.Name.Trim(),
+                        Role = guest.Character,
+                        Type = PersonType.GuestStar,
+                        SortOrder = guest.Order
+                    });
+                }
+            }
+
+            // and the rest from crew
+            if (credits?.Crew != null)
+            {
+                foreach (var person in credits.Crew)
+                {
+                    // Normalize this
+                    var type = TmdbUtils.MapCrewToPersonType(person);
+
+                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparer.OrdinalIgnoreCase)
+                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    metadataResult.AddPerson(new PersonInfo
+                    {
+                        Name = person.Name.Trim(),
+                        Role = person.Job,
+                        Type = type
+                    });
+                }
+            }
+
+            metadataResult.Item = item;
+
+            return metadataResult;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return GetResponse(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }
