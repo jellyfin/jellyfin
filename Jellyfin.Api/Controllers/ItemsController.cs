@@ -159,7 +159,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
             [FromQuery] string? locationTypes,
-            [FromQuery] string? excludeLocationTypes,
+            [FromQuery] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
             [FromQuery] double? minCommunityRating,
@@ -406,12 +406,9 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // ExcludeLocationTypes
-                if (!string.IsNullOrEmpty(excludeLocationTypes))
+                if (excludeLocationTypes.Any(t => t == LocationType.Virtual))
                 {
-                    if (excludeLocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray().Contains(LocationType.Virtual))
-                    {
-                        query.IsVirtualItem = false;
-                    }
+                    query.IsVirtualItem = false;
                 }
 
                 if (!string.IsNullOrEmpty(locationTypes))
