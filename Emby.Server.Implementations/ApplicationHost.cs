@@ -502,7 +502,7 @@ namespace Emby.Server.Implementations
 
             RegisterServices();
 
-            RegisterPlugInServices();
+            RegisterPluginServices();
         }
 
         /// <summary>
