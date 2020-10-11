@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Manually pre-loads a factory so that it is available pre system initialisation.
         /// </summary>
         /// <typeparam name="T">Class to register.</typeparam>
-        public virtual void RegisterConfiguration<T>()
+        public virtual void RegisterConfiguration<T>() where T : IConfigurationFactory
         {
             if (!typeof(IConfigurationFactory).IsAssignableFrom(typeof(T)))
             {
