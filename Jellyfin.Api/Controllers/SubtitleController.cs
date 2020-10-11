@@ -281,7 +281,8 @@ namespace Jellyfin.Api.Controllers
             var builder = new StringBuilder();
             builder.AppendLine("#EXTM3U")
                 .Append("#EXT-X-TARGETDURATION:")
-                .AppendLine(segmentLength.ToString(CultureInfo.InvariantCulture))
+                .Append(segmentLength)
+                .AppendLine()
                 .AppendLine("#EXT-X-VERSION:3")
                 .AppendLine("#EXT-X-MEDIA-SEQUENCE:0")
                 .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
@@ -296,8 +297,9 @@ namespace Jellyfin.Api.Controllers
                 var lengthTicks = Math.Min(remaining, segmentLengthTicks);
 
                 builder.Append("#EXTINF:")
-                    .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture))
-                    .AppendLine(",");
+                    .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds)
+                    .Append(',')
+                    .AppendLine();
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 

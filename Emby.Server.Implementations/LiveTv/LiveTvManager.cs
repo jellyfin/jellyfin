@@ -2135,6 +2135,7 @@ namespace Emby.Server.Implementations.LiveTv
         }
 
         private bool _disposed = false;
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>

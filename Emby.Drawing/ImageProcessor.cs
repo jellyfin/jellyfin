@@ -455,7 +455,7 @@ namespace Emby.Drawing
                 throw new ArgumentException("Path can't be empty.", nameof(path));
             }
 
-            if (path.IsEmpty)
+            if (filename.IsEmpty)
             {
                 throw new ArgumentException("Filename can't be empty.", nameof(filename));
             }

@@ -79,11 +79,7 @@ EOF
 
 %files server
 %attr(755,root,root) %{_bindir}/jellyfin
-%{_libdir}/jellyfin/*.json
-%{_libdir}/jellyfin/*.dll
-%{_libdir}/jellyfin/*.so
-%{_libdir}/jellyfin/*.a
-%{_libdir}/jellyfin/createdump
+%{_libdir}/jellyfin/*
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
 %{_libdir}/jellyfin/SOS_README.md

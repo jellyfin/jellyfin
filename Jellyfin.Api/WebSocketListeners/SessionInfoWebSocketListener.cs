@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.WebSocketListeners
@@ -34,7 +35,13 @@ namespace Jellyfin.Api.WebSocketListeners
         }
 
         /// <inheritdoc />
-        protected override string Name => "Sessions";
+        protected override SessionMessageType Type => SessionMessageType.Sessions;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StartType => SessionMessageType.SessionsStart;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StopType => SessionMessageType.SessionsStop;
 
         /// <summary>
         /// Gets the data to send.

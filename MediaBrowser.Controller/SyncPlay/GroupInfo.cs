@@ -14,12 +14,12 @@ namespace MediaBrowser.Controller.SyncPlay
     public class GroupInfo
     {
         /// <summary>
-        /// Gets the default ping value used for sessions.
+        /// The default ping value used for sessions.
         /// </summary>
-        public long DefaultPing { get; } = 500;
+        public const long DefaultPing = 500;
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
         public Guid GroupId { get; } = Guid.NewGuid();
@@ -58,7 +58,8 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Checks if a session is in this group.
         /// </summary>
-        /// <value><c>true</c> if the session is in this group; <c>false</c> otherwise.</value>
+        /// <param name="sessionId">The session id to check.</param>
+        /// <returns><c>true</c> if the session is in this group; <c>false</c> otherwise.</returns>
         public bool ContainsSession(string sessionId)
         {
             return Participants.ContainsKey(sessionId);
@@ -70,16 +71,14 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         public void AddSession(SessionInfo session)
         {
-            if (ContainsSession(session.Id))
-            {
-                return;
-            }
-
-            var member = new GroupMember();
-            member.Session = session;
-            member.Ping = DefaultPing;
-            member.IsBuffering = false;
-            Participants[session.Id] = member;
+            Participants.TryAdd(
+                session.Id,
+                new GroupMember
+                {
+                    Session = session,
+                    Ping = DefaultPing,
+                    IsBuffering = false
+                });
         }
 
         /// <summary>
@@ -88,12 +87,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         public void RemoveSession(SessionInfo session)
         {
-            if (!ContainsSession(session.Id))
-            {
-                return;
-            }
-
-            Participants.Remove(session.Id, out _);
+            Participants.Remove(session.Id);
         }
 
         /// <summary>
@@ -103,18 +97,16 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="ping">The ping.</param>
         public void UpdatePing(SessionInfo session, long ping)
         {
-            if (!ContainsSession(session.Id))
+            if (Participants.TryGetValue(session.Id, out GroupMember value))
             {
-                return;
+                value.Ping = ping;
             }
-
-            Participants[session.Id].Ping = ping;
         }
 
         /// <summary>
         /// Gets the highest ping in the group.
         /// </summary>
-        /// <value name="session">The highest ping in the group.</value>
+        /// <returns>The highest ping in the group.</returns>
         public long GetHighestPing()
         {
             long max = long.MinValue;
@@ -133,18 +125,16 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="isBuffering">The state.</param>
         public void SetBuffering(SessionInfo session, bool isBuffering)
         {
-            if (!ContainsSession(session.Id))
+            if (Participants.TryGetValue(session.Id, out GroupMember value))
             {
-                return;
+                value.IsBuffering = isBuffering;
             }
-
-            Participants[session.Id].IsBuffering = isBuffering;
         }
 
         /// <summary>
         /// Gets the group buffering state.
         /// </summary>
-        /// <value><c>true</c> if there is a session buffering in the group; <c>false</c> otherwise.</value>
+        /// <returns><c>true</c> if there is a session buffering in the group; <c>false</c> otherwise.</returns>
         public bool IsBuffering()
         {
             foreach (var session in Participants.Values)
@@ -161,7 +151,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Checks if the group is empty.
         /// </summary>
-        /// <value><c>true</c> if the group is empty; <c>false</c> otherwise.</value>
+        /// <returns><c>true</c> if the group is empty; <c>false</c> otherwise.</returns>
         public bool IsEmpty()
         {
             return Participants.Count == 0;
