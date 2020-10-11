@@ -196,7 +196,8 @@ namespace Jellyfin.Api.Helpers
                     }
 
                     return null;
-                }).Where(i => i.HasValue)
+                })
+                .Where(i => i.HasValue)
                 .Select(i => i!.Value)
                 .ToArray();
         }
