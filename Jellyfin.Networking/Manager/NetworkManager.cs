@@ -26,7 +26,7 @@ namespace Jellyfin.Networking.Manager
         private readonly Dictionary<string, int> _interfaceNames;
 
         /// <summary>
-        /// Threading lock for network interfaces.
+        /// Threading lock for network properties.
         /// </summary>
         private readonly object _intLock = new object();
 
