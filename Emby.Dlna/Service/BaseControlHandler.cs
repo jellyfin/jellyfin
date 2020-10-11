@@ -167,6 +167,7 @@ namespace Emby.Dlna.Service
 
                     if (!reader.IsEmptyElement)
                     {
+                        var result = new ControlRequestInfo(localName, namespaceURI);
                         using var subReader = reader.ReadSubtree();
                         await ParseFirstBodyChildAsync(subReader, result.Headers).ConfigureAwait(false);
                         return result;
