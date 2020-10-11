@@ -1,21 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
   <PropertyGroup>
     <ProjectGuid>{805844AB-E92F-45E6-9D99-4F6D48D129A5}</ProjectGuid>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Common\**" />
-    <EmbeddedResource Remove="Common\**" />
-    <None Remove="Common\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jellyfin.Networking\Jellyfin.Networking.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
@@ -26,6 +20,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <!-- Code Analyzers-->
@@ -39,19 +34,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Images\logo120.jpg" />
-    <EmbeddedResource Include="Images\logo120.png" />
-    <EmbeddedResource Include="Images\logo240.jpg" />
-    <EmbeddedResource Include="Images\logo240.png" />
-    <EmbeddedResource Include="Images\logo48.jpg" />
-    <EmbeddedResource Include="Images\logo48.png" />
-    <EmbeddedResource Include="Images\people48.jpg" />
-    <EmbeddedResource Include="Images\people48.png" />
-    <EmbeddedResource Include="Images\people480.jpg" />
-    <EmbeddedResource Include="Images\people480.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Default.xml" />
@@ -86,8 +68,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.6" />
-    <PackageReference Include="Mono.Nat" Version="3.0.0" />
-    <PackageReference Include="NetworkCollection" Version="1.0.4" />
   </ItemGroup>
 
 </Project>

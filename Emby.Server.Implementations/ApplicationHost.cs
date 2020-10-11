@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emby.Dlna;
-using Emby.Dlna.Main;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -64,7 +63,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -111,6 +109,7 @@ using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
+using Emby.Dlna.Common;
 
 namespace Emby.Server.Implementations
 {
@@ -1201,9 +1200,6 @@ namespace Emby.Server.Implementations
 
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
-
-            // Dlna
-            yield return typeof(DlnaEntryPoint).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;
