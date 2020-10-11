@@ -836,7 +836,7 @@ namespace Emby.Server.Implementations
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error registering {Assembly} with D.I.", pluginServiceRegistrar.Assembly);
+                    Logger.LogError(ex, "Error registering plugin services from {Assembly}.", pluginServiceRegistrar.Assembly);
                 }
             }
         }
