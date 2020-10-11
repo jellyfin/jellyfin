@@ -825,7 +825,7 @@ namespace Emby.Server.Implementations
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
         }
 
-        private void RegisterPlugInServices()
+        private void RegisterPluginServices()
         {
             foreach (var pluginServiceRegistrar in GetExportTypes<IPluginRegistrar>())
             {
