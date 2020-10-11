@@ -69,7 +69,7 @@ namespace MediaBrowser.Common.Plugins
         /// <returns>Comparison result.</returns>
         public static bool operator !=(LocalPlugin left, LocalPlugin right)
         {
-            return !(left == right);
+            return !left.Equals(right);
         }
 
         /// <summary>
