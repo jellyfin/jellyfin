@@ -5357,7 +5357,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                 itemCountColumns = new Dictionary<string, string>()
                 {
-                    { "itemTypes", "(" + itemCountColumnQuery + ") as itemTypes"}
+                    { "itemTypes", "(" + itemCountColumnQuery + ") as itemTypes" }
                 };
             }
 
