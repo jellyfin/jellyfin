@@ -827,11 +827,11 @@ namespace Emby.Server.Implementations
 
         private void RegisterPluginServices()
         {
-            foreach (var pluginServiceRegistrar in GetExportTypes<IPluginRegistrar>())
+            foreach (var pluginServiceRegistrar in GetExportTypes<IPluginServiceRegistrator>())
             {
                 try
                 {
-                    var instance = (IPluginRegistrar)Activator.CreateInstance(pluginServiceRegistrar);
+                    var instance = (IPluginServiceRegistrator)Activator.CreateInstance(pluginServiceRegistrar);
                     instance.RegisterServices(ServiceCollection);
                 }
                 catch (Exception ex)
