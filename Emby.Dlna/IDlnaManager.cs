@@ -69,13 +69,6 @@ namespace Emby.Dlna.Common
         DeviceProfile? GetProfile(PlayToDeviceInfo playToDeviceInfo);
 
         /// <summary>
-        /// Gets the icon.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>DlnaIconResponse.</returns>
-        ImageStream GetIcon(string filename);
-
-        /// <summary>
         /// Extracts all profiles, and loads them up.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>

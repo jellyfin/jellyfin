@@ -524,21 +524,6 @@ namespace Emby.Dlna
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
-        public ImageStream GetIcon(string filename)
-        {
-            var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-                ? ImageFormat.Png
-                : ImageFormat.Jpg;
-
-            var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
-
-            return new ImageStream
-            {
-                Format = format,
-                Stream = _assembly.GetManifestResourceStream(resource)
-            };
-        }
-
         private class InternalProfileInfo
         {
             internal InternalProfileInfo(string path, DeviceProfileInfo info)
