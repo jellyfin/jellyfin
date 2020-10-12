@@ -219,7 +219,8 @@ namespace Emby.Server.Implementations.Data
             {
                 connection.RunQueries(queries);
 
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var existingColumnNames = GetColumnNames(db, "AncestorIds");
                     AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
@@ -495,7 +496,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
@@ -546,7 +548,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     SaveItemsInTranscation(db, tuples);
                 }, TransactionMode);
@@ -2032,7 +2035,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     // First delete chapters
                     db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
@@ -2921,7 +2925,8 @@ namespace Emby.Server.Implementations.Data
             var result = new QueryResult<BaseItem>();
             using (var connection = GetConnection(true))
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var statements = PrepareAll(db, statementTexts);
 
@@ -3324,7 +3329,8 @@ namespace Emby.Server.Implementations.Data
             var result = new QueryResult<Guid>();
             using (var connection = GetConnection(true))
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var statements = PrepareAll(db, statementTexts);
 
@@ -4899,7 +4905,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     connection.ExecuteAll(sql);
                 }, TransactionMode);
@@ -4950,7 +4957,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var idBlob = id.ToByteArray();
 
@@ -5744,7 +5752,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var itemIdBlob = itemId.ToByteArray();
 
@@ -5898,7 +5907,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var itemIdBlob = id.ToByteArray();
 
@@ -6232,7 +6242,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var itemIdBlob = id.ToByteArray();
 

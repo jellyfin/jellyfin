@@ -1822,7 +1822,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (Convert.ToInt32(outputWidth), Convert.ToInt32(outputHeight));
         }
 
-        public List<string> GetScalingFilters(EncodingJobInfo state,
+        public List<string> GetScalingFilters(
+            EncodingJobInfo state,
             int? videoWidth,
             int? videoHeight,
             Video3DFormat? threedFormat,
