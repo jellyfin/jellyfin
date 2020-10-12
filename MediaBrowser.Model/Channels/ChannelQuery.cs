@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
@@ -13,13 +14,13 @@ namespace MediaBrowser.Model.Channels
         /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
-        public ItemFields[] Fields { get; set; }
+        public IReadOnlyCollection<ItemFields> Fields { get; set; }
 
         public bool? EnableImages { get; set; }
 
         public int? ImageTypeLimit { get; set; }
 
-        public ImageType[] EnableImageTypes { get; set; }
+        public IReadOnlyCollection<ImageType> EnableImageTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the user identifier.

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 #nullable disable
 #pragma warning disable CS1591
 
@@ -5,6 +7,37 @@ namespace MediaBrowser.Model.Configuration
 {
     public class EncodingOptions
     {
+        public EncodingOptions()
+        {
+            DownMixAudioBoost = 2;
+            MaxMuxingQueueSize = 2048;
+            EnableThrottling = false;
+            ThrottleDelaySeconds = 180;
+            EncodingThreadCount = -1;
+            // This is a DRM device that is almost guaranteed to be there on every intel platform,
+            // plus it's the default one in ffmpeg if you don't specify anything
+            VaapiDevice = "/dev/dri/renderD128";
+            // This is the OpenCL device that is used for tonemapping.
+            // The left side of the dot is the platform number, and the right side is the device number on the platform.
+            OpenclDevice = "0.0";
+            EnableTonemapping = false;
+            TonemappingAlgorithm = "reinhard";
+            TonemappingRange = "auto";
+            TonemappingDesat = 0;
+            TonemappingThreshold = 0.8;
+            TonemappingPeak = 0;
+            TonemappingParam = 0;
+            H264Crf = 23;
+            H265Crf = 28;
+            DeinterlaceDoubleRate = false;
+            DeinterlaceMethod = "yadif";
+            EnableDecodingColorDepth10Hevc = true;
+            EnableDecodingColorDepth10Vp9 = true;
+            EnableHardwareEncoding = true;
+            EnableSubtitleExtraction = true;
+            HardwareDecodingCodecs = new[] { "h264", "vc1" };
+        }
+
         public int EncodingThreadCount { get; set; }
 
         public string TranscodingTempPath { get; set; }
@@ -20,12 +53,12 @@ namespace MediaBrowser.Model.Configuration
         public string HardwareAccelerationType { get; set; }
 
         /// <summary>
-        /// FFmpeg path as set by the user via the UI.
+        ///     Gets or sets the FFmpeg path as set by the user via the UI.
         /// </summary>
         public string EncoderAppPath { get; set; }
 
         /// <summary>
-        /// The current FFmpeg path being used by the system and displayed on the transcode page.
+        ///     Gets or sets the current FFmpeg path being used by the system and displayed on the transcode page.
         /// </summary>
         public string EncoderAppPathDisplay { get; set; }
 
@@ -65,37 +98,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableSubtitleExtraction { get; set; }
 
-        public string[] HardwareDecodingCodecs { get; set; }
-
-        public EncodingOptions()
-        {
-            DownMixAudioBoost = 2;
-            MaxMuxingQueueSize = 2048;
-            EnableThrottling = false;
-            ThrottleDelaySeconds = 180;
-            EncodingThreadCount = -1;
-            // This is a DRM device that is almost guaranteed to be there on every intel platform,
-            // plus it's the default one in ffmpeg if you don't specify anything
-            VaapiDevice = "/dev/dri/renderD128";
-            // This is the OpenCL device that is used for tonemapping.
-            // The left side of the dot is the platform number, and the right side is the device number on the platform.
-            OpenclDevice = "0.0";
-            EnableTonemapping = false;
-            TonemappingAlgorithm = "reinhard";
-            TonemappingRange = "auto";
-            TonemappingDesat = 0;
-            TonemappingThreshold = 0.8;
-            TonemappingPeak = 0;
-            TonemappingParam = 0;
-            H264Crf = 23;
-            H265Crf = 28;
-            DeinterlaceDoubleRate = false;
-            DeinterlaceMethod = "yadif";
-            EnableDecodingColorDepth10Hevc = true;
-            EnableDecodingColorDepth10Vp9 = true;
-            EnableHardwareEncoding = true;
-            EnableSubtitleExtraction = true;
-            HardwareDecodingCodecs = new string[] { "h264", "vc1" };
-        }
+        public IReadOnlyCollection<string> HardwareDecodingCodecs { get; set; }
     }
 }

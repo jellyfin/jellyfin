@@ -117,19 +117,19 @@ namespace MediaBrowser.Model.Configuration
         /// Characters to be replaced with a ' ' in strings to create a sort name.
         /// </summary>
         /// <value>The sort replace characters.</value>
-        public string[] SortReplaceCharacters { get; set; }
+        public IReadOnlyCollection<string> SortReplaceCharacters { get; set; }
 
         /// <summary>
         /// Characters to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove characters.</value>
-        public string[] SortRemoveCharacters { get; set; }
+        public IReadOnlyCollection<string> SortRemoveCharacters { get; set; }
 
         /// <summary>
         /// Words to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove words.</value>
-        public string[] SortRemoveWords { get; set; }
+        public IReadOnlyCollection<string> SortRemoveWords { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum percentage of an item that must be played in order for playstate to be updated.
@@ -170,7 +170,7 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The image saving convention.</value>
         public ImageSavingConvention ImageSavingConvention { get; set; }
 
-        public MetadataOptions[] MetadataOptions { get; set; }
+        public IReadOnlyCollection<MetadataOptions> MetadataOptions { get; set; }
 
         public bool SkipDeserializationForBasicTypes { get; set; }
 
@@ -210,7 +210,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveMetadataHidden { get; set; }
 
-        public NameValuePair[] ContentTypes { get; set; }
+        public IReadOnlyCollection<NameValuePair> ContentTypes { get; set; }
 
         public int RemoteClientBitrateLimit { get; set; }
 
@@ -220,11 +220,11 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DisplaySpecialsWithinSeasons { get; set; }
 
-        public string[] LocalNetworkSubnets { get; set; }
+        public IReadOnlyCollection<string> LocalNetworkSubnets { get; set; }
 
-        public string[] LocalNetworkAddresses { get; set; }
+        public IReadOnlyCollection<string> LocalNetworkAddresses { get; set; }
 
-        public string[] CodecsUsed { get; set; }
+        public IReadOnlyCollection<string> CodecsUsed { get; set; }
 
         public List<RepositoryInfo> PluginRepositories { get; set; }
 
@@ -239,7 +239,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableNewOmdbSupport { get; set; }
 
-        public string[] RemoteIPFilter { get; set; }
+        public IReadOnlyCollection<string> RemoteIPFilter { get; set; }
 
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
@@ -249,7 +249,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableSimpleArtistDetection { get; set; }
 
-        public string[] UninstalledPlugins { get; set; }
+        public IReadOnlyCollection<string> UninstalledPlugins { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether slow server responses should be logged as a warning.
@@ -264,12 +264,12 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets the cors hosts.
         /// </summary>
-        public string[] CorsHosts { get; set; }
+        public IReadOnlyCollection<string> CorsHosts { get; set; }
 
         /// <summary>
         /// Gets or sets the known proxies.
         /// </summary>
-        public string[] KnownProxies { get; set; }
+        public IReadOnlyCollection<string> KnownProxies { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -382,12 +382,5 @@ namespace MediaBrowser.Model.Configuration
             CorsHosts = new[] { "*" };
             KnownProxies = Array.Empty<string>();
         }
-    }
-
-    public class PathSubstitution
-    {
-        public string From { get; set; }
-
-        public string To { get; set; }
     }
 }

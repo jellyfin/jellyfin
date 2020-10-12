@@ -2,28 +2,15 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
-    /// Class MetadataOptions.
+    ///     Class MetadataOptions.
     /// </summary>
     public class MetadataOptions
     {
-        public string ItemType { get; set; }
-
-        public string[] DisabledMetadataSavers { get; set; }
-
-        public string[] LocalMetadataReaderOrder { get; set; }
-
-        public string[] DisabledMetadataFetchers { get; set; }
-
-        public string[] MetadataFetcherOrder { get; set; }
-
-        public string[] DisabledImageFetchers { get; set; }
-
-        public string[] ImageFetcherOrder { get; set; }
-
         public MetadataOptions()
         {
             DisabledMetadataSavers = Array.Empty<string>();
@@ -33,5 +20,19 @@ namespace MediaBrowser.Model.Configuration
             DisabledImageFetchers = Array.Empty<string>();
             ImageFetcherOrder = Array.Empty<string>();
         }
+
+        public string ItemType { get; set; }
+
+        public IReadOnlyCollection<string> DisabledMetadataSavers { get; set; }
+
+        public IReadOnlyCollection<string> LocalMetadataReaderOrder { get; set; }
+
+        public IReadOnlyCollection<string> DisabledMetadataFetchers { get; set; }
+
+        public IReadOnlyCollection<string> MetadataFetcherOrder { get; set; }
+
+        public IReadOnlyCollection<string> DisabledImageFetchers { get; set; }
+
+        public IReadOnlyCollection<string> ImageFetcherOrder { get; set; }
     }
 }

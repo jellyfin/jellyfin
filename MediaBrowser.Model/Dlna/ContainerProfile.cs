@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 
@@ -9,18 +10,18 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ContainerProfile
     {
-        [XmlAttribute("type")]
-        public DlnaProfileType Type { get; set; }
-
-        public ProfileCondition[] Conditions { get; set; }
-
-        [XmlAttribute("container")]
-        public string Container { get; set; }
-
         public ContainerProfile()
         {
             Conditions = Array.Empty<ProfileCondition>();
         }
+
+        [XmlAttribute("type")]
+        public DlnaProfileType Type { get; set; }
+
+        public IReadOnlyCollection<ProfileCondition> Conditions { get; set; }
+
+        [XmlAttribute("container")]
+        public string Container { get; set; }
 
         public string[] GetContainers()
         {
