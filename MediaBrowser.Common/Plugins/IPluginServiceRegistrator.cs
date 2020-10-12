@@ -3,7 +3,7 @@ namespace MediaBrowser.Common.Plugins
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
-    /// Defines the <see cref="IPluginRegistrar" />.
+    /// Defines the <see cref="IPluginServiceRegistrator" />.
     /// </summary>
     public interface IPluginServiceRegistrator
     {
