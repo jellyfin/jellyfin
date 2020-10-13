@@ -1014,7 +1014,7 @@ namespace Jellyfin.Networking.Manager
                             {
                                 if (IsIP4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
-                                    IPNetAddress nw = new IPNetAddress(info.Address, info.IPv4Mask)
+                                    IPNetAddress nw = new IPNetAddress(info.Address, IPObject.MaskToCidr(info.IPv4Mask))
                                     {
                                         // Keep the number of gateways on this interface, along with its index.
                                         Tag = ipProperties.GetIPv4Properties().Index
