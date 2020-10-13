@@ -21,7 +21,7 @@ fi
 shared_version_file="./SharedVersion.cs"
 build_file="./build.yaml"
 # csproj files for nuget packages
-jellyfin_subprojects=( MediaBrowser.Common/MediaBrowser.Common.csproj Jellyfin.Data/Jellyfin.Data.csproj MediaBrowser.Controller/MediaBrowser.Controller.csproj MediaBrowser.Model/MediaBrowser.Model.csproj Emby.Naming/Emby.Naming.csproj )
+jellyfin_subprojects=( MediaBrowser.Common/MediaBrowser.Common.csproj Jellyfin.Data/Jellyfin.Data.csproj MediaBrowser.Controller/MediaBrowser.Controller.csproj MediaBrowser.Model/MediaBrowser.Model.csproj Emby.Naming/Emby.Naming.csproj Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj )
 
 new_version="$1"
 

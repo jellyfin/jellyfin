@@ -57,6 +57,9 @@ jobs:
         Common:
           NugetPackageName: Jellyfin.Common
           AssemblyFileName: MediaBrowser.Common.dll
+        Implementations: 
+          NugetPackageName: Jellyfin.Implementations
+          AssemblyFileName: Jellyfin.Server.Implementations.dll
       LinuxImage: 'ubuntu-latest'
 
 - ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master')) }}:

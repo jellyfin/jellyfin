@@ -192,7 +192,7 @@ jobs:
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       command: 'pack'
-      packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj'
+      packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj;Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj'
       versioningScheme: 'off'
 
   - task: DotNetCoreCLI@2
@@ -205,6 +205,7 @@ jobs:
         MediaBrowser.Controller/MediaBrowser.Controller.csproj
         MediaBrowser.Model/MediaBrowser.Model.csproj
         Emby.Naming/Emby.Naming.csproj
+        Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj
       custom: 'pack'
       arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory) -p:Stability=Unstable'
 

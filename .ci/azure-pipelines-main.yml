@@ -91,3 +91,10 @@ jobs:
         inputs:
           targetPath: '$(build.ArtifactStagingDirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
           artifactName: 'Jellyfin.Common'
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Artifact Implementations'
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: '$(build.ArtifactStagingDirectory)/Jellyfin.Server/Jellyfin.Server.Implementations.dll'
+          artifactName: 'Jellyfin.Implementations' 
