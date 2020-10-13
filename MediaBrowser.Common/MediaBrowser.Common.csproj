@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\NetworkCollection\NetworkCollection.csproj" />
+    <ProjectReference Include="..\NetCollection\NetworkCollection.csproj" />
   </ItemGroup>
 
   <ItemGroup>

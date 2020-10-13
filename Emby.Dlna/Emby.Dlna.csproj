@@ -19,7 +19,7 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
-    <ProjectReference Include="..\NetworkCollection\NetworkCollection.csproj" />
+    <ProjectReference Include="..\NetCollection\NetworkCollection.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
