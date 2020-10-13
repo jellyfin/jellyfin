@@ -21,6 +21,35 @@ namespace NetworkTesting
 
     public class NetTesting
     {
+        /// <summary>
+        /// Trys to identify the string and return an object of that class.
+        /// </summary>
+        /// <param name="addr">String to parse.</param>
+        /// <param name="result">IPObject to return.</param>
+        /// <returns>True if the value parsed successfully.</returns>
+        private static bool TryParse(string addr, out IPObject result)
+        {
+            if (!string.IsNullOrEmpty(addr))
+            {
+                // Is it an IP address
+                if (IPNetAddress.TryParse(addr, out IPNetAddress nw))
+                {
+                    result = nw;
+                    return true;
+                }
+
+                if (IPHost.TryParse(addr, out IPHost h))
+                {
+                    result = h;
+                    return true;
+                }
+            }
+
+            result = IPNetAddress.None;
+            return false;
+        }
+
+
         private IConfigurationManager GetMockConfig(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
@@ -83,7 +112,7 @@ namespace NetworkTesting
 
         public void TestCollectionCreation(string address)
         {
-            Assert.True(NetCollection.TryParse(address, out _));
+            Assert.True(TryParse(address, out _));
         }
 
         [Theory]
@@ -93,7 +122,7 @@ namespace NetworkTesting
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         public void TestInvalidCollectionCreation(string address)
         {
-            Assert.False(NetCollection.TryParse(address, out _));
+            Assert.False(TryParse(address, out _));
         }
 
         [Theory]
@@ -162,7 +191,7 @@ namespace NetworkTesting
 
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);
-            nc = NetCollection.AsNetworks(nc);
+            nc = nc.AsNetworks();
             Assert.True(string.Equals(nc.ToString(), result5, System.StringComparison.OrdinalIgnoreCase));
         }
 
@@ -251,8 +280,8 @@ namespace NetworkTesting
 
         public void TestSubnets(string network, string ip)
         {
-            Assert.True(NetCollection.TryParse(network, out IPObject? networkObj));
-            Assert.True(NetCollection.TryParse(ip, out IPObject? ipObj));
+            Assert.True(TryParse(network, out IPObject? networkObj));
+            Assert.True(TryParse(ip, out IPObject? ipObj));
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8604 // Possible null reference argument.
@@ -301,35 +330,6 @@ namespace NetworkTesting
         {
             await Task.Delay(5000-(1000*address.Tag));
             return address.Equals(IPAddress.Loopback);
-        }
-
-        [Theory]
-
-        // Testing multi-task launching, and resolution. Returning after the 1st success.
-        [InlineData("www.google.co.uk;www.helloworld.com;www.123.com;127.0.0.1")]
-        public void TestCallback(string source)
-        {
-
-            var conf = new NetworkConfiguration()
-            {
-                EnableIPV6 = true,
-                EnableIPV4 = true
-            };
-
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
-            // Test included, IP6.
-            NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
-
-            // Mark each one so we know which is which
-            ncSource[0].Tag = 1;
-            ncSource[1].Tag = 2;
-            ncSource[2].Tag = 3;
-            ncSource[3].Tag = 4;
-
-            // Last one should return first.
-            NetCollection first = ncSource.Callback(TestAsync, default, 1);
-            // test that we only have one response.
-            Assert.True(first.Count == 1 && first[0].Tag == 4);
         }
 
         [Theory]

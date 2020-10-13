@@ -41,8 +41,8 @@ namespace Jellyfin.Server.Middleware
             }
 
             var remoteIp = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
-
-            if (serverConfigurationManager.GetNetworkConfiguration().EnableRemoteAccess)
+            var config = serverConfigurationManager.GetNetworkConfiguration();
+            if (config.EnableRemoteAccess)
             {
                 // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
                 // If left blank, all remote addresses will be allowed.
@@ -51,8 +51,8 @@ namespace Jellyfin.Server.Middleware
                 if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIp))
                 {
                     // remoteAddressFilter is a whitelist or blacklist.
-                    bool isListed = remoteAddressFilter.Contains(remoteIp);
-                    if (!serverConfigurationManager.GetNetworkConfiguration().IsRemoteIPFilterBlacklist)
+                    bool isListed = remoteAddressFilter.ContainsAddress(remoteIp);
+                    if (!config.IsRemoteIPFilterBlacklist)
                     {
                         // Black list, so flip over.
                         isListed = !isListed;
@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Middleware
 
                     if (!isListed)
                     {
-                        // If your name isn't on the list, you arn't coming in.
+                        // If your name isn't on the list, you ain't coming in.
                         return;
                     }
                 }
