@@ -1,19 +1,14 @@
+using System;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Configuration;
+using Emby.Dlna.PlayTo;
+using Jellyfin.Networking.Manager;
+using MediaBrowser.Common.Configuration;
+using NetworkCollection;
+using NetworkCollection.Udp;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
-using Jellyfin.Networking.Manager;
-using Emby.Dlna.PlayTo;
-using NetworkCollection;
-using System;
-using NetworkCollection.Udp;
 using Jellyfin.Networking.Configuration;
-using MediaBrowser.Common.Configuration;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace NetworkTesting
 {
@@ -448,7 +443,7 @@ namespace NetworkTesting
         [InlineData("0      - 1202020", 1, 65535)]
         public void TestRange(string rangeStr, int min, int max)
         {
-            rangeStr.TryParseRange(out (int Min, int Max) range);
+            rangeStr.TryParseRange(out(int Min, int Max) range);
             Assert.True((range.Min == min) && (range.Max == max));
         }
 
