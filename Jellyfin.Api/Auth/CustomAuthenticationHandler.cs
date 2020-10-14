@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Claims;
@@ -43,18 +44,17 @@ namespace Jellyfin.Api.Auth
             try
             {
                 var authorizationInfo = _authService.Authenticate(Request);
-                if (authorizationInfo == null)
+                var role = UserRoles.User;
+                // UserId of Guid.Empty means token is an apikey.
+                if (authorizationInfo.UserId.Equals(Guid.Empty) || authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
                 {
-                    return Task.FromResult(AuthenticateResult.NoResult());
-                    // TODO return when legacy API is removed.
-                    // Don't spam the log with "Invalid User"
-                    // return Task.FromResult(AuthenticateResult.Fail("Invalid user"));
+                    role = UserRoles.Administrator;
                 }
 
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, authorizationInfo.User.Username),
-                    new Claim(ClaimTypes.Role, authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator) ? UserRoles.Administrator : UserRoles.User),
+                    new Claim(ClaimTypes.Name, authorizationInfo.User?.Username ?? string.Empty),
+                    new Claim(ClaimTypes.Role, role),
                     new Claim(InternalClaimTypes.UserId, authorizationInfo.UserId.ToString("N", CultureInfo.InvariantCulture)),
                     new Claim(InternalClaimTypes.DeviceId, authorizationInfo.DeviceId),
                     new Claim(InternalClaimTypes.Device, authorizationInfo.Device),

@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Security.Claims;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -55,6 +56,12 @@ namespace Jellyfin.Api.Auth
             if (!userId.HasValue)
             {
                 return false;
+            }
+
+            // UserId of Guid.Empty means token is an apikey.
+            if (userId.Equals(Guid.Empty))
+            {
+                return true;
             }
 
             // Ensure userId links to a valid user.
