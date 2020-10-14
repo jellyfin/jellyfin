@@ -6,6 +6,7 @@ using Jellyfin.Data.Events.Users;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Users
 {
@@ -33,7 +34,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         {
             await _sessionManager.SendMessageToUserSessions(
                 new List<Guid> { e.Argument.Id },
-                "UserUpdated",
+                SessionMessageType.UserUpdated,
                 _userManager.GetUserDto(e.Argument),
                 CancellationToken.None).ConfigureAwait(false);
         }

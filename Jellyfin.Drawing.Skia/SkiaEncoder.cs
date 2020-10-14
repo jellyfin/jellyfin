@@ -553,13 +553,13 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc/>
-        public void CreateImageCollage(ImageCollageOptions options)
+        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
         {
             double ratio = (double)options.Width / options.Height;
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(this).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(this).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, libraryName);
             }
             else if (ratio >= .9)
             {

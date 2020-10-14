@@ -255,7 +255,8 @@ namespace MediaBrowser.Controller.Entities
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
                 {
-                    Logger.LogError("Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
+                    Logger.LogError(
+                        "Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -984,7 +985,8 @@ namespace MediaBrowser.Controller.Entities
             return items;
         }
 
-        private static bool CollapseBoxSetItems(InternalItemsQuery query,
+        private static bool CollapseBoxSetItems(
+            InternalItemsQuery query,
             BaseItem queryParent,
             User user,
             IServerConfigurationManager configurationManager)
@@ -1386,7 +1388,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-
         /// <summary>
         /// Gets the linked children.
         /// </summary>
@@ -1594,7 +1595,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
-        public override void MarkPlayed(User user,
+        public override void MarkPlayed(
+            User user,
             DateTime? datePlayed,
             bool resetPosition)
         {

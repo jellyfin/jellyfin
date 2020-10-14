@@ -113,6 +113,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         // Program properties
         public int? SeasonNumber { get; set; }
+
         /// <summary>
         /// Gets or sets the episode number.
         /// </summary>

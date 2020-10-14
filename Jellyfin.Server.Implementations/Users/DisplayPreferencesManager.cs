@@ -61,6 +61,7 @@ namespace Jellyfin.Server.Implementations.Users
         public IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client)
         {
             return _dbContext.ItemDisplayPreferences
+                .AsQueryable()
                 .Where(prefs => prefs.UserId == userId && prefs.ItemId != Guid.Empty && string.Equals(prefs.Client, client))
                 .ToList();
         }

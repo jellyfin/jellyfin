@@ -468,7 +468,6 @@ namespace Emby.Server.Implementations.Dto
                     IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
                     Name = item.Album,
                     Limit = 1
-
                 });
 
                 if (parentAlbumIds.Count > 0)
@@ -1139,6 +1138,7 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
+                        AttachPrimaryImageAspectRatio(dto, episodeSeries);
                     }
                 }
 
@@ -1185,6 +1185,7 @@ namespace Emby.Server.Implementations.Dto
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
+                        AttachPrimaryImageAspectRatio(dto, series);
                     }
                 }
             }

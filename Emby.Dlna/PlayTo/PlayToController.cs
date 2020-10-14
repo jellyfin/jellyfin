@@ -811,7 +811,7 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <inheritdoc />
-        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
+        public Task SendMessage<T>(SessionMessageType name, Guid messageId, T data, CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -823,17 +823,17 @@ namespace Emby.Dlna.PlayTo
                 return Task.CompletedTask;
             }
 
-            if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
+            if (name == SessionMessageType.Play)
             {
                 return SendPlayCommand(data as PlayRequest, cancellationToken);
             }
 
-            if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
+            if (name == SessionMessageType.PlayState)
             {
                 return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
             }
 
-            if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
+            if (name == SessionMessageType.GeneralCommand)
             {
                 return SendGeneralCommand(data as GeneralCommand, cancellationToken);
             }
@@ -881,7 +881,10 @@ namespace Emby.Dlna.PlayTo
                     return null;
                 }
 
-                mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                if (_mediaSourceManager != null)
+                {
+                    mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                }
 
                 return mediaSource;
             }

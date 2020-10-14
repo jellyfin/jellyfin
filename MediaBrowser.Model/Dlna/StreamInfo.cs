@@ -276,7 +276,6 @@ namespace MediaBrowser.Model.Dlna
 
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
 
-
             if (!item.IsDirectStream)
             {
                 if (item.RequireNonAnamorphic)

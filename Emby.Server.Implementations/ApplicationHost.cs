@@ -97,6 +97,7 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
+using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Mvc;
@@ -523,6 +524,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TvdbClientManager>();
+            ServiceCollection.AddSingleton<TmdbClientManager>();
 
             ServiceCollection.AddSingleton(_networkManager);
 

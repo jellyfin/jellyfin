@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -378,7 +379,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult PostCapabilities(
             [FromQuery] string? id,
             [FromQuery] string? playableMediaTypes,
-            [FromQuery] string? supportedCommands,
+            [FromQuery] GeneralCommandType[] supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
             [FromQuery] bool supportsSync = false,
             [FromQuery] bool supportsPersistentIdentifier = true)
@@ -391,7 +392,7 @@ namespace Jellyfin.Api.Controllers
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
             {
                 PlayableMediaTypes = RequestHelpers.Split(playableMediaTypes, ',', true),
-                SupportedCommands = RequestHelpers.Split(supportedCommands, ',', true),
+                SupportedCommands = supportedCommands,
                 SupportsMediaControl = supportsMediaControl,
                 SupportsSync = supportsSync,
                 SupportsPersistentIdentifier = supportsPersistentIdentifier
