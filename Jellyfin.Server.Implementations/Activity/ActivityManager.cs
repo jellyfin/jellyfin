@@ -72,6 +72,18 @@ namespace Jellyfin.Server.Implementations.Activity
             };
         }
 
+        /// <inheritdoc />
+        public async Task CleanAsync(DateTime startDate)
+        {
+            await using var dbContext = _provider.CreateContext();
+            var entries = dbContext.ActivityLogs
+                .AsQueryable()
+                .Where(entry => entry.DateCreated <= startDate);
+
+            dbContext.RemoveRange(entries);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+
         private static ActivityLogEntry ConvertToOldModel(ActivityLog entry)
         {
             return new ActivityLogEntry

@@ -95,6 +95,8 @@
     "TasksLibraryCategory": "Library",
     "TasksApplicationCategory": "Application",
     "TasksChannelsCategory": "Internet Channels",
+    "TaskCleanActivityLog": "Clean Activity Log",
+    "TaskCleanActivityLogDescription": "Deletes activity log entries older then the configured age.",
     "TaskCleanCache": "Clean Cache Directory",
     "TaskCleanCacheDescription": "Deletes cache files no longer needed by the system.",
     "TaskRefreshChapterImages": "Extract Chapter Images",
