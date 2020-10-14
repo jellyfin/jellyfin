@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
@@ -57,17 +58,12 @@ namespace NetworkCollection
         {
             get
             {
-                if (_addresses.Length == 0)
-                {
-                    ResolveHost();
-                }
-
-                return _addresses.Length > 0 ? this[0] : IPAddress.None;
+                return ResolveHost() ? this[0] : IPAddress.None;
             }
 
             set
             {
-                // Do nothing - as this object cannot set the address this way.
+                // Not implemented.
             }
         }
 
@@ -79,12 +75,7 @@ namespace NetworkCollection
         {
             get
             {
-                if (_addresses.Length == 0)
-                {
-                    ResolveHost();
-                }
-
-                return (byte)((_addresses.Length > 0) ? 128 : 0);
+                return (byte)(ResolveHost() ? 128 : 0);
             }
 
             set
@@ -109,9 +100,6 @@ namespace NetworkCollection
             }
         }
 
-        /// <inheritdoc/>
-        public override IPObject NetworkAddress => new IPNetAddress(this[0]);
-
         /// <summary>
         /// Gets the host name of this object.
         /// </summary>
@@ -130,11 +118,7 @@ namespace NetworkCollection
         {
             get
             {
-                if (_addresses.Length == 0)
-                {
-                    ResolveHost();
-                }
-
+                ResolveHost();
                 return index >= 0 && index < _addresses.Length ? _addresses[index] : IPAddress.None;
             }
         }
@@ -149,12 +133,6 @@ namespace NetworkCollection
         {
             if (!string.IsNullOrEmpty(host))
             {
-                if (IPAddress.TryParse(host, out IPAddress hostIP))
-                {
-                    hostObj = new IPHost(host, hostIP);
-                    return true;
-                }
-
                 // See if it's an IPv6 with port address e.g. [::1]:120.
                 int i = host.IndexOf("]:", StringComparison.OrdinalIgnoreCase);
                 if (i != -1)
@@ -230,10 +208,10 @@ namespace NetworkCollection
         }
 
         /// <summary>
-        /// Attempts to parse the host string.
+        /// Attempts to parse the host string, ensuring that it resolves only to a specific IP type.
         /// </summary>
         /// <param name="host">Host name to parse.</param>
-        /// <param name="family">Optional Addressfamily filter.</param>
+        /// <param name="family">Addressfamily filter.</param>
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
         public static IPHost Parse(string host, AddressFamily family)
         {
@@ -260,12 +238,15 @@ namespace NetworkCollection
         /// <returns>IPAddress Array.</returns>
         public IPAddress[] GetAddresses()
         {
-            if (_addresses.Length == 0)
-            {
-                ResolveHost();
-            }
-
+            ResolveHost();
             return _addresses;
+        }
+
+        /// <inheritdoc/>
+        protected override IPObject GetNetworkAddress()
+        {
+            var netAddr = NetworkAddressOf(this[0], PrefixLength);
+            return new IPNetAddress(netAddr.Address, netAddr.PrefixLength);
         }
 
         /// <inheritdoc/>
@@ -301,12 +282,7 @@ namespace NetworkCollection
                     return true;
                 }
 
-                if (_addresses.Length == 0)
-                {
-                    ResolveHost();
-                }
-
-                if (!otherObj.ResolveHost())
+                if (!ResolveHost() || !otherObj.ResolveHost())
                 {
                     return false;
                 }
@@ -330,13 +306,8 @@ namespace NetworkCollection
         /// <inheritdoc/>
         public override bool IsIP6()
         {
-            if (_addresses.Length == 0)
-            {
-                ResolveHost();
-            }
-
             // Returns true if interfaces are only IP6.
-            if (_addresses.Length > 0)
+            if (ResolveHost())
             {
                 foreach (IPAddress i in _addresses)
                 {
@@ -359,7 +330,8 @@ namespace NetworkCollection
             string output = string.Empty;
             if (_addresses.Length > 0)
             {
-                if (_addresses.Length > 1)
+                bool moreThanOne = _addresses.Length > 1;
+                if (moreThanOne)
                 {
                     output = "[";
                 }
@@ -388,9 +360,9 @@ namespace NetworkCollection
                     }                    
                 }
 
-                output = output[0..^1]; // output = output.Remove(output.Length - 1);
+                output = output[0..^1];
 
-                if (_addresses.Length > 1)
+                if (moreThanOne)
                 {
                     output += "]";
                 }
@@ -406,27 +378,9 @@ namespace NetworkCollection
         /// <inheritdoc/>
         public override void Remove(AddressFamily family)
         {
-            if (_addresses.Length == 0)
+            if (ResolveHost())
             {
-                ResolveHost();
-            }
-
-            if (_addresses.Length > 0)
-            {
-                List<IPAddress> add = new List<IPAddress>();
-
-                // Filter out IP6 addresses.
-                foreach (IPAddress addr in _addresses)
-                {
-                    if (addr.AddressFamily == family)
-                    {
-                        continue;
-                    }
-
-                    add.Add(addr);
-                }
-
-                _addresses = add.ToArray();
+                _addresses = _addresses.Where(p => p.AddressFamily != family).ToArray();
             }
         }
 
@@ -471,8 +425,8 @@ namespace NetworkCollection
                 // Resolves the host name - so save a DNS lookup.
                 if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Defer to IPv4 first.
-                    _addresses = new IPAddress[] { new IPAddress(Ipv4Loopback) };
+                    _addresses = new IPAddress[] { new IPAddress(Ipv4Loopback), new IPAddress(Ipv6Loopback) };
+                    return;
                 }
 
                 if (Uri.CheckHostName(HostName).Equals(UriHostNameType.Dns))

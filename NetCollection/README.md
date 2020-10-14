@@ -33,7 +33,7 @@ Helper functions for creating everything you need for a multi-interface udp serv
 
 eg. Get a free port from the range 1-3402.
 ```
-if (UdpHelper.TryParseRange("1-3042", out (int Min, int Max) range))
+if ("1-3042".TryParseRange(out (int Min, int Max) range))
 {
   var port = UdpHelper.GetUdpPortFromRange(range);
   
@@ -51,7 +51,7 @@ public bool AddressValidator(IPAddress address)
   return IPObjects.IsPrivateAddressRange(address);
 }
 
-var interfaces = new NetCollection(unique:true);
+var interfaces = new NetCollection();
 interfaces.Add(IPNetAddress.Parse("10.0.0.0/8"));
 interfaces.Add(IPNetAddress.Parse("192.168.0.0/16"));
 

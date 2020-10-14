@@ -35,10 +35,11 @@ namespace NetworkCollection.Ssdp
         private readonly Hashtable _senders;
         private readonly Dictionary<string, List<EventHandler<SsdpEventArgs>>> _events;
         private readonly IsInLocalNetwork _isInLocalNetwork;
+        private readonly object _eventFireLock;
         private NetCollection _interfaces;
         private bool _running;
         private bool _eventfire;
-
+        
         public static string HostName = $"OS/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpServer"/> class.
@@ -49,6 +50,7 @@ namespace NetworkCollection.Ssdp
         private SsdpServer(ILogger logger, NetCollection interfaces, IsInLocalNetwork isInLocalNetwork)
         {
             _logger = logger;
+            _eventFireLock = new object();
             _synchroniser = new object();
             _listeners = new Hashtable();
             _senders = new Hashtable();
@@ -89,12 +91,18 @@ namespace NetworkCollection.Ssdp
         /// </summary>
         /// <param name="logger">Logger instance.</param>
         /// <param name="interfaces">Interfaces to use for the server.</param>
-        /// <param name="isInLocalNetwork">Delegate used to check if a network address in part of the local LAN.</param>
+        /// <param name="isInLocalNetwork">Delegate used to verify if a network address in part of the local LAN.</param>
         /// <param name="ipv4Enabled">True if IPv4 is enabled.</param>
         /// <param name="ipv6Enabled">True if IPv6 is enabled.</param>
         /// <returns>The SsdpServer singleton instance.</returns>
-        public static ISsdpServer GetOrCreateInstance(ILogger logger, NetCollection interfaces, IsInLocalNetwork isInLocalNetwork, bool ipv4Enabled = true, bool ipv6Enabled = true)
+        public static ISsdpServer GetOrCreateInstance(
+            ILogger logger,
+            NetCollection interfaces,
+            IsInLocalNetwork isInLocalNetwork,
+            bool ipv4Enabled = true,
+            bool ipv6Enabled = true)
         {
+            // As this class is used in multiple areas, we only want to create it once.
             if (_instance == null)
             {
                 _instance = new SsdpServer(logger, interfaces, isInLocalNetwork);
@@ -137,6 +145,7 @@ namespace NetworkCollection.Ssdp
                     _events[action] = new List<EventHandler<SsdpEventArgs>>();
                 }
 
+                // Ensure we only add the handler once.
                 if (_events[action].IndexOf(handler) == -1)
                 {
                     _events[action].Add(handler);
@@ -201,7 +210,8 @@ namespace NetworkCollection.Ssdp
                 if (ipEntry != null)
                 {
                     var addr = (IPAddress)ipEntry;
-                    if (((advertising != null) && (addr.AddressFamily != advertising.AddressFamily)) || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
+                    if (((advertising != null) &&
+                        (addr.AddressFamily != advertising.AddressFamily)) || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
                     {
                         continue;
                     }
@@ -560,11 +570,11 @@ namespace NetworkCollection.Ssdp
         {
             if (_running)
             {
+                _running = false;
                 NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
                 NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
                 _listeners.Clear();
                 _senders.Clear();
-                _running = false;
             }
         }
 
@@ -625,13 +635,16 @@ namespace NetworkCollection.Ssdp
         /// </summary>
         private void OnNetworkChanged()
         {
-            if (!_eventfire)
+            lock (_eventFireLock)
             {
-                _logger.LogDebug("Network Address Change Event.");
-                // As network events tend to fire one after the other only fire once every second.
-                _eventfire = true;
-                _ = OnNetworkChangeAsync();
+                if (!_eventfire)
+                {
+                    _logger.LogDebug("Network Address Change Event.");
+                    // As network events tend to fire one after the other only fire once every second.
+                    _eventfire = true;
+                    _ = OnNetworkChangeAsync();
+                }
             }
-        }        
+        }
     }
 }

@@ -37,7 +37,8 @@ namespace NetworkCollection.Ssdp
                     if (!string.IsNullOrEmpty(cc))
                     {
                         var values = cc.Split('=');
-                        if (string.Equals("Max-Age", values[0], StringComparison.OrdinalIgnoreCase) || string.Equals("Shared-MaxAge", values[0], StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals("Max-Age", values[0], StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals("Shared-MaxAge", values[0], StringComparison.OrdinalIgnoreCase))
                         {
                             if (TimeSpan.TryParse(values[1], out TimeSpan clt))
                             {
@@ -95,7 +96,7 @@ namespace NetworkCollection.Ssdp
         /// <returns>True of this device information has expired.</returns>
         public bool IsExpired()
         {
-            return this.CacheLifetime == TimeSpan.Zero || this.AsAt.Add(this.CacheLifetime) <= DateTimeOffset.Now;
+            return CacheLifetime == TimeSpan.Zero || AsAt.Add(CacheLifetime) <= DateTimeOffset.Now;
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace NetworkCollection.Ssdp
         /// <returns>A string containing the device's universal service name.</returns>
         public override string ToString()
         {
-            return this.Usn;
+            return Usn;
         }
     }
 }

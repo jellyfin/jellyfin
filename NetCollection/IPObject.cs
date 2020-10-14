@@ -20,6 +20,11 @@ namespace NetworkCollection
         protected static readonly byte[] Ipv4Loopback = { 127, 0, 0, 1 };
 
         /// <summary>
+        /// The network address of this object.
+        /// </summary>
+        private IPObject? _networkAddress;
+
+        /// <summary>
         /// Gets or sets the user defined functions that need storage in this object.
         /// </summary>
         public int Tag { get; set; }
@@ -32,7 +37,18 @@ namespace NetworkCollection
         /// <summary>
         /// Gets the object's network address.
         /// </summary>
-        public abstract IPObject NetworkAddress { get; }
+        public IPObject NetworkAddress
+        {
+            get
+            {
+                if (_networkAddress == null)
+                {
+                    _networkAddress = GetNetworkAddress();
+                }
+
+                return _networkAddress;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the object's IP address.
@@ -360,7 +376,12 @@ namespace NetworkCollection
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return Address.Equals(IPAddress.None) ? 0 : Address.GetHashCode();
+            return Address.GetHashCode();
         }
+
+        /// <summary>
+        /// Calculates the network address of this object.
+        /// </summary>
+        protected abstract IPObject GetNetworkAddress();
     }
 }

@@ -326,12 +326,6 @@ namespace NetworkTesting
             Assert.True(IPNetAddress.Parse(dest).Equals(IPNetAddress.Parse(source)));
         }
 
-        private async Task<bool> TestAsync(IPObject address, CancellationToken cancellationToken)
-        {
-            await Task.Delay(5000-(1000*address.Tag));
-            return address.Equals(IPAddress.Loopback);
-        }
-
         [Theory]
 
         // Testing bind interfaces. These are set for my system so won't work elsewhere.
@@ -454,7 +448,7 @@ namespace NetworkTesting
         [InlineData("0      - 1202020", 1, 65535)]
         public void TestRange(string rangeStr, int min, int max)
         {
-            UdpHelper.TryParseRange(rangeStr, out (int Min, int Max) range);
+            rangeStr.TryParseRange(out (int Min, int Max) range);
             Assert.True((range.Min == min) && (range.Max == max));
         }
 

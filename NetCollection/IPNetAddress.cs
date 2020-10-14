@@ -46,11 +46,6 @@ namespace NetworkCollection
         private IPAddress _address;
 
         /// <summary>
-        /// Object's network address.
-        /// </summary>
-        private IPNetAddress? _networkAddress;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
         /// <param name="address">Address to assign.</param>
@@ -58,35 +53,6 @@ namespace NetworkCollection
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
             PrefixLength = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
-        /// </summary>
-        /// <param name="address">Address to assign.</param>
-        /// <param name="subnet">Mask to assign.</param>
-        public IPNetAddress(IPAddress address, IPAddress subnet)
-        {
-            if (address?.IsIPv4MappedToIPv6 ?? throw new ArgumentNullException(nameof(address)))
-            {
-                _address = address.MapToIPv4();
-            }
-            else
-            {
-                _address = address;
-            }
-
-            if (subnet == null)
-            {
-                throw new ArgumentNullException(nameof(subnet));
-            }
-
-            if (address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                throw new ArgumentException("This method of creation is only for IPv4 addresses.");
-            }
-
-            PrefixLength = MaskToCidr(subnet);
         }
 
         /// <summary>
@@ -125,21 +91,6 @@ namespace NetworkCollection
         }
 
         /// <inheritdoc/>
-        public override IPObject NetworkAddress
-        {
-            get
-            {
-                if (_networkAddress == null)
-                {
-                    var value = NetworkAddressOf(_address, PrefixLength);
-                    _networkAddress = new IPNetAddress(value.Address, value.PrefixLength);
-                }
-
-                return _networkAddress;
-            }
-        }
-
-        /// <inheritdoc/>
         public override byte PrefixLength { get; set; }
 
         /// <summary>
@@ -171,22 +122,24 @@ namespace NetworkCollection
 
                     if (IPAddress.TryParse(tokens[0], out res))
                     {
+                        // Is the subnet part a cidr?
                         if (byte.TryParse(tokens[1], out byte cidr))
                         {
                             ip = new IPNetAddress(res, cidr);
                             return true;
                         }
 
+                        // Is the subnet in x.y.a.b form?
                         if (IPAddress.TryParse(tokens[1], out IPAddress mask))
                         {
-                            ip = new IPNetAddress(res, IPObject.MaskToCidr(mask));
+                            ip = new IPNetAddress(res, MaskToCidr(mask));
                             return true;
                         }
                     }
                 }
             }
 
-            ip = IPNetAddress.None;
+            ip = None;
             return false;
         }
 
@@ -219,7 +172,7 @@ namespace NetworkCollection
             }
 
             var altAddress = NetworkAddressOf(address, PrefixLength);
-            return NetworkAddress.Address.Equals(altAddress.Address);
+            return NetworkAddress.Address.Equals(altAddress.Address) && NetworkAddress.PrefixLength >= altAddress.PrefixLength;
         }
 
         /// <inheritdoc/>
@@ -237,15 +190,14 @@ namespace NetworkCollection
             }
             else if (address is IPNetAddress netaddrObj)
             {
-                var netAddress = NetworkAddress.NetworkAddress.Address;
                 // Have the same network address, but different subnets?
-                if (netAddress.Equals(netaddrObj.NetworkAddress.Address))
+                if (NetworkAddress.Address.Equals(netaddrObj.NetworkAddress.Address))
                 {
                     return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
                 var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength);
-                return netAddress.Equals(altAddress.Item1);
+                return NetworkAddress.Address.Equals(altAddress.Address);
             }
 
             return false;
@@ -256,8 +208,7 @@ namespace NetworkCollection
         {
             if (other is IPNetAddress otherObj && !Address.Equals(IPAddress.None) && !otherObj.Address.Equals(IPAddress.None))
             {
-                return Address.AddressFamily == otherObj.Address.AddressFamily &&
-                    Address.Equals(otherObj.Address) &&
+                return Address.Equals(otherObj.Address) &&
                     PrefixLength == otherObj.PrefixLength;
             }
 
@@ -269,33 +220,7 @@ namespace NetworkCollection
         {
             if (address != null && !address.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
             {
-                if (Address.AddressFamily == address.AddressFamily)
-                {
-                    return address.Equals(Address);
-                }
-
-                if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    // Is one an ipv4 to ipv6 mapping?
-                    return string.Equals(
-                        Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                        address.ToString(),
-                        StringComparison.OrdinalIgnoreCase);
-                }
-
-                if (Address.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    if (address.IsIPv4MappedToIPv6)
-                    {
-                        address = address.MapToIPv4();
-                    }
-
-                    // Is one an ipv4 to ipv6 mapping?
-                    return string.Equals(
-                        address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                        Address.ToString(),
-                        StringComparison.OrdinalIgnoreCase);
-                }
+                return address.Equals(Address);
             }
 
             return false;
@@ -314,7 +239,7 @@ namespace NetworkCollection
         /// <returns>String representation of this object.</returns>
         public string ToString(bool shortVersion)
         {
-            if (!(Address.Equals(IPAddress.None) && Address.AddressFamily == AddressFamily.Unspecified))
+            if (!Address.Equals(IPAddress.None))
             {
                 if (Address.Equals(IPAddress.Any))
                 {
@@ -341,5 +266,13 @@ namespace NetworkCollection
 
             return string.Empty;
         }
+
+        /// <inheritdoc/>
+        protected override IPObject GetNetworkAddress()
+        {
+            var value = NetworkAddressOf(_address, PrefixLength);
+            return new IPNetAddress(value.Address, value.PrefixLength);
+        }
+
     }
 }
