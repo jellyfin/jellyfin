@@ -29,13 +29,13 @@ namespace Jellyfin.Api.Auth.LocalAccessPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, LocalAccessRequirement requirement)
         {
             var validated = ValidateClaims(context.User, localAccessOnly: true);
-            if (!validated)
+            if (validated)
             {
-                context.Fail();
+                context.Succeed(requirement);
             }
             else
             {
-                context.Succeed(requirement);
+                context.Fail();
             }
 
             return Task.CompletedTask;
