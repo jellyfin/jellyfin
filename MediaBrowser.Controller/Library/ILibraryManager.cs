@@ -566,7 +566,8 @@ namespace MediaBrowser.Controller.Library
 
         int GetCount(InternalItemsQuery query);
 
-        void AddExternalSubtitleStreams(List<MediaStream> streams,
+        void AddExternalSubtitleStreams(
+            List<MediaStream> streams,
             string videoPath,
             string[] files);
     }

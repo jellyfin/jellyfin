@@ -70,15 +70,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var codecMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    {"qsv",                  hwEncoder + "_qsv"},
-                    {hwEncoder + "_qsv",     hwEncoder + "_qsv"},
-                    {"nvenc",                hwEncoder + "_nvenc"},
-                    {"amf",                  hwEncoder + "_amf"},
-                    {"omx",                  hwEncoder + "_omx"},
-                    {hwEncoder + "_v4l2m2m", hwEncoder + "_v4l2m2m"},
-                    {"mediacodec",           hwEncoder + "_mediacodec"},
-                    {"vaapi",                hwEncoder + "_vaapi"},
-                    {"videotoolbox",         hwEncoder + "_videotoolbox"}
+                    { "qsv",                  hwEncoder + "_qsv" },
+                    { hwEncoder + "_qsv",     hwEncoder + "_qsv" },
+                    { "nvenc",                hwEncoder + "_nvenc" },
+                    { "amf",                  hwEncoder + "_amf" },
+                    { "omx",                  hwEncoder + "_omx" },
+                    { hwEncoder + "_v4l2m2m", hwEncoder + "_v4l2m2m" },
+                    { "mediacodec",           hwEncoder + "_mediacodec" },
+                    { "vaapi",                hwEncoder + "_vaapi" },
+                    { "videotoolbox",         hwEncoder + "_videotoolbox" }
                 };
 
                 if (!string.IsNullOrEmpty(hwType)
@@ -1822,7 +1822,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (Convert.ToInt32(outputWidth), Convert.ToInt32(outputHeight));
         }
 
-        public List<string> GetScalingFilters(EncodingJobInfo state,
+        public List<string> GetScalingFilters(
+            EncodingJobInfo state,
             int? videoWidth,
             int? videoHeight,
             Video3DFormat? threedFormat,
