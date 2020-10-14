@@ -144,7 +144,7 @@ namespace Emby.Server.Implementations.AppBase
 
             if (_configurationFactories == null)
             {
-                _configurationFactories = new IConfigurationFactory[] { factory };
+                _configurationFactories = new[] { factory };
             }
             else
             {
