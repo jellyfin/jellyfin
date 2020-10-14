@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             else
             {
-                var list = _configurationFactories.ToList<IConfigurationFactory>();
+                var list = _configurationFactories.ToList();
                 list.Add(factory);
                 _configurationFactories = list.ToArray();
             }
