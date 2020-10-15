@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             if (string.IsNullOrWhiteSpace(token))
             {
                 // Request doesn't contain a token.
-                throw new SecurityException("Unauthorized.");
+                return (null, null);
             }
 
             var result = _authRepo.Get(new AuthenticationInfoQuery
