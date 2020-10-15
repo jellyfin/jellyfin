@@ -45,7 +45,7 @@ namespace Jellyfin.Api.Tests
             {
                 new Claim(ClaimTypes.Role, role),
                 new Claim(ClaimTypes.Name, "jellyfin"),
-                new Claim(InternalClaimTypes.UserId, Guid.Empty.ToString("N", CultureInfo.InvariantCulture)),
+                new Claim(InternalClaimTypes.UserId, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)),
                 new Claim(InternalClaimTypes.DeviceId, Guid.Empty.ToString("N", CultureInfo.InvariantCulture)),
                 new Claim(InternalClaimTypes.Device, "test"),
                 new Claim(InternalClaimTypes.Client, "test"),
