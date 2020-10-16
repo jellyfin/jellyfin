@@ -51,7 +51,7 @@ namespace Jellyfin.Server.Middleware
                 if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIp))
                 {
                     // remoteAddressFilter is a whitelist or blacklist.
-                    bool isListed = remoteAddressFilter.Contains(remoteIp);
+                    bool isListed = remoteAddressFilter.ContainsAddress(remoteIp);
                     if (!serverConfigurationManager.GetNetworkConfiguration().IsRemoteIPFilterBlacklist)
                     {
                         // Black list, so flip over.
