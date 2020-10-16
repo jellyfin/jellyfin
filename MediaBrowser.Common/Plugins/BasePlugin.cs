@@ -252,20 +252,23 @@ namespace MediaBrowser.Common.Plugins
             }
             catch
             {
-                return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+                var config = (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+                SaveConfiguration(config);
+                return config;
             }
         }
 
         /// <summary>
         /// Saves the current configuration to the file system.
         /// </summary>
-        public virtual void SaveConfiguration()
+        /// <param name="config">Configuration to save.</param>
+        public virtual void SaveConfiguration(TConfigurationType config)
         {
             lock (_configurationSaveLock)
             {
                 _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
 
-                XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
+                XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
             }
         }
 
@@ -279,7 +282,7 @@ namespace MediaBrowser.Common.Plugins
 
             Configuration = (TConfigurationType)configuration;
 
-            SaveConfiguration();
+            SaveConfiguration(Configuration);
         }
 
         /// <inheritdoc />
