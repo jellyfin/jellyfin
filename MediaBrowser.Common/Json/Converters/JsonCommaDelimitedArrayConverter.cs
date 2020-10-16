@@ -35,7 +35,7 @@ namespace MediaBrowser.Common.Json.Converters
                 var entries = new T[stringEntries.Length];
                 for (var i = 0; i < stringEntries.Length; i++)
                 {
-                    entries[i] = (T)_typeConverter.ConvertFrom(stringEntries[i]);
+                    entries[i] = (T)_typeConverter.ConvertFrom(stringEntries[i].Trim());
                 }
 
                 return entries;

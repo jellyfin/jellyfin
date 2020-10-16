@@ -22,6 +22,19 @@ namespace Jellyfin.Common.Tests.Json
         }
 
         [Fact]
+        public static void Deserialize_String_Space_Valid_Success()
+        {
+            var desiredValue = new GenericBodyModel<string>
+            {
+                Value = new[] { "a", "b", "c" }
+            };
+
+            var options = new JsonSerializerOptions();
+            var value = JsonSerializer.Deserialize<GenericBodyModel<string>>(@"{ ""Value"": ""a, b, c"" }", options);
+            Assert.Equal(desiredValue.Value, value?.Value);
+        }
+
+        [Fact]
         public static void Deserialize_GenericCommandType_Valid_Success()
         {
             var desiredValue = new GenericBodyModel<GeneralCommandType>
@@ -32,6 +45,20 @@ namespace Jellyfin.Common.Tests.Json
             var options = new JsonSerializerOptions();
             options.Converters.Add(new JsonStringEnumConverter());
             var value = JsonSerializer.Deserialize<GenericBodyModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,MoveDown"" }", options);
+            Assert.Equal(desiredValue.Value, value?.Value);
+        }
+
+        [Fact]
+        public static void Deserialize_GenericCommandType_Space_Valid_Success()
+        {
+            var desiredValue = new GenericBodyModel<GeneralCommandType>
+            {
+                Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
+            };
+
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new JsonStringEnumConverter());
+            var value = JsonSerializer.Deserialize<GenericBodyModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp, MoveDown"" }", options);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
