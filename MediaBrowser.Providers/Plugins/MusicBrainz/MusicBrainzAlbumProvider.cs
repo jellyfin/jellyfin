@@ -757,7 +757,7 @@ namespace MediaBrowser.Providers.Music
 
                     if (_stopWatchMusicBrainz.ElapsedMilliseconds < _musicBrainzQueryIntervalMs)
                     {
-                        // MusicBrainz is extremely adamant about limiting to one request per second
+                        // MusicBrainz is extremely adamant about limiting to one request per second.
                         var delayMs = _musicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
                         await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
                     }
@@ -770,7 +770,7 @@ namespace MediaBrowser.Providers.Music
                     using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
 
                     // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
-                    // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
+                    // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent .
                     request.Headers.UserAgent.ParseAdd(string.Format(
                         CultureInfo.InvariantCulture,
                         "{0} ( {1} )",
@@ -779,11 +779,11 @@ namespace MediaBrowser.Providers.Music
 
                     response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(request).ConfigureAwait(false);
 
-                    // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
+                    // We retry a finite number of times, and only whilst MB is indicating 503 (throttling).
                 }
                 while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
 
-                // Log error if unable to query MB database due to throttling
+                // Log error if unable to query MB database due to throttling.
                 if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
                 {
                     _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, requestUrl);
