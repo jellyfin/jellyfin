@@ -37,16 +37,19 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable images].
         /// </summary>
         /// <value><c>null</c> if [enable images] contains no value, <c>true</c> if [enable images]; otherwise, <c>false</c>.</value>
         public bool? EnableImages { get; set; }
+
         /// <summary>
         /// Gets or sets the image type limit.
         /// </summary>
         /// <value>The image type limit.</value>
         public int? ImageTypeLimit { get; set; }
+
         /// <summary>
         /// Gets or sets the enable image types.
         /// </summary>

@@ -342,7 +342,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
-                    var newSize = DrawingUtils.Resize(size,
+                    var newSize = DrawingUtils.Resize(
+                        size,
                         BaseRequest.Width ?? 0,
                         BaseRequest.Height ?? 0,
                         BaseRequest.MaxWidth ?? 0,
@@ -368,7 +369,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
-                    var newSize = DrawingUtils.Resize(size,
+                    var newSize = DrawingUtils.Resize(
+                        size,
                         BaseRequest.Width ?? 0,
                         BaseRequest.Height ?? 0,
                         BaseRequest.MaxWidth ?? 0,
@@ -697,10 +699,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// The progressive.
         /// </summary>
         Progressive,
+
         /// <summary>
         /// The HLS.
         /// </summary>
         Hls,
+
         /// <summary>
         /// The dash.
         /// </summary>

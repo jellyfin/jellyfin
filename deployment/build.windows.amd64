@@ -35,10 +35,6 @@ unzip ${addin_build_dir}/jellyfin-ffmpeg.zip -d ${addin_build_dir}/jellyfin-ffmp
 cp ${addin_build_dir}/jellyfin-ffmpeg/* ${output_dir}
 rm -rf ${addin_build_dir}
 
-# Prepare scripts
-cp ${SOURCE_DIR}/windows/legacy/install-jellyfin.ps1 ${output_dir}/install-jellyfin.ps1
-cp ${SOURCE_DIR}/windows/legacy/install.bat ${output_dir}/install.bat
-
 # Create zip package
 pushd dist
 zip -qr jellyfin-server_${version}.portable.zip jellyfin-server_${version}

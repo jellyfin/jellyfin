@@ -88,16 +88,19 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The play method.</value>
         public PlayMethod PlayMethod { get; set; }
+
         /// <summary>
         /// Gets or sets the live stream identifier.
         /// </summary>
         /// <value>The live stream identifier.</value>
         public string LiveStreamId { get; set; }
+
         /// <summary>
         /// Gets or sets the play session identifier.
         /// </summary>
         /// <value>The play session identifier.</value>
         public string PlaySessionId { get; set; }
+
         /// <summary>
         /// Gets or sets the repeat mode.
         /// </summary>

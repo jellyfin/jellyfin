@@ -198,6 +198,7 @@ namespace MediaBrowser.Providers.Music
                                 result.Name = reader.ReadElementContentAsString();
                                 break;
                             }
+
                         case "annotation":
                             {
                                 result.Overview = reader.ReadElementContentAsString();

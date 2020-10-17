@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
 using Xunit;
@@ -42,16 +43,22 @@ namespace Jellyfin.Naming.Tests.AudioBook
 
         [Theory]
         [MemberData(nameof(GetResolveFileTestData))]
-        public void ResolveFile_ValidFileName_Success(AudioBookFileInfo expectedResult)
+        public void Resolve_ValidFileName_Success(AudioBookFileInfo expectedResult)
         {
             var result = new AudioBookResolver(_namingOptions).Resolve(expectedResult.Path);
 
             Assert.NotNull(result);
-            Assert.Equal(result.Path, expectedResult.Path);
-            Assert.Equal(result.Container, expectedResult.Container);
-            Assert.Equal(result.ChapterNumber, expectedResult.ChapterNumber);
-            Assert.Equal(result.PartNumber, expectedResult.PartNumber);
-            Assert.Equal(result.IsDirectory, expectedResult.IsDirectory);
+            Assert.Equal(result!.Path, expectedResult.Path);
+            Assert.Equal(result!.Container, expectedResult.Container);
+            Assert.Equal(result!.ChapterNumber, expectedResult.ChapterNumber);
+            Assert.Equal(result!.PartNumber, expectedResult.PartNumber);
+            Assert.Equal(result!.IsDirectory, expectedResult.IsDirectory);
+        }
+
+        [Fact]
+        public void Resolve_EmptyFileName_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new AudioBookResolver(_namingOptions).Resolve(string.Empty));
         }
     }
 }
