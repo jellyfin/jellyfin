@@ -128,7 +128,6 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpClientFactory _httpClientFactory;
-        private IWebSocketManager _webSocketManager;
 
         private string[] _urlPrefixes;
 
@@ -259,8 +258,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();            
-            
+            _jsonSerializer = new JsonSerializer();
+
             ServiceCollection = serviceCollection;
 
             _networkManager = networkManager;
@@ -667,7 +666,6 @@ namespace Emby.Server.Implementations
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpClientFactory = Resolve<IHttpClientFactory>();
-            _webSocketManager = Resolve<IWebSocketManager>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -788,7 +786,6 @@ namespace Emby.Server.Implementations
                         .ToArray();
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
-            _webSocketManager.Init(GetExports<IWebSocketListener>());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -1058,7 +1055,7 @@ namespace Emby.Server.Implementations
                     {
                         // No metafile, so lets see if the folder is versioned.
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
-                        
+
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
                         {
@@ -1067,9 +1064,9 @@ namespace Emby.Server.Implementations
                         }
                         else
                         {
-                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
                             versions.Add((new Version(0, 0, 0, 1), metafile, dir));
-                        }   
+                        }
                     }
                 }
                 catch
