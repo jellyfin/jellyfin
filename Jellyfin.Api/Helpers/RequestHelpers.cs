@@ -57,18 +57,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Get parsed filters.
-        /// </summary>
-        /// <param name="filters">The filters.</param>
-        /// <returns>Item filters.</returns>
-        public static IEnumerable<ItemFilter> GetFilters(string? filters)
-        {
-            return string.IsNullOrEmpty(filters)
-                ? Array.Empty<ItemFilter>()
-                : filters.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
-        }
-
-        /// <summary>
         /// Splits a string at a separating character into an array of substrings.
         /// </summary>
         /// <param name="value">The string to split.</param>

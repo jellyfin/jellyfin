@@ -106,7 +106,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     .ConfigureAwait(false);
                 if (string.IsNullOrEmpty(episodeTvdbId))
                 {
-                    _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
+                    _logger.LogError(
+                        "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                         searchInfo.ParentIndexNumber, searchInfo.IndexNumber, seriesTvdbId);
                     return result;
                 }
@@ -141,6 +142,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Name = episode.EpisodeName,
                     Overview = episode.Overview,
                     CommunityRating = (float?)episode.SiteRating,
+                    OfficialRating = episode.ContentRating,
                 }
             };
             result.ResetPeople();

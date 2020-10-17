@@ -33,6 +33,8 @@ namespace MediaBrowser.Providers.Studios
 
         public string Name => "Emby Designs";
 
+        public int Order => 0;
+
         public bool Supports(BaseItem item)
         {
             return item is Studio;
@@ -119,8 +121,6 @@ namespace MediaBrowser.Providers.Studios
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
-        public int Order => 0;
-
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
@@ -161,12 +161,12 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetComparableName(string name)
         {
-            return name.Replace(" ", string.Empty)
-                .Replace(".", string.Empty)
-                .Replace("&", string.Empty)
-                .Replace("!", string.Empty)
-                .Replace(",", string.Empty)
-                .Replace("/", string.Empty);
+            return name.Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace(".", string.Empty, StringComparison.Ordinal)
+                .Replace("&", string.Empty, StringComparison.Ordinal)
+                .Replace("!", string.Empty, StringComparison.Ordinal)
+                .Replace(",", string.Empty, StringComparison.Ordinal)
+                .Replace("/", string.Empty, StringComparison.Ordinal);
         }
 
         public IEnumerable<string> GetAvailableImages(string file)

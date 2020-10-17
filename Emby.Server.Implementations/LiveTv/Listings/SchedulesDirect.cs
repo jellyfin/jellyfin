@@ -874,7 +874,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public List<Lineup> lineups { get; set; }
             }
 
-
             public class Headends
             {
                 public string headend { get; set; }
@@ -885,8 +884,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 public List<Lineup> lineups { get; set; }
             }
-
-
 
             public class Map
             {
@@ -971,9 +968,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public List<string> date { get; set; }
             }
 
-
-
-
             public class Rating
             {
                 public string body { get; set; }
@@ -1016,8 +1010,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 public string isPremiereOrFinale { get; set; }
             }
-
-
 
             public class MetadataSchedule
             {

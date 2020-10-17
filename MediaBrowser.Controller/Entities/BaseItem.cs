@@ -197,6 +197,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool SupportsRemoteImageDownloading => true;
 
         private string _name;
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -661,6 +662,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private string _forcedSortName;
+
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>

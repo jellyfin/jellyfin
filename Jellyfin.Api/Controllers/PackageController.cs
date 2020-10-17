@@ -77,6 +77,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="name">Package name.</param>
         /// <param name="assemblyGuid">GUID of the associated assembly.</param>
         /// <param name="version">Optional version. Defaults to latest version.</param>
+        /// <param name="repositoryUrl">Optional. Specify the repository to install from.</param>
         /// <response code="204">Package found.</response>
         /// <response code="404">Package not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the package could not be found.</returns>
@@ -87,9 +88,16 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> InstallPackage(
             [FromRoute, Required] string name,
             [FromQuery] string? assemblyGuid,
-            [FromQuery] string? version)
+            [FromQuery] string? version,
+            [FromQuery] string? repositoryUrl)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(repositoryUrl))
+            {
+                packages = packages.Where(p => p.repositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
             var package = _installationManager.GetCompatibleVersions(
                     packages,
                     name,
