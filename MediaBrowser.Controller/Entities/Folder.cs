@@ -722,7 +722,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
         {
-            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase))
             {
                 Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
@@ -812,7 +812,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
+                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(nameof(Series)))
                 {
                     Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;

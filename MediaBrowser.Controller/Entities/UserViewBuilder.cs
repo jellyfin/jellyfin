@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (query.IncludeItemTypes.Length == 0)
                 {
-                    query.IncludeItemTypes = new[] { typeof(Movie).Name };
+                    query.IncludeItemTypes = new[] { nameof(Movie) };
                 }
 
                 return parent.QueryRecursive(query);
@@ -167,7 +167,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(Movie).Name };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -178,7 +178,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(Series).Name };
+            query.IncludeItemTypes = new[] { nameof(Series) };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(Episode).Name };
+            query.IncludeItemTypes = new[] { nameof(Episode) };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -200,7 +200,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(Movie).Name };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -208,7 +208,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetMovieCollections(Folder parent, User user, InternalItemsQuery query)
         {
             query.Parent = null;
-            query.IncludeItemTypes = new[] { typeof(BoxSet).Name };
+            query.IncludeItemTypes = new[] { nameof(BoxSet) };
             query.SetUser(user);
             query.Recursive = true;
 
@@ -223,7 +223,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { typeof(Movie).Name };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
@@ -236,7 +236,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { typeof(Movie).Name };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
@@ -255,7 +255,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var genres = parent.QueryRecursive(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Movie).Name },
+                IncludeItemTypes = new[] { nameof(Movie) },
                 Recursive = true,
                 EnableTotalRecordCount = false
             }).Items
@@ -286,7 +286,7 @@ namespace MediaBrowser.Controller.Entities
             query.GenreIds = new[] { displayParent.Id };
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(Movie).Name };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -333,7 +333,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { typeof(Episode).Name };
+            query.IncludeItemTypes = new[] { nameof(Episode) };
             query.IsVirtualItem = false;
 
             return ConvertToResult(_libraryManager.GetItemList(query));
@@ -361,7 +361,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { typeof(Episode).Name };
+            query.IncludeItemTypes = new[] { nameof(Episode) };
 
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
@@ -372,7 +372,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(Series).Name };
+            query.IncludeItemTypes = new[] { nameof(Series) };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -381,7 +381,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var genres = parent.QueryRecursive(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { nameof(Series) },
                 Recursive = true,
                 EnableTotalRecordCount = false
             }).Items
@@ -412,7 +412,7 @@ namespace MediaBrowser.Controller.Entities
             query.GenreIds = new[] { displayParent.Id };
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(Series).Name };
+            query.IncludeItemTypes = new[] { nameof(Series) };
 
             return _libraryManager.GetItemsResult(query);
         }
