@@ -95,6 +95,7 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
+using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Mvc;
@@ -125,7 +126,6 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpClientFactory _httpClientFactory;
-        private IWebSocketManager _webSocketManager;
 
         private string[] _urlPrefixes;
 
@@ -535,6 +535,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TvdbClientManager>();
+            ServiceCollection.AddSingleton<TmdbClientManager>();
 
             ServiceCollection.AddSingleton(_networkManager);
 
@@ -663,7 +664,6 @@ namespace Emby.Server.Implementations
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpClientFactory = Resolve<IHttpClientFactory>();
-            _webSocketManager = Resolve<IWebSocketManager>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -784,7 +784,6 @@ namespace Emby.Server.Implementations
                         .ToArray();
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
-            _webSocketManager.Init(GetExports<IWebSocketListener>());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -817,38 +816,6 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                if (plugin is IPluginAssembly assemblyPlugin)
-                {
-                    var assembly = plugin.GetType().Assembly;
-                    var assemblyName = assembly.GetName();
-                    var assemblyFilePath = assembly.Location;
-
-                    var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-
-                    assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
-
-                    try
-                    {
-                        var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-                        if (idAttributes.Length > 0)
-                        {
-                            var attribute = (GuidAttribute)idAttributes[0];
-                            var assemblyId = new Guid(attribute.Value);
-
-                            assemblyPlugin.SetId(assemblyId);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
-                    }
-                }
-
-                if (plugin is IHasPluginConfiguration hasPluginConfiguration)
-                {
-                    hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
-                }
-
                 plugin.RegisterServices(ServiceCollection);
             }
             catch (Exception ex)

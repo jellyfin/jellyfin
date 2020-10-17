@@ -217,15 +217,15 @@ namespace Emby.Dlna.PlayTo
 
                     SupportedCommands = new[]
                     {
-                        GeneralCommandType.VolumeDown.ToString(),
-                        GeneralCommandType.VolumeUp.ToString(),
-                        GeneralCommandType.Mute.ToString(),
-                        GeneralCommandType.Unmute.ToString(),
-                        GeneralCommandType.ToggleMute.ToString(),
-                        GeneralCommandType.SetVolume.ToString(),
-                        GeneralCommandType.SetAudioStreamIndex.ToString(),
-                        GeneralCommandType.SetSubtitleStreamIndex.ToString(),
-                        GeneralCommandType.PlayMediaSource.ToString()
+                        GeneralCommandType.VolumeDown,
+                        GeneralCommandType.VolumeUp,
+                        GeneralCommandType.Mute,
+                        GeneralCommandType.Unmute,
+                        GeneralCommandType.ToggleMute,
+                        GeneralCommandType.SetVolume,
+                        GeneralCommandType.SetAudioStreamIndex,
+                        GeneralCommandType.SetSubtitleStreamIndex,
+                        GeneralCommandType.PlayMediaSource
                     },
 
                     SupportsMediaControl = true

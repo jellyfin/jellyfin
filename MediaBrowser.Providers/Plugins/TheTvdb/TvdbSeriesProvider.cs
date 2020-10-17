@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -123,7 +124,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     await _tvdbClientManager
                         .GetSeriesByIdAsync(Convert.ToInt32(tvdbId), metadataLanguage, cancellationToken)
                         .ConfigureAwait(false);
-                MapSeriesToResult(result, seriesResult.Data, metadataLanguage);
+                await MapSeriesToResult(result, seriesResult.Data, metadataLanguage).ConfigureAwait(false);
             }
             catch (TvDbServerException e)
             {
@@ -297,7 +298,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             return name.Trim();
         }
 
-        private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
+        private async Task MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
         {
             Series series = result.Item;
             series.SetProviderId(MetadataProvider.Tvdb, tvdbSeries.Id.ToString());
@@ -340,20 +341,21 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             {
                 try
                 {
-                    var episodeSummary = _tvdbClientManager
-                        .GetSeriesEpisodeSummaryAsync(tvdbSeries.Id, metadataLanguage, CancellationToken.None).Result.Data;
-                    var maxSeasonNumber = episodeSummary.AiredSeasons.Select(s => Convert.ToInt32(s)).Max();
-                    var episodeQuery = new EpisodeQuery
+                    var episodeSummary = await _tvdbClientManager.GetSeriesEpisodeSummaryAsync(tvdbSeries.Id, metadataLanguage, CancellationToken.None).ConfigureAwait(false);
+
+                    if (episodeSummary.Data.AiredSeasons.Length != 0)
                     {
-                        AiredSeason = maxSeasonNumber
-                    };
-                    var episodesPage =
-                        _tvdbClientManager.GetEpisodesPageAsync(tvdbSeries.Id, episodeQuery, metadataLanguage, CancellationToken.None).Result.Data;
-                    result.Item.EndDate = episodesPage.Select(e =>
+                        var maxSeasonNumber = episodeSummary.Data.AiredSeasons.Max(s => Convert.ToInt32(s, CultureInfo.InvariantCulture));
+                        var episodeQuery = new EpisodeQuery
                         {
-                            DateTime.TryParse(e.FirstAired, out var firstAired);
-                            return firstAired;
-                        }).Max();
+                            AiredSeason = maxSeasonNumber
+                        };
+                        var episodesPage = await _tvdbClientManager.GetEpisodesPageAsync(tvdbSeries.Id, episodeQuery, metadataLanguage, CancellationToken.None).ConfigureAwait(false);
+
+                        result.Item.EndDate = episodesPage.Data
+                            .Select(e => DateTime.TryParse(e.FirstAired, out var firstAired) ? firstAired : (DateTime?)null)
+                            .Max();
+                    }
                 }
                 catch (TvDbServerException e)
                 {

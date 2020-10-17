@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -13,28 +13,23 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.TV;
-using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
     public class TmdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly TmdbClientManager _tmdbClientManager;
 
-        public TmdbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory)
+        public TmdbSeriesImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
-            _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
+            _tmdbClientManager = tmdbClientManager;
         }
 
-        public string Name => ProviderName;
-
-        public static string ProviderName => TmdbUtils.ProviderName;
+        public string Name => TmdbUtils.ProviderName;
 
         // After tvdb and fanart
         public int Order => 2;
@@ -55,107 +50,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var list = new List<RemoteImageInfo>();
-
-            var results = await FetchImages(item, null, cancellationToken).ConfigureAwait(false);
-
-            if (results == null)
-            {
-                return list;
-            }
-
-            var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-            var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
-
-            var language = item.GetPreferredMetadataLanguage();
-
-            list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
-            {
-                Url = tmdbImageUrl + i.File_Path,
-                CommunityRating = i.Vote_Average,
-                VoteCount = i.Vote_Count,
-                Width = i.Width,
-                Height = i.Height,
-                Language = TmdbMovieProvider.AdjustImageLanguage(i.Iso_639_1, language),
-                ProviderName = Name,
-                Type = ImageType.Primary,
-                RatingType = RatingType.Score
-            }));
-
-            list.AddRange(GetBackdrops(results).Select(i => new RemoteImageInfo
-            {
-                Url = tmdbImageUrl + i.File_Path,
-                CommunityRating = i.Vote_Average,
-                VoteCount = i.Vote_Count,
-                Width = i.Width,
-                Height = i.Height,
-                ProviderName = Name,
-                Type = ImageType.Backdrop,
-                RatingType = RatingType.Score
-            }));
-
-            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
-
-            return list.OrderByDescending(i =>
-            {
-                if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 3;
-                }
-
-                if (!isLanguageEn)
-                {
-                    if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 2;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(i.Language))
-                {
-                    return isLanguageEn ? 3 : 2;
-                }
-
-                return 0;
-            })
-                .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0);
-        }
-
-        /// <summary>
-        /// Gets the posters.
-        /// </summary>
-        /// <param name="images">The images.</param>
-        private IEnumerable<Poster> GetPosters(Images images)
-        {
-            return images.Posters ?? new List<Poster>();
-        }
-
-        /// <summary>
-        /// Gets the backdrops.
-        /// </summary>
-        /// <param name="images">The images.</param>
-        private IEnumerable<Backdrop> GetBackdrops(Images images)
-        {
-            var eligibleBackdrops = images.Backdrops ?? new List<Backdrop>();
-
-            return eligibleBackdrops.OrderByDescending(i => i.Vote_Average)
-                .ThenByDescending(i => i.Vote_Count);
-        }
-
-        /// <summary>
-        /// Fetches the images.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MovieImages}.</returns>
-        private async Task<Images> FetchImages(
-            BaseItem item,
-            string language,
-            CancellationToken cancellationToken)
-        {
             var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
 
             if (string.IsNullOrEmpty(tmdbId))
@@ -163,16 +57,56 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return null;
             }
 
-            await TmdbSeriesProvider.Current.EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
+            var language = item.GetPreferredMetadataLanguage();
 
-            var path = TmdbSeriesProvider.Current.GetDataFilePath(tmdbId, language);
+            var series = await _tmdbClientManager
+                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
+                .ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            if (series?.Images == null)
             {
-                return _jsonSerializer.DeserializeFromFile<SeriesResult>(path).Images;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            return null;
+            var posters = series.Images.Posters;
+            var backdrops = series.Images.Backdrops;
+
+            var remoteImages = new RemoteImageInfo[posters.Count + backdrops.Count];
+
+            for (var i = 0; i < posters.Count; i++)
+            {
+                var poster = posters[i];
+                remoteImages[i] = new RemoteImageInfo
+                {
+                    Url = _tmdbClientManager.GetPosterUrl(poster.FilePath),
+                    CommunityRating = poster.VoteAverage,
+                    VoteCount = poster.VoteCount,
+                    Width = poster.Width,
+                    Height = poster.Height,
+                    Language = TmdbUtils.AdjustImageLanguage(poster.Iso_639_1, language),
+                    ProviderName = Name,
+                    Type = ImageType.Primary,
+                    RatingType = RatingType.Score
+                };
+            }
+
+            for (var i = 0; i < backdrops.Count; i++)
+            {
+                var backdrop = series.Images.Backdrops[i];
+                remoteImages[posters.Count + i] = new RemoteImageInfo
+                {
+                    Url = _tmdbClientManager.GetBackdropUrl(backdrop.FilePath),
+                    CommunityRating = backdrop.VoteAverage,
+                    VoteCount = backdrop.VoteCount,
+                    Width = backdrop.Width,
+                    Height = backdrop.Height,
+                    ProviderName = Name,
+                    Type = ImageType.Backdrop,
+                    RatingType = RatingType.Score
+                };
+            }
+
+            return remoteImages.OrderByLanguageDescending(language);
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

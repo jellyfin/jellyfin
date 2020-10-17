@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Events.Users;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Users
 {
@@ -30,7 +31,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         {
             await _sessionManager.SendMessageToUserSessions(
                 new List<Guid> { eventArgs.Argument.Id },
-                "UserDeleted",
+                SessionMessageType.UserDeleted,
                 eventArgs.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
                 CancellationToken.None).ConfigureAwait(false);
         }
