@@ -10,7 +10,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
     internal class DisableTranscodingThrottling : IMigrationRoutine
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<DisableTranscodingThrottling> _logger;
         private readonly IConfigurationManager _configManager;
 
         public DisableTranscodingThrottling(ILogger<DisableTranscodingThrottling> logger, IConfigurationManager configManager)
@@ -24,6 +24,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "DisableTranscodingThrottling";
+
+        /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()

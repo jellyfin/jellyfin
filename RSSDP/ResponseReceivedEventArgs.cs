@@ -9,17 +9,11 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public sealed class ResponseReceivedEventArgs : EventArgs
     {
-
         public IPAddress LocalIpAddress { get; set; }
 
-        #region Fields
-
         private readonly HttpResponseMessage _Message;
+
         private readonly IPEndPoint _ReceivedFrom;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Full constructor.
@@ -29,10 +23,6 @@ namespace Rssdp.Infrastructure
             _Message = message;
             _ReceivedFrom = receivedFrom;
         }
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// The <see cref="HttpResponseMessage"/> that was received.
@@ -49,7 +39,5 @@ namespace Rssdp.Infrastructure
         {
             get { return _ReceivedFrom; }
         }
-
-        #endregion
     }
 }

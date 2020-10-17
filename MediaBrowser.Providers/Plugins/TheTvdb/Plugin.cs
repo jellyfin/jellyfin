@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS1591
+
+using System;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -14,6 +16,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         public override string Name => "TheTVDB";
 
         public override string Description => "Get metadata for movies and other video content from TheTVDB.";
+
+        // TODO remove when plugin removed from server.
+        public override string ConfigurationFileName => "Jellyfin.Plugin.TheTvdb.xml";
 
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)

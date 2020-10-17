@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security;
 using System.Text;
 using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
@@ -64,10 +65,10 @@ namespace Emby.Dlna.Server
 
             foreach (var att in attributes)
             {
-                builder.AppendFormat(" {0}=\"{1}\"", att.Name, att.Value);
+                builder.AppendFormat(CultureInfo.InvariantCulture, " {0}=\"{1}\"", att.Name, att.Value);
             }
 
-            builder.Append(">");
+            builder.Append('>');
 
             builder.Append("<specVersion>");
             builder.Append("<major>1</major>");
@@ -76,7 +77,9 @@ namespace Emby.Dlna.Server
 
             if (!EnableAbsoluteUrls)
             {
-                builder.Append("<URLBase>" + Escape(_serverAddress) + "</URLBase>");
+                builder.Append("<URLBase>")
+                    .Append(SecurityElement.Escape(_serverAddress))
+                    .Append("</URLBase>");
             }
 
             AppendDeviceInfo(builder);
@@ -93,84 +96,12 @@ namespace Emby.Dlna.Server
 
             AppendIconList(builder);
 
-            builder.Append("<presentationURL>" + Escape(_serverAddress) + "/web/index.html</presentationURL>");
+            builder.Append("<presentationURL>")
+                .Append(SecurityElement.Escape(_serverAddress))
+                .Append("/web/index.html</presentationURL>");
 
             AppendServiceList(builder);
             builder.Append("</device>");
-        }
-
-        private static readonly char[] s_escapeChars = new char[]
-        {
-            '<',
-            '>',
-            '"',
-            '\'',
-            '&'
-        };
-
-        private static readonly string[] s_escapeStringPairs = new[]
-        {
-            "<",
-            "&lt;",
-            ">",
-            "&gt;",
-            "\"",
-            "&quot;",
-            "'",
-            "&apos;",
-            "&",
-            "&amp;"
-        };
-
-        private static string GetEscapeSequence(char c)
-        {
-            int num = s_escapeStringPairs.Length;
-            for (int i = 0; i < num; i += 2)
-            {
-                string text = s_escapeStringPairs[i];
-                string result = s_escapeStringPairs[i + 1];
-                if (text[0] == c)
-                {
-                    return result;
-                }
-            }
-            return c.ToString(CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>Replaces invalid XML characters in a string with their valid XML equivalent.</summary>
-        /// <returns>The input string with invalid characters replaced.</returns>
-        /// <param name="str">The string within which to escape invalid characters. </param>
-        public static string Escape(string str)
-        {
-            if (str == null)
-            {
-                return null;
-            }
-
-            StringBuilder stringBuilder = null;
-            int length = str.Length;
-            int num = 0;
-            while (true)
-            {
-                int num2 = str.IndexOfAny(s_escapeChars, num);
-                if (num2 == -1)
-                {
-                    break;
-                }
-                if (stringBuilder == null)
-                {
-                    stringBuilder = new StringBuilder();
-                }
-                stringBuilder.Append(str, num, num2 - num);
-                stringBuilder.Append(GetEscapeSequence(str[num2]));
-                num = num2 + 1;
-            }
-            if (stringBuilder == null)
-            {
-                return str;
-            }
-            stringBuilder.Append(str, num, length - num);
-            return stringBuilder.ToString();
         }
 
         private void AppendDeviceProperties(StringBuilder builder)
@@ -182,32 +113,54 @@ namespace Emby.Dlna.Server
 
             builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
 
-            builder.Append("<friendlyName>" + Escape(GetFriendlyName()) + "</friendlyName>");
-            builder.Append("<manufacturer>" + Escape(_profile.Manufacturer ?? string.Empty) + "</manufacturer>");
-            builder.Append("<manufacturerURL>" + Escape(_profile.ManufacturerUrl ?? string.Empty) + "</manufacturerURL>");
+            builder.Append("<friendlyName>")
+                .Append(SecurityElement.Escape(GetFriendlyName()))
+                .Append("</friendlyName>");
+            builder.Append("<manufacturer>")
+                .Append(SecurityElement.Escape(_profile.Manufacturer ?? string.Empty))
+                .Append("</manufacturer>");
+            builder.Append("<manufacturerURL>")
+                .Append(SecurityElement.Escape(_profile.ManufacturerUrl ?? string.Empty))
+                .Append("</manufacturerURL>");
 
-            builder.Append("<modelDescription>" + Escape(_profile.ModelDescription ?? string.Empty) + "</modelDescription>");
-            builder.Append("<modelName>" + Escape(_profile.ModelName ?? string.Empty) + "</modelName>");
+            builder.Append("<modelDescription>")
+                .Append(SecurityElement.Escape(_profile.ModelDescription ?? string.Empty))
+                .Append("</modelDescription>");
+            builder.Append("<modelName>")
+                .Append(SecurityElement.Escape(_profile.ModelName ?? string.Empty))
+                .Append("</modelName>");
 
-            builder.Append("<modelNumber>" + Escape(_profile.ModelNumber ?? string.Empty) + "</modelNumber>");
-            builder.Append("<modelURL>" + Escape(_profile.ModelUrl ?? string.Empty) + "</modelURL>");
+            builder.Append("<modelNumber>")
+                .Append(SecurityElement.Escape(_profile.ModelNumber ?? string.Empty))
+                .Append("</modelNumber>");
+            builder.Append("<modelURL>")
+                .Append(SecurityElement.Escape(_profile.ModelUrl ?? string.Empty))
+                .Append("</modelURL>");
 
             if (string.IsNullOrEmpty(_profile.SerialNumber))
             {
-                builder.Append("<serialNumber>" + Escape(_serverId) + "</serialNumber>");
+                builder.Append("<serialNumber>")
+                    .Append(SecurityElement.Escape(_serverId))
+                    .Append("</serialNumber>");
             }
             else
             {
-                builder.Append("<serialNumber>" + Escape(_profile.SerialNumber) + "</serialNumber>");
+                builder.Append("<serialNumber>")
+                    .Append(SecurityElement.Escape(_profile.SerialNumber))
+                    .Append("</serialNumber>");
             }
 
             builder.Append("<UPC/>");
 
-            builder.Append("<UDN>uuid:" + Escape(_serverUdn) + "</UDN>");
+            builder.Append("<UDN>uuid:")
+                .Append(SecurityElement.Escape(_serverUdn))
+                .Append("</UDN>");
 
             if (!string.IsNullOrEmpty(_profile.SonyAggregationFlags))
             {
-                builder.Append("<av:aggregationFlags xmlns:av=\"urn:schemas-sony-com:av\">" + Escape(_profile.SonyAggregationFlags) + "</av:aggregationFlags>");
+                builder.Append("<av:aggregationFlags xmlns:av=\"urn:schemas-sony-com:av\">")
+                    .Append(SecurityElement.Escape(_profile.SonyAggregationFlags))
+                    .Append("</av:aggregationFlags>");
             }
         }
 
@@ -245,11 +198,21 @@ namespace Emby.Dlna.Server
             {
                 builder.Append("<icon>");
 
-                builder.Append("<mimetype>" + Escape(icon.MimeType ?? string.Empty) + "</mimetype>");
-                builder.Append("<width>" + Escape(icon.Width.ToString(_usCulture)) + "</width>");
-                builder.Append("<height>" + Escape(icon.Height.ToString(_usCulture)) + "</height>");
-                builder.Append("<depth>" + Escape(icon.Depth ?? string.Empty) + "</depth>");
-                builder.Append("<url>" + BuildUrl(icon.Url) + "</url>");
+                builder.Append("<mimetype>")
+                    .Append(SecurityElement.Escape(icon.MimeType ?? string.Empty))
+                    .Append("</mimetype>");
+                builder.Append("<width>")
+                    .Append(SecurityElement.Escape(icon.Width.ToString(_usCulture)))
+                    .Append("</width>");
+                builder.Append("<height>")
+                    .Append(SecurityElement.Escape(icon.Height.ToString(_usCulture)))
+                    .Append("</height>");
+                builder.Append("<depth>")
+                    .Append(SecurityElement.Escape(icon.Depth ?? string.Empty))
+                    .Append("</depth>");
+                builder.Append("<url>")
+                    .Append(BuildUrl(icon.Url))
+                    .Append("</url>");
 
                 builder.Append("</icon>");
             }
@@ -265,11 +228,21 @@ namespace Emby.Dlna.Server
             {
                 builder.Append("<service>");
 
-                builder.Append("<serviceType>" + Escape(service.ServiceType ?? string.Empty) + "</serviceType>");
-                builder.Append("<serviceId>" + Escape(service.ServiceId ?? string.Empty) + "</serviceId>");
-                builder.Append("<SCPDURL>" + BuildUrl(service.ScpdUrl) + "</SCPDURL>");
-                builder.Append("<controlURL>" + BuildUrl(service.ControlUrl) + "</controlURL>");
-                builder.Append("<eventSubURL>" + BuildUrl(service.EventSubUrl) + "</eventSubURL>");
+                builder.Append("<serviceType>")
+                    .Append(SecurityElement.Escape(service.ServiceType ?? string.Empty))
+                    .Append("</serviceType>");
+                builder.Append("<serviceId>")
+                    .Append(SecurityElement.Escape(service.ServiceId ?? string.Empty))
+                    .Append("</serviceId>");
+                builder.Append("<SCPDURL>")
+                    .Append(BuildUrl(service.ScpdUrl))
+                    .Append("</SCPDURL>");
+                builder.Append("<controlURL>")
+                    .Append(BuildUrl(service.ControlUrl))
+                    .Append("</controlURL>");
+                builder.Append("<eventSubURL>")
+                    .Append(BuildUrl(service.EventSubUrl))
+                    .Append("</eventSubURL>");
 
                 builder.Append("</service>");
             }
@@ -293,7 +266,7 @@ namespace Emby.Dlna.Server
                 url = _serverAddress.TrimEnd('/') + url;
             }
 
-            return Escape(url);
+            return SecurityElement.Escape(url);
         }
 
         private IEnumerable<DeviceIcon> GetIcons()

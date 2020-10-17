@@ -6,11 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -18,41 +17,57 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class ScheduledTaskWorker
+    /// Class ScheduledTaskWorker.
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
-        public event EventHandler<GenericEventArgs<double>> TaskProgress;
-
-        /// <summary>
-        /// Gets the scheduled task.
-        /// </summary>
-        /// <value>The scheduled task.</value>
-        public IScheduledTask ScheduledTask { get; private set; }
-
         /// <summary>
         /// Gets or sets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
-        private IJsonSerializer JsonSerializer { get; set; }
+        private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        private IApplicationPaths ApplicationPaths { get; set; }
+        private readonly IApplicationPaths _applicationPaths;
 
         /// <summary>
-        /// Gets the logger.
+        /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
+        private readonly ILogger _logger;
 
         /// <summary>
-        /// Gets the task manager.
+        /// Gets or sets the task manager.
         /// </summary>
         /// <value>The task manager.</value>
-        private ITaskManager TaskManager { get; set; }
+        private readonly ITaskManager _taskManager;
+
+        /// <summary>
+        /// The _last execution result sync lock.
+        /// </summary>
+        private readonly object _lastExecutionResultSyncLock = new object();
+
+        private bool _readFromFile = false;
+
+        /// <summary>
+        /// The _last execution result.
+        /// </summary>
+        private TaskResult _lastExecutionResult;
+
+        private Task _currentTask;
+
+        /// <summary>
+        /// The _triggers.
+        /// </summary>
+        private Tuple<TaskTriggerInfo, ITaskTrigger>[] _triggers;
+
+        /// <summary>
+        /// The _id.
+        /// </summary>
+        private string _id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
@@ -71,7 +86,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// or
         /// jsonSerializer
         /// or
-        /// logger
+        /// logger.
         /// </exception>
         public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
@@ -101,23 +116,22 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
 
             ScheduledTask = scheduledTask;
-            ApplicationPaths = applicationPaths;
-            TaskManager = taskManager;
-            JsonSerializer = jsonSerializer;
-            Logger = logger;
+            _applicationPaths = applicationPaths;
+            _taskManager = taskManager;
+            _jsonSerializer = jsonSerializer;
+            _logger = logger;
 
             InitTriggerEvents();
         }
 
-        private bool _readFromFile = false;
+        public event EventHandler<GenericEventArgs<double>> TaskProgress;
+
         /// <summary>
-        /// The _last execution result
+        /// Gets the scheduled task.
         /// </summary>
-        private TaskResult _lastExecutionResult;
-        /// <summary>
-        /// The _last execution result sync lock
-        /// </summary>
-        private readonly object _lastExecutionResultSyncLock = new object();
+        /// <value>The scheduled task.</value>
+        public IScheduledTask ScheduledTask { get; private set; }
+
         /// <summary>
         /// Gets the last execution result.
         /// </summary>
@@ -136,19 +150,21 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         {
                             try
                             {
-                                _lastExecutionResult = JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                                _lastExecutionResult = _jsonSerializer.DeserializeFromFile<TaskResult>(path);
                             }
                             catch (Exception ex)
                             {
-                                Logger.LogError(ex, "Error deserializing {File}", path);
+                                _logger.LogError(ex, "Error deserializing {File}", path);
                             }
                         }
+
                         _readFromFile = true;
                     }
                 }
 
                 return _lastExecutionResult;
             }
+
             private set
             {
                 _lastExecutionResult = value;
@@ -158,7 +174,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 lock (_lastExecutionResultSyncLock)
                 {
-                    JsonSerializer.SerializeToFile(value, path);
+                    _jsonSerializer.SerializeToFile(value, path);
                 }
             }
         }
@@ -182,7 +198,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public string Category => ScheduledTask.Category;
 
         /// <summary>
-        /// Gets the current cancellation token
+        /// Gets or sets the current cancellation token.
         /// </summary>
         /// <value>The current cancellation token source.</value>
         private CancellationTokenSource CurrentCancellationTokenSource { get; set; }
@@ -219,12 +235,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public double? CurrentProgress { get; private set; }
 
         /// <summary>
-        /// The _triggers.
-        /// </summary>
-        private Tuple<TaskTriggerInfo, ITaskTrigger>[] _triggers;
-
-        /// <summary>
-        /// Gets the triggers that define when the task will run.
+        /// Gets or sets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
         private Tuple<TaskTriggerInfo, ITaskTrigger>[] InternalTriggers
@@ -253,7 +264,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
-        /// <exception cref="ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException"><c>value</c> is <c>null</c>.</exception>
         public TaskTriggerInfo[] Triggers
         {
             get
@@ -261,6 +272,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 var triggers = InternalTriggers;
                 return triggers.Select(i => i.Item1).ToArray();
             }
+
             set
             {
                 if (value == null)
@@ -276,11 +288,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 InternalTriggers = triggerList.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
             }
         }
-
-        /// <summary>
-        /// The _id
-        /// </summary>
-        private string _id;
 
         /// <summary>
         /// Gets the unique id.
@@ -322,9 +329,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 trigger.Stop();
 
-                trigger.Triggered -= trigger_Triggered;
-                trigger.Triggered += trigger_Triggered;
-                trigger.Start(LastExecutionResult, Logger, Name, isApplicationStartup);
+                trigger.Triggered -= OnTriggerTriggered;
+                trigger.Triggered += OnTriggerTriggered;
+                trigger.Start(LastExecutionResult, _logger, Name, isApplicationStartup);
             }
         }
 
@@ -333,7 +340,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        async void trigger_Triggered(object sender, EventArgs e)
+        private async void OnTriggerTriggered(object sender, EventArgs e)
         {
             var trigger = (ITaskTrigger)sender;
 
@@ -344,21 +351,19 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 return;
             }
 
-            Logger.LogInformation("{0} fired for task: {1}", trigger.GetType().Name, Name);
+            _logger.LogInformation("{0} fired for task: {1}", trigger.GetType().Name, Name);
 
             trigger.Stop();
 
-            TaskManager.QueueScheduledTask(ScheduledTask, trigger.TaskOptions);
+            _taskManager.QueueScheduledTask(ScheduledTask, trigger.TaskOptions);
 
             await Task.Delay(1000).ConfigureAwait(false);
 
-            trigger.Start(LastExecutionResult, Logger, Name, false);
+            trigger.Start(LastExecutionResult, _logger, Name, false);
         }
 
-        private Task _currentTask;
-
         /// <summary>
-        /// Executes the task
+        /// Executes the task.
         /// </summary>
         /// <param name="options">Task options.</param>
         /// <returns>Task.</returns>
@@ -392,9 +397,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             CurrentCancellationTokenSource = new CancellationTokenSource();
 
-            Logger.LogInformation("Executing {0}", Name);
+            _logger.LogInformation("Executing {0}", Name);
 
-            ((TaskManager)TaskManager).OnTaskExecuting(this);
+            ((TaskManager)_taskManager).OnTaskExecuting(this);
 
             progress.ProgressChanged += OnProgressChanged;
 
@@ -420,7 +425,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error");
+                _logger.LogError(ex, "Error");
 
                 failureException = ex;
 
@@ -453,7 +458,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops the task if it is currently executing
+        /// Stops the task if it is currently executing.
         /// </summary>
         /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
         public void Cancel()
@@ -473,7 +478,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             if (State == TaskState.Running)
             {
-                Logger.LogInformation("Attempting to cancel Scheduled Task {0}", Name);
+                _logger.LogInformation("Attempting to cancel Scheduled Task {0}", Name);
                 CurrentCancellationTokenSource.Cancel();
             }
         }
@@ -484,7 +489,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <returns>System.String.</returns>
         private string GetScheduledTasksConfigurationDirectory()
         {
-            return Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
+            return Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
         }
 
         /// <summary>
@@ -493,7 +498,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <returns>System.String.</returns>
         private string GetScheduledTasksDataDirectory()
         {
-            return Path.Combine(ApplicationPaths.DataPath, "ScheduledTasks");
+            return Path.Combine(_applicationPaths.DataPath, "ScheduledTasks");
         }
 
         /// <summary>
@@ -532,7 +537,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             TaskTriggerInfo[] list = null;
             if (File.Exists(path))
             {
-                list = JsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
+                list = _jsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
             }
 
             // Return defaults if file doesn't exist.
@@ -568,7 +573,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            JsonSerializer.SerializeToFile(triggers, path);
+            _jsonSerializer.SerializeToFile(triggers, path);
         }
 
         /// <summary>
@@ -582,7 +587,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var elapsedTime = endTime - startTime;
 
-            Logger.LogInformation("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
+            _logger.LogInformation("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
 
             var result = new TaskResult
             {
@@ -603,7 +608,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             LastExecutionResult = result;
 
-            ((TaskManager)TaskManager).OnTaskCompleted(this, result);
+            ((TaskManager)_taskManager).OnTaskCompleted(this, result);
         }
 
         /// <summary>
@@ -612,6 +617,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -632,34 +638,35 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        Logger.LogInformation(Name + ": Cancelling");
+                        _logger.LogInformation(Name + ": Cancelling");
                         token.Cancel();
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error calling CancellationToken.Cancel();");
+                        _logger.LogError(ex, "Error calling CancellationToken.Cancel();");
                     }
                 }
+
                 var task = _currentTask;
                 if (task != null)
                 {
                     try
                     {
-                        Logger.LogInformation(Name + ": Waiting on Task");
+                        _logger.LogInformation(Name + ": Waiting on Task");
                         var exited = Task.WaitAll(new[] { task }, 2000);
 
                         if (exited)
                         {
-                            Logger.LogInformation(Name + ": Task exited");
+                            _logger.LogInformation(Name + ": Task exited");
                         }
                         else
                         {
-                            Logger.LogInformation(Name + ": Timed out waiting for task to stop");
+                            _logger.LogInformation(Name + ": Timed out waiting for task to stop");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error calling Task.WaitAll();");
+                        _logger.LogError(ex, "Error calling Task.WaitAll();");
                     }
                 }
 
@@ -667,14 +674,15 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        Logger.LogDebug(Name + ": Disposing CancellationToken");
+                        _logger.LogDebug(Name + ": Disposing CancellationToken");
                         token.Dispose();
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error calling CancellationToken.Dispose();");
+                        _logger.LogError(ex, "Error calling CancellationToken.Dispose();");
                     }
                 }
+
                 if (wassRunning)
                 {
                     OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
@@ -683,12 +691,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger
+        /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>BaseTaskTrigger.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type</exception>
+        /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type.</exception>
         private ITaskTrigger GetTrigger(TaskTriggerInfo info)
         {
             var options = new TaskOptions
@@ -753,14 +760,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Disposes each trigger
+        /// Disposes each trigger.
         /// </summary>
         private void DisposeTriggers()
         {
             foreach (var triggerInfo in InternalTriggers)
             {
                 var trigger = triggerInfo.Item2;
-                trigger.Triggered -= trigger_Triggered;
+                trigger.Triggered -= OnTriggerTriggered;
                 trigger.Stop();
             }
         }

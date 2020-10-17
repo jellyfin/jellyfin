@@ -117,17 +117,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 taskCompletionSource,
                 LiveStreamCancellationTokenSource.Token).ConfigureAwait(false);
 
-            //OpenedMediaSource.Protocol = MediaProtocol.File;
-            //OpenedMediaSource.Path = tempFile;
-            //OpenedMediaSource.ReadAtNativeFramerate = true;
+            // OpenedMediaSource.Protocol = MediaProtocol.File;
+            // OpenedMediaSource.Path = tempFile;
+            // OpenedMediaSource.ReadAtNativeFramerate = true;
 
             MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
-            //OpenedMediaSource.SupportsDirectPlay = false;
-            //OpenedMediaSource.SupportsDirectStream = true;
-            //OpenedMediaSource.SupportsTranscoding = true;
+            // OpenedMediaSource.SupportsDirectPlay = false;
+            // OpenedMediaSource.SupportsDirectStream = true;
+            // OpenedMediaSource.SupportsTranscoding = true;
 
-            //await Task.Delay(5000).ConfigureAwait(false);
+            // await Task.Delay(5000).ConfigureAwait(false);
             await taskCompletionSource.Task.ConfigureAwait(false);
         }
 

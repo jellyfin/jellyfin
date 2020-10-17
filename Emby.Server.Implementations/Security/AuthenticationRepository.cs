@@ -54,14 +54,14 @@ namespace Emby.Server.Implementations.Security
             {
                 if (tableNewlyCreated && TableExists(connection, "AccessTokens"))
                 {
-                    connection.RunInTransaction(db =>
+                    connection.RunInTransaction(
+                    db =>
                     {
                         var existingColumnNames = GetColumnNames(db, "AccessTokens");
 
                         AddColumn(db, "AccessTokens", "UserName", "TEXT", existingColumnNames);
                         AddColumn(db, "AccessTokens", "DateLastActivity", "DATETIME", existingColumnNames);
                         AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
-
                     }, TransactionMode);
 
                     connection.RunQueries(new[]
@@ -89,7 +89,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("insert into Tokens (AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity) values (@AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @UserName, @IsActive, @DateCreated, @DateLastActivity)"))
                     {
@@ -99,7 +100,7 @@ namespace Emby.Server.Implementations.Security
                         statement.TryBind("@AppName", info.AppName);
                         statement.TryBind("@AppVersion", info.AppVersion);
                         statement.TryBind("@DeviceName", info.DeviceName);
-                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
+                        statement.TryBind("@UserId", info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture));
                         statement.TryBind("@UserName", info.UserName);
                         statement.TryBind("@IsActive", true);
                         statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
@@ -107,7 +108,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }
@@ -121,7 +121,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("Update Tokens set AccessToken=@AccessToken, DeviceId=@DeviceId, AppName=@AppName, AppVersion=@AppVersion, DeviceName=@DeviceName, UserId=@UserId, UserName=@UserName, DateCreated=@DateCreated, DateLastActivity=@DateLastActivity where Id=@Id"))
                     {
@@ -133,7 +134,7 @@ namespace Emby.Server.Implementations.Security
                         statement.TryBind("@AppName", info.AppName);
                         statement.TryBind("@AppVersion", info.AppVersion);
                         statement.TryBind("@DeviceName", info.DeviceName);
-                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
+                        statement.TryBind("@UserId", info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture));
                         statement.TryBind("@UserName", info.UserName);
                         statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
                         statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
@@ -153,7 +154,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("Delete from Tokens where Id=@Id"))
                     {
@@ -259,8 +261,7 @@ namespace Emby.Server.Implementations.Security
                 connection.RunInTransaction(
                     db =>
                     {
-                        var statements = PrepareAll(db, statementTexts)
-                            .ToList();
+                        var statements = PrepareAll(db, statementTexts);
 
                         using (var statement = statements[0])
                         {
@@ -284,7 +285,7 @@ namespace Emby.Server.Implementations.Security
                     ReadTransactionMode);
             }
 
-            result.Items = list.ToArray();
+            result.Items = list;
             return result;
         }
 
@@ -349,7 +350,8 @@ namespace Emby.Server.Implementations.Security
         {
             using (var connection = GetConnection(true))
             {
-                return connection.RunInTransaction(db =>
+                return connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = base.PrepareStatement(db, "select CustomName from Devices where Id=@DeviceId"))
                     {
@@ -367,7 +369,6 @@ namespace Emby.Server.Implementations.Security
 
                         return result;
                     }
-
                 }, ReadTransactionMode);
             }
         }
@@ -381,7 +382,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("replace into devices (Id, CustomName, Capabilities) VALUES (@Id, @CustomName, (Select Capabilities from Devices where Id=@Id))"))
                     {
@@ -398,7 +400,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }

@@ -1,10 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class UserItemData
+    /// Class UserItemData.
     /// </summary>
     public class UserItemData
     {
@@ -21,11 +23,12 @@ namespace MediaBrowser.Controller.Entities
         public string Key { get; set; }
 
         /// <summary>
-        /// The _rating
+        /// The _rating.
         /// </summary>
         private double? _rating;
+
         /// <summary>
-        /// Gets or sets the users 0-10 rating
+        /// Gets or sets the users 0-10 rating.
         /// </summary>
         /// <value>The rating.</value>
         /// <exception cref="ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
@@ -75,11 +78,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if played; otherwise, <c>false</c>.</value>
         public bool Played { get; set; }
+
         /// <summary>
         /// Gets or sets the index of the audio stream.
         /// </summary>
         /// <value>The index of the audio stream.</value>
         public int? AudioStreamIndex { get; set; }
+
         /// <summary>
         /// Gets or sets the index of the subtitle stream.
         /// </summary>
@@ -105,6 +110,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return null;
             }
+
             set
             {
                 if (value.HasValue)

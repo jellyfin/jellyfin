@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +8,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -60,15 +61,15 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             catch (IOException)
             {
-
             }
 
             return streams;
         }
 
-        public List<string> GetExternalSubtitleFiles(Video video,
-          IDirectoryService directoryService,
-          bool clearCache)
+        public List<string> GetExternalSubtitleFiles(
+            Video video,
+            IDirectoryService directoryService,
+            bool clearCache)
         {
             var list = new List<string>();
 
@@ -87,7 +88,9 @@ namespace MediaBrowser.Providers.MediaInfo
             return list;
         }
 
-        private void AddExternalSubtitleStreams(List<MediaStream> streams, string folder,
+        private void AddExternalSubtitleStreams(
+            List<MediaStream> streams,
+            string folder,
             string videoPath,
             int startIndex,
             IDirectoryService directoryService,
@@ -98,7 +101,8 @@ namespace MediaBrowser.Providers.MediaInfo
             AddExternalSubtitleStreams(streams, videoPath, startIndex, files);
         }
 
-        public void AddExternalSubtitleStreams(List<MediaStream> streams,
+        public void AddExternalSubtitleStreams(
+            List<MediaStream> streams,
             string videoPath,
             int startIndex,
             string[] files)
@@ -185,13 +189,13 @@ namespace MediaBrowser.Providers.MediaInfo
         private string NormalizeFilenameForSubtitleComparison(string filename)
         {
             // Try to account for sloppy file naming
-            filename = filename.Replace("_", string.Empty);
-            filename = filename.Replace(" ", string.Empty);
+            filename = filename.Replace("_", string.Empty, StringComparison.Ordinal);
+            filename = filename.Replace(" ", string.Empty, StringComparison.Ordinal);
 
             // can't normalize this due to languages such as pt-br
-            //filename = filename.Replace("-", string.Empty);
+            // filename = filename.Replace("-", string.Empty);
 
-            //filename = filename.Replace(".", string.Empty);
+            // filename = filename.Replace(".", string.Empty);
 
             return filename;
         }

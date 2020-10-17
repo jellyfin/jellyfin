@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -43,7 +45,8 @@ namespace MediaBrowser.Controller.Entities
         {
             if (file.StartsWith("http", System.StringComparison.OrdinalIgnoreCase))
             {
-                item.SetImage(new ItemImageInfo
+                item.SetImage(
+                new ItemImageInfo
                 {
                     Path = file,
                     Type = imageType

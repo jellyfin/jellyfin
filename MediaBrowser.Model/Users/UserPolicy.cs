@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Configuration;
+using System.Xml.Serialization;
+using Jellyfin.Data.Enums;
+using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
 
 namespace MediaBrowser.Model.Users
 {
@@ -33,24 +35,37 @@ namespace MediaBrowser.Model.Users
         public int? MaxParentalRating { get; set; }
 
         public string[] BlockedTags { get; set; }
+
         public bool EnableUserPreferenceAccess { get; set; }
+
         public AccessSchedule[] AccessSchedules { get; set; }
+
         public UnratedItem[] BlockUnratedItems { get; set; }
+
         public bool EnableRemoteControlOfOtherUsers { get; set; }
+
         public bool EnableSharedDeviceControl { get; set; }
+
         public bool EnableRemoteAccess { get; set; }
 
         public bool EnableLiveTvManagement { get; set; }
+
         public bool EnableLiveTvAccess { get; set; }
 
         public bool EnableMediaPlayback { get; set; }
+
         public bool EnableAudioPlaybackTranscoding { get; set; }
+
         public bool EnableVideoPlaybackTranscoding { get; set; }
+
         public bool EnablePlaybackRemuxing { get; set; }
+
         public bool ForceRemoteSourceTranscoding { get; set; }
 
         public bool EnableContentDeletion { get; set; }
+
         public string[] EnableContentDeletionFromFolders { get; set; }
+
         public bool EnableContentDownloading { get; set; }
 
         /// <summary>
@@ -58,27 +73,38 @@ namespace MediaBrowser.Model.Users
         /// </summary>
         /// <value><c>true</c> if [enable synchronize]; otherwise, <c>false</c>.</value>
         public bool EnableSyncTranscoding { get; set; }
+
         public bool EnableMediaConversion { get; set; }
 
         public string[] EnabledDevices { get; set; }
+
         public bool EnableAllDevices { get; set; }
 
-        public string[] EnabledChannels { get; set; }
+        public Guid[] EnabledChannels { get; set; }
+
         public bool EnableAllChannels { get; set; }
 
-        public string[] EnabledFolders { get; set; }
+        public Guid[] EnabledFolders { get; set; }
+
         public bool EnableAllFolders { get; set; }
 
         public int InvalidLoginAttemptCount { get; set; }
+
         public int LoginAttemptsBeforeLockout { get; set; }
+
+        public int MaxActiveSessions { get; set; }
 
         public bool EnablePublicSharing { get; set; }
 
-        public string[] BlockedMediaFolders { get; set; }
-        public string[] BlockedChannels { get; set; }
+        public Guid[] BlockedMediaFolders { get; set; }
+
+        public Guid[] BlockedChannels { get; set; }
 
         public int RemoteClientBitrateLimit { get; set; }
+
+        [XmlElement(ElementName = "AuthenticationProviderId")]
         public string AuthenticationProviderId { get; set; }
+
         public string PasswordResetProviderId { get; set; }
 
         /// <summary>
@@ -120,11 +146,13 @@ namespace MediaBrowser.Model.Users
 
             LoginAttemptsBeforeLockout = -1;
 
+            MaxActiveSessions = 0;
+
             EnableAllChannels = true;
-            EnabledChannels = Array.Empty<string>();
+            EnabledChannels = Array.Empty<Guid>();
 
             EnableAllFolders = true;
-            EnabledFolders = Array.Empty<string>();
+            EnabledFolders = Array.Empty<Guid>();
 
             EnabledDevices = Array.Empty<string>();
             EnableAllDevices = true;

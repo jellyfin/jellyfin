@@ -10,6 +10,8 @@ using System.Threading;
 using System.Xml;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Service;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -17,7 +19,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -28,22 +29,28 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Dlna.ContentDirectory
 {
     public class ControlHandler : BaseControlHandler
     {
+        private const string NsDc = "http://purl.org/dc/elements/1.1/";
+        private const string NsDidl = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
+        private const string NsDlna = "urn:schemas-dlna-org:metadata-1-0/";
+        private const string NsUpnp = "urn:schemas-upnp-org:metadata-1-0/upnp/";
+
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _config;
         private readonly User _user;
         private readonly IUserViewManager _userViewManager;
         private readonly ITVSeriesManager _tvSeriesManager;
-
-        private const string NS_DC = "http://purl.org/dc/elements/1.1/";
-        private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
-        private const string NS_DLNA = "urn:schemas-dlna-org:metadata-1-0/";
-        private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
 
         private readonly int _systemUpdateId;
 
@@ -174,7 +181,11 @@ namespace Emby.Dlna.ContentDirectory
 
             userdata.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
 
-            _userDataManager.SaveUserData(_user, item, userdata, UserDataSaveReason.TogglePlayed,
+            _userDataManager.SaveUserData(
+                _user,
+                item,
+                userdata,
+                UserDataSaveReason.TogglePlayed,
                 CancellationToken.None);
         }
 
@@ -246,7 +257,7 @@ namespace Emby.Dlna.ContentDirectory
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
             var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
 
             var provided = 0;
 
@@ -279,17 +290,16 @@ namespace Emby.Dlna.ContentDirectory
 
                 using (var writer = XmlWriter.Create(builder, settings))
                 {
-                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
 
-                    writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
-                    writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
-                    writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+                    writer.WriteAttributeString("xmlns", "dc", null, NsDc);
+                    writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
+                    writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
 
                     DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
                     var serverItem = GetItemFromObjectId(id);
                     var item = serverItem.Item;
-
 
                     if (string.Equals(flag, "BrowseMetadata", StringComparison.Ordinal))
                     {
@@ -355,8 +365,8 @@ namespace Emby.Dlna.ContentDirectory
 
         private void HandleSearch(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
-            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", ""));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
+            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", string.Empty));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
             var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
 
             // sort example: dc:title, dc:date
@@ -390,11 +400,11 @@ namespace Emby.Dlna.ContentDirectory
 
                 using (var writer = XmlWriter.Create(builder, settings))
                 {
-                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
 
-                    writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
-                    writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
-                    writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+                    writer.WriteAttributeString("xmlns", "dc", null, NsDc);
+                    writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
+                    writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
 
                     DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
@@ -460,12 +470,12 @@ namespace Emby.Dlna.ContentDirectory
             }
             else if (search.SearchType == SearchType.Playlist)
             {
-                //items = items.OfType<Playlist>();
+                // items = items.OfType<Playlist>();
                 isFolder = true;
             }
             else if (search.SearchType == SearchType.MusicAlbum)
             {
-                //items = items.OfType<MusicAlbum>();
+                // items = items.OfType<MusicAlbum>();
                 isFolder = true;
             }
 
@@ -731,7 +741,7 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenres(item, user, query);
             }
 
-            var array = new ServerItem[]
+            var array = new[]
             {
                 new ServerItem(item)
                 {
@@ -776,11 +786,14 @@ namespace Emby.Dlna.ContentDirectory
                 })
                 .ToArray();
 
-            return ApplyPaging(new QueryResult<ServerItem>
-            {
-                Items = folders,
-                TotalRecordCount = folders.Length
-            }, startIndex, limit);
+            return ApplyPaging(
+                new QueryResult<ServerItem>
+                {
+                    Items = folders,
+                    TotalRecordCount = folders.Length
+                },
+                startIndex,
+                limit);
         }
 
         private QueryResult<ServerItem> GetTvFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
@@ -920,7 +933,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMovieCollections(User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            //query.Parent = parent;
+            // query.Parent = parent;
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(BoxSet).Name };
@@ -1115,7 +1128,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicPlaylists(User user, InternalItemsQuery query)
         {
             query.Parent = null;
-            query.IncludeItemTypes = new[] { typeof(Playlist).Name };
+            query.IncludeItemTypes = new[] { nameof(Playlist) };
             query.SetUser(user);
             query.Recursive = true;
 
@@ -1128,15 +1141,16 @@ namespace Emby.Dlna.ContentDirectory
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
-            {
-                UserId = user.Id,
-                Limit = 50,
-                IncludeItemTypes = new[] { typeof(Audio).Name },
-                ParentId = parent == null ? Guid.Empty : parent.Id,
-                GroupItems = true
-
-            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+            var items = _userViewManager.GetLatestItems(
+                new LatestItemsQuery
+                {
+                    UserId = user.Id,
+                    Limit = 50,
+                    IncludeItemTypes = new[] { nameof(Audio) },
+                    ParentId = parent?.Id ?? Guid.Empty,
+                    GroupItems = true
+                },
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1145,13 +1159,15 @@ namespace Emby.Dlna.ContentDirectory
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var result = _tvSeriesManager.GetNextUp(new NextUpQuery
-            {
-                Limit = query.Limit,
-                StartIndex = query.StartIndex,
-                UserId = query.User.Id
-
-            }, new[] { parent }, query.DtoOptions);
+            var result = _tvSeriesManager.GetNextUp(
+                new NextUpQuery
+                {
+                    Limit = query.Limit,
+                    StartIndex = query.StartIndex,
+                    UserId = query.User.Id
+                },
+                new[] { parent },
+                query.DtoOptions);
 
             return ToResult(result);
         }
@@ -1160,15 +1176,16 @@ namespace Emby.Dlna.ContentDirectory
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
-            {
-                UserId = user.Id,
-                Limit = 50,
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                ParentId = parent == null ? Guid.Empty : parent.Id,
-                GroupItems = false
-
-            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+            var items = _userViewManager.GetLatestItems(
+                new LatestItemsQuery
+                {
+                    UserId = user.Id,
+                    Limit = 50,
+                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    ParentId = parent == null ? Guid.Empty : parent.Id,
+                    GroupItems = false
+                },
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1177,15 +1194,16 @@ namespace Emby.Dlna.ContentDirectory
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
-            {
-                UserId = user.Id,
-                Limit = 50,
-                IncludeItemTypes = new[] { typeof(Movie).Name },
-                ParentId = parent == null ? Guid.Empty : parent.Id,
-                GroupItems = true
-
-            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+            var items = _userViewManager.GetLatestItems(
+                new LatestItemsQuery
+                {
+                    UserId = user.Id,
+                    Limit = 50,
+                    IncludeItemTypes = new[] { nameof(Movie) },
+                    ParentId = parent?.Id ?? Guid.Empty,
+                    GroupItems = true
+                },
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1217,7 +1235,11 @@ namespace Emby.Dlna.ContentDirectory
                 Recursive = true,
                 ParentId = parentId,
                 GenreIds = new[] { item.Id },
-                IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name },
+                IncludeItemTypes = new[]
+                {
+                    nameof(Movie),
+                    nameof(Series)
+                },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()
@@ -1341,48 +1363,9 @@ namespace Emby.Dlna.ContentDirectory
                 };
             }
 
-            Logger.LogError("Error parsing item Id: {id}. Returning user root folder.", id);
+            Logger.LogError("Error parsing item Id: {Id}. Returning user root folder.", id);
 
             return new ServerItem(_libraryManager.GetUserRootFolder());
         }
-    }
-
-    internal class ServerItem
-    {
-        public BaseItem Item { get; set; }
-        public StubType? StubType { get; set; }
-
-        public ServerItem(BaseItem item)
-        {
-            Item = item;
-
-            if (item is IItemByName && !(item is Folder))
-            {
-                StubType = Dlna.ContentDirectory.StubType.Folder;
-            }
-        }
-    }
-
-    public enum StubType
-    {
-        Folder = 0,
-        Latest = 2,
-        Playlists = 3,
-        Albums = 4,
-        AlbumArtists = 5,
-        Artists = 6,
-        Songs = 7,
-        Genres = 8,
-        FavoriteSongs = 9,
-        FavoriteArtists = 10,
-        FavoriteAlbums = 11,
-        ContinueWatching = 12,
-        Movies = 13,
-        Collections = 14,
-        Favorites = 15,
-        NextUp = 16,
-        Series = 17,
-        FavoriteSeries = 18,
-        FavoriteEpisodes = 19
     }
 }

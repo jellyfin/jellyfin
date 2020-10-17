@@ -1,10 +1,10 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -15,32 +15,31 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    class FFProbeAudioInfo
+    public class FFProbeAudioInfo
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
-        private readonly IApplicationPaths _appPaths;
-        private readonly IJsonSerializer _json;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        public FFProbeAudioInfo(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IApplicationPaths appPaths, IJsonSerializer json, ILibraryManager libraryManager)
+        public FFProbeAudioInfo(
+            IMediaSourceManager mediaSourceManager,
+            IMediaEncoder mediaEncoder,
+            IItemRepository itemRepo,
+            ILibraryManager libraryManager)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
-            _appPaths = appPaths;
-            _json = json;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
         }
 
-        public async Task<ItemUpdateType> Probe<T>(T item, MetadataRefreshOptions options,
+        public async Task<ItemUpdateType> Probe<T>(
+            T item,
+            MetadataRefreshOptions options,
             CancellationToken cancellationToken)
             where T : Audio
         {
@@ -55,20 +54,21 @@ namespace MediaBrowser.Providers.MediaInfo
                     protocol = _mediaSourceManager.GetPathProtocol(path);
                 }
 
-                var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                {
-                    MediaType = DlnaProfileType.Audio,
-                    MediaSource = new MediaSourceInfo
+                var result = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
                     {
-                        Path = path,
-                        Protocol = protocol
-                    }
-
-                }, cancellationToken).ConfigureAwait(false);
+                        MediaType = DlnaProfileType.Audio,
+                        MediaSource = new MediaSourceInfo
+                        {
+                            Path = path,
+                            Protocol = protocol
+                        }
+                    },
+                    cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Fetch(item, cancellationToken, result);
+                Fetch(item, result, cancellationToken);
             }
 
             return ItemUpdateType.MetadataImport;
@@ -78,10 +78,9 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Fetches the specified audio.
         /// </summary>
         /// <param name="audio">The audio.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="mediaInfo">The media information.</param>
-        /// <returns>Task.</returns>
-        protected void Fetch(Audio audio, CancellationToken cancellationToken, Model.MediaInfo.MediaInfo mediaInfo)
+        /// <param name="cancellationToken">The cancellation token.</param>
+        protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
         {
             var mediaStreams = mediaInfo.MediaStreams;
 
@@ -91,8 +90,8 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
-            //var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
-            //audio.Container = extension;
+            // var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
+            // audio.Container = extension;
 
             FetchDataFromTags(audio, mediaInfo);
 
@@ -100,7 +99,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Fetches data from the tags dictionary
+        /// Fetches data from the tags dictionary.
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>
@@ -112,7 +111,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Name = data.Name;
             }
 
-            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataFields.Cast))
+            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
 
@@ -143,7 +142,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
             }
 
-            if (!audio.LockedFields.Contains(MetadataFields.Genres))
+            if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
                 audio.Genres = Array.Empty<string>();
 
@@ -153,16 +152,16 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!audio.LockedFields.Contains(MetadataFields.Studios))
+            if (!audio.LockedFields.Contains(MetadataField.Studios))
             {
                 audio.SetStudios(data.Studios);
             }
 
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist));
-            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, data.GetProviderId(MetadataProviders.MusicBrainzArtist));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, data.GetProviderId(MetadataProviders.MusicBrainzAlbum));
-            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup));
-            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, data.GetProviderId(MetadataProviders.MusicBrainzTrack));
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist));
+            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, data.GetProviderId(MetadataProvider.MusicBrainzArtist));
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, data.GetProviderId(MetadataProvider.MusicBrainzAlbum));
+            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup));
+            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, data.GetProviderId(MetadataProvider.MusicBrainzTrack));
         }
     }
 }

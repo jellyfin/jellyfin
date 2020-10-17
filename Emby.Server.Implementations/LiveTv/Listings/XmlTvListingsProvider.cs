@@ -25,20 +25,20 @@ namespace Emby.Server.Implementations.LiveTv.Listings
     public class XmlTvListingsProvider : IListingsProvider
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<XmlTvListingsProvider> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IZipClient _zipClient;
 
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILogger<XmlTvListingsProvider> logger,
             IFileSystem fileSystem,
             IZipClient zipClient)
         {
             _config = config;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
@@ -78,28 +78,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
 
-            using (var res = await _httpClient.SendAsync(
-                new HttpRequestOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Url = path,
-                    DecompressionMethod = CompressionMethods.Gzip,
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = res.Content)
-            using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(path, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
             {
-                if (res.ContentHeaders.ContentEncoding.Contains("gzip"))
-                {
-                    using (var gzStream = new GZipStream(stream, CompressionMode.Decompress))
-                    {
-                        await gzStream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-                else
-                {
-                    await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                }
+                await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
             return UnzipIfNeeded(path, cacheFile);
@@ -224,6 +207,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     uniqueString = "-" + programInfo.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
+
                 if (programInfo.EpisodeNumber.HasValue)
                 {
                     uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);
@@ -236,7 +220,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     && !programInfo.IsRepeat
                     && (programInfo.EpisodeNumber ?? 0) == 0)
                 {
-                    programInfo.ShowId = programInfo.ShowId + programInfo.StartDate.Ticks.ToString(CultureInfo.InvariantCulture);
+                    programInfo.ShowId += programInfo.StartDate.Ticks.ToString(CultureInfo.InvariantCulture);
                 }
             }
             else
@@ -245,7 +229,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             // Construct an id from the channel and start date
-            programInfo.Id = string.Format("{0}_{1:O}", program.ChannelId, program.StartDate);
+            programInfo.Id = string.Format(CultureInfo.InvariantCulture, "{0}_{1:O}", program.ChannelId, program.StartDate);
 
             if (programInfo.IsMovie)
             {
@@ -295,7 +279,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 Name = c.DisplayName,
                 ImageUrl = c.Icon != null && !string.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
-
             }).ToList();
         }
     }

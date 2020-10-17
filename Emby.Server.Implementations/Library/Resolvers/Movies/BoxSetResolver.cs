@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (!string.IsNullOrEmpty(id))
             {
-                item.SetProviderId(MetadataProviders.Tmdb, id);
+                item.SetProviderId(MetadataProvider.Tmdb, id);
             }
         }
     }

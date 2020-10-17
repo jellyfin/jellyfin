@@ -6,7 +6,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class DateCreatedComparer
+    /// Class DateCreatedComparer.
     /// </summary>
     public class DateCreatedComparer : IBaseItemComparer
     {
@@ -19,10 +19,14 @@ namespace Emby.Server.Implementations.Sorting
         public int Compare(BaseItem x, BaseItem y)
         {
             if (x == null)
+            {
                 throw new ArgumentNullException(nameof(x));
+            }
 
             if (y == null)
+            {
                 throw new ArgumentNullException(nameof(y));
+            }
 
             return DateTime.Compare(x.DateCreated, y.DateCreated);
         }

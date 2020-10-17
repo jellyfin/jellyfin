@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -14,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Drawing
 {
@@ -28,13 +30,13 @@ namespace Emby.Drawing
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
 
-        private readonly ILogger _logger;
+        private readonly ILogger<ImageProcessor> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
         private readonly IMediaEncoder _mediaEncoder;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageProcessor"/> class.
@@ -349,6 +351,13 @@ namespace Emby.Drawing
             });
         }
 
+        /// <inheritdoc />
+        public string GetImageCacheTag(User user)
+        {
+            return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
+                .ToString("N", CultureInfo.InvariantCulture);
+        }
+
         private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
         {
             var inputFormat = Path.GetExtension(originalImagePath)
@@ -439,29 +448,29 @@ namespace Emby.Drawing
         /// or
         /// filename.
         /// </exception>
-        public string GetCachePath(string path, string filename)
+        public string GetCachePath(ReadOnlySpan<char> path, ReadOnlySpan<char> filename)
         {
-            if (string.IsNullOrEmpty(path))
+            if (path.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentException("Path can't be empty.", nameof(path));
             }
 
-            if (string.IsNullOrEmpty(filename))
+            if (filename.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(filename));
+                throw new ArgumentException("Filename can't be empty.", nameof(filename));
             }
 
-            var prefix = filename.Substring(0, 1);
+            var prefix = filename.Slice(0, 1);
 
-            return Path.Combine(path, prefix, filename);
+            return Path.Join(path, prefix, filename);
         }
 
         /// <inheritdoc />
-        public void CreateImageCollage(ImageCollageOptions options)
+        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
         {
             _logger.LogInformation("Creating image collage and saving to {Path}", options.OutputPath);
 
-            _imageEncoder.CreateImageCollage(options);
+            _imageEncoder.CreateImageCollage(options, libraryName);
 
             _logger.LogInformation("Completed creation of image collage and saved to {Path}", options.OutputPath);
         }

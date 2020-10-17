@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.IO
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
-        protected ILogger Logger;
+        protected ILogger<ManagedFileSystem> Logger;
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.IO
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                //if (!result.IsDirectory)
+                // if (!result.IsDirectory)
                 //{
                 //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
                 //}
@@ -245,6 +245,16 @@ namespace Emby.Server.Implementations.IO
                 if (info is FileInfo fileInfo)
                 {
                     result.Length = fileInfo.Length;
+
+                    // Issue #2354 get the size of files behind symbolic links
+                    if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                    {
+                        using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                        {
+                            result.Length = thisFileStream.Length;
+                        }
+                    }
+
                     result.DirectoryName = fileInfo.DirectoryName;
                 }
 
@@ -383,30 +393,6 @@ namespace Emby.Server.Implementations.IO
                 {
                     var attributes = File.GetAttributes(path);
                     attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
-                    File.SetAttributes(path, attributes);
-                }
-            }
-        }
-
-        public virtual void SetReadOnly(string path, bool isReadOnly)
-        {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
-            {
-                return;
-            }
-
-            var info = GetExtendedFileSystemInfo(path);
-
-            if (info.Exists && info.IsReadOnly != isReadOnly)
-            {
-                if (isReadOnly)
-                {
-                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.ReadOnly);
-                }
-                else
-                {
-                    var attributes = File.GetAttributes(path);
-                    attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
                     File.SetAttributes(path, attributes);
                 }
             }
@@ -628,6 +614,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         return false;
                     }
+
                     return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }
@@ -682,6 +669,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         return false;
                     }
+
                     return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }
@@ -693,14 +681,6 @@ namespace Emby.Server.Implementations.IO
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             return Directory.EnumerateFileSystemEntries(path, "*", searchOption);
-        }
-
-        public virtual void SetExecutable(string path)
-        {
-            if (OperatingSystem.Id == OperatingSystemId.Darwin)
-            {
-                RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
-            }
         }
 
         private static void RunProcess(string path, string args, string workingDirectory)

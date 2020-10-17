@@ -11,13 +11,14 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
 {
     public sealed class WebSocketController : ISessionController, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<WebSocketController> _logger;
         private readonly ISessionManager _sessionManager;
         private readonly SessionInfo _session;
 
@@ -65,7 +66,7 @@ namespace Emby.Server.Implementations.Session
 
         /// <inheritdoc />
         public Task SendMessage<T>(
-            string name,
+            SessionMessageType name,
             Guid messageId,
             T data,
             CancellationToken cancellationToken)

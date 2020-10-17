@@ -12,6 +12,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class StartupTrigger : ITaskTrigger
     {
+        /// <summary>
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
         public int DelayMs { get; set; }
 
         /// <summary>
@@ -25,7 +30,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stars waiting for the trigger action
+        /// Stars waiting for the trigger action.
         /// </summary>
         /// <param name="lastResult">The last result.</param>
         /// <param name="logger">The logger.</param>
@@ -42,26 +47,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops waiting for the trigger action
+        /// Stops waiting for the trigger action.
         /// </summary>
         public void Stop()
         {
         }
 
         /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
-        public event EventHandler<EventArgs> Triggered;
-
-        /// <summary>
         /// Called when [triggered].
         /// </summary>
         private void OnTriggered()
         {
-            if (Triggered != null)
-            {
-                Triggered(this, EventArgs.Empty);
-            }
+            Triggered?.Invoke(this, EventArgs.Empty);
         }
     }
 }

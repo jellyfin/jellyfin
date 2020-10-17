@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Configuration;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library
@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             // load forced subs if we have found no suitable full subtitles
-            stream = stream ?? streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
+            stream ??= streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
 
             if (stream != null)
             {

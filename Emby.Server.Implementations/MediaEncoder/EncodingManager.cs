@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.MediaEncoder
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<EncodingManager> _logger;
         private readonly IMediaEncoder _encoder;
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;

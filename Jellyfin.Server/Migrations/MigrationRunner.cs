@@ -19,7 +19,11 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.DisableTranscodingThrottling),
             typeof(Routines.CreateUserLoggingConfigFile),
             typeof(Routines.MigrateActivityLogDb),
-            typeof(Routines.RemoveDuplicateExtras)
+            typeof(Routines.RemoveDuplicateExtras),
+            typeof(Routines.AddDefaultPluginRepository),
+            typeof(Routines.MigrateUserDb),
+            typeof(Routines.ReaddDefaultPluginRepository),
+            typeof(Routines.MigrateDisplayPreferencesDb)
         };
 
         /// <summary>
@@ -41,9 +45,8 @@ namespace Jellyfin.Server.Migrations
                 // If startup wizard is not finished, this is a fresh install.
                 // Don't run any migrations, just mark all of them as applied.
                 logger.LogInformation("Marking all known migrations as applied because this is a fresh install");
-                migrationOptions.Applied.AddRange(migrations.Select(m => (m.Id, m.Name)));
+                migrationOptions.Applied.AddRange(migrations.Where(m => !m.PerformOnNewInstall).Select(m => (m.Id, m.Name)));
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
-                return;
             }
 
             var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();

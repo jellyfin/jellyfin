@@ -1,8 +1,10 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -49,11 +51,13 @@ namespace MediaBrowser.Controller.Entities
             return SeriesId;
         }
 
+        /// <inheritdoc />
         public override bool CanDownload()
         {
             return IsFileProtocol;
         }
 
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Book;

@@ -1,3 +1,4 @@
+#nullable enable
 #pragma warning disable CS1591
 
 using System;
@@ -16,21 +17,11 @@ namespace Emby.Naming.AudioBook
             _options = options;
         }
 
-        public AudioBookFileInfo ParseFile(string path)
+        public AudioBookFileInfo? Resolve(string path, bool isDirectory = false)
         {
-            return Resolve(path, false);
-        }
-
-        public AudioBookFileInfo ParseDirectory(string path)
-        {
-            return Resolve(path, true);
-        }
-
-        public AudioBookFileInfo Resolve(string path, bool isDirectory = false)
-        {
-            if (string.IsNullOrEmpty(path))
+            if (path.Length == 0)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentException("String can't be empty.", nameof(path));
             }
 
             // TODO
@@ -55,8 +46,8 @@ namespace Emby.Naming.AudioBook
             {
                 Path = path,
                 Container = container,
-                PartNumber = parsingResult.PartNumber,
                 ChapterNumber = parsingResult.ChapterNumber,
+                PartNumber = parsingResult.PartNumber,
                 IsDirectory = isDirectory
             };
         }

@@ -1,11 +1,18 @@
+#pragma warning disable CS1591
+
 using System.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
-    class BdInfoFileInfo : BDInfo.IO.IFileInfo
+    public class BdInfoFileInfo : BDInfo.IO.IFileInfo
     {
-        FileSystemMetadata _impl = null;
+        private FileSystemMetadata _impl = null;
+
+        public BdInfoFileInfo(FileSystemMetadata impl)
+        {
+            _impl = impl;
+        }
 
         public string Name => _impl.Name;
 
@@ -17,14 +24,10 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
         public bool IsDir => _impl.IsDirectory;
 
-        public BdInfoFileInfo(FileSystemMetadata impl)
-        {
-            _impl = impl;
-        }
-
         public System.IO.Stream OpenRead()
         {
-            return new FileStream(FullName,
+            return new FileStream(
+                FullName,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.Read);

@@ -32,18 +32,29 @@ namespace MediaBrowser.Model.MediaInfo
         }
 
         public string OpenToken { get; set; }
+
         public Guid UserId { get; set; }
+
         public string PlaySessionId { get; set; }
+
         public long? MaxStreamingBitrate { get; set; }
+
         public long? StartTimeTicks { get; set; }
+
         public int? AudioStreamIndex { get; set; }
+
         public int? SubtitleStreamIndex { get; set; }
+
         public int? MaxAudioChannels { get; set; }
+
         public Guid ItemId { get; set; }
+
         public DeviceProfile DeviceProfile { get; set; }
 
         public bool EnableDirectPlay { get; set; }
+
         public bool EnableDirectStream { get; set; }
+
         public MediaProtocol[] DirectPlayProtocols { get; set; }
     }
 }

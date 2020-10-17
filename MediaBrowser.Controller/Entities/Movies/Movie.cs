@@ -1,11 +1,14 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
@@ -13,12 +16,10 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
-    /// Class Movie
+    /// Class Movie.
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
-        public Guid[] SpecialFeatureIds { get; set; }
-
         public Movie()
         {
             SpecialFeatureIds = Array.Empty<Guid>();
@@ -26,6 +27,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             LocalTrailerIds = Array.Empty<Guid>();
             RemoteTrailerIds = Array.Empty<Guid>();
         }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> SpecialFeatureIds { get; set; }
 
         /// <inheritdoc />
         public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
@@ -45,6 +49,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             get => TmdbCollectionName;
             set => TmdbCollectionName = value;
         }
+
+        [JsonIgnore]
+        public override bool StopRefreshIfLocalMetadataFound => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -105,6 +112,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return itemsChanged;
         }
 
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Movie;
@@ -133,6 +141,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return info;
         }
 
+        /// <inheritdoc />
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {
             var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
@@ -169,24 +178,22 @@ namespace MediaBrowser.Controller.Entities.Movies
             return hasChanges;
         }
 
+        /// <inheritdoc />
         public override List<ExternalUrl> GetRelatedUrls()
         {
             var list = base.GetRelatedUrls();
 
-            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(imdbId))
             {
                 list.Add(new ExternalUrl
                 {
                     Name = "Trakt",
-                    Url = string.Format("https://trakt.tv/movies/{0}", imdbId)
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/movies/{0}", imdbId)
                 });
             }
 
             return list;
         }
-
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

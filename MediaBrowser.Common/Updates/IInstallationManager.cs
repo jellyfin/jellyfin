@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Common.Updates
@@ -41,6 +40,14 @@ namespace MediaBrowser.Common.Updates
         IEnumerable<InstallationInfo> CompletedInstallations { get; }
 
         /// <summary>
+        /// Parses a plugin manifest at the supplied URL.
+        /// </summary>
+        /// <param name="manifest">The URL to query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets all available packages.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -66,12 +73,14 @@ namespace MediaBrowser.Common.Updates
         /// <param name="name">The name.</param>
         /// <param name="guid">The guid of the plugin.</param>
         /// <param name="minVersion">The minimum required version of the plugin.</param>
+        /// <param name="specificVersion">The specific version of the plugin to install.</param>
         /// <returns>All compatible versions ordered from newest to oldest.</returns>
         IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null);
+            Version minVersion = null,
+            Version specificVersion = null);
 
         /// <summary>
         /// Returns the available plugin updates.

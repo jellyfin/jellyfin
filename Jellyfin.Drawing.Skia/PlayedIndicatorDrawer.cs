@@ -22,31 +22,27 @@ namespace Jellyfin.Drawing.Skia
         {
             var x = imageSize.Width - OffsetFromTopRightCorner;
 
-            using (var paint = new SKPaint())
+            using var paint = new SKPaint
             {
-                paint.Color = SKColor.Parse("#CC00A4DC");
-                paint.Style = SKPaintStyle.Fill;
-                canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
-            }
+                Color = SKColor.Parse("#CC00A4DC"),
+                Style = SKPaintStyle.Fill
+            };
 
-            using (var paint = new SKPaint())
-            {
-                paint.Color = new SKColor(255, 255, 255, 255);
-                paint.Style = SKPaintStyle.Fill;
+            canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
 
-                paint.TextSize = 30;
-                paint.IsAntialias = true;
+            paint.Color = new SKColor(255, 255, 255, 255);
+            paint.TextSize = 30;
+            paint.IsAntialias = true;
 
-                // or:
-                // var emojiChar = 0x1F680;
-                const string Text = "✔️";
-                var emojiChar = StringUtilities.GetUnicodeCharacterCode(Text, SKTextEncoding.Utf32);
+            // or:
+            // var emojiChar = 0x1F680;
+            const string Text = "✔️";
+            var emojiChar = StringUtilities.GetUnicodeCharacterCode(Text, SKTextEncoding.Utf32);
 
-                // ask the font manager for a font with that character
-                paint.Typeface = SKFontManager.Default.MatchCharacter(emojiChar);
+            // ask the font manager for a font with that character
+            paint.Typeface = SKFontManager.Default.MatchCharacter(emojiChar);
 
-                canvas.DrawText(Text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
-            }
+            canvas.DrawText(Text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
         }
     }
 }

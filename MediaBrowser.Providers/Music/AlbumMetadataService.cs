@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +47,7 @@ namespace MediaBrowser.Providers.Music
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
-                if (!item.LockedFields.Contains(MetadataFields.Name))
+                if (!item.LockedFields.Contains(MetadataField.Name))
                 {
                     var name = children.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
@@ -108,7 +110,7 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(
             MetadataResult<MusicAlbum> source,
             MetadataResult<MusicAlbum> target,
-            MetadataFields[] lockedFields,
+            MetadataField[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
         {

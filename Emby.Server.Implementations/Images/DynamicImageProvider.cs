@@ -78,7 +78,6 @@ namespace Emby.Server.Implementations.Images
                 }
 
                 return i;
-
             }).GroupBy(x => x.Id)
             .Select(x => x.First());
 

@@ -1,6 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -18,13 +21,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<TvdbSeasonImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger<TvdbSeasonImageProvider> logger, TvdbClientManager tvdbClientManager)
+        public TvdbSeasonImageProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbSeasonImageProvider> logger, TvdbClientManager tvdbClientManager)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _tvdbClientManager = tvdbClientManager;
         }
@@ -58,13 +61,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 return Array.Empty<RemoteImageInfo>();
             }
 
-            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb));
+            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProvider.Tvdb));
             var seasonNumber = season.IndexNumber.Value;
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
 
-            var keyTypes = new[] { KeyType.Season, KeyType.Seasonwide, KeyType.Fanart };
-            foreach (var keyType in keyTypes)
+            var keyTypes = _tvdbClientManager.GetImageKeyTypesForSeasonAsync(tvdbId, language, cancellationToken).ConfigureAwait(false);
+            await foreach (var keyType in keyTypes)
             {
                 var imageQuery = new ImagesQuery
                 {
@@ -144,13 +147,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public int Order => 0;
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

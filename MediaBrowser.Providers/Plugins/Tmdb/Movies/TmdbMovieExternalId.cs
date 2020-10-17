@@ -1,18 +1,24 @@
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
+    /// <summary>
+    /// External ID for a TMBD movie.
+    /// </summary>
     public class TmdbMovieExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => TmdbUtils.ProviderName;
+        public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Tmdb.ToString();
+        public string Key => MetadataProvider.Tmdb.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Movie;
 
         /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "movie/{0}";
@@ -26,7 +32,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 return true;
             }
 
-            return item is Movie || item is MusicVideo || item is Trailer;
+            return item is Movie;
         }
     }
 }

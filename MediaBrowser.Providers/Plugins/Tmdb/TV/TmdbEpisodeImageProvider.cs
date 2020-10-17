@@ -1,32 +1,37 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
-using MediaBrowser.Providers.Plugins.Tmdb.Movies;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
-    public class TmdbEpisodeImageProvider :
-            TmdbEpisodeProviderBase,
-            IRemoteImageProvider,
-            IHasOrder
+    public class TmdbEpisodeImageProvider : IRemoteImageProvider, IHasOrder
     {
-        public TmdbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
-            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
-        { }
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly TmdbClientManager _tmdbClientManager;
+
+        public TmdbEpisodeImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
+        {
+            _httpClientFactory = httpClientFactory;
+            _tmdbClientManager = tmdbClientManager;
+        }
+
+        // After TheTvDb
+        public int Order => 1;
+
+        public string Name => TmdbUtils.ProviderName;
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
@@ -41,13 +46,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var episode = (Controller.Entities.TV.Episode)item;
             var series = episode.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tmdb) : null;
+            var seriesTmdbId = Convert.ToInt32(series?.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
 
-            var list = new List<RemoteImageInfo>();
-
-            if (string.IsNullOrEmpty(seriesId))
+            if (seriesTmdbId <= 0)
             {
-                return list;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var seasonNumber = episode.ParentIndexNumber;
@@ -55,77 +58,50 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (!seasonNumber.HasValue || !episodeNumber.HasValue)
             {
-                return list;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var language = item.GetPreferredMetadataLanguage();
 
-            var response = await GetEpisodeInfo(seriesId, seasonNumber.Value, episodeNumber.Value,
-                        language, cancellationToken).ConfigureAwait(false);
+            var episodeResult = await _tmdbClientManager
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
+                .ConfigureAwait(false);
 
-            var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-            var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
-
-            list.AddRange(GetPosters(response.Images).Select(i => new RemoteImageInfo
+            var stills = episodeResult?.Images?.Stills;
+            if (stills == null)
             {
-                Url = tmdbImageUrl + i.File_Path,
-                CommunityRating = i.Vote_Average,
-                VoteCount = i.Vote_Count,
-                Width = i.Width,
-                Height = i.Height,
-                Language = TmdbMovieProvider.AdjustImageLanguage(i.Iso_639_1, language),
-                ProviderName = Name,
-                Type = ImageType.Primary,
-                RatingType = RatingType.Score
-            }));
+                return Enumerable.Empty<RemoteImageInfo>();
+            }
 
-            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
-
-            return list.OrderByDescending(i =>
+            var remoteImages = new RemoteImageInfo[stills.Count];
+            for (var i = 0; i < stills.Count; i++)
             {
-                if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                var image = stills[i];
+                remoteImages[i] = new RemoteImageInfo
                 {
-                    return 3;
-                }
+                    Url = _tmdbClientManager.GetStillUrl(image.FilePath),
+                    CommunityRating = image.VoteAverage,
+                    VoteCount = image.VoteCount,
+                    Width = image.Width,
+                    Height = image.Height,
+                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
+                    ProviderName = Name,
+                    Type = ImageType.Primary,
+                    RatingType = RatingType.Score
+                };
+            }
 
-                if (!isLanguageEn)
-                {
-                    if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 2;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(i.Language))
-                {
-                    return isLanguageEn ? 3 : 2;
-                }
-
-                return 0;
-            })
-                .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0);
+            return remoteImages.OrderByLanguageDescending(language);
         }
 
-        private IEnumerable<Still> GetPosters(StillImages images)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return images.Stills ?? new List<Still>();
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
-
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            return GetResponse(url, cancellationToken);
-        }
-
-        public string Name => TmdbUtils.ProviderName;
 
         public bool Supports(BaseItem item)
         {
             return item is Controller.Entities.TV.Episode;
         }
-
-        // After TheTvDb
-        public int Order => 1;
     }
 }

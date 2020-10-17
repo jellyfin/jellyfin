@@ -15,12 +15,12 @@ namespace MediaBrowser.XbmcMetadata.Providers
     public abstract class BaseVideoNfoProvider<T> : BaseNfoProvider<T>
         where T : Video, new()
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<BaseVideoNfoProvider<T>> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 
         public BaseVideoNfoProvider(
-            ILogger logger,
+            ILogger<BaseVideoNfoProvider<T>> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
             IProviderManager providerManager)

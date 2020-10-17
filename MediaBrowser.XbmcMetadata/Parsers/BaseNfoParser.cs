@@ -212,7 +212,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             var m = Regex.Match(xml, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
             if (m.Success)
             {
-                item.SetProviderId(MetadataProviders.Imdb, m.Value);
+                item.SetProviderId(MetadataProvider.Imdb, m.Value);
             }
 
             // Support Tmdb
@@ -222,10 +222,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             if (index != -1)
             {
-                var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/').Split('-')[0];
-                if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                var tmdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
+                index = tmdbId.IndexOf('-');
+                if (index != -1)
                 {
-                    item.SetProviderId(MetadataProviders.Tmdb, value.ToString(UsCulture));
+                    tmdbId = tmdbId.Slice(0, index);
+                }
+
+                if (!tmdbId.IsEmpty
+                    && !tmdbId.IsWhiteSpace()
+                    && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                {
+                    item.SetProviderId(MetadataProvider.Tmdb, value.ToString(UsCulture));
                 }
             }
 
@@ -237,10 +245,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 if (index != -1)
                 {
-                    var tvdbId = xml.Substring(index + srch.Length).TrimEnd('/');
-                    if (!string.IsNullOrWhiteSpace(tvdbId) && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                    var tvdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
+                    if (!tvdbId.IsEmpty
+                        && !tvdbId.IsWhiteSpace()
+                        && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                     {
-                        item.SetProviderId(MetadataProviders.Tvdb, value.ToString(UsCulture));
+                        item.SetProviderId(MetadataProvider.Tvdb, value.ToString(UsCulture));
                     }
                 }
             }
@@ -360,9 +370,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             item.LockedFields = val.Split('|').Select(i =>
                             {
-                                if (Enum.TryParse(i, true, out MetadataFields field))
+                                if (Enum.TryParse(i, true, out MetadataField field))
                                 {
-                                    return (MetadataFields?)field;
+                                    return (MetadataField?)field;
                                 }
 
                                 return null;
@@ -442,8 +452,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasAspectRatio = item as IHasAspectRatio;
-                        if (!string.IsNullOrWhiteSpace(val) && hasAspectRatio != null)
+                        if (!string.IsNullOrWhiteSpace(val)
+                            && item is IHasAspectRatio hasAspectRatio)
                         {
                             hasAspectRatio.AspectRatio = val;
                         }

@@ -9,12 +9,16 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
     /// <summary>
-    /// Class BdInfoExaminer
+    /// Class BdInfoExaminer.
     /// </summary>
     public class BdInfoExaminer : IBlurayExaminer
     {
         private readonly IFileSystem _fileSystem;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BdInfoExaminer" /> class.
+        /// </summary>
+        /// <param name="fileSystem">The filesystem.</param>
         public BdInfoExaminer(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
@@ -41,7 +45,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             var outputStream = new BlurayDiscInfo
             {
-                MediaStreams = new MediaStream[] { }
+                MediaStreams = Array.Empty<MediaStream>()
             };
 
             if (playlist == null)

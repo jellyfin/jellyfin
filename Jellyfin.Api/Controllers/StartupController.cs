@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -5,6 +6,7 @@ using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -30,97 +32,114 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Api endpoint for completing the startup wizard.
+        /// Completes the startup wizard.
         /// </summary>
+        /// <response code="204">Startup wizard completed.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Complete")]
-        public void CompleteWizard()
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult CompleteWizard()
         {
             _config.Configuration.IsStartupWizardCompleted = true;
-            _config.SetOptimalValues();
             _config.SaveConfiguration();
+            return NoContent();
         }
 
         /// <summary>
-        /// Endpoint for getting the initial startup wizard configuration.
+        /// Gets the initial startup wizard configuration.
         /// </summary>
-        /// <returns>The initial startup wizard configuration.</returns>
+        /// <response code="200">Initial startup wizard configuration retrieved.</response>
+        /// <returns>An <see cref="OkResult"/> containing the initial startup wizard configuration.</returns>
         [HttpGet("Configuration")]
-        public StartupConfigurationDto GetStartupConfiguration()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<StartupConfigurationDto> GetStartupConfiguration()
         {
-            var result = new StartupConfigurationDto
+            return new StartupConfigurationDto
             {
                 UICulture = _config.Configuration.UICulture,
                 MetadataCountryCode = _config.Configuration.MetadataCountryCode,
                 PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
             };
-
-            return result;
         }
 
         /// <summary>
-        /// Endpoint for updating the initial startup wizard configuration.
+        /// Sets the initial startup wizard configuration.
         /// </summary>
-        /// <param name="uiCulture">The UI language culture.</param>
-        /// <param name="metadataCountryCode">The metadata country code.</param>
-        /// <param name="preferredMetadataLanguage">The preferred language for metadata.</param>
+        /// <param name="startupConfiguration">The updated startup configuration.</param>
+        /// <response code="204">Configuration saved.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Configuration")]
-        public void UpdateInitialConfiguration(
-            [FromForm] string uiCulture,
-            [FromForm] string metadataCountryCode,
-            [FromForm] string preferredMetadataLanguage)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
         {
-            _config.Configuration.UICulture = uiCulture;
-            _config.Configuration.MetadataCountryCode = metadataCountryCode;
-            _config.Configuration.PreferredMetadataLanguage = preferredMetadataLanguage;
+            _config.Configuration.UICulture = startupConfiguration.UICulture;
+            _config.Configuration.MetadataCountryCode = startupConfiguration.MetadataCountryCode;
+            _config.Configuration.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage;
             _config.SaveConfiguration();
+            return NoContent();
         }
 
         /// <summary>
-        /// Endpoint for (dis)allowing remote access and UPnP.
+        /// Sets remote access and UPnP.
         /// </summary>
-        /// <param name="enableRemoteAccess">Enable remote access.</param>
-        /// <param name="enableAutomaticPortMapping">Enable UPnP.</param>
+        /// <param name="startupRemoteAccessDto">The startup remote access dto.</param>
+        /// <response code="204">Configuration saved.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("RemoteAccess")]
-        public void SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SetRemoteAccess([FromBody, Required] StartupRemoteAccessDto startupRemoteAccessDto)
         {
-            _config.Configuration.EnableRemoteAccess = enableRemoteAccess;
-            _config.Configuration.EnableUPnP = enableAutomaticPortMapping;
+            _config.Configuration.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
+            _config.Configuration.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
             _config.SaveConfiguration();
+            return NoContent();
         }
 
         /// <summary>
-        /// Endpoint for returning the first user.
+        /// Gets the first user.
         /// </summary>
+        /// <response code="200">Initial user retrieved.</response>
         /// <returns>The first user.</returns>
         [HttpGet("User")]
-        public StartupUserDto GetFirstUser()
+        [HttpGet("FirstUser", Name = "GetFirstUser_2")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<StartupUserDto> GetFirstUser()
         {
+            // TODO: Remove this method when startup wizard no longer requires an existing user.
+            await _userManager.InitializeAsync().ConfigureAwait(false);
             var user = _userManager.Users.First();
             return new StartupUserDto
             {
-                Name = user.Name,
+                Name = user.Username,
                 Password = user.Password
             };
         }
 
         /// <summary>
-        /// Endpoint for updating the user name and password.
+        /// Sets the user name and password.
         /// </summary>
         /// <param name="startupUserDto">The DTO containing username and password.</param>
-        /// <returns>The async task.</returns>
+        /// <response code="204">Updated user name and password.</response>
+        /// <returns>
+        /// A <see cref="Task" /> that represents the asynchronous update operation.
+        /// The task result contains a <see cref="NoContentResult"/> indicating success.
+        /// </returns>
         [HttpPost("User")]
-        public async Task UpdateUser([FromForm] StartupUserDto startupUserDto)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> UpdateStartupUser([FromBody] StartupUserDto startupUserDto)
         {
             var user = _userManager.Users.First();
 
-            user.Name = startupUserDto.Name;
+            user.Username = startupUserDto.Name;
 
-            _userManager.UpdateUser(user);
+            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(startupUserDto.Password))
             {
                 await _userManager.ChangePassword(user, startupUserDto.Password).ConfigureAwait(false);
             }
+
+            return NoContent();
         }
     }
 }

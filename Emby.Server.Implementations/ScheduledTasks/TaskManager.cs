@@ -5,9 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class TaskManager
+    /// Class TaskManager.
     /// </summary>
     public class TaskManager : ITaskManager
     {
@@ -23,21 +22,20 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 
         /// <summary>
-        /// Gets the list of Scheduled Tasks
+        /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
         public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
 
         /// <summary>
-        /// The _task queue
+        /// The _task queue.
         /// </summary>
         private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
             new ConcurrentQueue<Tuple<Type, TaskOptions>>();
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationPaths _applicationPaths;
-        private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
+        private readonly ILogger<TaskManager> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
@@ -45,17 +43,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="fileSystem">The filesystem manager.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
             IJsonSerializer jsonSerializer,
-            ILogger<TaskManager> logger,
-            IFileSystem fileSystem)
+            ILogger<TaskManager> logger)
         {
             _applicationPaths = applicationPaths;
             _jsonSerializer = jsonSerializer;
             _logger = logger;
-            _fileSystem = fileSystem;
 
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
         }
@@ -81,7 +76,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Cancels if running
+        /// Cancels if running.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         public void CancelIfRunning<T>()
@@ -95,7 +90,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Queues the scheduled task.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="options">Task options</param>
+        /// <param name="options">Task options.</param>
         public void QueueScheduledTask<T>(TaskOptions options)
             where T : IScheduledTask
         {
@@ -212,6 +207,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

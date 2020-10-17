@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -17,6 +19,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -125,12 +129,12 @@ namespace Emby.Server.Implementations.Library
 
             if (!query.IncludeHidden)
             {
-                list = list.Where(i => !user.Configuration.MyMediaExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture))).ToList();
+                list = list.Where(i => !user.GetPreference(PreferenceKind.MyMediaExcludes).Contains(i.Id.ToString("N", CultureInfo.InvariantCulture))).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
 
-            var orders = user.Configuration.OrderedViews.ToList();
+            var orders = user.GetPreference(PreferenceKind.OrderedViews).ToList();
 
             return list
                 .OrderBy(i =>
@@ -165,7 +169,13 @@ namespace Emby.Server.Implementations.Library
             return GetUserSubViewWithName(name, parentId, type, sortName);
         }
 
-        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string localizationKey, string sortName, User user, string[] presetViews)
+        private Folder GetUserView(
+            List<ICollectionFolder> parents,
+            string viewType,
+            string localizationKey,
+            string sortName,
+            Jellyfin.Data.Entities.User user,
+            string[] presetViews)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -270,7 +280,8 @@ namespace Emby.Server.Implementations.Library
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
+                    .Where(i => !user.GetPreference(PreferenceKind.LatestItemExcludes)
+                        .Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
                     .ToList();
             }
 
@@ -331,12 +342,11 @@ namespace Emby.Server.Implementations.Library
 
             var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0 ? new[]
             {
-                typeof(Person).Name,
-                typeof(Studio).Name,
-                typeof(Year).Name,
-                typeof(MusicGenre).Name,
-                typeof(Genre).Name
-
+                nameof(Person),
+                nameof(Studio),
+                nameof(Year),
+                nameof(MusicGenre),
+                nameof(Genre)
             } : Array.Empty<string>();
 
             var query = new InternalItemsQuery(user)

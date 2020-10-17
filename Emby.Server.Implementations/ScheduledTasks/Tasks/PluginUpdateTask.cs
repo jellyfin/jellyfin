@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// The _logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<PluginUpdateTask> _logger;
 
         private readonly IInstallationManager _installationManager;
         private readonly ILocalizationManager _localization;
@@ -33,6 +33,27 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _installationManager = installationManager;
             _localization = localization;
         }
+
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskUpdatePlugins");
+
+        /// <inheritdoc />
+        public string Description => _localization.GetLocalizedString("TaskUpdatePluginsDescription");
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksApplicationCategory");
+
+        /// <inheritdoc />
+        public string Key => "PluginUpdates";
+
+        /// <inheritdoc />
+        public bool IsHidden => false;
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
+
+        /// <inheritdoc />
+        public bool IsLogged => true;
 
         /// <summary>
         /// Creates the triggers that define when the task will run.
@@ -98,26 +119,5 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             progress.Report(100);
         }
-
-        /// <inheritdoc />
-        public string Name => _localization.GetLocalizedString("TaskUpdatePlugins");
-
-        /// <inheritdoc />
-        public string Description => _localization.GetLocalizedString("TaskUpdatePluginsDescription");
-
-        /// <inheritdoc />
-        public string Category => _localization.GetLocalizedString("TasksApplicationCategory");
-
-        /// <inheritdoc />
-        public string Key => "PluginUpdates";
-
-        /// <inheritdoc />
-        public bool IsHidden => false;
-
-        /// <inheritdoc />
-        public bool IsEnabled => true;
-
-        /// <inheritdoc />
-        public bool IsLogged => true;
     }
 }

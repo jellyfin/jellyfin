@@ -6,27 +6,27 @@ namespace MediaBrowser.Model.Net
     public class NetworkShare
     {
         /// <summary>
-        /// The name of the computer that this share belongs to
+        /// The name of the computer that this share belongs to.
         /// </summary>
         public string Server { get; set; }
 
         /// <summary>
-        /// Share name
+        /// Share name.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Local path
+        /// Local path.
         /// </summary>
         public string Path { get; set; }
 
         /// <summary>
-        /// Share type
+        /// Share type.
         /// </summary>
         public NetworkShareType ShareType { get; set; }
 
         /// <summary>
-        /// Comment
+        /// Comment.
         /// </summary>
         public string Remark { get; set; }
     }

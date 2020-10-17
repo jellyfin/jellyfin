@@ -58,12 +58,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         protected virtual int EmptyReadLimit => 1000;
 
         public MediaSourceInfo OriginalMediaSource { get; set; }
+
         public MediaSourceInfo MediaSource { get; set; }
 
         public int ConsumerCount { get; set; }
 
         public string OriginalStreamId { get; set; }
+
         public bool EnableStreamSharing { get; set; }
+
         public string UniqueId { get; }
 
         public string TunerHostId { get; }
@@ -220,11 +223,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             catch (IOException)
             {
-
             }
             catch (ArgumentException)
             {
-
             }
             catch (Exception ex)
             {

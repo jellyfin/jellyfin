@@ -1,20 +1,21 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.Session
 {
     /// <summary>
-    /// Interface ISessionManager
+    /// Interface ISessionManager.
     /// </summary>
     public interface ISessionManager
     {
@@ -75,19 +76,19 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
-        SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
+        SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
 
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 
         /// <summary>
-        /// Used to report that playback has started for an item
+        /// Used to report that playback has started for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         Task OnPlaybackStart(PlaybackStartInfo info);
 
         /// <summary>
-        /// Used to report playback progress for an item
+        /// Used to report playback progress for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
@@ -97,7 +98,7 @@ namespace MediaBrowser.Controller.Session
         Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
 
         /// <summary>
-        /// Used to report that playback has ended for an item
+        /// Used to report that playback has ended for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
@@ -187,16 +188,16 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToAdminSessions<T>(SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user sessions.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken);
 
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, Func<T> dataFn, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.
@@ -207,7 +208,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserDeviceSessions<T>(string deviceId, SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the restart required message.
@@ -264,6 +265,14 @@ namespace MediaBrowser.Controller.Session
         /// <param name="request">The request.</param>
         /// <returns>Task{SessionInfo}.</returns>
         Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
+
+        /// <summary>
+        /// Authenticates a new session with quick connect.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="token">Quick connect access token.</param>
+        /// <returns>Task{SessionInfo}.</returns>
+        Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token);
 
         /// <summary>
         /// Creates the new session.

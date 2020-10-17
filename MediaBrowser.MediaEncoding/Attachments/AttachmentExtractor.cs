@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -21,7 +23,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 {
     public class AttachmentExtractor : IAttachmentExtractor, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<AttachmentExtractor> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
@@ -238,11 +240,11 @@ namespace MediaBrowser.MediaEncoding.Attachments
             if (protocol == MediaProtocol.File)
             {
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
-                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
+                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
             }
             else
             {
-                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
+                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
             }
 
             var prefix = filename.Substring(0, 1);
@@ -269,7 +271,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             if (disposing)
             {
-
             }
 
             _disposed = true;

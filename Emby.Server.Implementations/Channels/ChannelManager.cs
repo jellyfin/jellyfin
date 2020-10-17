@@ -1,11 +1,12 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
@@ -13,8 +14,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
@@ -23,7 +22,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.Channels
 {
@@ -36,15 +41,12 @@ namespace Emby.Server.Implementations.Channels
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<ChannelManager> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IProviderManager _providerManager;
-
-        private readonly ConcurrentDictionary<string, Tuple<DateTime, List<MediaSourceInfo>>> _channelItemMediaInfo =
-            new ConcurrentDictionary<string, Tuple<DateTime, List<MediaSourceInfo>>>();
-
+        private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
@@ -59,6 +61,7 @@ namespace Emby.Server.Implementations.Channels
         /// <param name="userDataManager">The user data manager.</param>
         /// <param name="jsonSerializer">The JSON serializer.</param>
         /// <param name="providerManager">The provider manager.</param>
+        /// <param name="memoryCache">The memory cache.</param>
         public ChannelManager(
             IUserManager userManager,
             IDtoService dtoService,
@@ -68,7 +71,8 @@ namespace Emby.Server.Implementations.Channels
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IJsonSerializer jsonSerializer,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            IMemoryCache memoryCache)
         {
             _userManager = userManager;
             _dtoService = dtoService;
@@ -79,6 +83,7 @@ namespace Emby.Server.Implementations.Channels
             _userDataManager = userDataManager;
             _jsonSerializer = jsonSerializer;
             _providerManager = providerManager;
+            _memoryCache = memoryCache;
         }
 
         internal IChannel[] Channels { get; private set; }
@@ -413,20 +418,15 @@ namespace Emby.Server.Implementations.Channels
 
         private async Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSourcesInternal(IRequiresMediaInfoCallback channel, string id, CancellationToken cancellationToken)
         {
-            if (_channelItemMediaInfo.TryGetValue(id, out Tuple<DateTime, List<MediaSourceInfo>> cachedInfo))
+            if (_memoryCache.TryGetValue(id, out List<MediaSourceInfo> cachedInfo))
             {
-                if ((DateTime.UtcNow - cachedInfo.Item1).TotalMinutes < 5)
-                {
-                    return cachedInfo.Item2;
-                }
+                return cachedInfo;
             }
 
             var mediaInfo = await channel.GetChannelItemMediaInfo(id, cancellationToken)
                    .ConfigureAwait(false);
             var list = mediaInfo.ToList();
-
-            var item2 = new Tuple<DateTime, List<MediaSourceInfo>>(DateTime.UtcNow, list);
-            _channelItemMediaInfo.AddOrUpdate(id, item2, (key, oldValue) => item2);
+            _memoryCache.Set(id, list, DateTimeOffset.UtcNow.AddMinutes(5));
 
             return list;
         }
@@ -746,12 +746,21 @@ namespace Emby.Server.Implementations.Channels
             // null if came from cache
             if (itemsResult != null)
             {
-                var internalItems = itemsResult.Items
-                    .Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, parentItem, cancellationToken))
-                    .ToArray();
+                var items = itemsResult.Items;
+                var itemsLen = items.Count;
+                var internalItems = new Guid[itemsLen];
+                for (int i = 0; i < itemsLen; i++)
+                {
+                    internalItems[i] = (await GetChannelItemEntityAsync(
+                        items[i],
+                        channelProvider,
+                        channel.Id,
+                        parentItem,
+                        cancellationToken).ConfigureAwait(false)).Id;
+                }
 
                 var existingIds = _libraryManager.GetItemIds(query);
-                var deadIds = existingIds.Except(internalItems.Select(i => i.Id))
+                var deadIds = existingIds.Except(internalItems)
                     .ToArray();
 
                 foreach (var deadId in deadIds)
@@ -791,7 +800,8 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
-        private async Task<ChannelItemResult> GetChannelItems(IChannel channel,
+        private async Task<ChannelItemResult> GetChannelItems(
+            IChannel channel,
             User user,
             string externalFolderId,
             ChannelItemSortField? sortField,
@@ -880,7 +890,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error writing to channel cache file: {path}", path);
+                _logger.LogError(ex, "Error writing to channel cache file: {Path}", path);
             }
         }
 
@@ -962,7 +972,7 @@ namespace Emby.Server.Implementations.Channels
             return item;
         }
 
-        private BaseItem GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntityAsync(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
         {
             var parentFolderId = parentFolder.Id;
 
@@ -1067,7 +1077,7 @@ namespace Emby.Server.Implementations.Channels
             }
 
             // was used for status
-            //if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
+            // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
             //{
             //    item.ExternalEtag = info.Etag;
             //    forceUpdate = true;
@@ -1164,7 +1174,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else if (forceUpdate)
             {
-                item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
             }
 
             if ((isNew || forceUpdate) && info.Type == ChannelItemType.Media)

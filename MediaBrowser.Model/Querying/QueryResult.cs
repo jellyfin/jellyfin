@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Querying
         public IReadOnlyList<T> Items { get; set; }
 
         /// <summary>
-        /// The total number of records available
+        /// The total number of records available.
         /// </summary>
         /// <value>The total record count.</value>
         public int TotalRecordCount { get; set; }

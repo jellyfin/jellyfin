@@ -100,6 +100,7 @@ namespace MediaBrowser.Model.Search
         public string MediaType { get; set; }
 
         public DateTime? StartDate { get; set; }
+
         public DateTime? EndDate { get; set; }
 
         /// <summary>

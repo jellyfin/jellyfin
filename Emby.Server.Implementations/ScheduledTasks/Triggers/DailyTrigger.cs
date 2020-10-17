@@ -11,7 +11,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
     public class DailyTrigger : ITaskTrigger
     {
         /// <summary>
-        /// Get the time of day to trigger the task to run.
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
+        /// <summary>
+        /// Gets or sets the time of day to trigger the task to run.
         /// </summary>
         /// <value>The time of day.</value>
         public TimeSpan TimeOfDay { get; set; }
@@ -28,7 +33,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private Timer Timer { get; set; }
 
         /// <summary>
-        /// Stars waiting for the trigger action
+        /// Stars waiting for the trigger action.
         /// </summary>
         /// <param name="lastResult">The last result.</param>
         /// <param name="logger">The logger.</param>
@@ -51,7 +56,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops waiting for the trigger action
+        /// Stops waiting for the trigger action.
         /// </summary>
         public void Stop()
         {
@@ -68,11 +73,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 Timer.Dispose();
             }
         }
-
-        /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
-        public event EventHandler<EventArgs> Triggered;
 
         /// <summary>
         /// Called when [triggered].

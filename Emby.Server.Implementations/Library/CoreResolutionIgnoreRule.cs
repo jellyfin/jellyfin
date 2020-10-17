@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -8,24 +9,33 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Provides the core resolver ignore rules
+    /// Provides the core resolver ignore rules.
     /// </summary>
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerApplicationPaths _serverApplicationPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CoreResolutionIgnoreRule"/> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        public CoreResolutionIgnoreRule(ILibraryManager libraryManager)
+        /// <param name="serverApplicationPaths">The server application paths.</param>
+        public CoreResolutionIgnoreRule(ILibraryManager libraryManager, IServerApplicationPaths serverApplicationPaths)
         {
             _libraryManager = libraryManager;
+            _serverApplicationPaths = serverApplicationPaths;
         }
 
         /// <inheritdoc />
         public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem parent)
         {
+            // Don't ignore application folders
+            if (fileInfo.FullName.Contains(_serverApplicationPaths.RootFolderPath, StringComparison.InvariantCulture))
+            {
+                return false;
+            }
+
             // Don't ignore top level folders
             if (fileInfo.IsDirectory && parent is AggregateFolder)
             {
@@ -67,7 +77,7 @@ namespace Emby.Server.Implementations.Library
                 if (parent != null)
                 {
                     // Don't resolve these into audio files
-                    if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename)
+                    if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename, StringComparison.Ordinal)
                         && _libraryManager.IsAudioFile(filename))
                     {
                         return true;

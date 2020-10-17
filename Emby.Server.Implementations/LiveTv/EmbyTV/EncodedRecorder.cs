@@ -8,12 +8,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -26,26 +23,24 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IJsonSerializer _json;
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
         private Process _process;
-        private readonly IJsonSerializer _json;
-        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
-        private readonly IServerConfigurationManager _config;
 
         public EncodedRecorder(
             ILogger logger,
             IMediaEncoder mediaEncoder,
             IServerApplicationPaths appPaths,
-            IJsonSerializer json,
-            IServerConfigurationManager config)
+            IJsonSerializer json)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
             _json = json;
-            _config = config;
         }
 
         private static bool CopySubtitles => false;
@@ -58,17 +53,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public async Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             // The media source is infinite so we need to handle stopping ourselves
-            var durationToken = new CancellationTokenSource(duration);
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            using var durationToken = new CancellationTokenSource(duration);
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
-        }
-
-        private EncodingOptions GetEncodingOptions()
-        {
-            return _config.GetConfiguration<EncodingOptions>("encoding");
         }
 
         private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
@@ -108,7 +98,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 StartInfo = processStartInfo,
                 EnableRaisingEvents = true
             };
-            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process, inputFile);
+            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process);
 
             _process.Start();
 
@@ -183,7 +173,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var subtitleArgs = CopySubtitles ? " -codec:s copy" : " -sn";
 
-            //var outputParam = string.Equals(Path.GetExtension(targetFile), ".mp4", StringComparison.OrdinalIgnoreCase) ?
+            // var outputParam = string.Equals(Path.GetExtension(targetFile), ".mp4", StringComparison.OrdinalIgnoreCase) ?
             //    " -f mp4 -movflags frag_keyframe+empty_moov" :
             //    string.Empty;
 
@@ -206,13 +196,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             return "-codec:a:0 copy";
 
-            //var audioChannels = 2;
-            //var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
-            //if (audioStream != null)
+            // var audioChannels = 2;
+            // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
+            // if (audioStream != null)
             //{
             //    audioChannels = audioStream.Channels ?? audioChannels;
             //}
-            //return "-codec:a:0 aac -strict experimental -ab 320000";
+            // return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
         private static bool EncodeVideo(MediaSourceInfo mediaSource)
@@ -221,20 +211,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         }
 
         protected string GetOutputSizeParam()
-        {
-            var filters = new List<string>();
-
-            filters.Add("yadif=0:-1:0");
-
-            var output = string.Empty;
-
-            if (filters.Count > 0)
-            {
-                output += string.Format(" -vf \"{0}\"", string.Join(",", filters.ToArray()));
-            }
-
-            return output;
-        }
+            => "-vf \"yadif=0:-1:0\"";
 
         private void Stop()
         {
@@ -291,7 +268,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        private void OnFfMpegProcessExited(Process process, string inputFile)
+        private void OnFfMpegProcessExited(Process process)
         {
             using (process)
             {

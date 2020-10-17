@@ -3,27 +3,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
 using Microsoft.Extensions.Logging;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {
     public class SearchEngine : ISearchEngine
     {
-        private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
 
-        public SearchEngine(ILogger<SearchEngine> logger, ILibraryManager libraryManager, IUserManager userManager)
+        public SearchEngine(ILibraryManager libraryManager, IUserManager userManager)
         {
-            _logger = logger;
             _libraryManager = libraryManager;
             _userManager = userManager;
         }
@@ -31,11 +32,7 @@ namespace Emby.Server.Implementations.Library
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
             User user = null;
-
-            if (query.UserId.Equals(Guid.Empty))
-            {
-            }
-            else
+            if (query.UserId != Guid.Empty)
             {
                 user = _userManager.GetUserById(query.UserId);
             }
@@ -45,19 +42,19 @@ namespace Emby.Server.Implementations.Library
 
             if (query.StartIndex.HasValue)
             {
-                results = results.Skip(query.StartIndex.Value).ToList();
+                results = results.GetRange(query.StartIndex.Value, totalRecordCount - query.StartIndex.Value);
             }
 
             if (query.Limit.HasValue)
             {
-                results = results.Take(query.Limit.Value).ToList();
+                results = results.GetRange(0, query.Limit.Value);
             }
 
             return new QueryResult<SearchHintInfo>
             {
                 TotalRecordCount = totalRecordCount,
 
-                Items = results.ToArray()
+                Items = results
             };
         }
 
@@ -82,7 +79,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.IsNullOrEmpty(searchTerm))
             {
-                throw new ArgumentNullException("SearchTerm can't be empty.", nameof(searchTerm));
+                throw new ArgumentException("SearchTerm can't be empty.", nameof(query));
             }
 
             searchTerm = searchTerm.Trim().RemoveDiacritics();
@@ -191,6 +188,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     searchQuery.AncestorIds = new[] { searchQuery.ParentId };
                 }
+
                 searchQuery.ParentId = Guid.Empty;
                 searchQuery.IncludeItemsByName = true;
                 searchQuery.IncludeItemTypes = Array.Empty<string>();
@@ -204,7 +202,6 @@ namespace Emby.Server.Implementations.Library
             return mediaItems.Select(i => new SearchHintInfo
             {
                 Item = i
-
             }).ToList();
         }
     }

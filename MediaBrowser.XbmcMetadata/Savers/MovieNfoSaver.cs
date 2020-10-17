@@ -93,7 +93,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
-            var imdb = item.GetProviderId(MetadataProviders.Imdb);
+            var imdb = item.GetProviderId(MetadataProvider.Imdb);
 
             if (!string.IsNullOrEmpty(imdb))
             {

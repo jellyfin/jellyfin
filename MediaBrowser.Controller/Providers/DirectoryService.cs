@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.IO;
@@ -9,11 +12,11 @@ namespace MediaBrowser.Controller.Providers
     {
         private readonly IFileSystem _fileSystem;
 
-        private readonly Dictionary<string, FileSystemMetadata[]> _cache = new Dictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new ConcurrentDictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly Dictionary<string, FileSystemMetadata> _fileCache = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new ConcurrentDictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly Dictionary<string, List<string>> _filePathCache = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new ConcurrentDictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         public DirectoryService(IFileSystem fileSystem)
         {
@@ -22,14 +25,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            if (!_cache.TryGetValue(path, out FileSystemMetadata[] entries))
-            {
-                entries = _fileSystem.GetFileSystemEntries(path).ToArray();
-
-                _cache[path] = entries;
-            }
-
-            return entries;
+            return _cache.GetOrAdd(path, p => _fileSystem.GetFileSystemEntries(p).ToArray());
         }
 
         public List<FileSystemMetadata> GetFiles(string path)
@@ -49,21 +45,19 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata GetFile(string path)
         {
-            if (!_fileCache.TryGetValue(path, out FileSystemMetadata file))
+            var result = _fileCache.GetOrAdd(path, p =>
             {
-                file = _fileSystem.GetFileInfo(path);
+                var file = _fileSystem.GetFileInfo(p);
+                return file != null && file.Exists ? file : null;
+            });
 
-                if (file != null && file.Exists)
-                {
-                    _fileCache[path] = file;
-                }
-                else
-                {
-                    return null;
-                }
+            if (result == null)
+            {
+                // lets not store null results in the cache
+                _fileCache.TryRemove(path, out _);
             }
 
-            return file;
+            return result;
         }
 
         public IReadOnlyList<string> GetFilePaths(string path)
@@ -71,14 +65,12 @@ namespace MediaBrowser.Controller.Providers
 
         public IReadOnlyList<string> GetFilePaths(string path, bool clearCache)
         {
-            if (clearCache || !_filePathCache.TryGetValue(path, out List<string> result))
+            if (clearCache)
             {
-                result = _fileSystem.GetFilePaths(path).ToList();
-
-                _filePathCache[path] = result;
+                _filePathCache.TryRemove(path, out _);
             }
 
-            return result;
+            return _filePathCache.GetOrAdd(path, p => _fileSystem.GetFilePaths(p).ToList());
         }
     }
 }

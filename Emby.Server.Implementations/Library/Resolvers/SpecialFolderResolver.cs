@@ -41,10 +41,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 {
                     return new AggregateFolder();
                 }
+
                 if (string.Equals(args.Path, _appPaths.DefaultUserViewsPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new UserRootFolder();  //if we got here and still a root - must be user root
+                    return new UserRootFolder();  // if we got here and still a root - must be user root
                 }
+
                 if (args.IsVf)
                 {
                     return new CollectionFolder
@@ -73,7 +75,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         return false;
                     }
-
                 })
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
                 .FirstOrDefault();

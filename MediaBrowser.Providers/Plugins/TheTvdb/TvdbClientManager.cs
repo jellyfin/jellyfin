@@ -1,7 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Providers;
@@ -16,7 +20,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     {
         private const string DefaultLanguage = "en";
 
-        private readonly SemaphoreSlim _cacheWriteLock = new SemaphoreSlim(1, 1);
         private readonly IMemoryCache _cache;
         private readonly TvDbClient _tvDbClient;
         private DateTime _tokenCreatedAt;
@@ -75,32 +78,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         {
             var cacheKey = GenerateKey("episode", episodeTvdbId, language);
             return TryGetValue(cacheKey, language, () => TvDbClient.Episodes.GetAsync(episodeTvdbId, cancellationToken));
-        }
-
-        public async Task<List<EpisodeRecord>> GetAllEpisodesAsync(int tvdbId, string language,
-            CancellationToken cancellationToken)
-        {
-            // Traverse all episode pages and join them together
-            var episodes = new List<EpisodeRecord>();
-            var episodePage = await GetEpisodesPageAsync(tvdbId, new EpisodeQuery(), language, cancellationToken)
-                .ConfigureAwait(false);
-            episodes.AddRange(episodePage.Data);
-            if (!episodePage.Links.Next.HasValue || !episodePage.Links.Last.HasValue)
-            {
-                return episodes;
-            }
-
-            int next = episodePage.Links.Next.Value;
-            int last = episodePage.Links.Last.Value;
-
-            for (var page = next; page <= last; ++page)
-            {
-                episodePage = await GetEpisodesPageAsync(tvdbId, page, new EpisodeQuery(), language, cancellationToken)
-                    .ConfigureAwait(false);
-                episodes.AddRange(episodePage.Data);
-            }
-
-            return episodes;
         }
 
         public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByImdbIdAsync(
@@ -173,7 +150,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             string language,
             CancellationToken cancellationToken)
         {
-            searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(),
+            searchInfo.SeriesProviderIds.TryGetValue(
+                nameof(MetadataProvider.Tvdb),
                 out var seriesTvdbId);
 
             var episodeQuery = new EpisodeQuery();
@@ -200,10 +178,10 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             else if (searchInfo.PremiereDate.HasValue)
             {
                 // tvdb expects yyyy-mm-dd format
-                episodeQuery.FirstAired = searchInfo.PremiereDate.Value.ToString("yyyy-MM-dd");
+                episodeQuery.FirstAired = searchInfo.PremiereDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             }
 
-            return GetEpisodeTvdbId(Convert.ToInt32(seriesTvdbId), episodeQuery, language, cancellationToken);
+            return GetEpisodeTvdbId(Convert.ToInt32(seriesTvdbId, CultureInfo.InvariantCulture), episodeQuery, language, cancellationToken);
         }
 
         public async Task<string> GetEpisodeTvdbId(
@@ -215,7 +193,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var episodePage =
                 await GetEpisodesPageAsync(Convert.ToInt32(seriesTvdbId), episodeQuery, language, cancellationToken)
                     .ConfigureAwait(false);
-            return episodePage.Data.FirstOrDefault()?.Id.ToString();
+            return episodePage.Data.FirstOrDefault()?.Id.ToString(CultureInfo.InvariantCulture);
         }
 
         public Task<TvDbResponse<EpisodeRecord[]>> GetEpisodesPageAsync(
@@ -227,6 +205,45 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             return GetEpisodesPageAsync(tvdbId, 1, episodeQuery, language, cancellationToken);
         }
 
+        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeriesAsync(int tvdbId, string language, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var cacheKey = GenerateKey(nameof(TvDbClient.Series.GetImagesSummaryAsync), tvdbId);
+            var imagesSummary = await TryGetValue(cacheKey, language, () => TvDbClient.Series.GetImagesSummaryAsync(tvdbId, cancellationToken)).ConfigureAwait(false);
+
+            if (imagesSummary.Data.Fanart > 0)
+            {
+                yield return KeyType.Fanart;
+            }
+
+            if (imagesSummary.Data.Series > 0)
+            {
+                yield return KeyType.Series;
+            }
+
+            if (imagesSummary.Data.Poster > 0)
+            {
+                yield return KeyType.Poster;
+            }
+        }
+
+        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeasonAsync(int tvdbId, string language, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var cacheKey = GenerateKey(nameof(TvDbClient.Series.GetImagesSummaryAsync), tvdbId);
+            var imagesSummary = await TryGetValue(cacheKey, language, () => TvDbClient.Series.GetImagesSummaryAsync(tvdbId, cancellationToken)).ConfigureAwait(false);
+
+            if (imagesSummary.Data.Season > 0)
+            {
+                yield return KeyType.Season;
+            }
+
+            if (imagesSummary.Data.Fanart > 0)
+            {
+                yield return KeyType.Fanart;
+            }
+
+            // TODO seasonwide is not supported in TvDbSharper
+        }
+
         private async Task<T> TryGetValue<T>(string key, string language, Func<Task<T>> resultFactory)
         {
             if (_cache.TryGetValue(key, out T cachedValue))
@@ -234,23 +251,10 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 return cachedValue;
             }
 
-            await _cacheWriteLock.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                if (_cache.TryGetValue(key, out cachedValue))
-                {
-                    return cachedValue;
-                }
-
-                _tvDbClient.AcceptedLanguage = TvdbUtils.NormalizeLanguage(language) ?? DefaultLanguage;
-                var result = await resultFactory.Invoke().ConfigureAwait(false);
-                _cache.Set(key, result, TimeSpan.FromHours(1));
-                return result;
-            }
-            finally
-            {
-                _cacheWriteLock.Release();
-            }
+            _tvDbClient.AcceptedLanguage = TvdbUtils.NormalizeLanguage(language) ?? DefaultLanguage;
+            var result = await resultFactory.Invoke().ConfigureAwait(false);
+            _cache.Set(key, result, TimeSpan.FromHours(1));
+            return result;
         }
 
         private static string GenerateKey(params object[] objects)

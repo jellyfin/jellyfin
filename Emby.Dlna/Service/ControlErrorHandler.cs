@@ -10,7 +10,7 @@ namespace Emby.Dlna.Service
 {
     public static class ControlErrorHandler
     {
-        private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
+        private const string NsSoapEnv = "http://schemas.xmlsoap.org/soap/envelope/";
 
         public static ControlResponse GetResponse(Exception ex)
         {
@@ -26,11 +26,11 @@ namespace Emby.Dlna.Service
             {
                 writer.WriteStartDocument(true);
 
-                writer.WriteStartElement("SOAP-ENV", "Envelope", NS_SOAPENV);
-                writer.WriteAttributeString(string.Empty, "encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
+                writer.WriteStartElement("SOAP-ENV", "Envelope", NsSoapEnv);
+                writer.WriteAttributeString(string.Empty, "encodingStyle", NsSoapEnv, "http://schemas.xmlsoap.org/soap/encoding/");
 
-                writer.WriteStartElement("SOAP-ENV", "Body", NS_SOAPENV);
-                writer.WriteStartElement("SOAP-ENV", "Fault", NS_SOAPENV);
+                writer.WriteStartElement("SOAP-ENV", "Body", NsSoapEnv);
+                writer.WriteStartElement("SOAP-ENV", "Fault", NsSoapEnv);
 
                 writer.WriteElementString("faultcode", "500");
                 writer.WriteElementString("faultstring", ex.Message);

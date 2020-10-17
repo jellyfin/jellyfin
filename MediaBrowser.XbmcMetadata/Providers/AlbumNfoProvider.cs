@@ -14,7 +14,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
     /// </summary>
     public class AlbumNfoProvider : BaseNfoProvider<MusicAlbum>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<AlbumNfoProvider> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 

@@ -1,8 +1,10 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -18,22 +20,37 @@ namespace MediaBrowser.Controller.MediaEncoding
     public class EncodingJobInfo
     {
         public MediaStream VideoStream { get; set; }
+
         public VideoType VideoType { get; set; }
+
         public Dictionary<string, string> RemoteHttpHeaders { get; set; }
+
         public string OutputVideoCodec { get; set; }
+
         public MediaProtocol InputProtocol { get; set; }
+
         public string MediaPath { get; set; }
+
         public bool IsInputVideo { get; set; }
+
         public IIsoMount IsoMount { get; set; }
+
         public string[] PlayableStreamFileNames { get; set; }
+
         public string OutputAudioCodec { get; set; }
+
         public int? OutputVideoBitrate { get; set; }
+
         public MediaStream SubtitleStream { get; set; }
+
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+
         public string[] SupportedSubtitleCodecs { get; set; }
 
         public int InternalSubtitleStreamOffset { get; set; }
+
         public MediaSourceInfo MediaSource { get; set; }
+
         public User User { get; set; }
 
         public long? RunTimeTicks { get; set; }
@@ -112,13 +129,19 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string AlbumCoverPath { get; set; }
 
         public string InputAudioSync { get; set; }
+
         public string InputVideoSync { get; set; }
+
         public TransportStreamTimestamp InputTimestamp { get; set; }
 
         public MediaStream AudioStream { get; set; }
+
         public string[] SupportedAudioCodecs { get; set; }
+
         public string[] SupportedVideoCodecs { get; set; }
+
         public string InputContainer { get; set; }
+
         public IsoType? IsoType { get; set; }
 
         public BaseEncodingJobOptions BaseRequest { get; set; }
@@ -278,6 +301,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public bool IsVideoRequest { get; set; }
+
         public TranscodingJobType TranscodingType { get; set; }
 
         public EncodingJobInfo(TranscodingJobType jobType)
@@ -318,7 +342,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
-                    var newSize = DrawingUtils.Resize(size,
+                    var newSize = DrawingUtils.Resize(
+                        size,
                         BaseRequest.Width ?? 0,
                         BaseRequest.Height ?? 0,
                         BaseRequest.MaxWidth ?? 0,
@@ -344,7 +369,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
-                    var newSize = DrawingUtils.Resize(size,
+                    var newSize = DrawingUtils.Resize(
+                        size,
                         BaseRequest.Width ?? 0,
                         BaseRequest.Height ?? 0,
                         BaseRequest.MaxWidth ?? 0,
@@ -403,7 +429,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public double? TargetVideoLevel
         {
@@ -426,7 +452,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetVideoBitDepth
         {
@@ -461,7 +487,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public float? TargetFramerate
         {
@@ -493,7 +519,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetPacketLength
         {
@@ -509,7 +535,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public string TargetVideoProfile
         {
@@ -657,6 +683,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public IProgress<double> Progress { get; set; }
+
         public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             Progress.Report(percentComplete.Value);
@@ -664,20 +691,22 @@ namespace MediaBrowser.Controller.MediaEncoding
     }
 
     /// <summary>
-    /// Enum TranscodingJobType
+    /// Enum TranscodingJobType.
     /// </summary>
     public enum TranscodingJobType
     {
         /// <summary>
-        /// The progressive
+        /// The progressive.
         /// </summary>
         Progressive,
+
         /// <summary>
-        /// The HLS
+        /// The HLS.
         /// </summary>
         Hls,
+
         /// <summary>
-        /// The dash
+        /// The dash.
         /// </summary>
         Dash
     }

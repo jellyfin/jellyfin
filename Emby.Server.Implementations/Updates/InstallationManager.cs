@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -16,13 +15,14 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Common.System;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -32,16 +32,11 @@ namespace Emby.Server.Implementations.Updates
     public class InstallationManager : IInstallationManager
     {
         /// <summary>
-        /// The key for a setting that specifies a URL for the plugin repository JSON manifest.
-        /// </summary>
-        public const string PluginManifestUrlKey = "InstallationManager:PluginManifestUrl";
-
-        /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<InstallationManager> _logger;
         private readonly IApplicationPaths _appPaths;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
@@ -53,7 +48,6 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationHost _applicationHost;
 
         private readonly IZipClient _zipClient;
-        private readonly IConfiguration _appConfig;
 
         private readonly object _currentInstallationsLock = new object();
 
@@ -71,12 +65,11 @@ namespace Emby.Server.Implementations.Updates
             ILogger<InstallationManager> logger,
             IApplicationHost appHost,
             IApplicationPaths appPaths,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            IZipClient zipClient,
-            IConfiguration appConfig)
+            IZipClient zipClient)
         {
             if (logger == null)
             {
@@ -89,12 +82,11 @@ namespace Emby.Server.Implementations.Updates
             _logger = logger;
             _applicationHost = appHost;
             _appPaths = appPaths;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _jsonSerializer = jsonSerializer;
             _config = config;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
-            _appConfig = appConfig;
         }
 
         /// <inheritdoc />
@@ -122,46 +114,56 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <inheritdoc />
-        public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default)
         {
-            var manifestUrl = _appConfig.GetValue<string>(PluginManifestUrlKey);
-
             try
             {
-                using (var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        Url = manifestUrl,
-                        CancellationToken = cancellationToken,
-                        CacheMode = CacheMode.Unconditional,
-                        CacheLength = TimeSpan.FromMinutes(3)
-                    },
-                    HttpMethod.Get).ConfigureAwait(false))
-                using (Stream stream = response.Content)
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .GetAsync(manifest, cancellationToken).ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+                try
                 {
-                    try
-                    {
-                        return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(stream).ConfigureAwait(false);
-                    }
-                    catch (SerializationException ex)
-                    {
-                        const string LogTemplate =
-                            "Failed to deserialize the plugin manifest retrieved from {PluginManifestUrl}. If you " +
-                            "have specified a custom plugin repository manifest URL with --plugin-manifest-url or " +
-                            PluginManifestUrlKey + ", please ensure that it is correct.";
-                        _logger.LogError(ex, LogTemplate, manifestUrl);
-                        throw;
-                    }
+                    return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(stream).ConfigureAwait(false);
+                }
+                catch (SerializationException ex)
+                {
+                    _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
+                    return Array.Empty<PackageInfo>();
                 }
             }
             catch (UriFormatException ex)
             {
-                const string LogTemplate =
-                    "The URL configured for the plugin repository manifest URL is not valid: {PluginManifestUrl}. " +
-                    "Please check the URL configured by --plugin-manifest-url or " + PluginManifestUrlKey;
-                _logger.LogError(ex, LogTemplate, manifestUrl);
-                throw;
+                _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
+                return Array.Empty<PackageInfo>();
             }
+            catch (HttpException ex)
+            {
+                _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
+                return Array.Empty<PackageInfo>();
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
+                return Array.Empty<PackageInfo>();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
+        {
+            var result = new List<PackageInfo>();
+            foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
+            {
+                foreach (var package in await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true))
+                {
+                    package.repositoryName = repository.Name;
+                    package.repositoryUrl = repository.Url;
+                    result.Add(package);
+                }
+            }
+
+            return result;
         }
 
         /// <inheritdoc />
@@ -188,7 +190,8 @@ namespace Emby.Server.Implementations.Updates
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null)
+            Version minVersion = null,
+            Version specificVersion = null)
         {
             var package = FilterPackages(availablePackages, name, guid).FirstOrDefault();
 
@@ -202,7 +205,11 @@ namespace Emby.Server.Implementations.Updates
             var availableVersions = package.versions
                 .Where(x => Version.Parse(x.targetAbi) <= appVer);
 
-            if (minVersion != null)
+            if (specificVersion != null)
+            {
+                availableVersions = availableVersions.Where(x => new Version(x.version) == specificVersion);
+            }
+            else if (minVersion != null)
             {
                 availableVersions = availableVersions.Where(x => new Version(x.version) >= minVersion);
             }
@@ -232,8 +239,8 @@ namespace Emby.Server.Implementations.Updates
         {
             foreach (var plugin in _applicationHost.Plugins)
             {
-                var compatibleversions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, plugin.Version);
-                var version = compatibleversions.FirstOrDefault(y => y.Version > plugin.Version);
+                var compatibleVersions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, minVersion: plugin.Version);
+                var version = compatibleVersions.FirstOrDefault(y => y.Version > plugin.Version);
                 if (version != null && CompletedInstallations.All(x => x.Guid != version.Guid))
                 {
                     yield return version;
@@ -357,41 +364,43 @@ namespace Emby.Server.Implementations.Updates
             // Always override the passed-in target (which is a file) and figure it out again
             string targetDir = Path.Combine(_appPaths.PluginsPath, package.Name);
 
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(package.SourceUrl, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
-            using (var res = await _httpClient.SendAsync(
-                new HttpRequestOptions
-                {
-                    Url = package.SourceUrl,
-                    CancellationToken = cancellationToken,
-                    // We need it to be buffered for setting the position
-                    BufferContent = true
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = res.Content)
-            using (var md5 = MD5.Create())
+            using var md5 = MD5.Create();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var hash = Hex.Encode(md5.ComputeHash(stream));
+            if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                _logger.LogError(
+                    "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
+                    package.Name,
+                    package.Checksum,
+                    hash);
+                throw new InvalidDataException("The checksum of the received data doesn't match.");
+            }
 
-                var hash = Hex.Encode(md5.ComputeHash(stream));
-                if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogError(
-                        "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
-                        package.Name,
-                        package.Checksum,
-                        hash);
-                    throw new InvalidDataException("The checksum of the received data doesn't match.");
-                }
+            // Version folder as they cannot be overwritten in Windows.
+            targetDir += "_" + package.Version;
 
-                if (Directory.Exists(targetDir))
+            if (Directory.Exists(targetDir))
+            {
+                try
                 {
                     Directory.Delete(targetDir, true);
                 }
-
-                stream.Position = 0;
-                _zipClient.ExtractAllFromZip(stream, targetDir, true);
+                catch
+                {
+                    // Ignore any exceptions.
+                }
             }
+
+            stream.Position = 0;
+            _zipClient.ExtractAllFromZip(stream, targetDir, true);
 
 #pragma warning restore CA5351
         }
@@ -402,6 +411,12 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="plugin">The plugin.</param>
         public void UninstallPlugin(IPlugin plugin)
         {
+            if (!plugin.CanUninstall)
+            {
+                _logger.LogWarning("Attempt to delete non removable plugin {0}, ignoring request", plugin.Name);
+                return;
+            }
+
             plugin.OnUninstalling();
 
             // Remove it the quick way for now
@@ -425,15 +440,22 @@ namespace Emby.Server.Implementations.Updates
                 path = file;
             }
 
-            if (isDirectory)
+            try
             {
-                _logger.LogInformation("Deleting plugin directory {0}", path);
-                Directory.Delete(path, true);
+                if (isDirectory)
+                {
+                    _logger.LogInformation("Deleting plugin directory {0}", path);
+                    Directory.Delete(path, true);
+                }
+                else
+                {
+                    _logger.LogInformation("Deleting plugin file {0}", path);
+                    _fileSystem.DeleteFile(path);
+                }
             }
-            else
+            catch
             {
-                _logger.LogInformation("Deleting plugin file {0}", path);
-                _fileSystem.DeleteFile(path);
+                // Ignore file errors.
             }
 
             var list = _config.Configuration.UninstalledPlugins.ToList();

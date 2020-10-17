@@ -6,7 +6,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class PremiereDateComparer
+    /// Class PremiereDateComparer.
     /// </summary>
     public class PremiereDateComparer : IBaseItemComparer
     {
@@ -44,6 +44,7 @@ namespace Emby.Server.Implementations.Sorting
                     // Don't blow up if the item has a bad ProductionYear, just return MinValue
                 }
             }
+
             return DateTime.MinValue;
         }
 

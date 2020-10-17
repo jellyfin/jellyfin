@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Configuration
         public string ReleaseDateFormat { get; set; }
 
         public bool SaveImagePathsInNfo { get; set; }
+
         public bool EnablePathSubstitution { get; set; }
 
         public bool EnableExtraThumbsDuplication { get; set; }

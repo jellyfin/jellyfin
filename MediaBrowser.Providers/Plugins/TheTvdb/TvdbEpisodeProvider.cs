@@ -1,5 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -19,13 +22,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     /// </summary>
     public class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<TvdbEpisodeProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger<TvdbEpisodeProvider> logger, TvdbClientManager tvdbClientManager)
+        public TvdbEpisodeProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbEpisodeProvider> logger, TvdbClientManager tvdbClientManager)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _tvdbClientManager = tvdbClientManager;
         }
@@ -94,7 +97,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 QueriedById = true
             };
 
-            string seriesTvdbId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
+            string seriesTvdbId = searchInfo.GetProviderId(MetadataProvider.Tvdb);
             string episodeTvdbId = null;
             try
             {
@@ -103,7 +106,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     .ConfigureAwait(false);
                 if (string.IsNullOrEmpty(episodeTvdbId))
                 {
-                    _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
+                    _logger.LogError(
+                        "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                         searchInfo.ParentIndexNumber, searchInfo.IndexNumber, seriesTvdbId);
                     return result;
                 }
@@ -138,18 +142,26 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Name = episode.EpisodeName,
                     Overview = episode.Overview,
                     CommunityRating = (float?)episode.SiteRating,
+                    OfficialRating = episode.ContentRating,
                 }
             };
             result.ResetPeople();
 
             var item = result.Item;
-            item.SetProviderId(MetadataProviders.Tvdb, episode.Id.ToString());
-            item.SetProviderId(MetadataProviders.Imdb, episode.ImdbId);
+            item.SetProviderId(MetadataProvider.Tvdb, episode.Id.ToString());
+            item.SetProviderId(MetadataProvider.Imdb, episode.ImdbId);
 
             if (string.Equals(id.SeriesDisplayOrder, "dvd", StringComparison.OrdinalIgnoreCase))
             {
                 item.IndexNumber = Convert.ToInt32(episode.DvdEpisodeNumber ?? episode.AiredEpisodeNumber);
                 item.ParentIndexNumber = episode.DvdSeason ?? episode.AiredSeason;
+            }
+            else if (string.Equals(id.SeriesDisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase))
+            {
+                if (episode.AbsoluteNumber.GetValueOrDefault() != 0)
+                {
+                    item.IndexNumber = episode.AbsoluteNumber;
+                }
             }
             else if (episode.AiredEpisodeNumber.HasValue)
             {
@@ -186,7 +198,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             for (var i = 0; i < episode.GuestStars.Length; ++i)
             {
                 var currentActor = episode.GuestStars[i];
-                var roleStartIndex = currentActor.IndexOf('(');
+                var roleStartIndex = currentActor.IndexOf('(', StringComparison.Ordinal);
 
                 if (roleStartIndex == -1)
                 {
@@ -205,7 +217,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 for (var j = i + 1; j < episode.GuestStars.Length; ++j)
                 {
                     var currentRole = episode.GuestStars[j];
-                    var roleEndIndex = currentRole.IndexOf(')');
+                    var roleEndIndex = currentRole.IndexOf(')', StringComparison.Ordinal);
 
                     if (roleEndIndex == -1)
                     {
@@ -240,13 +252,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             return result;
         }
 
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url
-            });
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
         public int Order => 0;

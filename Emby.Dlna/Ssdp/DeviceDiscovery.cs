@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using Rssdp;
 using Rssdp.Infrastructure;
 
@@ -17,8 +17,16 @@ namespace Emby.Dlna.Ssdp
 
         private readonly IServerConfigurationManager _config;
 
+        private SsdpDeviceLocator _deviceLocator;
+        private ISsdpCommunicationsServer _commsServer;
+
         private int _listenerCount;
         private bool _disposed;
+
+        public DeviceDiscovery(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
 
         private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
 
@@ -49,15 +57,6 @@ namespace Emby.Dlna.Ssdp
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
-        private SsdpDeviceLocator _deviceLocator;
-
-        private ISsdpCommunicationsServer _commsServer;
-
-        public DeviceDiscovery(IServerConfigurationManager config)
-        {
-            _config = config;
-        }
-
         // Call this method from somewhere in your code to start the search.
         public void Start(ISsdpCommunicationsServer communicationsServer)
         {
@@ -77,7 +76,7 @@ namespace Emby.Dlna.Ssdp
                     // (Optional) Set the filter so we only see notifications for devices we care about
                     // (can be any search target value i.e device type, uuid value etc - any value that appears in the
                     // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
-                    //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
+                    // _DeviceLocator.NotificationFilter = "upnp:rootdevice";
 
                     // Connect our event handler so we process devices as they are found
                     _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
