@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Entities
             query.ExcludeItemTypes = new[]
             {
                 nameof(MusicVideo),
-                nameof(Audio.Audio),
+                nameof(Entities.Audio.Audio),
                 nameof(MusicAlbum),
                 nameof(MusicArtist)
             };

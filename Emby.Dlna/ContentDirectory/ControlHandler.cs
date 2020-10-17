@@ -988,7 +988,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] {  };
+            query.IncludeItemTypes = new[] { nameof(Series) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1001,7 +1001,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] {  };
+            query.IncludeItemTypes = new[] { nameof(Episode) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1014,7 +1014,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] {  };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1027,7 +1027,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] {  };
+            query.IncludeItemTypes = new[] { nameof(MusicAlbum) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1181,7 +1181,7 @@ namespace Emby.Dlna.ContentDirectory
                 {
                     UserId = user.Id,
                     Limit = 50,
-                    IncludeItemTypes = new[] {  },
+                    IncludeItemTypes = new[] { nameof(Episode) },
                     ParentId = parent == null ? Guid.Empty : parent.Id,
                     GroupItems = false
                 },
@@ -1215,7 +1215,7 @@ namespace Emby.Dlna.ContentDirectory
                 Recursive = true,
                 ParentId = parentId,
                 ArtistIds = new[] { item.Id },
-                IncludeItemTypes = new[] {  },
+                IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()
@@ -1259,7 +1259,7 @@ namespace Emby.Dlna.ContentDirectory
                 Recursive = true,
                 ParentId = parentId,
                 GenreIds = new[] { item.Id },
-                IncludeItemTypes = new[] {  },
+                IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()
