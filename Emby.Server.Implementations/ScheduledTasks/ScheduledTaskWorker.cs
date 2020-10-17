@@ -703,7 +703,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 MaxRuntimeTicks = info.MaxRuntimeTicks
             };
 
-            if (info.Type.Equals(typeof(DailyTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            if (info.Type.Equals(nameof(DailyTrigger), StringComparison.OrdinalIgnoreCase))
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
@@ -717,7 +717,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 };
             }
 
-            if (info.Type.Equals(typeof(WeeklyTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            if (info.Type.Equals(nameof(WeeklyTrigger), StringComparison.OrdinalIgnoreCase))
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
@@ -737,7 +737,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 };
             }
 
-            if (info.Type.Equals(typeof(IntervalTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            if (info.Type.Equals(nameof(IntervalTrigger), StringComparison.OrdinalIgnoreCase))
             {
                 if (!info.IntervalTicks.HasValue)
                 {
@@ -751,7 +751,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 };
             }
 
-            if (info.Type.Equals(typeof(StartupTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            if (info.Type.Equals(nameof(StartupTrigger), StringComparison.OrdinalIgnoreCase))
             {
                 return new StartupTrigger();
             }

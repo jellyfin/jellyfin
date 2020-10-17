@@ -59,7 +59,13 @@ namespace MediaBrowser.Controller.Entities
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.GenreIds = new[] { Id };
-            query.ExcludeItemTypes = new[] { typeof(MusicVideo).Name, typeof(Audio.Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
+            query.ExcludeItemTypes = new[]
+            {
+                nameof(MusicVideo),
+                nameof(Audio.Audio),
+                nameof(MusicAlbum),
+                nameof(MusicArtist)
+            };
 
             return LibraryManager.GetItemList(query);
         }

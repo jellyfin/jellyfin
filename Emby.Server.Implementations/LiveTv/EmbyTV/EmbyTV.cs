@@ -1790,7 +1790,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var program = string.IsNullOrWhiteSpace(timer.ProgramId) ? null : _libraryManager.GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                    IncludeItemTypes = new[] { nameof(LiveTvProgram) },
                     Limit = 1,
                     ExternalId = timer.ProgramId,
                     DtoOptions = new DtoOptions(true)
@@ -2151,7 +2151,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var query = new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new string[] { nameof(LiveTvProgram) },
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
                 {
@@ -2370,7 +2370,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var query = new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new string[] { nameof(LiveTvProgram) },
                 ExternalSeriesId = seriesTimer.SeriesId,
                 DtoOptions = new DtoOptions(true)
                 {
@@ -2405,7 +2405,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     channel = _libraryManager.GetItemList(
                         new InternalItemsQuery
                         {
-                            IncludeItemTypes = new string[] { typeof(LiveTvChannel).Name },
+                            IncludeItemTypes = new string[] { nameof(LiveTvChannel) },
                             ItemIds = new[] { parent.ChannelId },
                             DtoOptions = new DtoOptions()
                         }).FirstOrDefault() as LiveTvChannel;
@@ -2464,7 +2464,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     channel = _libraryManager.GetItemList(
                         new InternalItemsQuery
                         {
-                            IncludeItemTypes = new string[] { typeof(LiveTvChannel).Name },
+                            IncludeItemTypes = new string[] { nameof(LiveTvChannel) },
                             ItemIds = new[] { programInfo.ChannelId },
                             DtoOptions = new DtoOptions()
                         }).FirstOrDefault() as LiveTvChannel;
@@ -2529,7 +2529,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 var seriesIds = _libraryManager.GetItemIds(
                     new InternalItemsQuery
                     {
-                        IncludeItemTypes = new[] { typeof(Series).Name },
+                        IncludeItemTypes = new[] { nameof(Series) },
                         Name = program.Name
                     }).ToArray();
 
@@ -2542,7 +2542,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     var result = _libraryManager.GetItemIds(new InternalItemsQuery
                     {
-                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        IncludeItemTypes = new[] { nameof(Episode) },
                         ParentIndexNumber = program.SeasonNumber.Value,
                         IndexNumber = program.EpisodeNumber.Value,
                         AncestorIds = seriesIds,
