@@ -259,8 +259,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();            
-            
+            _jsonSerializer = new JsonSerializer();
+
             ServiceCollection = serviceCollection;
 
             _networkManager = networkManager;
@@ -340,7 +340,7 @@ namespace Emby.Server.Implementations
         /// Gets the email address for use within a comment section of a user agent field.
         /// Presently used to provide contact information to MusicBrainz service.
         /// </summary>
-        public string ApplicationUserAgentAddress { get; } = "team@jellyfin.org";
+        public string ApplicationUserAgentAddress => "team@jellyfin.org";
 
         /// <summary>
         /// Gets the current application name.
@@ -404,7 +404,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Resolves this instance.
         /// </summary>
-        /// <typeparam name="T">The type</typeparam>
+        /// <typeparam name="T">The type.</typeparam>
         /// <returns>``0.</returns>
         public T Resolve<T>() => ServiceProvider.GetService<T>();
 
@@ -1090,7 +1090,7 @@ namespace Emby.Server.Implementations
                     {
                         // No metafile, so lets see if the folder is versioned.
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
-                        
+
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
                         {
@@ -1099,9 +1099,9 @@ namespace Emby.Server.Implementations
                         }
                         else
                         {
-                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
                             versions.Add((new Version(0, 0, 0, 1), metafile, dir));
-                        }   
+                        }
                     }
                 }
                 catch
