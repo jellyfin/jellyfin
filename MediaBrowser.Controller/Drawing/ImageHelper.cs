@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
@@ -16,6 +18,7 @@ namespace MediaBrowser.Controller.Drawing
 
                 return newSize;
             }
+
             return GetSizeEstimate(options);
         }
 
@@ -57,6 +60,7 @@ namespace MediaBrowser.Controller.Drawing
                 case ImageType.BoxRear:
                 case ImageType.Disc:
                 case ImageType.Menu:
+                case ImageType.Profile:
                     return 1;
                 case ImageType.Logo:
                     return 2.58;

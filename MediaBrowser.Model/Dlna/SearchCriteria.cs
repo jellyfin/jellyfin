@@ -34,9 +34,9 @@ namespace MediaBrowser.Model.Dlna
 
         public SearchCriteria(string search)
         {
-            if (string.IsNullOrEmpty(search))
+            if (search.Length == 0)
             {
-                throw new ArgumentNullException(nameof(search));
+                throw new ArgumentException("String can't be empty.", nameof(search));
             }
 
             SearchType = SearchType.Unknown;
@@ -48,11 +48,10 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subFactors.Length == 3)
                 {
-
                     if (string.Equals("upnp:class", subFactors[0], StringComparison.OrdinalIgnoreCase) &&
-                        (string.Equals("=", subFactors[1]) || string.Equals("derivedfrom", subFactors[1], StringComparison.OrdinalIgnoreCase)))
+                        (string.Equals("=", subFactors[1], StringComparison.Ordinal) || string.Equals("derivedfrom", subFactors[1], StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (string.Equals("\"object.item.imageItem\"", subFactors[2]) || string.Equals("\"object.item.imageItem.photo\"", subFactors[2], StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals("\"object.item.imageItem\"", subFactors[2], StringComparison.Ordinal) || string.Equals("\"object.item.imageItem.photo\"", subFactors[2], StringComparison.OrdinalIgnoreCase))
                         {
                             SearchType = SearchType.Image;
                         }

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {
+    /// <summary>
+    /// Class containing helper methods for working with FFprobe output.
+    /// </summary>
     public static class FFProbeHelpers
     {
         /// <summary>
@@ -35,7 +38,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets a string from an FFProbeResult tags dictionary
+        /// Gets a string from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
@@ -52,7 +55,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets an int from an FFProbeResult tags dictionary
+        /// Gets an int from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
@@ -73,7 +76,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets a DateTime from an FFProbeResult tags dictionary
+        /// Gets a DateTime from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
@@ -94,7 +97,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts a dictionary to case insensitive
+        /// Converts a dictionary to case insensitive.
         /// </summary>
         /// <param name="dict">The dict.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>

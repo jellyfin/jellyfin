@@ -1,109 +1,96 @@
+#pragma warning disable CA2227
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
-    public partial class Group
+    /// <summary>
+    /// An entity representing a group.
+    /// </summary>
+    public class Group : IHasPermissions, IHasConcurrencyToken
     {
-        partial void Init();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Group"/> class.
+        /// </summary>
+        /// <param name="name">The name of the group.</param>
+        public Group(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            Name = name;
+            Id = Guid.NewGuid();
+
+            Permissions = new HashSet<Permission>();
+            Preferences = new HashSet<Preference>();
+        }
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Group"/> class.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected Group()
         {
-            GroupPermissions = new HashSet<Permission>();
-            ProviderMappings = new HashSet<ProviderMapping>();
-            Preferences = new HashSet<Preference>();
-
-            Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Gets or sets the id of this group.
         /// </summary>
-        public static Group CreateGroupUnsafe()
-        {
-            return new Group();
-        }
+        /// <remarks>
+        /// Identity, Indexed, Required.
+        /// </remarks>
+        public Guid Id { get; protected set; }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Gets or sets the group's name.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_user0"></param>
-        public Group(string name, User _user0)
-        {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            this.Name = name;
-
-            if (_user0 == null) throw new ArgumentNullException(nameof(_user0));
-            _user0.Groups.Add(this);
-
-            this.GroupPermissions = new HashSet<Permission>();
-            this.ProviderMappings = new HashSet<ProviderMapping>();
-            this.Preferences = new HashSet<Preference>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_user0"></param>
-        public static Group Create(string name, User _user0)
-        {
-            return new Group(name, _user0);
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Identity, Indexed, Required
-        /// </summary>
-        [Key]
-        [Required]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
-
-        /// <summary>
-        /// Required, Max length = 255
-        /// </summary>
+        /// <remarks>
+        /// Required, Max length = 255.
+        /// </remarks>
         [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Name { get; set; }
 
-        /// <summary>
-        /// Required, ConcurrenyToken
-        /// </summary>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection containing the group's permissions.
+        /// </summary>
+        public virtual ICollection<Permission> Permissions { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the group's preferences.
+        /// </summary>
+        public virtual ICollection<Preference> Preferences { get; protected set; }
+
+        /// <inheritdoc/>
+        public bool HasPermission(PermissionKind kind)
+        {
+            return Permissions.First(p => p.Kind == kind).Value;
+        }
+
+        /// <inheritdoc/>
+        public void SetPermission(PermissionKind kind, bool value)
+        {
+            Permissions.First(p => p.Kind == kind).Value = value;
+        }
+
+        /// <inheritdoc />
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        [ForeignKey("Permission_GroupPermissions_Id")]
-        public virtual ICollection<Permission> GroupPermissions { get; protected set; }
-
-        [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
-
-        [ForeignKey("Preference_Preferences_Id")]
-        public virtual ICollection<Preference> Preferences { get; protected set; }
-
     }
 }
-

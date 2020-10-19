@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -35,12 +36,6 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         /// <value>The model description.</value>
         public string ModelDescription { get; set; }
-
-        /// <summary>
-        /// Gets or sets the device description.
-        /// </summary>
-        /// <value>The device description.</value>
-        public string DeviceDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the model URL.

@@ -2,9 +2,12 @@
 
 using System;
 using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -50,6 +53,12 @@ namespace MediaBrowser.Common.Plugins
         public string DataFolderPath { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the plugin can be uninstalled.
+        /// </summary>
+        public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
+            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
+
+        /// <summary>
         /// Gets the plugin info.
         /// </summary>
         /// <returns>PluginInfo.</returns>
@@ -60,7 +69,8 @@ namespace MediaBrowser.Common.Plugins
                 Name = Name,
                 Version = Version.ToString(),
                 Description = Description,
-                Id = Id.ToString()
+                Id = Id.ToString(),
+                CanUninstall = CanUninstall
             };
 
             return info;
@@ -70,6 +80,16 @@ namespace MediaBrowser.Common.Plugins
         /// Called just before the plugin is uninstalled from the server.
         /// </summary>
         public virtual void OnUninstalling()
+        {
+        }
+
+        /// <inheritdoc />
+        public virtual void RegisterServices(IServiceCollection serviceCollection)
+        {
+        }
+
+        /// <inheritdoc />
+        public virtual void UnregisterServices(IServiceCollection serviceCollection)
         {
         }
 
@@ -121,6 +141,30 @@ namespace MediaBrowser.Common.Plugins
         {
             ApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
+            if (this is IPluginAssembly assemblyPlugin)
+            {
+                var assembly = GetType().Assembly;
+                var assemblyName = assembly.GetName();
+                var assemblyFilePath = assembly.Location;
+
+                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
+
+                assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
+
+                var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
+                if (idAttributes.Length > 0)
+                {
+                    var attribute = (GuidAttribute)idAttributes[0];
+                    var assemblyId = new Guid(attribute.Value);
+
+                    assemblyPlugin.SetId(assemblyId);
+                }
+            }
+
+            if (this is IHasPluginConfiguration hasPluginConfiguration)
+            {
+                hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
+            }
         }
 
         /// <summary>

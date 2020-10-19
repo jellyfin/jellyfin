@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -11,6 +13,9 @@ namespace Emby.Server.Implementations.Serialization
     /// </summary>
     public class JsonSerializer : IJsonSerializer
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonSerializer" /> class.
+        /// </summary>
         public JsonSerializer()
         {
             ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.DateHandler.ISO8601;

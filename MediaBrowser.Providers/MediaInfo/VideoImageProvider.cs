@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace MediaBrowser.Providers.MediaInfo
     public class VideoImageProvider : IDynamicImageProvider, IHasOrder
     {
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly ILogger _logger;
+        private readonly ILogger<VideoImageProvider> _logger;
         private readonly IFileSystem _fileSystem;
 
         public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger, IFileSystem fileSystem)
@@ -26,6 +28,11 @@ namespace MediaBrowser.Providers.MediaInfo
             _logger = logger;
             _fileSystem = fileSystem;
         }
+
+        public string Name => "Screen Grabber";
+
+        // Make sure this comes after internet image providers
+        public int Order => 100;
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
@@ -93,6 +100,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         videoIndex++;
                     }
+
                     if (mediaStream == imageStream)
                     {
                         break;
@@ -124,14 +132,13 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
-        public string Name => "Screen Grabber";
-
         public bool Supports(BaseItem item)
         {
             if (item.IsShortcut)
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;
@@ -146,7 +153,5 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return false;
         }
-        // Make sure this comes after internet image providers
-        public int Order => 100;
     }
 }

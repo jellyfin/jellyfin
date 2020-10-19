@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -32,7 +34,7 @@ namespace Emby.Server.Implementations.Sorting
 
                 if (val != 0)
                 {
-                    //return val;
+                    // return val;
                 }
             }
 
@@ -152,8 +154,8 @@ namespace Emby.Server.Implementations.Sorting
 
         private static int CompareEpisodes(Episode x, Episode y)
         {
-            var xValue = (x.ParentIndexNumber ?? -1) * 1000 + (x.IndexNumber ?? -1);
-            var yValue = (y.ParentIndexNumber ?? -1) * 1000 + (y.IndexNumber ?? -1);
+            var xValue = ((x.ParentIndexNumber ?? -1) * 1000) + (x.IndexNumber ?? -1);
+            var yValue = ((y.ParentIndexNumber ?? -1) * 1000) + (y.IndexNumber ?? -1);
 
             return xValue.CompareTo(yValue);
         }

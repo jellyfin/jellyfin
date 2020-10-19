@@ -4,6 +4,11 @@ namespace MediaBrowser.Model.Playlists
 {
     public class PlaylistCreationResult
     {
-        public string Id { get; set; }
+        public PlaylistCreationResult(string id)
+        {
+            Id = id;
+        }
+
+        public string Id { get; }
     }
 }

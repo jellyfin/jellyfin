@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using MediaBrowser.Model.Dto;
@@ -40,6 +41,5 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The program information.</value>
         public BaseItemDto ProgramInfo { get; set; }
-
     }
 }

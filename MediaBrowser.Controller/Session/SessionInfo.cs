@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -19,7 +21,6 @@ namespace MediaBrowser.Controller.Session
 
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
-
 
         private readonly object _progressLock = new object();
         private Timer _progressTimer;
@@ -61,6 +62,7 @@ namespace MediaBrowser.Controller.Session
                 {
                     return Array.Empty<string>();
                 }
+
                 return Capabilities.PlayableMediaTypes;
             }
         }
@@ -106,6 +108,12 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The name of the device.</value>
         public string DeviceName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the device.
+        /// </summary>
+        /// <value>The type of the device.</value>
+        public string DeviceType { get; set; }
 
         /// <summary>
         /// Gets or sets the now playing item.
@@ -154,6 +162,7 @@ namespace MediaBrowser.Controller.Session
                         return true;
                     }
                 }
+
                 if (controllers.Length > 0)
                 {
                     return false;
@@ -213,7 +222,16 @@ namespace MediaBrowser.Controller.Session
 
         public string PlaylistItemId { get; set; }
 
+        public string ServerId { get; set; }
+
         public string UserPrimaryImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the supported commands.
+        /// </summary>
+        /// <value>The supported commands.</value>
+        public GeneralCommandType[] SupportedCommands
+            => Capabilities == null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {
@@ -255,6 +273,7 @@ namespace MediaBrowser.Controller.Session
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -292,6 +311,7 @@ namespace MediaBrowser.Controller.Session
             {
                 return;
             }
+
             if (progressInfo.IsPaused)
             {
                 return;
@@ -334,6 +354,7 @@ namespace MediaBrowser.Controller.Session
                     _progressTimer.Dispose();
                     _progressTimer = null;
                 }
+
                 _lastProgressInfo = null;
             }
         }

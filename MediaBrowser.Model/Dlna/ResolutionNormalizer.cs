@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -14,10 +15,12 @@ namespace MediaBrowser.Model.Dlna
                 new ResolutionConfiguration(720, 950000),
                 new ResolutionConfiguration(1280, 2500000),
                 new ResolutionConfiguration(1920, 4000000),
+                new ResolutionConfiguration(2560, 8000000),
                 new ResolutionConfiguration(3840, 35000000)
             };
 
-        public static ResolutionOptions Normalize(int? inputBitrate,
+        public static ResolutionOptions Normalize(
+            int? inputBitrate,
             int? unused1,
             int? unused2,
             int outputBitrate,
@@ -83,6 +86,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 return .5;
             }
+
             return 1;
         }
 

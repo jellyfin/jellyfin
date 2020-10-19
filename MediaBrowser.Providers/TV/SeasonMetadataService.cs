@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,9 @@ namespace MediaBrowser.Providers.TV
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
         }
+
+        /// <inheritdoc />
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
         /// <inheritdoc />
         protected override ItemUpdateType BeforeSaveInternal(Season item, bool isFullRefresh, ItemUpdateType currentUpdateType)
@@ -66,9 +71,6 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override bool EnableUpdatingPremiereDateFromChildren => true;
-
-        /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)
             => item.GetEpisodes();
 
@@ -86,7 +88,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

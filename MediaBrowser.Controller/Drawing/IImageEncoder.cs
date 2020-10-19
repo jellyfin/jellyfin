@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Drawing;
@@ -44,6 +47,15 @@ namespace MediaBrowser.Controller.Drawing
         ImageDimensions GetImageSize(string path);
 
         /// <summary>
+        /// Gets the blurhash of an image.
+        /// </summary>
+        /// <param name="xComp">Amount of X components of DCT to take.</param>
+        /// <param name="yComp">Amount of Y components of DCT to take.</param>
+        /// <param name="path">The filepath of the image.</param>
+        /// <returns>The blurhash.</returns>
+        string GetImageBlurHash(int xComp, int yComp, string path);
+
+        /// <summary>
         /// Encode an image.
         /// </summary>
         string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
@@ -52,6 +64,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Create an image collage.
         /// </summary>
         /// <param name="options">The options to use when creating the collage.</param>
-        void CreateImageCollage(ImageCollageOptions options);
+        /// <param name="libraryName">Optional. </param>
+        void CreateImageCollage(ImageCollageOptions options, string? libraryName);
     }
 }

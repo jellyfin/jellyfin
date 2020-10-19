@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.Udp
     public sealed class UdpServer : IDisposable
     {
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
@@ -68,12 +68,6 @@ namespace Emby.Server.Implementations.Udp
                 {
                     _logger.LogError(ex, "Error sending response message");
                 }
-
-                var parts = messageText.Split('|');
-                if (parts.Length > 1)
-                {
-                    _appHost.EnableLoopback(parts[1]);
-                }
             }
             else
             {
@@ -101,11 +95,18 @@ namespace Emby.Server.Implementations.Udp
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                var infiniteTask = Task.Delay(-1, cancellationToken);
                 try
                 {
-                    var result = await _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint).ConfigureAwait(false);
+                    var task = _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint);
+                    await Task.WhenAny(task, infiniteTask).ConfigureAwait(false);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!task.IsCompleted)
+                    {
+                        return;
+                    }
+
+                    var result = task.Result;
 
                     var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))

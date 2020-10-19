@@ -1,3 +1,4 @@
+#nullable disable
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Session

@@ -1,10 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -63,7 +65,7 @@ namespace MediaBrowser.Controller.LiveTv
 
                 if (double.TryParse(Number, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
                 {
-                    return string.Format("{0:00000.0}", number) + "-" + (Name ?? string.Empty);
+                    return string.Format(CultureInfo.InvariantCulture, "{0:00000.0}", number) + "-" + (Name ?? string.Empty);
                 }
             }
 

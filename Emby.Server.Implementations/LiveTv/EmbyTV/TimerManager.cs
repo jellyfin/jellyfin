@@ -5,8 +5,8 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (startDate < now)
             {
-                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = item });
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(item));
                 return;
             }
 
@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (timer != null)
             {
-                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = timer });
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
             }
         }
 

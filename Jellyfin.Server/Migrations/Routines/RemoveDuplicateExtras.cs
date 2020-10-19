@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Migrations.Routines
     internal class RemoveDuplicateExtras : IMigrationRoutine
     {
         private const string DbFilename = "library.db";
-        private readonly ILogger _logger;
+        private readonly ILogger<RemoveDuplicateExtras> _logger;
         private readonly IServerApplicationPaths _paths;
 
         public RemoveDuplicateExtras(ILogger<RemoveDuplicateExtras> logger, IServerApplicationPaths paths)
@@ -28,6 +28,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "RemoveDuplicateExtras";
+
+        /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()

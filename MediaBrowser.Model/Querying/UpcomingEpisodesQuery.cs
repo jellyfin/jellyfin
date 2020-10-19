@@ -1,5 +1,7 @@
+#nullable disable
 #pragma warning disable CS1591
 
+using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
@@ -25,26 +27,29 @@ namespace MediaBrowser.Model.Querying
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable images].
         /// </summary>
         /// <value><c>null</c> if [enable images] contains no value, <c>true</c> if [enable images]; otherwise, <c>false</c>.</value>
         public bool? EnableImages { get; set; }
+
         /// <summary>
         /// Gets or sets the image type limit.
         /// </summary>
         /// <value>The image type limit.</value>
         public int? ImageTypeLimit { get; set; }
+
         /// <summary>
         /// Gets or sets the enable image types.
         /// </summary>
@@ -53,7 +58,7 @@ namespace MediaBrowser.Model.Querying
 
         public UpcomingEpisodesQuery()
         {
-            EnableImageTypes = new ImageType[] { };
+            EnableImageTypes = Array.Empty<ImageType>();
         }
     }
 }

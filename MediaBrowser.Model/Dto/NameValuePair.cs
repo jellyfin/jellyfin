@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Dto
@@ -6,7 +7,6 @@ namespace MediaBrowser.Model.Dto
     {
         public NameValuePair()
         {
-
         }
 
         public NameValuePair(string name, string value)

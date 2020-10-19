@@ -10,6 +10,12 @@ namespace MediaBrowser.Model.IO
     public interface IIsoMounter
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        string Name { get; }
+
+        /// <summary>
         /// Mounts the specified iso path.
         /// </summary>
         /// <param name="isoPath">The iso path.</param>
@@ -25,11 +31,5 @@ namespace MediaBrowser.Model.IO
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if this instance can mount the specified path; otherwise, <c>false</c>.</returns>
         bool CanMount(string path);
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        string Name { get; }
     }
 }

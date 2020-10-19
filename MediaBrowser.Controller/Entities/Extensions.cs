@@ -6,7 +6,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Extensions
+    /// Class Extensions.
     /// </summary>
     public static class Extensions
     {

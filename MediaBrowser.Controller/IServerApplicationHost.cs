@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -10,19 +12,15 @@ using Microsoft.AspNetCore.Http;
 namespace MediaBrowser.Controller
 {
     /// <summary>
-    /// Interface IServerApplicationHost
+    /// Interface IServerApplicationHost.
     /// </summary>
     public interface IServerApplicationHost : IApplicationHost
     {
         event EventHandler HasUpdateAvailableChanged;
 
-        /// <summary>
-        /// Gets the system info.
-        /// </summary>
-        /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+        IServiceProvider ServiceProvider { get; }
 
-        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
+        bool CoreStartupHasCompleted { get; }
 
         bool CanLaunchWebBrowser { get; }
 
@@ -54,6 +52,14 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The name of the friendly.</value>
         string FriendlyName { get; }
+
+        /// <summary>
+        /// Gets the system info.
+        /// </summary>
+        /// <returns>SystemInfo.</returns>
+        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+
+        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request
@@ -108,13 +114,10 @@ namespace MediaBrowser.Controller
         /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
         void LaunchUrl(string url);
 
-        void EnableLoopback(string appName);
-
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
-        string ReverseVirtualPath(string path);
 
-        Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
+        string ReverseVirtualPath(string path);
     }
 }

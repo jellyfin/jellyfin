@@ -16,8 +16,8 @@
 <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
 <img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
 </a>
-<a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=1">
-<img alt="Azure Builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20CI"/>
+<a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=29">
+<img alt="Azure Builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20Server"/>
 </a>
 <a href="https://hub.docker.com/r/jellyfin/jellyfin">
 <img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/>
@@ -53,18 +53,19 @@ Jellyfin is a Free Software Media System that puts you in control of managing an
 For further details, please see [our documentation page](https://docs.jellyfin.org/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels](https://docs.jellyfin.org/general/getting-help.html). For more information about the project, please see our [about page](https://docs.jellyfin.org/general/about.html).
 
 <strong>Want to get started?</strong><br/>
-Choose from <a href="https://docs.jellyfin.org/general/administration/installing.html">Prebuilt Packages</a> or <a href="https://docs.jellyfin.org/general/administration/building.html">Build from Source</a>, then see our <a href="https://docs.jellyfin.org/general/quick-start.html">quick start guide</a>.<br/>
+Check out our <a href="https://jellyfin.org/downloads">downloads page</a> or our <a href="https://docs.jellyfin.org/general/administration/installing.html">installation guide</a>, then see our <a href="https://docs.jellyfin.org/general/quick-start.html">quick start guide</a>. You can also <a href="https://docs.jellyfin.org/general/administration/building.html">build from source</a>.<br/>
 
 <strong>Something not working right?</strong><br/>
 Open an <a href="https://docs.jellyfin.org/general/contributing/issues.html">Issue</a> on GitHub.<br/>
 
 <strong>Want to contribute?</strong><br/>
-Check out <a href="https://docs.jellyfin.org/general/contributing/index.html">our documentation for guidelines</a>.<br/>
+Check out our <a href="https://jellyfin.org/contribute">contributing choose-your-own-adventure</a> to see where you can help, then see our <a href="https://docs.jellyfin.org/general/contributing/index.html">contributing guide</a> and our <a href="https://jellyfin.org/docs/general/community-standards">community standards</a>.<br/>
 
 <strong>New idea or improvement?</strong><br/>
 Check out our <a href="https://features.jellyfin.org/?view=most-wanted">feature request hub</a>.<br/>
 
-Most of the translations can be found in the web client but we have several other clients that have missing strings. Translations can be improved very easily from our <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core">Weblate</a> instance. Look through the following graphic to see if your native language could use some work!
+<strong>Don't see Jellyfin in your language?</strong><br/>
+Check out our <a href="https://translate.jellyfin.org">Weblate instance</a> to help translate Jellyfin and its subprojects.<br/>
 
 <a href="https://translate.jellyfin.org/engage/jellyfin/?utm_source=widget">
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
@@ -100,7 +101,7 @@ Note that it is also possible to [host the web client separately](#hosting-the-w
 
 There are three options to get the files for the web client.
 
-1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=11). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=11&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
+1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
 
@@ -124,7 +125,7 @@ To run the project with Visual Studio Code you will first need to open the repos
 
 Second, you need to [install the recommended extensions for the workspace](https://code.visualstudio.com/docs/editor/extension-gallery#_recommended-extensions). Note that extension recommendations are classified as either "Workspace Recommendations" or "Other Recommendations", but only the "Workspace Recommendations" are required.
 
-After the required extensions are installed, you can can run the server by pressing `F5`.
+After the required extensions are installed, you can run the server by pressing `F5`.
 
 #### Running From The Command Line
 
@@ -162,6 +163,9 @@ The following sections describe some more advanced scenarios for running the ser
 
 It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for frontend developers who would prefer to host the client in a separate webpack development server for a tighter development loop. See the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this.
 
-To instruct the server not to host the web content, there is a `nowebcontent` configuration flag that must be set. This can specified using the command line switch `--nowebcontent` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
+To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can specified using the command line
+switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
+
+**NOTE:** The setup wizard can not be run if the web client is hosted separately.

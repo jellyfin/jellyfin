@@ -234,7 +234,9 @@ namespace Emby.Server.Implementations.Data
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
-                bindParam.Bind(value.ToByteArray());
+                Span<byte> byteValue = stackalloc byte[16];
+                value.TryWriteBytes(byteValue);
+                bindParam.Bind(byteValue);
             }
             else
             {

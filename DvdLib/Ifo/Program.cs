@@ -6,7 +6,7 @@ namespace DvdLib.Ifo
 {
     public class Program
     {
-        public readonly List<Cell> Cells;
+        public IReadOnlyList<Cell> Cells { get; }
 
         public Program(List<Cell> cells)
         {

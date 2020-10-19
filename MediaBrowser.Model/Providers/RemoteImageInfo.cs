@@ -1,3 +1,4 @@
+#nullable disable
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 
@@ -67,5 +68,4 @@ namespace MediaBrowser.Model.Providers
         /// <value>The type of the rating.</value>
         public RatingType RatingType { get; set; }
     }
-
 }

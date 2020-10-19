@@ -1,7 +1,7 @@
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Interface IHasAspectRatio
+    /// Interface IHasAspectRatio.
     /// </summary>
     public interface IHasAspectRatio
     {

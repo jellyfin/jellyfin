@@ -16,7 +16,6 @@
     "Folders": "Mape",
     "Genres": "Zvrsti",
     "HeaderAlbumArtists": "Izvajalci albuma",
-    "HeaderCameraUploads": "Posnetki kamere",
     "HeaderContinueWatching": "Nadaljuj gledanje",
     "HeaderFavoriteAlbums": "Priljubljeni albumi",
     "HeaderFavoriteArtists": "Priljubljeni izvajalci",
@@ -113,5 +112,6 @@
     "TasksChannelsCategory": "Spletni kanali",
     "TasksApplicationCategory": "Aplikacija",
     "TasksLibraryCategory": "Knjižnica",
-    "TasksMaintenanceCategory": "Vzdrževanje"
+    "TasksMaintenanceCategory": "Vzdrževanje",
+    "TaskDownloadMissingSubtitlesDescription": "Na podlagi nastavitev metapodatkov poišče manjkajoče podnapise na internetu."
 }

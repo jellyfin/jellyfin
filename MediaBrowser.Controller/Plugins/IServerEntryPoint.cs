@@ -22,6 +22,5 @@ namespace MediaBrowser.Controller.Plugins
     /// </summary>
     public interface IRunBeforeStartup
     {
-
     }
 }

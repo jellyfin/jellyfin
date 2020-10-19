@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -28,11 +29,17 @@ namespace MediaBrowser.Model.MediaInfo
         public DeviceProfile DeviceProfile { get; set; }
 
         public bool EnableDirectPlay { get; set; }
+
         public bool EnableDirectStream { get; set; }
+
         public bool EnableTranscoding { get; set; }
+
         public bool AllowVideoStreamCopy { get; set; }
+
         public bool AllowAudioStreamCopy { get; set; }
+
         public bool IsPlayback { get; set; }
+
         public bool AutoOpenLiveStream { get; set; }
 
         public MediaProtocol[] DirectPlayProtocols { get; set; }

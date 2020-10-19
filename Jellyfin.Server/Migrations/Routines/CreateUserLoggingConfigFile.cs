@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Common.Configuration;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Jellyfin.Server.Migrations.Routines
@@ -48,6 +47,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "CreateLoggingConfigHeirarchy";
+
+        /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()

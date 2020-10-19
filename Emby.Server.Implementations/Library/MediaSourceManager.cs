@@ -1,12 +1,15 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
@@ -14,7 +17,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -28,16 +30,22 @@ namespace Emby.Server.Implementations.Library
 {
     public class MediaSourceManager : IMediaSourceManager, IDisposable
     {
+        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
+        private const char LiveStreamIdDelimeter = '_';
+
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaSourceManager> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
+
+        private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
+        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
         private IMediaSourceProvider[] _providers;
 
@@ -190,10 +198,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding)
-                        {
-                            source.SupportsTranscoding = false;
-                        }
+                        source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
                     }
                 }
             }
@@ -207,22 +212,27 @@ namespace Emby.Server.Implementations.Library
             {
                 return MediaProtocol.Rtsp;
             }
+
             if (path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtmp;
             }
+
             if (path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Http;
             }
+
             if (path.StartsWith("rtp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtp;
             }
+
             if (path.StartsWith("ftp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Ftp;
             }
+
             if (path.StartsWith("udp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Udp;
@@ -352,7 +362,9 @@ namespace Emby.Server.Implementations.Library
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.SubtitleStreamIndex.HasValue && user.Configuration.RememberSubtitleSelections && user.Configuration.SubtitleMode != SubtitlePlaybackMode.None && allowRememberingSelection)
+            if (userData.SubtitleStreamIndex.HasValue
+                && user.RememberSubtitleSelections
+                && user.SubtitleMode != SubtitlePlaybackMode.None && allowRememberingSelection)
             {
                 var index = userData.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -363,26 +375,26 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredSubs = string.IsNullOrEmpty(user.Configuration.SubtitleLanguagePreference)
-                ? Array.Empty<string>() : NormalizeLanguage(user.Configuration.SubtitleLanguagePreference);
+            var preferredSubs = string.IsNullOrEmpty(user.SubtitleLanguagePreference)
+                ? Array.Empty<string>() : NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLangage = defaultAudioIndex == null
                 ? null
                 : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
 
-            source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(source.MediaStreams,
+            source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                source.MediaStreams,
                 preferredSubs,
-                user.Configuration.SubtitleMode,
+                user.SubtitleMode,
                 audioLangage);
 
-            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs,
-                user.Configuration.SubtitleMode, audioLangage);
+            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLangage);
         }
 
         private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.AudioStreamIndex.HasValue && user.Configuration.RememberAudioSelections && allowRememberingSelection)
+            if (userData.AudioStreamIndex.HasValue && user.RememberAudioSelections && allowRememberingSelection)
             {
                 var index = userData.AudioStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -393,11 +405,11 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredAudio = string.IsNullOrEmpty(user.Configuration.AudioLanguagePreference)
+            var preferredAudio = string.IsNullOrEmpty(user.AudioLanguagePreference)
                 ? Array.Empty<string>()
-                : NormalizeLanguage(user.Configuration.AudioLanguagePreference);
+                : NormalizeLanguage(user.AudioLanguagePreference);
 
-            source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.Configuration.PlayDefaultAudioTrack);
+            source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }
 
         public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
@@ -435,7 +447,6 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 return 1;
-
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i =>
             {
@@ -445,9 +456,6 @@ namespace Emby.Server.Implementations.Library
             })
             .ToList();
         }
-
-        private readonly Dictionary<string, ILiveStream> _openStreams = new Dictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
-        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
         {
@@ -521,11 +529,7 @@ namespace Emby.Server.Implementations.Library
                 SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);
             }
 
-            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse
-            {
-                MediaSource = clone
-
-            }, liveStream as IDirectStreamProvider);
+            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
 
         private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
@@ -538,7 +542,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.RunTimeTicks = null;
             }
 
-            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio);
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             if (audioStream == null || audioStream.Index == -1)
             {
@@ -549,7 +553,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.DefaultAudioStreamIndex = audioStream.Index;
             }
 
-            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
             if (videoStream != null)
             {
                 if (!videoStream.BitRate.HasValue)
@@ -560,17 +564,14 @@ namespace Emby.Server.Implementations.Library
                     {
                         videoStream.BitRate = 30000000;
                     }
-
                     else if (width >= 1900)
                     {
                         videoStream.BitRate = 20000000;
                     }
-
                     else if (width >= 1200)
                     {
                         videoStream.BitRate = 8000000;
                     }
-
                     else if (width >= 700)
                     {
                         videoStream.BitRate = 2000000;
@@ -582,29 +583,20 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate();
         }
 
-        public async Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
+        public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
         {
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            var info = _openStreams.Values.FirstOrDefault(i =>
             {
-                var info = _openStreams.Values.FirstOrDefault(i =>
+                var liveStream = i as ILiveStream;
+                if (liveStream != null)
                 {
-                    var liveStream = i as ILiveStream;
-                    if (liveStream != null)
-                    {
-                        return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
-                    }
+                    return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
+                }
 
-                    return false;
-                });
+                return false;
+            });
 
-                return info as IDirectStreamProvider;
-            }
-            finally
-            {
-                _liveStreamSemaphore.Release();
-            }
+            return Task.FromResult(info as IDirectStreamProvider);
         }
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
@@ -621,13 +613,14 @@ namespace Emby.Server.Implementations.Library
 
             if (liveStreamInfo is IDirectStreamProvider)
             {
-                var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                {
-                    MediaSource = mediaSource,
-                    ExtractChapters = false,
-                    MediaType = DlnaProfileType.Video
-
-                }, cancellationToken).ConfigureAwait(false);
+                var info = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaSource = mediaSource,
+                        ExtractChapters = false,
+                        MediaType = DlnaProfileType.Video
+                    },
+                    cancellationToken).ConfigureAwait(false);
 
                 mediaSource.MediaStreams = info.MediaStreams;
                 mediaSource.Container = info.Container;
@@ -652,7 +645,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     mediaInfo = _jsonSerializer.DeserializeFromFile<MediaInfo>(cacheFilePath);
 
-                    //_logger.LogDebug("Found cached media info");
+                    // _logger.LogDebug("Found cached media info");
                 }
                 catch (Exception ex)
                 {
@@ -674,20 +667,21 @@ namespace Emby.Server.Implementations.Library
                     mediaSource.AnalyzeDurationMs = 3000;
                 }
 
-                mediaInfo = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                mediaInfo = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
                 {
                     MediaSource = mediaSource,
                     MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
                     ExtractChapters = false
-
-                }, cancellationToken).ConfigureAwait(false);
+                },
+                    cancellationToken).ConfigureAwait(false);
 
                 if (cacheFilePath != null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     _jsonSerializer.SerializeToFile(mediaInfo, cacheFilePath);
 
-                    //_logger.LogDebug("Saved media info to {0}", cacheFilePath);
+                    // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 
@@ -753,17 +747,14 @@ namespace Emby.Server.Implementations.Library
                     {
                         videoStream.BitRate = 30000000;
                     }
-
                     else if (width >= 1900)
                     {
                         videoStream.BitRate = 20000000;
                     }
-
                     else if (width >= 1200)
                     {
                         videoStream.BitRate = 8000000;
                     }
-
                     else if (width >= 700)
                     {
                         videoStream.BitRate = 2000000;
@@ -794,29 +785,20 @@ namespace Emby.Server.Implementations.Library
             return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider);
         }
 
-        private async Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
+        private Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
-                if (_openStreams.TryGetValue(id, out ILiveStream info))
-                {
-                    return info;
-                }
-                else
-                {
-                    throw new ResourceNotFoundException();
-                }
+                return Task.FromResult(info);
             }
-            finally
+            else
             {
-                _liveStreamSemaphore.Release();
+                return Task.FromException<ILiveStream>(new ResourceNotFoundException());
             }
         }
 
@@ -845,7 +827,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (liveStream.ConsumerCount <= 0)
                     {
-                        _openStreams.Remove(id);
+                        _openStreams.TryRemove(id, out _);
 
                         _logger.LogInformation("Closing live stream {0}", id);
 
@@ -860,24 +842,21 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
-        private const char LiveStreamIdDelimeter = '_';
-
-        private Tuple<IMediaSourceProvider, string> GetProvider(string key)
+        private (IMediaSourceProvider, string) GetProvider(string key)
         {
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentException("key");
+                throw new ArgumentException("Key can't be empty.", nameof(key));
             }
 
             var keys = key.Split(new[] { LiveStreamIdDelimeter }, 2);
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), keys[0], StringComparison.OrdinalIgnoreCase));
 
-            var splitIndex = key.IndexOf(LiveStreamIdDelimeter);
+            var splitIndex = key.IndexOf(LiveStreamIdDelimeter, StringComparison.Ordinal);
             var keyId = key.Substring(splitIndex + 1);
 
-            return new Tuple<IMediaSourceProvider, string>(provider, keyId);
+            return (provider, keyId);
         }
 
         /// <summary>
@@ -886,9 +865,9 @@ namespace Emby.Server.Implementations.Library
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private readonly object _disposeLock = new object();
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
@@ -897,15 +876,12 @@ namespace Emby.Server.Implementations.Library
         {
             if (dispose)
             {
-                lock (_disposeLock)
+                foreach (var key in _openStreams.Keys.ToList())
                 {
-                    foreach (var key in _openStreams.Keys.ToList())
-                    {
-                        var task = CloseLiveStream(key);
-
-                        Task.WaitAll(task);
-                    }
+                    CloseLiveStream(key).GetAwaiter().GetResult();
                 }
+
+                _liveStreamSemaphore.Dispose();
             }
         }
     }

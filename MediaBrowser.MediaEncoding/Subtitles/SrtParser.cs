@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,6 +22,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();
@@ -35,6 +38,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         continue;
                     }
+
                     var subEvent = new SubtitleTrackEvent { Id = line };
                     line = reader.ReadLine();
 
@@ -52,11 +56,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         _logger.LogWarning("Unrecognized line in srt: {0}", line);
                         continue;
                     }
+
                     subEvent.StartPositionTicks = GetTicks(time[0]);
-                    var endTime = time[1];
-                    var idx = endTime.IndexOf(" ", StringComparison.Ordinal);
+                    var endTime = time[1].AsSpan();
+                    var idx = endTime.IndexOf(' ');
                     if (idx > 0)
-                        endTime = endTime.Substring(0, idx);
+                    {
+                        endTime = endTime.Slice(0, idx);
+                    }
+
                     subEvent.EndPositionTicks = GetTicks(endTime);
                     var multiline = new List<string>();
                     while ((line = reader.ReadLine()) != null)
@@ -65,8 +73,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             break;
                         }
+
                         multiline.Add(line);
                     }
+
                     subEvent.Text = string.Join(ParserValues.NewLine, multiline);
                     subEvent.Text = subEvent.Text.Replace(@"\N", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, @"\{(?:\\\d?[\w.-]+(?:\([^\)]*\)|&H?[0-9A-Fa-f]+&|))+\}", string.Empty, RegexOptions.IgnoreCase);
@@ -76,11 +86,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     trackEvents.Add(subEvent);
                 }
             }
+
             trackInfo.TrackEvents = trackEvents.ToArray();
             return trackInfo;
         }
 
-        long GetTicks(string time)
+        private long GetTicks(ReadOnlySpan<char> time)
         {
             return TimeSpan.TryParseExact(time, @"hh\:mm\:ss\.fff", _usCulture, out var span)
                 ? span.Ticks

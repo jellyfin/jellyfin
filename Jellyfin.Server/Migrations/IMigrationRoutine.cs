@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations
 {
@@ -17,6 +16,11 @@ namespace Jellyfin.Server.Migrations
         /// Gets the display name of the migration.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether to perform migration on a new install.
+        /// </summary>
+        public bool PerformOnNewInstall { get; }
 
         /// <summary>
         /// Execute the migration routine.

@@ -1,13 +1,15 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -16,109 +18,118 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ProviderManager
+    /// Class ProviderManager.
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
-        private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly object _refreshQueueLock = new object();
+        private readonly ILogger<ProviderManager> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly IJsonSerializer _json;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new ConcurrentDictionary<Guid, double>();
+        private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
+        private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
+            new SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>>();
 
-        private IImageProvider[] ImageProviders { get; set; }
-
-        private IMetadataService[] _metadataServices = { };
-        private IMetadataProvider[] _metadataProviders = { };
+        private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
+        private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
         private IEnumerable<IMetadataSaver> _savers;
-
         private IExternalId[] _externalIds;
-
-        private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
-
-        public event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
-        public event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
-        public event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
+        private bool _isProcessingRefreshQueue;
+        private bool _disposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProviderManager" /> class.
+        /// Initializes a new instance of the <see cref="ProviderManager"/> class.
         /// </summary>
+        /// <param name="httpClientFactory">The Http client factory.</param>
+        /// <param name="subtitleManager">The subtitle manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="libraryMonitor">The library monitor.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="appPaths">The server application paths.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public ProviderManager(
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
             IServerConfigurationManager configurationManager,
             ILibraryMonitor libraryMonitor,
             ILogger<ProviderManager> logger,
             IFileSystem fileSystem,
             IServerApplicationPaths appPaths,
-            ILibraryManager libraryManager,
-            IJsonSerializer json)
+            ILibraryManager libraryManager)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _configurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _libraryManager = libraryManager;
-            _json = json;
             _subtitleManager = subtitleManager;
         }
 
-        /// <summary>
-        /// Adds the metadata providers.
-        /// </summary>
-        public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices,
-                             IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers,
-                             IEnumerable<IExternalId> externalIds)
+        /// <inheritdoc/>
+        public event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
+
+        /// <inheritdoc/>
+        public event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
+
+        /// <inheritdoc/>
+        public event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
+
+        private IImageProvider[] ImageProviders { get; set; }
+
+        /// <inheritdoc/>
+        public void AddParts(
+            IEnumerable<IImageProvider> imageProviders,
+            IEnumerable<IMetadataService> metadataServices,
+            IEnumerable<IMetadataProvider> metadataProviders,
+            IEnumerable<IMetadataSaver> metadataSavers,
+            IEnumerable<IExternalId> externalIds)
         {
             ImageProviders = imageProviders.ToArray();
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
-            _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
+            _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
-            _savers = metadataSavers.Where(i =>
-            {
-                var configurable = i as IConfigurableProvider;
-
-                return configurable == null || configurable.IsEnabled;
-            }).ToArray();
+            _savers = metadataSavers
+                .Where(i => !(i is IConfigurableProvider configurable) || configurable.IsEnabled)
+                .ToArray();
         }
 
+        /// <inheritdoc/>
         public Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            IMetadataService service = null;
             var type = item.GetType();
 
-            foreach (var current in _metadataServices)
-            {
-                if (current.CanRefreshPrimary(type))
-                {
-                    service = current;
-                    break;
-                }
-            }
+            var service = _metadataServices.FirstOrDefault(current => current.CanRefreshPrimary(type));
 
             if (service == null)
             {
@@ -141,35 +152,58 @@ namespace MediaBrowser.Providers.Manager
             return Task.FromResult(ItemUpdateType.None);
         }
 
+        /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            using (var response = await _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                BufferContent = false
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+            using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
-            }).ConfigureAwait(false))
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                // Workaround for tvheadend channel icons
-                // TODO: Isolate this hack into the tvh plugin
-                if (string.IsNullOrEmpty(response.ContentType))
+                throw new HttpException("Invalid image received.")
                 {
-                    if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        response.ContentType = "image/png";
-                    }
-                }
-
-                await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken).ConfigureAwait(false);
+                    StatusCode = response.StatusCode
+                };
             }
+
+            var contentType = response.Content.Headers.ContentType.MediaType;
+
+            // Workaround for tvheadend channel icons
+            // TODO: Isolate this hack into the tvh plugin
+            if (string.IsNullOrEmpty(contentType))
+            {
+                if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    contentType = "image/png";
+                }
+            }
+
+            // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
+            if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new HttpException("Invalid image received.")
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await SaveImage(
+                item,
+                stream,
+                contentType,
+                type,
+                imageIndex,
+                cancellationToken).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
 
+        /// <inheritdoc/>
         public Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(source))
@@ -182,6 +216,14 @@ namespace MediaBrowser.Providers.Manager
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
 
+        /// <inheritdoc/>
+        public Task SaveImage(Stream source, string mimeType, string path)
+        {
+            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+                .SaveImage(source, path);
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, RemoteImageQuery query, CancellationToken cancellationToken)
         {
             var providers = GetRemoteImageProviders(item, query.IncludeDisabledProviders);
@@ -201,7 +243,7 @@ namespace MediaBrowser.Providers.Manager
                 languages.Add(preferredLanguage);
             }
 
-            var tasks = providers.Select(i => GetImages(item, cancellationToken, i, languages, query.ImageType));
+            var tasks = providers.Select(i => GetImages(item, i, languages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -212,12 +254,17 @@ namespace MediaBrowser.Providers.Manager
         /// Gets the images.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="preferredLanguages">The preferred languages.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken, IRemoteImageProvider provider, List<string> preferredLanguages, ImageType? type = null)
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(
+            BaseItem item,
+            IRemoteImageProvider provider,
+            IReadOnlyCollection<string> preferredLanguages,
+            CancellationToken cancellationToken,
+            ImageType? type = null)
         {
             try
             {
@@ -243,25 +290,23 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{0} failed in GetImageInfos for type {1}", provider.GetType().Name, item.GetType().Name);
+                _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return new List<RemoteImageInfo>();
             }
         }
 
-        /// <summary>
-        /// Gets the supported image providers.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{IImageProvider}.</returns>
+        /// <inheritdoc/>
         public IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(BaseItem item)
         {
-            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo
-            {
-                Name = i.Name,
-                SupportedImages = i.GetSupportedImages(item).ToArray()
-            });
+            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo(i.Name, i.GetSupportedImages(item).ToArray()));
         }
 
+        /// <summary>
+        /// Gets the image providers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="refreshOptions">The image refresh options.</param>
+        /// <returns>The image providers for the item.</returns>
         public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)
         {
             return GetImageProviders(item, _libraryManager.GetLibraryOptions(item), GetMetadataOptions(item), refreshOptions, false);
@@ -275,7 +320,7 @@ namespace MediaBrowser.Providers.Manager
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
             var typeFetcherOrder = typeOptions?.ImageFetcherOrder;
 
-            return ImageProviders.Where(i => CanRefresh(i, item, libraryOptions, options, refreshOptions, includeDisabled))
+            return ImageProviders.Where(i => CanRefresh(i, item, libraryOptions, refreshOptions, includeDisabled))
                 .OrderBy(i =>
                 {
                     // See if there's a user-defined order
@@ -296,6 +341,13 @@ namespace MediaBrowser.Providers.Manager
             .ThenBy(GetOrder);
         }
 
+        /// <summary>
+        /// Gets the metadata providers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <typeparam name="T">The type of metadata provider.</typeparam>
+        /// <returns>The metadata providers.</returns>
         public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions)
             where T : BaseItem
         {
@@ -311,7 +363,7 @@ namespace MediaBrowser.Providers.Manager
             var currentOptions = globalMetadataOptions;
 
             return _metadataProviders.OfType<IMetadataProvider<T>>()
-                .Where(i => CanRefresh(i, item, libraryOptions, currentOptions, includeDisabled, forceEnableInternetMetadata))
+                .Where(i => CanRefresh(i, item, libraryOptions, includeDisabled, forceEnableInternetMetadata))
                 .OrderBy(i => GetConfiguredOrder(item, i, libraryOptions, globalMetadataOptions))
                 .ThenBy(GetDefaultOrder);
         }
@@ -321,14 +373,20 @@ namespace MediaBrowser.Providers.Manager
             var options = GetMetadataOptions(item);
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
 
-            return GetImageProviders(item, libraryOptions, options,
-                    new ImageRefreshOptions(
-                        new DirectoryService(_fileSystem)),
-                    includeDisabled)
-                .OfType<IRemoteImageProvider>();
+            return GetImageProviders(
+                item,
+                libraryOptions,
+                options,
+                new ImageRefreshOptions(new DirectoryService(_fileSystem)),
+                includeDisabled).OfType<IRemoteImageProvider>();
         }
 
-        private bool CanRefresh(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, bool includeDisabled, bool forceEnableInternetMetadata)
+        private bool CanRefresh(
+            IMetadataProvider provider,
+            BaseItem item,
+            LibraryOptions libraryOptions,
+            bool includeDisabled,
+            bool forceEnableInternetMetadata)
         {
             if (!includeDisabled)
             {
@@ -364,7 +422,12 @@ namespace MediaBrowser.Providers.Manager
             return true;
         }
 
-        private bool CanRefresh(IImageProvider provider, BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
+        private bool CanRefresh(
+            IImageProvider provider,
+            BaseItem item,
+            LibraryOptions libraryOptions,
+            ImageRefreshOptions refreshOptions,
+            bool includeDisabled)
         {
             if (!includeDisabled)
             {
@@ -392,7 +455,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{0} failed in Supports for type {1}", provider.GetType().Name, item.GetType().Name);
+                _logger.LogError(ex, "{ProviderName} failed in Supports for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return false;
             }
         }
@@ -404,9 +467,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>System.Int32.</returns>
         private int GetOrder(IImageProvider provider)
         {
-            var hasOrder = provider as IHasOrder;
-
-            if (hasOrder == null)
+            if (!(provider is IHasOrder hasOrder))
             {
                 return 0;
             }
@@ -433,7 +494,7 @@ namespace MediaBrowser.Providers.Manager
             if (provider is IRemoteMetadataProvider)
             {
                 var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
-                var typeFetcherOrder = typeOptions == null ? null : typeOptions.MetadataFetcherOrder;
+                var typeFetcherOrder = typeOptions?.MetadataFetcherOrder;
 
                 var fetcherOrder = typeFetcherOrder ?? globalMetadataOptions.MetadataFetcherOrder;
 
@@ -451,9 +512,7 @@ namespace MediaBrowser.Providers.Manager
 
         private int GetDefaultOrder(IMetadataProvider provider)
         {
-            var hasOrder = provider as IHasOrder;
-
-            if (hasOrder != null)
+            if (provider is IHasOrder hasOrder)
             {
                 return hasOrder.Order;
             }
@@ -461,9 +520,10 @@ namespace MediaBrowser.Providers.Manager
             return 0;
         }
 
+        /// <inheritdoc/>
         public MetadataPluginSummary[] GetAllMetadataPlugins()
         {
-            return new MetadataPluginSummary[]
+            return new[]
             {
                 GetPluginSummary<Movie>(),
                 GetPluginSummary<BoxSet>(),
@@ -485,7 +545,7 @@ namespace MediaBrowser.Providers.Manager
             where T : BaseItem, new()
         {
             // Give it a dummy path just so that it looks like a file system item
-            var dummy = new T()
+            var dummy = new T
             {
                 Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
                 ParentId = Guid.NewGuid()
@@ -500,16 +560,17 @@ namespace MediaBrowser.Providers.Manager
 
             var libraryOptions = new LibraryOptions();
 
-            var imageProviders = GetImageProviders(dummy, libraryOptions, options,
-                                    new ImageRefreshOptions(
-                                        new DirectoryService(_fileSystem)),
-                                    true)
-                                .ToList();
+            var imageProviders = GetImageProviders(
+                dummy,
+                libraryOptions,
+                options,
+                new ImageRefreshOptions(new DirectoryService(_fileSystem)),
+                true).ToList();
 
             var pluginList = summary.Plugins.ToList();
 
             AddMetadataPlugins(pluginList, dummy, libraryOptions, options);
-            AddImagePlugins(pluginList, dummy, imageProviders);
+            AddImagePlugins(pluginList, imageProviders);
 
             var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
 
@@ -540,14 +601,14 @@ namespace MediaBrowser.Providers.Manager
             var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true).ToList();
 
             // Locals
-            list.AddRange(providers.Where(i => (i is ILocalMetadataProvider)).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => i is ILocalMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
             // Fetchers
-            list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => i is IRemoteMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataFetcher
@@ -561,12 +622,10 @@ namespace MediaBrowser.Providers.Manager
             }));
         }
 
-        private void AddImagePlugins<T>(List<MetadataPlugin> list, T item, List<IImageProvider> imageProviders)
-            where T : BaseItem
+        private void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
         {
-
             // Locals
-            list.AddRange(imageProviders.Where(i => (i is ILocalImageProvider)).Select(i => new MetadataPlugin
+            list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalImageProvider
@@ -580,6 +639,7 @@ namespace MediaBrowser.Providers.Manager
             }));
         }
 
+        /// <inheritdoc/>
         public MetadataOptions GetMetadataOptions(BaseItem item)
         {
             var type = item.GetType().Name;
@@ -589,17 +649,13 @@ namespace MediaBrowser.Providers.Manager
                 new MetadataOptions();
         }
 
-        /// <summary>
-        /// Saves the metadata.
-        /// </summary>
+        /// <inheritdoc/>
         public void SaveMetadata(BaseItem item, ItemUpdateType updateType)
         {
             SaveMetadata(item, updateType, _savers);
         }
 
-        /// <summary>
-        /// Saves the metadata.
-        /// </summary>
+        /// <inheritdoc/>
         public void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
         {
             SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
@@ -611,7 +667,6 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <param name="savers">The savers.</param>
-        /// <returns>Task.</returns>
         private void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
@@ -620,11 +675,9 @@ namespace MediaBrowser.Providers.Manager
             {
                 _logger.LogDebug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
 
-                var fileSaver = saver as IMetadataFileSaver;
-
-                if (fileSaver != null)
+                if (saver is IMetadataFileSaver fileSaver)
                 {
-                    string path = null;
+                    string path;
 
                     try
                     {
@@ -691,11 +744,9 @@ namespace MediaBrowser.Providers.Manager
                         {
                             if (updateType >= ItemUpdateType.MetadataEdit)
                             {
-                                var fileSaver = saver as IMetadataFileSaver;
-
                                 // Manual edit occurred
                                 // Even if save local is off, save locally anyway if the metadata file already exists
-                                if (fileSaver == null || !File.Exists(fileSaver.GetSavePath(item)))
+                                if (!(saver is IMetadataFileSaver fileSaver) || !File.Exists(fileSaver.GetSavePath(item)))
                                 {
                                     return false;
                                 }
@@ -726,6 +777,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        /// <inheritdoc/>
         public Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, CancellationToken cancellationToken)
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
@@ -740,7 +792,7 @@ namespace MediaBrowser.Providers.Manager
             return GetRemoteSearchResults<TItemType, TLookupType>(searchInfo, referenceItem, cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, BaseItem referenceItem, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, BaseItem referenceItem, CancellationToken cancellationToken)
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
         {
@@ -779,6 +831,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 searchInfo.SearchInfo.MetadataLanguage = _configurationManager.Configuration.PreferredMetadataLanguage;
             }
+
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
             {
                 searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.Configuration.MetadataCountryCode;
@@ -823,12 +876,14 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            //_logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
+            // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(IRemoteSearchProvider<TLookupType> provider, TLookupType searchInfo,
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(
+            IRemoteSearchProvider<TLookupType> provider,
+            TLookupType searchInfo,
             CancellationToken cancellationToken)
             where TLookupType : ItemLookupInfo
         {
@@ -844,7 +899,8 @@ namespace MediaBrowser.Providers.Manager
             return list;
         }
 
-        public Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
         {
             var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
 
@@ -856,7 +912,7 @@ namespace MediaBrowser.Providers.Manager
             return provider.GetImageResponse(url, cancellationToken);
         }
 
-        public IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
+        private IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
         {
             return _externalIds.Where(i =>
             {
@@ -872,6 +928,7 @@ namespace MediaBrowser.Providers.Manager
             });
         }
 
+        /// <inheritdoc/>
         public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
             return GetExternalIds(item)
@@ -891,29 +948,29 @@ namespace MediaBrowser.Providers.Manager
 
                 return new ExternalUrl
                 {
-                    Name = i.Name,
+                    Name = i.ProviderName,
                     Url = string.Format(
                         CultureInfo.InvariantCulture,
                         i.UrlFormatString,
                         value)
                 };
-
             }).Where(i => i != null).Concat(item.GetRelatedUrls());
         }
 
+        /// <inheritdoc/>
         public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
         {
             return GetExternalIds(item)
                 .Select(i => new ExternalIdInfo
                 {
-                    Name = i.Name,
+                    Name = i.ProviderName,
                     Key = i.Key,
+                    Type = i.Type,
                     UrlFormatString = i.UrlFormatString
                 });
         }
 
-        private ConcurrentDictionary<Guid, double> _activeRefreshes = new ConcurrentDictionary<Guid, double>();
-
+        /// <inheritdoc/>
         public Dictionary<Guid, Guid> GetRefreshQueue()
         {
             lock (_refreshQueueLock)
@@ -929,22 +986,25 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        /// <inheritdoc/>
         public void OnRefreshStart(BaseItem item)
         {
-            _logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
             _activeRefreshes[item.Id] = 0;
             RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
 
+        /// <inheritdoc/>
         public void OnRefreshComplete(BaseItem item)
         {
-            _logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
 
             _activeRefreshes.Remove(item.Id, out _);
 
             RefreshCompleted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
 
+        /// <inheritdoc/>
         public double? GetRefreshProgress(Guid id)
         {
             if (_activeRefreshes.TryGetValue(id, out double value))
@@ -955,6 +1015,7 @@ namespace MediaBrowser.Providers.Manager
             return null;
         }
 
+        /// <inheritdoc/>
         public void OnRefreshProgress(BaseItem item, double progress)
         {
             var id = item.Id;
@@ -974,12 +1035,7 @@ namespace MediaBrowser.Providers.Manager
             RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }
 
-        private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
-            new SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>>();
-
-        private readonly object _refreshQueueLock = new object();
-        private bool _isProcessingRefreshQueue;
-
+        /// <inheritdoc/>
         public void QueueRefresh(Guid id, MetadataRefreshOptions options, RefreshPriority priority)
         {
             if (_disposed)
@@ -1023,7 +1079,7 @@ namespace MediaBrowser.Providers.Manager
                     if (item != null)
                     {
                         // Try to throttle this a little bit.
-                        await Task.Delay(100).ConfigureAwait(false);
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
 
                         var task = item is MusicArtist artist
                             ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
@@ -1053,17 +1109,14 @@ namespace MediaBrowser.Providers.Manager
             await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
             // Collection folders don't validate their children so we'll have to simulate that here
-
-            if (item is CollectionFolder collectionFolder)
+            switch (item)
             {
-                await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                if (item is Folder folder)
-                {
+                case CollectionFolder collectionFolder:
+                    await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
+                    break;
+                case Folder folder:
                     await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
-                }
+                    break;
             }
         }
 
@@ -1073,7 +1126,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
-                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options, true).ConfigureAwait(false);
+                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
             }
         }
 
@@ -1109,20 +1162,41 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        /// <inheritdoc/>
         public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return RefreshItem(item, options, cancellationToken);
         }
 
-        private bool _disposed;
+        /// <inheritdoc/>
         public void Dispose()
         {
-            _disposed = true;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!_disposeCancellationTokenSource.IsCancellationRequested)
             {
                 _disposeCancellationTokenSource.Cancel();
             }
+
+            if (disposing)
+            {
+                _disposeCancellationTokenSource.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

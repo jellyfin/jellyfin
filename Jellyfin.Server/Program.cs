@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -6,17 +7,15 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
+using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.WebDashboard.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +27,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
+using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -40,12 +40,12 @@ namespace Jellyfin.Server
         /// <summary>
         /// The name of logging configuration file containing application defaults.
         /// </summary>
-        public static readonly string LoggingConfigFileDefault = "logging.default.json";
+        public const string LoggingConfigFileDefault = "logging.default.json";
 
         /// <summary>
         /// The name of the logging configuration file containing the system-specific override settings.
         /// </summary>
-        public static readonly string LoggingConfigFileSystem = "logging.json";
+        public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
@@ -59,20 +59,15 @@ namespace Jellyfin.Server
         /// <returns><see cref="Task" />.</returns>
         public static Task Main(string[] args)
         {
-            // For backwards compatibility.
-            // Modify any input arguments now which start with single-hyphen to POSIX standard
-            // double-hyphen to allow parsing by CommandLineParser package.
-            const string Pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
-            const string Substitution = @"-$1"; // Prepend with additional single-hyphen
-            var regex = new Regex(Pattern);
-            for (var i = 0; i < args.Length; i++)
+            static Task ErrorParsingArguments(IEnumerable<Error> errors)
             {
-                args[i] = regex.Replace(args[i], Substitution);
+                Environment.ExitCode = 1;
+                return Task.CompletedTask;
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
             return Parser.Default.ParseArguments<StartupOptions>(args)
-                .MapResult(StartApp, _ => Task.CompletedTask);
+                .MapResult(StartApp, ErrorParsingArguments);
         }
 
         /// <summary>
@@ -159,20 +154,22 @@ namespace Jellyfin.Server
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
             PerformStaticInitialization();
+            var serviceCollection = new ServiceCollection();
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
+                serviceCollection);
 
             try
             {
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string webContentPath = DashboardService.GetDashboardUIPath(startupConfig, appHost.ServerConfigurationManager);
+                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(
@@ -183,8 +180,7 @@ namespace Jellyfin.Server
                     }
                 }
 
-                ServiceCollection serviceCollection = new ServiceCollection();
-                appHost.Init(serviceCollection);
+                appHost.Init();
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
@@ -279,10 +275,10 @@ namespace Jellyfin.Server
                     var addresses = appHost.ServerConfigurationManager
                         .Configuration
                         .LocalNetworkAddresses
-                        .Select(appHost.NormalizeConfiguredLocalAddress)
+                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
                         .Where(i => i != null)
                         .ToHashSet();
-                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
+                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
                     {
                         if (!addresses.Contains(IPAddress.Loopback))
                         {
@@ -348,13 +344,41 @@ namespace Jellyfin.Server
                             }
                         }
                     }
+
+                    // Bind to unix socket (only on macOS and Linux)
+                    if (startupConfig.UseUnixSocket() && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        var socketPath = startupConfig.GetUnixSocketPath();
+                        if (string.IsNullOrEmpty(socketPath))
+                        {
+                            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+                            if (xdgRuntimeDir == null)
+                            {
+                                // Fall back to config dir
+                                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, "socket.sock");
+                            }
+                            else
+                            {
+                                socketPath = Path.Join(xdgRuntimeDir, "jellyfin-socket");
+                            }
+                        }
+
+                        // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
+                        if (File.Exists(socketPath))
+                        {
+                            File.Delete(socketPath);
+                        }
+
+                        options.ListenUnixSocket(socketPath);
+                        _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
+                    }
                 })
                 .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
                 .UseSerilog()
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
-                    services.TryAdd(serviceCollection);
+                    services.Add(serviceCollection);
                 })
                 .UseStartup<Startup>();
         }
@@ -503,6 +527,13 @@ namespace Jellyfin.Server
                 }
             }
 
+            // Normalize paths. Only possible with GetFullPath for now - https://github.com/dotnet/runtime/issues/2162
+            dataDir = Path.GetFullPath(dataDir);
+            logDir = Path.GetFullPath(logDir);
+            configDir = Path.GetFullPath(configDir);
+            cacheDir = Path.GetFullPath(cacheDir);
+            webDir = Path.GetFullPath(webDir);
+
             // Ensure the main folders exist before we continue
             try
             {
@@ -570,7 +601,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
+                inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
             }
 
             return config

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,7 +19,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Video
+    /// Class Video.
     /// </summary>
     public class Video : BaseItem,
         IHasAspectRatio,
@@ -28,7 +30,9 @@ namespace MediaBrowser.Controller.Entities
         public string PrimaryVersionId { get; set; }
 
         public string[] AdditionalParts { get; set; }
+
         public string[] LocalAlternateVersions { get; set; }
+
         public LinkedChild[] LinkedAlternateVersions { get; set; }
 
         [JsonIgnore]
@@ -52,15 +56,18 @@ namespace MediaBrowser.Controller.Entities
                     {
                         return false;
                     }
+
                     if (extraType.Value == Model.Entities.ExtraType.ThemeVideo)
                     {
                         return false;
                     }
+
                     if (extraType.Value == Model.Entities.ExtraType.Trailer)
                     {
                         return false;
                     }
                 }
+
                 return true;
             }
         }
@@ -196,6 +203,7 @@ namespace MediaBrowser.Controller.Entities
                         return video.MediaSourceCount;
                     }
                 }
+
                 return LinkedAlternateVersions.Length + LocalAlternateVersions.Length + 1;
             }
         }
@@ -272,13 +280,13 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (ExtraType.HasValue)
                 {
-                    var key = this.GetProviderId(MetadataProviders.Tmdb);
+                    var key = this.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, GetUserDataKey(key));
                     }
 
-                    key = this.GetProviderId(MetadataProviders.Imdb);
+                    key = this.GetProviderId(MetadataProvider.Imdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, GetUserDataKey(key));
@@ -286,13 +294,13 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    var key = this.GetProviderId(MetadataProviders.Imdb);
+                    var key = this.GetProviderId(MetadataProvider.Imdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, key);
                     }
 
-                    key = this.GetProviderId(MetadataProviders.Tmdb);
+                    key = this.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, key);
@@ -390,11 +398,13 @@ namespace MediaBrowser.Controller.Entities
                     AdditionalParts = newVideo.AdditionalParts;
                     updateType |= ItemUpdateType.MetadataImport;
                 }
+
                 if (!LocalAlternateVersions.SequenceEqual(newVideo.LocalAlternateVersions, StringComparer.Ordinal))
                 {
                     LocalAlternateVersions = newVideo.LocalAlternateVersions;
                     updateType |= ItemUpdateType.MetadataImport;
                 }
+
                 if (VideoType != newVideo.VideoType)
                 {
                     VideoType = newVideo.VideoType;
@@ -416,6 +426,7 @@ namespace MediaBrowser.Controller.Entities
                     .Select(i => i.FullName)
                     .ToArray();
             }
+
             if (videoType == VideoType.BluRay)
             {
                 return FileSystem.GetFiles(rootPath, new[] { ".m2ts" }, false, true)
@@ -425,6 +436,7 @@ namespace MediaBrowser.Controller.Entities
                     .Select(i => i.FullName)
                     .ToArray();
             }
+
             return Array.Empty<string>();
         }
 
@@ -485,9 +497,10 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public override async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            base.UpdateToRepository(updateReason, cancellationToken);
+            await base.UpdateToRepositoryAsync(updateReason, cancellationToken).ConfigureAwait(false);
 
             var localAlternates = GetLocalAlternateVersionIds()
                 .Select(i => LibraryManager.GetItemById(i))
@@ -504,7 +517,7 @@ namespace MediaBrowser.Controller.Entities
                 item.Genres = Genres;
                 item.ProviderIds = ProviderIds;
 
-                item.UpdateToRepository(ItemUpdateType.MetadataDownload, cancellationToken);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -535,7 +548,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 ItemId = Id,
                 Index = DefaultVideoStreamIndex.Value
-
             }).FirstOrDefault();
         }
 

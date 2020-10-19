@@ -3,7 +3,7 @@
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
-    /// Enum MetadataPluginType
+    /// Enum MetadataPluginType.
     /// </summary>
     public enum MetadataPluginType
     {

@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -12,7 +13,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
+using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -26,18 +27,15 @@ namespace Emby.Server.Implementations.Library
         private readonly ConcurrentDictionary<string, UserItemData> _userData =
             new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
         private readonly IUserDataRepository _repository;
 
         public UserDataManager(
-            ILogger<UserDataManager> logger,
             IServerConfigurationManager config,
             IUserManager userManager,
             IUserDataRepository repository)
         {
-            _logger = logger;
             _config = config;
             _userManager = userManager;
             _repository = repository;
@@ -101,7 +99,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Retrieve all user data for the given user
+        /// Retrieve all user data for the given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
@@ -186,7 +184,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Converts a UserItemData to a DTOUserItemData
+        /// Converts a UserItemData to a DTOUserItemData.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
@@ -240,7 +238,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds && !(item is Book))
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;

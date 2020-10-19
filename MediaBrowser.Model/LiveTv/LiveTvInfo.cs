@@ -6,6 +6,12 @@ namespace MediaBrowser.Model.LiveTv
 {
     public class LiveTvInfo
     {
+        public LiveTvInfo()
+        {
+            Services = Array.Empty<LiveTvServiceInfo>();
+            EnabledUsers = Array.Empty<string>();
+        }
+
         /// <summary>
         /// Gets or sets the services.
         /// </summary>
@@ -23,11 +29,5 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The enabled users.</value>
         public string[] EnabledUsers { get; set; }
-
-        public LiveTvInfo()
-        {
-            Services = Array.Empty<LiveTvServiceInfo>();
-            EnabledUsers = Array.Empty<string>();
-        }
     }
 }

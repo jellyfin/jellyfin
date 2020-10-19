@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.LiveTv;
@@ -57,6 +59,7 @@ namespace MediaBrowser.Controller.LiveTv
         public bool RecordAnyChannel { get; set; }
 
         public int KeepUpTo { get; set; }
+
         public KeepUntil KeepUntil { get; set; }
 
         public bool SkipEpisodesInLibrary { get; set; }

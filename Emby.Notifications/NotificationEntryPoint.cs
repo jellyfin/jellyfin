@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -13,7 +14,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using Microsoft.Extensions.Logging;
@@ -25,7 +25,7 @@ namespace Emby.Notifications
     /// </summary>
     public class NotificationEntryPoint : IServerEntryPoint
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NotificationEntryPoint> _logger;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
         private readonly INotificationManager _notificationManager;

@@ -133,9 +133,20 @@ namespace Emby.Server.Implementations.Images
 
         protected virtual IEnumerable<string> GetStripCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
         {
+            var useBackdrop = primaryItem is CollectionFolder;
             return items
                 .Select(i =>
                 {
+                    // Use Backdrop instead of Primary image for Library images.
+                    if (useBackdrop)
+                    {
+                        var backdrop = i.GetImageInfo(ImageType.Backdrop, 0);
+                        if (backdrop != null && backdrop.IsLocalFile)
+                        {
+                            return backdrop.Path;
+                        }
+                    }
+
                     var image = i.GetImageInfo(ImageType.Primary, 0);
                     if (image != null && image.IsLocalFile)
                     {
@@ -190,11 +201,12 @@ namespace Emby.Server.Implementations.Images
                 return null;
             }
 
-            ImageProcessor.CreateImageCollage(options);
+            ImageProcessor.CreateImageCollage(options, primaryItem.Name);
             return outputPath;
         }
 
-        protected virtual string CreateImage(BaseItem item,
+        protected virtual string CreateImage(
+            BaseItem item,
             IReadOnlyCollection<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
@@ -214,7 +226,12 @@ namespace Emby.Server.Implementations.Images
 
             if (imageType == ImageType.Primary)
             {
-                if (item is UserView || item is Playlist || item is MusicGenre || item is Genre || item is PhotoAlbum)
+                if (item is UserView
+                    || item is Playlist
+                    || item is MusicGenre
+                    || item is Genre
+                    || item is PhotoAlbum
+                    || item is MusicArtist)
                 {
                     return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
@@ -225,7 +242,7 @@ namespace Emby.Server.Implementations.Images
             throw new ArgumentException("Unexpected image type", nameof(imageType));
         }
 
-        public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
+        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             if (!Supports(item))
             {
@@ -236,6 +253,7 @@ namespace Emby.Server.Implementations.Images
             {
                 return true;
             }
+
             if (SupportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
             {
                 return true;

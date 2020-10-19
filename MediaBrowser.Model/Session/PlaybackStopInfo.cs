@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -61,6 +62,7 @@ namespace MediaBrowser.Model.Session
         public string NextMediaType { get; set; }
 
         public string PlaylistItemId { get; set; }
+
         public QueueItem[] NowPlayingQueue { get; set; }
     }
 }

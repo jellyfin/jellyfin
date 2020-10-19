@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
@@ -6,7 +8,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class UserDataSaveEventArgs
+    /// Class UserDataSaveEventArgs.
     /// </summary>
     public class UserDataSaveEventArgs : EventArgs
     {

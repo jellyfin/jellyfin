@@ -1,3 +1,4 @@
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -6,15 +7,30 @@ namespace MediaBrowser.Model.Notifications
 {
     public class NotificationOption
     {
-        public string Type { get; set; }
+        public NotificationOption(string type)
+        {
+            Type = type;
+            DisabledServices = Array.Empty<string>();
+            DisabledMonitorUsers = Array.Empty<string>();
+            SendToUsers = Array.Empty<string>();
+        }
+
+        public NotificationOption()
+        {
+            DisabledServices = Array.Empty<string>();
+            DisabledMonitorUsers = Array.Empty<string>();
+            SendToUsers = Array.Empty<string>();
+        }
+
+        public string? Type { get; set; }
 
         /// <summary>
-        /// User Ids to not monitor (it's opt out)
+        /// Gets or sets user Ids to not monitor (it's opt out).
         /// </summary>
         public string[] DisabledMonitorUsers { get; set; }
 
         /// <summary>
-        /// User Ids to send to (if SendToUserMode == Custom)
+        /// Gets or sets user Ids to send to (if SendToUserMode == Custom).
         /// </summary>
         public string[] SendToUsers { get; set; }
 
@@ -35,12 +51,5 @@ namespace MediaBrowser.Model.Notifications
         /// </summary>
         /// <value>The send to user mode.</value>
         public SendToUserType SendToUserMode { get; set; }
-
-        public NotificationOption()
-        {
-            DisabledServices = Array.Empty<string>();
-            DisabledMonitorUsers = Array.Empty<string>();
-            SendToUsers = Array.Empty<string>();
-        }
     }
 }

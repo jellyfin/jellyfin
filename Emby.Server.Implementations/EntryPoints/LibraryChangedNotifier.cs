@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -14,7 +16,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -22,13 +24,15 @@ namespace Emby.Server.Implementations.EntryPoints
     public class LibraryChangedNotifier : IServerEntryPoint
     {
         /// <summary>
-        /// The library manager.
+        /// The library update duration.
         /// </summary>
-        private readonly ILibraryManager _libraryManager;
+        private const int LibraryUpdateDuration = 30000;
 
+        private readonly ILibraryManager _libraryManager;
+        private readonly IProviderManager _providerManager;
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryChangedNotifier> _logger;
 
         /// <summary>
         /// The library changed sync lock.
@@ -37,23 +41,10 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly List<Folder> _foldersAddedTo = new List<Folder>();
         private readonly List<Folder> _foldersRemovedFrom = new List<Folder>();
-
         private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
         private readonly List<BaseItem> _itemsRemoved = new List<BaseItem>();
         private readonly List<BaseItem> _itemsUpdated = new List<BaseItem>();
-
-        /// <summary>
-        /// Gets or sets the library update timer.
-        /// </summary>
-        /// <value>The library update timer.</value>
-        private Timer LibraryUpdateTimer { get; set; }
-
-        /// <summary>
-        /// The library update duration.
-        /// </summary>
-        private const int LibraryUpdateDuration = 30000;
-
-        private readonly IProviderManager _providerManager;
+        private readonly Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
 
         public LibraryChangedNotifier(
             ILibraryManager libraryManager,
@@ -69,22 +60,26 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager = providerManager;
         }
 
+        /// <summary>
+        /// Gets or sets the library update timer.
+        /// </summary>
+        /// <value>The library update timer.</value>
+        private Timer LibraryUpdateTimer { get; set; }
+
         public Task RunAsync()
         {
-            _libraryManager.ItemAdded += libraryManager_ItemAdded;
-            _libraryManager.ItemUpdated += libraryManager_ItemUpdated;
-            _libraryManager.ItemRemoved += libraryManager_ItemRemoved;
+            _libraryManager.ItemAdded += OnLibraryItemAdded;
+            _libraryManager.ItemUpdated += OnLibraryItemUpdated;
+            _libraryManager.ItemRemoved += OnLibraryItemRemoved;
 
-            _providerManager.RefreshCompleted += _providerManager_RefreshCompleted;
-            _providerManager.RefreshStarted += _providerManager_RefreshStarted;
-            _providerManager.RefreshProgress += _providerManager_RefreshProgress;
+            _providerManager.RefreshCompleted += OnProviderRefreshCompleted;
+            _providerManager.RefreshStarted += OnProviderRefreshStarted;
+            _providerManager.RefreshProgress += OnProviderRefreshProgress;
 
             return Task.CompletedTask;
         }
 
-        private Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
-
-        private void _providerManager_RefreshProgress(object sender, GenericEventArgs<Tuple<BaseItem, double>> e)
+        private void OnProviderRefreshProgress(object sender, GenericEventArgs<Tuple<BaseItem, double>> e)
         {
             var item = e.Argument.Item1;
 
@@ -111,7 +106,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _sessionManager.SendMessageToAdminSessions("RefreshProgress", dict, CancellationToken.None);
+                _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, dict, CancellationToken.None);
             }
             catch
             {
@@ -121,36 +116,35 @@ namespace Emby.Server.Implementations.EntryPoints
 
             foreach (var collectionFolder in collectionFolders)
             {
-                var collectionFolderDict = new Dictionary<string, string>();
-                collectionFolderDict["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture);
-                collectionFolderDict["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture);
+                var collectionFolderDict = new Dictionary<string, string>
+                {
+                    ["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
+                    ["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture)
+                };
 
                 try
                 {
-                    _sessionManager.SendMessageToAdminSessions("RefreshProgress", collectionFolderDict, CancellationToken.None);
+                    _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, collectionFolderDict, CancellationToken.None);
                 }
                 catch
                 {
-
                 }
             }
         }
 
-        private void _providerManager_RefreshStarted(object sender, GenericEventArgs<BaseItem> e)
+        private void OnProviderRefreshStarted(object sender, GenericEventArgs<BaseItem> e)
         {
-            _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
+            OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
         }
 
-        private void _providerManager_RefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
+        private void OnProviderRefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
         {
-            _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
+            OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
         }
 
         private static bool EnableRefreshMessage(BaseItem item)
         {
-            var folder = item as Folder;
-
-            if (folder == null)
+            if (!(item is Folder folder))
             {
                 return false;
             }
@@ -183,7 +177,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        private void OnLibraryItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -205,8 +199,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Item.GetParent() as Folder;
-                if (parent != null)
+                if (e.Item.GetParent() is Folder parent)
                 {
                     _foldersAddedTo.Add(parent);
                 }
@@ -220,7 +213,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
+        private void OnLibraryItemUpdated(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -231,8 +224,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
-                                                   Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
                 else
                 {
@@ -248,7 +240,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
+        private void OnLibraryItemRemoved(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -259,16 +251,14 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
-                                                   Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
                 else
                 {
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Parent as Folder;
-                if (parent != null)
+                if (e.Parent is Folder parent)
                 {
                     _foldersRemovedFrom.Add(parent);
                 }
@@ -302,7 +292,7 @@ namespace Emby.Server.Implementations.EntryPoints
                                     .Select(x => x.First())
                                     .ToList();
 
-                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None);
+                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None).GetAwaiter().GetResult();
 
                 if (LibraryUpdateTimer != null)
                 {
@@ -327,7 +317,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="foldersAddedTo">The folders added to.</param>
         /// <param name="foldersRemovedFrom">The folders removed from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private async void SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
+        private async Task SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
         {
             var userIds = _sessionManager.Sessions
                 .Select(i => i.UserId)
@@ -356,7 +346,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "LibraryChanged", info, cancellationToken).ConfigureAwait(false);
+                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, SessionMessageType.LibraryChanged, info, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -486,13 +476,13 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer = null;
                 }
 
-                _libraryManager.ItemAdded -= libraryManager_ItemAdded;
-                _libraryManager.ItemUpdated -= libraryManager_ItemUpdated;
-                _libraryManager.ItemRemoved -= libraryManager_ItemRemoved;
+                _libraryManager.ItemAdded -= OnLibraryItemAdded;
+                _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
+                _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
 
-                _providerManager.RefreshCompleted -= _providerManager_RefreshCompleted;
-                _providerManager.RefreshStarted -= _providerManager_RefreshStarted;
-                _providerManager.RefreshProgress -= _providerManager_RefreshProgress;
+                _providerManager.RefreshCompleted -= OnProviderRefreshCompleted;
+                _providerManager.RefreshStarted -= OnProviderRefreshStarted;
+                _providerManager.RefreshProgress -= OnProviderRefreshProgress;
             }
         }
     }

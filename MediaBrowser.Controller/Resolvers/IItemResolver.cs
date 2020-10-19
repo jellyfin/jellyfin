@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -7,7 +9,7 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Controller.Resolvers
 {
     /// <summary>
-    /// Interface IItemResolver
+    /// Interface IItemResolver.
     /// </summary>
     public interface IItemResolver
     {
@@ -17,6 +19,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// <param name="args">The args.</param>
         /// <returns>BaseItem.</returns>
         BaseItem ResolvePath(ItemResolveArgs args);
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -26,7 +29,8 @@ namespace MediaBrowser.Controller.Resolvers
 
     public interface IMultiItemResolver
     {
-        MultiItemResolverResult ResolveMultiple(Folder parent,
+        MultiItemResolverResult ResolveMultiple(
+            Folder parent,
             List<FileSystemMetadata> files,
             string collectionType,
             IDirectoryService directoryService);
@@ -35,6 +39,7 @@ namespace MediaBrowser.Controller.Resolvers
     public class MultiItemResolverResult
     {
         public List<BaseItem> Items { get; set; }
+
         public List<FileSystemMetadata> ExtraFiles { get; set; }
 
         public MultiItemResolverResult()

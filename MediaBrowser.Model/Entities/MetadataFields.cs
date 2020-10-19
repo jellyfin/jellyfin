@@ -3,7 +3,7 @@ namespace MediaBrowser.Model.Entities
     /// <summary>
     /// Enum MetadataFields.
     /// </summary>
-    public enum MetadataFields
+    public enum MetadataField
     {
         /// <summary>
         /// The cast.

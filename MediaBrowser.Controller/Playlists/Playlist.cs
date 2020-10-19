@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,6 +7,8 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -241,15 +245,7 @@ namespace MediaBrowser.Controller.Playlists
             }
 
             var userId = user.Id.ToString("N", CultureInfo.InvariantCulture);
-            foreach (var share in shares)
-            {
-                if (string.Equals(share.UserId, userId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return shares.Any(share => string.Equals(share.UserId, userId, StringComparison.OrdinalIgnoreCase));
         }
 
         public override bool IsVisibleStandalone(User user)

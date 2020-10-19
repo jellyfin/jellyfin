@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -22,7 +24,7 @@ namespace MediaBrowser.Providers.Folders
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<UserView> source, MetadataResult<UserView> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<UserView> source, MetadataResult<UserView> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

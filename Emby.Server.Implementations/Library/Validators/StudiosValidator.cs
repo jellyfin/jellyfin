@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<StudiosValidator> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StudiosValidator" /> class.
@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repository.</param>
-        public StudiosValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        public StudiosValidator(ILibraryManager libraryManager, ILogger<StudiosValidator> logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -92,7 +92,6 @@ namespace Emby.Server.Implementations.Library.Validators
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
                     DeleteFileLocation = false
-
                 }, false);
             }
 

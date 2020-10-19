@@ -13,10 +13,8 @@
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
-    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
@@ -24,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="IPNetwork2" Version="2.4.0.126" />
-    <PackageReference Include="Jellyfin.XmlTv" Version="10.4.3" />
+    <PackageReference Include="IPNetwork2" Version="2.5.226" />
+    <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
@@ -34,16 +32,16 @@
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.4" />
-    <PackageReference Include="Mono.Nat" Version="2.0.1" />
-    <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.3.1" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.8.0" />
-    <PackageReference Include="sharpcompress" Version="0.25.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.9" />
+    <PackageReference Include="Mono.Nat" Version="3.0.0" />
+    <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.4.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.9.2" />
+    <PackageReference Include="sharpcompress" Version="0.26.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.1.0" />
-    <PackageReference Include="DotNet.Glob" Version="3.0.9" />
+    <PackageReference Include="DotNet.Glob" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,6 +52,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

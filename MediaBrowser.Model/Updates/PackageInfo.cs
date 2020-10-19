@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 
@@ -50,6 +51,16 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The versions.</value>
         public IReadOnlyList<VersionInfo> versions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the repository name.
+        /// </summary>
+        public string repositoryName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the repository url.
+        /// </summary>
+        public string repositoryUrl { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageInfo"/> class.

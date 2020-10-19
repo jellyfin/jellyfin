@@ -28,7 +28,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly object _syncLock = new object();
         private Timer _updateTimer;
 
-
         public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IUserManager userManager)
         {
             _userDataManager = userDataManager;
@@ -116,7 +115,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private Task SendNotifications(Guid userId, List<BaseItem> changedItems, CancellationToken cancellationToken)
         {
-            return _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "UserDataChanged", () => GetUserDataChangeInfo(userId, changedItems), cancellationToken);
+            return _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, SessionMessageType.UserDataChanged, () => GetUserDataChangeInfo(userId, changedItems), cancellationToken);
         }
 
         private UserDataChangeInfo GetUserDataChangeInfo(Guid userId, List<BaseItem> changedItems)

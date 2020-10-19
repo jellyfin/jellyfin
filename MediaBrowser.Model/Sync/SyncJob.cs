@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -121,7 +122,9 @@ namespace MediaBrowser.Model.Sync
         public int ItemCount { get; set; }
 
         public string ParentName { get; set; }
+
         public string PrimaryImageItemId { get; set; }
+
         public string PrimaryImageTag { get; set; }
 
         public SyncJob()

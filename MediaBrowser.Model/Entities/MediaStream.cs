@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -12,7 +13,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Class MediaStream
+    /// Class MediaStream.
     /// </summary>
     public class MediaStream
     {
@@ -35,6 +36,18 @@ namespace MediaBrowser.Model.Entities
         public string Language { get; set; }
 
         /// <summary>
+        /// Gets or sets the color range.
+        /// </summary>
+        /// <value>The color range.</value>
+        public string ColorRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
+        public string ColorSpace { get; set; }
+
+        /// <summary>
         /// Gets or sets the color transfer.
         /// </summary>
         /// <value>The color transfer.</value>
@@ -45,12 +58,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The color primaries.</value>
         public string ColorPrimaries { get; set; }
-
-        /// <summary>
-        /// Gets or sets the color space.
-        /// </summary>
-        /// <value>The color space.</value>
-        public string ColorSpace { get; set; }
 
         /// <summary>
         /// Gets or sets the comment.
@@ -111,106 +118,146 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
-                if (Type == MediaStreamType.Audio)
+                switch (Type)
                 {
-                    //if (!string.IsNullOrEmpty(Title))
-                    //{
-                    //    return AddLanguageIfNeeded(Title);
-                    //}
+                    case MediaStreamType.Audio:
+                    {
+                        var attributes = new List<string>();
 
-                    var attributes = new List<string>();
+                        if (!string.IsNullOrEmpty(Language))
+                        {
+                            // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
+                            string fullLanguage = CultureInfo
+                                .GetCultures(CultureTypes.NeutralCultures)
+                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
+                                ?.DisplayName;
+                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                        }
 
-                    if (!string.IsNullOrEmpty(Language))
-                    {
-                        attributes.Add(StringHelper.FirstToUpper(Language));
-                    }
-                    if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
-                    {
-                        attributes.Add(AudioCodec.GetFriendlyName(Codec));
-                    }
-                    else if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
-                    {
-                        attributes.Add(Profile);
+                        if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
+                        {
+                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
+                        }
+                        else if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
+                        {
+                            attributes.Add(Profile);
+                        }
+
+                        if (!string.IsNullOrEmpty(ChannelLayout))
+                        {
+                            attributes.Add(StringHelper.FirstToUpper(ChannelLayout));
+                        }
+                        else if (Channels.HasValue)
+                        {
+                            attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
+                        }
+
+                        if (IsDefault)
+                        {
+                            attributes.Add(string.IsNullOrEmpty(localizedDefault) ? "Default" : localizedDefault);
+                        }
+
+                        if (!string.IsNullOrEmpty(Title))
+                        {
+                            var result = new StringBuilder(Title);
+                            foreach (var tag in attributes)
+                            {
+                                // Keep Tags that are not already in Title.
+                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                {
+                                    result.Append(" - ").Append(tag);
+                                }
+                            }
+
+                            return result.ToString();
+                        }
+
+                        return string.Join(" - ", attributes);
                     }
 
-                    if (!string.IsNullOrEmpty(ChannelLayout))
+                    case MediaStreamType.Video:
                     {
-                        attributes.Add(ChannelLayout);
-                    }
-                    else if (Channels.HasValue)
-                    {
-                        attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
-                    }
-                    if (IsDefault)
-                    {
-                        attributes.Add("Default");
+                        var attributes = new List<string>();
+
+                        var resolutionText = GetResolutionText();
+
+                        if (!string.IsNullOrEmpty(resolutionText))
+                        {
+                            attributes.Add(resolutionText);
+                        }
+
+                        if (!string.IsNullOrEmpty(Codec))
+                        {
+                            attributes.Add(Codec.ToUpperInvariant());
+                        }
+
+                        if (!string.IsNullOrEmpty(Title))
+                        {
+                            var result = new StringBuilder(Title);
+                            foreach (var tag in attributes)
+                            {
+                                // Keep Tags that are not already in Title.
+                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                {
+                                    result.Append(" - ").Append(tag);
+                                }
+                            }
+
+                            return result.ToString();
+                        }
+
+                        return string.Join(" ", attributes);
                     }
 
-                    return string.Join(" ", attributes);
+                    case MediaStreamType.Subtitle:
+                    {
+                        var attributes = new List<string>();
+
+                        if (!string.IsNullOrEmpty(Language))
+                        {
+                            // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
+                            string fullLanguage = CultureInfo
+                                .GetCultures(CultureTypes.NeutralCultures)
+                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
+                                ?.DisplayName;
+                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                        }
+                        else
+                        {
+                            attributes.Add(string.IsNullOrEmpty(localizedUndefined) ? "Und" : localizedUndefined);
+                        }
+
+                        if (IsDefault)
+                        {
+                            attributes.Add(string.IsNullOrEmpty(localizedDefault) ? "Default" : localizedDefault);
+                        }
+
+                        if (IsForced)
+                        {
+                            attributes.Add(string.IsNullOrEmpty(localizedForced) ? "Forced" : localizedForced);
+                        }
+
+                        if (!string.IsNullOrEmpty(Title))
+                        {
+                            var result = new StringBuilder(Title);
+                            foreach (var tag in attributes)
+                            {
+                                // Keep Tags that are not already in Title.
+                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                {
+                                    result.Append(" - ").Append(tag);
+                                }
+                            }
+
+                            return result.ToString();
+                        }
+
+                        return string.Join(" - ", attributes);
+                    }
+
+                    default:
+                        return null;
                 }
-
-                if (Type == MediaStreamType.Video)
-                {
-                    var attributes = new List<string>();
-
-                    var resolutionText = GetResolutionText();
-
-                    if (!string.IsNullOrEmpty(resolutionText))
-                    {
-                        attributes.Add(resolutionText);
-                    }
-
-                    if (!string.IsNullOrEmpty(Codec))
-                    {
-                        attributes.Add(Codec.ToUpperInvariant());
-                    }
-
-                    return string.Join(" ", attributes);
-                }
-
-                if (Type == MediaStreamType.Subtitle)
-                {
-
-                    var attributes = new List<string>();
-
-                    if (!string.IsNullOrEmpty(Language))
-                    {
-                        attributes.Add(StringHelper.FirstToUpper(Language));
-                    }
-                    else
-                    {
-                        attributes.Add(string.IsNullOrEmpty(localizedUndefined) ? "Und" : localizedUndefined);
-                    }
-
-                    if (IsDefault)
-                    {
-                        attributes.Add(string.IsNullOrEmpty(localizedDefault) ? "Default" : localizedDefault);
-                    }
-
-                    if (IsForced)
-                    {
-                        attributes.Add(string.IsNullOrEmpty(localizedForced) ? "Forced" : localizedForced);
-                    }
-
-                    if (!string.IsNullOrEmpty(Title))
-                    {
-                        return attributes.AsEnumerable()
-                        // keep Tags that are not already in Title
-                        .Where(tag => Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
-                        // attributes concatenation, starting with Title
-                        .Aggregate(new StringBuilder(Title), (builder, attr) => builder.Append(" - ").Append(attr))
-                        .ToString();
-                    }
-
-                    return string.Join(" - ", attributes.ToArray());
-                }
-
-                if (Type == MediaStreamType.Video)
-                {
-
-                }
-
-                return null;
             }
         }
 
@@ -227,30 +274,37 @@ namespace MediaBrowser.Model.Entities
                 {
                     return "4K";
                 }
+
                 if (width >= 2500)
                 {
                     if (i.IsInterlaced)
                     {
                         return "1440i";
                     }
+
                     return "1440p";
                 }
+
                 if (width >= 1900 || height >= 1000)
                 {
                     if (i.IsInterlaced)
                     {
                         return "1080i";
                     }
+
                     return "1080p";
                 }
+
                 if (width >= 1260 || height >= 700)
                 {
                     if (i.IsInterlaced)
                     {
                         return "720i";
                     }
+
                     return "720p";
                 }
+
                 if (width >= 700 || height >= 440)
                 {
 
@@ -258,11 +312,13 @@ namespace MediaBrowser.Model.Entities
                     {
                         return "480i";
                     }
+
                     return "480p";
                 }
 
                 return "SD";
             }
+
             return null;
         }
 
@@ -395,11 +451,13 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The method.</value>
         public SubtitleDeliveryMethod? DeliveryMethod { get; set; }
+
         /// <summary>
         /// Gets or sets the delivery URL.
         /// </summary>
         /// <value>The delivery URL.</value>
         public string DeliveryUrl { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is external URL.
         /// </summary>
@@ -410,7 +468,10 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
-                if (Type != MediaStreamType.Subtitle) return false;
+                if (Type != MediaStreamType.Subtitle)
+                {
+                    return false;
+                }
 
                 if (string.IsNullOrEmpty(Codec) && !IsExternal)
                 {
@@ -448,6 +509,7 @@ namespace MediaBrowser.Model.Entities
             {
                 return false;
             }
+
             if (string.Equals(fromCodec, "ssa", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -458,6 +520,7 @@ namespace MediaBrowser.Model.Entities
             {
                 return false;
             }
+
             if (string.Equals(toCodec, "ssa", StringComparison.OrdinalIgnoreCase))
             {
                 return false;

@@ -38,7 +38,13 @@ namespace Emby.Drawing
         }
 
         /// <inheritdoc />
-        public void CreateImageCollage(ImageCollageOptions options)
+        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public string GetImageBlurHash(int xComp, int yComp, string path)
         {
             throw new NotImplementedException();
         }

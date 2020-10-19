@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -8,6 +11,6 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the special feature ids.
         /// </summary>
         /// <value>The special feature ids.</value>
-        Guid[] SpecialFeatureIds { get; set; }
+        IReadOnlyList<Guid> SpecialFeatureIds { get; set; }
     }
 }

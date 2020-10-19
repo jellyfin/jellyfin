@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -35,7 +37,7 @@ namespace MediaBrowser.Controller.Entities
         public override bool SupportsPlayedStatus => false;
 
         /// <summary>
-        /// The _virtual children
+        /// The _virtual children.
         /// </summary>
         private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
 
@@ -57,6 +59,7 @@ namespace MediaBrowser.Controller.Entities
 
         private Guid[] _childrenIds = null;
         private readonly object _childIdsLock = new object();
+
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
@@ -195,6 +198,7 @@ namespace MediaBrowser.Controller.Entities
                     return child;
                 }
             }
+
             return null;
         }
     }

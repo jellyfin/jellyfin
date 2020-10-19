@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
@@ -15,12 +16,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// </summary>
     public class DeleteLogFileTask : IScheduledTask, IConfigurableScheduledTask
     {
-        /// <summary>
-        /// Gets or sets the configuration manager.
-        /// </summary>
-        /// <value>The configuration manager.</value>
-        private IConfigurationManager ConfigurationManager { get; set; }
-
+        private readonly IConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
 
@@ -28,12 +24,38 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="localization">The localization manager.</param>
         public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization)
         {
-            ConfigurationManager = configurationManager;
+            _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
         }
+
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskCleanLogs");
+
+        /// <inheritdoc />
+        public string Description => string.Format(
+            CultureInfo.InvariantCulture,
+            _localization.GetLocalizedString("TaskCleanLogsDescription"),
+            _configurationManager.CommonConfiguration.LogFileRetentionDays);
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
+
+        /// <inheritdoc />
+        public string Key => "CleanLogFiles";
+
+        /// <inheritdoc />
+        public bool IsHidden => false;
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
+
+        /// <inheritdoc />
+        public bool IsLogged => true;
 
         /// <summary>
         /// Creates the triggers that define when the task will run.
@@ -41,8 +63,9 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
+            return new[]
+            {
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks }
             };
         }
 
@@ -55,10 +78,10 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Delete log files more than n days old
-            var minDateModified = DateTime.UtcNow.AddDays(-ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
+            var minDateModified = DateTime.UtcNow.AddDays(-_configurationManager.CommonConfiguration.LogFileRetentionDays);
 
             // Only delete the .txt log files, the *.log files created by serilog get managed by itself
-            var filesToDelete = _fileSystem.GetFiles(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath, new[] { ".txt" }, true, true)
+            var filesToDelete = _fileSystem.GetFiles(_configurationManager.CommonApplicationPaths.LogDirectoryPath, new[] { ".txt" }, true, true)
                           .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                           .ToList();
 
@@ -81,19 +104,5 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             return Task.CompletedTask;
         }
-
-        public string Name => _localization.GetLocalizedString("TaskCleanLogs");
-
-        public string Description => string.Format(_localization.GetLocalizedString("TaskCleanLogsDescription"), ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
-
-        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
-
-        public string Key => "CleanLogFiles";
-
-        public bool IsHidden => false;
-
-        public bool IsEnabled => true;
-
-        public bool IsLogged => true;
     }
 }

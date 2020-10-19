@@ -1,3 +1,5 @@
+#nullable disable
+
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,9 +18,18 @@ namespace MediaBrowser.MediaEncoding.Probing
 {
     public class ProbeResultNormalizer
     {
+        // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
+        private const int MaxSubtitleDescriptionExtractionLength = 100;
+
+        private const string ArtistReplaceValue = " | ";
+
+        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
+
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
+
+        private List<string> _splitWhiteList = null;
 
         public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
@@ -31,7 +42,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             var info = new MediaInfo
             {
                 Path = path,
-                Protocol = protocol
+                Protocol = protocol,
+                VideoType = videoType
             };
 
             FFProbeHelpers.NormalizeFFProbeResult(data);
@@ -93,6 +105,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "description");
             }
+
             if (string.IsNullOrWhiteSpace(overview))
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "desc");
@@ -274,10 +287,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subtree = reader.ReadSubtree())
                                         {
                                             ReadFromDictNode(subtree, info);
                                         }
+
                                         break;
                                     default:
                                         reader.Skip();
@@ -319,6 +334,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             {
                                 ProcessPairs(currentKey, pairs, info);
                             }
+
                             currentKey = reader.ReadElementContentAsString();
                             pairs = new List<NameValuePair>();
                             break;
@@ -332,6 +348,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     Value = value
                                 });
                             }
+
                             break;
                         case "array":
                             if (reader.IsEmptyElement)
@@ -339,6 +356,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 if (!string.IsNullOrWhiteSpace(currentKey))
@@ -346,6 +364,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.AddRange(ReadValueArray(subtree));
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -361,7 +380,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private List<NameValuePair> ReadValueArray(XmlReader reader)
         {
-
             var pairs = new List<NameValuePair>();
 
             reader.MoveToContent();
@@ -381,6 +399,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 var dict = GetNameValuePair(subtree);
@@ -389,6 +408,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.Add(dict);
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -413,7 +433,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
-
             }
             else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
             {
@@ -425,7 +444,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                         Type = PersonType.Writer
                     });
                 }
-
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
@@ -517,7 +535,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaAttachment class
+        /// Converts ffprobe stream info to our MediaAttachment class.
         /// </summary>
         /// <param name="streamInfo">The stream info.</param>
         /// <returns>MediaAttachments.</returns>
@@ -550,7 +568,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaStream class
+        /// Converts ffprobe stream info to our MediaStream class.
         /// </summary>
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
@@ -562,7 +580,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
             {
                 // Edit: but these are also sometimes subtitles?
-                //return null;
+                // return null;
             }
 
             var stream = new MediaStream
@@ -684,7 +702,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.BitDepth = streamInfo.BitsPerRawSample;
                 }
 
-                //stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
+                // stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
 
@@ -694,6 +712,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (streamInfo.Refs > 0)
                 {
                     stream.RefFrames = streamInfo.Refs;
+                }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorRange))
+                {
+                    stream.ColorRange = streamInfo.ColorRange;
+                }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorSpace))
+                {
+                    stream.ColorSpace = streamInfo.ColorSpace;
                 }
 
                 if (!string.IsNullOrEmpty(streamInfo.ColorTransfer))
@@ -769,7 +797,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets a string from an FFProbeResult tags dictionary
+        /// Gets a string from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
@@ -942,48 +970,46 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
+            var peoples = new List<BaseItemPerson>();
             var composer = FFProbeHelpers.GetDictionaryValue(tags, "composer");
             if (!string.IsNullOrWhiteSpace(composer))
             {
-                var peoples = new List<BaseItemPerson>();
                 foreach (var person in Split(composer, false))
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
                 }
-                audio.People = peoples.ToArray();
             }
 
-            //var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
-            //if (!string.IsNullOrWhiteSpace(conductor))
-            //{
-            //    foreach (var person in Split(conductor, false))
-            //    {
-            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
-            //    }
-            //}
+            var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
+            if (!string.IsNullOrWhiteSpace(conductor))
+            {
+                foreach (var person in Split(conductor, false))
+                {
+                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+                }
+            }
 
-            //var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
-            //if (!string.IsNullOrWhiteSpace(lyricist))
-            //{
-            //    foreach (var person in Split(lyricist, false))
-            //    {
-            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
-            //    }
-            //}
+            var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            if (!string.IsNullOrWhiteSpace(lyricist))
+            {
+                foreach (var person in Split(lyricist, false))
+                {
+                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                }
+            }
 
             // Check for writer some music is tagged that way as alternative to composer/lyricist
             var writer = FFProbeHelpers.GetDictionaryValue(tags, "writer");
 
             if (!string.IsNullOrWhiteSpace(writer))
             {
-                var peoples = new List<BaseItemPerson>();
                 foreach (var person in Split(writer, false))
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
                 }
-                audio.People = peoples.ToArray();
             }
 
+            audio.People = peoples.ToArray();
             audio.Album = FFProbeHelpers.GetDictionaryValue(tags, "album");
 
             var artists = FFProbeHelpers.GetDictionaryValue(tags, "artists");
@@ -999,7 +1025,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
                 if (string.IsNullOrWhiteSpace(artist))
                 {
-                    audio.Artists = new string[] { };
+                    audio.Artists = Array.Empty<string>();
                 }
                 else
                 {
@@ -1014,6 +1040,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album artist");
             }
+
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
@@ -1021,14 +1048,13 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
-                audio.AlbumArtists = new string[] { };
+                audio.AlbumArtists = Array.Empty<string>();
             }
             else
             {
                 audio.AlbumArtists = SplitArtists(albumArtist, _nameDelimiters, true)
                     .DistinctNames()
                     .ToArray();
-
             }
 
             if (audio.AlbumArtists.Length == 0)
@@ -1056,24 +1082,44 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // These support mulitple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, mb);
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
+            }
+
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, mb);
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
+            }
+
+            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, mb);
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
+            }
+
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, mb);
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
+            }
+
+            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, mb);
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
+            }
+
+            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
         private string GetMultipleMusicBrainzId(string value)
@@ -1088,8 +1134,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
-
         /// <summary>
         /// Splits the specified val.
         /// </summary>
@@ -1100,7 +1144,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Only use the comma as a delimeter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i) != -1) ?
+            var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i, StringComparison.Ordinal) != -1) ?
                 _nameDelimiters :
                 new[] { ',' };
 
@@ -1108,8 +1152,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => i.Trim());
         }
-
-        private const string ArtistReplaceValue = " | ";
 
         private IEnumerable<string> SplitArtists(string val, char[] delimiters, bool splitFeaturing)
         {
@@ -1140,9 +1182,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             return artistsFound;
         }
 
-
-        private List<string> _splitWhiteList = null;
-
         private IEnumerable<string> GetSplitWhitelist()
         {
             if (_splitWhiteList == null)
@@ -1157,7 +1196,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the studios from the tags collection
+        /// Gets the studios from the tags collection.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <param name="tags">The tags.</param>
@@ -1178,6 +1217,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         continue;
                     }
+
                     if (info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
@@ -1194,7 +1234,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the genres from the tags collection
+        /// Gets the genres from the tags collection.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="tags">The tags.</param>
@@ -1218,7 +1258,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the disc number, which is sometimes can be in the form of '1', or '1/3'
+        /// Gets the disc number, which is sometimes can be in the form of '1', or '1/3'.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="tagName">Name of the tag.</param>
@@ -1263,8 +1303,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             return info;
         }
-
-        private const int MaxSubtitleDescriptionExtractionLength = 100; // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
 
         private void FetchWtvInfo(MediaInfo video, InternalMediaInfoResult data)
         {
@@ -1337,7 +1375,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             // OR -> COMMENT. SUBTITLE: DESCRIPTION
             // e.g. -> 4/13. The Doctor's Wife: Science fiction drama. When he follows a Time Lord distress signal, the Doctor puts Amy, Rory and his beloved TARDIS in grave danger. Also in HD. [AD,S]
             // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
-            if (string.IsNullOrWhiteSpace(subTitle) && !string.IsNullOrWhiteSpace(description) && description.Substring(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).Contains(":")) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
+            if (string.IsNullOrWhiteSpace(subTitle)
+                && !string.IsNullOrWhiteSpace(description)
+                && description.AsSpan().Slice(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).IndexOf(':') != -1) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
             {
                 string[] parts = description.Split(':');
                 if (parts.Length > 0)
@@ -1345,23 +1385,30 @@ namespace MediaBrowser.MediaEncoding.Probing
                     string subtitle = parts[0];
                     try
                     {
-                        if (subtitle.Contains("/")) // It contains a episode number and season number
+                        if (subtitle.Contains('/', StringComparison.Ordinal)) // It contains a episode number and season number
                         {
                             string[] numbers = subtitle.Split(' ');
-                            video.IndexNumber = int.Parse(numbers[0].Replace(".", "").Split('/')[0]);
-                            int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", "").Split('/')[1]);
+                            video.IndexNumber = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[0], CultureInfo.InvariantCulture);
+                            int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[1], CultureInfo.InvariantCulture);
 
                             description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }
                         else
+                        {
                             throw new Exception(); // Switch to default parsing
+                        }
                     }
                     catch // Default parsing
                     {
-                        if (subtitle.Contains(".")) // skip the comment, keep the subtitle
+                        if (subtitle.Contains('.', StringComparison.Ordinal))
+                        {
+                            // skip the comment, keep the subtitle
                             description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                        }
                         else
+                        {
                             description = subtitle.Trim(); // Clean up whitespaces and save it
+                        }
                     }
                 }
             }

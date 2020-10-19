@@ -32,7 +32,7 @@ namespace Emby.Dlna.Profiles
                 }
             };
 
-            ResponseProfiles = new ResponseProfile[]
+            ResponseProfiles = new[]
             {
                 new ResponseProfile
                 {

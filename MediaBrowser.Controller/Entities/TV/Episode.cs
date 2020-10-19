@@ -1,10 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -12,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Entities.TV
 {
     /// <summary>
-    /// Class Episode
+    /// Class Episode.
     /// </summary>
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
@@ -34,7 +36,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The aired season.</value>
         public int? AirsBeforeSeasonNumber { get; set; }
+
         public int? AirsAfterSeasonNumber { get; set; }
+
         public int? AirsBeforeEpisodeNumber { get; set; }
 
         /// <summary>
@@ -94,6 +98,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     take--;
                 }
+
                 list.InsertRange(0, seriesUserDataKeys.Take(take).Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
             }
 
@@ -101,7 +106,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This Episode's Series Instance
+        /// This Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]
@@ -114,6 +119,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     seriesId = FindSeriesId();
                 }
+
                 return !seriesId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seriesId) as Series) : null;
             }
         }
@@ -128,6 +134,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     seasonId = FindSeasonId();
                 }
+
                 return !seasonId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seasonId) as Season) : null;
             }
         }
@@ -160,6 +167,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     return "Season " + ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
+
                 return "Season Unknown";
             }
 

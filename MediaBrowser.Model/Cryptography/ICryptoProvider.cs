@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Cryptography
 
         IEnumerable<string> GetSupportedHashMethods();
 
-        byte[] ComputeHash(string HashMethod, byte[] bytes, byte[] salt);
+        byte[] ComputeHash(string hashMethod, byte[] bytes, byte[] salt);
 
         byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt);
 

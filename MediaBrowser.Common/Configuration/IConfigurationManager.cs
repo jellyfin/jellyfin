@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Configuration
         event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
 
         /// <summary>
-        /// Gets or sets the application paths.
+        /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
         IApplicationPaths CommonApplicationPaths { get; }

@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Globalization
@@ -11,6 +12,7 @@ namespace MediaBrowser.Model.Globalization
         }
 
         public string Name { get; set; }
+
         public string Value { get; set; }
     }
 }
