@@ -56,7 +56,12 @@ namespace Jellyfin.Api.Controllers
             [FromBody, Required] NewGroupRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
+            var syncPlayRequest = new NewGroupRequest(
+                requestData.GroupName,
+                requestData.Visibility,
+                requestData.InvitedUsers,
+                requestData.OpenPlaybackAccess,
+                requestData.OpenPlaylistAccess);
             _syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -96,10 +101,36 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
+        /// Updates the settings of a SyncPlay group.
+        /// </summary>
+        /// <param name="requestData">The settings of the new group.</param>
+        /// <response code="204">Group settings updated.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("Settings")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+        public ActionResult SyncPlaySettingsGroup(
+            [FromBody, Required] UpdateGroupSettingsRequestDto requestData)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new UpdateGroupSettingsRequest(
+                requestData.GroupName,
+                requestData.Visibility,
+                requestData.InvitedUsers,
+                requestData.OpenPlaybackAccess,
+                requestData.OpenPlaylistAccess,
+                requestData.AccessListUserIds,
+                requestData.AccessListPlayback,
+                requestData.AccessListPlaylist);
+            _syncPlayManager.UpdateGroupSettings(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
         /// Gets all SyncPlay groups.
         /// </summary>
         /// <response code="200">Groups returned.</response>
-        /// <returns>An <see cref="IEnumerable{GroupInfoView}"/> containing the available SyncPlay groups.</returns>
+        /// <returns>An <see cref="IEnumerable{GroupInfoDto}"/> containing the available SyncPlay groups.</returns>
         [HttpGet("List")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.SyncPlayJoinGroup)]
@@ -108,6 +139,21 @@ namespace Jellyfin.Api.Controllers
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new ListGroupsRequest();
             return Ok(_syncPlayManager.ListGroups(currentSession, syncPlayRequest));
+        }
+
+        /// <summary>
+        /// Gets all users that have access to SyncPlay.
+        /// </summary>
+        /// <response code="200">Users returned.</response>
+        /// <returns>An <see cref="IEnumerable{UserInfoDto}"/> containing the available users.</returns>
+        [HttpGet("ListAvailableUsers")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Policy = Policies.SyncPlayJoinGroup)]
+        public ActionResult<IEnumerable<UserInfoDto>> SyncPlayGetAvailableUsers()
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new ListUsersRequest();
+            return Ok(_syncPlayManager.ListAvailableUsers(currentSession, syncPlayRequest));
         }
 
         /// <summary>

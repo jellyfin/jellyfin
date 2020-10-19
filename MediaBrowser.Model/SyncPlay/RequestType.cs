@@ -21,13 +21,23 @@ namespace MediaBrowser.Model.SyncPlay
         LeaveGroup = 2,
 
         /// <summary>
+        /// A user is updating the settings of a group.
+        /// </summary>
+        UpdateGroupSettings = 3,
+
+        /// <summary>
         /// A user is requesting the list of available groups.
         /// </summary>
-        ListGroups = 3,
+        ListGroups = 4,
+
+        /// <summary>
+        /// A user is requesting the list of available users.
+        /// </summary>
+        ListUsers = 5,
 
         /// <summary>
         /// A user is sending a playback command to a group.
         /// </summary>
-        Playback = 4
+        Playback = 6
     }
 }

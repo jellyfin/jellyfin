@@ -26,6 +26,11 @@ namespace MediaBrowser.Model.SyncPlay
         GroupLeft,
 
         /// <summary>
+        /// The group-update update. Notifies that group settings have been changed.
+        /// </summary>
+        GroupUpdate,
+
+        /// <summary>
         /// The group-state update. Tells members of the group that the state changed.
         /// </summary>
         StateUpdate,
@@ -34,6 +39,11 @@ namespace MediaBrowser.Model.SyncPlay
         /// The play-queue update. Tells a user the playing queue of the group.
         /// </summary>
         PlayQueue,
+
+        /// <summary>
+        /// The SyncPlay-is-disabled error. User is not allowed to use SyncPlay.
+        /// </summary>
+        SyncPlayIsDisabled,
 
         /// <summary>
         /// The not-in-group error. Tells a user that they don't belong to a group.

@@ -37,12 +37,28 @@ namespace MediaBrowser.Controller.SyncPlay
         void LeaveGroup(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Updates the settings of a group.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void UpdateGroupSettings(SessionInfo session, UpdateGroupSettingsRequest request, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets list of available groups for a session.
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
         /// <returns>The list of available groups.</returns>
         List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request);
+
+        /// <summary>
+        /// Gets list of available users that have access to SyncPlay.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
+        /// <returns>The list of available users.</returns>
+        List<UserInfoDto> ListAvailableUsers(SessionInfo session, ListUsersRequest request);
 
         /// <summary>
         /// Handle a request by a session in a group.

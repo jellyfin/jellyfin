@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
@@ -174,6 +176,15 @@ namespace Emby.Server.Implementations.SyncPlay
                         return;
                     }
 
+                    if (!group.CanUserJoin(session.UserId))
+                    {
+                        _logger.LogWarning("Session {SessionId} cannot join group {GroupId}.", session.Id, request.GroupId);
+
+                        var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.JoinGroupDenied, string.Empty);
+                        _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                        return;
+                    }
+
                     if (_sessionToGroupMap.TryGetValue(session.Id, out var existingGroup))
                     {
                         if (existingGroup.GroupId.Equals(request.GroupId))
@@ -254,6 +265,49 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
+        public void UpdateGroupSettings(SessionInfo session, UpdateGroupSettingsRequest request, CancellationToken cancellationToken)
+        {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request is null!");
+            }
+
+            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
+            {
+                // Group lock required as Group is not thread-safe.
+                lock (group)
+                {
+                    // Make sure that session still belongs to this group.
+                    if (_sessionToGroupMap.TryGetValue(session.Id, out var checkGroup) && !checkGroup.GroupId.Equals(group.GroupId))
+                    {
+                        // Drop request.
+                        return;
+                    }
+
+                    // Drop message if group is empty.
+                    if (group.IsGroupEmpty())
+                    {
+                        return;
+                    }
+
+                    group.UpdateSettings(session, request, cancellationToken);
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
+
+                var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
+                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+            }
+        }
+
+        /// <inheritdoc />
         public List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request)
         {
             if (session == null)
@@ -274,7 +328,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 // Locking required as group is not thread-safe.
                 lock (group)
                 {
-                    if (group.HasAccessToPlayQueue(user))
+                    if (group.CanUserJoin(session.UserId) && group.HasAccessToPlayQueue(user))
                     {
                         list.Add(group.GetInfo());
                     }
@@ -282,6 +336,17 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             return list;
+        }
+
+        /// <inheritdoc />
+        public List<UserInfoDto> ListAvailableUsers(SessionInfo session, ListUsersRequest request)
+        {
+            // TODO: should additional filters exist for privacy?
+            return _userManager
+                .Users
+                .Where(user => !user.SyncPlayAccess.Equals(SyncPlayUserAccessType.None))
+                .Select(user => new UserInfoDto(user.Id, user.Username))
+                .ToList();
         }
 
         /// <inheritdoc />
