@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         public IdleGroupState(ILogger logger) : base(logger)
         {
-            // Do nothing
+            // Do nothing.
         }
 
         /// <inheritdoc />
@@ -36,13 +36,13 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <inheritdoc />
         public override void SessionLeaving(ISyncPlayStateContext context, GroupState prevState, SessionInfo session, CancellationToken cancellationToken)
         {
-            // Do nothing
+            // Do nothing.
         }
 
         /// <inheritdoc />
         public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PlayGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            // Change state
+            // Change state.
             var waitingState = new WaitingGroupState(_logger);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <inheritdoc />
         public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, UnpauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            // Change state
+            // Change state.
             var waitingState = new WaitingGroupState(_logger);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <inheritdoc />
         public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            // Change state
+            // Change state.
             var waitingState = new WaitingGroupState(_logger);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <inheritdoc />
         public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            // Change state
+            // Change state.
             var waitingState = new WaitingGroupState(_logger);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);

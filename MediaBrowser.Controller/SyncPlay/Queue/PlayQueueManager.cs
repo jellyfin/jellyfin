@@ -261,9 +261,9 @@ namespace MediaBrowser.Controller.SyncPlay
 
             if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
-                // Append items to sorted playlist as they are
+                // Append items to sorted playlist as they are.
                 SortedPlaylist.AddRange(newItems);
-                // Shuffle items before adding to shuffled playlist
+                // Shuffle items before adding to shuffled playlist.
                 newItems.Shuffle();
                 ShuffledPlaylist.InsertRange(PlayingItemIndex + 1, newItems);
             }
@@ -387,11 +387,11 @@ namespace MediaBrowser.Controller.SyncPlay
             {
                 if (playlistItemIds.Contains(playingItem.PlaylistItemId))
                 {
-                    // Playing item has been removed, picking previous item
+                    // Playing item has been removed, picking previous item.
                     PlayingItemIndex--;
                     if (PlayingItemIndex < 0)
                     {
-                        // Was first element, picking next if available
+                        // Was first element, picking next if available.
                         PlayingItemIndex = SortedPlaylist.Count() > 0 ? 0 : -1;
                     }
 
@@ -399,7 +399,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 }
                 else
                 {
-                    // Restoring playing item
+                    // Restoring playing item.
                     SetPlayingItemByPlaylistId(playingItem.PlaylistItemId);
                     return false;
                 }

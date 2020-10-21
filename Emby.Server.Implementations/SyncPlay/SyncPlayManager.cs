@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            // TODO: probably remove this event, not used at the moment
+            // TODO: probably remove this event, not used at the moment.
         }
 
         private void OnSessionManagerPlaybackStart(object sender, PlaybackProgressEventArgs e)
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            // TODO: probably remove this event, not used at the moment
+            // TODO: probably remove this event, not used at the moment.
         }
 
         private void OnSessionManagerPlaybackStopped(object sender, PlaybackStopEventArgs e)
@@ -157,7 +157,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            // TODO: probably remove this event, not used at the moment
+            // TODO: probably remove this event, not used at the moment.
         }
 
         private bool IsSessionInGroup(SessionInfo session)
@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session, CancellationToken cancellationToken)
         {
-            // TODO: determine what happens to users that are in a group and get their permissions revoked
+            // TODO: determine what happens to users that are in a group and get their permissions revoked.
             lock (_groupsLock)
             {
                 _sessionToGroupMap.TryGetValue(session.Id, out var group);

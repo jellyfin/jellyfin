@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="cancellationToken">The cancellation token.</param>
         protected void SendGroupStateUpdate(ISyncPlayStateContext context, IPlaybackGroupRequest reason, SessionInfo session, CancellationToken cancellationToken)
         {
-            // Notify relevant state change event
+            // Notify relevant state change event.
             var stateUpdate = new GroupStateUpdate()
             {
                 State = GetGroupState(),
@@ -200,7 +200,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <inheritdoc />
         public virtual void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PingGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            // Collected pings are used to account for network latency when unpausing playback
+            // Collected pings are used to account for network latency when unpausing playback.
             context.UpdatePing(session, request.Ping);
         }
 

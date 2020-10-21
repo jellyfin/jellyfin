@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="InvalidOperationException">Thrown when the user is in another group already.</exception>
         void AddSessionToGroup(SessionInfo session, ISyncPlayGroupController group);
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="InvalidOperationException">Thrown when the user is not found in the specified group.</exception>
         void RemoveSessionFromGroup(SessionInfo session, ISyncPlayGroupController group);
     }
 }

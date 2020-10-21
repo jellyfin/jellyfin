@@ -206,22 +206,22 @@ namespace Emby.Server.Implementations.SyncPlay
             var items = queue.ToList()
                 .Select(item => _libraryManager.GetItemById(item));
 
-            // Find the highest rating value, which becomes the required minimum for the user
+            // Find the highest rating value, which becomes the required minimum for the user.
             var MinParentalRatingAccessRequired = items
                 .Select(item => item.InheritedParentalRatingValue)
                 .Min();
 
-            // Check ParentalRating access, user must have the minimum required access level
+            // Check ParentalRating access, user must have the minimum required access level.
             var hasParentalRatingAccess = !user.MaxParentalAgeRating.HasValue
                 || MinParentalRatingAccessRequired <= user.MaxParentalAgeRating;
 
-            // Check that user has access to all required folders
+            // Check that user has access to all required folders.
             if (!user.HasPermission(PermissionKind.EnableAllFolders) && hasParentalRatingAccess)
             {
-                // Get list of items that are not accessible
+                // Get list of items that are not accessible.
                 var blockedItems = items.Where(item => !HasAccessToItem(user, item));
 
-                // We need the user to be able to access all items
+                // We need the user to be able to access all items.
                 return !blockedItems.Any();
             }
 
@@ -235,14 +235,14 @@ namespace Emby.Server.Implementations.SyncPlay
                 return true;
             }
 
-            // Get list of users
+            // Get list of users.
             var users = Participants.Values
                 .Select(participant => _userManager.GetUserById(participant.Session.UserId));
 
-            // Find problematic users
+            // Find problematic users.
             var usersWithNoAccess = users.Where(user => !HasAccessToQueue(user, queue));
 
-            // All users must be able to access the queue
+            // All users must be able to access the queue.
             return !usersWithNoAccess.Any();
         }
 
@@ -268,7 +268,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 RunTimeTicks = session.FullNowPlayingItem.RunTimeTicks ?? 0;
                 PositionTicks = session.PlayState.PositionTicks ?? 0;
 
-                // Mantain playstate
+                // Mantain playstate.
                 var waitingState = new WaitingGroupState(_logger);
                 waitingState.ResumePlaying = !session.PlayState.IsPaused;
                 SetState(waitingState);
@@ -503,13 +503,13 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public bool SetPlayQueue(Guid[] playQueue, int playingItemPosition, long startPositionTicks)
         {
-            // Ignore on empty queue or invalid item position
+            // Ignore on empty queue or invalid item position.
             if (playQueue.Length < 1 || playingItemPosition >= playQueue.Length || playingItemPosition < 0)
             {
                 return false;
             }
 
-            // Check is participants can access the new playing queue
+            // Check is participants can access the new playing queue.
             if (!AllUsersHaveAccessToQueue(playQueue))
             {
                 return false;
@@ -577,13 +577,13 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public bool AddToPlayQueue(Guid[] newItems, string mode)
         {
-            // Ignore on empty list
+            // Ignore on empty list.
             if (newItems.Length < 1)
             {
                 return false;
             }
 
-            // Check is participants can access the new playing queue
+            // Check is participants can access the new playing queue.
             if (!AllUsersHaveAccessToQueue(newItems))
             {
                 return false;
@@ -661,7 +661,7 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - LastActivity;
-                // Event may happen during the delay added to account for latency
+                // Event may happen during the delay added to account for latency.
                 startPositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
             }
 
