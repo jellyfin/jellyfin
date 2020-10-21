@@ -245,15 +245,12 @@ namespace MediaBrowser.Common.Plugins
         private TConfigurationType LoadConfiguration()
         {
             var path = ConfigurationFilePath;
+            if (!File.Exists(path))
+            {
+                return Activator.CreateInstance<TConfigurationType>();
+            }
 
-            try
-            {
-                return (TConfigurationType)XmlSerializer.DeserializeFromFile(typeof(TConfigurationType), path);
-            }
-            catch
-            {
-                return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
-            }
+            return (TConfigurationType)XmlSerializer.DeserializeFromFile(typeof(TConfigurationType), path);
         }
 
         /// <summary>
