@@ -71,7 +71,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Builds a new playback command with some default values.
         /// </summary>
         /// <param name="type">The command type.</param>
-        /// <returns>The SendCommand.</returns>
+        /// <returns>The command.</returns>
         SendCommand NewSyncPlayCommand(SendCommandType type);
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="type">The update type.</param>
         /// <param name="data">The data to send.</param>
-        /// <returns>The GroupUpdate.</returns>
+        /// <returns>The group update.</returns>
         GroupUpdate<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data);
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Sanitizes the PositionTicks, considers the current playing item when available.
         /// </summary>
         /// <param name="positionTicks">The PositionTicks.</param>
-        /// <returns>The sanitized PositionTicks.</returns>
+        /// <returns>The sanitized position ticks.</returns>
         long SanitizePositionTicks(long? positionTicks);
 
         /// <summary>
@@ -141,14 +141,14 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="playQueue">The new play queue.</param>
         /// <param name="playingItemPosition">The playing item position in the play queue.</param>
         /// <param name="startPositionTicks">The start position ticks.</param>
-        /// <returns><c>true</c> if the play queue has been changed; <c>false</c> is something went wrong.</returns>
+        /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
         bool SetPlayQueue(Guid[] playQueue, int playingItemPosition, long startPositionTicks);
 
         /// <summary>
         /// Sets the playing item.
         /// </summary>
-        /// <param name="playlistItemId">The new playing item id.</param>
-        /// <returns><c>true</c> if the play queue has been changed; <c>false</c> is something went wrong.</returns>
+        /// <param name="playlistItemId">The new playing item identifier.</param>
+        /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
         bool SetPlayingItem(string playlistItemId);
 
         /// <summary>
@@ -161,9 +161,9 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Moves an item in the play queue.
         /// </summary>
-        /// <param name="playlistItemId">The playlist id of the item to move.</param>
+        /// <param name="playlistItemId">The playlist identifier of the item to move.</param>
         /// <param name="newIndex">The new position.</param>
-        /// <returns><c>true</c> if item has been moved; <c>false</c> is something went wrong.</returns>
+        /// <returns><c>true</c> if item has been moved; <c>false</c> if something went wrong.</returns>
         bool MoveItemInPlayQueue(string playlistItemId, int newIndex);
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="newItems">The new items to add to the play queue.</param>
         /// <param name="mode">The mode with which the items will be added.</param>
-        /// <returns><c>true</c> if the play queue has been changed; <c>false</c> is something went wrong.</returns>
+        /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
         bool AddToPlayQueue(Guid[] newItems, string mode);
 
         /// <summary>

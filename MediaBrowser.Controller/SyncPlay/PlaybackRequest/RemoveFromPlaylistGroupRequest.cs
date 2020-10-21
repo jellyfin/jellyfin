@@ -10,15 +10,15 @@ namespace MediaBrowser.Controller.SyncPlay
     public class RemoveFromPlaylistGroupRequest : IPlaybackGroupRequest
     {
         /// <summary>
-        /// Gets or sets the playlist ids ot the items.
+        /// Gets or sets the playlist identifiers ot the items.
         /// </summary>
-        /// <value>The playlist ids ot the items.</value>
+        /// <value>The playlist identifiers ot the items.</value>
         public string[] PlaylistItemIds { get; set; }
 
         /// <inheritdoc />
         public PlaybackRequestType GetRequestType()
         {
-            return PlaybackRequestType.Queue;
+            return PlaybackRequestType.RemoveFromPlaylist;
         }
 
         /// <inheritdoc />

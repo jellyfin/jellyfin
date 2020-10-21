@@ -10,9 +10,9 @@ namespace MediaBrowser.Controller.SyncPlay
     public class SetPlaylistItemGroupRequest : IPlaybackGroupRequest
     {
         /// <summary>
-        /// Gets or sets the playlist id of the playing item.
+        /// Gets or sets the playlist identifier of the playing item.
         /// </summary>
-        /// <value>The playlist id of the playing item.</value>
+        /// <value>The playlist identifier of the playing item.</value>
         public string PlaylistItemId { get; set; }
 
         /// <inheritdoc />

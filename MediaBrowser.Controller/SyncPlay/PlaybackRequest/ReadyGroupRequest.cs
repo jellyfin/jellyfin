@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Session;
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Class BufferingDoneGroupRequest.
+    /// Class ReadyGroupRequest.
     /// </summary>
     public class ReadyGroupRequest : IPlaybackGroupRequest
     {
@@ -29,9 +29,9 @@ namespace MediaBrowser.Controller.SyncPlay
         public bool IsPlaying { get; set; }
 
         /// <summary>
-        /// Gets or sets the playlist item id of the playing item.
+        /// Gets or sets the playlist item identifier of the playing item.
         /// </summary>
-        /// <value>The playlist item id.</value>
+        /// <value>The playlist item identifier.</value>
         public string PlaylistItemId { get; set; }
 
         /// <inheritdoc />

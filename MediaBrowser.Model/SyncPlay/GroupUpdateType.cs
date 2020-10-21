@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.SyncPlay
         StateUpdate,
 
         /// <summary>
-        /// The play-queue update. Tells a user what's the playing queue of the group.
+        /// The play-queue update. Tells a user the playing queue of the group.
         /// </summary>
         PlayQueue,
 

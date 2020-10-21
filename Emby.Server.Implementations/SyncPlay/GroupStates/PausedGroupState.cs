@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 context.LastActivity = currentTime;
                 // Seek only if playback actually started.
                 // Pause request may be issued during the delay added to account for latency.
-                context.PositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
+                context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
 
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
                 context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);

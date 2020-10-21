@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.SyncPlay
         GroupState GetGroupState();
 
         /// <summary>
-        /// Handle a session that joined the group.
+        /// Handles a session that joined the group.
         /// </summary>
         /// <param name="context">The context of the state.</param>
         /// <param name="prevState">The previous state.</param>
@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.SyncPlay
         void SessionJoined(ISyncPlayStateContext context, GroupState prevState, SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Handle a session that is leaving the group.
+        /// Handles a session that is leaving the group.
         /// </summary>
         /// <param name="context">The context of the state.</param>
         /// <param name="prevState">The previous state.</param>

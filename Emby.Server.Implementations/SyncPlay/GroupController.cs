@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// Checks if a session is in this group.
         /// </summary>
-        /// <param name="sessionId">The session id to check.</param>
+        /// <param name="sessionId">The session identifier to check.</param>
         /// <returns><c>true</c> if the session is in this group; <c>false</c> otherwise.</returns>
         private bool ContainsSession(string sessionId)
         {
@@ -509,7 +509,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return false;
             }
 
-            // Check is participants can access the new playing queue.
+            // Check if participants can access the new playing queue.
             if (!AllUsersHaveAccessToQueue(playQueue))
             {
                 return false;
@@ -583,7 +583,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return false;
             }
 
-            // Check is participants can access the new playing queue.
+            // Check if participants can access the new playing queue.
             if (!AllUsersHaveAccessToQueue(newItems))
             {
                 return false;

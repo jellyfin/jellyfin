@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Session;
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Class UpdatePingGroupRequest.
+    /// Class PingGroupRequest.
     /// </summary>
     public class PingGroupRequest : IPlaybackGroupRequest
     {

@@ -10,15 +10,15 @@ namespace MediaBrowser.Model.SyncPlay
     public class QueueItem
     {
         /// <summary>
-        /// Gets or sets the item id.
+        /// Gets or sets the item identifier.
         /// </summary>
-        /// <value>The item id.</value>
+        /// <value>The item identifier.</value>
         public Guid ItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the playlist id of the item.
+        /// Gets or sets the playlist identifier of the item.
         /// </summary>
-        /// <value>The playlist id of the item.</value>
+        /// <value>The playlist identifier of the item.</value>
         public string PlaylistItemId { get; set; }
     }
 }

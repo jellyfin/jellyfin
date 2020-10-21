@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Checks if the group is empty.
         /// </summary>
-        /// <returns>If the group is empty.</returns>
+        /// <returns><c>true</c> if the group is empty, <c>false</c> otherwise</returns>
         bool IsGroupEmpty();
 
         /// <summary>

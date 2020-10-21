@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Adds the session to a group.
         /// </summary>
         /// <param name="session">The session.</param>
-        /// <param name="groupId">The group id.</param>
+        /// <param name="groupId">The group identifier.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequest request, CancellationToken cancellationToken);

@@ -64,9 +64,9 @@ namespace MediaBrowser.Controller.SyncPlay
         public GroupRepeatMode RepeatMode { get; private set; } = GroupRepeatMode.RepeatNone;
 
         /// <summary>
-        /// Gets or sets the progressive id counter.
+        /// Gets or sets the progressive identifier counter.
         /// </summary>
-        /// <value>The progressive id.</value>
+        /// <value>The progressive identifier.</value>
         private int ProgressiveId { get; set; } = 0;
 
         private bool _disposed = false;
@@ -101,15 +101,15 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
-        /// Gets the next available id.
+        /// Gets the next available identifier.
         /// </summary>
-        /// <returns>The next available id.</returns>
+        /// <returns>The next available identifier.</returns>
         private int GetNextProgressiveId() {
             return ProgressiveId++;
         }
 
         /// <summary>
-        /// Creates a list from the array of items. Each item is given an unique playlist id.
+        /// Creates a list from the array of items. Each item is given an unique playlist identifier.
         /// </summary>
         /// <returns>The list of queue items.</returns>
         private List<QueueItem> CreateQueueItemsFromArray(Guid[] items)
@@ -276,9 +276,9 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
-        /// Gets playlist id of the playing item, if any.
+        /// Gets playlist identifier of the playing item, if any.
         /// </summary>
-        /// <returns>The playlist id of the playing item.</returns>
+        /// <returns>The playlist identifier of the playing item.</returns>
         public string GetPlayingItemPlaylistId()
         {
             if (PlayingItemIndex < 0)
@@ -299,9 +299,9 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
-        /// Gets the playing item id, if any.
+        /// Gets the playing item identifier, if any.
         /// </summary>
-        /// <returns>The playing item id.</returns>
+        /// <returns>The playing item identifier.</returns>
         public Guid GetPlayingItemId()
         {
             if (PlayingItemIndex < 0)
@@ -322,9 +322,9 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
-        /// Sets the playing item using its id. If not in the playlist, the playing item is reset.
+        /// Sets the playing item using its identifier. If not in the playlist, the playing item is reset.
         /// </summary>
-        /// <param name="itemId">The new playing item id.</param>
+        /// <param name="itemId">The new playing item identifier.</param>
         public void SetPlayingItemById(Guid itemId)
         {
             var itemIds = GetPlaylistAsList().Select(queueItem => queueItem.ItemId).ToList();
@@ -333,9 +333,9 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
-        /// Sets the playing item using its playlist id. If not in the playlist, the playing item is reset.
+        /// Sets the playing item using its playlist identifier. If not in the playlist, the playing item is reset.
         /// </summary>
-        /// <param name="playlistItemId">The new playing item id.</param>
+        /// <param name="playlistItemId">The new playing item identifier.</param>
         /// <returns><c>true</c> if playing item has been set; <c>false</c> if item is not in the playlist.</returns>
         public bool SetPlayingItemByPlaylistId(string playlistItemId)
         {

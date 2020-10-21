@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 context.LastActivity = currentTime;
                 // Seek only if playback actually started.
                 // Event may happen during the delay added to account for latency.
-                context.PositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
+                context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
             }
 
             // Prepare new session.
@@ -151,7 +151,7 @@ namespace MediaBrowser.Controller.SyncPlay
             var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
-            // Reset status of sessions and await for all Ready events before sending Play command.
+            // Reset status of sessions and await for all Ready events.
             context.SetAllBuffering(true);
 
             _logger.LogDebug("HandleRequest: {0} in group {1}, {2} set a new play queue.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
-                // Reset status of sessions and await for all Ready events before sending Play command.
+                // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
             }
             else
@@ -221,7 +221,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
-                // Reset status of sessions and await for all Ready events before sending Play command.
+                // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
 
                 _logger.LogDebug("HandleRequest: {0} in group {1}, waiting for all ready events.", request.GetRequestType(), context.GroupId.ToString());
@@ -314,7 +314,7 @@ namespace MediaBrowser.Controller.SyncPlay
             var command = context.NewSyncPlayCommand(SendCommandType.Seek);
             context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
 
-            // Reset status of sessions and await for all Ready events before sending Play command.
+            // Reset status of sessions and await for all Ready events.
             context.SetAllBuffering(true);
 
             // Notify relevant state change event.
@@ -355,7 +355,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - context.LastActivity;
                 context.LastActivity = currentTime;
-                context.PositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
+                context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
 
                 // Send pause command to all non-buffering sessions.
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
@@ -559,7 +559,7 @@ namespace MediaBrowser.Controller.SyncPlay
             // Make sure the client knows the playing item, to avoid duplicate requests.
             if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
             {
-                _logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist id.", request.GetRequestType(), context.GroupId.ToString());
+                _logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist identifier.", request.GetRequestType(), context.GroupId.ToString());
                 return;
             }
 
@@ -571,7 +571,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
-                // Reset status of sessions and await for all Ready events before sending Play command.
+                // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
             }
             else
@@ -612,7 +612,7 @@ namespace MediaBrowser.Controller.SyncPlay
             // Make sure the client knows the playing item, to avoid duplicate requests.
             if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
             {
-                _logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist id.", request.GetRequestType(), context.GroupId.ToString());
+                _logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist identifier.", request.GetRequestType(), context.GroupId.ToString());
                 return;
             }
 
@@ -624,7 +624,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
-                // Reset status of sessions and await for all Ready events before sending Play command.
+                // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
             }
             else

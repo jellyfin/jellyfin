@@ -10,9 +10,9 @@ namespace MediaBrowser.Controller.SyncPlay
     public class MovePlaylistItemGroupRequest : IPlaybackGroupRequest
     {
         /// <summary>
-        /// Gets or sets the playlist id of the item.
+        /// Gets or sets the playlist identifier of the item.
         /// </summary>
-        /// <value>The playlist id of the item.</value>
+        /// <value>The playlist identifier of the item.</value>
         public string PlaylistItemId { get; set; }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <inheritdoc />
         public PlaybackRequestType GetRequestType()
         {
-            return PlaybackRequestType.Queue;
+            return PlaybackRequestType.MovePlaylistItem;
         }
 
         /// <inheritdoc />
