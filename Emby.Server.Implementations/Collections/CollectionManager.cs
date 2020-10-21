@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.Collections
 
             return folder == null
                 ? Enumerable.Empty<BoxSet>()
-                : folder.GetChildren(user, true).OfType<BoxSet>();
+                : folder.GetChildrenByUser(user, true).OfType<BoxSet>();
         }
 
         /// <inheritdoc />
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.Collections
             var list = new List<LinkedChild>();
             var itemList = new List<BaseItem>();
 
-            var linkedChildrenList = collection.GetLinkedChildren();
+            var linkedChildrenList = collection.FetchLinkedChildren();
             var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
 
             foreach (var id in ids)

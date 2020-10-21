@@ -1,5 +1,7 @@
 #pragma warning disable CS1591
 
+using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -40,7 +42,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, IEnumerable<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
@@ -57,7 +59,7 @@ namespace MediaBrowser.Providers.TV
                 targetItem.Status = sourceItem.Status;
             }
 
-            if (replaceData || targetItem.AirDays == null || targetItem.AirDays.Length == 0)
+            if (replaceData || targetItem.AirDays == null || !targetItem.AirDays.Any())
             {
                 targetItem.AirDays = sourceItem.AirDays;
             }

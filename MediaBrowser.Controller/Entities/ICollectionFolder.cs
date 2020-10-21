@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -15,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
 
         Guid Id { get; }
 
-        string[] PhysicalLocations { get; }
+        IReadOnlyCollection<string> PhysicalLocations { get; }
     }
 
     public interface ISupportsUserSpecificView

@@ -226,7 +226,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                 }
 
-                if (dto.ParentBackdropImageTags == null || dto.ParentBackdropImageTags.Length == 0)
+                if (dto.ParentBackdropImageTags == null || !dto.ParentBackdropImageTags.Any())
                 {
                     image = program.GetImageInfo(ImageType.Backdrop, 0);
                     if (image != null)

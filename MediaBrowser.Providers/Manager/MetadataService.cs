@@ -505,7 +505,7 @@ namespace MediaBrowser.Providers.Manager
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
-                if (currentList.Length != item.Genres.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Count() != item.Genres.Count() || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType = updateType | ItemUpdateType.MetadataEdit;
                 }
@@ -526,7 +526,7 @@ namespace MediaBrowser.Providers.Manager
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
-                if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Count() != item.Studios.Count() || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType = updateType | ItemUpdateType.MetadataEdit;
                 }
@@ -553,7 +553,12 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the providers.
         /// </summary>
-        /// <returns>IEnumerable{`0}.</returns>
+        /// <param name="item">Item.</param>
+        /// <param name="libraryOptions">Library options.</param>
+        /// <param name="options">Metadata refresh options.</param>
+        /// <param name="isFirstRefresh">Is first refresh.</param>
+        /// <param name="requiresRefresh">Requires refresh.</param>
+        /// <returns>Enumerable of metadata providers.</returns>
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
             // Get providers to refresh
@@ -899,7 +904,7 @@ namespace MediaBrowser.Providers.Manager
         protected abstract void MergeData(
             MetadataResult<TItemType> source,
             MetadataResult<TItemType> target,
-            MetadataField[] lockedFields,
+            IEnumerable<MetadataField> lockedFields,
             bool replaceData,
             bool mergeMetadataSettings);
 

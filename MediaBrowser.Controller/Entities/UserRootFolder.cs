@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override int GetChildCount(User user)
         {
-            return GetChildren(user, true).Count;
+            return GetChildrenByUser(user, true).Count;
         }
 
         [JsonIgnore]

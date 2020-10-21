@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public override bool IsVisible(User user)
         {
-            return base.IsVisible(user) && GetChildren(user, true).Any();
+            return base.IsVisible(user) && GetChildrenByUser(user, true).Any();
         }
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)

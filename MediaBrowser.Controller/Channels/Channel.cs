@@ -15,6 +15,22 @@ namespace MediaBrowser.Controller.Channels
 {
     public class Channel : Folder
     {
+        [JsonIgnore]
+        public override SourceType SourceType => SourceType.Channel;
+
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        public static string GetInternalMetadataPath(string basePath, Guid id)
+        {
+            return System.IO.Path.Combine(basePath, "channels", id.ToString("N", CultureInfo.InvariantCulture), "metadata");
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         public override bool IsVisible(User user)
         {
             if (user.GetPreference(PreferenceKind.BlockedChannels) != null)
@@ -37,11 +53,17 @@ namespace MediaBrowser.Controller.Channels
             return base.IsVisible(user);
         }
 
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
+        internal static bool IsChannelVisible(BaseItem channelItem, User user)
+        {
+            var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(string.Empty, CultureInfo.InvariantCulture));
 
-        [JsonIgnore]
-        public override SourceType SourceType => SourceType.Channel;
+            return channel.IsVisible(user);
+        }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return GetInternalMetadataPath(basePath, Id);
+        }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
@@ -60,31 +82,9 @@ namespace MediaBrowser.Controller.Channels
             }
         }
 
-        protected override string GetInternalMetadataPath(string basePath)
-        {
-            return GetInternalMetadataPath(basePath, Id);
-        }
-
-        public static string GetInternalMetadataPath(string basePath, Guid id)
-        {
-            return System.IO.Path.Combine(basePath, "channels", id.ToString("N", CultureInfo.InvariantCulture), "metadata");
-        }
-
-        public override bool CanDelete()
-        {
-            return false;
-        }
-
         protected override bool IsAllowTagFilterEnforced()
         {
             return false;
-        }
-
-        internal static bool IsChannelVisible(BaseItem channelItem, User user)
-        {
-            var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(""));
-
-            return channel.IsVisible(user);
         }
     }
 }

@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.Playlists
         {
             var user = _userManager.GetUserById(userId);
 
-            return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>();
+            return GetPlaylistsFolder(userId).GetChildrenByUser(user, true).OfType<Playlist>();
         }
 
         public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest options)
@@ -232,9 +232,7 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             // Create a new array with the updated playlist items
-            var newLinkedChildren = new LinkedChild[playlist.LinkedChildren.Length + childrenToAdd.Count];
-            playlist.LinkedChildren.CopyTo(newLinkedChildren, 0);
-            childrenToAdd.CopyTo(newLinkedChildren, playlist.LinkedChildren.Length);
+            var newLinkedChildren = playlist.LinkedChildren.Concat(childrenToAdd);
 
             // Update the playlist in the repository
             playlist.LinkedChildren = newLinkedChildren;
@@ -305,7 +303,7 @@ namespace Emby.Server.Implementations.Playlists
                 return;
             }
 
-            var item = playlist.LinkedChildren[oldIndex];
+            var item = playlist.LinkedChildren.ElementAt(oldIndex);
 
             var newList = playlist.LinkedChildren.ToList();
 
@@ -340,7 +338,7 @@ namespace Emby.Server.Implementations.Playlists
             if (string.Equals(".wpl", extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new WplPlaylist();
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.FetchLinkedChildren())
                 {
                     var entry = new WplPlaylistEntry()
                     {
@@ -374,7 +372,7 @@ namespace Emby.Server.Implementations.Playlists
             if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new ZplPlaylist();
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.FetchLinkedChildren())
                 {
                     var entry = new ZplPlaylistEntry()
                     {
@@ -411,7 +409,7 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     IsExtended = true
                 };
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.FetchLinkedChildren())
                 {
                     var entry = new M3uPlaylistEntry()
                     {
@@ -441,7 +439,7 @@ namespace Emby.Server.Implementations.Playlists
             {
                 var playlist = new M3uPlaylist();
                 playlist.IsExtended = true;
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.FetchLinkedChildren())
                 {
                     var entry = new M3uPlaylistEntry()
                     {
@@ -470,7 +468,7 @@ namespace Emby.Server.Implementations.Playlists
             if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new PlsPlaylist();
-                foreach (var child in item.GetLinkedChildren())
+                foreach (var child in item.FetchLinkedChildren())
                 {
                     var entry = new PlsPlaylistEntry()
                     {

@@ -225,7 +225,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, ItemFields[] fields, User user = null);
+        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, IEnumerable<ItemFields> fields, User user = null);
 
         /// <summary>
         /// Saves the tuner host.

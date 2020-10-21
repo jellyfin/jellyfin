@@ -122,7 +122,7 @@ namespace Jellyfin.Api.Controllers
 
                 if (!userId.Equals(Guid.Empty))
                 {
-                    items = recursive ? folder.GetRecursiveChildren(user, query).ToList() : folder.GetChildren(user, true).Where(Filter).ToList();
+                    items = recursive ? folder.GetRecursiveChildren(user, query).ToList() : folder.GetChildrenByUser(user, true).Where(Filter).ToList();
                 }
                 else
                 {

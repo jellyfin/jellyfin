@@ -136,7 +136,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             return Ok(_libraryManager.GetUserRootFolder()
-                .GetChildren(user, true)
+                .GetChildrenByUser(user, true)
                 .OfType<Folder>()
                 .Where(UserView.IsEligibleForGrouping)
                 .Select(i => new SpecialViewOptionDto

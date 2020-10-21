@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -248,7 +249,7 @@ namespace MediaBrowser.Controller.Entities
         public ProgramAudio? Audio { get; set; }
 
         /// <summary>
-        /// Return the id that should be used to key display prefs for this item.
+        /// Gets the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
         /// </summary>
         /// <value>The display prefs id.</value>
@@ -284,7 +285,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Returns the folder containing the item.
+        /// Gets the folder containing the item.
         /// If the item is a folder, it returns the folder itself.
         /// </summary>
         [JsonIgnore]
@@ -309,7 +310,7 @@ namespace MediaBrowser.Controller.Entities
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// If this content came from an external service, the id of the content on that service.
+        /// Gets or sets if this content came from an external service, the id of the content on that service.
         /// </summary>
         [JsonIgnore]
         public string ExternalId { get; set; }
@@ -638,7 +639,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The locked fields.</value>
         [JsonIgnore]
-        public MetadataField[] LockedFields { get; set; }
+        public IEnumerable<MetadataField> LockedFields { get; set; }
 
         /// <summary>
         /// Gets the type of the media.
@@ -648,7 +649,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual string MediaType => null;
 
         [JsonIgnore]
-        public virtual string[] PhysicalLocations
+        public virtual IReadOnlyCollection<string> PhysicalLocations
         {
             get
             {
@@ -955,24 +956,24 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The studios.</value>
         [JsonIgnore]
-        public string[] Studios { get; set; }
+        public IEnumerable<string> Studios { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
         [JsonIgnore]
-        public string[] Genres { get; set; }
+        public IEnumerable<string> Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
         [JsonIgnore]
-        public string[] Tags { get; set; }
+        public IEnumerable<string> Tags { get; set; }
 
         [JsonIgnore]
-        public string[] ProductionLocations { get; set; }
+        public IEnumerable<string> ProductionLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the home page URL.
@@ -2017,7 +2018,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemCollectionFolders.Count > 0)
                 {
-                    var userCollectionFolders = LibraryManager.GetUserRootFolder().GetChildren(user, true).Select(i => i.Id).ToList();
+                    var userCollectionFolders = LibraryManager.GetUserRootFolder().GetChildrenByUser(user, true).Select(i => i.Id).ToList();
                     if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
                     {
                         return false;
@@ -2140,17 +2141,14 @@ namespace MediaBrowser.Controller.Entities
 
             if (!current.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
-                int curLen = current.Length;
+                int curLen = current.Count();
                 if (curLen == 0)
                 {
                     Studios = new[] { name };
                 }
                 else
                 {
-                    var newArr = new string[curLen + 1];
-                    current.CopyTo(newArr, 0);
-                    newArr[curLen] = name;
-                    Studios = newArr;
+                    Studios = current.ToList();
                 }
             }
         }

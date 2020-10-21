@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,11 +59,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = AudioDbArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
 
-                var obj = _json.DeserializeFromFile<AudioDbArtistProvider.RootObject>(path);
+                var obj = _json.DeserializeFromFile<AudioDbArtistProviderRootObject>(path);
 
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                if (obj != null && obj.Artists != null && obj.Artists.Any())
                 {
-                    return GetImages(obj.artists[0]);
+                    return GetImages(obj.Artists.First());
                 }
             }
 
@@ -73,62 +74,62 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         {
             var list = new List<RemoteImageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistThumb))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistThumb))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistThumb,
+                    Url = item.StrArtistThumb,
                     Type = ImageType.Primary
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistLogo))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistLogo))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistLogo,
+                    Url = item.StrArtistLogo,
                     Type = ImageType.Logo
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistBanner))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistBanner))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistBanner,
+                    Url = item.StrArtistBanner,
                     Type = ImageType.Banner
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistFanart))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart,
+                    Url = item.StrArtistFanart,
                     Type = ImageType.Backdrop
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart2))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistFanart2))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart2,
+                    Url = item.StrArtistFanart2,
                     Type = ImageType.Backdrop
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart3))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistFanart3))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart3,
+                    Url = item.StrArtistFanart3,
                     Type = ImageType.Backdrop
                 });
             }

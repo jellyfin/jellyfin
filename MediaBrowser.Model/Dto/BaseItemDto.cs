@@ -112,13 +112,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the external urls.
         /// </summary>
         /// <value>The external urls.</value>
-        public ExternalUrl[] ExternalUrls { get; set; }
+        public IEnumerable<ExternalUrl> ExternalUrls { get; set; }
 
         /// <summary>
         /// Gets or sets the media versions.
         /// </summary>
         /// <value>The media versions.</value>
-        public MediaSourceInfo[] MediaSources { get; set; }
+        public IEnumerable<MediaSourceInfo> MediaSources { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.
@@ -126,7 +126,7 @@ namespace MediaBrowser.Model.Dto
         /// <value>The critic rating.</value>
         public float? CriticRating { get; set; }
 
-        public string[] ProductionLocations { get; set; }
+        public IEnumerable<string> ProductionLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -166,13 +166,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
-        public string[] Taglines { get; set; }
+        public IEnumerable<string> Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
-        public string[] Genres { get; set; }
+        public IEnumerable<string> Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating.
@@ -252,7 +252,9 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the provider ids.
         /// </summary>
         /// <value>The provider ids.</value>
+#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, string> ProviderIds { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is HD.
@@ -282,24 +284,24 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the people.
         /// </summary>
         /// <value>The people.</value>
-        public BaseItemPerson[] People { get; set; }
+        public IEnumerable<BaseItemPerson> People { get; set; }
 
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
-        public NameGuidPair[] Studios { get; set; }
+        public IEnumerable<NameGuidPair> Studios { get; set; }
 
-        public NameGuidPair[] GenreItems { get; set; }
+        public IEnumerable<NameGuidPair> GenreItems { get; set; }
 
         /// <summary>
-        /// If the item does not have a logo, this will hold the Id of the Parent that has one.
+        /// Gets or sets If the item does not have a logo, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent logo item id.</value>
         public string ParentLogoItemId { get; set; }
 
         /// <summary>
-        /// If the item does not have any backdrops, this will hold the Id of the Parent that has one.
+        /// Gets or sets if the item does not have any backdrops, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent backdrop item id.</value>
         public string ParentBackdropItemId { get; set; }
@@ -308,7 +310,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent backdrop image tags.
         /// </summary>
         /// <value>The parent backdrop image tags.</value>
-        public string[] ParentBackdropImageTags { get; set; }
+        public IEnumerable<string> ParentBackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the local trailer count.
@@ -317,7 +319,7 @@ namespace MediaBrowser.Model.Dto
         public int? LocalTrailerCount { get; set; }
 
         /// <summary>
-        /// User data for this item based on the user it's being requested for.
+        /// Gets or sets user data for this item based on the user it's being requested for.
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
@@ -380,13 +382,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the air days.
         /// </summary>
         /// <value>The air days.</value>
-        public DayOfWeek[] AirDays { get; set; }
+        public IEnumerable<DayOfWeek> AirDays { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
-        public string[] Tags { get; set; }
+        public IEnumerable<string> Tags { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.
@@ -404,7 +406,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artist items.
         /// </summary>
         /// <value>The artist items.</value>
-        public NameGuidPair[] ArtistItems { get; set; }
+        public IEnumerable<NameGuidPair> ArtistItems { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -452,7 +454,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
-        public NameGuidPair[] AlbumArtists { get; set; }
+        public IEnumerable<NameGuidPair> AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the season.
@@ -464,7 +466,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the media streams.
         /// </summary>
         /// <value>The media streams.</value>
-        public MediaStream[] MediaStreams { get; set; }
+        public IEnumerable<MediaStream> MediaStreams { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the video.
@@ -484,19 +486,21 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
+#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<ImageType, string> ImageTags { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets the backdrop image tags.
         /// </summary>
         /// <value>The backdrop image tags.</value>
-        public string[] BackdropImageTags { get; set; }
+        public IEnumerable<string> BackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the screenshot image tags.
         /// </summary>
         /// <value>The screenshot image tags.</value>
-        public string[] ScreenshotImageTags { get; set; }
+        public IEnumerable<string> ScreenshotImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the parent logo image tag.
@@ -505,7 +509,7 @@ namespace MediaBrowser.Model.Dto
         public string ParentLogoImageTag { get; set; }
 
         /// <summary>
-        /// If the item does not have a art, this will hold the Id of the Parent that has one.
+        /// Gets or sets if the item does not have a art, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent art item id.</value>
         public string ParentArtItemId { get; set; }
@@ -527,7 +531,9 @@ namespace MediaBrowser.Model.Dto
         /// Maps image type to dictionary mapping image tag to blurhash value.
         /// </summary>
         /// <value>The blurhashes.</value>
+#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<ImageType, Dictionary<string, string>> ImageBlurHashes { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets the series studio.
@@ -563,7 +569,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the chapters.
         /// </summary>
         /// <value>The chapters.</value>
-        public List<ChapterInfo> Chapters { get; set; }
+        public IEnumerable<ChapterInfo> Chapters { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the location.
@@ -593,7 +599,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        public MetadataField[] LockedFields { get; set; }
+        public IEnumerable<MetadataField> LockedFields { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer count.
@@ -694,7 +700,7 @@ namespace MediaBrowser.Model.Dto
         public string ChannelPrimaryImageTag { get; set; }
 
         /// <summary>
-        /// The start date of the recording, in UTC.
+        /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime? StartDate { get; set; }
 

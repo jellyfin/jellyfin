@@ -41,7 +41,7 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<MusicArtist> source, MetadataResult<MusicArtist> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<MusicArtist> source, MetadataResult<MusicArtist> target, IEnumerable<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

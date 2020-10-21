@@ -1556,7 +1556,7 @@ namespace Emby.Server.Implementations.Library
                     && user.GetPreference(PreferenceKind.GroupedFolders).Length > 0)
                 {
                     return GetUserRootFolder()
-                        .GetChildren(user, true)
+                        .GetChildrenByUser(user, true)
                         .OfType<CollectionFolder>()
                         .Where(i => string.IsNullOrEmpty(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase))
                         .Where(i => user.IsFolderGrouped(i.Id))

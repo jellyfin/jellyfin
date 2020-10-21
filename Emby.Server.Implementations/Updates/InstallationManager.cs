@@ -15,14 +15,12 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Common.System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -203,27 +201,27 @@ namespace Emby.Server.Implementations.Updates
 
             var appVer = _applicationHost.ApplicationVersion;
             var availableVersions = package.versions
-                .Where(x => Version.Parse(x.targetAbi) <= appVer);
+                .Where(x => Version.Parse(x.TargetAbi) <= appVer);
 
             if (specificVersion != null)
             {
-                availableVersions = availableVersions.Where(x => new Version(x.version) == specificVersion);
+                availableVersions = availableVersions.Where(x => new Version(x.Version) == specificVersion);
             }
             else if (minVersion != null)
             {
-                availableVersions = availableVersions.Where(x => new Version(x.version) >= minVersion);
+                availableVersions = availableVersions.Where(x => new Version(x.Version) >= minVersion);
             }
 
-            foreach (var v in availableVersions.OrderByDescending(x => x.version))
+            foreach (var v in availableVersions.OrderByDescending(x => x.Version))
             {
                 yield return new InstallationInfo
                 {
-                    Changelog = v.changelog,
+                    Changelog = v.Changelog,
                     Guid = new Guid(package.guid),
                     Name = package.name,
-                    Version = new Version(v.version),
-                    SourceUrl = v.sourceUrl,
-                    Checksum = v.checksum
+                    Version = new Version(v.Version),
+                    SourceUrl = v.SourceUrl,
+                    Checksum = v.Checksum
                 };
             }
         }

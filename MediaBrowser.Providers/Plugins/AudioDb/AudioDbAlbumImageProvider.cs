@@ -58,9 +58,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var obj = _json.DeserializeFromFile<AudioDbAlbumProvider.RootObject>(path);
 
-                if (obj != null && obj.album != null && obj.album.Count > 0)
+                if (obj != null && obj.Album != null && obj.Album.Count > 0)
                 {
-                    return GetImages(obj.album[0]);
+                    return GetImages(obj.Album[0]);
                 }
             }
 
@@ -71,22 +71,22 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         {
             var list = new List<RemoteImageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(item.strAlbumThumb))
+            if (!string.IsNullOrWhiteSpace(item.StrAlbumThumb))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strAlbumThumb,
+                    Url = item.StrAlbumThumb,
                     Type = ImageType.Primary
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strAlbumCDart))
+            if (!string.IsNullOrWhiteSpace(item.StrAlbumCDart))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strAlbumCDart,
+                    Url = item.StrAlbumCDart,
                     Type = ImageType.Disc
                 });
             }

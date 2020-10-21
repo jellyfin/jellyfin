@@ -1078,11 +1078,11 @@ namespace Emby.Server.Implementations.Channels
 
             // was used for status
             // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
-            //{
+            // {
             //    item.ExternalEtag = info.Etag;
             //    forceUpdate = true;
             //    _logger.LogDebug("Forcing update due to ExternalEtag {0}", item.Name);
-            //}
+            // }
 
             if (!internalChannelId.Equals(item.ChannelId))
             {

@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override int GetChildCount(User user)
         {
-            var result = GetChildren(user, true).Count;
+            var result = GetChildrenByUser(user, true).Count;
 
             return result;
         }
@@ -166,7 +166,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true));
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildrenByUser(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetEpisodes(user, new DtoOptions(true));
         }

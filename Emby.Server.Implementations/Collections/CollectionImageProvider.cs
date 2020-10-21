@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Collections
         {
             var playlist = (BoxSet)item;
 
-            return playlist.Children.Concat(playlist.GetLinkedChildren())
+            return playlist.Children.Concat(playlist.FetchLinkedChildren())
                 .Select(i =>
                 {
                     var subItem = i;

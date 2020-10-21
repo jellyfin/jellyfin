@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.Playlists
             return Task.CompletedTask;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildrenByUser(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
@@ -132,7 +132,7 @@ namespace MediaBrowser.Controller.Playlists
 
             query.IsFolder = false;
 
-            return base.GetChildren(user, true, query);
+            return base.GetChildrenByUser(user, true, query);
         }
 
         public static List<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)

@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.Manager
         public static void MergeBaseItemData<T>(
             MetadataResult<T> sourceResult,
             MetadataResult<T> targetResult,
-            MetadataField[] lockedFields,
+            IEnumerable<MetadataField> lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
             where T : BaseItem
@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Genres))
             {
-                if (replaceData || target.Genres.Length == 0)
+                if (replaceData || !target.Genres.Any())
                 {
                     target.Genres = source.Genres;
                 }
@@ -144,7 +144,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Studios))
             {
-                if (replaceData || target.Studios.Length == 0)
+                if (replaceData || !target.Studios.Any())
                 {
                     target.Studios = source.Studios;
                 }
@@ -152,7 +152,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Tags))
             {
-                if (replaceData || target.Tags.Length == 0)
+                if (replaceData || !target.Tags.Any())
                 {
                     target.Tags = source.Tags;
                 }
@@ -160,7 +160,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.ProductionLocations))
             {
-                if (replaceData || target.ProductionLocations.Length == 0)
+                if (replaceData || !target.ProductionLocations.Any())
                 {
                     target.ProductionLocations = source.ProductionLocations;
                 }

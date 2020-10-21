@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -24,7 +25,7 @@ namespace MediaBrowser.Providers.MusicGenres
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, IEnumerable<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

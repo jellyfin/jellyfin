@@ -373,7 +373,7 @@ namespace Emby.Server.Implementations.EntryPoints
             newAndRemoved.AddRange(foldersAddedTo);
             newAndRemoved.AddRange(foldersRemovedFrom);
 
-            var allUserRootChildren = _libraryManager.GetUserRootFolder().GetChildren(user, true).OfType<Folder>().ToList();
+            var allUserRootChildren = _libraryManager.GetUserRootFolder().GetChildrenByUser(user, true).OfType<Folder>().ToList();
 
             return new LibraryUpdateInfo
             {

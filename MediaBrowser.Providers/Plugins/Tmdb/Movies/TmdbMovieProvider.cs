@@ -266,7 +266,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
             }
 
-
             if (movieResult.Videos?.Results != null)
             {
                 var trailers = new List<MediaUrl>();

@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(
             MetadataResult<MusicAlbum> source,
             MetadataResult<MusicAlbum> target,
-            MetadataField[] lockedFields,
+            IEnumerable<MetadataField> lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
         {

@@ -58,6 +58,15 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Encode an image.
         /// </summary>
+        /// <param name="inputPath">Input file path.</param>
+        /// <param name="dateModified">Modification date.</param>
+        /// <param name="outputPath">Output path.</param>
+        /// <param name="autoOrient">Auto orientation?.</param>
+        /// <param name="orientation">Image orientation.</param>
+        /// <param name="quality">Quality of encoding.</param>
+        /// <param name="options">Image processing options.</param>
+        /// <param name="outputFormat">Output format.</param>
+        /// <returns>Path with the encoded image.</returns>
         string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
 
         /// <summary>

@@ -21,12 +21,6 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
-        /// <inheritdoc />
-        public IReadOnlyList<string> AlbumArtists { get; set; }
-
-        /// <inheritdoc />
-        public IReadOnlyList<string> Artists { get; set; }
-
         public MusicAlbum()
         {
             Artists = Array.Empty<string>();
@@ -34,15 +28,80 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [JsonIgnore]
+        public string AlbumArtist => AlbumArtists.Count > 0 ? AlbumArtists[0] : default;
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> AlbumArtists { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> Artists { get; set; }
+
+        [JsonIgnore]
+        public MusicArtist MusicArtist => GetMusicArtistWithDtoOptions(new DtoOptions(true));
+
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
+
+        [JsonIgnore]
+        public override bool SupportsCumulativeRunTimeTicks => true;
 
         [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
         [JsonIgnore]
-        public MusicArtist MusicArtist => GetMusicArtist(new DtoOptions(true));
+        public override bool SupportsPeople => false;
 
-        public MusicArtist GetMusicArtist(DtoOptions options)
+        [JsonIgnore]
+        public override bool SupportsPlayedStatus => false;
+
+        /// <summary>
+        /// Gets the tracks.
+        /// </summary>
+        /// <value>The tracks.</value>
+        [JsonIgnore]
+        public IEnumerable<Audio> Tracks => GetRecursiveChildren(i => i is Audio).Cast<Audio>();
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Music;
+        }
+
+        public override double GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
+        public AlbumInfo GetLookupInfo()
+        {
+            var id = GetItemLookupInfo<AlbumInfo>();
+
+            id.AlbumArtists = AlbumArtists;
+
+            var artist = GetMusicArtistWithDtoOptions(new DtoOptions(false));
+
+            if (artist != null)
+            {
+                id.ArtistProviderIds = artist.ProviderIds;
+            }
+
+            id.SongInfos = GetRecursiveChildren(i => i is Audio)
+                .Cast<Audio>()
+                .Select(i => i.GetLookupInfo())
+                .ToList();
+
+            var album = id.SongInfos
+                .Select(i => i.Album)
+                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+
+            if (!string.IsNullOrEmpty(album))
+            {
+                id.Name = album;
+            }
+
+            return id;
+        }
+
+        public MusicArtist GetMusicArtistWithDtoOptions(DtoOptions options)
         {
             var parents = GetParents();
             foreach (var parent in parents)
@@ -60,35 +119,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
 
             return null;
-        }
-
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
-
-        [JsonIgnore]
-        public override bool SupportsCumulativeRunTimeTicks => true;
-
-        [JsonIgnore]
-        public string AlbumArtist => AlbumArtists.FirstOrDefault();
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
-
-        /// <summary>
-        /// Gets the tracks.
-        /// </summary>
-        /// <value>The tracks.</value>
-        [JsonIgnore]
-        public IEnumerable<Audio> Tracks => GetRecursiveChildren(i => i is Audio).Cast<Audio>();
-
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
-        {
-            return Tracks;
-        }
-
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            return 1;
         }
 
         public override List<string> GetUserDataKeys()
@@ -116,46 +146,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
 
             return list;
-        }
-
-        protected override bool GetBlockUnratedValue(User user)
-        {
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
-        }
-
-        public override UnratedItem GetBlockUnratedType()
-        {
-            return UnratedItem.Music;
-        }
-
-        public AlbumInfo GetLookupInfo()
-        {
-            var id = GetItemLookupInfo<AlbumInfo>();
-
-            id.AlbumArtists = AlbumArtists;
-
-            var artist = GetMusicArtist(new DtoOptions(false));
-
-            if (artist != null)
-            {
-                id.ArtistProviderIds = artist.ProviderIds;
-            }
-
-            id.SongInfos = GetRecursiveChildren(i => i is Audio)
-                .Cast<Audio>()
-                .Select(i => i.GetLookupInfo())
-                .ToList();
-
-            var album = id.SongInfos
-                .Select(i => i.Album)
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
-
-            if (!string.IsNullOrEmpty(album))
-            {
-                id.Name = album;
-            }
-
-            return id;
         }
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
@@ -195,6 +185,16 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 await RefreshArtists(refreshOptions, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        protected override bool GetBlockUnratedValue(User user)
+        {
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
+        }
+
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return Tracks;
         }
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)

@@ -24,7 +24,9 @@ namespace Emby.Server.Implementations.AppBase
         {
             object configuration;
 
+#pragma warning disable SA1011 // Closing square brackets should be spaced correctly
             byte[]? buffer = null;
+#pragma warning restore SA1011 // Closing square brackets should be spaced correctly
 
             // Use try/catch to avoid the extra file system lookup using File.Exists
             try

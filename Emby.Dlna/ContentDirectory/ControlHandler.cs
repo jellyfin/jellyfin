@@ -778,7 +778,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetFolders(User user, int? startIndex, int? limit)
         {
-            var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true)
+            var folders = _libraryManager.GetUserRootFolder().GetChildrenByUser(user, true)
                 .OrderBy(i => i.SortName)
                 .Select(i => new ServerItem(i)
                 {

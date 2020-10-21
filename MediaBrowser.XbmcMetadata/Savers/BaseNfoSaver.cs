@@ -469,7 +469,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             writer.WriteElementString("lockdata", item.IsLocked.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
-            if (item.LockedFields.Length > 0)
+            if (item.LockedFields.Any())
             {
                 writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields));
             }

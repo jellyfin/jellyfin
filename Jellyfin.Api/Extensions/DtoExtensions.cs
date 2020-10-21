@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Dto;
@@ -79,11 +79,7 @@ namespace Jellyfin.Api.Extensions
                     client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
                     client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    int oldLen = dtoOptions.Fields.Length;
-                    var arr = new ItemFields[oldLen + 1];
-                    dtoOptions.Fields.CopyTo(arr, 0);
-                    arr[oldLen] = ItemFields.RecursiveItemCount;
-                    dtoOptions.Fields = arr;
+                    dtoOptions.Fields = dtoOptions.Fields.Concat(new ItemFields[] { ItemFields.RecursiveItemCount }).ToList();
                 }
             }
 
@@ -97,11 +93,7 @@ namespace Jellyfin.Api.Extensions
                     client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
                     client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    int oldLen = dtoOptions.Fields.Length;
-                    var arr = new ItemFields[oldLen + 1];
-                    dtoOptions.Fields.CopyTo(arr, 0);
-                    arr[oldLen] = ItemFields.ChildCount;
-                    dtoOptions.Fields = arr;
+                    dtoOptions.Fields = dtoOptions.Fields.Concat(new ItemFields[] { ItemFields.ChildCount }).ToList();
                 }
             }
 

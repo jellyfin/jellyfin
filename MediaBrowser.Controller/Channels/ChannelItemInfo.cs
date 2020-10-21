@@ -25,9 +25,9 @@ namespace MediaBrowser.Controller.Channels
 
         public string Overview { get; set; }
 
-        public List<string> Genres { get; set; }
+        public IEnumerable<string> Genres { get; set; }
 
-        public List<string> Studios { get; set; }
+        public IEnumerable<string> Studios { get; set; }
 
         public List<string> Tags { get; set; }
 

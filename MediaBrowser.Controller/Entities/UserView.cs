@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override int GetChildCount(User user)
         {
-            return GetChildren(user, true).Count;
+            return GetChildrenByUser(user, true).Count;
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Entities
                 .GetUserItems(parent, this, CollectionType, query);
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildrenByUser(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             if (query == null)
             {
@@ -108,7 +108,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
-            return GetChildren(user, false);
+            return GetChildrenByUser(user, false);
         }
 
         private static string[] UserSpecificViewTypes = new string[]

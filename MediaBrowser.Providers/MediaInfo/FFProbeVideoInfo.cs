@@ -121,7 +121,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options).ConfigureAwait(false);
+            await Fetch(item, mediaInfoResult, blurayDiscInfo, options, cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.MetadataImport;
         }
@@ -160,10 +160,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
         protected async Task Fetch(
             Video video,
-            CancellationToken cancellationToken,
             Model.MediaInfo.MediaInfo mediaInfo,
             BlurayDiscInfo blurayInfo,
-            MetadataRefreshOptions options)
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
         {
             List<MediaStream> mediaStreams;
             IReadOnlyList<MediaAttachment> mediaAttachments;
@@ -377,7 +377,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Genres))
             {
-                if (video.Genres.Length == 0 || isFullRefresh)
+                if (!video.Genres.Any() || isFullRefresh)
                 {
                     video.Genres = Array.Empty<string>();
 
@@ -390,7 +390,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Studios))
             {
-                if (video.Studios.Length == 0 || isFullRefresh)
+                if (!video.Studios.Any() || isFullRefresh)
                 {
                     video.SetStudios(data.Studios);
                 }

@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
             switch (viewType)
             {
                 case CollectionType.Folders:
-                    return GetResult(_libraryManager.GetUserRootFolder().GetChildren(user, true), queryParent, query);
+                    return GetResult(_libraryManager.GetUserRootFolder().GetChildrenByUser(user, true), queryParent, query);
 
                 case CollectionType.TvShows:
                     return GetTvView(queryParent, user, query);
@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (queryParent is UserView)
                         {
-                            return GetResult(GetMediaFolders(user).OfType<Folder>().SelectMany(i => i.GetChildren(user, true)), queryParent, query);
+                            return GetResult(GetMediaFolders(user).OfType<Folder>().SelectMany(i => i.GetChildrenByUser(user, true)), queryParent, query);
                         }
 
                         return queryParent.GetItems(query);
@@ -962,7 +962,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return _libraryManager.GetUserRootFolder()
-                .GetChildren(user, true)
+                .GetChildrenByUser(user, true)
                 .OfType<Folder>()
                 .Where(i => user.IsFolderGrouped(i.Id) && UserView.IsEligibleForGrouping(i));
         }

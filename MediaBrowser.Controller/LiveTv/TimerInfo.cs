@@ -19,14 +19,16 @@ namespace MediaBrowser.Controller.LiveTv
             Tags = Array.Empty<string>();
         }
 
+#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public Dictionary<string, string> SeriesProviderIds { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
-        public string[] Tags { get; set; }
+        public IEnumerable<string> Tags { get; set; }
 
         /// <summary>
-        /// Id of the recording.
+        /// Gets or sets Id of the recording.
         /// </summary>
         public string Id { get; set; }
 
@@ -37,7 +39,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string SeriesTimerId { get; set; }
 
         /// <summary>
-        /// ChannelId of the recording.
+        /// Gets or sets channelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
 
@@ -50,24 +52,24 @@ namespace MediaBrowser.Controller.LiveTv
         public string ShowId { get; set; }
 
         /// <summary>
-        /// Name of the recording.
+        /// Gets or sets name of the recording.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Description of the recording.
+        /// Gets or sets description of the recording.
         /// </summary>
         public string Overview { get; set; }
 
         public string SeriesId { get; set; }
 
         /// <summary>
-        /// The start date of the recording, in UTC.
+        /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// The end date of the recording, in UTC.
+        /// Gets or sets the end date of the recording, in UTC.
         /// </summary>
         public DateTime EndDate { get; set; }
 
@@ -131,7 +133,7 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsSeries { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is live.
+        /// Gets a value indicating whether this instance is live.
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
         [JsonIgnore]
@@ -156,7 +158,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         public string OfficialRating { get; set; }
 
-        public string[] Genres { get; set; }
+        public IEnumerable<string> Genres { get; set; }
 
         public string RecordingPath { get; set; }
 

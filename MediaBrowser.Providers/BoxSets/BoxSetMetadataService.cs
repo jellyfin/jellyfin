@@ -41,11 +41,11 @@ namespace MediaBrowser.Providers.BoxSets
         /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(BoxSet item)
         {
-            return item.GetLinkedChildren();
+            return item.FetchLinkedChildren();
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<BoxSet> source, MetadataResult<BoxSet> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<BoxSet> source, MetadataResult<BoxSet> target, IEnumerable<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

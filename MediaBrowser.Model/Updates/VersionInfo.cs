@@ -13,36 +13,36 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
-        public string version { get; set; }
+        public string Version { get; set; }
 
         /// <summary>
         /// Gets or sets the changelog for this version.
         /// </summary>
         /// <value>The changelog.</value>
-        public string changelog { get; set; }
+        public string Changelog { get; set; }
 
         /// <summary>
         /// Gets or sets the ABI that this version was built against.
         /// </summary>
         /// <value>The target ABI version.</value>
-        public string targetAbi { get; set; }
+        public string TargetAbi { get; set; }
 
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
         /// <value>The source URL.</value>
-        public string sourceUrl { get; set; }
+        public string SourceUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a checksum for the binary.
         /// </summary>
         /// <value>The checksum.</value>
-        public string checksum { get; set; }
+        public string Checksum { get; set; }
 
         /// <summary>
         /// Gets or sets a timestamp of when the binary was built.
         /// </summary>
         /// <value>The timestamp.</value>
-        public string timestamp { get; set; }
+        public string Timestamp { get; set; }
     }
 }

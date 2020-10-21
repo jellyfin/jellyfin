@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Providers.Videos
         public override int Order => 10;
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Video> source, MetadataResult<Video> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Video> source, MetadataResult<Video> target, IEnumerable<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

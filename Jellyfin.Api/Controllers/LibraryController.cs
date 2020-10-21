@@ -857,7 +857,7 @@ namespace Jellyfin.Api.Controllers
         private BaseItem TranslateParentItem(BaseItem item, User user)
         {
             return item.GetParent() is AggregateFolder
-                ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
+                ? _libraryManager.GetUserRootFolder().GetChildrenByUser(user, true)
                     .FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path))
                 : item;
         }

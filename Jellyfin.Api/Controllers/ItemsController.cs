@@ -498,7 +498,7 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                var itemsArray = folder.GetChildren(user, true);
+                var itemsArray = folder.GetChildrenByUser(user, true);
                 result = new QueryResult<BaseItem> { Items = itemsArray, TotalRecordCount = itemsArray.Count, StartIndex = 0 };
             }
 
@@ -554,7 +554,7 @@ namespace Jellyfin.Api.Controllers
             var excludeFolderIds = user.GetPreference(PreferenceKind.LatestItemExcludes);
             if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
             {
-                ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
+                ancestorIds = _libraryManager.GetUserRootFolder().GetChildrenByUser(user, true)
                     .Where(i => i is Folder)
                     .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
                     .Select(i => i.Id)

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
@@ -22,50 +23,25 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasMediaSources
     {
-        /// <inheritdoc />
-        [JsonIgnore]
-        public IReadOnlyList<string> Artists { get; set; }
-
-        /// <inheritdoc />
-        [JsonIgnore]
-        public IReadOnlyList<string> AlbumArtists { get; set; }
-
         public Audio()
         {
             Artists = Array.Empty<string>();
             AlbumArtists = Array.Empty<string>();
         }
 
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            return 1;
-        }
-
+        /// <inheritdoc />
         [JsonIgnore]
-        public override bool SupportsPlayedStatus => true;
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
-
-        [JsonIgnore]
-        public override bool SupportsAddingToPlaylist => true;
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => true;
-
-        [JsonIgnore]
-        protected override bool SupportsOwnedItems => false;
-
-        [JsonIgnore]
-        public override Folder LatestItemsIndexContainer => AlbumEntity;
-
-        public override bool CanDownload()
-        {
-            return IsFileProtocol;
-        }
+        public IReadOnlyList<string> AlbumArtists { get; set; }
 
         [JsonIgnore]
         public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
+
+        /// <inheritdoc />
+        [JsonIgnore]
+        public IReadOnlyList<string> Artists { get; set; }
+
+        [JsonIgnore]
+        public override Folder LatestItemsIndexContainer => AlbumEntity;
 
         /// <summary>
         /// Gets the type of the media.
@@ -74,43 +50,24 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Audio;
 
-        /// <summary>
-        /// Creates the name of the sort.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateSortName()
+        [JsonIgnore]
+        public override bool SupportsAddingToPlaylist => true;
+
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => true;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        [JsonIgnore]
+        public override bool SupportsPlayedStatus => true;
+
+        [JsonIgnore]
+        protected override bool SupportsOwnedItems => false;
+
+        public override bool CanDownload()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
-        }
-
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
-
-            if (ParentIndexNumber.HasValue)
-            {
-                songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
-            }
-
-            songKey += Name;
-
-            if (!string.IsNullOrEmpty(Album))
-            {
-                songKey = Album + "-" + songKey;
-            }
-
-            var albumArtist = AlbumArtists.FirstOrDefault();
-            if (!string.IsNullOrEmpty(albumArtist))
-            {
-                songKey = albumArtist + "-" + songKey;
-            }
-
-            list.Insert(0, songKey);
-
-            return list;
+            return IsFileProtocol;
         }
 
         public override UnratedItem GetBlockUnratedType()
@@ -123,13 +80,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.GetBlockUnratedType();
         }
 
-        public List<MediaStream> GetMediaStreams(MediaStreamType type)
+        public override double GetDefaultPrimaryImageAspectRatio()
         {
-            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = Id,
-                Type = type
-            });
+            return 1;
         }
 
         public SongInfo GetLookupInfo()
@@ -141,6 +94,54 @@ namespace MediaBrowser.Controller.Entities.Audio
             info.Artists = Artists;
 
             return info;
+        }
+
+        public List<MediaStream> GetMediaStreams(MediaStreamType type)
+        {
+            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = Id,
+                Type = type
+            });
+        }
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : string.Empty;
+
+            if (ParentIndexNumber.HasValue)
+            {
+                songKey = ParentIndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) + "-" + songKey;
+            }
+
+            songKey += Name;
+
+            if (!string.IsNullOrEmpty(Album))
+            {
+                songKey = Album + "-" + songKey;
+            }
+
+            var albumArtist = AlbumArtists.Count > 0 ? AlbumArtists[0] : default;
+            if (!string.IsNullOrEmpty(albumArtist))
+            {
+                songKey = albumArtist + "-" + songKey;
+            }
+
+            list.Insert(0, songKey);
+
+            return list;
+        }
+
+        /// <summary>
+        /// Creates the name of the sort.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        protected override string CreateSortName()
+        {
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         protected override List<Tuple<BaseItem, MediaSourceType>> GetAllItemsForMediaSources()
