@@ -14,6 +14,7 @@ namespace MediaBrowser.Model.Configuration
     public class ServerConfiguration : BaseApplicationConfiguration
     {
         public const int DefaultHttpPort = 8096;
+        public const int DefaultManagementPort = 12000;
         public const int DefaultHttpsPort = 8920;
         private string _baseUrl;
 

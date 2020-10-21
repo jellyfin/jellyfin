@@ -159,6 +159,9 @@ namespace Jellyfin.Server.Extensions
                 })
                 .AddMvc(opts =>
                 {
+                    // Seperate the management routes and the general ones.
+                    opts.Filters.Add(typeof(ManagementInterfaceFilter));
+
                     // Allow requester to change between camelCase and PascalCase
                     opts.RespectBrowserAcceptHeader = true;
 

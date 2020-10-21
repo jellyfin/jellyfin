@@ -50,6 +50,21 @@ namespace MediaBrowser.Controller.Extensions
         public const string UnixSocketPathKey = "kestrel:socketPath";
 
         /// <summary>
+        /// The key for a setting that indicates whether the management interface should be enabled.
+        /// </summary>
+        public const string UseManagementInterfaceKey = "management:enabled";
+
+        /// <summary>
+        /// The key for a setting that indicates whether the management interface should listen on localhost.
+        /// </summary>
+        public const string ManagementInterfaceLocalhostPortKey = "management:port";
+
+        /// <summary>
+        /// The key for the management interface socket path.
+        /// </summary>
+        public const string ManagementInterfaceSocketPathKey = "management:socket";
+
+        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
@@ -97,5 +112,29 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>The unix socket path.</returns>
         public static string GetUnixSocketPath(this IConfiguration configuration)
             => configuration[UnixSocketPathKey];
+
+        /// <summary>
+        /// Gets a value indicating whether kestrel should enable the management interface from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns><c>true</c> if kestrel should bind to a unix socket, otherwise <c>false</c>.</returns>
+        public static bool UseManagementInterface(this IConfiguration configuration)
+            => configuration.GetValue<bool>(UseManagementInterfaceKey);
+
+        /// <summary>
+        /// Gets the localhost port for the management interface from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns>The management interface address.</returns>
+        public static int GetManagementInterfaceLocalhostPort(this IConfiguration configuration)
+            => configuration.GetValue<int>(ManagementInterfaceLocalhostPortKey);
+
+        /// <summary>
+        /// Gets the path for the management interface socket from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns>The management interface socket path.</returns>
+        public static string GetManagementInterfaceSocketPath(this IConfiguration configuration)
+            => configuration[ManagementInterfaceSocketPathKey];
     }
 }

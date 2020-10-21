@@ -16,6 +16,7 @@ using Emby.Server.Implementations.Networking;
 using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
@@ -371,6 +372,39 @@ namespace Jellyfin.Server
 
                         options.ListenUnixSocket(socketPath);
                         _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
+                    }
+
+                    // Enable the Management Interface
+                    if (startupConfig.UseManagementInterface())
+                    {
+                        var socketPath = startupConfig.GetManagementInterfaceSocketPath();
+                        var localhostPort = startupConfig.GetManagementInterfaceLocalhostPort();
+                        bool useDefault = true;
+                        if (!string.IsNullOrEmpty(socketPath))
+                        {
+                            // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
+                            if (File.Exists(socketPath))
+                            {
+                                File.Delete(socketPath);
+                            }
+
+                            options.ListenUnixSocket(socketPath);
+                            _logger.LogInformation("Management interface listening to unix socket {SocketPath}", socketPath);
+                            useDefault = false;
+                        }
+
+                        if (localhostPort > 0)
+                        {
+                            options.ListenLocalhost(localhostPort);
+                            _logger.LogInformation("Management interface listening to localhost on port {LocalhostPort}", localhostPort);
+                            useDefault = false;
+                        }
+
+                        if (useDefault)
+                        {
+                            options.ListenLocalhost(ServerConfiguration.DefaultManagementPort);
+                            _logger.LogInformation("Management interface listening to localhost on default port {DefaultManagementPort}", ServerConfiguration.DefaultManagementPort);
+                        }
                     }
                 })
                 .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
