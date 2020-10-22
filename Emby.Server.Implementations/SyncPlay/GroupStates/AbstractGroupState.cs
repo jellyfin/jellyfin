@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.SyncPlay
 
         private void UnhandledRequest(IPlaybackGroupRequest request)
         {
-            _logger.LogWarning("HandleRequest: unhandled {0} request for {1} state.", request.GetRequestType(), this.GetGroupState());
+            _logger.LogWarning("HandleRequest: unhandled {0} request for {1} state.", request.GetRequestType(), GetGroupState());
         }
     }
 }

@@ -17,7 +17,8 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public PausedGroupState(ILogger logger) : base(logger)
+        public PausedGroupState(ILogger logger)
+            : base(logger)
         {
             // Do nothing.
         }
@@ -70,8 +71,12 @@ namespace MediaBrowser.Controller.SyncPlay
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - context.LastActivity;
                 context.LastActivity = currentTime;
+                // Elapsed time is negative if event happens
+                // during the delay added to account for latency.
+                // In this phase clients haven't started the playback yet.
+                // In other words, LastActivity is in the future,
+                // when playback unpause is supposed to happen.
                 // Seek only if playback actually started.
-                // Pause request may be issued during the delay added to account for latency.
                 context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
 
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);

@@ -22,7 +22,8 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public PlayingGroupState(ILogger logger) : base(logger)
+        public PlayingGroupState(ILogger logger)
+            : base(logger)
         {
             // Do nothing.
         }

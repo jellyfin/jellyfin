@@ -127,16 +127,6 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <summary>
-        /// Checks if a session is in this group.
-        /// </summary>
-        /// <param name="sessionId">The session identifier to check.</param>
-        /// <returns><c>true</c> if the session is in this group; <c>false</c> otherwise.</returns>
-        private bool ContainsSession(string sessionId)
-        {
-            return Participants.ContainsKey(sessionId);
-        }
-
-        /// <summary>
         /// Adds the session to the group.
         /// </summary>
         /// <param name="session">The session.</param>
@@ -174,16 +164,22 @@ namespace Emby.Server.Implementations.SyncPlay
                 case SyncPlayBroadcastType.CurrentSession:
                     return new SessionInfo[] { from };
                 case SyncPlayBroadcastType.AllGroup:
-                    return Participants.Values.Select(
-                        session => session.Session).ToArray();
+                    return Participants
+                        .Values
+                        .Select(session => session.Session)
+                        .ToArray();
                 case SyncPlayBroadcastType.AllExceptCurrentSession:
-                    return Participants.Values.Select(
-                        session => session.Session).Where(
-                        session => !session.Id.Equals(from.Id)).ToArray();
+                    return Participants
+                        .Values
+                        .Select(session => session.Session)
+                        .Where(session => !session.Id.Equals(from.Id))
+                        .ToArray();
                 case SyncPlayBroadcastType.AllReady:
-                    return Participants.Values.Where(
-                        session => !session.IsBuffering).Select(
-                        session => session.Session).ToArray();
+                    return Participants
+                        .Values
+                        .Where(session => !session.IsBuffering)
+                        .Select(session => session.Session)
+                        .ToArray();
                 default:
                     return Array.Empty<SessionInfo>();
             }
@@ -236,7 +232,8 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             // Get list of users.
-            var users = Participants.Values
+            var users = Participants
+                .Values
                 .Select(participant => _userManager.GetUserById(participant.Session.UserId));
 
             // Find problematic users.
@@ -365,7 +362,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetIgnoreGroupWait(SessionInfo session, bool ignoreGroupWait)
         {
-            if (!ContainsSession(session.Id))
+            if (!Participants.ContainsKey(session.Id))
             {
                 return;
             }
@@ -443,8 +440,8 @@ namespace Emby.Server.Implementations.SyncPlay
         public long SanitizePositionTicks(long? positionTicks)
         {
             var ticks = positionTicks ?? 0;
-            ticks = ticks >= 0 ? ticks : 0;
-            ticks = ticks > RunTimeTicks ? RunTimeTicks : ticks;
+            ticks = Math.Max(ticks, 0);
+            ticks = Math.Min(ticks, RunTimeTicks);
             return ticks;
         }
 
@@ -663,8 +660,13 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - LastActivity;
-                // Event may happen during the delay added to account for latency.
-                startPositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
+                // Elapsed time is negative if event happens
+                // during the delay added to account for latency.
+                // In this phase clients haven't started the playback yet.
+                // In other words, LastActivity is in the future,
+                // when playback unpause is supposed to happen.
+                // Adjust ticks only if playback actually started.
+                startPositionTicks += Math.Max(elapsedTime.Ticks, 0);
             }
 
             return new PlayQueueUpdate()

@@ -32,7 +32,8 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public WaitingGroupState(ILogger logger) : base(logger)
+        public WaitingGroupState(ILogger logger)
+            : base(logger)
         {
             // Do nothing.
         }
@@ -59,8 +60,12 @@ namespace MediaBrowser.Controller.SyncPlay
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - context.LastActivity;
                 context.LastActivity = currentTime;
+                // Elapsed time is negative if event happens
+                // during the delay added to account for latency.
+                // In this phase clients haven't started the playback yet.
+                // In other words, LastActivity is in the future,
+                // when playback unpause is supposed to happen.
                 // Seek only if playback actually started.
-                // Event may happen during the delay added to account for latency.
                 context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
             }
 
@@ -355,6 +360,12 @@ namespace MediaBrowser.Controller.SyncPlay
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - context.LastActivity;
                 context.LastActivity = currentTime;
+                // Elapsed time is negative if event happens
+                // during the delay added to account for latency.
+                // In this phase clients haven't started the playback yet.
+                // In other words, LastActivity is in the future,
+                // when playback unpause is supposed to happen.
+                // Seek only if playback actually started.
                 context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
 
                 // Send pause command to all non-buffering sessions.
@@ -484,7 +495,7 @@ namespace MediaBrowser.Controller.SyncPlay
                     {
                         // Client, that was buffering, resumed playback but did not update others in time.
                         delayTicks = context.GetHighestPing() * 2 * TimeSpan.TicksPerMillisecond;
-                        delayTicks = delayTicks < context.DefaultPing ? context.DefaultPing : delayTicks;
+                        delayTicks = Math.Max(delayTicks, context.DefaultPing);
 
                         context.LastActivity = currentTime.AddTicks(delayTicks);
 
