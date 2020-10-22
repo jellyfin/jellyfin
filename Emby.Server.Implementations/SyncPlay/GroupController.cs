@@ -643,12 +643,33 @@ namespace Emby.Server.Implementations.SyncPlay
 
         /// <inheritdoc />
         public void SetRepeatMode(string mode) {
-            PlayQueue.SetRepeatMode(mode);
+            switch (mode)
+            {
+                case "RepeatOne":
+                    PlayQueue.SetRepeatMode(GroupRepeatMode.RepeatOne);
+                    break;
+                case "RepeatAll":
+                    PlayQueue.SetRepeatMode(GroupRepeatMode.RepeatAll);
+                    break;
+                default:
+                    // On unknown values, default to repeat none.
+                    PlayQueue.SetRepeatMode(GroupRepeatMode.RepeatNone);
+                    break;
+            }
         }
 
         /// <inheritdoc />
         public void SetShuffleMode(string mode) {
-            PlayQueue.SetShuffleMode(mode);
+            switch (mode)
+            {
+                case "Shuffle":
+                    PlayQueue.SetShuffleMode(GroupShuffleMode.Shuffle);
+                    break;
+                default:
+                    // On unknown values, default to sorted playlist.
+                    PlayQueue.SetShuffleMode(GroupShuffleMode.Sorted);
+                    break;
+            }
         }
 
         /// <inheritdoc />

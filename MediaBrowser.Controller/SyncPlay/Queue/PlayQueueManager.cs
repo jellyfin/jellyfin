@@ -461,21 +461,9 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Sets the repeat mode.
         /// </summary>
         /// <param name="mode">The new mode.</param>
-        public void SetRepeatMode(string mode)
+        public void SetRepeatMode(GroupRepeatMode mode)
         {
-            switch (mode)
-            {
-                case "RepeatOne":
-                    RepeatMode = GroupRepeatMode.RepeatOne;
-                    break;
-                case "RepeatAll":
-                    RepeatMode = GroupRepeatMode.RepeatAll;
-                    break;
-                default:
-                    RepeatMode = GroupRepeatMode.RepeatNone;
-                    break;
-            }
-
+            RepeatMode = mode;
             LastChange = DateTime.UtcNow;
         }
 
@@ -483,16 +471,15 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Sets the shuffle mode.
         /// </summary>
         /// <param name="mode">The new mode.</param>
-        public void SetShuffleMode(string mode)
+        public void SetShuffleMode(GroupShuffleMode mode)
         {
-            switch (mode)
+            if (mode.Equals(GroupShuffleMode.Shuffle))
             {
-                case "Shuffle":
-                    ShufflePlaylist();
-                    break;
-                default:
-                    RestoreSortedPlaylist();
-                    break;
+                ShufflePlaylist();
+            }
+            else
+            {
+                RestoreSortedPlaylist();
             }
         }
 
@@ -501,7 +488,14 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         public void ToggleShuffleMode()
         {
-            SetShuffleMode(ShuffleMode.Equals(GroupShuffleMode.Shuffle) ? "Shuffle" : "");
+            if (ShuffleMode.Equals(GroupShuffleMode.Sorted))
+            {
+                ShufflePlaylist();
+            }
+            else
+            {
+                RestoreSortedPlaylist();
+            }
         }
 
         /// <summary>
