@@ -174,8 +174,10 @@ namespace Emby.Server.Implementations.SyncPlay
                 case SyncPlayBroadcastType.CurrentSession:
                     return new SessionInfo[] { from };
                 case SyncPlayBroadcastType.AllGroup:
-                    return Participants.Values.Select(
-                        session => session.Session).ToArray();
+                    return Participants
+                        .Values
+                        .Select(session => session.Session)
+                        .ToArray();
                 case SyncPlayBroadcastType.AllExceptCurrentSession:
                     return Participants.Values.Select(
                         session => session.Session).Where(
