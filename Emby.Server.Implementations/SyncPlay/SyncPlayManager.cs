@@ -160,6 +160,48 @@ namespace Emby.Server.Implementations.SyncPlay
             // TODO: probably remove this event, not used at the moment.
         }
 
+        private bool IsRequestValid<T>(SessionInfo session, GroupRequestType requestType, T request, bool checkRequest = true)
+        {
+            if (session == null || (request == null && checkRequest))
+            {
+                return false;
+            }
+
+            var user = _userManager.GetUserById(session.UserId);
+
+            if (user.SyncPlayAccess == SyncPlayAccess.None)
+            {
+                _logger.LogWarning("IsRequestValid: {0} does not have access to SyncPlay. Requested {1}.", session.Id, requestType);
+
+                var error = new GroupUpdate<string>()
+                {
+                    // TODO: rename to a more generic error. Next PR will fix this.
+                    Type = GroupUpdateType.JoinGroupDenied
+                };
+                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                return false;
+            }
+
+            if (requestType.Equals(GroupRequestType.NewGroup) && user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
+            {
+                _logger.LogWarning("IsRequestValid: {0} does not have permission to create groups.", session.Id);
+
+                var error = new GroupUpdate<string>
+                {
+                    Type = GroupUpdateType.CreateGroupDenied
+                };
+                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsRequestValid(SessionInfo session, GroupRequestType requestType)
+        {
+            return IsRequestValid(session, requestType, session, false);
+        }
+
         private bool IsSessionInGroup(SessionInfo session)
         {
             return _sessionToGroupMap.ContainsKey(session.Id);
@@ -174,17 +216,9 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
-            var user = _userManager.GetUserById(session.UserId);
-
-            if (user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
+            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
+            if (!IsRequestValid(session, GroupRequestType.NewGroup, request))
             {
-                _logger.LogWarning("NewGroup: {0} does not have permission to create groups.", session.Id);
-
-                var error = new GroupUpdate<string>
-                {
-                    Type = GroupUpdateType.CreateGroupDenied
-                };
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
                 return;
             }
 
@@ -205,24 +239,17 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequest request, CancellationToken cancellationToken)
         {
-            var user = _userManager.GetUserById(session.UserId);
-
-            if (user.SyncPlayAccess == SyncPlayAccess.None)
+            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
+            if (!IsRequestValid(session, GroupRequestType.JoinGroup, request))
             {
-                _logger.LogWarning("JoinGroup: {0} does not have access to SyncPlay.", session.Id);
-
-                var error = new GroupUpdate<string>()
-                {
-                    Type = GroupUpdateType.JoinGroupDenied
-                };
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
                 return;
             }
 
+            var user = _userManager.GetUserById(session.UserId);
+
             lock (_groupsLock)
             {
-                ISyncPlayGroupController group;
-                _groups.TryGetValue(groupId, out group);
+                _groups.TryGetValue(groupId, out ISyncPlayGroupController group);
 
                 if (group == null)
                 {
@@ -267,6 +294,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session, CancellationToken cancellationToken)
         {
+            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
+            if (!IsRequestValid(session, GroupRequestType.LeaveGroup))
+            {
+                return;
+            }
+
             // TODO: determine what happens to users that are in a group and get their permissions revoked.
             lock (_groupsLock)
             {
@@ -297,32 +330,27 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public List<GroupInfoDto> ListGroups(SessionInfo session)
         {
-            var user = _userManager.GetUserById(session.UserId);
-
-            if (user.SyncPlayAccess == SyncPlayAccess.None)
+            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
+            if (!IsRequestValid(session, GroupRequestType.ListGroups))
             {
                 return new List<GroupInfoDto>();
             }
 
-            return _groups.Values.Where(
-                group => group.HasAccessToPlayQueue(user)).Select(
-                group => group.GetInfo()).ToList();
+            var user = _userManager.GetUserById(session.UserId);
+
+            return _groups
+                .Values
+                .Where(group => group.HasAccessToPlayQueue(user))
+                .Select(group => group.GetInfo())
+                .ToList();
         }
 
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IPlaybackGroupRequest request, CancellationToken cancellationToken)
         {
-            var user = _userManager.GetUserById(session.UserId);
-
-            if (user.SyncPlayAccess == SyncPlayAccess.None)
+            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
+            if (!IsRequestValid(session, GroupRequestType.Playback, request))
             {
-                _logger.LogWarning("HandleRequest: {0} does not have access to SyncPlay.", session.Id);
-
-                var error = new GroupUpdate<string>()
-                {
-                    Type = GroupUpdateType.JoinGroupDenied
-                };
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
                 return;
             }
 
@@ -349,6 +377,16 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void AddSessionToGroup(SessionInfo session, ISyncPlayGroupController group)
         {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (group == null)
+            {
+                throw new InvalidOperationException("Group is null!");
+            }
+
             if (IsSessionInGroup(session))
             {
                 throw new InvalidOperationException("Session in other group already!");
@@ -360,6 +398,16 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void RemoveSessionFromGroup(SessionInfo session, ISyncPlayGroupController group)
         {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (group == null)
+            {
+                throw new InvalidOperationException("Group is null!");
+            }
+
             if (!IsSessionInGroup(session))
             {
                 throw new InvalidOperationException("Session not in any group!");
