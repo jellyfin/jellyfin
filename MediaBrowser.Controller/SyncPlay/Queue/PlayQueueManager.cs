@@ -69,7 +69,11 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <value>The progressive identifier.</value>
         private int ProgressiveId { get; set; } = 0;
 
-        private bool _disposed = false;
+        /// <summary>
+        /// Placeholder index for when no item is playing.
+        /// </summary>
+        /// <value>The no-playing item index.</value>
+        private const int NoPlayingItemIndex = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayQueueManager" /> class.
@@ -140,6 +144,26 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
+        /// Gets the current playing item, depending on the shuffle mode.
+        /// </summary>
+        /// <returns>The playing item.</returns>
+        private QueueItem GetPlayingItem()
+        {
+            if (PlayingItemIndex == NoPlayingItemIndex)
+            {
+                return null;
+            }
+            else if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
+            {
+                return ShuffledPlaylist[PlayingItemIndex];
+            }
+            else
+            {
+                return SortedPlaylist[PlayingItemIndex];
+            }
+        }
+
+        /// <summary>
         /// Gets the current playlist as an array, depending on the shuffle mode.
         /// </summary>
         /// <returns>The array of items in the playlist.</returns>
@@ -155,30 +179,36 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
-        /// Sets a new playlist. Playing item is set to none. Resets shuffle mode and repeat mode as well.
+        /// Sets a new playlist. Playing item is reset.
         /// </summary>
         /// <param name="items">The new items of the playlist.</param>
         public void SetPlaylist(Guid[] items)
         {
+            SortedPlaylist.Clear();
+            ShuffledPlaylist.Clear();
+
             SortedPlaylist = CreateQueueItemsFromArray(items);
-            PlayingItemIndex = -1;
-            ShuffleMode = GroupShuffleMode.Sorted;
-            RepeatMode = GroupRepeatMode.RepeatNone;
+            if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
+            {
+                ShuffledPlaylist = SortedPlaylist.ToList();
+                ShuffledPlaylist.Shuffle();
+            }
+
+            PlayingItemIndex = NoPlayingItemIndex;
             LastChange = DateTime.UtcNow;
         }
 
         /// <summary>
-        /// Appends new items to the playlist. The specified order is mantained for the sorted playlist, whereas items get shuffled for the shuffled playlist.
+        /// Appends new items to the playlist. The specified order is mantained.
         /// </summary>
         /// <param name="items">The items to add to the playlist.</param>
         public void Queue(Guid[] items)
         {
             var newItems = CreateQueueItemsFromArray(items);
-            SortedPlaylist.AddRange(newItems);
 
+            SortedPlaylist.AddRange(newItems);
             if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
-                newItems.Shuffle();
                 ShuffledPlaylist.AddRange(newItems);
             }
 
@@ -190,19 +220,24 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         public void ShufflePlaylist()
         {
-            if (SortedPlaylist.Count() == 0)
-            {
-                return;
-            }
-
-            if (PlayingItemIndex < 0) {
+            if (PlayingItemIndex == NoPlayingItemIndex) {
                 ShuffledPlaylist = SortedPlaylist.ToList();
                 ShuffledPlaylist.Shuffle();
             }
-            else
+            else if (ShuffleMode.Equals(GroupShuffleMode.Sorted))
             {
+                // First time shuffle.
                 var playingItem = SortedPlaylist[PlayingItemIndex];
                 ShuffledPlaylist = SortedPlaylist.ToList();
+                ShuffledPlaylist.RemoveAt(PlayingItemIndex);
+                ShuffledPlaylist.Shuffle();
+                ShuffledPlaylist = ShuffledPlaylist.Prepend(playingItem).ToList();
+                PlayingItemIndex = 0;
+            }
+            else
+            {
+                // Re-shuffle playlist.
+                var playingItem = ShuffledPlaylist[PlayingItemIndex];
                 ShuffledPlaylist.RemoveAt(PlayingItemIndex);
                 ShuffledPlaylist.Shuffle();
                 ShuffledPlaylist = ShuffledPlaylist.Prepend(playingItem).ToList();
@@ -216,9 +251,9 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Resets the playlist to sorted mode. Shuffle mode is changed.
         /// </summary>
-        public void SortShuffledPlaylist()
+        public void RestoreSortedPlaylist()
         {
-            if (PlayingItemIndex >= 0)
+            if (PlayingItemIndex != NoPlayingItemIndex)
             {
                 var playingItem = ShuffledPlaylist[PlayingItemIndex];
                 PlayingItemIndex = SortedPlaylist.IndexOf(playingItem);
@@ -231,12 +266,12 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <summary>
-        /// Clears the playlist.
+        /// Clears the playlist. Shuffle mode is preserved.
         /// </summary>
         /// <param name="clearPlayingItem">Whether to remove the playing item as well.</param>
         public void ClearPlaylist(bool clearPlayingItem)
         {
-            var playingItem = SortedPlaylist[PlayingItemIndex];
+            var playingItem = GetPlayingItem();
             SortedPlaylist.Clear();
             ShuffledPlaylist.Clear();
             LastChange = DateTime.UtcNow;
@@ -246,13 +281,18 @@ namespace MediaBrowser.Controller.SyncPlay
                 SortedPlaylist.Add(playingItem);
                 if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
                 {
-                    SortedPlaylist.Add(playingItem);
+                    ShuffledPlaylist.Add(playingItem);
                 }
+                PlayingItemIndex = 0;
+                }
+            else
+            {
+                PlayingItemIndex = NoPlayingItemIndex;
             }
         }
 
         /// <summary>
-        /// Adds new items to the playlist right after the playing item. The specified order is mantained for the sorted playlist, whereas items get shuffled for the shuffled playlist.
+        /// Adds new items to the playlist right after the playing item. The specified order is mantained.
         /// </summary>
         /// <param name="items">The items to add to the playlist.</param>
         public void QueueNext(Guid[] items)
@@ -261,10 +301,10 @@ namespace MediaBrowser.Controller.SyncPlay
 
             if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
-                // Append items to sorted playlist as they are.
-                SortedPlaylist.AddRange(newItems);
-                // Shuffle items before adding to shuffled playlist.
-                newItems.Shuffle();
+                var playingItem = GetPlayingItem();
+                var sortedPlayingItemIndex = SortedPlaylist.IndexOf(playingItem);
+                // Append items to sorted and shuffled playlist as they are.
+                SortedPlaylist.InsertRange(sortedPlayingItemIndex + 1, newItems);
                 ShuffledPlaylist.InsertRange(PlayingItemIndex + 1, newItems);
             }
             else
@@ -281,16 +321,10 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <returns>The playlist identifier of the playing item.</returns>
         public string GetPlayingItemPlaylistId()
         {
-            if (PlayingItemIndex < 0)
+            var playingItem = GetPlayingItem();
+            if (playingItem != null)
             {
-                return null;
-            }
-
-            var list = GetPlaylistAsList();
-
-            if (list.Count() > 0)
-            {
-                return list[PlayingItemIndex].PlaylistItemId;
+                return playingItem.PlaylistItemId;
             }
             else
             {
@@ -304,16 +338,10 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <returns>The playing item identifier.</returns>
         public Guid GetPlayingItemId()
         {
-            if (PlayingItemIndex < 0)
+            var playingItem = GetPlayingItem();
+            if (playingItem != null)
             {
-                return Guid.Empty;
-            }
-
-            var list = GetPlaylistAsList();
-
-            if (list.Count() > 0)
-            {
-                return list[PlayingItemIndex].ItemId;
+                return playingItem.ItemId;
             }
             else
             {
@@ -342,7 +370,7 @@ namespace MediaBrowser.Controller.SyncPlay
             var playlistIds = GetPlaylistAsList().Select(queueItem => queueItem.PlaylistItemId).ToList();
             PlayingItemIndex = playlistIds.IndexOf(playlistItemId);
             LastChange = DateTime.UtcNow;
-            return PlayingItemIndex != -1;
+            return PlayingItemIndex != NoPlayingItemIndex;
         }
 
         /// <summary>
@@ -354,7 +382,7 @@ namespace MediaBrowser.Controller.SyncPlay
             var list = GetPlaylistAsList();
             if (playlistIndex < 0 || playlistIndex > list.Count())
             {
-                PlayingItemIndex = -1;
+                PlayingItemIndex = NoPlayingItemIndex;
             }
             else
             {
@@ -371,13 +399,9 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <returns><c>true</c> if playing item got removed; <c>false</c> otherwise.</returns>
         public bool RemoveFromPlaylist(string[] playlistItemIds)
         {
-            var playingItem = SortedPlaylist[PlayingItemIndex];
-            if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
-            {
-                playingItem = ShuffledPlaylist[PlayingItemIndex];
-            }
-
+            var playingItem = GetPlayingItem();
             var playlistItemIdsList = playlistItemIds.ToList();
+
             SortedPlaylist.RemoveAll(item => playlistItemIdsList.Contains(item.PlaylistItemId));
             ShuffledPlaylist.RemoveAll(item => playlistItemIdsList.Contains(item.PlaylistItemId));
 
@@ -392,7 +416,8 @@ namespace MediaBrowser.Controller.SyncPlay
                     if (PlayingItemIndex < 0)
                     {
                         // Was first element, picking next if available.
-                        PlayingItemIndex = SortedPlaylist.Count() > 0 ? 0 : -1;
+                        // Default to no playing item otherwise.
+                        PlayingItemIndex = SortedPlaylist.Count() > 0 ? 0 : NoPlayingItemIndex;
                     }
 
                     return true;
@@ -419,18 +444,19 @@ namespace MediaBrowser.Controller.SyncPlay
         public bool MovePlaylistItem(string playlistItemId, int newIndex)
         {
             var list = GetPlaylistAsList();
-            var playingItem = list[PlayingItemIndex];
+            var playingItem = GetPlayingItem();
 
             var playlistIds = list.Select(queueItem => queueItem.PlaylistItemId).ToList();
             var oldIndex = playlistIds.IndexOf(playlistItemId);
-            if (oldIndex < 0) {
+            if (oldIndex < 0)
+            {
                 return false;
             }
 
             var queueItem = list[oldIndex];
             list.RemoveAt(oldIndex);
-            newIndex = newIndex > list.Count() ? list.Count() : newIndex;
-            newIndex = newIndex < 0 ? 0 : newIndex;
+            newIndex = Math.Min(newIndex, list.Count());
+            newIndex = Math.Max(newIndex, 0);
             list.Insert(newIndex, queueItem);
 
             LastChange = DateTime.UtcNow;
@@ -446,7 +472,7 @@ namespace MediaBrowser.Controller.SyncPlay
             ProgressiveId = 0;
             SortedPlaylist.Clear();
             ShuffledPlaylist.Clear();
-            PlayingItemIndex = -1;
+            PlayingItemIndex = NoPlayingItemIndex;
             ShuffleMode = GroupShuffleMode.Sorted;
             RepeatMode = GroupRepeatMode.RepeatNone;
             LastChange = DateTime.UtcNow;
@@ -486,7 +512,7 @@ namespace MediaBrowser.Controller.SyncPlay
                     ShufflePlaylist();
                     break;
                 default:
-                    SortShuffledPlaylist();
+                    RestoreSortedPlaylist();
                     break;
             }
         }

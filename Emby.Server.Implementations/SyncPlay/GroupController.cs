@@ -263,6 +263,7 @@ namespace Emby.Server.Implementations.SyncPlay
             if (sessionIsPlayingAnItem)
             {
                 var playlist = session.NowPlayingQueue.Select(item => item.Id).ToArray();
+                PlayQueue.Reset();
                 PlayQueue.SetPlaylist(playlist);
                 PlayQueue.SetPlayingItemById(session.FullNowPlayingItem.Id);
                 RunTimeTicks = session.FullNowPlayingItem.RunTimeTicks ?? 0;
@@ -515,6 +516,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return false;
             }
 
+            PlayQueue.Reset();
             PlayQueue.SetPlaylist(playQueue);
             PlayQueue.SetPlayingItemByIndex(playingItemPosition);
             var item = _libraryManager.GetItemById(PlayQueue.GetPlayingItemId());
