@@ -486,7 +486,10 @@ namespace MediaBrowser.Controller.SyncPlay
                     ShufflePlaylist();
                     break;
                 default:
+                if (!ShuffleMode.Equals(mode))
+                { 
                     SortShuffledPlaylist();
+                }
                     break;
             }
         }
