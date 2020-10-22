@@ -404,7 +404,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // Don't exceed what the encoder supports
                     // Seeing issues of attempting to encode to 88200
-                    return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
+                    // return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
+
+                    // I don't see any reason why limiting the sample rate to a maximum of 44100 !
+                    return BaseRequest.AudioSampleRate.Value;
                 }
 
                 return null;
