@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -43,7 +44,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
 
-        private readonly Dictionary<string, ILiveStream> _openStreams = new Dictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
         private IMediaSourceProvider[] _providers;
@@ -582,29 +583,20 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate();
         }
 
-        public async Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
+        public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
         {
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            var info = _openStreams.Values.FirstOrDefault(i =>
             {
-                var info = _openStreams.Values.FirstOrDefault(i =>
+                var liveStream = i as ILiveStream;
+                if (liveStream != null)
                 {
-                    var liveStream = i as ILiveStream;
-                    if (liveStream != null)
-                    {
-                        return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
-                    }
+                    return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
+                }
 
-                    return false;
-                });
+                return false;
+            });
 
-                return info as IDirectStreamProvider;
-            }
-            finally
-            {
-                _liveStreamSemaphore.Release();
-            }
+            return Task.FromResult(info as IDirectStreamProvider);
         }
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
@@ -793,29 +785,20 @@ namespace Emby.Server.Implementations.Library
             return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider);
         }
 
-        private async Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
+        private Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
-                if (_openStreams.TryGetValue(id, out ILiveStream info))
-                {
-                    return info;
-                }
-                else
-                {
-                    throw new ResourceNotFoundException();
-                }
+                return Task.FromResult(info);
             }
-            finally
+            else
             {
-                _liveStreamSemaphore.Release();
+                return Task.FromException<ILiveStream>(new ResourceNotFoundException());
             }
         }
 
@@ -844,7 +827,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (liveStream.ConsumerCount <= 0)
                     {
-                        _openStreams.Remove(id);
+                        _openStreams.TryRemove(id, out _);
 
                         _logger.LogInformation("Closing live stream {0}", id);
 

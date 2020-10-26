@@ -31,10 +31,10 @@
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.9" />
     <PackageReference Include="Mono.Nat" Version="3.0.0" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.4.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.9.2" />

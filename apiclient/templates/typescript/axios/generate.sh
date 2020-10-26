@@ -4,7 +4,7 @@ artifactsDirectory="${1}"
 buildNumber="${2}"
 if [[ -n ${buildNumber} ]]; then
     # Unstable build
-    additionalProperties=",snapshotVersion=-SNAPSHOT.${buildNumber},npmRepository=https://pkgs.dev.azure.com/jellyfin-project/jellyfin/_packaging/unstable%40Local/npm/registry/"
+    additionalProperties=",snapshotVersion=-SNAPSHOT.${buildNumber},npmRepository=https://pkgs.dev.azure.com/jellyfin-project/jellyfin/_packaging/unstable/npm/registry/"
 else
     # Stable build
     additionalProperties=""
