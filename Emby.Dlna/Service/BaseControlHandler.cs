@@ -60,10 +60,8 @@ namespace Emby.Dlna.Service
                     Async = true
                 };
 
-                using (var reader = XmlReader.Create(streamReader, readerSettings))
-                {
-                    requestInfo = await ParseRequestAsync(reader).ConfigureAwait(false);
-                }
+                using var reader = XmlReader.Create(streamReader, readerSettings);
+                requestInfo = await ParseRequestAsync(reader).ConfigureAwait(false);
             }
 
             Logger.LogDebug("Received control request {0}", requestInfo.LocalName);
@@ -124,10 +122,8 @@ namespace Emby.Dlna.Service
                             {
                                 if (!reader.IsEmptyElement)
                                 {
-                                    using (var subReader = reader.ReadSubtree())
-                                    {
-                                        return await ParseBodyTagAsync(subReader).ConfigureAwait(false);
-                                    }
+                                    using var subReader = reader.ReadSubtree();
+                                    return await ParseBodyTagAsync(subReader).ConfigureAwait(false);
                                 }
                                 else
                                 {
@@ -171,11 +167,8 @@ namespace Emby.Dlna.Service
                     if (!reader.IsEmptyElement)
                     {
                         var result = new ControlRequestInfo(localName, namespaceURI);
-                        using (var subReader = reader.ReadSubtree())
-                        {
-                            await ParseFirstBodyChildAsync(subReader, result.Headers).ConfigureAwait(false);
-                            return result;
-                        }
+                        using var subReader = reader.ReadSubtree();
+                        await ParseFirstBodyChildAsync(subReader, result.Headers).ConfigureAwait(false);
                     }
                     else
                     {

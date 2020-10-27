@@ -1315,7 +1315,8 @@ namespace MediaBrowser.Controller.Entities
             return items;
         }
 
-        private static bool CollapseBoxSetItems(InternalItemsQuery query,
+        private static bool CollapseBoxSetItems(
+            InternalItemsQuery query,
             BaseItem queryParent,
             User user,
             IServerConfigurationManager configurationManager)

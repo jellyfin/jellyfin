@@ -44,7 +44,8 @@ namespace Emby.Server.Implementations.Data
 
                 var users = userDatasTableExists ? null : userManager.Users;
 
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     db.ExecuteAll(string.Join(";", new[] {
 
@@ -178,7 +179,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     SaveUserData(db, internalUserId, key, userData);
                 }, TransactionMode);
@@ -246,7 +248,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     foreach (var userItemData in userDataList)
                     {
