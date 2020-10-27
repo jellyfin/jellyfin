@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using MediaBrowser.Common.Json.Converters;
+using MediaBrowser.Model.Querying;
 
 namespace Jellyfin.Api.Models.LiveTvDtos
 {
@@ -161,6 +165,8 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Gets or sets specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.
         /// Optional.
         /// </summary>
-        public string? Fields { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "Fields", Justification = "Imported from ServiceStack")]
+        public ItemFields[] Fields { get; set; } = Array.Empty<ItemFields>();
     }
 }

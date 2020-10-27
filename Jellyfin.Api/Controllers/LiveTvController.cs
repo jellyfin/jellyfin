@@ -661,9 +661,8 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var fields = RequestHelpers.GetItemFields(body.Fields);
             var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+                .AddItemFields(body.Fields)
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
