@@ -19,6 +19,21 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now, a common base class until the API and MediaEncoding classes are unified
     public class EncodingJobInfo
     {
+        private TranscodeReason[] _transcodeReasons;
+
+        public int? OutputAudioBitrate;
+        public int? OutputAudioChannels;
+
+        public EncodingJobInfo(TranscodingJobType jobType)
+        {
+            TranscodingType = jobType;
+            RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            PlayableStreamFileNames = Array.Empty<string>();
+            SupportedAudioCodecs = Array.Empty<string>();
+            SupportedVideoCodecs = Array.Empty<string>();
+            SupportedSubtitleCodecs = Array.Empty<string>();
+        }
+
         public MediaStream VideoStream { get; set; }
 
         public VideoType VideoType { get; set; }
@@ -61,17 +76,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string MimeType { get; set; }
 
-        public string GetMimeType(string outputPath, bool enableStreamDefault = true)
-        {
-            if (!string.IsNullOrEmpty(MimeType))
-            {
-                return MimeType;
-            }
-
-            return MimeTypes.GetMimeType(outputPath, enableStreamDefault);
-        }
-
-        private TranscodeReason[] _transcodeReasons = null;
         public TranscodeReason[] TranscodeReasons
         {
             get
@@ -150,187 +154,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool CopyTimestamps => BaseRequest.CopyTimestamps;
 
-        public int? OutputAudioBitrate;
-        public int? OutputAudioChannels;
-
-        public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)
-        {
-            var videoStream = VideoStream;
-            var isInputInterlaced = videoStream != null && videoStream.IsInterlaced;
-
-            if (!isInputInterlaced)
-            {
-                return false;
-            }
-
-            // Support general param
-            if (BaseRequest.DeInterlace)
-            {
-                return true;
-            }
-
-            if (!string.IsNullOrEmpty(videoCodec))
-            {
-                if (string.Equals(BaseRequest.GetOption(videoCodec, "deinterlace"), "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return forceDeinterlaceIfSourceIsInterlaced && isInputInterlaced;
-        }
-
-        public string[] GetRequestedProfiles(string codec)
-        {
-            if (!string.IsNullOrEmpty(BaseRequest.Profile))
-            {
-                return BaseRequest.Profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var profile = BaseRequest.GetOption(codec, "profile");
-
-                if (!string.IsNullOrEmpty(profile))
-                {
-                    return profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
-                }
-            }
-
-            return Array.Empty<string>();
-        }
-
-        public string GetRequestedLevel(string codec)
-        {
-            if (!string.IsNullOrEmpty(BaseRequest.Level))
-            {
-                return BaseRequest.Level;
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                return BaseRequest.GetOption(codec, "level");
-            }
-
-            return null;
-        }
-
-        public int? GetRequestedMaxRefFrames(string codec)
-        {
-            if (BaseRequest.MaxRefFrames.HasValue)
-            {
-                return BaseRequest.MaxRefFrames;
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var value = BaseRequest.GetOption(codec, "maxrefframes");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
-        public int? GetRequestedVideoBitDepth(string codec)
-        {
-            if (BaseRequest.MaxVideoBitDepth.HasValue)
-            {
-                return BaseRequest.MaxVideoBitDepth;
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var value = BaseRequest.GetOption(codec, "videobitdepth");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
-        public int? GetRequestedAudioBitDepth(string codec)
-        {
-            if (BaseRequest.MaxAudioBitDepth.HasValue)
-            {
-                return BaseRequest.MaxAudioBitDepth;
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var value = BaseRequest.GetOption(codec, "audiobitdepth");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
-        public int? GetRequestedAudioChannels(string codec)
-        {
-            if (BaseRequest.MaxAudioChannels.HasValue)
-            {
-                return BaseRequest.MaxAudioChannels;
-            }
-
-            if (BaseRequest.AudioChannels.HasValue)
-            {
-                return BaseRequest.AudioChannels;
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var value = BaseRequest.GetOption(codec, "audiochannels");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
         public bool IsVideoRequest { get; set; }
 
         public TranscodingJobType TranscodingType { get; set; }
 
-        public EncodingJobInfo(TranscodingJobType jobType)
-        {
-            TranscodingType = jobType;
-            RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            PlayableStreamFileNames = Array.Empty<string>();
-            SupportedAudioCodecs = Array.Empty<string>();
-            SupportedVideoCodecs = Array.Empty<string>();
-            SupportedSubtitleCodecs = Array.Empty<string>();
-        }
-
         public bool IsSegmentedLiveStream
             => TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
-
-        public bool EnableBreakOnNonKeyFrames(string videoCodec)
-        {
-            if (TranscodingType != TranscodingJobType.Progressive)
-            {
-                if (IsSegmentedLiveStream)
-                {
-                    return false;
-                }
-
-                return BaseRequest.BreakOnNonKeyFrames && EncodingHelper.IsCopyCodec(videoCodec);
-            }
-
-            return false;
-        }
 
         public int? TotalOutputBitrate => (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
 
@@ -427,7 +256,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        ///     Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public double? TargetVideoLevel
         {
@@ -450,7 +279,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        ///     Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetVideoBitDepth
         {
@@ -467,7 +296,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the target reference frames.
+        ///     Gets the target reference frames.
         /// </summary>
         /// <value>The target reference frames.</value>
         public int? TargetRefFrames
@@ -485,7 +314,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        ///     Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public float? TargetFramerate
         {
@@ -510,14 +339,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return InputTimestamp;
                 }
 
-                return string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ?
-                    TransportStreamTimestamp.Valid :
-                    TransportStreamTimestamp.None;
+                return string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ? TransportStreamTimestamp.Valid : TransportStreamTimestamp.None;
             }
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        ///     Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetPacketLength
         {
@@ -533,7 +360,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        ///     Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public string TargetVideoProfile
         {
@@ -668,6 +495,185 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int HlsListSize => 0;
 
+        public IProgress<double> Progress { get; set; }
+
+        public string GetMimeType(string outputPath, bool enableStreamDefault = true)
+        {
+            if (!string.IsNullOrEmpty(MimeType))
+            {
+                return MimeType;
+            }
+
+            return MimeTypes.GetMimeType(outputPath, enableStreamDefault);
+        }
+
+        public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)
+        {
+            var videoStream = VideoStream;
+            var isInputInterlaced = videoStream != null && videoStream.IsInterlaced;
+
+            if (!isInputInterlaced)
+            {
+                return false;
+            }
+
+            // Support general param
+            if (BaseRequest.DeInterlace)
+            {
+                return true;
+            }
+
+            if (!string.IsNullOrEmpty(videoCodec))
+            {
+                if (string.Equals(BaseRequest.GetOption(videoCodec, "deinterlace"), "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return forceDeinterlaceIfSourceIsInterlaced && isInputInterlaced;
+        }
+
+        public string[] GetRequestedProfiles(string codec)
+        {
+            if (!string.IsNullOrEmpty(BaseRequest.Profile))
+            {
+                return BaseRequest.Profile.Split(new[] {'|', ','}, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var profile = BaseRequest.GetOption(codec, "profile");
+
+                if (!string.IsNullOrEmpty(profile))
+                {
+                    return profile.Split(new[] {'|', ','}, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            return Array.Empty<string>();
+        }
+
+        public string GetRequestedLevel(string codec)
+        {
+            if (!string.IsNullOrEmpty(BaseRequest.Level))
+            {
+                return BaseRequest.Level;
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                return BaseRequest.GetOption(codec, "level");
+            }
+
+            return null;
+        }
+
+        public int? GetRequestedMaxRefFrames(string codec)
+        {
+            if (BaseRequest.MaxRefFrames.HasValue)
+            {
+                return BaseRequest.MaxRefFrames;
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var value = BaseRequest.GetOption(codec, "maxrefframes");
+                if (!string.IsNullOrEmpty(value)
+                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public int? GetRequestedVideoBitDepth(string codec)
+        {
+            if (BaseRequest.MaxVideoBitDepth.HasValue)
+            {
+                return BaseRequest.MaxVideoBitDepth;
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var value = BaseRequest.GetOption(codec, "videobitdepth");
+                if (!string.IsNullOrEmpty(value)
+                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public int? GetRequestedAudioBitDepth(string codec)
+        {
+            if (BaseRequest.MaxAudioBitDepth.HasValue)
+            {
+                return BaseRequest.MaxAudioBitDepth;
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var value = BaseRequest.GetOption(codec, "audiobitdepth");
+                if (!string.IsNullOrEmpty(value)
+                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public int? GetRequestedAudioChannels(string codec)
+        {
+            if (BaseRequest.MaxAudioChannels.HasValue)
+            {
+                return BaseRequest.MaxAudioChannels;
+            }
+
+            if (BaseRequest.AudioChannels.HasValue)
+            {
+                return BaseRequest.AudioChannels;
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var value = BaseRequest.GetOption(codec, "audiochannels");
+                if (!string.IsNullOrEmpty(value)
+                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public bool EnableBreakOnNonKeyFrames(string videoCodec)
+        {
+            if (TranscodingType != TranscodingJobType.Progressive)
+            {
+                if (IsSegmentedLiveStream)
+                {
+                    return false;
+                }
+
+                return BaseRequest.BreakOnNonKeyFrames && EncodingHelper.IsCopyCodec(videoCodec);
+            }
+
+            return false;
+        }
+
+        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
+        {
+            Progress.Report(percentComplete.Value);
+        }
+
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
         {
             var count = MediaSource.GetStreamCount(type);
@@ -679,32 +685,25 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return count;
         }
-
-        public IProgress<double> Progress { get; set; }
-
-        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
-        {
-            Progress.Report(percentComplete.Value);
-        }
     }
 
     /// <summary>
-    /// Enum TranscodingJobType.
+    ///     Enum TranscodingJobType.
     /// </summary>
     public enum TranscodingJobType
     {
         /// <summary>
-        /// The progressive.
+        ///     The progressive.
         /// </summary>
         Progressive,
 
         /// <summary>
-        /// The HLS.
+        ///     The HLS.
         /// </summary>
         Hls,
 
         /// <summary>
-        /// The dash.
+        ///     The dash.
         /// </summary>
         Dash
     }

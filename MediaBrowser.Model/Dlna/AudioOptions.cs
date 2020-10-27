@@ -42,7 +42,7 @@ namespace MediaBrowser.Model.Dlna
 
         /// <summary>
         /// Allows an override of supported number of audio channels
-        /// Example: DeviceProfile supports five channel, but user only has stereo speakers
+        /// Example: DeviceProfile supports five channel, but user only has stereo speakers.
         /// </summary>
         public int? MaxAudioChannels { get; set; }
 

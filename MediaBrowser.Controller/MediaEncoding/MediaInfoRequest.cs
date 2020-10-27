@@ -9,6 +9,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class MediaInfoRequest
     {
+        public MediaInfoRequest()
+        {
+            PlayableStreamFileNames = Array.Empty<string>();
+        }
+
         public MediaSourceInfo MediaSource { get; set; }
 
         public bool ExtractChapters { get; set; }
@@ -18,10 +23,5 @@ namespace MediaBrowser.Controller.MediaEncoding
         public IIsoMount MountedIso { get; set; }
 
         public string[] PlayableStreamFileNames { get; set; }
-
-        public MediaInfoRequest()
-        {
-            PlayableStreamFileNames = Array.Empty<string>();
-        }
     }
 }

@@ -183,7 +183,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id.</exception>
         public BaseItem FindVirtualChild(Guid id)
         {
             if (id.Equals(Guid.Empty))

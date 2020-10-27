@@ -7,12 +7,21 @@ using MediaBrowser.Model.Entities;
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
     /// <summary>
-    /// Class EpisodeResolver.
+    ///     Class EpisodeResolver.
     /// </summary>
     public class EpisodeResolver : BaseVideoResolver<Episode>
     {
         /// <summary>
-        /// Resolves the specified args.
+        ///     Initializes a new instance of the <see cref="EpisodeResolver" /> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        public EpisodeResolver(ILibraryManager libraryManager)
+            : base(libraryManager)
+        {
+        }
+
+        /// <summary>
+        ///     Resolves the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>Episode.</returns>
@@ -73,15 +82,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
-        /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        public EpisodeResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
-        {
         }
     }
 }

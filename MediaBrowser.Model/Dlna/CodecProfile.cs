@@ -9,33 +9,25 @@ namespace MediaBrowser.Model.Dlna
 {
     public class CodecProfile
     {
-        [XmlAttribute("type")]
-        public CodecType Type { get; set; }
-
-        public ProfileCondition[] Conditions { get; set; }
-
-        public ProfileCondition[] ApplyConditions { get; set; }
-
-        [XmlAttribute("codec")]
-        public string Codec { get; set; }
-
-        [XmlAttribute("container")]
-        public string Container { get; set; }
-
         public CodecProfile()
         {
             Conditions = Array.Empty<ProfileCondition>();
             ApplyConditions = Array.Empty<ProfileCondition>();
         }
 
+        [XmlAttribute("type")] public CodecType Type { get; set; }
+
+        public ProfileCondition[] Conditions { get; set; }
+
+        public ProfileCondition[] ApplyConditions { get; set; }
+
+        [XmlAttribute("codec")] public string Codec { get; set; }
+
+        [XmlAttribute("container")] public string Container { get; set; }
+
         public string[] GetCodecs()
         {
             return ContainerProfile.SplitValue(Codec);
-        }
-
-        private bool ContainsContainer(string container)
-        {
-            return ContainerProfile.ContainsContainer(Container, container);
         }
 
         public bool ContainsAnyCodec(string codec, string container)
@@ -65,6 +57,11 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return false;
+        }
+
+        private bool ContainsContainer(string container)
+        {
+            return ContainerProfile.ContainsContainer(Container, container);
         }
     }
 }

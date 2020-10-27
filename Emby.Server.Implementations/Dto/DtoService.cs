@@ -14,6 +14,8 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -24,14 +26,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
-using Book = MediaBrowser.Controller.Entities.Book;
-using Episode = MediaBrowser.Controller.Entities.TV.Episode;
-using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
-using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
-using Person = MediaBrowser.Controller.Entities.Person;
-using Photo = MediaBrowser.Controller.Entities.Photo;
-using Season = MediaBrowser.Controller.Entities.TV.Season;
-using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.Dto
 {
@@ -47,9 +41,7 @@ namespace Emby.Server.Implementations.Dto
 
         private readonly IApplicationHost _appHost;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
-
-        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
+        private readonly Lazy<ILiveTvManager> _liveTvManagerFactory;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -60,7 +52,7 @@ namespace Emby.Server.Implementations.Dto
             IProviderManager providerManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
-            Lazy<ILiveTvManager> livetvManagerFactory)
+            Lazy<ILiveTvManager> liveTvManagerFactory)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -70,8 +62,10 @@ namespace Emby.Server.Implementations.Dto
             _providerManager = providerManager;
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
-            _livetvManagerFactory = livetvManagerFactory;
+            _liveTvManagerFactory = liveTvManagerFactory;
         }
+
+        private ILiveTvManager LivetvManager => _liveTvManagerFactory.Value;
 
         /// <inheritdoc />
         public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
@@ -98,14 +92,7 @@ namespace Emby.Server.Implementations.Dto
                 {
                     if (options.ContainsField(ItemFields.ItemCounts))
                     {
-                        var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
-                        {
-                            Recursive = true,
-                            DtoOptions = new DtoOptions(false)
-                            {
-                                EnableImages = false
-                            }
-                        });
+                        var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user) {Recursive = true, DtoOptions = new DtoOptions(false) {EnableImages = false}});
 
                         SetItemByNameInfo(item, dto, libraryItems, user);
                     }
@@ -132,12 +119,12 @@ namespace Emby.Server.Implementations.Dto
             var dto = GetBaseItemDtoInternal(item, options, user, owner);
             if (item is LiveTvChannel tvChannel)
             {
-                var list = new List<(BaseItemDto, LiveTvChannel)>(1) { (dto, tvChannel) };
+                var list = new List<(BaseItemDto, LiveTvChannel)>(1) {(dto, tvChannel)};
                 LivetvManager.AddChannelInfo(list, options, user);
             }
             else if (item is LiveTvProgram)
             {
-                var list = new List<(BaseItem, BaseItemDto)>(1) { (item, dto) };
+                var list = new List<(BaseItem, BaseItemDto)>(1) {(item, dto)};
                 var task = LivetvManager.AddInfoToProgramDto(list, options.Fields, user);
                 Task.WaitAll(task);
             }
@@ -151,32 +138,94 @@ namespace Emby.Server.Implementations.Dto
                     GetTaggedItems(
                         itemByName,
                         user,
-                        new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        }),
+                        new DtoOptions(false) {EnableImages = false}),
                     user);
             }
 
             return dto;
         }
 
+        public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
+        {
+            var dto = GetBaseItemDtoInternal(item, options, user);
+
+            if (taggedItems != null && options.ContainsField(ItemFields.ItemCounts))
+            {
+                SetItemByNameInfo(item, dto, taggedItems, user);
+            }
+
+            return dto;
+        }
+
+        public double? GetPrimaryImageAspectRatio(BaseItem item)
+        {
+            var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
+
+            if (imageInfo == null)
+            {
+                return null;
+            }
+
+            ImageDimensions size;
+
+            var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
+
+            if (defaultAspectRatio > 0)
+            {
+                return defaultAspectRatio;
+            }
+
+            if (!imageInfo.IsLocalFile)
+            {
+                return null;
+            }
+
+            try
+            {
+                size = _imageProcessor.GetImageDimensions(item, imageInfo);
+
+                if (size.Width <= 0 || size.Height <= 0)
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
+                return null;
+            }
+
+            var width = size.Width;
+            var height = size.Height;
+
+            if (width <= 0 || height <= 0)
+            {
+                return null;
+            }
+
+            return (double)width / height;
+        }
+
+        /// <summary>
+        ///     Attaches the primary image aspect ratio.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="item">The item.</param>
+        /// <returns>Task.</returns>
+        public void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
+        {
+            dto.PrimaryImageAspectRatio = GetPrimaryImageAspectRatio(item);
+        }
+
         private static IList<BaseItem> GetTaggedItems(IItemByName byName, User user, DtoOptions options)
         {
             return byName.GetTaggedItems(
-                new InternalItemsQuery(user)
-                {
-                    Recursive = true,
-                    DtoOptions = options
-                });
+                new InternalItemsQuery(user) {Recursive = true, DtoOptions = options});
         }
 
         private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
-            var dto = new BaseItemDto
-            {
-                ServerId = _appHost.SystemId
-            };
+            var dto = new BaseItemDto {ServerId = _appHost.SystemId};
 
             if (item.SourceType == SourceType.Channel)
             {
@@ -275,7 +324,7 @@ namespace Emby.Server.Implementations.Dto
                     continue;
                 }
 
-                var containers = container.Split(new[] { ',' });
+                var containers = container.Split(new[] {','});
                 if (containers.Length < 2)
                 {
                     continue;
@@ -304,18 +353,6 @@ namespace Emby.Server.Implementations.Dto
 
                 mediaSource.Container = fileExtensionContainer ?? containers[0];
             }
-        }
-
-        public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
-        {
-            var dto = GetBaseItemDtoInternal(item, options, user);
-
-            if (taggedItems != null && options.ContainsField(ItemFields.ItemCounts))
-            {
-                SetItemByNameInfo(item, dto, taggedItems, user);
-            }
-
-            return dto;
         }
 
         private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems, User user = null)
@@ -352,7 +389,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Attaches the user specific info.
+        ///     Attaches the user specific info.
         /// </summary>
         private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options)
         {
@@ -463,12 +500,7 @@ namespace Emby.Server.Implementations.Dto
         {
             if (!string.IsNullOrEmpty(item.Album))
             {
-                var parentAlbumIds = _libraryManager.GetItemIds(new InternalItemsQuery
-                {
-                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
-                    Name = item.Album,
-                    Limit = 1
-                });
+                var parentAlbumIds = _libraryManager.GetItemIds(new InternalItemsQuery {IncludeItemTypes = new[] {typeof(MusicAlbum).Name}, Name = item.Album, Limit = 1});
 
                 if (parentAlbumIds.Count > 0)
                 {
@@ -501,7 +533,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Attaches People DTO's to a DTOBaseItem.
+        ///     Attaches People DTO's to a DTOBaseItem.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
@@ -571,12 +603,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 var person = people[i];
 
-                var baseItemPerson = new BaseItemPerson
-                {
-                    Name = person.Name,
-                    Role = person.Role,
-                    Type = person.Type
-                };
+                var baseItemPerson = new BaseItemPerson {Name = person.Name, Role = person.Role, Type = person.Type};
 
                 if (dictionary.TryGetValue(person.Name, out Person entity))
                 {
@@ -591,7 +618,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Attaches the studios.
+        ///     Attaches the studios.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
@@ -600,11 +627,7 @@ namespace Emby.Server.Implementations.Dto
         {
             dto.Studios = item.Studios
                 .Where(i => !string.IsNullOrEmpty(i))
-                .Select(i => new NameGuidPair
-                {
-                    Name = i,
-                    Id = _libraryManager.GetStudioId(i)
-                })
+                .Select(i => new NameGuidPair {Name = i, Id = _libraryManager.GetStudioId(i)})
                 .ToArray();
         }
 
@@ -612,11 +635,7 @@ namespace Emby.Server.Implementations.Dto
         {
             dto.GenreItems = item.Genres
                 .Where(i => !string.IsNullOrEmpty(i))
-                .Select(i => new NameGuidPair
-                {
-                    Name = i,
-                    Id = GetGenreId(i, item)
-                })
+                .Select(i => new NameGuidPair {Name = i, Id = GetGenreId(i, item)})
                 .ToArray();
         }
 
@@ -695,7 +714,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Sets simple property values on a DTOBaseItem.
+        ///     Sets simple property values on a DTOBaseItem.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
@@ -876,7 +895,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (!string.IsNullOrEmpty(item.Tagline))
                 {
-                    dto.Taglines = new string[] { item.Tagline };
+                    dto.Taglines = new[] {item.Tagline};
                 }
 
                 if (dto.Taglines == null)
@@ -955,17 +974,10 @@ namespace Emby.Server.Implementations.Dto
                             return null;
                         }
 
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
+                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false) {EnableImages = false});
                         if (artist != null)
                         {
-                            return new NameGuidPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id
-                            };
+                            return new NameGuidPair {Name = artist.Name, Id = artist.Id};
                         }
 
                         return null;
@@ -1005,17 +1017,10 @@ namespace Emby.Server.Implementations.Dto
                             return null;
                         }
 
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
+                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false) {EnableImages = false});
                         if (artist != null)
                         {
-                            return new NameGuidPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id
-                            };
+                            return new NameGuidPair {Name = artist.Name, Id = artist.Id};
                         }
 
                         return null;
@@ -1299,7 +1304,7 @@ namespace Emby.Server.Implementations.Dto
             var imageTags = dto.ImageTags;
 
             while (((!(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0) || parent is Series) &&
-                (parent = parent ?? (isFirst ? GetImageDisplayParent(item, item) ?? owner : parent)) != null)
+                   (parent = parent ?? (isFirst ? GetImageDisplayParent(item, item) ?? owner : parent)) != null)
             {
                 if (parent == null)
                 {
@@ -1373,66 +1378,6 @@ namespace Emby.Server.Implementations.Dto
             }
 
             return path;
-        }
-
-        /// <summary>
-        /// Attaches the primary image aspect ratio.
-        /// </summary>
-        /// <param name="dto">The dto.</param>
-        /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
-        public void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
-        {
-            dto.PrimaryImageAspectRatio = GetPrimaryImageAspectRatio(item);
-        }
-
-        public double? GetPrimaryImageAspectRatio(BaseItem item)
-        {
-            var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
-
-            if (imageInfo == null)
-            {
-                return null;
-            }
-
-            ImageDimensions size;
-
-            var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
-
-            if (defaultAspectRatio > 0)
-            {
-                return defaultAspectRatio;
-            }
-
-            if (!imageInfo.IsLocalFile)
-            {
-                return null;
-            }
-
-            try
-            {
-                size = _imageProcessor.GetImageDimensions(item, imageInfo);
-
-                if (size.Width <= 0 || size.Height <= 0)
-                {
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
-                return null;
-            }
-
-            var width = size.Width;
-            var height = size.Height;
-
-            if (width <= 0 || height <= 0)
-            {
-                return null;
-            }
-
-            return (double)width / height;
         }
     }
 }

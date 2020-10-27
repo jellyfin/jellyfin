@@ -11,6 +11,19 @@ namespace MediaBrowser.Controller.Channels
 {
     public class ChannelItemInfo : IHasProviderIds
     {
+        public ChannelItemInfo()
+        {
+            MediaSources = new List<MediaSourceInfo>();
+            TrailerTypes = new List<TrailerType>();
+            Genres = new List<string>();
+            Studios = new List<string>();
+            People = new List<PersonInfo>();
+            Tags = new List<string>();
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Artists = new List<string>();
+            AlbumArtists = new List<string>();
+        }
+
         public string Name { get; set; }
 
         public string SeriesName { get; set; }
@@ -51,8 +64,6 @@ namespace MediaBrowser.Controller.Channels
 
         public List<TrailerType> TrailerTypes { get; set; }
 
-        public Dictionary<string, string> ProviderIds { get; set; }
-
         public DateTime? PremiereDate { get; set; }
 
         public int? ProductionYear { get; set; }
@@ -79,17 +90,6 @@ namespace MediaBrowser.Controller.Channels
 
         public string Etag { get; set; }
 
-        public ChannelItemInfo()
-        {
-            MediaSources = new List<MediaSourceInfo>();
-            TrailerTypes = new List<TrailerType>();
-            Genres = new List<string>();
-            Studios = new List<string>();
-            People = new List<PersonInfo>();
-            Tags = new List<string>();
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Artists = new List<string>();
-            AlbumArtists = new List<string>();
-        }
+        public Dictionary<string, string> ProviderIds { get; set; }
     }
 }

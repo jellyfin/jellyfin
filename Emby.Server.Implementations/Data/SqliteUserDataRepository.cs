@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentNullException">
         /// userId
         /// or
-        /// key
+        /// key.
         /// </exception>
         public UserItemData GetUserData(long internalUserId, string key)
         {

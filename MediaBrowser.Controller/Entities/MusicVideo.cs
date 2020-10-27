@@ -11,19 +11,14 @@ namespace MediaBrowser.Controller.Entities
 {
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasLookupInfo<MusicVideoInfo>
     {
-        /// <inheritdoc />
-        [JsonIgnore]
-        public IReadOnlyList<string> Artists { get; set; }
-
         public MusicVideo()
         {
             Artists = Array.Empty<string>();
         }
 
-        public override UnratedItem GetBlockUnratedType()
-        {
-            return UnratedItem.Music;
-        }
+        /// <inheritdoc />
+        [JsonIgnore]
+        public IReadOnlyList<string> Artists { get; set; }
 
         public MusicVideoInfo GetLookupInfo()
         {
@@ -32,6 +27,11 @@ namespace MediaBrowser.Controller.Entities
             info.Artists = Artists;
 
             return info;
+        }
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Music;
         }
 
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)

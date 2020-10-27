@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
 
@@ -13,16 +15,25 @@ namespace MediaBrowser.Controller.Entities
 {
     public class UserView : Folder, IHasCollectionType
     {
-        /// <inheritdoc />
+        public static ITVSeriesManager TVSeriesManager;
+
+        private static readonly string[] UserSpecificViewTypes = {Model.Entities.CollectionType.Playlists};
+
+        private static readonly string[] ViewTypesEligibleForGrouping = {Model.Entities.CollectionType.Movies, Model.Entities.CollectionType.TvShows, string.Empty};
+
+        private static readonly string[] OriginalFolderViewTypes = {Model.Entities.CollectionType.Books, Model.Entities.CollectionType.MusicVideos, Model.Entities.CollectionType.HomeVideos, Model.Entities.CollectionType.Photos, Model.Entities.CollectionType.Music, Model.Entities.CollectionType.BoxSets};
+
         public string ViewType { get; set; }
 
-        /// <inheritdoc />
         public new Guid DisplayParentId { get; set; }
 
-        /// <inheritdoc />
         public Guid? UserId { get; set; }
 
-        public static ITVSeriesManager TVSeriesManager;
+        [JsonIgnore] public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore] public override bool SupportsPlayedStatus => false;
+
+        [JsonIgnore] public override bool SupportsPeople => false;
 
         /// <inheritdoc />
         [JsonIgnore]
@@ -45,32 +56,9 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
-
         public override int GetChildCount(User user)
         {
             return GetChildren(user, true).Count;
-        }
-
-        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
-        {
-            var parent = this as Folder;
-
-            if (!DisplayParentId.Equals(Guid.Empty))
-            {
-                parent = LibraryManager.GetItemById(DisplayParentId) as Folder ?? parent;
-            }
-            else if (!ParentId.Equals(Guid.Empty))
-            {
-                parent = LibraryManager.GetItemById(ParentId) as Folder ?? parent;
-            }
-
-            return new UserViewBuilder(UserViewManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, ConfigurationManager)
-                .GetUserItems(parent, this, CollectionType, query);
         }
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
@@ -106,16 +94,6 @@ namespace MediaBrowser.Controller.Entities
             return GetItemList(query);
         }
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
-        {
-            return GetChildren(user, false);
-        }
-
-        private static string[] UserSpecificViewTypes = new string[]
-            {
-                Model.Entities.CollectionType.Playlists
-            };
-
         public static bool IsUserSpecific(Folder folder)
         {
             var collectionFolder = folder as ICollectionFolder;
@@ -137,42 +115,44 @@ namespace MediaBrowser.Controller.Entities
         public static bool IsEligibleForGrouping(Folder folder)
         {
             return folder is ICollectionFolder collectionFolder
-                    && IsEligibleForGrouping(collectionFolder.CollectionType);
+                   && IsEligibleForGrouping(collectionFolder.CollectionType);
         }
-
-        private static string[] ViewTypesEligibleForGrouping = new string[]
-            {
-                Model.Entities.CollectionType.Movies,
-                Model.Entities.CollectionType.TvShows,
-                string.Empty
-            };
 
         public static bool IsEligibleForGrouping(string viewType)
         {
             return ViewTypesEligibleForGrouping.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
-        private static string[] OriginalFolderViewTypes = new string[]
-            {
-                Model.Entities.CollectionType.Books,
-                Model.Entities.CollectionType.MusicVideos,
-                Model.Entities.CollectionType.HomeVideos,
-                Model.Entities.CollectionType.Photos,
-                Model.Entities.CollectionType.Music,
-                Model.Entities.CollectionType.BoxSets
-            };
-
         public static bool EnableOriginalFolder(string viewType)
         {
             return OriginalFolderViewTypes.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, System.Threading.CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService)
+        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
+        {
+            var parent = this as Folder;
+
+            if (!DisplayParentId.Equals(Guid.Empty))
+            {
+                parent = LibraryManager.GetItemById(DisplayParentId) as Folder ?? parent;
+            }
+            else if (!ParentId.Equals(Guid.Empty))
+            {
+                parent = LibraryManager.GetItemById(ParentId) as Folder ?? parent;
+            }
+
+            return new UserViewBuilder(UserViewManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, ConfigurationManager)
+                .GetUserItems(parent, this, CollectionType, query);
+        }
+
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return GetChildren(user, false);
+        }
+
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             return Task.CompletedTask;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
     }
 }

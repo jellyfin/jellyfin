@@ -11,17 +11,33 @@ namespace MediaBrowser.Model.Dlna
     [XmlRoot("Profile")]
     public class DeviceProfile
     {
+        public DeviceProfile()
+        {
+            DirectPlayProfiles = Array.Empty<DirectPlayProfile>();
+            TranscodingProfiles = Array.Empty<TranscodingProfile>();
+            ResponseProfiles = Array.Empty<ResponseProfile>();
+            CodecProfiles = Array.Empty<CodecProfile>();
+            ContainerProfiles = Array.Empty<ContainerProfile>();
+            SubtitleProfiles = Array.Empty<SubtitleProfile>();
+
+            XmlRootAttributes = Array.Empty<XmlAttribute>();
+
+            SupportedMediaTypes = "Audio,Photo,Video";
+            MaxStreamingBitrate = 8000000;
+            MaxStaticBitrate = 8000000;
+            MusicStreamingTranscodingBitrate = 128000;
+        }
+
         /// <summary>
-        /// Gets or sets the name.
+        ///     Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
 
-        [XmlIgnore]
-        public string Id { get; set; }
+        [XmlIgnore] public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the identification.
+        ///     Gets or sets the identification.
         /// </summary>
         /// <value>The identification.</value>
         public DeviceIdentification Identification { get; set; }
@@ -71,7 +87,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxStaticMusicBitrate { get; set; }
 
         /// <summary>
-        /// Controls the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.
+        ///     Controls the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.
         /// </summary>
         public string SonyAggregationFlags { get; set; }
 
@@ -90,13 +106,13 @@ namespace MediaBrowser.Model.Dlna
         public XmlAttribute[] XmlRootAttributes { get; set; }
 
         /// <summary>
-        /// Gets or sets the direct play profiles.
+        ///     Gets or sets the direct play profiles.
         /// </summary>
         /// <value>The direct play profiles.</value>
         public DirectPlayProfile[] DirectPlayProfiles { get; set; }
 
         /// <summary>
-        /// Gets or sets the transcoding profiles.
+        ///     Gets or sets the transcoding profiles.
         /// </summary>
         /// <value>The transcoding profiles.</value>
         public TranscodingProfile[] TranscodingProfiles { get; set; }
@@ -109,23 +125,6 @@ namespace MediaBrowser.Model.Dlna
 
         public SubtitleProfile[] SubtitleProfiles { get; set; }
 
-        public DeviceProfile()
-        {
-            DirectPlayProfiles = Array.Empty<DirectPlayProfile>();
-            TranscodingProfiles = Array.Empty<TranscodingProfile>();
-            ResponseProfiles = Array.Empty<ResponseProfile>();
-            CodecProfiles = Array.Empty<CodecProfile>();
-            ContainerProfiles = Array.Empty<ContainerProfile>();
-            SubtitleProfiles = Array.Empty<SubtitleProfile>();
-
-            XmlRootAttributes = Array.Empty<XmlAttribute>();
-
-            SupportedMediaTypes = "Audio,Photo,Video";
-            MaxStreamingBitrate = 8000000;
-            MaxStaticBitrate = 8000000;
-            MusicStreamingTranscodingBitrate = 128000;
-        }
-
         public string[] GetSupportedMediaTypes()
         {
             return ContainerProfile.SplitValue(SupportedMediaTypes);
@@ -137,7 +136,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (var i in TranscodingProfiles)
             {
-                if (i.Type != MediaBrowser.Model.Dlna.DlnaProfileType.Audio)
+                if (i.Type != DlnaProfileType.Audio)
                 {
                     continue;
                 }
@@ -164,7 +163,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (var i in TranscodingProfiles)
             {
-                if (i.Type != MediaBrowser.Model.Dlna.DlnaProfileType.Video)
+                if (i.Type != DlnaProfileType.Video)
                 {
                     continue;
                 }
@@ -229,17 +228,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
-        }
-
-        private ProfileCondition GetModelProfileCondition(ProfileCondition c)
-        {
-            return new ProfileCondition
-            {
-                Condition = c.Condition,
-                IsRequired = c.IsRequired,
-                Property = c.Property,
-                Value = c.Value
-            };
         }
 
         public ResponseProfile GetImageMediaProfile(string container, int? width, int? height)
@@ -340,6 +328,11 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
+        }
+
+        private ProfileCondition GetModelProfileCondition(ProfileCondition c)
+        {
+            return new ProfileCondition {Condition = c.Condition, IsRequired = c.IsRequired, Property = c.Property, Value = c.Value};
         }
     }
 }

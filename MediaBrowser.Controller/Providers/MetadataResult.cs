@@ -9,15 +9,15 @@ namespace MediaBrowser.Controller.Providers
 {
     public class MetadataResult<T>
     {
-        public List<LocalImageInfo> Images { get; set; }
-
-        public List<UserItemData> UserDataList { get; set; }
-
         public MetadataResult()
         {
             Images = new List<LocalImageInfo>();
             ResultLanguage = "en";
         }
+
+        public List<LocalImageInfo> Images { get; set; }
+
+        public List<UserItemData> UserDataList { get; set; }
 
         public List<PersonInfo> People { get; set; }
 
@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
-        /// Not only does this clear, but initializes the list so that services can differentiate between a null list and zero people.
+        ///     Not only does this clear, but initializes the list so that services can differentiate between a null list and zero people.
         /// </summary>
         public void ResetPeople()
         {
@@ -73,10 +73,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (userData == null)
             {
-                userData = new UserItemData()
-                {
-                    UserId = new Guid(userId)
-                };
+                userData = new UserItemData {UserId = new Guid(userId)};
 
                 UserDataList.Add(userData);
             }

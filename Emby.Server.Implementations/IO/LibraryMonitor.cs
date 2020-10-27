@@ -23,29 +23,35 @@ namespace Emby.Server.Implementations.IO
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// The file system watchers.
+        ///     The file system watchers.
         /// </summary>
         private readonly ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new ConcurrentDictionary<string, FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The affected paths.
+        ///     The affected paths.
         /// </summary>
         private readonly List<FileRefresher> _activeRefreshers = new List<FileRefresher>();
 
         /// <summary>
-        /// A dynamic list of paths that should be ignored.  Added to during our own file system modifications.
+        ///     A dynamic list of paths that should be ignored.  Added to during our own file system modifications.
         /// </summary>
         private readonly ConcurrentDictionary<string, string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
-        /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
+        ///     Initializes a new instance of the <see cref="LibraryMonitor" /> class.
         /// </summary>
-        /// <param name="path">The path.</param>
-        private void TemporarilyIgnore(string path)
+        public LibraryMonitor(
+            ILogger<LibraryMonitor> logger,
+            ILibraryManager libraryManager,
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem)
         {
-            _tempIgnoredPaths[path] = path;
+            _libraryManager = libraryManager;
+            _logger = logger;
+            _configurationManager = configurationManager;
+            _fileSystem = fileSystem;
         }
 
         public void ReportFileSystemChangeBeginning(string path)
@@ -93,38 +99,6 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
-        /// </summary>
-        public LibraryMonitor(
-            ILogger<LibraryMonitor> logger,
-            ILibraryManager libraryManager,
-            IServerConfigurationManager configurationManager,
-            IFileSystem fileSystem)
-        {
-            _libraryManager = libraryManager;
-            _logger = logger;
-            _configurationManager = configurationManager;
-            _fileSystem = fileSystem;
-        }
-
-        private bool IsLibraryMonitorEnabled(BaseItem item)
-        {
-            if (item is BasePluginFolder)
-            {
-                return false;
-            }
-
-            var options = _libraryManager.GetLibraryOptions(item);
-
-            if (options != null)
-            {
-                return options.EnableRealtimeMonitor;
-            }
-
-            return false;
-        }
-
         public void Start()
         {
             _libraryManager.ItemAdded += OnLibraryManagerItemAdded;
@@ -156,6 +130,106 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        public void ReportFileSystemChanged(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            var monitorPath = !IgnorePatterns.ShouldIgnore(path);
+
+            // Ignore certain files
+            var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();
+
+            // If the parent of an ignored path has a change event, ignore that too
+            if (tempIgnorePaths.Any(i =>
+            {
+                if (_fileSystem.AreEqual(i, path))
+                {
+                    _logger.LogDebug("Ignoring change to {Path}", path);
+                    return true;
+                }
+
+                if (_fileSystem.ContainsSubPath(i, path))
+                {
+                    _logger.LogDebug("Ignoring change to {Path}", path);
+                    return true;
+                }
+
+                // Go up a level
+                var parent = Path.GetDirectoryName(i);
+                if (!string.IsNullOrEmpty(parent) && _fileSystem.AreEqual(parent, path))
+                {
+                    _logger.LogDebug("Ignoring change to {Path}", path);
+                    return true;
+                }
+
+                return false;
+            }))
+            {
+                monitorPath = false;
+            }
+
+            if (monitorPath)
+            {
+                // Avoid implicitly captured closure
+                CreateRefresher(path);
+            }
+        }
+
+        /// <summary>
+        ///     Stops this instance.
+        /// </summary>
+        public void Stop()
+        {
+            _libraryManager.ItemAdded -= OnLibraryManagerItemAdded;
+            _libraryManager.ItemRemoved -= OnLibraryManagerItemRemoved;
+
+            foreach (var watcher in _fileSystemWatchers.Values.ToList())
+            {
+                DisposeWatcher(watcher, false);
+            }
+
+            _fileSystemWatchers.Clear();
+            DisposeRefreshers();
+        }
+
+        /// <summary>
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        ///     Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        private void TemporarilyIgnore(string path)
+        {
+            _tempIgnoredPaths[path] = path;
+        }
+
+        private bool IsLibraryMonitorEnabled(BaseItem item)
+        {
+            if (item is BasePluginFolder)
+            {
+                return false;
+            }
+
+            var options = _libraryManager.GetLibraryOptions(item);
+
+            if (options != null)
+            {
+                return options.EnableRealtimeMonitor;
+            }
+
+            return false;
+        }
+
         private void StartWatching(BaseItem item)
         {
             if (IsLibraryMonitorEnabled(item))
@@ -165,10 +239,10 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Handles the ItemRemoved event of the LibraryManager control.
+        ///     Handles the ItemRemoved event of the LibraryManager control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ItemChangeEventArgs" /> instance containing the event data.</param>
         private void OnLibraryManagerItemRemoved(object sender, ItemChangeEventArgs e)
         {
             if (e.Parent is AggregateFolder)
@@ -178,10 +252,10 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Handles the ItemAdded event of the LibraryManager control.
+        ///     Handles the ItemAdded event of the LibraryManager control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ItemChangeEventArgs" /> instance containing the event data.</param>
         private void OnLibraryManagerItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (e.Parent is AggregateFolder)
@@ -191,13 +265,13 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Examine a list of strings assumed to be file paths to see if it contains a parent of
-        /// the provided path.
+        ///     Examine a list of strings assumed to be file paths to see if it contains a parent of
+        ///     the provided path.
         /// </summary>
         /// <param name="lst">The LST.</param>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [contains parent folder] [the specified LST]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path.</exception>
         private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -217,7 +291,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Starts the watching path.
+        ///     Starts the watching path.
         /// </summary>
         /// <param name="path">The path.</param>
         private void StartWatchingPath(string path)
@@ -276,7 +350,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Stops the watching path.
+        ///     Stops the watching path.
         /// </summary>
         /// <param name="path">The path.</param>
         private void StopWatchingPath(string path)
@@ -288,7 +362,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Disposes the watcher.
+        ///     Disposes the watcher.
         /// </summary>
         private void DisposeWatcher(FileSystemWatcher watcher, bool removeFromList)
         {
@@ -317,7 +391,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Removes the watcher from list.
+        ///     Removes the watcher from list.
         /// </summary>
         /// <param name="watcher">The watcher.</param>
         private void RemoveWatcherFromList(FileSystemWatcher watcher)
@@ -326,7 +400,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Handles the Error event of the watcher control.
+        ///     Handles the Error event of the watcher control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ErrorEventArgs" /> instance containing the event data.</param>
@@ -341,7 +415,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Handles the Changed event of the watcher control.
+        ///     Handles the Changed event of the watcher control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FileSystemEventArgs" /> instance containing the event data.</param>
@@ -354,54 +428,6 @@ namespace Emby.Server.Implementations.IO
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception in ReportFileSystemChanged. Path: {FullPath}", e.FullPath);
-            }
-        }
-
-        public void ReportFileSystemChanged(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            var monitorPath = !IgnorePatterns.ShouldIgnore(path);
-
-            // Ignore certain files
-            var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();
-
-            // If the parent of an ignored path has a change event, ignore that too
-            if (tempIgnorePaths.Any(i =>
-            {
-                if (_fileSystem.AreEqual(i, path))
-                {
-                    _logger.LogDebug("Ignoring change to {Path}", path);
-                    return true;
-                }
-
-                if (_fileSystem.ContainsSubPath(i, path))
-                {
-                    _logger.LogDebug("Ignoring change to {Path}", path);
-                    return true;
-                }
-
-                // Go up a level
-                var parent = Path.GetDirectoryName(i);
-                if (!string.IsNullOrEmpty(parent) && _fileSystem.AreEqual(parent, path))
-                {
-                    _logger.LogDebug("Ignoring change to {Path}", path);
-                    return true;
-                }
-
-                return false;
-            }))
-            {
-                monitorPath = false;
-            }
-
-            if (monitorPath)
-            {
-                // Avoid implicitly captured closure
-                CreateRefresher(path);
             }
         }
 
@@ -454,23 +480,6 @@ namespace Emby.Server.Implementations.IO
             DisposeRefresher(refresher);
         }
 
-        /// <summary>
-        /// Stops this instance.
-        /// </summary>
-        public void Stop()
-        {
-            _libraryManager.ItemAdded -= OnLibraryManagerItemAdded;
-            _libraryManager.ItemRemoved -= OnLibraryManagerItemRemoved;
-
-            foreach (var watcher in _fileSystemWatchers.Values.ToList())
-            {
-                DisposeWatcher(watcher, false);
-            }
-
-            _fileSystemWatchers.Clear();
-            DisposeRefreshers();
-        }
-
         private void DisposeRefresher(FileRefresher refresher)
         {
             lock (_activeRefreshers)
@@ -494,16 +503,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
+        ///     Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)

@@ -58,11 +58,11 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">type of the param.</typeparam>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">message</exception>
+        /// <exception cref="ArgumentNullException">message.</exception>
         Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken);
 
         Task ProcessAsync(CancellationToken cancellationToken = default);

@@ -3058,7 +3058,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets a hwaccel type to use as a hardware decoder(dxva/vaapi) depending on the system
+        /// Gets a hwaccel type to use as a hardware decoder(dxva/vaapi) depending on the system.
         /// </summary>
         public string GetHwaccelType(EncodingJobInfo state, EncodingOptions options, string videoCodec)
         {

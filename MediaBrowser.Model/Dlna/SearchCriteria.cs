@@ -7,31 +7,6 @@ namespace MediaBrowser.Model.Dlna
 {
     public class SearchCriteria
     {
-        public SearchType SearchType { get; set; }
-
-        /// <summary>
-        /// Splits the specified string.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="term">The term.</param>
-        /// <param name="limit">The limit.</param>
-        /// <returns>System.String[].</returns>
-        private static string[] RegexSplit(string str, string term, int limit)
-        {
-            return new Regex(term).Split(str, limit);
-        }
-
-        /// <summary>
-        /// Splits the specified string.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="term">The term.</param>
-        /// <returns>System.String[].</returns>
-        private static string[] RegexSplit(string str, string term)
-        {
-            return Regex.Split(str, term, RegexOptions.IgnoreCase);
-        }
-
         public SearchCriteria(string search)
         {
             if (search.Length == 0)
@@ -70,6 +45,31 @@ namespace MediaBrowser.Model.Dlna
                     }
                 }
             }
+        }
+
+        public SearchType SearchType { get; set; }
+
+        /// <summary>
+        ///     Splits the specified string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="term">The term.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns>System.String[].</returns>
+        private static string[] RegexSplit(string str, string term, int limit)
+        {
+            return new Regex(term).Split(str, limit);
+        }
+
+        /// <summary>
+        ///     Splits the specified string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="term">The term.</param>
+        /// <returns>System.String[].</returns>
+        private static string[] RegexSplit(string str, string term)
+        {
+            return Regex.Split(str, term, RegexOptions.IgnoreCase);
         }
     }
 }

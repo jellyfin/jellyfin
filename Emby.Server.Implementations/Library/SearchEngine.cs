@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="query">The query.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
-        /// <exception cref="ArgumentNullException">searchTerm</exception>
+        /// <exception cref="ArgumentNullException">searchTerm.</exception>
         private List<SearchHintInfo> GetSearchHints(SearchQuery query, User user)
         {
             var searchTerm = query.SearchTerm;

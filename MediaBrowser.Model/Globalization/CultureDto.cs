@@ -6,30 +6,35 @@ using System;
 namespace MediaBrowser.Model.Globalization
 {
     /// <summary>
-    /// Class CultureDto.
+    ///     Class CultureDto.
     /// </summary>
     public class CultureDto
     {
+        public CultureDto()
+        {
+            ThreeLetterISOLanguageNames = Array.Empty<string>();
+        }
+
         /// <summary>
-        /// Gets or sets the name.
+        ///     Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the display name.
+        ///     Gets or sets the display name.
         /// </summary>
         /// <value>The display name.</value>
         public string DisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the two letter ISO language.
+        ///     Gets or sets the name of the two letter ISO language.
         /// </summary>
         /// <value>The name of the two letter ISO language.</value>
         public string TwoLetterISOLanguageName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the three letter ISO language.
+        ///     Gets or sets the name of the three letter ISO language.
         /// </summary>
         /// <value>The name of the three letter ISO language.</value>
         public string ThreeLetterISOLanguageName
@@ -47,10 +52,5 @@ namespace MediaBrowser.Model.Globalization
         }
 
         public string[] ThreeLetterISOLanguageNames { get; set; }
-
-        public CultureDto()
-        {
-            ThreeLetterISOLanguageNames = Array.Empty<string>();
-        }
     }
 }

@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS1591
+#pragma warning disable CS1591
 
 using System;
 using MediaBrowser.Common.Configuration;
@@ -9,6 +9,12 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class Plugin : BasePlugin<PluginConfiguration>
     {
+        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+            : base(applicationPaths, xmlSerializer)
+        {
+            Instance = this;
+        }
+
         public static Plugin Instance { get; private set; }
 
         public override Guid Id => new Guid("a677c0da-fac5-4cde-941a-7134223f14c8");
@@ -19,11 +25,5 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         // TODO remove when plugin removed from server.
         public override string ConfigurationFileName => "Jellyfin.Plugin.TheTvdb.xml";
-
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
-            : base(applicationPaths, xmlSerializer)
-        {
-            Instance = this;
-        }
     }
 }
