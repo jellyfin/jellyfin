@@ -724,6 +724,7 @@ namespace Jellyfin.Server.Implementations.Users
             using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
             dbContext.SaveChanges();
+            user.ProfileImage = null;
         }
 
         private static bool IsValidUsername(string name)
