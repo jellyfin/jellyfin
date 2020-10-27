@@ -105,7 +105,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="sortOrder">Optional. Sort Order - Ascending,Descending.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <response code="200">Channel items returned.</response>
@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] string? sortBy,
             [FromQuery] ItemFields[] fields)
         {
@@ -140,7 +140,7 @@ namespace Jellyfin.Api.Controllers
                     .AddItemFields(fields)
             };
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {
@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] ItemFields[] fields,
             [FromQuery] string? channelIds)
         {
@@ -217,7 +217,7 @@ namespace Jellyfin.Api.Controllers
                     .AddItemFields(fields)
             };
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {

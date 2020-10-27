@@ -89,7 +89,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] ItemFields[] fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? genres,
@@ -187,7 +187,7 @@ namespace Jellyfin.Api.Controllers
                     .ToArray();
             }
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {

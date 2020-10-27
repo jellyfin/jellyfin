@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
         /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
         /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimited.</param>
@@ -89,7 +89,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] ItemFields[] fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? genres,
@@ -188,7 +188,7 @@ namespace Jellyfin.Api.Controllers
                 }).Where(i => i != null).Select(i => i!.Id).ToArray();
             }
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {
@@ -263,7 +263,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
         /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
         /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimited.</param>
@@ -298,7 +298,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] ItemFields[] fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? genres,
@@ -397,7 +397,7 @@ namespace Jellyfin.Api.Controllers
                 }).Where(i => i != null).Select(i => i!.Id).ToArray();
             }
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {

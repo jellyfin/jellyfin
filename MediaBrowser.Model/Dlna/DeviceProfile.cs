@@ -277,7 +277,8 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public ResponseProfile GetVideoMediaProfile(string container,
+        public ResponseProfile GetVideoMediaProfile(
+            string container,
             string audioCodec,
             string videoCodec,
             int? width,
