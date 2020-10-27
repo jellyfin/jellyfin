@@ -9,18 +9,16 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ContainerProfile
     {
-        [XmlAttribute("type")]
-        public DlnaProfileType Type { get; set; }
-
-        public ProfileCondition[] Conditions { get; set; }
-
-        [XmlAttribute("container")]
-        public string Container { get; set; }
-
         public ContainerProfile()
         {
             Conditions = Array.Empty<ProfileCondition>();
         }
+
+        [XmlAttribute("type")] public DlnaProfileType Type { get; set; }
+
+        public ProfileCondition[] Conditions { get; set; }
+
+        [XmlAttribute("container")] public string Container { get; set; }
 
         public string[] GetContainers()
         {
@@ -34,7 +32,7 @@ namespace MediaBrowser.Model.Dlna
                 return Array.Empty<string>();
             }
 
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return value.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool ContainsContainer(string container)

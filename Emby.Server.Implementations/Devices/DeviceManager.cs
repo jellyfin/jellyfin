@@ -30,8 +30,6 @@ namespace Emby.Server.Implementations.Devices
         private readonly IAuthenticationRepository _authRepo;
         private readonly object _capabilitiesSyncLock = new object();
 
-        public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
-
         public DeviceManager(
             IAuthenticationRepository authRepo,
             IJsonSerializer json,
@@ -45,6 +43,8 @@ namespace Emby.Server.Implementations.Devices
             _memoryCache = memoryCache;
             _authRepo = authRepo;
         }
+
+        public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
 
         public void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
@@ -97,18 +97,6 @@ namespace Emby.Server.Implementations.Devices
             return GetDevice(id, true);
         }
 
-        private DeviceInfo GetDevice(string id, bool includeCapabilities)
-        {
-            var session = _authRepo.Get(new AuthenticationInfoQuery
-            {
-                DeviceId = id
-            }).Items.FirstOrDefault();
-
-            var device = session == null ? null : ToDeviceInfo(session);
-
-            return device;
-        }
-
         public QueryResult<DeviceInfo> GetDevices(DeviceQuery query)
         {
             IEnumerable<AuthenticationInfo> sessions = _authRepo.Get(new AuthenticationInfoQuery
@@ -135,33 +123,6 @@ namespace Emby.Server.Implementations.Devices
             var array = sessions.Select(ToDeviceInfo).ToArray();
 
             return new QueryResult<DeviceInfo>(array);
-        }
-
-        private DeviceInfo ToDeviceInfo(AuthenticationInfo authInfo)
-        {
-            var caps = GetCapabilities(authInfo.DeviceId);
-
-            return new DeviceInfo
-            {
-                AppName = authInfo.AppName,
-                AppVersion = authInfo.AppVersion,
-                Id = authInfo.DeviceId,
-                LastUserId = authInfo.UserId,
-                LastUserName = authInfo.UserName,
-                Name = authInfo.DeviceName,
-                DateLastActivity = authInfo.DateLastActivity,
-                IconUrl = caps?.IconUrl
-            };
-        }
-
-        private string GetDevicesPath()
-        {
-            return Path.Combine(_config.ApplicationPaths.DataPath, "devices");
-        }
-
-        private string GetDevicePath(string id)
-        {
-            return Path.Combine(GetDevicesPath(), id.GetMD5().ToString("N", CultureInfo.InvariantCulture));
         }
 
         public bool CanAccessDevice(User user, string deviceId)
@@ -192,6 +153,42 @@ namespace Emby.Server.Implementations.Devices
             }
 
             return true;
+        }
+
+        private DeviceInfo GetDevice(string id, bool includeCapabilities)
+        {
+            var session = _authRepo.Get(new AuthenticationInfoQuery {DeviceId = id}).Items.FirstOrDefault();
+
+            var device = session == null ? null : ToDeviceInfo(session);
+
+            return device;
+        }
+
+        private DeviceInfo ToDeviceInfo(AuthenticationInfo authInfo)
+        {
+            var caps = GetCapabilities(authInfo.DeviceId);
+
+            return new DeviceInfo
+            {
+                AppName = authInfo.AppName,
+                AppVersion = authInfo.AppVersion,
+                Id = authInfo.DeviceId,
+                LastUserId = authInfo.UserId,
+                LastUserName = authInfo.UserName,
+                Name = authInfo.DeviceName,
+                DateLastActivity = authInfo.DateLastActivity,
+                IconUrl = caps?.IconUrl
+            };
+        }
+
+        private string GetDevicesPath()
+        {
+            return Path.Combine(_config.ApplicationPaths.DataPath, "devices");
+        }
+
+        private string GetDevicePath(string id)
+        {
+            return Path.Combine(GetDevicesPath(), id.GetMD5().ToString("N", CultureInfo.InvariantCulture));
         }
     }
 }

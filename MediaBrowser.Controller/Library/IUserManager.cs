@@ -59,16 +59,16 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="newName">The new name.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user.</exception>
+        /// <exception cref="ArgumentException">newName.</exception>
         Task RenameUser(User user, string newName);
 
         /// <summary>
         /// Updates the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <exception cref="ArgumentNullException">user</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user.</exception>
+        /// <exception cref="ArgumentException">Exception thrown.</exception>
         void UpdateUser(User user);
 
         /// <summary>
@@ -85,8 +85,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name of the new user.</param>
         /// <returns>The created user.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">name.</exception>
+        /// <exception cref="ArgumentException">exception thrown.</exception>
         Task<User> CreateUserAsync(string name);
 
         /// <summary>

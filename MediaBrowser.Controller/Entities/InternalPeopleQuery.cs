@@ -6,8 +6,14 @@ namespace MediaBrowser.Controller.Entities
 {
     public class InternalPeopleQuery
     {
+        public InternalPeopleQuery()
+        {
+            PersonTypes = Array.Empty<string>();
+            ExcludePersonTypes = Array.Empty<string>();
+        }
+
         /// <summary>
-        /// Gets or sets the maximum number of items the query should return.
+        ///     Gets or sets the maximum number of items the query should return.
         /// </summary>
         public int Limit { get; set; }
 
@@ -22,11 +28,5 @@ namespace MediaBrowser.Controller.Entities
         public Guid AppearsInItemId { get; set; }
 
         public string NameContains { get; set; }
-
-        public InternalPeopleQuery()
-        {
-            PersonTypes = Array.Empty<string>();
-            ExcludePersonTypes = Array.Empty<string>();
-        }
     }
 }

@@ -473,7 +473,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item.</exception>
         public void SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
@@ -516,7 +516,7 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentNullException">
         /// items
         /// or
-        /// cancellationToken
+        /// cancellationToken.
         /// </exception>
         public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
         {
@@ -1137,7 +1137,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id.</exception>
         /// <exception cref="ArgumentException"></exception>
         public BaseItem RetrieveItem(Guid id)
         {
@@ -1917,7 +1917,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ChapterInfo}.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id.</exception>
         public List<ChapterInfo> GetChapters(BaseItem item)
         {
             CheckDisposed();
@@ -1946,7 +1946,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="item">The item.</param>
         /// <param name="index">The index.</param>
         /// <returns>ChapterInfo.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id.</exception>
         public ChapterInfo GetChapter(BaseItem item, int index)
         {
             CheckDisposed();

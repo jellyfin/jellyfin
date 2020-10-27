@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -34,6 +33,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
         private readonly IApplicationHost _appHost;
 
+        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
+        private DateTime _lastErrorResponse;
+
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
             IJsonSerializer jsonSerializer,
@@ -53,22 +55,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         /// <inheritdoc />
         public string Type => nameof(SchedulesDirect);
-
-        private static List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
-        {
-            var dates = new List<string>();
-
-            var start = new List<DateTime> { startDateUtc, startDateUtc.ToLocalTime() }.Min().Date;
-            var end = new List<DateTime> { endDateUtc, endDateUtc.ToLocalTime() }.Max().Date;
-
-            while (start <= end)
-            {
-                dates.Add(start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                start = start.AddDays(1);
-            }
-
-            return dates;
-        }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
@@ -92,14 +78,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var dates = GetScheduleRequestDates(startDateUtc, endDateUtc);
 
             _logger.LogInformation("Channel Station ID is: {ChannelID}", channelId);
-            var requestList = new List<ScheduleDirect.RequestScheduleForChannel>()
-                {
-                    new ScheduleDirect.RequestScheduleForChannel()
-                    {
-                        stationID = channelId,
-                        date = dates
-                    }
-                };
+            var requestList = new List<ScheduleDirect.RequestScheduleForChannel> {new ScheduleDirect.RequestScheduleForChannel {stationID = channelId, date = dates}};
 
             var requestString = _jsonSerializer.SerializeToString(requestList);
             _logger.LogDebug("Request string for schedules is: {RequestString}", requestString);
@@ -176,6 +155,153 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             return programsInfo;
+        }
+
+        public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
+        {
+            if (validateLogin)
+            {
+                if (string.IsNullOrEmpty(info.Username))
+                {
+                    throw new ArgumentException("Username is required");
+                }
+
+                if (string.IsNullOrEmpty(info.Password))
+                {
+                    throw new ArgumentException("Password is required");
+                }
+            }
+
+            if (validateListings)
+            {
+                if (string.IsNullOrEmpty(info.ListingsId))
+                {
+                    throw new ArgumentException("Listings Id required");
+                }
+
+                var hasLineup = await HasLineup(info, CancellationToken.None).ConfigureAwait(false);
+
+                if (!hasLineup)
+                {
+                    await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+        }
+
+        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
+        {
+            return GetHeadends(info, country, location, CancellationToken.None);
+        }
+
+        public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            var listingsId = info.ListingsId;
+            if (string.IsNullOrEmpty(listingsId))
+            {
+                throw new Exception("ListingsId required");
+            }
+
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new Exception("token required");
+            }
+
+            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
+            options.Headers.TryAddWithoutValidation("token", token);
+
+            var list = new List<ChannelInfo>();
+
+            using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
+            await using var stream = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Channel>(stream).ConfigureAwait(false);
+            _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.map.Count);
+            _logger.LogInformation("Mapping Stations to Channel");
+
+            var allStations = root.stations ?? Enumerable.Empty<ScheduleDirect.Station>();
+
+            foreach (ScheduleDirect.Map map in root.map)
+            {
+                var channelNumber = GetChannelNumber(map);
+
+                var station = allStations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
+                if (station == null)
+                {
+                    station = new ScheduleDirect.Station {stationID = map.stationID};
+                }
+
+                var channelInfo = new ChannelInfo {Id = station.stationID, CallSign = station.callsign, Number = channelNumber, Name = string.IsNullOrWhiteSpace(station.name) ? channelNumber : station.name};
+
+                if (station.logo != null)
+                {
+                    channelInfo.ImageUrl = station.logo.URL;
+                }
+
+                list.Add(channelInfo);
+            }
+
+            return list;
+        }
+
+        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
+        {
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+
+            var lineups = new List<NameIdPair>();
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return lineups;
+            }
+
+            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/headends?country=" + country + "&postalcode=" + location);
+            options.Headers.TryAddWithoutValidation("token", token);
+
+            try
+            {
+                using var httpResponse = await Send(options, false, info, cancellationToken).ConfigureAwait(false);
+                await using var response = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+                var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(response).ConfigureAwait(false);
+
+                if (root != null)
+                {
+                    foreach (ScheduleDirect.Headends headend in root)
+                    {
+                        foreach (ScheduleDirect.Lineup lineup in headend.lineups)
+                        {
+                            lineups.Add(new NameIdPair {Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name, Id = lineup.uri.Substring(18)});
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("No lineups available");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting headends");
+            }
+
+            return lineups;
+        }
+
+        private static List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
+        {
+            var dates = new List<string>();
+
+            var start = new List<DateTime> {startDateUtc, startDateUtc.ToLocalTime()}.Min().Date;
+            var end = new List<DateTime> {endDateUtc, endDateUtc.ToLocalTime()}.Max().Date;
+
+            while (start <= end)
+            {
+                dates.Add(start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                start = start.AddDays(1);
+            }
+
+            return dates;
         }
 
         private static int GetSizeOrder(ScheduleDirect.ImageData image)
@@ -286,7 +412,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             // According to SchedulesDirect, these are generic, unidentified episodes
             // SH005316560000
             var hasUniqueShowId = !showId.StartsWith("SH", StringComparison.OrdinalIgnoreCase) ||
-                !showId.EndsWith("0000", StringComparison.OrdinalIgnoreCase);
+                                  !showId.EndsWith("0000", StringComparison.OrdinalIgnoreCase);
 
             if (!hasUniqueShowId)
             {
@@ -305,7 +431,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 info.OfficialRating = details.contentRating[0].code.Replace("TV", "TV-").Replace("--", "-");
 
-                var invalid = new[] { "N/A", "Approved", "Not Rated", "Passed" };
+                var invalid = new[] {"N/A", "Approved", "Not Rated", "Passed"};
                 if (invalid.Contains(info.OfficialRating, StringComparer.OrdinalIgnoreCase))
                 {
                     info.OfficialRating = null;
@@ -409,14 +535,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 return null;
             }
-            else if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+
+            if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return uri;
             }
-            else
-            {
-                return apiUrl + "/image/" + uri;
-            }
+
+            return apiUrl + "/image/" + uri;
         }
 
         private static double GetAspectRatio(ScheduleDirect.ImageData i)
@@ -468,10 +593,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             imageIdString = imageIdString.TrimEnd(',') + "]";
 
-            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs")
-            {
-                Content = new StringContent(imageIdString, Encoding.UTF8, MediaTypeNames.Application.Json)
-            };
+            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs") {Content = new StringContent(imageIdString, Encoding.UTF8, MediaTypeNames.Application.Json)};
 
             try
             {
@@ -488,56 +610,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
         }
 
-        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
-        {
-            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
-
-            var lineups = new List<NameIdPair>();
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                return lineups;
-            }
-
-            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/headends?country=" + country + "&postalcode=" + location);
-            options.Headers.TryAddWithoutValidation("token", token);
-
-            try
-            {
-                using var httpResponse = await Send(options, false, info, cancellationToken).ConfigureAwait(false);
-                await using var response = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
-
-                var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(response).ConfigureAwait(false);
-
-                if (root != null)
-                {
-                    foreach (ScheduleDirect.Headends headend in root)
-                    {
-                        foreach (ScheduleDirect.Lineup lineup in headend.lineups)
-                        {
-                            lineups.Add(new NameIdPair
-                            {
-                                Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name,
-                                Id = lineup.uri.Substring(18)
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogInformation("No lineups available");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting headends");
-            }
-
-            return lineups;
-        }
-
-        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
-        private DateTime _lastErrorResponse;
         private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             var username = info.Username;
@@ -715,99 +787,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 throw;
             }
-        }
-
-        public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
-        {
-            if (validateLogin)
-            {
-                if (string.IsNullOrEmpty(info.Username))
-                {
-                    throw new ArgumentException("Username is required");
-                }
-
-                if (string.IsNullOrEmpty(info.Password))
-                {
-                    throw new ArgumentException("Password is required");
-                }
-            }
-
-            if (validateListings)
-            {
-                if (string.IsNullOrEmpty(info.ListingsId))
-                {
-                    throw new ArgumentException("Listings Id required");
-                }
-
-                var hasLineup = await HasLineup(info, CancellationToken.None).ConfigureAwait(false);
-
-                if (!hasLineup)
-                {
-                    await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
-                }
-            }
-        }
-
-        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
-        {
-            return GetHeadends(info, country, location, CancellationToken.None);
-        }
-
-        public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
-        {
-            var listingsId = info.ListingsId;
-            if (string.IsNullOrEmpty(listingsId))
-            {
-                throw new Exception("ListingsId required");
-            }
-
-            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
-
-            if (string.IsNullOrEmpty(token))
-            {
-                throw new Exception("token required");
-            }
-
-            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
-            options.Headers.TryAddWithoutValidation("token", token);
-
-            var list = new List<ChannelInfo>();
-
-            using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
-            await using var stream = await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Channel>(stream).ConfigureAwait(false);
-            _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.map.Count);
-            _logger.LogInformation("Mapping Stations to Channel");
-
-            var allStations = root.stations ?? Enumerable.Empty<ScheduleDirect.Station>();
-
-            foreach (ScheduleDirect.Map map in root.map)
-            {
-                var channelNumber = GetChannelNumber(map);
-
-                var station = allStations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
-                if (station == null)
-                {
-                    station = new ScheduleDirect.Station { stationID = map.stationID };
-                }
-
-                var channelInfo = new ChannelInfo
-                {
-                    Id = station.stationID,
-                    CallSign = station.callsign,
-                    Number = channelNumber,
-                    Name = string.IsNullOrWhiteSpace(station.name) ? channelNumber : station.name
-                };
-
-                if (station.logo != null)
-                {
-                    channelInfo.ImageUrl = station.logo.URL;
-                }
-
-                list.Add(channelInfo);
-            }
-
-            return list;
         }
 
         private ScheduleDirect.Station GetStation(List<ScheduleDirect.Station> allStations, string channelNumber, string channelName)
@@ -1026,19 +1005,18 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             public class Day
             {
+                public Day()
+                {
+                    programs = new List<Program>();
+                }
+
                 public string stationID { get; set; }
 
                 public List<Program> programs { get; set; }
 
                 public MetadataSchedule metadata { get; set; }
-
-                public Day()
-                {
-                    programs = new List<Program>();
-                }
             }
 
-            //
             public class Title
             {
                 public string title120 { get; set; }

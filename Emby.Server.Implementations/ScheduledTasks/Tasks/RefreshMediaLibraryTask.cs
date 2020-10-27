@@ -73,13 +73,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <inheritdoc />
         public string Key => "RefreshLibrary";
 
-        /// <inheritdoc />
         public bool IsHidden => false;
 
-        /// <inheritdoc />
         public bool IsEnabled => true;
 
-        /// <inheritdoc />
         public bool IsLogged => true;
     }
 }

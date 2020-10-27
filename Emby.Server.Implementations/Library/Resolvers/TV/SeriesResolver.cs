@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is place holder] [the specified path]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path.</exception>
         private static bool IsVideoPlaceHolder(string path)
         {
             if (string.IsNullOrEmpty(path))

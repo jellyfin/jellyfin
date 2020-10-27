@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="directoryService">The directory service.</param>
-        /// <exception cref="ArgumentException">Item must have a path</exception>
+        /// <exception cref="ArgumentException">Item must have a path.</exception>
         public static void SetInitialItemValues(BaseItem item, Folder parent, IFileSystem fileSystem, ILibraryManager libraryManager, IDirectoryService directoryService)
         {
             // This version of the below method has no ItemResolveArgs, so we have to require the path already being set

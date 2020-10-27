@@ -8,6 +8,13 @@ namespace MediaBrowser.Model.Session
 {
     public class ClientCapabilities
     {
+        public ClientCapabilities()
+        {
+            PlayableMediaTypes = Array.Empty<string>();
+            SupportedCommands = Array.Empty<GeneralCommandType>();
+            SupportsPersistentIdentifier = true;
+        }
+
         public string[] PlayableMediaTypes { get; set; }
 
         public GeneralCommandType[] SupportedCommands { get; set; }
@@ -27,12 +34,5 @@ namespace MediaBrowser.Model.Session
         public string AppStoreUrl { get; set; }
 
         public string IconUrl { get; set; }
-
-        public ClientCapabilities()
-        {
-            PlayableMediaTypes = Array.Empty<string>();
-            SupportedCommands = Array.Empty<GeneralCommandType>();
-            SupportsPersistentIdentifier = true;
-        }
     }
 }

@@ -9,11 +9,32 @@ namespace MediaBrowser.Controller.Dto
 {
     public class DtoOptions
     {
-        private static readonly ItemFields[] DefaultExcludedFields = new[]
+        private static readonly ItemFields[] DefaultExcludedFields = {ItemFields.SeasonUserData, ItemFields.RefreshState};
+
+        private static readonly ImageType[] AllImageTypes = Enum.GetNames(typeof(ImageType))
+            .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
+            .ToArray();
+
+        private static readonly ItemFields[] AllItemFields = Enum.GetNames(typeof(ItemFields))
+            .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+            .Except(DefaultExcludedFields)
+            .ToArray();
+
+        public DtoOptions()
+            : this(true)
         {
-            ItemFields.SeasonUserData,
-            ItemFields.RefreshState
-        };
+        }
+
+        public DtoOptions(bool allFields)
+        {
+            ImageTypeLimit = int.MaxValue;
+            EnableImages = true;
+            EnableUserData = true;
+            AddCurrentProgram = true;
+
+            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
+            ImageTypes = AllImageTypes;
+        }
 
         public ItemFields[] Fields { get; set; }
 
@@ -29,33 +50,8 @@ namespace MediaBrowser.Controller.Dto
 
         public bool AddCurrentProgram { get; set; }
 
-        public DtoOptions()
-            : this(true)
-        {
-        }
-
-        private static readonly ImageType[] AllImageTypes = Enum.GetNames(typeof(ImageType))
-            .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
-            .ToArray();
-
-        private static readonly ItemFields[] AllItemFields = Enum.GetNames(typeof(ItemFields))
-            .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-            .Except(DefaultExcludedFields)
-            .ToArray();
-
         public bool ContainsField(ItemFields field)
             => Fields.Contains(field);
-
-        public DtoOptions(bool allFields)
-        {
-            ImageTypeLimit = int.MaxValue;
-            EnableImages = true;
-            EnableUserData = true;
-            AddCurrentProgram = true;
-
-            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
-            ImageTypes = AllImageTypes;
-        }
 
         public int GetImageLimit(ImageType type)
         {

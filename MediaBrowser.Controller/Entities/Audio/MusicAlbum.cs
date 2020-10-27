@@ -12,121 +12,46 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class MusicAlbum.
+    ///     Class MusicAlbum.
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
-        /// <inheritdoc />
-        public IReadOnlyList<string> AlbumArtists { get; set; }
-
-        /// <inheritdoc />
-        public IReadOnlyList<string> Artists { get; set; }
-
         public MusicAlbum()
         {
             Artists = Array.Empty<string>();
             AlbumArtists = Array.Empty<string>();
         }
 
-        [JsonIgnore]
-        public override bool SupportsAddingToPlaylist => true;
+        [JsonIgnore] public override bool SupportsAddingToPlaylist => true;
 
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => true;
+        [JsonIgnore] public override bool SupportsInheritedParentImages => true;
 
-        [JsonIgnore]
-        public MusicArtist MusicArtist => GetMusicArtist(new DtoOptions(true));
+        [JsonIgnore] public MusicArtist MusicArtist => GetMusicArtist(new DtoOptions(true));
 
-        public MusicArtist GetMusicArtist(DtoOptions options)
-        {
-            var parents = GetParents();
-            foreach (var parent in parents)
-            {
-                if (parent is MusicArtist artist)
-                {
-                    return artist;
-                }
-            }
+        [JsonIgnore] public override bool SupportsPlayedStatus => false;
 
-            var name = AlbumArtist;
-            if (!string.IsNullOrEmpty(name))
-            {
-                return LibraryManager.GetArtist(name, options);
-            }
+        [JsonIgnore] public override bool SupportsCumulativeRunTimeTicks => true;
 
-            return null;
-        }
+        [JsonIgnore] public string AlbumArtist => AlbumArtists.FirstOrDefault();
 
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
-
-        [JsonIgnore]
-        public override bool SupportsCumulativeRunTimeTicks => true;
-
-        [JsonIgnore]
-        public string AlbumArtist => AlbumArtists.FirstOrDefault();
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
+        [JsonIgnore] public override bool SupportsPeople => false;
 
         /// <summary>
-        /// Gets the tracks.
+        ///     Gets the tracks.
         /// </summary>
         /// <value>The tracks.</value>
         [JsonIgnore]
         public IEnumerable<Audio> Tracks => GetRecursiveChildren(i => i is Audio).Cast<Audio>();
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
-        {
-            return Tracks;
-        }
+        /// <inheritdoc />
+        public IReadOnlyList<string> AlbumArtists { get; set; }
 
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            return 1;
-        }
-
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            var albumArtist = AlbumArtist;
-            if (!string.IsNullOrEmpty(albumArtist))
-            {
-                list.Insert(0, albumArtist + "-" + Name);
-            }
-
-            var id = this.GetProviderId(MetadataProvider.MusicBrainzAlbum);
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                list.Insert(0, "MusicAlbum-Musicbrainz-" + id);
-            }
-
-            id = this.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                list.Insert(0, "MusicAlbum-MusicBrainzReleaseGroup-" + id);
-            }
-
-            return list;
-        }
-
-        protected override bool GetBlockUnratedValue(User user)
-        {
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
-        }
-
-        public override UnratedItem GetBlockUnratedType()
-        {
-            return UnratedItem.Music;
-        }
+        /// <inheritdoc />
+        public IReadOnlyList<string> Artists { get; set; }
 
         public AlbumInfo GetLookupInfo()
         {
@@ -195,6 +120,73 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 await RefreshArtists(refreshOptions, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        public MusicArtist GetMusicArtist(DtoOptions options)
+        {
+            var parents = GetParents();
+            foreach (var parent in parents)
+            {
+                if (parent is MusicArtist artist)
+                {
+                    return artist;
+                }
+            }
+
+            var name = AlbumArtist;
+            if (!string.IsNullOrEmpty(name))
+            {
+                return LibraryManager.GetArtist(name, options);
+            }
+
+            return null;
+        }
+
+        public override double GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            var albumArtist = AlbumArtist;
+            if (!string.IsNullOrEmpty(albumArtist))
+            {
+                list.Insert(0, albumArtist + "-" + Name);
+            }
+
+            var id = this.GetProviderId(MetadataProvider.MusicBrainzAlbum);
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                list.Insert(0, "MusicAlbum-Musicbrainz-" + id);
+            }
+
+            id = this.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                list.Insert(0, "MusicAlbum-MusicBrainzReleaseGroup-" + id);
+            }
+
+            return list;
+        }
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Music;
+        }
+
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return Tracks;
+        }
+
+        protected override bool GetBlockUnratedValue(User user)
+        {
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
         }
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)

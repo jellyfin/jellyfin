@@ -9,22 +9,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class EncodingJobOptions : BaseEncodingJobOptions
     {
-        public string OutputDirectory { get; set; }
-
-        public string ItemId { get; set; }
-
-        public string TempDirectory { get; set; }
-
-        public bool ReadInputAtNativeFramerate { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has fixed resolution.
-        /// </summary>
-        /// <value><c>true</c> if this instance has fixed resolution; otherwise, <c>false</c>.</value>
-        public bool HasFixedResolution => Width.HasValue || Height.HasValue;
-
-        public DeviceProfile DeviceProfile { get; set; }
-
         public EncodingJobOptions(StreamInfo info, DeviceProfile deviceProfile)
         {
             Container = info.Container;
@@ -53,13 +37,38 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             StreamOptions = info.StreamOptions;
         }
+
+        public string OutputDirectory { get; set; }
+
+        public string ItemId { get; set; }
+
+        public string TempDirectory { get; set; }
+
+        public bool ReadInputAtNativeFramerate { get; set; }
+
+        /// <summary>
+        ///     Gets a value indicating whether this instance has fixed resolution.
+        /// </summary>
+        /// <value><c>true</c> if this instance has fixed resolution; otherwise, <c>false</c>.</value>
+        public bool HasFixedResolution => Width.HasValue || Height.HasValue;
+
+        public DeviceProfile DeviceProfile { get; set; }
     }
 
     // For now until api and media encoding layers are unified
     public class BaseEncodingJobOptions
     {
+        public BaseEncodingJobOptions()
+        {
+            EnableAutoStreamCopy = true;
+            AllowVideoStreamCopy = true;
+            AllowAudioStreamCopy = true;
+            Context = EncodingContext.Streaming;
+            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
-        /// Gets or sets the id.
+        ///     Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         public Guid Id { get; set; }
@@ -71,7 +80,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string Container { get; set; }
 
         /// <summary>
-        /// Gets or sets the audio codec.
+        ///     Gets or sets the audio codec.
         /// </summary>
         /// <value>The audio codec.</value>
         public string AudioCodec { get; set; }
@@ -85,7 +94,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool BreakOnNonKeyFrames { get; set; }
 
         /// <summary>
-        /// Gets or sets the audio sample rate.
+        ///     Gets or sets the audio sample rate.
         /// </summary>
         /// <value>The audio sample rate.</value>
         public int? AudioSampleRate { get; set; }
@@ -93,13 +102,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? MaxAudioBitDepth { get; set; }
 
         /// <summary>
-        /// Gets or sets the audio bit rate.
+        ///     Gets or sets the audio bit rate.
         /// </summary>
         /// <value>The audio bit rate.</value>
         public int? AudioBitRate { get; set; }
 
         /// <summary>
-        /// Gets or sets the audio channels.
+        ///     Gets or sets the audio channels.
         /// </summary>
         /// <value>The audio channels.</value>
         public int? AudioChannels { get; set; }
@@ -109,19 +118,19 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool Static { get; set; }
 
         /// <summary>
-        /// Gets or sets the profile.
+        ///     Gets or sets the profile.
         /// </summary>
         /// <value>The profile.</value>
         public string Profile { get; set; }
 
         /// <summary>
-        /// Gets or sets the level.
+        ///     Gets or sets the level.
         /// </summary>
         /// <value>The level.</value>
         public string Level { get; set; }
 
         /// <summary>
-        /// Gets or sets the framerate.
+        ///     Gets or sets the framerate.
         /// </summary>
         /// <value>The framerate.</value>
         public float? Framerate { get; set; }
@@ -131,43 +140,43 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool CopyTimestamps { get; set; }
 
         /// <summary>
-        /// Gets or sets the start time ticks.
+        ///     Gets or sets the start time ticks.
         /// </summary>
         /// <value>The start time ticks.</value>
         public long? StartTimeTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the width.
+        ///     Gets or sets the width.
         /// </summary>
         /// <value>The width.</value>
         public int? Width { get; set; }
 
         /// <summary>
-        /// Gets or sets the height.
+        ///     Gets or sets the height.
         /// </summary>
         /// <value>The height.</value>
         public int? Height { get; set; }
 
         /// <summary>
-        /// Gets or sets the width of the max.
+        ///     Gets or sets the width of the max.
         /// </summary>
         /// <value>The width of the max.</value>
         public int? MaxWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the height of the max.
+        ///     Gets or sets the height of the max.
         /// </summary>
         /// <value>The height of the max.</value>
         public int? MaxHeight { get; set; }
 
         /// <summary>
-        /// Gets or sets the video bit rate.
+        ///     Gets or sets the video bit rate.
         /// </summary>
         /// <value>The video bit rate.</value>
         public int? VideoBitRate { get; set; }
 
         /// <summary>
-        /// Gets or sets the index of the subtitle stream.
+        ///     Gets or sets the index of the subtitle stream.
         /// </summary>
         /// <value>The index of the subtitle stream.</value>
         public int? SubtitleStreamIndex { get; set; }
@@ -193,7 +202,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool EnableMpegtsM2TsMode { get; set; }
 
         /// <summary>
-        /// Gets or sets the video codec.
+        ///     Gets or sets the video codec.
         /// </summary>
         /// <value>The video codec.</value>
         public string VideoCodec { get; set; }
@@ -203,13 +212,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string TranscodeReasons { get; set; }
 
         /// <summary>
-        /// Gets or sets the index of the audio stream.
+        ///     Gets or sets the index of the audio stream.
         /// </summary>
         /// <value>The index of the audio stream.</value>
         public int? AudioStreamIndex { get; set; }
 
         /// <summary>
-        /// Gets or sets the index of the video stream.
+        ///     Gets or sets the index of the video stream.
         /// </summary>
         /// <value>The index of the video stream.</value>
         public int? VideoStreamIndex { get; set; }
@@ -238,15 +247,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return null;
-        }
-
-        public BaseEncodingJobOptions()
-        {
-            EnableAutoStreamCopy = true;
-            AllowVideoStreamCopy = true;
-            AllowAudioStreamCopy = true;
-            Context = EncodingContext.Streaming;
-            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

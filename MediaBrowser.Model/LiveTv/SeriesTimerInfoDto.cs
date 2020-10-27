@@ -83,12 +83,4 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The parent primary image tag.</value>
         public string ParentPrimaryImageTag { get; set; }
     }
-
-    public enum KeepUntil
-    {
-        UntilDeleted,
-        UntilSpaceNeeded,
-        UntilWatched,
-        UntilDate
-    }
 }

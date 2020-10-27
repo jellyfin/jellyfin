@@ -7,26 +7,39 @@ namespace MediaBrowser.Model.Search
 {
     public class SearchQuery
     {
+        public SearchQuery()
+        {
+            IncludeArtists = true;
+            IncludeGenres = true;
+            IncludeMedia = true;
+            IncludePeople = true;
+            IncludeStudios = true;
+
+            MediaTypes = Array.Empty<string>();
+            IncludeItemTypes = Array.Empty<string>();
+            ExcludeItemTypes = Array.Empty<string>();
+        }
+
         /// <summary>
-        /// The user to localize search results for.
+        ///     The user to localize search results for.
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// Gets or sets the search term.
+        ///     Gets or sets the search term.
         /// </summary>
         /// <value>The search term.</value>
         public string SearchTerm { get; set; }
 
         /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
+        ///     Skips over a given number of items within the results. Use for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return.
+        ///     The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
@@ -58,18 +71,5 @@ namespace MediaBrowser.Model.Search
         public bool? IsKids { get; set; }
 
         public bool? IsSports { get; set; }
-
-        public SearchQuery()
-        {
-            IncludeArtists = true;
-            IncludeGenres = true;
-            IncludeMedia = true;
-            IncludePeople = true;
-            IncludeStudios = true;
-
-            MediaTypes = Array.Empty<string>();
-            IncludeItemTypes = Array.Empty<string>();
-            ExcludeItemTypes = Array.Empty<string>();
-        }
     }
 }

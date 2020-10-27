@@ -10,27 +10,27 @@ namespace MediaBrowser.Controller.Entities
 {
     public class LinkedChild
     {
+        public LinkedChild()
+        {
+            Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        }
+
         public string Path { get; set; }
 
         public LinkedChildType Type { get; set; }
 
         public string LibraryItemId { get; set; }
 
-        [JsonIgnore]
-        public string Id { get; set; }
+        [JsonIgnore] public string Id { get; set; }
 
         /// <summary>
-        /// Serves as a cache.
+        ///     Serves as a cache.
         /// </summary>
         public Guid? ItemId { get; set; }
 
         public static LinkedChild Create(BaseItem item)
         {
-            var child = new LinkedChild
-            {
-                Path = item.Path,
-                Type = LinkedChildType.Manual
-            };
+            var child = new LinkedChild {Path = item.Path, Type = LinkedChildType.Manual};
 
             if (string.IsNullOrEmpty(child.Path))
             {
@@ -38,11 +38,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return child;
-        }
-
-        public LinkedChild()
-        {
-            Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
     }
 

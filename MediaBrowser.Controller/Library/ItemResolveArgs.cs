@@ -11,20 +11,18 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// These are arguments relating to the file system that are collected once and then referred to
-    /// whenever needed.  Primarily for entity resolution.
+    ///     These are arguments relating to the file system that are collected once and then referred to
+    ///     whenever needed.  Primarily for entity resolution.
     /// </summary>
     public class ItemResolveArgs : EventArgs
     {
         /// <summary>
-        /// The _app paths.
+        ///     The _app paths.
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
-        public IDirectoryService DirectoryService { get; private set; }
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
+        ///     Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="directoryService">The directory service.</param>
@@ -34,45 +32,42 @@ namespace MediaBrowser.Controller.Library
             DirectoryService = directoryService;
         }
 
+        public IDirectoryService DirectoryService { get; private set; }
+
         /// <summary>
-        /// Gets the file system children.
+        ///     Gets the file system children.
         /// </summary>
         /// <value>The file system children.</value>
         public FileSystemMetadata[] FileSystemChildren { get; set; }
 
         public LibraryOptions LibraryOptions { get; set; }
 
-        public LibraryOptions GetLibraryOptions()
-        {
-            return LibraryOptions ?? (LibraryOptions = Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent));
-        }
-
         /// <summary>
-        /// Gets or sets the parent.
+        ///     Gets or sets the parent.
         /// </summary>
         /// <value>The parent.</value>
         public Folder Parent { get; set; }
 
         /// <summary>
-        /// Gets or sets the file info.
+        ///     Gets or sets the file info.
         /// </summary>
         /// <value>The file info.</value>
         public FileSystemMetadata FileInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the path.
+        ///     Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is directory.
+        ///     Gets a value indicating whether this instance is directory.
         /// </summary>
         /// <value><c>true</c> if this instance is directory; otherwise, <c>false</c>.</value>
         public bool IsDirectory => FileInfo.IsDirectory;
 
         /// <summary>
-        /// Gets a value indicating whether this instance is vf.
+        ///     Gets a value indicating whether this instance is vf.
         /// </summary>
         /// <value><c>true</c> if this instance is vf; otherwise, <c>false</c>.</value>
         public bool IsVf
@@ -95,16 +90,38 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is physical root.
+        ///     Gets a value indicating whether this instance is physical root.
         /// </summary>
         /// <value><c>true</c> if this instance is physical root; otherwise, <c>false</c>.</value>
         public bool IsPhysicalRoot => IsDirectory && BaseItem.FileSystem.AreEqual(Path, _appPaths.RootFolderPath);
 
         /// <summary>
-        /// Gets or sets the additional locations.
+        ///     Gets or sets the additional locations.
         /// </summary>
         /// <value>The additional locations.</value>
         private List<string> AdditionalLocations { get; set; }
+
+        // REVIEW: @bond
+
+        /// <summary>
+        ///     Gets the physical locations.
+        /// </summary>
+        /// <value>The physical locations.</value>
+        public string[] PhysicalLocations
+        {
+            get
+            {
+                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] {Path};
+                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
+            }
+        }
+
+        public string CollectionType { get; set; }
+
+        public LibraryOptions GetLibraryOptions()
+        {
+            return LibraryOptions ?? (LibraryOptions = Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent));
+        }
 
         public bool HasParent<T>()
             where T : Folder
@@ -136,7 +153,7 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Adds the additional location.
+        ///     Adds the additional location.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -155,23 +172,8 @@ namespace MediaBrowser.Controller.Library
             AdditionalLocations.Add(path);
         }
 
-        // REVIEW: @bond
-
         /// <summary>
-        /// Gets the physical locations.
-        /// </summary>
-        /// <value>The physical locations.</value>
-        public string[] PhysicalLocations
-        {
-            get
-            {
-                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Gets the name of the file system entry by.
+        ///     Gets the name of the file system entry by.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>FileSystemInfo.</returns>
@@ -187,7 +189,7 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Gets the file system entry by path.
+        ///     Gets the file system entry by path.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
@@ -211,7 +213,7 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Determines whether [contains file system entry by name] [the specified name].
+        ///     Determines whether [contains file system entry by name] [the specified name].
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns><c>true</c> if [contains file system entry by name] [the specified name]; otherwise, <c>false</c>.</returns>
@@ -225,10 +227,8 @@ namespace MediaBrowser.Controller.Library
             return CollectionType;
         }
 
-        public string CollectionType { get; set; }
-
         /// <summary>
-        /// Determines whether the specified <see cref="object" /> is equal to this instance.
+        ///     Determines whether the specified <see cref="object" /> is equal to this instance.
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
@@ -238,7 +238,7 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Returns a hash code for this instance.
+        ///     Returns a hash code for this instance.
         /// </summary>
         /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
         public override int GetHashCode()
@@ -247,10 +247,10 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Equals the specified args.
+        ///     Equals the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         protected bool Equals(ItemResolveArgs args)
         {
             if (args != null)

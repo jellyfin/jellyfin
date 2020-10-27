@@ -2,74 +2,20 @@
 #pragma warning disable CS1591
 
 using System;
-using Jellyfin.Data.Enums;
-using MediaBrowser.Model.Extensions;
 using System.Linq;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Model.Users;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Notifications
 {
     public class NotificationOptions
     {
-        public NotificationOption[] Options { get; set; }
-
         public NotificationOptions()
         {
-            Options = new[]
-            {
-                new NotificationOption(NotificationType.TaskFailed.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.ServerRestartRequired.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.ApplicationUpdateAvailable.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.ApplicationUpdateInstalled.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.PluginUpdateInstalled.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.PluginUninstalled.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.InstallationFailed.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.PluginInstalled.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.PluginError.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                },
-                new NotificationOption(NotificationType.UserLockedOut.ToString())
-                {
-                    Enabled = true,
-                    SendToUserMode = SendToUserType.Admins
-                }
-            };
+            Options = new[] {new NotificationOption(NotificationType.TaskFailed.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.ServerRestartRequired.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.ApplicationUpdateAvailable.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.ApplicationUpdateInstalled.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.PluginUpdateInstalled.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.PluginUninstalled.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.InstallationFailed.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.PluginInstalled.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.PluginError.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}, new NotificationOption(NotificationType.UserLockedOut.ToString()) {Enabled = true, SendToUserMode = SendToUserType.Admins}};
         }
+
+        public NotificationOption[] Options { get; set; }
 
         public NotificationOption GetOptions(string type)
         {

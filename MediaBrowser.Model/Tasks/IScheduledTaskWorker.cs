@@ -60,7 +60,7 @@ namespace MediaBrowser.Model.Tasks
         /// Gets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
-        /// <exception cref="ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value.</exception>
         TaskTriggerInfo[] Triggers { get; set; }
 
         /// <summary>

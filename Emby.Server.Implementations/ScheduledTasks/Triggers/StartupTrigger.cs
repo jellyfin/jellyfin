@@ -8,29 +8,29 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class StartupTaskTrigger.
+    ///     Class StartupTaskTrigger.
     /// </summary>
     public class StartupTrigger : ITaskTrigger
     {
-        /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
-        public event EventHandler<EventArgs> Triggered;
-
-        public int DelayMs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the options of this task.
-        /// </summary>
-        public TaskOptions TaskOptions { get; set; }
-
         public StartupTrigger()
         {
             DelayMs = 3000;
         }
 
+        public int DelayMs { get; set; }
+
         /// <summary>
-        /// Stars waiting for the trigger action.
+        ///     Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
+        /// <summary>
+        ///     Gets or sets the options of this task.
+        /// </summary>
+        public TaskOptions TaskOptions { get; set; }
+
+        /// <summary>
+        ///     Stars waiting for the trigger action.
         /// </summary>
         /// <param name="lastResult">The last result.</param>
         /// <param name="logger">The logger.</param>
@@ -47,14 +47,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops waiting for the trigger action.
+        ///     Stops waiting for the trigger action.
         /// </summary>
         public void Stop()
         {
         }
 
         /// <summary>
-        /// Called when [triggered].
+        ///     Called when [triggered].
         /// </summary>
         private void OnTriggered()
         {

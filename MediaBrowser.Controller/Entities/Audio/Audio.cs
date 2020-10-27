@@ -13,7 +13,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class Audio.
+    ///     Class Audio.
     /// </summary>
     public class Audio : BaseItem,
         IHasAlbumArtist,
@@ -22,18 +22,50 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasMediaSources
     {
-        /// <inheritdoc />
+        public Audio()
+        {
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
+        }
+
+        [JsonIgnore] public override bool SupportsPlayedStatus => true;
+
+        [JsonIgnore] public override bool SupportsPeople => false;
+
+        [JsonIgnore] public override bool SupportsAddingToPlaylist => true;
+
+        [JsonIgnore] public override bool SupportsInheritedParentImages => true;
+
+        [JsonIgnore] protected override bool SupportsOwnedItems => false;
+
+        [JsonIgnore] public override Folder LatestItemsIndexContainer => AlbumEntity;
+
+        [JsonIgnore] public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
+
+        /// <summary>
+        ///     Gets the type of the media.
+        /// </summary>
+        /// <value>The type of the media.</value>
         [JsonIgnore]
-        public IReadOnlyList<string> Artists { get; set; }
+        public override string MediaType => Model.Entities.MediaType.Audio;
 
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<string> AlbumArtists { get; set; }
 
-        public Audio()
+        /// <inheritdoc />
+        [JsonIgnore]
+        public IReadOnlyList<string> Artists { get; set; }
+
+        public SongInfo GetLookupInfo()
         {
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
+            var info = GetItemLookupInfo<SongInfo>();
+
+            info.AlbumArtists = AlbumArtists;
+            info.Album = Album;
+            info.Artists = Artists;
+
+            return info;
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -41,47 +73,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             return 1;
         }
 
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => true;
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
-
-        [JsonIgnore]
-        public override bool SupportsAddingToPlaylist => true;
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => true;
-
-        [JsonIgnore]
-        protected override bool SupportsOwnedItems => false;
-
-        [JsonIgnore]
-        public override Folder LatestItemsIndexContainer => AlbumEntity;
-
         public override bool CanDownload()
         {
             return IsFileProtocol;
-        }
-
-        [JsonIgnore]
-        public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
-
-        /// <summary>
-        /// Gets the type of the media.
-        /// </summary>
-        /// <value>The type of the media.</value>
-        [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Audio;
-
-        /// <summary>
-        /// Creates the name of the sort.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateSortName()
-        {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
 
         public override List<string> GetUserDataKeys()
@@ -125,22 +119,17 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public List<MediaStream> GetMediaStreams(MediaStreamType type)
         {
-            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = Id,
-                Type = type
-            });
+            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery {ItemId = Id, Type = type});
         }
 
-        public SongInfo GetLookupInfo()
+        /// <summary>
+        ///     Creates the name of the sort.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        protected override string CreateSortName()
         {
-            var info = GetItemLookupInfo<SongInfo>();
-
-            info.AlbumArtists = AlbumArtists;
-            info.Album = Album;
-            info.Artists = Artists;
-
-            return info;
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
+                   + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
 
         protected override List<Tuple<BaseItem, MediaSourceType>> GetAllItemsForMediaSources()
