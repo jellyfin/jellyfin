@@ -49,7 +49,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
-        private readonly IDictionary<Guid, User> _users = new ConcurrentDictionary<Guid, User>();
+        private readonly IDictionary<Guid, User> _users;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
@@ -85,6 +85,7 @@ namespace Jellyfin.Server.Implementations.Users
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
 
+            _users = new ConcurrentDictionary<Guid, User>();
             using var dbContext = _dbProvider.CreateContext();
             foreach (var user in dbContext.Users
                 .Include(user => user.Permissions)
@@ -101,16 +102,10 @@ namespace Jellyfin.Server.Implementations.Users
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
-        public IEnumerable<User> Users
-        {
-            get { return _users.Values; }
-        }
+        public IEnumerable<User> Users => _users.Values;
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds
-        {
-            get { return _users.Keys; }
-        }
+        public IEnumerable<Guid> UsersIds => _users.Keys;
 
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
