@@ -662,11 +662,10 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var imageTypes = RequestHelpers.GetImageTypes(body.EnableImageTypes);
             var dtoOptions = new DtoOptions()
                 .AddItemFields(body.Fields)
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, imageTypes);
+                .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
         }
 
