@@ -128,6 +128,7 @@ namespace Jellyfin.Api.Tests.Auth
             var authorizationInfo = _fixture.Create<AuthorizationInfo>();
             authorizationInfo.User = _fixture.Create<User>();
             authorizationInfo.User.SetPermission(PermissionKind.IsAdministrator, isAdmin);
+            authorizationInfo.IsApiKey = false;
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
