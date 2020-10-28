@@ -1,6 +1,7 @@
 ﻿using System;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -124,7 +125,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
             [FromQuery] string? locationTypes,
-            [FromQuery] string? excludeLocationTypes,
+            [FromQuery] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
             [FromQuery] double? minCommunityRating,
@@ -146,7 +147,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? parentId,
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? imageTypes,

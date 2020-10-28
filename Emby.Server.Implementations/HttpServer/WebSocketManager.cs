@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
@@ -14,16 +13,18 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class WebSocketManager : IWebSocketManager
     {
+        private readonly Lazy<IEnumerable<IWebSocketListener>> _webSocketListeners;
         private readonly ILogger<WebSocketManager> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
-        private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private bool _disposed = false;
 
         public WebSocketManager(
+            Lazy<IEnumerable<IWebSocketListener>> webSocketListeners,
             ILogger<WebSocketManager> logger,
             ILoggerFactory loggerFactory)
         {
+            _webSocketListeners = webSocketListeners;
             _logger = logger;
             _loggerFactory = loggerFactory;
         }
@@ -69,15 +70,6 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Adds the rest handlers.
-        /// </summary>
-        /// <param name="listeners">The web socket listeners.</param>
-        public void Init(IEnumerable<IWebSocketListener> listeners)
-        {
-            _webSocketListeners = listeners.ToArray();
-        }
-
-        /// <summary>
         /// Processes the web socket message received.
         /// </summary>
         /// <param name="result">The result.</param>
@@ -90,7 +82,8 @@ namespace Emby.Server.Implementations.HttpServer
 
             IEnumerable<Task> GetTasks()
             {
-                foreach (var x in _webSocketListeners)
+                var listeners = _webSocketListeners.Value;
+                foreach (var x in listeners)
                 {
                     yield return x.ProcessMessageAsync(result);
                 }

@@ -740,10 +740,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="state">The state.</param>
         private void OnFfMpegProcessExited(Process process, TranscodingJobDto job, StreamState state)
         {
-            if (job != null)
-            {
-                job.HasExited = true;
-            }
+            job.HasExited = true;
 
             _logger.LogDebug("Disposing stream resources");
             state.Dispose();

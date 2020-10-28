@@ -333,7 +333,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
         /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
@@ -364,7 +364,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] string? tag,
             [FromQuery] bool? cropWhitespace,
-            [FromQuery] string? format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
             [FromQuery] int? unplayedCount,
@@ -443,7 +443,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromRoute, Required] string tag,
             [FromQuery] bool? cropWhitespace,
-            [FromRoute, Required] string format,
+            [FromRoute, Required] ImageFormat format,
             [FromQuery] bool? addPlayedIndicator,
             [FromRoute, Required] double percentPlayed,
             [FromRoute, Required] int unplayedCount,
@@ -516,7 +516,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromQuery] string tag,
-            [FromQuery] string format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -595,7 +595,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromQuery] string tag,
-            [FromQuery] string format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -674,7 +674,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromQuery] string tag,
-            [FromQuery] string format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -753,7 +753,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromQuery] string tag,
-            [FromQuery] string format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -832,7 +832,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] string tag,
-            [FromRoute, Required] string format,
+            [FromRoute, Required] ImageFormat format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -911,7 +911,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromRoute, Required] ImageType imageType,
             [FromQuery] string? tag,
-            [FromQuery] string? format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -1038,7 +1038,7 @@ namespace Jellyfin.Api.Controllers
             ImageType imageType,
             int? imageIndex,
             string? tag,
-            string? format,
+            ImageFormat? format,
             int? maxWidth,
             int? maxHeight,
             double? percentPlayed,
@@ -1128,12 +1128,11 @@ namespace Jellyfin.Api.Controllers
                 isHeadRequest).ConfigureAwait(false);
         }
 
-        private ImageFormat[] GetOutputFormats(string? format)
+        private ImageFormat[] GetOutputFormats(ImageFormat? format)
         {
-            if (!string.IsNullOrWhiteSpace(format)
-                && Enum.TryParse(format, true, out ImageFormat parsedFormat))
+            if (format.HasValue)
             {
-                return new[] { parsedFormat };
+                return new[] { format.Value };
             }
 
             return GetClientSupportedFormats();
@@ -1157,7 +1156,7 @@ namespace Jellyfin.Api.Controllers
 
             var acceptParam = Request.Query[HeaderNames.Accept];
 
-            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, "webp", false);
+            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, ImageFormat.Webp, false);
 
             if (!supportsWebP)
             {
@@ -1179,7 +1178,7 @@ namespace Jellyfin.Api.Controllers
             formats.Add(ImageFormat.Jpg);
             formats.Add(ImageFormat.Png);
 
-            if (SupportsFormat(supportedFormats, acceptParam, "gif", true))
+            if (SupportsFormat(supportedFormats, acceptParam, ImageFormat.Gif, true))
             {
                 formats.Add(ImageFormat.Gif);
             }
@@ -1187,9 +1186,10 @@ namespace Jellyfin.Api.Controllers
             return formats.ToArray();
         }
 
-        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, string format, bool acceptAll)
+        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, ImageFormat format, bool acceptAll)
         {
-            var mimeType = "image/" + format;
+            var normalized = format.ToString().ToLowerInvariant();
+            var mimeType = "image/" + normalized;
 
             if (requestAcceptTypes.Contains(mimeType))
             {
@@ -1201,7 +1201,7 @@ namespace Jellyfin.Api.Controllers
                 return true;
             }
 
-            return string.Equals(acceptParam, format, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(acceptParam, normalized, StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<ActionResult> GetImageResult(

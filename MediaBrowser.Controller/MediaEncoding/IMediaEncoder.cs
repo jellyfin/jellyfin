@@ -69,7 +69,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
-        Task ExtractVideoImagesOnInterval(string inputFile,
+        Task ExtractVideoImagesOnInterval(
+            string inputFile,
             string container,
             MediaStream videoStream,
             MediaSourceInfo mediaSource,

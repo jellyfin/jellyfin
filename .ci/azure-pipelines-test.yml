@@ -56,7 +56,7 @@ jobs:
         inputs:
           command: "test"
           projects: ${{ parameters.TestProjects }}
-          arguments: '--configuration Release --collect:"XPlat Code Coverage" --settings tests/coverletArgs.runsettings --verbosity minimal "-p:GenerateDocumentationFile=False"'
+          arguments: '--configuration Release --collect:"XPlat Code Coverage" --settings tests/coverletArgs.runsettings --verbosity minimal'
           publishTestResults: true
           testRunTitle: $(Agent.JobName)
           workingDirectory: "$(Build.SourcesDirectory)"
