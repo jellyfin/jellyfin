@@ -183,6 +183,12 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         originalAuthenticationInfo.UserName = authInfo.User.Username;
                         updateToken = true;
                     }
+
+                    authInfo.IsApiKey = true;
+                }
+                else
+                {
+                    authInfo.IsApiKey = false;
                 }
 
                 if (updateToken)

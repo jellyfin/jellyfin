@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Claims;
@@ -45,8 +44,7 @@ namespace Jellyfin.Api.Auth
             {
                 var authorizationInfo = _authService.Authenticate(Request);
                 var role = UserRoles.User;
-                // UserId of Guid.Empty means token is an apikey.
-                if (authorizationInfo.UserId.Equals(Guid.Empty) || authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+                if (authorizationInfo.IsApiKey || authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
                 {
                     role = UserRoles.Administrator;
                 }
@@ -61,6 +59,7 @@ namespace Jellyfin.Api.Auth
                     new Claim(InternalClaimTypes.Client, authorizationInfo.Client),
                     new Claim(InternalClaimTypes.Version, authorizationInfo.Version),
                     new Claim(InternalClaimTypes.Token, authorizationInfo.Token),
+                    new Claim(InternalClaimTypes.IsApiKey, authorizationInfo.IsApiKey.ToString(CultureInfo.InvariantCulture))
                 };
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
