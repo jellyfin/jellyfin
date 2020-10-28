@@ -1380,24 +1380,40 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? GetAudioBitrateParam(BaseEncodingJobOptions request, MediaStream audioStream)
         {
+            if (audioStream == null)
+            {
+                return null;
+            }
+
             if (request.AudioBitRate.HasValue)
             {
                 // Don't encode any higher than this
                 return Math.Min(384000, request.AudioBitRate.Value);
             }
 
-            return null;
+            // Empty bitrate area is not allow on iOS
+            // Default audio bitrate to 128K if it is not being requested
+            // https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options
+            return 128000;
         }
 
         public int? GetAudioBitrateParam(int? audioBitRate, MediaStream audioStream)
         {
+            if (audioStream == null)
+            {
+                return null;
+            }
+
             if (audioBitRate.HasValue)
             {
                 // Don't encode any higher than this
                 return Math.Min(384000, audioBitRate.Value);
             }
 
-            return null;
+            // Empty bitrate area is not allow on iOS
+            // Default audio bitrate to 128K if it is not being requested
+            // https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options
+            return 128000;
         }
 
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions, bool isHls)

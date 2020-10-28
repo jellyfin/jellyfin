@@ -155,7 +155,7 @@ namespace Jellyfin.Api.Helpers
                 return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
             }
 
-            var totalBitrate = state.OutputAudioBitrate ?? 0 + state.OutputVideoBitrate ?? 0;
+            var totalBitrate = (state.OutputAudioBitrate ?? 0) + (state.OutputVideoBitrate ?? 0);
 
             var builder = new StringBuilder();
 
