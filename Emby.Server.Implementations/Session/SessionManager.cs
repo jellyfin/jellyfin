@@ -993,17 +993,9 @@ namespace Emby.Server.Implementations.Session
             return playedToCompletion;
         }
 
-        /// <summary>
-        /// Gets the session.
-        /// </summary>
-        /// <param name="sessionId">The session identifier.</param>
-        /// <param name="throwOnMissing">if set to <c>true</c> [throw on missing].</param>
-        /// <returns>SessionInfo.</returns>
-        /// <exception cref="ResourceNotFoundException">
-        /// No session with an Id equal to <c>sessionId</c> was found
-        /// and <c>throwOnMissing</c> is <c>true</c>.
-        /// </exception>
-        private SessionInfo GetSession(string sessionId, bool throwOnMissing = true)
+        /// <inheritdoc />
+
+        public SessionInfo GetSession(string sessionId, bool throwOnMissing = true)
         {
             var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId, StringComparison.Ordinal));
             if (session == null && throwOnMissing)

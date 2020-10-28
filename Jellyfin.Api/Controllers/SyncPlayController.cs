@@ -73,24 +73,58 @@ namespace Jellyfin.Api.Controllers
         public ActionResult SyncPlayJoinGroup(
             [FromBody, Required] JoinGroupRequestDto requestData)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var joiningSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+
+            // TODO: check if session can control remote session.
+            if (requestData.RemoteSessionId != null)
+            {
+                var remoteSession = _sessionManager.GetSession(requestData.RemoteSessionId);
+                if (!remoteSession.Capabilities.SupportsSyncPlay)
+                {
+                    // Remote session does not support SyncPlay.
+                    return NoContent();
+                }
+                else
+                {
+                    joiningSession = remoteSession;
+                }
+            }
+
             var syncPlayRequest = new JoinGroupRequest(requestData.GroupId);
-            _syncPlayManager.JoinGroup(currentSession, syncPlayRequest, CancellationToken.None);
+            _syncPlayManager.JoinGroup(joiningSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 
         /// <summary>
         /// Leave the joined SyncPlay group.
         /// </summary>
+        /// <param name="requestData">The group to leave.</param>
         /// <response code="204">Group leave successful.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayLeaveGroup()
+        public ActionResult SyncPlayLeaveGroup(
+            [FromBody, Required] LeaveGroupRequestDto requestData)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var leavingSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+
+            // TODO: check if session can control remote session.
+            if (requestData.RemoteSessionId != null)
+            {
+                var remoteSession = _sessionManager.GetSession(requestData.RemoteSessionId);
+                if (!remoteSession.Capabilities.SupportsSyncPlay)
+                {
+                    // Remote session does not support SyncPlay.
+                    return NoContent();
+                }
+                else
+                {
+                    leavingSession = remoteSession;
+                }
+            }
+
             var syncPlayRequest = new LeaveGroupRequest();
-            _syncPlayManager.LeaveGroup(currentSession, syncPlayRequest, CancellationToken.None);
+            _syncPlayManager.LeaveGroup(leavingSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 
