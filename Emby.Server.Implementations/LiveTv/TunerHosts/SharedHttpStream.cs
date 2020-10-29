@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var typeName = GetType().Name;
             Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
                 .ConfigureAwait(false);
 
