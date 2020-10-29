@@ -371,7 +371,7 @@ namespace Jellyfin.Api.Controllers
 
             var baseUrlParam = string.Format(
                 CultureInfo.InvariantCulture,
-                "\"hls{0}\"",
+                "\"hls/{0}\"/",
                 Path.GetFileNameWithoutExtension(outputPath));
 
             return string.Format(
