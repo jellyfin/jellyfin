@@ -113,8 +113,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -322,8 +321,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 

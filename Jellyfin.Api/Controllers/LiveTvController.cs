@@ -154,8 +154,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableFavoriteSorting = false,
             [FromQuery] bool addCurrentProgram = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -274,8 +273,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isLibraryItem,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -606,8 +604,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
@@ -662,8 +659,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(body.Fields)
+            var dtoOptions = new DtoOptions{ Fields = body.Fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
@@ -729,8 +725,7 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = RequestHelpers.GetGuids(genreIds)
             };
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             return _liveTvManager.GetRecommendedPrograms(query, dtoOptions, CancellationToken.None);

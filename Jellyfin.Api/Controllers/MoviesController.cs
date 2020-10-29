@@ -72,8 +72,7 @@ namespace Jellyfin.Api.Controllers
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request);
 
             var categories = new List<RecommendationDto>();

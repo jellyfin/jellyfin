@@ -82,8 +82,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var options = new DtoOptions()
-                .AddItemFields(fields)
+            var options = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
 
@@ -146,8 +145,7 @@ namespace Jellyfin.Api.Controllers
 
             var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId);
 
-            var options = new DtoOptions()
-                .AddItemFields(fields!)
+            var options = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
 
@@ -217,8 +215,7 @@ namespace Jellyfin.Api.Controllers
 
             List<BaseItem> episodes;
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields!)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
 
@@ -345,8 +342,7 @@ namespace Jellyfin.Api.Controllers
                 AdjacentTo = adjacentTo
             });
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
 

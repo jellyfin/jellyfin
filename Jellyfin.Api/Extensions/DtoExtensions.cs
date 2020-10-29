@@ -14,22 +14,6 @@ namespace Jellyfin.Api.Extensions
     public static class DtoExtensions
     {
         /// <summary>
-        /// Add Dto Item fields.
-        /// </summary>
-        /// <remarks>
-        /// Converted from IHasItemFields.
-        /// Legacy order: 1.
-        /// </remarks>
-        /// <param name="dtoOptions">DtoOptions object.</param>
-        /// <param name="fields">Array of item fields.</param>
-        /// <returns>Modified DtoOptions object.</returns>
-        internal static DtoOptions AddItemFields(this DtoOptions dtoOptions, ItemFields[] fields)
-        {
-            dtoOptions.Fields = fields;
-            return dtoOptions;
-        }
-
-        /// <summary>
         /// Add additional fields depending on client.
         /// </summary>
         /// <remarks>

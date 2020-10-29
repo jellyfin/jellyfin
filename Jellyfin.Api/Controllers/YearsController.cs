@@ -83,8 +83,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool recursive = true,
             [FromQuery] bool? enableImages = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions{ Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
