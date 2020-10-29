@@ -460,7 +460,7 @@ namespace Jellyfin.Server.Implementations.Users
                     // the authentication provider might have created it
                     user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user != null)
                     {
                         UpdatePolicy(user.Id, hasNewUserPolicy.GetNewUserPolicy());
 
