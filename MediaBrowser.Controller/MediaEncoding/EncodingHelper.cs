@@ -3084,7 +3084,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            var whichCodec = videoStream.Codec.ToLowerInvariant();
+            var whichCodec = videoStream.Codec?.ToLowerInvariant();
             switch (whichCodec)
             {
                 case "avc":
