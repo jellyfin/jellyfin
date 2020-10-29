@@ -892,7 +892,7 @@ namespace Jellyfin.Api.Controllers
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
-            var dtoOptions = new DtoOptions{ Fields = fields }
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request);
 
             var query = new InternalItemsQuery(user)

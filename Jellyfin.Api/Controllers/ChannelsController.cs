@@ -133,7 +133,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                ChannelIds = new[] {channelId},
+                ChannelIds = new[] { channelId },
                 ParentId = folderId ?? Guid.Empty,
                 OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                 DtoOptions = new DtoOptions { Fields = fields }
@@ -212,7 +212,7 @@ namespace Jellyfin.Api.Controllers
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Select(i => new Guid(i))
                     .ToArray(),
-                DtoOptions = new DtoOptions{ Fields = fields }
+                DtoOptions = new DtoOptions { Fields = fields }
             };
 
             foreach (var filter in filters)

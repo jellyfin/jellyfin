@@ -176,7 +176,7 @@ namespace Jellyfin.Api.Controllers
                 items = items.Take(limit.Value).ToArray();
             }
 
-            var dtoOptions = new DtoOptions{ Fields = fields }
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
