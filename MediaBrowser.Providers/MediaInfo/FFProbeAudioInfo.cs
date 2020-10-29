@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -24,17 +25,20 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IBaseItemManager _baseItemManager;
 
         public FFProbeAudioInfo(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IBaseItemManager baseItemManager)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
+            _baseItemManager = baseItemManager;
         }
 
         public async Task<ItemUpdateType> Probe<T>(
@@ -154,7 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataField.Studios))
             {
-                audio.SetStudios(data.Studios);
+                _baseItemManager.SetStudios(audio, data.Studios);
             }
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist));

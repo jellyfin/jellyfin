@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -47,6 +48,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly SubtitleResolver _subtitleResolver;
+        private readonly IBaseItemManager _baseItemManager;
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
 
@@ -61,7 +63,8 @@ namespace MediaBrowser.Providers.MediaInfo
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IBaseItemManager baseItemManager)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
@@ -73,6 +76,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
+            _baseItemManager = baseItemManager;
             _mediaSourceManager = mediaSourceManager;
 
             _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
@@ -191,7 +195,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 _config,
                 _subtitleManager,
                 _chapterManager,
-                _libraryManager);
+                _libraryManager,
+                _baseItemManager);
 
             return prober.ProbeVideo(item, options, cancellationToken);
         }
@@ -229,7 +234,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
-            var prober = new FFProbeAudioInfo(_mediaSourceManager, _mediaEncoder, _itemRepo, _libraryManager);
+            var prober = new FFProbeAudioInfo(_mediaSourceManager, _mediaEncoder, _itemRepo, _libraryManager, _baseItemManager);
 
             return prober.Probe(item, options, cancellationToken);
         }

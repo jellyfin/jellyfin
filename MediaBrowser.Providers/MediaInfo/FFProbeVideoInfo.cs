@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -43,6 +44,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IBaseItemManager _baseItemManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
 
@@ -57,7 +59,8 @@ namespace MediaBrowser.Providers.MediaInfo
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IBaseItemManager baseItemManager)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
@@ -69,6 +72,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
+            _baseItemManager = baseItemManager;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -392,7 +396,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (video.Studios.Length == 0 || isFullRefresh)
                 {
-                    video.SetStudios(data.Studios);
+                    _baseItemManager.SetStudios(video, data.Studios);
                 }
             }
 

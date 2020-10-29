@@ -2070,11 +2070,6 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual bool EnableRememberingTrackSelections => true;
 
-        public void SetStudios(IEnumerable<string> names)
-        {
-            Studios = names.Distinct().ToArray();
-        }
-
         /// <summary>
         /// Adds a genre to the item.
         /// </summary>

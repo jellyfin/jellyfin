@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -108,6 +109,12 @@ namespace MediaBrowser.Controller.BaseItemManager
                     baseItem.Studios = newArr;
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public void SetStudios(BaseItem baseItem, IEnumerable<string> studioNames)
+        {
+            baseItem.Studios = studioNames.Distinct().ToArray();
         }
     }
 }

@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -25,15 +27,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly TmdbClientManager _tmdbClientManager;
+        private readonly IBaseItemManager _baseItemManager;
 
         public TmdbMovieProvider(
             ILibraryManager libraryManager,
             TmdbClientManager tmdbClientManager,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IBaseItemManager baseItemManager)
         {
             _libraryManager = libraryManager;
             _tmdbClientManager = tmdbClientManager;
             _httpClientFactory = httpClientFactory;
+            _baseItemManager = baseItemManager;
         }
 
         public string Name => TmdbUtils.ProviderName;
@@ -180,7 +185,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.ProductionCompanies != null)
             {
-                movie.SetStudios(movieResult.ProductionCompanies.Select(c => c.Name));
+                _baseItemManager.SetStudios(movie, movieResult.ProductionCompanies.Select(c => c.Name));
             }
 
             var genres = movieResult.Genres;
