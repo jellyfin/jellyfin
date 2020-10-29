@@ -4,6 +4,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Helpers
@@ -130,6 +131,32 @@ namespace Jellyfin.Api.Helpers
 
             return Split(value, ',', true)
                 .Select(i => new Guid(i))
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Gets the item fields.
+        /// </summary>
+        /// <param name="fields">The fields string.</param>
+        /// <returns>IEnumerable{ItemFields}.</returns>
+        internal static ItemFields[] GetItemFields(string? fields)
+        {
+            if (string.IsNullOrEmpty(fields))
+            {
+                return Array.Empty<ItemFields>();
+            }
+
+            return Split(fields, ',', true)
+                .Select(v =>
+                {
+                    if (Enum.TryParse(v, true, out ItemFields value))
+                    {
+                        return (ItemFields?)value;
+                    }
+
+                    return null;
+                }).Where(i => i.HasValue)
+                .Select(i => i!.Value)
                 .ToArray();
         }
     }

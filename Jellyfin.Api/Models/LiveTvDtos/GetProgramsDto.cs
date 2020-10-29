@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using MediaBrowser.Common.Json.Converters;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace Jellyfin.Api.Models.LiveTvDtos
@@ -141,7 +142,9 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Gets or sets the image types to include in the output.
         /// Optional.
         /// </summary>
-        public string? EnableImageTypes { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "EnableImageTypes", Justification = "Imported from ServiceStack")]
+        public ImageType[] EnableImageTypes { get; set; } = Array.Empty<ImageType>();
 
         /// <summary>
         /// Gets or sets include user data.

@@ -106,7 +106,7 @@ namespace Jellyfin.Api.Extensions
             bool? enableImages,
             bool? enableUserData,
             int? imageTypeLimit,
-            string? enableImageTypes)
+            ImageType[] enableImageTypes)
         {
             dtoOptions.EnableImages = enableImages ?? true;
 
@@ -120,11 +120,9 @@ namespace Jellyfin.Api.Extensions
                 dtoOptions.EnableUserData = enableUserData.Value;
             }
 
-            if (!string.IsNullOrWhiteSpace(enableImageTypes))
+            if (enableImageTypes.Length != 0)
             {
-                dtoOptions.ImageTypes = enableImageTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true))
-                    .ToArray();
+                dtoOptions.ImageTypes = enableImageTypes;
             }
 
             return dtoOptions;
