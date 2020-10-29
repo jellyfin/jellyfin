@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
@@ -18,8 +19,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="logger">The logger.</param>
         /// <param name="config">the configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public SeasonNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
+        /// <param name="baseItemManager">The base item manager.</param>
+        public SeasonNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IBaseItemManager baseItemManager)
+            : base(logger, config, providerManager, baseItemManager)
         {
         }
 

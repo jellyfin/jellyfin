@@ -1,4 +1,5 @@
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
@@ -18,12 +19,14 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="fileSystem">The file system.</param>
         /// <param name="config">the configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
+        /// <param name="baseItemManager">The base item manager.</param>
         public MovieNfoProvider(
             ILogger<MovieNfoProvider> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
-            IProviderManager providerManager)
-            : base(logger, fileSystem, config, providerManager)
+            IProviderManager providerManager,
+            IBaseItemManager baseItemManager)
+            : base(logger, fileSystem, config, providerManager, baseItemManager)
         {
         }
     }

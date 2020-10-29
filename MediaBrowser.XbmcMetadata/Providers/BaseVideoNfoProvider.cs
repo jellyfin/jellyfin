@@ -3,6 +3,7 @@
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
@@ -18,17 +19,20 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly ILogger<BaseVideoNfoProvider<T>> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
+        private readonly IBaseItemManager _baseItemManager;
 
         public BaseVideoNfoProvider(
             ILogger<BaseVideoNfoProvider<T>> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            IBaseItemManager baseItemManager)
             : base(fileSystem)
         {
             _logger = logger;
             _config = config;
             _providerManager = providerManager;
+            _baseItemManager = baseItemManager;
         }
 
         /// <inheritdoc />
@@ -38,7 +42,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 Item = result.Item
             };
-            new MovieNfoParser(_logger, _config, _providerManager).Fetch(tmpItem, path, cancellationToken);
+            new MovieNfoParser(_logger, _config, _providerManager, _baseItemManager).Fetch(tmpItem, path, cancellationToken);
 
             result.Item = (T)tmpItem.Item;
             result.People = tmpItem.People;

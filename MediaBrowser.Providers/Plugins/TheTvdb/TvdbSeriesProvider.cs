@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -32,8 +33,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly TvdbClientManager _tvdbClientManager;
+        private readonly IBaseItemManager _baseItemManager;
 
-        public TvdbSeriesProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbSeriesProvider> logger, ILibraryManager libraryManager, ILocalizationManager localizationManager, TvdbClientManager tvdbClientManager)
+        public TvdbSeriesProvider(IHttpClientFactory httpClientFactory, ILogger<TvdbSeriesProvider> logger, ILibraryManager libraryManager, ILocalizationManager localizationManager, TvdbClientManager tvdbClientManager, IBaseItemManager baseItemManager)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
@@ -41,6 +43,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             _localizationManager = localizationManager;
             Current = this;
             _tvdbClientManager = tvdbClientManager;
+            _baseItemManager = baseItemManager;
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
@@ -334,7 +337,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             if (!string.IsNullOrEmpty(tvdbSeries.Network))
             {
-                series.AddStudio(tvdbSeries.Network);
+                _baseItemManager.AddStudio(series, tvdbSeries.Network);
             }
 
             if (result.Item.Status.HasValue && result.Item.Status.Value == SeriesStatus.Ended)

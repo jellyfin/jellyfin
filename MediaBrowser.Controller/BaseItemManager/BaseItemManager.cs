@@ -82,5 +82,32 @@ namespace MediaBrowser.Controller.BaseItemManager
 
             return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
+
+        /// <inheritdoc />
+        public void AddStudio(BaseItem baseItem, string studioName)
+        {
+            if (string.IsNullOrEmpty(studioName))
+            {
+                throw new ArgumentNullException(nameof(studioName));
+            }
+
+            var current = baseItem.Studios;
+
+            if (!current.Contains(studioName, StringComparer.OrdinalIgnoreCase))
+            {
+                int curLen = current.Length;
+                if (curLen == 0)
+                {
+                    baseItem.Studios = new[] { studioName };
+                }
+                else
+                {
+                    var newArr = new string[curLen + 1];
+                    current.CopyTo(newArr, 0);
+                    newArr[curLen] = studioName;
+                    baseItem.Studios = newArr;
+                }
+            }
+        }
     }
 }

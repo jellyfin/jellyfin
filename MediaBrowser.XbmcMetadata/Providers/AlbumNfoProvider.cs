@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
@@ -17,6 +18,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly ILogger<AlbumNfoProvider> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
+        private readonly IBaseItemManager _baseItemManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlbumNfoProvider"/> class.
@@ -25,22 +27,25 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="fileSystem">The file system.</param>
         /// <param name="config">the configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
+        /// <param name="baseItemManager">The base item manager.</param>
         public AlbumNfoProvider(
             ILogger<AlbumNfoProvider> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            IBaseItemManager baseItemManager)
             : base(fileSystem)
         {
             _logger = logger;
             _config = config;
             _providerManager = providerManager;
+            _baseItemManager = baseItemManager;
         }
 
         /// <inheritdoc />
         protected override void Fetch(MetadataResult<MusicAlbum> result, string path, CancellationToken cancellationToken)
         {
-            new BaseNfoParser<MusicAlbum>(_logger, _config, _providerManager).Fetch(result, path, cancellationToken);
+            new BaseNfoParser<MusicAlbum>(_logger, _config, _providerManager, _baseItemManager).Fetch(result, path, cancellationToken);
         }
 
         /// <inheritdoc />

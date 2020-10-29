@@ -25,5 +25,12 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// <param name="name">The image fetcher name.</param>
         /// <returns><c>true</c> if image fetcher is enabled, else false.</returns>
         bool IsImageFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name);
+
+        /// <summary>
+        /// Adds a studio to the item.
+        /// </summary>
+        /// <param name="baseItem">The base item.</param>
+        /// <param name="studioName">The studio name to add.</param>
+        void AddStudio(BaseItem baseItem, string studioName);
     }
 }

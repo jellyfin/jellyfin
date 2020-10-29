@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Xml;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -17,8 +18,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger{PlaylistXmlParser}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-        public PlaylistXmlParser(ILogger<PlaylistXmlParser> logger, IProviderManager providerManager)
-            : base(logger, providerManager)
+        /// <param name="baseItemManager">Instance of the <see cref="IBaseItemManager"/> interface.</param>
+        public PlaylistXmlParser(ILogger<PlaylistXmlParser> logger, IProviderManager providerManager, IBaseItemManager baseItemManager)
+            : base(logger, providerManager, baseItemManager)
         {
         }
 

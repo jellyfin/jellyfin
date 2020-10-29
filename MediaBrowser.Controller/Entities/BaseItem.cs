@@ -2070,37 +2070,6 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual bool EnableRememberingTrackSelections => true;
 
-        /// <summary>
-        /// Adds a studio to the item.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public void AddStudio(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            var current = Studios;
-
-            if (!current.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                int curLen = current.Length;
-                if (curLen == 0)
-                {
-                    Studios = new[] { name };
-                }
-                else
-                {
-                    var newArr = new string[curLen + 1];
-                    current.CopyTo(newArr, 0);
-                    newArr[curLen] = name;
-                    Studios = newArr;
-                }
-            }
-        }
-
         public void SetStudios(IEnumerable<string> names)
         {
             Studios = names.Distinct().ToArray();

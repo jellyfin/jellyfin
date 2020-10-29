@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -21,6 +22,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         where T : BaseItem
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly IBaseItemManager _baseItemManager;
 
         private Dictionary<string, string>? _validProviderIds;
 
@@ -29,10 +31,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger{BaseItemXmlParser}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-        public BaseItemXmlParser(ILogger<BaseItemXmlParser<T>> logger, IProviderManager providerManager)
+        /// <param name="baseItemManager">Instance of the <see cref="IBaseItemManager"/> interface.</param>
+        public BaseItemXmlParser(ILogger<BaseItemXmlParser<T>> logger, IProviderManager providerManager, IBaseItemManager baseItemManager)
         {
             Logger = logger;
             ProviderManager = providerManager;
+            _baseItemManager = baseItemManager;
         }
 
         /// <summary>
@@ -374,7 +378,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             continue;
                         }
 
-                        item.AddStudio(name);
+                        _baseItemManager.AddStudio(item, name);
                     }
 
                     break;
@@ -1062,7 +1066,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                             if (!string.IsNullOrWhiteSpace(studio))
                             {
-                                item.AddStudio(studio);
+                                _baseItemManager.AddStudio(item, studio);
                             }
 
                             break;
