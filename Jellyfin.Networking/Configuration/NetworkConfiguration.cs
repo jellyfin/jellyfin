@@ -10,8 +10,6 @@ namespace Jellyfin.Networking.Configuration
     /// </summary>
     public class NetworkConfiguration
     {
-        private string _baseUrl = string.Empty;
-
         /// <summary>
         /// Gets the default http port.
         /// </summary>
@@ -22,10 +20,12 @@ namespace Jellyfin.Networking.Configuration
         /// </summary>
         public const int DefaultHttpsPort = 8920;
 
+        private string _baseUrl = string.Empty;
+
         /// <summary>
         /// Gets or sets a value indicating whether the server should force connections over HTTPS.
         /// </summary>
-        public bool RequireHttps { get; set; } = false;
+        public bool RequireHttps { get; set; }
 
         /// <summary>
         /// Gets or sets a value used to specify the URL prefix that your Jellyfin instance can be accessed at.
@@ -50,7 +50,7 @@ namespace Jellyfin.Networking.Configuration
                 }
 
                 // Normalize the end of the string
-                if (value[value.Length - 1] == '/')
+                if (value[^1] == '/')
                 {
                     // If baseUrl was configured with a trailing slash, remove it for consistency
                     value = value.Remove(value.Length - 1);
@@ -85,7 +85,7 @@ namespace Jellyfin.Networking.Configuration
         /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
         /// provided for <see cref="ServerConfiguration.CertificatePath"/> and <see cref="ServerConfiguration.CertificatePassword"/>.
         /// </remarks>
-        public bool EnableHttps { get; set; } = false;
+        public bool EnableHttps { get; set; }
 
         /// <summary>
         /// Gets or sets the public mapped port.
@@ -96,7 +96,7 @@ namespace Jellyfin.Networking.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding..
         /// </summary>
-        public bool UPnPCreateHttpPortMap { get; set; } = false;
+        public bool UPnPCreateHttpPortMap { get; set; }
 
         /// <summary>
         /// Gets or sets the UDPPortRange
@@ -105,12 +105,12 @@ namespace Jellyfin.Networking.Configuration
         public string UDPPortRange { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether IPV6 capability is enabled.
+        /// Gets or sets a value indicating whether gets or sets IPV6 capability..
         /// </summary>
-        public bool EnableIPV6 { get; set; } = false;
+        public bool EnableIPV6 { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether IPV6 capability is enabled.
+        /// Gets or sets a value indicating whether gets or sets IPV4 capability..
         /// </summary>
         public bool EnableIPV4 { get; set; } = true;
 
@@ -118,7 +118,7 @@ namespace Jellyfin.Networking.Configuration
         /// Gets or sets a value indicating whether detailed ssdp logs are sent to the console/log.
         /// "Emby.Dlna": "Debug" must be set in logging.default.json for this property to work..
         /// </summary>
-        public bool EnableSSDPTracing { get; set; } = false;
+        public bool EnableSSDPTracing { get; set; }
 
         /// <summary>
         /// Gets or sets the SSDPTracingFilter
@@ -162,7 +162,7 @@ namespace Jellyfin.Networking.Configuration
         /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
         /// Depending on the address range implemented ULA ranges might not be used..
         /// </summary>
-        public bool TrustAllIP6Interfaces { get; set; } = false;
+        public bool TrustAllIP6Interfaces { get; set; }
 
         /// <summary>
         /// Gets or sets the ports that HDHomerun uses..
@@ -178,7 +178,7 @@ namespace Jellyfin.Networking.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether Autodiscovery tracing is enabled..
         /// </summary>
-        public bool AutoDiscoveryTracing { get; set; } = false;
+        public bool AutoDiscoveryTracing { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether Autodiscovery is enabled..
@@ -193,12 +193,12 @@ namespace Jellyfin.Networking.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist..
         /// </summary>
-        public bool IsRemoteIPFilterBlacklist { get; set; } = false;
+        public bool IsRemoteIPFilterBlacklist { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable automatic port forwarding..
         /// </summary>
-        public bool EnableUPnP { get; set; } = false;
+        public bool EnableUPnP { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether access outside of the LAN is permitted..
