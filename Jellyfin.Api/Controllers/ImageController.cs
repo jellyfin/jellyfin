@@ -109,7 +109,7 @@ namespace Jellyfin.Api.Controllers
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage != null)
             {
-                _userManager.ClearProfileImage(user);
+                await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
             user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
@@ -138,7 +138,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult DeleteUserImage(
+        public async Task<ActionResult> DeleteUserImage(
             [FromRoute, Required] Guid userId,
             [FromRoute, Required] ImageType imageType,
             [FromRoute] int? index = null)
@@ -158,7 +158,7 @@ namespace Jellyfin.Api.Controllers
                 _logger.LogError(e, "Error deleting user profile image:");
             }
 
-            _userManager.ClearProfileImage(user);
+            await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             return NoContent();
         }
 
