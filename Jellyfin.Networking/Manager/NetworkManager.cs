@@ -1,3 +1,5 @@
+#pragma warning disable CA1021 // Avoid out parameters
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -103,7 +105,7 @@ namespace Jellyfin.Networking.Manager
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
 
-            _interfaceAddresses = new NetCollection(unique: false);
+            _interfaceAddresses = new NetCollection();
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new Dictionary<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
@@ -198,7 +200,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsExcluded(IPAddress ip)
         {
-            return _excludedSubnets.Contains(ip);
+            return _excludedSubnets.ContainsAddress(ip);
         }
 
         /// <inheritdoc/>
@@ -226,7 +228,7 @@ namespace Jellyfin.Networking.Manager
                     {
                         if (bracketed)
                         {
-                            AddToCollection(col, v.Substring(1, v.Length - 2));
+                            AddToCollection(col, v[1..^1]);
                         }
                     }
                     else if (v.StartsWith('!'))
@@ -328,6 +330,11 @@ namespace Jellyfin.Networking.Manager
         public string GetBindInterface(IPObject source, out int? port)
         {
             port = null;
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             // Do we have a source?
             bool haveSource = !source.Address.Equals(IPAddress.None);
             bool isExternal = false;
@@ -469,7 +476,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.Contains(address) && !_excludedSubnets.Contains(address);
+            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
         }
 
         /// <inheritdoc/>
@@ -494,7 +501,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsExcludedInterface(IPAddress address)
         {
-            return _bindExclusions.Contains(address);
+            return _bindExclusions.ContainsAddress(address);
         }
 
         /// <inheritdoc/>
@@ -502,7 +509,7 @@ namespace Jellyfin.Networking.Manager
         {
             if (filter == null)
             {
-                return NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
+                return _lanSubnets.Exclude(_excludedSubnets).AsNetworks();
             }
 
             return _lanSubnets.Exclude(filter);
@@ -511,7 +518,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsValidInterfaceAddress(IPAddress address)
         {
-            return _interfaceAddresses.Contains(address);
+            return _interfaceAddresses.ContainsAddress(address);
         }
 
         /// <inheritdoc/>
@@ -610,12 +617,32 @@ namespace Jellyfin.Networking.Manager
             }
         }
 
-        private void ConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs evt)
+        /// <summary>
+        /// Trys to identify the string and return an object of that class.
+        /// </summary>
+        /// <param name="addr">String to parse.</param>
+        /// <param name="result">IPObject to return.</param>
+        /// <returns>True if the value parsed successfully.</returns>
+        private static bool TryParse(string addr, out IPObject result)
         {
-            if (evt.Key.Equals("network", StringComparison.Ordinal))
+            if (!string.IsNullOrEmpty(addr))
             {
-                UpdateSettings(evt.NewConfiguration);
+                // Is it an IP address
+                if (IPNetAddress.TryParse(addr, out IPNetAddress nw))
+                {
+                    result = nw;
+                    return true;
+                }
+
+                if (IPHost.TryParse(addr, out IPHost h))
+                {
+                    result = h;
+                    return true;
+                }
             }
+
+            result = IPNetAddress.None;
+            return false;
         }
 
         /// <summary>
@@ -624,7 +651,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="address">Address to convert.</param>
         /// <returns>URI save conversion of the address.</returns>
-        private string FormatIP6String(IPAddress address)
+        private static string FormatIP6String(IPAddress address)
         {
             var str = address.ToString();
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -640,6 +667,14 @@ namespace Jellyfin.Networking.Manager
             }
 
             return str;
+        }
+
+        private void ConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs evt)
+        {
+            if (evt.Key.Equals("network", StringComparison.Ordinal))
+            {
+                UpdateSettings(evt.NewConfiguration);
+            }
         }
 
         /// <summary>
@@ -700,7 +735,7 @@ namespace Jellyfin.Networking.Manager
                     }
                 }
             }
-            else if (NetCollection.TryParse(token, out IPObject obj))
+            else if (TryParse(token, out IPObject obj))
             {
                 if (!IsIP6Enabled)
                 {
@@ -895,7 +930,7 @@ namespace Jellyfin.Networking.Manager
                 // Create lists from user settings.
 
                 _lanSubnets = CreateIPCollection(subnets);
-                _excludedSubnets = NetCollection.AsNetworks(CreateIPCollection(subnets, true));
+                _excludedSubnets = CreateIPCollection(subnets, true).AsNetworks();
 
                 // If no LAN addresses are specified - all private subnets are deemed to be the LAN
                 _usingPrivateAddresses = _lanSubnets.Count == 0;
@@ -945,7 +980,7 @@ namespace Jellyfin.Networking.Manager
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
                 _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets);
-                _logger.LogInformation("Using LAN addresses: {0}", NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets)));
+                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets).AsNetworks());
             }
         }
 
@@ -985,7 +1020,7 @@ namespace Jellyfin.Networking.Manager
                             {
                                 if (IsIP4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
-                                    IPNetAddress nw = new IPNetAddress(info.Address, info.IPv4Mask)
+                                    IPNetAddress nw = new IPNetAddress(info.Address, IPObject.MaskToCidr(info.IPv4Mask))
                                     {
                                         // Keep the number of gateways on this interface, along with its index.
                                         Tag = ipProperties.GetIPv4Properties().Index
