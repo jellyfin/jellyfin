@@ -297,7 +297,7 @@ namespace Emby.Dlna.Main
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
                     Address = address.Address,
-                    SubnetMask = address.Mask,
+                    PrefixLength = address.PrefixLength,
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",
