@@ -272,7 +272,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] int limit = 20,
             [FromQuery] bool groupItems = true)
