@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -24,6 +25,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
+        private readonly IBaseItemManager _baseItemManager;
 
         public OmdbEpisodeProvider(
             IJsonSerializer jsonSerializer,
@@ -31,14 +33,16 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager,
+            IBaseItemManager baseItemManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+            _baseItemManager = baseItemManager;
             _appHost = appHost;
-            _itemProvider = new OmdbItemProvider(jsonSerializer, _appHost, httpClientFactory, libraryManager, fileSystem, configurationManager);
+            _itemProvider = new OmdbItemProvider(jsonSerializer, _appHost, httpClientFactory, libraryManager, fileSystem, configurationManager, baseItemManager);
         }
 
         // After TheTvDb
@@ -69,7 +73,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 if (info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
                 {
-                    result.HasMetadata = await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _appHost, _configurationManager)
+                    result.HasMetadata = await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _appHost, _configurationManager, _baseItemManager)
                         .FetchEpisodeData(result, info.IndexNumber.Value, info.ParentIndexNumber.Value, info.GetProviderId(MetadataProvider.Imdb), seriesImdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 }
             }

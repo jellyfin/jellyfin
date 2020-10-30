@@ -116,5 +116,31 @@ namespace MediaBrowser.Controller.BaseItemManager
         {
             baseItem.Studios = studioNames.Distinct().ToArray();
         }
+
+        /// <inheritdoc />
+        public void AddGenre(BaseItem baseItem, string genreName)
+        {
+            if (string.IsNullOrEmpty(genreName))
+            {
+                throw new ArgumentNullException(nameof(genreName));
+            }
+
+            var current = baseItem.Genres;
+            if (!current.Contains(genreName, StringComparer.OrdinalIgnoreCase))
+            {
+                int curLen = current.Length;
+                if (curLen == 0)
+                {
+                    baseItem.Genres = new[] { genreName };
+                }
+                else
+                {
+                    var newArr = new string[curLen + 1];
+                    current.CopyTo(newArr, 0);
+                    newArr[curLen] = genreName;
+                    baseItem.Genres = newArr;
+                }
+            }
+        }
     }
 }

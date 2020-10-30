@@ -20,6 +20,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -65,6 +66,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
+        private readonly IBaseItemManager _baseItemManager;
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
@@ -89,7 +91,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
-            IMediaEncoder mediaEncoder)
+            IMediaEncoder mediaEncoder,
+            IBaseItemManager baseItemManager)
         {
             Current = this;
 
@@ -102,6 +105,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
+            _baseItemManager = baseItemManager;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
@@ -1815,18 +1819,18 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (timer.IsSports)
                 {
-                    program.AddGenre("Sports");
+                    _baseItemManager.AddGenre(program, "Sports");
                 }
 
                 if (timer.IsKids)
                 {
-                    program.AddGenre("Kids");
-                    program.AddGenre("Children");
+                    _baseItemManager.AddGenre(program, "Kids");
+                    _baseItemManager.AddGenre(program, "Children");
                 }
 
                 if (timer.IsNews)
                 {
-                    program.AddGenre("News");
+                    _baseItemManager.AddGenre(program, "News");
                 }
 
                 if (timer.IsProgramSeries)

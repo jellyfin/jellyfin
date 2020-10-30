@@ -681,7 +681,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                             foreach (var p in parts)
                             {
-                                item.AddGenre(p);
+                                _baseItemManager.AddGenre(item, p);
                             }
                         }
 

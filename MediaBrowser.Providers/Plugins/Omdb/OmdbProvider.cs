@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -28,13 +29,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IApplicationHost _appHost;
+        private readonly IBaseItemManager _baseItemManager;
 
-        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager, IBaseItemManager baseItemManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+            _baseItemManager = baseItemManager;
             _appHost = appHost;
         }
 
@@ -395,7 +398,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     .Select(i => i.Trim())
                     .Where(i => !string.IsNullOrWhiteSpace(i)))
                 {
-                    item.AddGenre(genre);
+                    _baseItemManager.AddGenre(item, genre);
                 }
             }
 

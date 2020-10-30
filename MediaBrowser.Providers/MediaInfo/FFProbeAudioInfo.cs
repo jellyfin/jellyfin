@@ -152,7 +152,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var genre in data.Genres)
                 {
-                    audio.AddGenre(genre);
+                    _baseItemManager.AddGenre(audio, genre);
                 }
             }
 

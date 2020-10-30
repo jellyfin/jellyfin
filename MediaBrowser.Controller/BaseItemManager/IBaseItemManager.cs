@@ -40,5 +40,12 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// <param name="baseItem">The base item.</param>
         /// <param name="studioNames">The enumerable of studio names.</param>
         void SetStudios(BaseItem baseItem, IEnumerable<string> studioNames);
+
+        /// <summary>
+        /// Adds a genre to the item.
+        /// </summary>
+        /// <param name="baseItem">The base item.</param>
+        /// <param name="genreName">The genre name to add.</param>
+        void AddGenre(BaseItem baseItem, string genreName);
     }
 }

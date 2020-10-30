@@ -192,7 +192,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             foreach (var genre in genres.Select(g => g.Name))
             {
-                movie.AddGenre(genre);
+                _baseItemManager.AddGenre(movie, genre);
             }
 
             if (movieResult.Keywords?.Keywords != null)

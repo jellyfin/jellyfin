@@ -387,7 +387,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     foreach (var genre in data.Genres)
                     {
-                        video.AddGenre(genre);
+                        _baseItemManager.AddGenre(video, genre);
                     }
                 }
             }

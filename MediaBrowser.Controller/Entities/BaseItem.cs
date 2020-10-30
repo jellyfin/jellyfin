@@ -2071,27 +2071,6 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool EnableRememberingTrackSelections => true;
 
         /// <summary>
-        /// Adds a genre to the item.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public void AddGenre(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            var genres = Genres;
-            if (!genres.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                var list = genres.ToList();
-                list.Add(name);
-                Genres = list.ToArray();
-            }
-        }
-
-        /// <summary>
         /// Marks the played.
         /// </summary>
         /// <param name="user">The user.</param>

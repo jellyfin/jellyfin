@@ -895,7 +895,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                             if (!string.IsNullOrWhiteSpace(genre))
                             {
-                                item.AddGenre(genre);
+                                _baseItemManager.AddGenre(item, genre);
                             }
 
                             break;

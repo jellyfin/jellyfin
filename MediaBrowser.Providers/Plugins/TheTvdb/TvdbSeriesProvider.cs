@@ -332,7 +332,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             foreach (var genre in tvdbSeries.Genre)
             {
-                series.AddGenre(genre);
+                _baseItemManager.AddGenre(series, genre);
             }
 
             if (!string.IsNullOrEmpty(tvdbSeries.Network))
