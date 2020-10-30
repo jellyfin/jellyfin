@@ -4,7 +4,9 @@ using System.Linq;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.BaseItemManager
 {
@@ -12,14 +14,23 @@ namespace MediaBrowser.Controller.BaseItemManager
     public class BaseItemManager : IBaseItemManager
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IProviderManager _providerManager;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
         /// </summary>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public BaseItemManager(IServerConfigurationManager serverConfigurationManager)
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        public BaseItemManager(
+            IServerConfigurationManager serverConfigurationManager,
+            IProviderManager providerManager,
+            IFileSystem fileSystem)
         {
             _serverConfigurationManager = serverConfigurationManager;
+            _providerManager = providerManager;
+            _fileSystem = fileSystem;
         }
 
         /// <inheritdoc />
@@ -141,6 +152,12 @@ namespace MediaBrowser.Controller.BaseItemManager
                     baseItem.Genres = newArr;
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public void ChangedExternally(Guid baseItemId)
+        {
+            _providerManager.QueueRefresh(baseItemId, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
         }
     }
 }

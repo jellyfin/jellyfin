@@ -5,8 +5,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -21,6 +23,7 @@ namespace Emby.Server.Implementations.IO
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IBaseItemManager _baseItemManager;
 
         /// <summary>
         /// The file system watchers.
@@ -100,12 +103,14 @@ namespace Emby.Server.Implementations.IO
             ILogger<LibraryMonitor> logger,
             ILibraryManager libraryManager,
             IServerConfigurationManager configurationManager,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            IBaseItemManager baseItemManager)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
+            _baseItemManager = baseItemManager;
         }
 
         private bool IsLibraryMonitorEnabled(BaseItem item)
@@ -442,7 +447,7 @@ namespace Emby.Server.Implementations.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _configurationManager, _libraryManager, _logger);
+                var newRefresher = new FileRefresher(path, _configurationManager, _libraryManager, _logger, _baseItemManager);
                 newRefresher.Completed += NewRefresher_Completed;
                 _activeRefreshers.Add(newRefresher);
             }

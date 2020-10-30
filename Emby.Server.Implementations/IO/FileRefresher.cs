@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -17,13 +18,14 @@ namespace Emby.Server.Implementations.IO
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly IBaseItemManager _baseItemManager;
 
         private readonly List<string> _affectedPaths = new List<string>();
         private readonly object _timerLock = new object();
         private Timer _timer;
         private bool _disposed;
 
-        public FileRefresher(string path, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger logger)
+        public FileRefresher(string path, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger logger, IBaseItemManager baseItemManager)
         {
             logger.LogDebug("New file refresher created for {0}", path);
             Path = path;
@@ -31,6 +33,7 @@ namespace Emby.Server.Implementations.IO
             _configurationManager = configurationManager;
             _libraryManager = libraryManager;
             _logger = logger;
+            _baseItemManager = baseItemManager;
             AddPath(path);
         }
 
@@ -153,7 +156,7 @@ namespace Emby.Server.Implementations.IO
 
                 try
                 {
-                    item.ChangedExternally();
+                    _baseItemManager.ChangedExternally(item.Id);
                 }
                 catch (IOException ex)
                 {

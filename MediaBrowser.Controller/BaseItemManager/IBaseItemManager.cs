@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 
@@ -47,5 +48,11 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// <param name="baseItem">The base item.</param>
         /// <param name="genreName">The genre name to add.</param>
         void AddGenre(BaseItem baseItem, string genreName);
+
+        /// <summary>
+        /// Do whatever refreshing is necessary when the filesystem pertaining to this item has changed.
+        /// </summary>
+        /// <param name="baseItemId">The base item id.</param>
+        void ChangedExternally(Guid baseItemId);
     }
 }

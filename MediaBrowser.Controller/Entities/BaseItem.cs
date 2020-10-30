@@ -2137,14 +2137,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Do whatever refreshing is necessary when the filesystem pertaining to this item has changed.
-        /// </summary>
-        public virtual void ChangedExternally()
-        {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(new DirectoryService(FileSystem)), RefreshPriority.High);
-        }
-
-        /// <summary>
         /// Gets an image.
         /// </summary>
         /// <param name="type">The type.</param>
