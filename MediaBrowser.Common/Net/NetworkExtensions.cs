@@ -41,28 +41,6 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Converts this object to a string.
-        /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
-        /// <returns>Returns a string representation of this object.</returns>
-        public static string Readable(this NetCollection source)
-        {
-            var sb = new StringBuilder();
-            string output = "[";
-            if (source.Count > 0)
-            {
-                foreach (var i in source)
-                {
-                    output += $"{i},";
-                }
-
-                output = output[0..^1];
-            }
-
-            return $"{output}]";
-        }
-
-        /// <summary>
         /// Returns true if the collection contains an item with the ip address,
         /// or the ip address falls within any of the collection's network ranges.
         /// </summary>
