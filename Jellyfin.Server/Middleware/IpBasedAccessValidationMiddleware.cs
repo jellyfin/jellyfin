@@ -5,7 +5,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
-using NetworkCollection;
 
 namespace Jellyfin.Server.Middleware
 {
@@ -47,7 +46,7 @@ namespace Jellyfin.Server.Middleware
             {
                 // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
                 // If left blank, all remote addresses will be allowed.
-                NetCollection remoteAddressFilter = networkManager.RemoteAddressFilter;
+                var remoteAddressFilter = networkManager.RemoteAddressFilter;
 
                 if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIp))
                 {

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -26,7 +27,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using NetworkCollection;
 using Rssdp;
 using Rssdp.Infrastructure;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
@@ -261,7 +261,7 @@ namespace Emby.Dlna.Main
         {
             var udn = CreateUuid(_appHost.SystemId);
 
-            var bindAddresses = new NetCollection(
+            var bindAddresses = NetworkManager.CreateCollection(
                 _networkManager.GetInternalBindAddresses()
                 .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
 

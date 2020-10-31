@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +18,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.Udp;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -51,6 +52,25 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             EnableStreamSharing = true;
         }
 
+        /// <summary>
+        /// Returns an unused UDP port number in the range specified.
+        /// </summary>
+        /// <param name="range">Upper and Lower boundary of ports to select.</param>
+        /// <returns>System.Int32.</returns>
+        private static int GetUdpPortFromRange((int Min, int Max) range)
+        {
+            var properties = IPGlobalProperties.GetIPGlobalProperties();
+
+            // Get active udp listeners.
+            var udpListenerPorts = properties.GetActiveUdpListeners()
+                        .Where(n => n.Port >= range.Min && n.Port <= range.Max)
+                        .Select(n => n.Port);
+
+            return Enumerable.Range(range.Min, range.Max)
+                .Where(i => !udpListenerPorts.Contains(i))
+                .FirstOrDefault();
+        }
+
         public override async Task Open(CancellationToken openCancellationToken)
         {
             LiveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
@@ -58,7 +78,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            var localPort = UdpHelper.GetRandomUnusedUdpPort();
+            // Temporary Code to reduce PR size.
+            var localPort = GetUdpPortFromRange((49152, 65535));
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 

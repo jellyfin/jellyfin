@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using NetworkCollection;
 
 namespace Rssdp.Infrastructure
 {

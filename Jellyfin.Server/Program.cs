@@ -14,6 +14,7 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -23,7 +24,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using NetworkCollection;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
@@ -271,7 +271,7 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    NetCollection addresses = appHost.NetManager.GetAllBindInterfaces();
+                    var addresses = appHost.NetManager.GetAllBindInterfaces();
 
                     bool flagged = false;
                     foreach (IPObject netAdd in addresses)
