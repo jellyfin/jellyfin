@@ -158,12 +158,15 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="source">Items to assign the collection, or null.</param>
         /// <returns>The collection created.</returns>
-        public static NetCollection CreateCollection(IEnumerable<IPObject>? source)
+        public static NetCollection CreateCollection(IEnumerable<IPObject>? source = null)
         {
             var result = new NetCollection();
             if (source != null)
             {
-                return result.AddRange(source);
+                foreach (var item in source)
+                {
+                    result.AddItem(item);
+                }
             }
 
             return result;
@@ -433,7 +436,7 @@ namespace Jellyfin.Networking.Manager
                 if (_bindExclusions.Count > 0)
                 {
                     // Return all the internal interfaces except the ones excluded.
-                    return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.Contains(p)));
+                    return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.ContainsAddress(p)));
                 }
 
                 // No bind address, so return all internal interfaces.
@@ -463,7 +466,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.Contains(address) && !_excludedSubnets.Contains(address);
+            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
         }
 
         /// <inheritdoc/>
@@ -471,7 +474,7 @@ namespace Jellyfin.Networking.Manager
         {
             if (IPHost.TryParse(address, out IPHost ep))
             {
-                return _lanSubnets.Contains(ep) && !_excludedSubnets.Contains(ep);
+                return _lanSubnets.ContainsAddress(ep) && !_excludedSubnets.ContainsAddress(ep);
             }
 
             return false;
@@ -559,7 +562,7 @@ namespace Jellyfin.Networking.Manager
                         ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) ||
                          (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
-                        result.Add(iface);
+                        result.AddItem(iface);
                     }
                 }
 
@@ -603,7 +606,7 @@ namespace Jellyfin.Networking.Manager
                     var address = IPNetAddress.Parse(parts[0]);
                     var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
                     address.Tag = index;
-                    _interfaceAddresses.Add(address);
+                    _interfaceAddresses.AddItem(address);
                     _interfaceNames.Add(parts[2], Math.Abs(index));
                 }
             }
@@ -747,7 +750,7 @@ namespace Jellyfin.Networking.Manager
                         ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) ||
                          (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
-                        col.Add(iface);
+                        col.AddItem(iface);
                     }
                 }
             }
@@ -759,7 +762,7 @@ namespace Jellyfin.Networking.Manager
                     obj.Remove(AddressFamily.InterNetworkV6);
                     if (!obj.IsIP6())
                     {
-                        col.Add(obj);
+                        col.AddItem(obj);
                     }
                 }
                 else if (!IsIP4Enabled)
@@ -768,12 +771,12 @@ namespace Jellyfin.Networking.Manager
                     obj.Remove(AddressFamily.InterNetwork);
                     if (obj.IsIP6())
                     {
-                        col.Add(obj);
+                        col.AddItem(obj);
                     }
                 }
                 else
                 {
-                    col.Add(obj);
+                    col.AddItem(obj);
                 }
             }
             else
@@ -956,7 +959,7 @@ namespace Jellyfin.Networking.Manager
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
                     // Internal interfaces must be private and not excluded.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.Contains(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)));
 
                     // Subnets are the same as the calculated internal interface.
                     _lanSubnets = new NetCollection();
@@ -964,17 +967,17 @@ namespace Jellyfin.Networking.Manager
                     // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IsIP6Enabled)
                     {
-                        _lanSubnets.Add(IPNetAddress.IP6Loopback);
-                        _lanSubnets.Add(IPNetAddress.Parse("fc00::/7")); // ULA
-                        _lanSubnets.Add(IPNetAddress.Parse("fe80::/10")); // Site local
+                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback);
+                        _lanSubnets.AddItem(IPNetAddress.Parse("fc00::/7")); // ULA
+                        _lanSubnets.AddItem(IPNetAddress.Parse("fe80::/10")); // Site local
                     }
 
                     if (IsIP4Enabled)
                     {
-                        _lanSubnets.Add(IPNetAddress.IP4Loopback);
-                        _lanSubnets.Add(IPNetAddress.Parse("10.0.0.0/8"));
-                        _lanSubnets.Add(IPNetAddress.Parse("172.16.0.0/12"));
-                        _lanSubnets.Add(IPNetAddress.Parse("192.168.0.0/16"));
+                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback);
+                        _lanSubnets.AddItem(IPNetAddress.Parse("10.0.0.0/8"));
+                        _lanSubnets.AddItem(IPNetAddress.Parse("172.16.0.0/12"));
+                        _lanSubnets.AddItem(IPNetAddress.Parse("192.168.0.0/16"));
                     }
                 }
                 else
@@ -982,16 +985,16 @@ namespace Jellyfin.Networking.Manager
                     // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IsIP6Enabled)
                     {
-                        _lanSubnets.Add(IPNetAddress.IP6Loopback);
+                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback);
                     }
 
                     if (IsIP4Enabled)
                     {
-                        _lanSubnets.Add(IPNetAddress.IP4Loopback);
+                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback);
                     }
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i) && !_excludedSubnets.Contains(i) && _lanSubnets.Contains(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)));
                 }
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
@@ -1049,7 +1052,7 @@ namespace Jellyfin.Networking.Manager
                                         nw.Tag *= -1;
                                     }
 
-                                    _interfaceAddresses.Add(nw);
+                                    _interfaceAddresses.AddItem(nw);
 
                                     // Store interface name so we can use the name in Collections.
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
@@ -1070,7 +1073,7 @@ namespace Jellyfin.Networking.Manager
                                         nw.Tag *= -1;
                                     }
 
-                                    _interfaceAddresses.Add(nw);
+                                    _interfaceAddresses.AddItem(nw);
 
                                     // Store interface name so we can use the name in Collections.
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
@@ -1104,10 +1107,10 @@ namespace Jellyfin.Networking.Manager
                         {
                             _logger.LogError("No interfaces information available. Resolving DNS name.");
                             // Last ditch attempt - use loopback address.
-                            _interfaceAddresses.Add(IPNetAddress.IP4Loopback);
+                            _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
                             if (IsIP6Enabled)
                             {
-                                _interfaceAddresses.Add(IPNetAddress.IP6Loopback);
+                                _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
                             }
                         }
                     }
