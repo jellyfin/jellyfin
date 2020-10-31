@@ -1,10 +1,12 @@
+#pragma warning disable CA1021 // Avoid out parameters
 #nullable enable
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
+using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
-using NetworkCollection;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -130,7 +132,7 @@ namespace Jellyfin.Networking.Manager
         /// Get a list of all the MAC addresses associated with active interfaces.
         /// </summary>
         /// <returns>List of MAC addresses.</returns>
-        List<PhysicalAddress> GetMacAddresses();
+        IReadOnlyCollection<PhysicalAddress> GetMacAddresses();
 
         /// <summary>
         /// Checks to see if the IP Address provided matches an interface that has a gateway.

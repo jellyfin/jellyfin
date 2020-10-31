@@ -10,10 +10,10 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using NetworkCollection;
-using NetworkCollection.Udp;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -161,10 +161,10 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public List<PhysicalAddress> GetMacAddresses()
+        public IReadOnlyCollection<PhysicalAddress> GetMacAddresses()
         {
             // Populated in construction - so always has values.
-            return _macAddresses.ToList();
+            return _macAddresses.AsReadOnly();
         }
 
         /// <inheritdoc/>
@@ -186,12 +186,12 @@ namespace Jellyfin.Networking.Manager
             NetCollection nc = new NetCollection();
             if (IsIP4Enabled)
             {
-                nc.Add(IPAddress.Loopback);
+                nc.AddItem(IPAddress.Loopback);
             }
 
             if (IsIP6Enabled)
             {
-                nc.Add(IPAddress.IPv6Loopback);
+                nc.AddItem(IPAddress.IPv6Loopback);
             }
 
             return nc;
@@ -275,12 +275,12 @@ namespace Jellyfin.Networking.Manager
 
                 if (IsIP4Enabled)
                 {
-                    result.Add(IPAddress.Any);
+                    result.AddItem(IPAddress.Any);
                 }
 
                 if (IsIP6Enabled)
                 {
-                    result.Add(IPAddress.IPv6Any);
+                    result.AddItem(IPAddress.IPv6Any);
                 }
 
                 return result;
@@ -374,7 +374,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // Get the first LAN interface address that isn't a loopback.
-            var interfaces = new NetCollection(_interfaceAddresses
+            var interfaces = CreateCollection(_interfaceAddresses
                 .Exclude(_bindExclusions)
                 .Where(p => IsInLocalNetwork(p))
                 .OrderBy(p => p.Tag));
@@ -417,11 +417,11 @@ namespace Jellyfin.Networking.Manager
                 if (_bindExclusions.Count > 0)
                 {
                     // Return all the internal interfaces except the ones excluded.
-                    return new NetCollection(_internalInterfaces.Where(p => !_bindExclusions.Contains(p)));
+                    return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.Contains(p)));
                 }
 
                 // No bind address, so return all internal interfaces.
-                return new NetCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
+                return CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
             }
 
             return new NetCollection(_bindAddresses);
@@ -571,7 +571,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
-            UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
+            // UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
             if (string.IsNullOrEmpty(MockNetworkSettings))
             {
@@ -615,6 +615,12 @@ namespace Jellyfin.Networking.Manager
 
                 _disposed = true;
             }
+        }
+
+        private static NetCollection CreateCollection(IEnumerable<IPObject> source)
+        {
+            var result = new NetCollection();
+            return result.AddRange(source);
         }
 
         /// <summary>
@@ -940,7 +946,7 @@ namespace Jellyfin.Networking.Manager
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
                     // Internal interfaces must be private and not excluded.
-                    _internalInterfaces = new NetCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.Contains(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.Contains(i)));
 
                     // Subnets are the same as the calculated internal interface.
                     _lanSubnets = new NetCollection();
@@ -975,7 +981,7 @@ namespace Jellyfin.Networking.Manager
                     }
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
-                    _internalInterfaces = new NetCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i) && !_excludedSubnets.Contains(i) && _lanSubnets.Contains(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i) && !_excludedSubnets.Contains(i) && _lanSubnets.Contains(i)));
                 }
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
@@ -1081,7 +1087,7 @@ namespace Jellyfin.Networking.Manager
                         IPHost host = new IPHost(Dns.GetHostName());
                         foreach (var a in host.GetAddresses())
                         {
-                            _interfaceAddresses.Add(a);
+                            _interfaceAddresses.AddItem(a);
                         }
 
                         if (_interfaceAddresses.Count == 0)
@@ -1188,7 +1194,7 @@ namespace Jellyfin.Networking.Manager
                 if (isExternal)
                 {
                     // Find all external bind addresses. Store the default gateway, but check to see if there is a better match first.
-                    bindResult = new NetCollection(nc
+                    bindResult = CreateCollection(nc
                         .Where(p => !IsInLocalNetwork(p))
                         .OrderBy(p => p.Tag));
                     defaultGateway = bindResult.FirstOrDefault()?.Address;
@@ -1245,7 +1251,7 @@ namespace Jellyfin.Networking.Manager
         {
             result = string.Empty;
             // Get the first WAN interface address that isn't a loopback.
-            var extResult = new NetCollection(_interfaceAddresses
+            var extResult = CreateCollection(_interfaceAddresses
                 .Exclude(_bindExclusions)
                 .Where(p => !IsInLocalNetwork(p))
                 .OrderBy(p => p.Tag));

@@ -24,10 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NetworkCollection" Version="1.0.6" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
