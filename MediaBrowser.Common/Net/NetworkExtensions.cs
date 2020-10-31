@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text;
 using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace MediaBrowser.Common.Net
@@ -27,22 +28,6 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Add multiple items to the collection.
-        /// </summary>
-        /// <param name="destination">The <see cref="NetCollection"/>.</param>
-        /// <param name="source">Item to add.</param>
-        /// <returns>Return the collection.</returns>
-        public static NetCollection AddRange(this NetCollection destination, IEnumerable<IPObject> source)
-        {
-            foreach (var item in source)
-            {
-                destination.Add(item);
-            }
-
-            return destination;
-        }
-
-        /// <summary>
         /// Adds a network to the collection.
         /// </summary>
         /// <param name="source">The <see cref="NetCollection"/>.</param>
@@ -62,6 +47,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Returns a string representation of this object.</returns>
         public static string Readable(this NetCollection source)
         {
+            var sb = new StringBuilder();
             string output = "[";
             if (source.Count > 0)
             {
@@ -142,6 +128,40 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
+        /// Compares two NetCollection objects. The order is ignored.
+        /// </summary>
+        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="dest">Item to compare to.</param>
+        /// <returns>True if both are equal.</returns>
+        public static bool Compare(this NetCollection source, NetCollection dest)
+        {
+            if (dest == null || source.Count != dest.Count)
+            {
+                return false;
+            }
+
+            foreach (var sourceItem in source)
+            {
+                bool found = false;
+                foreach (var destItem in dest)
+                {
+                    if (sourceItem.Equals(destItem))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Returns a collection containing the subnets of this collection given.
         /// </summary>
         /// <param name="source">The <see cref="NetCollection"/>.</param>
@@ -162,7 +182,7 @@ namespace MediaBrowser.Common.Net
                     // Add the subnet calculated from the interface address/mask.
                     var na = nw.NetworkAddress;
                     na.Tag = i.Tag;
-                    res.Add(na);
+                    res.AddItem(na);
                 }
                 else
                 {
@@ -174,7 +194,7 @@ namespace MediaBrowser.Common.Net
                             Tag = i.Tag
                         };
 
-                        res.Add(host);
+                        res.AddItem(host);
                     }
                 }
             }
@@ -213,7 +233,7 @@ namespace MediaBrowser.Common.Net
 
                 if (!found)
                 {
-                    results.Add(outer);
+                    results.AddItem(outer);
                 }
             }
 
@@ -244,7 +264,7 @@ namespace MediaBrowser.Common.Net
             {
                 if (target.ContainsAddress(i))
                 {
-                    nc.Add(i);
+                    nc.AddItem(i);
                 }
             }
 
