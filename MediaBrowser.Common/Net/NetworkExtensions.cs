@@ -45,7 +45,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="source">The <see cref="NetCollection"/>.</param>
         /// <returns>Returns a string representation of this object.</returns>
-        public static string Readable(this NetCollection source)
+        public static string AsString(this NetCollection source)
         {
             var sb = new StringBuilder();
             string output = "[";
