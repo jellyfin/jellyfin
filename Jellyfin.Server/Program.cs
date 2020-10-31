@@ -280,21 +280,19 @@ namespace Jellyfin.Server
                         options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
-                            options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
-                            {
-                                listenOptions.UseHttps(appHost.Certificate);
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                            });
+                            options.Listen(
+                                netAdd.Address,
+                                appHost.HttpsPort,
+                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
                         }
                         else if (builderContext.HostingEnvironment.IsDevelopment())
                         {
                             try
                             {
-                                options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps();
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
+                                options.Listen(
+                                    netAdd.Address,
+                                    appHost.HttpsPort,
+                                    listenOptions => listenOptions.UseHttps());
                             }
                             catch (InvalidOperationException)
                             {
