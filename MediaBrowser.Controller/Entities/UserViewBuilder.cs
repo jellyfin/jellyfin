@@ -343,7 +343,8 @@ namespace MediaBrowser.Controller.Entities
         {
             var parentFolders = GetMediaFolders(parent, query.User, new[] { CollectionType.TvShows, string.Empty });
 
-            var result = _tvSeriesManager.GetNextUp(new NextUpQuery
+            var result = _tvSeriesManager.GetNextUp(
+            new NextUpQuery
             {
                 Limit = query.Limit,
                 StartIndex = query.StartIndex,
@@ -443,7 +444,8 @@ namespace MediaBrowser.Controller.Entities
             return Filter(item, query.User, query, BaseItem.UserDataManager, BaseItem.LibraryManager);
         }
 
-        public static QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items,
+        public static QueryResult<BaseItem> PostFilterAndSort(
+            IEnumerable<BaseItem> items,
             BaseItem queryParent,
             int? totalRecordLimit,
             InternalItemsQuery query,

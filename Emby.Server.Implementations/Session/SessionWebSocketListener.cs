@@ -8,6 +8,7 @@ using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -316,7 +317,7 @@ namespace Emby.Server.Implementations.Session
             return webSocket.SendAsync(
                 new WebSocketMessage<int>
                 {
-                    MessageType = "ForceKeepAlive",
+                    MessageType = SessionMessageType.ForceKeepAlive,
                     Data = WebSocketLostTimeout
                 },
                 CancellationToken.None);

@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -89,7 +90,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? genres,
@@ -99,7 +100,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? person,
             [FromQuery] string? personIds,
             [FromQuery] string? personTypes,
@@ -187,7 +188,7 @@ namespace Jellyfin.Api.Controllers
                     .ToArray();
             }
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {

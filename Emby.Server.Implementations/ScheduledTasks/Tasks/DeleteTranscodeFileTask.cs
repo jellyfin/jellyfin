@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public bool IsHidden => false;
 
         /// <inheritdoc />
-        public bool IsEnabled => false;
+        public bool IsEnabled => true;
 
         /// <inheritdoc />
         public bool IsLogged => true;

@@ -381,16 +381,12 @@ namespace Jellyfin.Api.Controllers
 
             var user = _userManager.GetUserById(userId);
 
-            if (string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
-            {
-                await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
-                _userManager.UpdateConfiguration(user.Id, updateUser.Configuration);
-            }
-            else
+            if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
             {
                 await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
-                _userManager.UpdateConfiguration(updateUser.Id, updateUser.Configuration);
             }
+
+            await _userManager.UpdateConfigurationAsync(user.Id, updateUser.Configuration).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -409,7 +405,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult UpdateUserPolicy(
+        public async Task<ActionResult> UpdateUserPolicy(
             [FromRoute, Required] Guid userId,
             [FromBody] UserPolicy newPolicy)
         {
@@ -447,7 +443,7 @@ namespace Jellyfin.Api.Controllers
                 _sessionManager.RevokeUserTokens(user.Id, currentToken);
             }
 
-            _userManager.UpdatePolicy(userId, newPolicy);
+            await _userManager.UpdatePolicyAsync(userId, newPolicy).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -464,7 +460,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult UpdateUserConfiguration(
+        public async Task<ActionResult> UpdateUserConfiguration(
             [FromRoute, Required] Guid userId,
             [FromBody] UserConfiguration userConfig)
         {
@@ -473,7 +469,7 @@ namespace Jellyfin.Api.Controllers
                 return Forbid("User configuration update not allowed");
             }
 
-            _userManager.UpdateConfiguration(userId, userConfig);
+            await _userManager.UpdateConfigurationAsync(userId, userConfig).ConfigureAwait(false);
 
             return NoContent();
         }
