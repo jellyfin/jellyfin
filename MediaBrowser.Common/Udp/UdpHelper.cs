@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
-using NetworkCollection;
 
-namespace Jellyfin.Networking.Udp
+namespace MediaBrowser.Common.Udp
 {
     /// <summary>
     /// Processes a SSDP message.

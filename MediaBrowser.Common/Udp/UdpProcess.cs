@@ -1,9 +1,10 @@
+#nullable enable
 using System;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Networking.Udp
+namespace MediaBrowser.Common.Udp
 {
     /// <summary>
     /// Provides logging capabilities.
