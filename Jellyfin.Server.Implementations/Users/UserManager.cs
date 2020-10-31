@@ -2,6 +2,7 @@
 #pragma warning disable CA1307
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -48,6 +49,8 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
+        private readonly IDictionary<Guid, User> _users;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
@@ -81,38 +84,28 @@ namespace Jellyfin.Server.Implementations.Users
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
+
+            _users = new ConcurrentDictionary<Guid, User>();
+            using var dbContext = _dbProvider.CreateContext();
+            foreach (var user in dbContext.Users
+                .Include(user => user.Permissions)
+                .Include(user => user.Preferences)
+                .Include(user => user.AccessSchedules)
+                .Include(user => user.ProfileImage)
+                .AsEnumerable())
+            {
+                _users.Add(user.Id, user);
+            }
         }
 
         /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
-        public IEnumerable<User> Users
-        {
-            get
-            {
-                using var dbContext = _dbProvider.CreateContext();
-                return dbContext.Users
-                    .Include(user => user.Permissions)
-                    .Include(user => user.Preferences)
-                    .Include(user => user.AccessSchedules)
-                    .Include(user => user.ProfileImage)
-                    .ToList();
-            }
-        }
+        public IEnumerable<User> Users => _users.Values;
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds
-        {
-            get
-            {
-                using var dbContext = _dbProvider.CreateContext();
-                return dbContext.Users
-                    .AsQueryable()
-                    .Select(user => user.Id)
-                    .ToList();
-            }
-        }
+        public IEnumerable<Guid> UsersIds => _users.Keys;
 
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
@@ -122,13 +115,8 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
-            return dbContext.Users
-                .Include(user => user.Permissions)
-                .Include(user => user.Preferences)
-                .Include(user => user.AccessSchedules)
-                .Include(user => user.ProfileImage)
-                .FirstOrDefault(user => user.Id == id);
+            _users.TryGetValue(id, out var user);
+            return user;
         }
 
         /// <inheritdoc/>
@@ -139,14 +127,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
-            return dbContext.Users
-                .Include(user => user.Permissions)
-                .Include(user => user.Preferences)
-                .Include(user => user.AccessSchedules)
-                .Include(user => user.ProfileImage)
-                .AsEnumerable()
-                .FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
+            return _users.Values.FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <inheritdoc/>
@@ -205,13 +186,17 @@ namespace Jellyfin.Server.Implementations.Users
                 ? await dbContext.Users.AsQueryable().Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
                 : 0;
 
-            return new User(
+            var user = new User(
                 name,
                 _defaultAuthenticationProvider.GetType().FullName,
                 _defaultPasswordResetProvider.GetType().FullName)
             {
                 InternalId = max + 1
             };
+
+            _users.Add(user.Id, user);
+
+            return user;
         }
 
         /// <inheritdoc/>
@@ -237,28 +222,12 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void DeleteUser(Guid userId)
         {
-            using var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users
-                .Include(u => u.Permissions)
-                .Include(u => u.Preferences)
-                .Include(u => u.AccessSchedules)
-                .Include(u => u.ProfileImage)
-                .FirstOrDefault(u => u.Id == userId);
-            if (user == null)
+            if (!_users.TryGetValue(userId, out var user))
             {
                 throw new ResourceNotFoundException(nameof(userId));
             }
 
-            if (dbContext.Users.Find(user.Id) == null)
-            {
-                throw new ArgumentException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "The user cannot be deleted because there is no user with the Name {0} and Id {1}.",
-                    user.Username,
-                    user.Id));
-            }
-
-            if (dbContext.Users.Count() == 1)
+            if (_users.Count == 1)
             {
                 throw new InvalidOperationException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -277,6 +246,8 @@ namespace Jellyfin.Server.Implementations.Users
                     nameof(userId));
             }
 
+            using var dbContext = _dbProvider.CreateContext();
+
             // Clear all entities related to the user from the database.
             if (user.ProfileImage != null)
             {
@@ -288,6 +259,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             dbContext.SaveChanges();
+            _users.Remove(userId);
 
             _eventManager.Publish(new UserDeletedEventArgs(user));
         }
@@ -460,11 +432,9 @@ namespace Jellyfin.Server.Implementations.Users
                     // the authentication provider might have created it
                     user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user != null)
                     {
-                        UpdatePolicy(user.Id, hasNewUserPolicy.GetNewUserPolicy());
-
-                        await UpdateUserAsync(user).ConfigureAwait(false);
+                        await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
                     }
                 }
             }
@@ -589,9 +559,7 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task InitializeAsync()
         {
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-            await using var dbContext = _dbProvider.CreateContext();
-
-            if (await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false))
+            if (_users.Any())
             {
                 return;
             }
@@ -604,6 +572,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
 
+            await using var dbContext = _dbProvider.CreateContext();
             var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
             newUser.SetPermission(PermissionKind.IsAdministrator, true);
             newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
@@ -644,9 +613,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void UpdateConfiguration(Guid userId, UserConfiguration config)
+        public async Task UpdateConfigurationAsync(Guid userId, UserConfiguration config)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -673,13 +642,13 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
             dbContext.Update(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public void UpdatePolicy(Guid userId, UserPolicy policy)
+        public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -744,15 +713,16 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public void ClearProfileImage(User user)
+        public async Task ClearProfileImageAsync(User user)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            user.ProfileImage = null;
         }
 
         private static bool IsValidUsername(string name)
