@@ -74,8 +74,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "Jell
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\NetworkTesting\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkCollection", "NetCollection\NetworkCollection.csproj", "{A4D20398-FD42-4B7E-A175-0ACC9C28CE88}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -190,10 +188,6 @@ Global
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4D20398-FD42-4B7E-A175-0ACC9C28CE88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4D20398-FD42-4B7E-A175-0ACC9C28CE88}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4D20398-FD42-4B7E-A175-0ACC9C28CE88}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4D20398-FD42-4B7E-A175-0ACC9C28CE88}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
