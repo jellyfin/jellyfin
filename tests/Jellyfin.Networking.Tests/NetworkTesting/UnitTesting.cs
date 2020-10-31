@@ -71,7 +71,7 @@ namespace NetworkTesting
             var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            Assert.True(string.Equals(nm.GetInternalBindAddresses().ToString(), value, StringComparison.Ordinal));
+            Assert.True(string.Equals(nm.GetInternalBindAddresses().Readable(), value, StringComparison.Ordinal));
         }
 
         [Theory]
@@ -163,22 +163,22 @@ namespace NetworkTesting
 
             // Test included, IP6.
             NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);
-            Assert.True(string.Equals(nc.ToString(), result1, System.StringComparison.OrdinalIgnoreCase));
+            Assert.True(string.Equals(nc.Readable(), result1, System.StringComparison.OrdinalIgnoreCase));
 
             // Text excluded, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), true);
-            Assert.True(string.Equals(nc?.ToString(), result3, System.StringComparison.OrdinalIgnoreCase));
+            Assert.True(string.Equals(nc?.Readable(), result3, System.StringComparison.OrdinalIgnoreCase));
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
             
             // Test included, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), false);
-            Assert.True(string.Equals(nc.ToString(), result2, System.StringComparison.OrdinalIgnoreCase));
+            Assert.True(string.Equals(nc.Readable(), result2, System.StringComparison.OrdinalIgnoreCase));
 
             // Test excluded, including IPv6.
             nc = nm.CreateIPCollection(settings.Split(","), true);
-            Assert.True(string.Equals(nc.ToString(), result4, System.StringComparison.OrdinalIgnoreCase));
+            Assert.True(string.Equals(nc.Readable(), result4, System.StringComparison.OrdinalIgnoreCase));
 
             conf.EnableIPV6 = true;
             nm.UpdateSettings(conf);
@@ -186,7 +186,7 @@ namespace NetworkTesting
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             nc = nc.AsNetworks();
-            Assert.True(string.Equals(nc.ToString(), result5, System.StringComparison.OrdinalIgnoreCase));
+            Assert.True(string.Equals(nc.Readable(), result5, System.StringComparison.OrdinalIgnoreCase));
         }
 
         [Theory]
@@ -205,7 +205,7 @@ namespace NetworkTesting
             NetCollection nc1 = nm.CreateIPCollection(settings.Split(","), false);
             NetCollection nc2 = nm.CreateIPCollection(compare.Split(","), false);
 
-            Assert.True(nc1.Union(nc2).ToString() == result);
+            Assert.True(nc1.Union(nc2).Readable() == result);
         }
 
         [Theory]
@@ -306,7 +306,7 @@ namespace NetworkTesting
             NetCollection ncDest = nm.CreateIPCollection(dest.Split(","));
             NetCollection ncResult = ncSource.Union(ncDest);
             NetCollection resultCollection = nm.CreateIPCollection(result.Split(","));
-            Assert.True(ncResult.Equals(resultCollection));
+            Assert.True(ncResult.Compare(resultCollection));
         }
 
 
