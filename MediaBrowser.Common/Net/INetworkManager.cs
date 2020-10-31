@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Http;
-using NetworkCollection;
 
 namespace MediaBrowser.Common.Net
 {

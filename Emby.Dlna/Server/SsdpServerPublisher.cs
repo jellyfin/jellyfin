@@ -11,10 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Main;
 using Emby.Dlna.PlayTo.Devices;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.Ssdp;
-using NetworkCollection.Udp;
 
 namespace Emby.Dlna.Net
 {

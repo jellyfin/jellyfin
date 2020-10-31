@@ -5,7 +5,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
-using NetworkCollection;
 
 namespace Jellyfin.Server.Middleware
 {

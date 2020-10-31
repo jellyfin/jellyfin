@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.Udp;
 
 namespace Jellyfin.Networking.Advertising
 {

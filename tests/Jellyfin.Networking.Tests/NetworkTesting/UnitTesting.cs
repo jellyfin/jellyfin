@@ -1,14 +1,14 @@
 using System;
 using System.Net;
 using Emby.Dlna.PlayTo;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
-using NetworkCollection;
-using NetworkCollection.Udp;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Udp;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
-using Jellyfin.Networking.Configuration;
 
 namespace NetworkTesting
 {

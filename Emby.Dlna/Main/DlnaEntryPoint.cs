@@ -13,6 +13,7 @@ using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.PlayTo.Devices;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -28,9 +29,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
-using NetworkCollection;
-using NetworkCollection.Ssdp;
-using NetworkCollection.Udp;
 
 namespace Emby.Dlna.Main
 {

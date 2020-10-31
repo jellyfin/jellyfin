@@ -1,10 +1,10 @@
 #nullable enable
 using System;
 using Emby.Dlna.Configuration;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.Ssdp;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -15,6 +15,7 @@ namespace Emby.Dlna.PlayTo
     {
         private readonly IConfigurationManager _configuration;
 
+#pragma warning disable CA1062 // Validate arguments of public methods
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpPlayToLocator"/> class.
         /// </summary>
@@ -30,6 +31,7 @@ namespace Emby.Dlna.PlayTo
             networkManager.IsInLocalNetwork,
             networkManager.IsIP4Enabled,
             networkManager.IsIP6Enabled)
+#pragma warning restore CA1062 // Validate arguments of public methods
         {
             _configuration = configurationManager;
         }

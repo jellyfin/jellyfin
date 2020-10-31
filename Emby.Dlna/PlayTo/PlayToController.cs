@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Net;
+using Emby.Dlna.Ssdp;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -25,7 +25,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.Ssdp;
 using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Dlna.PlayTo

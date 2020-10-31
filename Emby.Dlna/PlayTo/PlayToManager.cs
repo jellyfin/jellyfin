@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo.EventArgs;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -22,7 +23,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
-using NetworkCollection.Ssdp;
 
 namespace Emby.Dlna.PlayTo
 {

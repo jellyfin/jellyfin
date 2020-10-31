@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Udp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using NetworkCollection;
-using NetworkCollection.Udp;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -329,6 +328,11 @@ namespace Jellyfin.Networking.Manager
         public string GetBindInterface(IPObject source, out int? port)
         {
             port = null;
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             // Do we have a source?
             bool haveSource = !source.Address.Equals(IPAddress.None);
             bool isExternal = false;
@@ -611,6 +615,34 @@ namespace Jellyfin.Networking.Manager
             }
         }
 
+        /// <summary>
+        /// Trys to identify the string and return an object of that class.
+        /// </summary>
+        /// <param name="addr">String to parse.</param>
+        /// <param name="result">IPObject to return.</param>
+        /// <returns>True if the value parsed successfully.</returns>
+        private static bool TryParse(string addr, out IPObject result)
+        {
+            if (!string.IsNullOrEmpty(addr))
+            {
+                // Is it an IP address
+                if (IPNetAddress.TryParse(addr, out IPNetAddress nw))
+                {
+                    result = nw;
+                    return true;
+                }
+
+                if (IPHost.TryParse(addr, out IPHost h))
+                {
+                    result = h;
+                    return true;
+                }
+            }
+
+            result = IPNetAddress.None;
+            return false;
+        }
+
         private void ConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs evt)
         {
             if (evt.Key.Equals("network", StringComparison.Ordinal))
@@ -674,34 +706,6 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            return false;
-        }
-
-        /// <summary>
-        /// Trys to identify the string and return an object of that class.
-        /// </summary>
-        /// <param name="addr">String to parse.</param>
-        /// <param name="result">IPObject to return.</param>
-        /// <returns>True if the value parsed successfully.</returns>
-        private static bool TryParse(string addr, out IPObject result)
-        {
-            if (!string.IsNullOrEmpty(addr))
-            {
-                // Is it an IP address
-                if (IPNetAddress.TryParse(addr, out IPNetAddress nw))
-                {
-                    result = nw;
-                    return true;
-                }
-
-                if (IPHost.TryParse(addr, out IPHost h))
-                {
-                    result = h;
-                    return true;
-                }
-            }
-
-            result = IPNetAddress.None;
             return false;
         }
 

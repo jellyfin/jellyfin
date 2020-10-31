@@ -11,6 +11,7 @@ using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
@@ -19,8 +20,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
-using NetworkCollection;
-using NetworkCollection.Udp;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {

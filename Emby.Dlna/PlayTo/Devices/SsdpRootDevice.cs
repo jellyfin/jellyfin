@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 using System.Net;
-using NetworkCollection;
+using MediaBrowser.Common.Net;
 
 namespace Emby.Dlna.PlayTo.Devices
 {
