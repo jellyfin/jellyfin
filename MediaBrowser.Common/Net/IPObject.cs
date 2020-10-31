@@ -360,12 +360,6 @@ namespace MediaBrowser.Common.Net
             return false;
         }
 
-        /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
         /// <summary>
         /// Compares the address in this object and the address in the object passed as a parameter.
         /// </summary>
@@ -386,10 +380,16 @@ namespace MediaBrowser.Common.Net
             return Address.GetHashCode();
         }
 
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as IPObject);
+        }
+
         /// <summary>
         /// Calculates the network address of this object.
         /// </summary>
-        /// <returns>The network address of this object.</returns>
+        /// <returns>Returns the network address of this object.</returns>
         protected abstract IPObject CalculateNetworkAddress();
     }
 }

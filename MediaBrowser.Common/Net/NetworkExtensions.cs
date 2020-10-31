@@ -1,6 +1,10 @@
 #pragma warning disable CA1062 // Validate arguments of public methods
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Net;
+using System.Runtime.CompilerServices;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace MediaBrowser.Common.Net
 {
@@ -9,6 +13,69 @@ namespace MediaBrowser.Common.Net
     /// </summary>
     public static class NetworkExtensions
     {
+        /// <summary>
+        /// Add an address to the collection.
+        /// </summary>
+        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="ip">Item to add.</param>
+        public static void AddItem(this NetCollection source, IPAddress ip)
+        {
+            if (!source.ContainsAddress(ip))
+            {
+                source.Add(new IPNetAddress(ip, 32));
+            }
+        }
+
+        /// <summary>
+        /// Add multiple items to the collection.
+        /// </summary>
+        /// <param name="destination">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">Item to add.</param>
+        /// <returns>Return the collection.</returns>
+        public static NetCollection AddRange(this NetCollection destination, IEnumerable<IPObject> source)
+        {
+            foreach (var item in source)
+            {
+                destination.Add(item);
+            }
+
+            return destination;
+        }
+
+        /// <summary>
+        /// Adds a network to the collection.
+        /// </summary>
+        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="item">Item to add.</param>
+        public static void AddItem(this NetCollection source, IPObject item)
+        {
+            if (!source.ContainsAddress(item))
+            {
+                source.Add(item);
+            }
+        }
+
+        /// <summary>
+        /// Converts this object to a string.
+        /// </summary>
+        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <returns>Returns a string representation of this object.</returns>
+        public static string Readable(this NetCollection source)
+        {
+            string output = "[";
+            if (source.Count > 0)
+            {
+                foreach (var i in source)
+                {
+                    output += $"{i},";
+                }
+
+                output = output[0..^1];
+            }
+
+            return $"{output}]";
+        }
+
         /// <summary>
         /// Returns true if the collection contains an item with the ip address,
         /// or the ip address falls within any of the collection's network ranges.

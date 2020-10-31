@@ -14,6 +14,7 @@ using Emby.Dlna.Net;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.PlayTo.Devices;
 using Emby.Dlna.Ssdp;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -396,7 +397,7 @@ namespace Emby.Dlna.Main
 
             var udn = CreateUuid(_appHost.SystemId);
 
-            var ba = new NetCollection(
+            var ba = NetworkManager.CreateCollection(
                 _networkManager.GetInternalBindAddresses()
                 .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
 

@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 using SsdpMessage = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Emby.Dlna.Ssdp

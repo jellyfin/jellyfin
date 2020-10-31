@@ -9,11 +9,11 @@ using MediaBrowser.Common.Udp;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
+using XMLProperties = System.Collections.Generic.Dictionary<string, string>;
 
 namespace NetworkTesting
 {
-    using XMLProperties = System.Collections.Generic.Dictionary<string, string>;
-
     public class NetTesting
     {
         /// <summary>

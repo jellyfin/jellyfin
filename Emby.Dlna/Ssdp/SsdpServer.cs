@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Udp;
 using Microsoft.Extensions.Logging;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace Emby.Dlna.Ssdp
 {
@@ -349,7 +350,7 @@ namespace Emby.Dlna.Ssdp
         /// <param name="header">SSDP Header string.</param>
         /// <param name="values">SSDP paramaters.</param>
         /// <returns>Formatted string.</returns>
-        private string BuildMessage(string header, Dictionary<string, string> values)
+        private static string BuildMessage(string header, Dictionary<string, string> values)
         {
             const string SsdpOpt = "\"http://schemas.upnp.org/upnp/1/0/\"; ns=";
 

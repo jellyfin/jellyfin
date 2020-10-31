@@ -6,10 +6,10 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace MediaBrowser.Common.Udp
 {
@@ -262,7 +262,7 @@ namespace MediaBrowser.Common.Udp
         /// <returns>A list of UdpProcesss.</returns>
         public static List<UdpProcess> CreateMulticastClients(
             int port,
-            NetCollection addresses,
+            IEnumerable<IPObject> addresses,
             UdpProcessor? processor = null,
             ILogger? logger = null,
             FailureFunction? failure = null,

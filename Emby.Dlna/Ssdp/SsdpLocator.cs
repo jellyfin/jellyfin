@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 using static Emby.Dlna.Ssdp.SsdpServer;
+using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Emby.Dlna.Ssdp
