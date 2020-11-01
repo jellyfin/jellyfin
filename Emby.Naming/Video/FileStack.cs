@@ -13,7 +13,7 @@ namespace Emby.Naming.Video
             Files = new List<string>();
         }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public List<string> Files { get; set; }
 

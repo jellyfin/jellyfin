@@ -11,19 +11,19 @@ namespace Emby.Naming.Video
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
         /// <summary>
         /// Gets or sets the container.
         /// </summary>
         /// <value>The container.</value>
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the year.
@@ -41,13 +41,13 @@ namespace Emby.Naming.Video
         /// Gets or sets the extra rule.
         /// </summary>
         /// <value>The extra rule.</value>
-        public ExtraRule ExtraRule { get; set; }
+        public ExtraRule? ExtraRule { get; set; }
 
         /// <summary>
         /// Gets or sets the format3 d.
         /// </summary>
         /// <value>The format3 d.</value>
-        public string Format3D { get; set; }
+        public string? Format3D { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [is3 d].
@@ -65,7 +65,7 @@ namespace Emby.Naming.Video
         /// Gets or sets the type of the stub.
         /// </summary>
         /// <value>The type of the stub.</value>
-        public string StubType { get; set; }
+        public string? StubType { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is a directory.

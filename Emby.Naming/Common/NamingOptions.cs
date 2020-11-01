@@ -75,56 +75,45 @@ namespace Emby.Naming.Common
 
             StubTypes = new[]
             {
-                new StubTypeRule
-                {
-                    StubType = "dvd",
-                    Token = "dvd"
-                },
-                new StubTypeRule
-                {
-                    StubType = "hddvd",
-                    Token = "hddvd"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "bluray"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "brrip"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "bd25"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "bd50"
-                },
-                new StubTypeRule
-                {
-                    StubType = "vhs",
-                    Token = "vhs"
-                },
-                new StubTypeRule
-                {
-                    StubType = "tv",
-                    Token = "HDTV"
-                },
-                new StubTypeRule
-                {
-                    StubType = "tv",
-                    Token = "PDTV"
-                },
-                new StubTypeRule
-                {
-                    StubType = "tv",
-                    Token = "DSR"
-                }
+                new StubTypeRule(
+                    stubType: "dvd",
+                    token: "dvd"),
+
+                new StubTypeRule(
+                    stubType: "hddvd",
+                    token: "hddvd"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "bluray"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "brrip"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "bd25"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "bd50"),
+
+                new StubTypeRule(
+                    stubType: "vhs",
+                    token: "vhs"),
+
+                new StubTypeRule(
+                    stubType: "tv",
+                    token: "HDTV"),
+
+                new StubTypeRule(
+                    stubType: "tv",
+                    token: "PDTV"),
+
+                new StubTypeRule(
+                    stubType: "tv",
+                    token: "DSR")
             };
 
             VideoFileStackingExpressions = new[]
@@ -381,247 +370,193 @@ namespace Emby.Naming.Common
 
             VideoExtraRules = new[]
             {
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Trailer,
-                    RuleType = ExtraRuleType.Filename,
-                    Token = "trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Trailer,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Trailer,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = ".trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Trailer,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "_trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Trailer,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = " trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Sample,
-                    RuleType = ExtraRuleType.Filename,
-                    Token = "sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Sample,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Sample,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = ".sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Sample,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "_sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Sample,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = " sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.ThemeSong,
-                    RuleType = ExtraRuleType.Filename,
-                    Token = "theme",
-                    MediaType = MediaType.Audio
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Scene,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-scene",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Clip,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-clip",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Interview,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-interview",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.BehindTheScenes,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-behindthescenes",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.DeletedScene,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-deleted",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Clip,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-featurette",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Clip,
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-short",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.BehindTheScenes,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "behind the scenes",
-                    MediaType = MediaType.Video,
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.DeletedScene,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "deleted scenes",
-                    MediaType = MediaType.Video,
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Interview,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "interviews",
-                    MediaType = MediaType.Video,
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Scene,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "scenes",
-                    MediaType = MediaType.Video,
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Sample,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "samples",
-                    MediaType = MediaType.Video,
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Clip,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "shorts",
-                    MediaType = MediaType.Video,
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Clip,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "featurettes",
-                    MediaType = MediaType.Video,
-                },
-                new ExtraRule
-                {
-                    ExtraType = ExtraType.Unknown,
-                    RuleType = ExtraRuleType.DirectoryName,
-                    Token = "extras",
-                    MediaType = MediaType.Video,
-                },
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Filename,
+                    "trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    "-trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    ".trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    "_trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    " trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Filename,
+                    "sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    "-sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    ".sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    "_sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    " sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.ThemeSong,
+                    ExtraRuleType.Filename,
+                    "theme",
+                    MediaType.Audio),
+
+                new ExtraRule(
+                    ExtraType.Scene,
+                    ExtraRuleType.Suffix,
+                    "-scene",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.Suffix,
+                    "-clip",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Interview,
+                    ExtraRuleType.Suffix,
+                    "-interview",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.BehindTheScenes,
+                    ExtraRuleType.Suffix,
+                    "-behindthescenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.Suffix,
+                    "-deleted",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.Suffix,
+                    "-featurette",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.Suffix,
+                    "-short",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.BehindTheScenes,
+                    ExtraRuleType.DirectoryName,
+                    "behind the scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.DirectoryName,
+                    "deleted scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Interview,
+                    ExtraRuleType.DirectoryName,
+                    "interviews",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Scene,
+                    ExtraRuleType.DirectoryName,
+                    "scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.DirectoryName,
+                    "samples",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.DirectoryName,
+                    "shorts",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.DirectoryName,
+                    "featurettes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.DirectoryName,
+                    "extras",
+                    MediaType.Video),
             };
 
             Format3DRules = new[]
             {
                 // Kodi rules:
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "hsbs"
-                },
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "sbs"
-                },
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "htab"
-                },
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "tab"
-                },
-                                 // Media Browser rules:
-                new Format3DRule
-                {
-                    Token = "fsbs"
-                },
-                new Format3DRule
-                {
-                    Token = "hsbs"
-                },
-                new Format3DRule
-                {
-                    Token = "sbs"
-                },
-                new Format3DRule
-                {
-                    Token = "ftab"
-                },
-                new Format3DRule
-                {
-                    Token = "htab"
-                },
-                new Format3DRule
-                {
-                    Token = "tab"
-                },
-                new Format3DRule
-                {
-                    Token = "sbs3d"
-                },
-                new Format3DRule
-                {
-                    Token = "mvc"
-                }
+                new Format3DRule(
+                    preceedingToken: "3d",
+                    token: "hsbs"),
+
+                new Format3DRule(
+                    preceedingToken: "3d",
+                    token: "sbs"),
+
+                new Format3DRule(
+                    preceedingToken: "3d",
+                    token: "htab"),
+
+                new Format3DRule(
+                    preceedingToken: "3d",
+                    token: "tab"),
+
+                 // Media Browser rules:
+                new Format3DRule("fsbs"),
+                new Format3DRule("hsbs"),
+                new Format3DRule("sbs"),
+                new Format3DRule("ftab"),
+                new Format3DRule("htab"),
+                new Format3DRule("tab"),
+                new Format3DRule("sbs3d"),
+                new Format3DRule("mvc")
             };
+
             AudioBookPartsExpressions = new[]
             {
                 // Detect specified chapters, like CH 01
@@ -737,15 +672,15 @@ namespace Emby.Naming.Common
 
         public ExtraRule[] VideoExtraRules { get; set; }
 
-        public Regex[] VideoFileStackingRegexes { get; private set; }
+        public Regex[] VideoFileStackingRegexes { get; private set; } = Array.Empty<Regex>();
 
-        public Regex[] CleanDateTimeRegexes { get; private set; }
+        public Regex[] CleanDateTimeRegexes { get; private set; } = Array.Empty<Regex>();
 
-        public Regex[] CleanStringRegexes { get; private set; }
+        public Regex[] CleanStringRegexes { get; private set; } = Array.Empty<Regex>();
 
-        public Regex[] EpisodeWithoutSeasonRegexes { get; private set; }
+        public Regex[] EpisodeWithoutSeasonRegexes { get; private set; } = Array.Empty<Regex>();
 
-        public Regex[] EpisodeMultiPartRegexes { get; private set; }
+        public Regex[] EpisodeMultiPartRegexes { get; private set; } = Array.Empty<Regex>();
 
         public void Compile()
         {

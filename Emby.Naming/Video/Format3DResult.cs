@@ -21,7 +21,7 @@ namespace Emby.Naming.Video
         /// Gets or sets the format3 d.
         /// </summary>
         /// <value>The format3 d.</value>
-        public string Format3D { get; set; }
+        public string? Format3D { get; set; }
 
         /// <summary>
         /// Gets or sets the tokens.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
@@ -14,30 +14,24 @@ namespace Jellyfin.Naming.Tests.AudioBook
         {
             yield return new object[]
             {
-                new AudioBookFileInfo()
-                {
-                    Path = @"/server/AudioBooks/Larry Potter/Larry Potter.mp3",
-                    Container = "mp3",
-                }
+                new AudioBookFileInfo(
+                    @"/server/AudioBooks/Larry Potter/Larry Potter.mp3",
+                    "mp3")
             };
             yield return new object[]
             {
-                new AudioBookFileInfo()
-                {
-                    Path = @"/server/AudioBooks/Berry Potter/Chapter 1 .ogg",
-                    Container = "ogg",
-                    ChapterNumber = 1
-                }
+                new AudioBookFileInfo(
+                    @"/server/AudioBooks/Berry Potter/Chapter 1 .ogg",
+                    "ogg",
+                    chapterNumber: 1)
             };
             yield return new object[]
             {
-                new AudioBookFileInfo()
-                {
-                    Path = @"/server/AudioBooks/Nerry Potter/Part 3 - Chapter 2.mp3",
-                    Container = "mp3",
-                    ChapterNumber = 2,
-                    PartNumber = 3
-                }
+                new AudioBookFileInfo(
+                    @"/server/AudioBooks/Nerry Potter/Part 3 - Chapter 2.mp3",
+                    "mp3",
+                    chapterNumber: 2,
+                    partNumber: 3)
             };
         }
 

@@ -4,6 +4,11 @@ namespace Emby.Naming.TV
 {
     public class EpisodeInfo
     {
+        public EpisodeInfo(string path)
+        {
+            Path = path;
+        }
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
@@ -14,19 +19,19 @@ namespace Emby.Naming.TV
         /// Gets or sets the container.
         /// </summary>
         /// <value>The container.</value>
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the series.
         /// </summary>
         /// <value>The name of the series.</value>
-        public string SeriesName { get; set; }
+        public string? SeriesName { get; set; }
 
         /// <summary>
         /// Gets or sets the format3 d.
         /// </summary>
         /// <value>The format3 d.</value>
-        public string Format3D { get; set; }
+        public string? Format3D { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [is3 d].
@@ -44,7 +49,7 @@ namespace Emby.Naming.TV
         /// Gets or sets the type of the stub.
         /// </summary>
         /// <value>The type of the stub.</value>
-        public string StubType { get; set; }
+        public string? StubType { get; set; }
 
         public int? SeasonNumber { get; set; }
 

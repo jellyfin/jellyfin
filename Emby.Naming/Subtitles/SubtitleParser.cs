@@ -31,12 +31,10 @@ namespace Emby.Naming.Subtitles
             }
 
             var flags = GetFlags(path);
-            var info = new SubtitleInfo
-            {
-                Path = path,
-                IsDefault = _options.SubtitleDefaultFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase)),
-                IsForced = _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase))
-            };
+            var info = new SubtitleInfo(
+                path,
+                _options.SubtitleDefaultFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase)),
+                _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase)));
 
             var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase)
                 && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))

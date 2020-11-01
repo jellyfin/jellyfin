@@ -54,9 +54,8 @@ namespace Emby.Naming.TV
             var parsingResult = new EpisodePathParser(_options)
                 .Parse(path, isDirectory, isNamed, isOptimistic, supportsAbsoluteNumbers, fillExtendedInfo);
 
-            return new EpisodeInfo
+            return new EpisodeInfo(path)
             {
-                Path = path,
                 Container = container,
                 IsStub = isStub,
                 EndingEpsiodeNumber = parsingResult.EndingEpsiodeNumber,

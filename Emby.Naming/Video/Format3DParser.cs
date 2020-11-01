@@ -57,7 +57,7 @@ namespace Emby.Naming.Video
             else
             {
                 var foundPrefix = false;
-                string format = null;
+                string? format = null;
 
                 foreach (var flag in videoFlags)
                 {

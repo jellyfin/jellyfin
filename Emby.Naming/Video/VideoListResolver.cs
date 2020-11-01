@@ -26,7 +26,8 @@ namespace Emby.Naming.Video
 
             var videoInfos = files
                 .Select(i => videoResolver.Resolve(i.FullName, i.IsDirectory))
-                .Where(i => i != null)
+                // .Where(i => i != null)
+                .OfType<VideoFileInfo>()
                 .ToList();
 
             // Filter out all extras, otherwise they could cause stacks to not be resolved
@@ -39,7 +40,7 @@ namespace Emby.Naming.Video
                 .Resolve(nonExtras).ToList();
 
             var remainingFiles = videoInfos
-                .Where(i => !stackResult.Any(s => s.ContainsFile(i.Path, i.IsDirectory)))
+                .Where(i => !stackResult.Any(s => i.Path != null && s.ContainsFile(i.Path, i.IsDirectory)))
                 .ToList();
 
             var list = new List<VideoInfo>();
@@ -48,7 +49,9 @@ namespace Emby.Naming.Video
             {
                 var info = new VideoInfo(stack.Name)
                 {
-                    Files = stack.Files.Select(i => videoResolver.Resolve(i, stack.IsDirectoryStack)).ToList()
+                    Files = stack.Files.Select(i => videoResolver.Resolve(i, stack.IsDirectoryStack))
+                        .OfType<VideoFileInfo>()
+                        .ToList()
                 };
 
                 info.Year = info.Files[0].Year;
@@ -203,7 +206,7 @@ namespace Emby.Naming.Video
             return videos.Select(i => i.Year ?? -1).Distinct().Count() < 2;
         }
 
-        private bool IsEligibleForMultiVersion(string folderName, string testFilename)
+        private bool IsEligibleForMultiVersion(string folderName, string? testFilename)
         {
             testFilename = Path.GetFileNameWithoutExtension(testFilename) ?? string.Empty;
 

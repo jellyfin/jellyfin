@@ -22,7 +22,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoFileInfo.</returns>
-        public VideoFileInfo? ResolveDirectory(string path)
+        public VideoFileInfo? ResolveDirectory(string? path)
         {
             return Resolve(path, true);
         }
@@ -32,7 +32,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoFileInfo.</returns>
-        public VideoFileInfo? ResolveFile(string path)
+        public VideoFileInfo? ResolveFile(string? path)
         {
             return Resolve(path, false);
         }
@@ -45,7 +45,7 @@ namespace Emby.Naming.Video
         /// <param name="parseName">Whether or not the name should be parsed for info.</param>
         /// <returns>VideoFileInfo.</returns>
         /// <exception cref="ArgumentNullException"><c>path</c> is <c>null</c>.</exception>
-        public VideoFileInfo? Resolve(string path, bool isDirectory, bool parseName = true)
+        public VideoFileInfo? Resolve(string? path, bool isDirectory, bool parseName = true)
         {
             if (string.IsNullOrEmpty(path))
             {

@@ -16,6 +16,6 @@ namespace Emby.Naming.Video
         /// Gets or sets the rule.
         /// </summary>
         /// <value>The rule.</value>
-        public ExtraRule Rule { get; set; }
+        public ExtraRule? Rule { get; set; }
     }
 }

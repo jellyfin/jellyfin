@@ -2470,9 +2470,10 @@ namespace Emby.Server.Implementations.Library
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
+            // TODO nullable - what are we trying to do there with empty episodeInfo?
             var episodeInfo = episode.IsFileProtocol
-                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo()
-                : new Naming.TV.EpisodeInfo();
+                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo(episode.Path)
+                : new Naming.TV.EpisodeInfo(episode.Path);
 
             try
             {

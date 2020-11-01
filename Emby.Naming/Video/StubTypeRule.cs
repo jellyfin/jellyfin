@@ -4,6 +4,12 @@ namespace Emby.Naming.Video
 {
     public class StubTypeRule
     {
+        public StubTypeRule(string token, string stubType)
+        {
+            Token = token;
+            StubType = stubType;
+        }
+
         /// <summary>
         /// Gets or sets the token.
         /// </summary>

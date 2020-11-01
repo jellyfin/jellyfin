@@ -10,11 +10,13 @@ namespace Emby.Naming.AudioBook
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioBookInfo" /> class.
         /// </summary>
-        public AudioBookInfo()
+        /// <param name="name">Name of audiobook.</param>
+        public AudioBookInfo(string name)
         {
             Files = new List<AudioBookFileInfo>();
             Extras = new List<AudioBookFileInfo>();
             AlternateVersions = new List<AudioBookFileInfo>();
+            Name = name;
         }
 
         /// <summary>

@@ -42,14 +42,12 @@ namespace Emby.Naming.AudioBook
 
             var parsingResult = new AudioBookFilePathParser(_options).Parse(path);
 
-            return new AudioBookFileInfo
-            {
-                Path = path,
-                Container = container,
-                ChapterNumber = parsingResult.ChapterNumber,
-                PartNumber = parsingResult.PartNumber,
-                IsDirectory = isDirectory
-            };
+            return new AudioBookFileInfo(
+                path,
+                container,
+                chapterNumber: parsingResult.ChapterNumber,
+                partNumber: parsingResult.PartNumber,
+                isDirectory: isDirectory );
         }
     }
 }

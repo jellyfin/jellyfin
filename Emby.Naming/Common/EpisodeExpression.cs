@@ -8,11 +8,11 @@ namespace Emby.Naming.Common
     public class EpisodeExpression
     {
         private string _expression;
-        private Regex _regex;
+        private Regex? _regex;
 
         public EpisodeExpression(string expression, bool byDate)
         {
-            Expression = expression;
+            _expression = expression;
             IsByDate = byDate;
             DateTimeFormats = Array.Empty<string>();
             SupportsAbsoluteEpisodeNumbers = true;

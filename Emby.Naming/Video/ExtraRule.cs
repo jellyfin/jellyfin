@@ -10,6 +10,14 @@ namespace Emby.Naming.Video
     /// </summary>
     public class ExtraRule
     {
+        public ExtraRule(ExtraType extraType, ExtraRuleType ruleType, string token, MediaType mediaType)
+        {
+            Token = token;
+            ExtraType = extraType;
+            RuleType = ruleType;
+            MediaType = mediaType;
+        }
+
         /// <summary>
         /// Gets or sets the token to use for matching against the file path.
         /// </summary>

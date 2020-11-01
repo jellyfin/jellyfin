@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.Common;
@@ -23,7 +24,7 @@ namespace Emby.Naming.AudioBook
 
             var audiobookFileInfos = files
                 .Select(i => audioBookResolver.Resolve(i.FullName, i.IsDirectory))
-                .Where(i => i != null)
+                .OfType<AudioBookFileInfo>()
                 .ToList();
 
             // Filter out all extras, otherwise they could cause stacks to not be resolved
@@ -36,9 +37,10 @@ namespace Emby.Naming.AudioBook
 
             foreach (var stack in stackResult)
             {
-                var stackFiles = stack.Files.Select(i => audioBookResolver.Resolve(i, stack.IsDirectoryStack)).ToList();
+                var stackFiles = stack.Files.Select(i => audioBookResolver.Resolve(i, stack.IsDirectoryStack)).OfType<AudioBookFileInfo>().ToList();
                 stackFiles.Sort();
-                var info = new AudioBookInfo { Files = stackFiles, Name = stack.Name };
+                // TODO nullable discover if name can be empty
+                var info = new AudioBookInfo(stack.Name ?? string.Empty) { Files = stackFiles };
 
                 yield return info;
             }

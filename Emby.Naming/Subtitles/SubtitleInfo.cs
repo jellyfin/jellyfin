@@ -4,6 +4,13 @@ namespace Emby.Naming.Subtitles
 {
     public class SubtitleInfo
     {
+        public SubtitleInfo(string path, bool isDefault, bool isForced)
+        {
+            Path = path;
+            IsDefault = isDefault;
+            IsForced = isForced;
+        }
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
@@ -14,7 +21,7 @@ namespace Emby.Naming.Subtitles
         /// Gets or sets the language.
         /// </summary>
         /// <value>The language.</value>
-        public string Language { get; set; }
+        public string? Language { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is default.

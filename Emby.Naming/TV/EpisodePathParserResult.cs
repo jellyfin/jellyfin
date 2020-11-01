@@ -10,7 +10,7 @@ namespace Emby.Naming.TV
 
         public int? EndingEpsiodeNumber { get; set; }
 
-        public string SeriesName { get; set; }
+        public string? SeriesName { get; set; }
 
         public bool Success { get; set; }
 

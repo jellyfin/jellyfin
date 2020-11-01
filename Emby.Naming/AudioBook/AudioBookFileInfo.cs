@@ -8,6 +8,23 @@ namespace Emby.Naming.AudioBook
     public class AudioBookFileInfo : IComparable<AudioBookFileInfo>
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="AudioBookFileInfo"/> class.
+        /// </summary>
+        /// <param name="path">Path to audiobook file.</param>
+        /// <param name="container">File type.</param>
+        /// <param name="partNumber">Number of part this file represents.</param>
+        /// <param name="chapterNumber">Number of chapter this file represents.</param>
+        /// <param name="isDirectory">Indication if we are looking at file or directory.</param>
+        public AudioBookFileInfo(string path, string container, int? partNumber = default, int? chapterNumber = default, bool isDirectory = default)
+        {
+            Path = path;
+            Container = container;
+            PartNumber = partNumber;
+            ChapterNumber = chapterNumber;
+            IsDirectory = isDirectory;
+        }
+
+        /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
@@ -38,7 +55,7 @@ namespace Emby.Naming.AudioBook
         public bool IsDirectory { get; set; }
 
         /// <inheritdoc />
-        public int CompareTo(AudioBookFileInfo other)
+        public int CompareTo(AudioBookFileInfo? other)
         {
             if (ReferenceEquals(this, other))
             {
