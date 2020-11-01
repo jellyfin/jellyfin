@@ -8,7 +8,5 @@ namespace Emby.Naming.AudioBook
         public int? PartNumber { get; set; }
 
         public int? ChapterNumber { get; set; }
-
-        public bool Success { get; set; }
     }
 }

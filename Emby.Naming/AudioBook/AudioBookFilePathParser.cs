@@ -52,8 +52,6 @@ namespace Emby.Naming.AudioBook
                 }
             }
 
-            result.Success = result.ChapterNumber.HasValue || result.PartNumber.HasValue;
-
             return result;
         }
     }
