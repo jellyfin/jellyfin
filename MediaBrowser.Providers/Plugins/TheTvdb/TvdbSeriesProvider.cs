@@ -86,12 +86,18 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 var imdbId = seriesInfo.GetProviderId(MetadataProvider.Imdb);
                 if (!string.IsNullOrEmpty(imdbId))
                 {
-                    tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProvider.Imdb.ToString(), seriesInfo.MetadataLanguage,
+                    tvdbId = await GetSeriesByRemoteId(
+                        imdbId,
+                        MetadataProvider.Imdb.ToString(),
+                        seriesInfo.MetadataLanguage,
                         cancellationToken).ConfigureAwait(false);
                 }
+            }
 
+            if (string.IsNullOrEmpty(tvdbId))
+            {
                 var zap2ItId = seriesInfo.GetProviderId(MetadataProvider.Zap2It);
-                if (string.IsNullOrEmpty(tvdbId) && !string.IsNullOrEmpty(zap2ItId))
+                if (!string.IsNullOrEmpty(zap2ItId))
                 {
                     tvdbId = await GetSeriesByRemoteId(zap2ItId, MetadataProvider.Zap2It.ToString(), seriesInfo.MetadataLanguage,
                         cancellationToken).ConfigureAwait(false);
