@@ -274,7 +274,7 @@ namespace Jellyfin.Api.Controllers
 
             foreach (var cont in containers)
             {
-                var parts = RequestHelpers.Split(cont, ',', true);
+                var parts = RequestHelpers.Split(cont, '|', true);
 
                 var audioCodecs = parts.Length == 1 ? null : string.Join(",", parts.Skip(1).ToArray());
 
