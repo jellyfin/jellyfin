@@ -22,21 +22,21 @@ namespace Emby.Naming.AudioBook
             var audioBookResolver = new AudioBookResolver(_options);
 
             var audiobookFileInfos = files
-                .Select(i => audioBookResolver.Resolve(i.FullName, i.IsDirectory))
+                .Select(i => audioBookResolver.Resolve(i.FullName))
                 .OfType<AudioBookFileInfo>()
                 .ToList();
 
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
             var metadata = audiobookFileInfos
-                .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = i.IsDirectory });
+                .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = false });
 
             var stackResult = new StackResolver(_options)
-                .ResolveAudioBooks(metadata);
+                .ResolveAudioBooks(audiobookFileInfos);
 
             foreach (var stack in stackResult)
             {
-                var stackFiles = stack.Files.Select(i => audioBookResolver.Resolve(i, stack.IsDirectoryStack)).OfType<AudioBookFileInfo>().ToList();
+                var stackFiles = stack.Files.Select(i => audioBookResolver.Resolve(i)).OfType<AudioBookFileInfo>().ToList();
                 stackFiles.Sort();
                 // TODO nullable discover if name can be empty
                 var info = new AudioBookInfo(stack.Name ?? string.Empty) { Files = stackFiles };

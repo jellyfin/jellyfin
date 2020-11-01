@@ -17,17 +17,11 @@ namespace Emby.Naming.AudioBook
             _options = options;
         }
 
-        public AudioBookFileInfo? Resolve(string path, bool isDirectory = false)
+        public AudioBookFileInfo? Resolve(string path)
         {
             if (path.Length == 0)
             {
                 throw new ArgumentException("String can't be empty.", nameof(path));
-            }
-
-            // TODO
-            if (isDirectory)
-            {
-                return null;
             }
 
             var extension = Path.GetExtension(path);
@@ -46,8 +40,7 @@ namespace Emby.Naming.AudioBook
                 path,
                 container,
                 chapterNumber: parsingResult.ChapterNumber,
-                partNumber: parsingResult.PartNumber,
-                isDirectory: isDirectory);
+                partNumber: parsingResult.PartNumber);
         }
     }
 }

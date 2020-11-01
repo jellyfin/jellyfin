@@ -14,14 +14,12 @@ namespace Emby.Naming.AudioBook
         /// <param name="container">File type.</param>
         /// <param name="partNumber">Number of part this file represents.</param>
         /// <param name="chapterNumber">Number of chapter this file represents.</param>
-        /// <param name="isDirectory">Indication if we are looking at file or directory.</param>
-        public AudioBookFileInfo(string path, string container, int? partNumber = default, int? chapterNumber = default, bool isDirectory = default)
+        public AudioBookFileInfo(string path, string container, int? partNumber = default, int? chapterNumber = default)
         {
             Path = path;
             Container = container;
             PartNumber = partNumber;
             ChapterNumber = chapterNumber;
-            IsDirectory = isDirectory;
         }
 
         /// <summary>
@@ -47,12 +45,6 @@ namespace Emby.Naming.AudioBook
         /// </summary>
         /// <value>The chapter number.</value>
         public int? ChapterNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is a directory.
-        /// </summary>
-        /// <value>The type.</value>
-        public bool IsDirectory { get; set; }
 
         /// <inheritdoc />
         public int CompareTo(AudioBookFileInfo? other)
