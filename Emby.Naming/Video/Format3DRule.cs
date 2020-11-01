@@ -4,10 +4,10 @@ namespace Emby.Naming.Video
 {
     public class Format3DRule
     {
-        public Format3DRule(string token, string? preceedingToken = null)
+        public Format3DRule(string token, string? precedingToken = null)
         {
             Token = token;
-            PreceedingToken = preceedingToken;
+            PrecedingToken = precedingToken;
         }
 
         /// <summary>
@@ -17,9 +17,9 @@ namespace Emby.Naming.Video
         public string Token { get; set; }
 
         /// <summary>
-        /// Gets or sets the preceeding token.
+        /// Gets or sets the preceding token.
         /// </summary>
-        /// <value>The preceeding token.</value>
-        public string? PreceedingToken { get; set; }
+        /// <value>The preceding token.</value>
+        public string? PrecedingToken { get; set; }
     }
 }

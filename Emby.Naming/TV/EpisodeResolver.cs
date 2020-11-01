@@ -58,7 +58,7 @@ namespace Emby.Naming.TV
             {
                 Container = container,
                 IsStub = isStub,
-                EndingEpsiodeNumber = parsingResult.EndingEpsiodeNumber,
+                EndingEpisodeNumber = parsingResult.EndingEpisodeNumber,
                 EpisodeNumber = parsingResult.EpisodeNumber,
                 SeasonNumber = parsingResult.SeasonNumber,
                 SeriesName = parsingResult.SeriesName,

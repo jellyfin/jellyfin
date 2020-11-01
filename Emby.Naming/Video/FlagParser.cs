@@ -20,7 +20,7 @@ namespace Emby.Naming.Video
             return GetFlags(path, _options.VideoFlagDelimiters);
         }
 
-        public string[] GetFlags(string path, char[] delimeters)
+        public string[] GetFlags(string path, char[] delimiters)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -31,7 +31,7 @@ namespace Emby.Naming.Video
 
             var file = Path.GetFileName(path);
 
-            return file.Split(delimeters, StringSplitOptions.RemoveEmptyEntries);
+            return file.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

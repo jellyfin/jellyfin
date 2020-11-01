@@ -18,11 +18,11 @@ namespace Emby.Naming.Video
         public Format3DResult Parse(string path)
         {
             int oldLen = _options.VideoFlagDelimiters.Length;
-            var delimeters = new char[oldLen + 1];
-            _options.VideoFlagDelimiters.CopyTo(delimeters, 0);
-            delimeters[oldLen] = ' ';
+            var delimiters = new char[oldLen + 1];
+            _options.VideoFlagDelimiters.CopyTo(delimiters, 0);
+            delimiters[oldLen] = ' ';
 
-            return Parse(new FlagParser(_options).GetFlags(path, delimeters));
+            return Parse(new FlagParser(_options).GetFlags(path, delimiters));
         }
 
         internal Format3DResult Parse(string[] videoFlags)
@@ -44,7 +44,7 @@ namespace Emby.Naming.Video
         {
             var result = new Format3DResult();
 
-            if (string.IsNullOrEmpty(rule.PreceedingToken))
+            if (string.IsNullOrEmpty(rule.PrecedingToken))
             {
                 result.Format3D = new[] { rule.Token }.FirstOrDefault(i => videoFlags.Contains(i, StringComparer.OrdinalIgnoreCase));
                 result.Is3D = !string.IsNullOrEmpty(result.Format3D);
@@ -63,7 +63,7 @@ namespace Emby.Naming.Video
                 {
                     if (foundPrefix)
                     {
-                        result.Tokens.Add(rule.PreceedingToken);
+                        result.Tokens.Add(rule.PrecedingToken);
 
                         if (string.Equals(rule.Token, flag, StringComparison.OrdinalIgnoreCase))
                         {
@@ -74,7 +74,7 @@ namespace Emby.Naming.Video
                         break;
                     }
 
-                    foundPrefix = string.Equals(flag, rule.PreceedingToken, StringComparison.OrdinalIgnoreCase);
+                    foundPrefix = string.Equals(flag, rule.PrecedingToken, StringComparison.OrdinalIgnoreCase);
                 }
 
                 result.Is3D = foundPrefix && !string.IsNullOrEmpty(format);

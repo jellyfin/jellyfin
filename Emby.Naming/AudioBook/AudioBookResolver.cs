@@ -47,7 +47,7 @@ namespace Emby.Naming.AudioBook
                 container,
                 chapterNumber: parsingResult.ChapterNumber,
                 partNumber: parsingResult.PartNumber,
-                isDirectory: isDirectory );
+                isDirectory: isDirectory);
         }
     }
 }

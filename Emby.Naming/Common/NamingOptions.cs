@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using Emby.Naming.Video;
 using MediaBrowser.Model.Entities;
 
+// ReSharper disable StringLiteralTypo
+
 namespace Emby.Naming.Common
 {
     public class NamingOptions
@@ -531,19 +533,19 @@ namespace Emby.Naming.Common
             {
                 // Kodi rules:
                 new Format3DRule(
-                    preceedingToken: "3d",
+                    precedingToken: "3d",
                     token: "hsbs"),
 
                 new Format3DRule(
-                    preceedingToken: "3d",
+                    precedingToken: "3d",
                     token: "sbs"),
 
                 new Format3DRule(
-                    preceedingToken: "3d",
+                    precedingToken: "3d",
                     token: "htab"),
 
                 new Format3DRule(
-                    preceedingToken: "3d",
+                    precedingToken: "3d",
                     token: "tab"),
 
                  // Media Browser rules:
@@ -608,7 +610,7 @@ namespace Emby.Naming.Common
                 ".mxf"
             });
 
-            MultipleEpisodeExpressions = new string[]
+            MultipleEpisodeExpressions = new[]
             {
                 @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
                 @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",

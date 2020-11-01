@@ -146,7 +146,7 @@ namespace Emby.Naming.TV
                         {
                             if (int.TryParse(endingNumberGroup.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
                             {
-                                result.EndingEpsiodeNumber = num;
+                                result.EndingEpisodeNumber = num;
                             }
                         }
                     }
@@ -217,13 +217,13 @@ namespace Emby.Naming.TV
                     info.SeriesName = result.SeriesName;
                 }
 
-                if (!info.EndingEpsiodeNumber.HasValue && info.EpisodeNumber.HasValue)
+                if (!info.EndingEpisodeNumber.HasValue && info.EpisodeNumber.HasValue)
                 {
-                    info.EndingEpsiodeNumber = result.EndingEpsiodeNumber;
+                    info.EndingEpisodeNumber = result.EndingEpisodeNumber;
                 }
 
                 if (!string.IsNullOrEmpty(info.SeriesName)
-                    && (!info.EpisodeNumber.HasValue || info.EndingEpsiodeNumber.HasValue))
+                    && (!info.EpisodeNumber.HasValue || info.EndingEpisodeNumber.HasValue))
                 {
                     break;
                 }

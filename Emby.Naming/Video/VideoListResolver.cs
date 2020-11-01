@@ -136,7 +136,7 @@ namespace Emby.Naming.Video
             }
 
             // If there's only one video, accept all trailers
-            // Be lenient because people use all kinds of mish mash conventions with trailers
+            // Be lenient because people use all kinds of mishmash conventions with trailers
             if (list.Count == 1)
             {
                 var trailers = remainingFiles

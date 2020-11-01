@@ -55,7 +55,7 @@ namespace Emby.Naming.TV
 
         public int? EpisodeNumber { get; set; }
 
-        public int? EndingEpsiodeNumber { get; set; }
+        public int? EndingEpisodeNumber { get; set; }
 
         public int? Year { get; set; }
 
