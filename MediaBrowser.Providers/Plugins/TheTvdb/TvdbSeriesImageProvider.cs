@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            if (!TvdbSeriesProvider.IsValidSeries(item.ProviderIds))
+            if (!TvdbSeriesProvider.IsValidSeries(item))
             {
                 return Array.Empty<RemoteImageInfo>();
             }

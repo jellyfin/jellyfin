@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             // Either an episode number or date must be provided; and the dictionary of provider ids must be valid
             if ((searchInfo.IndexNumber == null && searchInfo.PremiereDate == null)
-                || !TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds))
+                || !TvdbSeriesProvider.IsValidSeries(searchInfo))
             {
                 return list;
             }
@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 QueriedById = true
             };
 
-            if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) &&
+            if (TvdbSeriesProvider.IsValidSeries(searchInfo) &&
                 (searchInfo.IndexNumber.HasValue || searchInfo.PremiereDate.HasValue))
             {
                 result = await GetEpisode(searchInfo, cancellationToken).ConfigureAwait(false);

@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var season = (Season)item;
             var series = season.Series;
 
-            if (series == null || !season.IndexNumber.HasValue || !TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
+            if (series == null || !season.IndexNumber.HasValue || !TvdbSeriesProvider.IsValidSeries(series))
             {
                 return Array.Empty<RemoteImageInfo>();
             }
