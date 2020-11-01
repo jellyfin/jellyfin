@@ -21,7 +21,8 @@ namespace Emby.Naming.AudioBook
         {
             if (path.Length == 0)
             {
-                throw new ArgumentException("String can't be empty.", nameof(path));
+                // Return null to indicate this path will not be used, instead of stopping whole process with exception
+                return null;
             }
 
             var extension = Path.GetExtension(path);

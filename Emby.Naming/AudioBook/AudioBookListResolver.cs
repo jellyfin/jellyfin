@@ -1,6 +1,8 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
@@ -21,25 +23,27 @@ namespace Emby.Naming.AudioBook
         {
             var audioBookResolver = new AudioBookResolver(_options);
 
+            // File with empty fullname will be sorted out here
             var audiobookFileInfos = files
                 .Select(i => audioBookResolver.Resolve(i.FullName))
                 .OfType<AudioBookFileInfo>()
                 .ToList();
-
-            // Filter out all extras, otherwise they could cause stacks to not be resolved
-            // See the unit test TestStackedWithTrailer
-            var metadata = audiobookFileInfos
-                .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = false });
 
             var stackResult = new StackResolver(_options)
                 .ResolveAudioBooks(audiobookFileInfos);
 
             foreach (var stack in stackResult)
             {
-                var stackFiles = stack.Files.Select(i => audioBookResolver.Resolve(i)).OfType<AudioBookFileInfo>().ToList();
+                var stackFiles = stack.Files
+                    .Select(i => audioBookResolver.Resolve(i))
+                    .OfType<AudioBookFileInfo>()
+                    .ToList();
+
                 stackFiles.Sort();
-                // TODO nullable discover if name can be empty
-                var info = new AudioBookInfo(stack.Name ?? string.Empty) { Files = stackFiles };
+
+                // stack.Name can be empty when we have file without folder, but always have some files
+                var name = string.IsNullOrEmpty(stack.Name) ? stack.Files[0] : stack.Name;
+                var info = new AudioBookInfo(name) { Files = stackFiles };
 
                 yield return info;
             }

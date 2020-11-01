@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
 using MediaBrowser.Model.IO;
@@ -80,6 +81,41 @@ namespace Jellyfin.Naming.Tests.AudioBook
             })).ToList();
 
             Assert.Single(result);
+        }
+
+        [Fact]
+        public void TestWithoutFolder()
+        {
+            var files = new[]
+            {
+                "Harry Potter and the Deathly Hallows trailer.mp3"
+            };
+
+            var resolver = GetResolver();
+
+            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            {
+                IsDirectory = false,
+                FullName = i
+            })).ToList();
+
+            Assert.Single(result);
+        }
+
+        [Fact]
+        public void TestEmpty()
+        {
+            var files = Array.Empty<string>();
+
+            var resolver = GetResolver();
+
+            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            {
+                IsDirectory = false,
+                FullName = i
+            })).ToList();
+
+            Assert.Empty(result);
         }
 
         private AudioBookListResolver GetResolver()
