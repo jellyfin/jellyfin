@@ -35,10 +35,6 @@ namespace Jellyfin.Naming.Tests.AudioBook
             };
         }
 
-        public static IEnumerable<object[]> GetPathsWithInvalidExtensions()
-        {
-            yield return new object[] { @"/server/AudioBooks/Larry Potter/Larry Potter.mp9" };
-        }
 
         [Theory]
         [MemberData(nameof(GetResolveFileTestData))]
@@ -53,11 +49,10 @@ namespace Jellyfin.Naming.Tests.AudioBook
             Assert.Equal(result!.PartNumber, expectedResult.PartNumber);
         }
 
-        [Theory]
-        [MemberData(nameof(GetPathsWithInvalidExtensions))]
-        public void Resolve_InvalidExtension(string path)
+        [Fact]
+        public void Resolve_InvalidExtension()
         {
-            var result = new AudioBookResolver(_namingOptions).Resolve(path);
+            var result = new AudioBookResolver(_namingOptions).Resolve(@"/server/AudioBooks/Larry Potter/Larry Potter.mp9");
 
             Assert.Null(result);
         }

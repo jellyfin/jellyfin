@@ -44,6 +44,64 @@ namespace Jellyfin.Naming.Tests.AudioBook
         }
 
         [Fact]
+        public void TestAlternativeVersions()
+        {
+            var files = new[]
+            {
+                "Harry Potter and the Deathly Hallows/Chapter 1.ogg",
+                "Harry Potter and the Deathly Hallows/Chapter 1.mp3",
+
+                "Deadpool.ogg",
+                "Deadpool.mp3",
+
+                "Batman/Chapter 1.mp3"
+            };
+
+            var resolver = GetResolver();
+
+            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            {
+                IsDirectory = false,
+                FullName = i
+            })).ToList();
+
+            Assert.Equal(3, result[0].Files.Count);
+            Assert.NotEmpty(result[0].AlternateVersions);
+            Assert.NotEmpty(result[1].AlternateVersions);
+            Assert.Empty(result[2].AlternateVersions);
+        }
+
+        [Fact]
+        public void TestYearExtraction()
+        {
+            var files = new[]
+            {
+                "Harry Potter and the Deathly Hallows (2007)/Chapter 1.ogg",
+                "Harry Potter and the Deathly Hallows (2007)/Chapter 2.mp3",
+
+                "Batman (2020).ogg",
+
+                "Batman(2021).mp3",
+
+                "Batman.mp3"
+            };
+
+            var resolver = GetResolver();
+
+            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            {
+                IsDirectory = false,
+                FullName = i
+            })).ToList();
+
+            Assert.Equal(3, result[0].Files.Count);
+            Assert.Equal(2007, result[0].Year);
+            Assert.Equal(2020, result[1].Year);
+            Assert.Equal(2021, result[2].Year);
+            Assert.Null(result[2].Year);
+        }
+
+        [Fact]
         public void TestWithMetadata()
         {
             var files = new[]
