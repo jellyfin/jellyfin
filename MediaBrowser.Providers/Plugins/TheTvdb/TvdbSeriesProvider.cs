@@ -99,7 +99,10 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 var zap2ItId = seriesInfo.GetProviderId(MetadataProvider.Zap2It);
                 if (!string.IsNullOrEmpty(zap2ItId))
                 {
-                    tvdbId = await GetSeriesByRemoteId(zap2ItId, MetadataProvider.Zap2It.ToString(), seriesInfo.MetadataLanguage,
+                    tvdbId = await GetSeriesByRemoteId(
+                        zap2ItId,
+                        MetadataProvider.Zap2It.ToString(),
+                        seriesInfo.MetadataLanguage,
                         cancellationToken).ConfigureAwait(false);
                 }
             }
