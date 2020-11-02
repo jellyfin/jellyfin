@@ -272,6 +272,11 @@ namespace MediaBrowser.Model.Configuration
         public string[] KnownProxies { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of days we should retain activity logs.
+        /// </summary>
+        public int? ActivityLogRetentionDays { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -381,6 +386,7 @@ namespace MediaBrowser.Model.Configuration
             SlowResponseThresholdMs = 500;
             CorsHosts = new[] { "*" };
             KnownProxies = Array.Empty<string>();
+            ActivityLogRetentionDays = 30;
         }
     }
 
