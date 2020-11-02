@@ -145,7 +145,7 @@ namespace Jellyfin.Api.Controllers
                 NameLessThan = nameLessThan,
                 NameStartsWith = nameStartsWith,
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
-                Tags = RequestHelpers.Split(tags, ',', true),
+                Tags = RequestHelpers.Split(tags, '|', true),
                 OfficialRatings = RequestHelpers.Split(officialRatings, ',', true),
                 Genres = RequestHelpers.Split(genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(genreIds),
