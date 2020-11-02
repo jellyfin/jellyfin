@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
@@ -72,33 +73,69 @@ namespace Jellyfin.Naming.Tests.AudioBook
         }
 
         [Fact]
-        public void TestYearExtraction()
+        public void TestNameYearExtraction()
         {
-            var files = new[]
+            var data = new[]
             {
-                "Harry Potter and the Deathly Hallows (2007)/Chapter 1.ogg",
-                "Harry Potter and the Deathly Hallows (2007)/Chapter 2.mp3",
-
-                "Batman (2020).ogg",
-
-                "Batman(2021).mp3",
-
-                "Batman.mp3"
+                new NameYearPath
+                {
+                    Name = "Harry Potter and the Deathly Hallows",
+                    Path = "Harry Potter and the Deathly Hallows (2007)/Chapter 1.ogg",
+                    Year = 2007
+                },
+                new NameYearPath
+                {
+                    Name = "Batman",
+                    Path = "Batman (2020).ogg",
+                    Year = 2020
+                },
+                new NameYearPath
+                {
+                    Name = "Batman",
+                    Path = "Batman( 2021 ).mp3",
+                    Year = 2021
+                },
+                new NameYearPath
+                {
+                    Name = "Batman(*2021*)",
+                    Path = "Batman(*2021*).mp3",
+                    Year = null
+                },
+                new NameYearPath
+                {
+                    Name = "Batman",
+                    Path = "Batman.mp3",
+                    Year = null
+                },
+                new NameYearPath
+                {
+                    Name = "+ Batman .",
+                    Path = " + Batman . .mp3",
+                    Year = null
+                },
+                new NameYearPath
+                {
+                    Name = " ",
+                    Path = " .mp3",
+                    Year = null
+                }
             };
 
             var resolver = GetResolver();
 
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = resolver.Resolve(data.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
-                FullName = i
+                FullName = i.Path
             })).ToList();
 
-            Assert.Equal(3, result[0].Files.Count);
-            Assert.Equal(2007, result[0].Year);
-            Assert.Equal(2020, result[1].Year);
-            Assert.Equal(2021, result[2].Year);
-            Assert.Null(result[2].Year);
+            Assert.Equal(data.Length, result.Count);
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                Assert.Equal(data[i].Name, result[i].Name);
+                Assert.Equal(data[i].Year, result[i].Year);
+            }
         }
 
         [Fact]
@@ -179,6 +216,13 @@ namespace Jellyfin.Naming.Tests.AudioBook
         private AudioBookListResolver GetResolver()
         {
             return new AudioBookListResolver(_namingOptions);
+        }
+
+        internal struct NameYearPath
+        {
+            public string Name;
+            public string Path;
+            public int? Year;
         }
     }
 }

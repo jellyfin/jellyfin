@@ -41,9 +41,9 @@ namespace Emby.Naming.AudioBook
 
                 stackFiles.Sort();
 
-                // stack.Name can be empty when we have file without folder, but always have some files
-                var name = string.IsNullOrEmpty(stack.Name) ? stack.Files[0] : stack.Name;
-                var info = new AudioBookInfo(name) { Files = stackFiles };
+                var result = new AudioBookNameParser(_options).Parse(stack.Name);
+
+                var info = new AudioBookInfo(result.Name, result.Year) { Files = stackFiles };
 
                 yield return info;
             }

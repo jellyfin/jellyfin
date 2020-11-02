@@ -575,6 +575,13 @@ namespace Emby.Naming.Common
                 @"dis(?:c|k)[\s_-]?(?<chapter>[0-9]+)"
             };
 
+            AudioBookNamesExpressions = new[]
+            {
+                // Detect year usually in brackets after name Batman (2020)
+                @"^(?<name>.+?)\s*\(\s*(?<year>\d{4})\s*\)\s*$",
+                @"^\s*(?<name>.+?)\s*$"
+            };
+
             var extensions = VideoFileExtensions.ToList();
 
             extensions.AddRange(new[]
@@ -657,6 +664,8 @@ namespace Emby.Naming.Common
         public string[] StubFileExtensions { get; set; }
 
         public string[] AudioBookPartsExpressions { get; set; }
+
+        public string[] AudioBookNamesExpressions { get; set; }
 
         public StubTypeRule[] StubTypes { get; set; }
 

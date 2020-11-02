@@ -36,13 +36,25 @@ namespace Emby.Naming.Video
 
             foreach (var directory in groupedDirectoryFiles)
             {
-                var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
-                foreach (var file in directory)
+                if (string.IsNullOrEmpty(directory.Key))
                 {
-                    stack.Files.Add(file.Path);
+                    foreach (var file in directory)
+                    {
+                        var stack = new FileStack { Name = Path.GetFileNameWithoutExtension(file.Path), IsDirectoryStack = false };
+                        stack.Files.Add(file.Path);
+                        yield return stack;
+                    }
                 }
+                else
+                {
+                    var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
+                    foreach (var file in directory)
+                    {
+                        stack.Files.Add(file.Path);
+                    }
 
-                yield return stack;
+                    yield return stack;
+                }
             }
         }
 

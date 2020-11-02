@@ -35,7 +35,6 @@ namespace Jellyfin.Naming.Tests.AudioBook
             };
         }
 
-
         [Theory]
         [MemberData(nameof(GetResolveFileTestData))]
         public void Resolve_ValidFileName_Success(AudioBookFileInfo expectedResult)
