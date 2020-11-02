@@ -20,11 +20,20 @@ namespace Jellyfin.Naming.Tests.AudioBook
             {
                 "Harry Potter and the Deathly Hallows/Part 1.mp3",
                 "Harry Potter and the Deathly Hallows/Part 2.mp3",
-                "Harry Potter and the Deathly Hallows/book.nfo",
+                "Harry Potter and the Deathly Hallows/Extra.mp3",
 
                 "Batman/Chapter 1.mp3",
                 "Batman/Chapter 2.mp3",
                 "Batman/Chapter 3.mp3",
+
+                "Ready Player One (2020)/Ready Player One.mp3",
+                "Ready Player One (2020)/extra.mp3",
+
+                "Badman/audiobook.mp3",
+                "Badman/extra.mp3",
+
+                "Superman (2020)/book.mp3",
+                "Superman (2020)/extra.mp3"
             };
 
             var resolver = GetResolver();
@@ -35,13 +44,21 @@ namespace Jellyfin.Naming.Tests.AudioBook
                 FullName = i
             })).ToList();
 
-            Assert.Equal(2, result[0].Files.Count);
-            // Assert.Empty(result[0].Extras); FIXME: AudioBookListResolver should resolve extra files properly
+            Assert.Equal(4, result[0].Files.Count);
+            Assert.Single(result[0].Extras);
             Assert.Equal("Harry Potter and the Deathly Hallows", result[0].Name);
 
             Assert.Equal(3, result[1].Files.Count);
             Assert.Empty(result[1].Extras);
             Assert.Equal("Batman", result[1].Name);
+
+            Assert.Equal(2, result[2].Files.Count);
+            Assert.Single(result[2].Extras);
+            Assert.Equal("Badman", result[2].Name);
+
+            Assert.Equal(2, result[3].Files.Count);
+            Assert.Single(result[3].Extras);
+            Assert.Equal("Superman", result[3].Name);
         }
 
         [Fact]
@@ -52,10 +69,19 @@ namespace Jellyfin.Naming.Tests.AudioBook
                 "Harry Potter and the Deathly Hallows/Chapter 1.ogg",
                 "Harry Potter and the Deathly Hallows/Chapter 1.mp3",
 
-                "Deadpool.ogg",
-                "Deadpool.mp3",
+                "Aqua-man/book.mp3",
 
-                "Batman/Chapter 1.mp3"
+                "Deadpool.mp3",
+                "Deadpool [HQ].mp3",
+
+                "Superman/book.mp3",
+                "Superman/audiobook.mp3",
+                "Superman/Superman.mp3",
+                "Superman/Superman [HQ].mp3",
+                "Superman/extra.mp3",
+
+                "Batman/ Chapter 1 .mp3",
+                "Batman/Chapter 1[loss-less].mp3"
             };
 
             var resolver = GetResolver();
@@ -66,10 +92,27 @@ namespace Jellyfin.Naming.Tests.AudioBook
                 FullName = i
             })).ToList();
 
-            Assert.Equal(3, result[0].Files.Count);
-            Assert.NotEmpty(result[0].AlternateVersions);
-            Assert.NotEmpty(result[1].AlternateVersions);
+            Assert.Equal(6, result[0].Files.Count);
+            // HP - Same name so we don't care which file is alternative
+            Assert.Single(result[0].AlternateVersions);
+            // Aqua-man
+            Assert.Empty(result[1].AlternateVersions);
+            // DP
             Assert.Empty(result[2].AlternateVersions);
+            // DP HQ (directory missing so we do not group deadpools together)
+            Assert.Empty(result[3].AlternateVersions);
+            // Superman
+            // Priority:
+            //  1. Name
+            //  2. audiobook
+            //  3. book
+            //  4. Names with modifiers
+            Assert.Equal(3, result[4].AlternateVersions.Count);
+            Assert.Equal("Superman/audiobook.mp3", result[4].AlternateVersions[0].Path);
+            Assert.Equal("Superman/book.mp3", result[4].AlternateVersions[1].Path);
+            Assert.Equal("Superman/Superman [HQ].mp3", result[4].AlternateVersions[2].Path);
+            // Batman
+            Assert.Single(result[5].AlternateVersions);
         }
 
         [Fact]
