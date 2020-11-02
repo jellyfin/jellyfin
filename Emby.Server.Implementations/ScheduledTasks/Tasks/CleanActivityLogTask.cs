@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
@@ -16,18 +17,22 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     {
         private readonly ILocalizationManager _localization;
         private readonly IActivityManager _activityManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CleanActivityLogTask"/> class.
         /// </summary>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="activityManager">Instance of the <see cref="IActivityManager"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         public CleanActivityLogTask(
             ILocalizationManager localization,
-            IActivityManager activityManager)
+            IActivityManager activityManager,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _localization = localization;
             _activityManager = activityManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <inheritdoc />
@@ -54,8 +59,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <inheritdoc />
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            // TODO allow configure
-            var startDate = DateTime.UtcNow.AddDays(-30);
+            var retentionDays = _serverConfigurationManager.Configuration.ActivityLogRetentionDays;
+            if (!retentionDays.HasValue || retentionDays <= 0)
+            {
+                throw new Exception($"Activity Log Retention days must be at least 0. Currently: {retentionDays}");
+            }
+
+            var startDate = DateTime.UtcNow.AddDays(retentionDays.Value * -1);
             return _activityManager.CleanAsync(startDate);
         }
 
