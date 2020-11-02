@@ -3914,7 +3914,7 @@ namespace Emby.Server.Implementations.Data
                 if (query.IsPlayed.HasValue)
                 {
                     // We should probably figure this out for all folders, but for right now, this is the only place where we need it
-                    if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(Series).Name, StringComparison.OrdinalIgnoreCase))
+                    if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(Series), StringComparison.OrdinalIgnoreCase))
                     {
                         if (query.IsPlayed.Value)
                         {
@@ -4755,29 +4755,29 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<string>();
 
-            if (IsTypeInQuery(typeof(Person).Name, query))
+            if (IsTypeInQuery(nameof(Person), query))
             {
-                list.Add(typeof(Person).Name);
+                list.Add(nameof(Person));
             }
 
-            if (IsTypeInQuery(typeof(Genre).Name, query))
+            if (IsTypeInQuery(nameof(Genre), query))
             {
-                list.Add(typeof(Genre).Name);
+                list.Add(nameof(Genre));
             }
 
-            if (IsTypeInQuery(typeof(MusicGenre).Name, query))
+            if (IsTypeInQuery(nameof(MusicGenre), query))
             {
-                list.Add(typeof(MusicGenre).Name);
+                list.Add(nameof(MusicGenre));
             }
 
-            if (IsTypeInQuery(typeof(MusicArtist).Name, query))
+            if (IsTypeInQuery(nameof(MusicArtist), query))
             {
-                list.Add(typeof(MusicArtist).Name);
+                list.Add(nameof(MusicArtist));
             }
 
-            if (IsTypeInQuery(typeof(Studio).Name, query))
+            if (IsTypeInQuery(nameof(Studio), query))
             {
-                list.Add(typeof(Studio).Name);
+                list.Add(nameof(Studio));
             }
 
             return list;
@@ -4832,12 +4832,12 @@ namespace Emby.Server.Implementations.Data
 
             var types = new[]
             {
-                typeof(Episode).Name,
-                typeof(Video).Name,
-                typeof(Movie).Name,
-                typeof(MusicVideo).Name,
-                typeof(Series).Name,
-                typeof(Season).Name
+                nameof(Episode),
+                nameof(Video),
+                nameof(Movie),
+                nameof(MusicVideo),
+                nameof(Series),
+                nameof(Season)
             };
 
             if (types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase)))

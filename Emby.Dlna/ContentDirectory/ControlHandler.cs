@@ -487,7 +487,7 @@ namespace Emby.Dlna.ContentDirectory
                 User = user,
                 Recursive = true,
                 IsMissing = false,
-                ExcludeItemTypes = new[] { typeof(Book).Name },
+                ExcludeItemTypes = new[] { nameof(Book) },
                 IsFolder = isFolder,
                 MediaTypes = mediaTypes,
                 DtoOptions = GetDtoOptions()
@@ -556,7 +556,7 @@ namespace Emby.Dlna.ContentDirectory
                 Limit = limit,
                 StartIndex = startIndex,
                 IsVirtualItem = false,
-                ExcludeItemTypes = new[] { typeof(Book).Name },
+                ExcludeItemTypes = new[] { nameof(Book) },
                 IsPlaceHolder = false,
                 DtoOptions = GetDtoOptions()
             };
@@ -575,7 +575,7 @@ namespace Emby.Dlna.ContentDirectory
                 StartIndex = startIndex,
                 Limit = limit,
             };
-            query.IncludeItemTypes = new[] { typeof(LiveTvChannel).Name };
+            query.IncludeItemTypes = new[] { nameof(LiveTvChannel) };
 
             SetSorting(query, sort, false);
 
@@ -910,7 +910,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(Series).Name };
+            query.IncludeItemTypes = new[] { nameof(Series) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -923,7 +923,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(Movie).Name };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -936,7 +936,7 @@ namespace Emby.Dlna.ContentDirectory
             // query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(BoxSet).Name };
+            query.IncludeItemTypes = new[] { nameof(BoxSet) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -949,7 +949,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(MusicAlbum).Name };
+            query.IncludeItemTypes = new[] { nameof(MusicAlbum) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -962,7 +962,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { typeof(Audio).Name };
+            query.IncludeItemTypes = new[] { nameof(Audio) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -975,7 +975,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(Audio).Name };
+            query.IncludeItemTypes = new[] { nameof(Audio) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -988,7 +988,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(Series).Name };
+            query.IncludeItemTypes = new[] { nameof(Series) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1001,7 +1001,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(Episode).Name };
+            query.IncludeItemTypes = new[] { nameof(Episode) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1014,7 +1014,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(Movie).Name };
+            query.IncludeItemTypes = new[] { nameof(Movie) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1027,7 +1027,7 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { typeof(MusicAlbum).Name };
+            query.IncludeItemTypes = new[] { nameof(MusicAlbum) };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1181,7 +1181,7 @@ namespace Emby.Dlna.ContentDirectory
                 {
                     UserId = user.Id,
                     Limit = 50,
-                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    IncludeItemTypes = new[] { nameof(Episode) },
                     ParentId = parent == null ? Guid.Empty : parent.Id,
                     GroupItems = false
                 },
@@ -1215,7 +1215,7 @@ namespace Emby.Dlna.ContentDirectory
                 Recursive = true,
                 ParentId = parentId,
                 ArtistIds = new[] { item.Id },
-                IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()
@@ -1259,7 +1259,7 @@ namespace Emby.Dlna.ContentDirectory
                 Recursive = true,
                 ParentId = parentId,
                 GenreIds = new[] { item.Id },
-                IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()
