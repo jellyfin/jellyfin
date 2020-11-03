@@ -83,6 +83,7 @@ jobs:
 
       - task: DotNetCoreCLI@2
         displayName: 'Execute ABI Compatibility Check Tool'
+        enabled: false
         inputs:
           command: custom
           custom: compat
