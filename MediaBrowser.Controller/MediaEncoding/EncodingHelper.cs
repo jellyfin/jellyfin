@@ -2675,9 +2675,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             state.MediaSource = mediaSource;
 
             var request = state.BaseRequest;
-            if (!string.IsNullOrWhiteSpace(request.AudioCodec))
+            var supportedAudioCodecs = state.SupportedAudioCodecs;
+            if (request != null && supportedAudioCodecs != null && supportedAudioCodecs.Length > 0)
             {
-                var supportedAudioCodecsList = request.AudioCodec.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var supportedAudioCodecsList = supportedAudioCodecs.ToList();
 
                 ShiftAudioCodecsIfNeeded(supportedAudioCodecsList, state.AudioStream);
 

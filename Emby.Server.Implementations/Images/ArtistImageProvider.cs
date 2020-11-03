@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Images
             // return _libraryManager.GetItemList(new InternalItemsQuery
             // {
             //    ArtistIds = new[] { item.Id },
-            //    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+            //    IncludeItemTypes = new[] { nameof(MusicAlbum) },
             //    OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
             //    Limit = 4,
             //    Recursive = true,

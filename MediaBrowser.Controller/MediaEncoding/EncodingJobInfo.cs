@@ -287,6 +287,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return BaseRequest.AudioChannels;
             }
 
+            if (BaseRequest.TranscodingMaxAudioChannels.HasValue)
+            {
+                return BaseRequest.TranscodingMaxAudioChannels;
+            }
+
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "audiochannels");

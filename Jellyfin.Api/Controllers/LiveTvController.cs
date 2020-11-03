@@ -592,7 +592,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 SeriesTimerId = seriesTimerId,
-                Genres = RequestHelpers.Split(genres, ',', true),
+                Genres = RequestHelpers.Split(genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(genreIds)
             };
 
@@ -648,7 +648,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = body.IsKids,
                 IsSports = body.IsSports,
                 SeriesTimerId = body.SeriesTimerId,
-                Genres = RequestHelpers.Split(body.Genres, ',', true),
+                Genres = RequestHelpers.Split(body.Genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(body.GenreIds)
             };
 

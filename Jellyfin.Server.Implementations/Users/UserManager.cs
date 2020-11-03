@@ -432,11 +432,9 @@ namespace Jellyfin.Server.Implementations.Users
                     // the authentication provider might have created it
                     user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user != null)
                     {
-                        UpdatePolicy(user.Id, hasNewUserPolicy.GetNewUserPolicy());
-
-                        await UpdateUserAsync(user).ConfigureAwait(false);
+                        await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
                     }
                 }
             }
@@ -615,9 +613,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void UpdateConfiguration(Guid userId, UserConfiguration config)
+        public async Task UpdateConfigurationAsync(Guid userId, UserConfiguration config)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -644,13 +642,13 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
             dbContext.Update(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public void UpdatePolicy(Guid userId, UserPolicy policy)
+        public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -715,15 +713,15 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public void ClearProfileImage(User user)
+        public async Task ClearProfileImageAsync(User user)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
             user.ProfileImage = null;
         }
 
