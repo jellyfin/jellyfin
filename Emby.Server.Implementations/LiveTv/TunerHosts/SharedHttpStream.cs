@@ -122,6 +122,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
+        public string GetFilePath()
+        {
+            return TempFilePath;
+        }
+
         private Task StartStreaming(HttpResponseMessage response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>

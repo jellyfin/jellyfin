@@ -82,20 +82,23 @@ namespace Jellyfin.Api.Helpers
             int totalBytesRead = 0;
             int remainingBytesToRead = count;
 
+            int newOffset = offset;
             while (remainingBytesToRead > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 int bytesRead;
                 if (_allowAsyncFileRead)
                 {
-                    bytesRead = await _fileStream.ReadAsync(buffer, offset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
+                    bytesRead = await _fileStream.ReadAsync(buffer, newOffset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    bytesRead = _fileStream.Read(buffer, offset, remainingBytesToRead);
+                    bytesRead = _fileStream.Read(buffer, newOffset, remainingBytesToRead);
                 }
 
                 remainingBytesToRead -= bytesRead;
+                newOffset += bytesRead;
+
                 if (bytesRead > 0)
                 {
                     _bytesWritten += bytesRead;
@@ -108,12 +111,13 @@ namespace Jellyfin.Api.Helpers
                 }
                 else
                 {
-                    if (_job == null || _job.HasExited)
+                    // If the job is null it's a live stream and will require user action to close
+                    if (_job?.HasExited ?? false)
                     {
                         break;
                     }
 
-                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
                 }
             }
 

@@ -1220,11 +1220,8 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await new ProgressiveFileCopier(liveStreamInfo, null, _transcodingJobHelper, CancellationToken.None)
-                .WriteToAsync(Response.Body, CancellationToken.None)
-                .ConfigureAwait(false);
-            Response.ContentType = MimeTypes.GetMimeType("file." + container);
-            return Ok();
+            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetFilePath(), null, _transcodingJobHelper);
+            return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file." + container));
         }
 
         private void AssertUserCanManageLiveTv()
