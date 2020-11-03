@@ -568,7 +568,7 @@ namespace Emby.Naming.Common
                 // Chapter is often beginning of filename
                 "^(?<chapter>[0-9]+)",
                 // Part if often ending of filename
-                "(?<part>[0-9]+)$",
+                @"(?<!ch(?:apter) )(?<part>[0-9]+)$",
                 // Sometimes named as 0001_005 (chapter_part)
                 "(?<chapter>[0-9]+)_(?<part>[0-9]+)",
                 // Some audiobooks are ripped from cd's, and will be named by disk number.
@@ -579,7 +579,7 @@ namespace Emby.Naming.Common
             {
                 // Detect year usually in brackets after name Batman (2020)
                 @"^(?<name>.+?)\s*\(\s*(?<year>\d{4})\s*\)\s*$",
-                @"^\s*(?<name>.+?)\s*$"
+                @"^\s*(?<name>[^ ].*?)\s*$"
             };
 
             var extensions = VideoFileExtensions.ToList();

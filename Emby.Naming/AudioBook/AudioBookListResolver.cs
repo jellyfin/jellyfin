@@ -41,12 +41,101 @@ namespace Emby.Naming.AudioBook
 
                 stackFiles.Sort();
 
-                var result = new AudioBookNameParser(_options).Parse(stack.Name);
+                var nameParserResult = new AudioBookNameParser(_options).Parse(stack.Name);
 
-                var info = new AudioBookInfo(result.Name, result.Year) { Files = stackFiles };
+                FindExtraAndAlternativeFiles(ref stackFiles, out var extras, out var alternativeVersions, nameParserResult);
+
+                var info = new AudioBookInfo(
+                    nameParserResult.Name,
+                    nameParserResult.Year,
+                    stackFiles,
+                    extras,
+                    alternativeVersions);
 
                 yield return info;
             }
+        }
+
+        private void FindExtraAndAlternativeFiles(ref List<AudioBookFileInfo> stackFiles, out List<AudioBookFileInfo> extras, out List<AudioBookFileInfo> alternativeVersions, AudioBookNameParserResult nameParserResult)
+        {
+            extras = new List<AudioBookFileInfo>();
+            alternativeVersions = new List<AudioBookFileInfo>();
+
+            var haveChaptersOrPages = stackFiles.Any(x => x.ChapterNumber != null || x.PartNumber != null);
+            var groupedBy = stackFiles.GroupBy(file => new { file.ChapterNumber, file.PartNumber });
+
+            foreach (var group in groupedBy)
+            {
+                if (group.Key.ChapterNumber == null && group.Key.PartNumber == null)
+                {
+                    if (group.Count() > 1 || haveChaptersOrPages)
+                    {
+                        var ex = new List<AudioBookFileInfo>();
+                        var alt = new List<AudioBookFileInfo>();
+
+                        foreach (var audioFile in group)
+                        {
+                            var name = Path.GetFileNameWithoutExtension(audioFile.Path);
+                            if (name == "audiobook" ||
+                                name.Contains(nameParserResult.Name, StringComparison.OrdinalIgnoreCase) ||
+                                name.Contains(nameParserResult.Name.Replace(" ", "."), StringComparison.OrdinalIgnoreCase))
+                            {
+                                alt.Add(audioFile);
+                            }
+                            else
+                            {
+                                ex.Add(audioFile);
+                            }
+                        }
+
+                        if (ex.Count > 0)
+                        {
+                            var extra = ex
+                                .OrderBy(x => x.Container)
+                                .ThenBy(x => x.Path)
+                                .ToList();
+
+                            stackFiles = stackFiles.Except(extra).ToList();
+                            extras.AddRange(extra);
+                        }
+
+                        if (alt.Count > 0)
+                        {
+                            var alternatives = alt
+                                .OrderBy(x => x.Container)
+                                .ThenBy(x => x.Path)
+                                .ToList();
+
+                            var main = FindMainAudioBookFile(alternatives, nameParserResult.Name);
+                            alternatives.Remove(main);
+                            stackFiles = stackFiles.Except(alternatives).ToList();
+                            alternativeVersions.AddRange(alternatives);
+                        }
+                    }
+                }
+                else if (group.Count() > 1)
+                {
+                    var alternatives = group
+                        .OrderBy(x => x.Container)
+                        .ThenBy(x => x.Path)
+                        .Skip(1)
+                        .ToList();
+
+                    stackFiles = stackFiles.Except(alternatives).ToList();
+                    alternativeVersions.AddRange(alternatives);
+                }
+            }
+        }
+
+        private AudioBookFileInfo FindMainAudioBookFile(List<AudioBookFileInfo> files, string name)
+        {
+            var main = files.Find(x => Path.GetFileNameWithoutExtension(x.Path) == name);
+            main ??= files.FirstOrDefault(x => Path.GetFileNameWithoutExtension(x.Path) == "audiobook");
+            main ??= files.OrderBy(x => x.Container)
+                .ThenBy(x => x.Path)
+                .First();
+
+            return main;
         }
     }
 }

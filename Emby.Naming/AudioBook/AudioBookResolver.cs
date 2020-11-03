@@ -19,7 +19,7 @@ namespace Emby.Naming.AudioBook
 
         public AudioBookFileInfo? Resolve(string path)
         {
-            if (path.Length == 0)
+            if (path.Length == 0 || Path.GetFileNameWithoutExtension(path).Length == 0)
             {
                 // Return null to indicate this path will not be used, instead of stopping whole process with exception
                 return null;
