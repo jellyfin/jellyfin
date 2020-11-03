@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emby.Naming.Common;
 using Emby.Naming.Subtitles;
 using Xunit;
@@ -26,6 +26,7 @@ namespace Jellyfin.Naming.Tests.Subtitles
             Assert.Equal(language, result?.Language, true);
             Assert.Equal(isDefault, result?.IsDefault);
             Assert.Equal(isForced, result?.IsForced);
+            Assert.Equal(input, result?.Path);
         }
 
         [Theory]
