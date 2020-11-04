@@ -1,4 +1,3 @@
-#nullable enable
 #pragma warning disable CS1591
 #pragma warning disable CA1819
 
@@ -14,6 +13,10 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class ServerConfiguration : BaseApplicationConfiguration
     {
+        public const int DefaultHttpPort = 8096;
+        public const int DefaultHttpsPort = 8920;
+        private string _baseUrl = string.Empty;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -70,19 +73,14 @@ namespace MediaBrowser.Model.Configuration
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
-        /// </summary>
-        public bool EnableMetrics { get; set; } = false;
-
-// #if BACKWARDSCOMPAT
-        public const int DefaultHttpPort = 8096;
-        public const int DefaultHttpsPort = 8920;
-        private string _baseUrl = string.Empty;
-
-        /// <summary>
         /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
         public bool EnableUPnP { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
+        /// </summary>
+        public bool EnableMetrics { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the public mapped port.
@@ -205,73 +203,6 @@ namespace MediaBrowser.Model.Configuration
         /// </remarks>
         public bool EnableHttps { get; set; } = false;
 
-        /// <summary>
-        /// Gets or sets a value indicating whether access outside of the LAN is permitted.
-        /// </summary>
-        public bool EnableRemoteAccess { get; set; } = true;
-
-        public string BaseUrl
-        {
-            get => _baseUrl;
-            set
-            {
-                // Normalize the start of the string
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    // If baseUrl is empty, set an empty prefix string
-                    _baseUrl = string.Empty;
-                    return;
-                }
-
-                if (value[0] != '/')
-                {
-                    // If baseUrl was not configured with a leading slash, append one for consistency
-                    value = "/" + value;
-                }
-
-                // Normalize the end of the string
-                if (value[value.Length - 1] == '/')
-                {
-                    // If baseUrl was configured with a trailing slash, remove it for consistency
-                    value = value.Remove(value.Length - 1);
-                }
-
-                _baseUrl = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the subnets that are deemed to make up the LAN.
-        /// </summary>
-        public string[] LocalNetworkSubnets { get; set; } = Array.Empty<string>();
-
-        /// <summary>
-        /// Gets or sets the interface addresses which Jellyfin will bind to. If empty, all interfaces will be used.
-        /// </summary>
-        public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the server should force connections over HTTPS.
-        /// </summary>
-        public bool RequireHttps { get; set; } = false;
-
-        /// <summary>
-        /// Gets or sets the known proxies.
-        /// </summary>
-        public string[] KnownProxies { get; set; } = Array.Empty<string>();
-
-        /// <summary>
-        /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
-        /// </summary>
-        public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
-
-        /// <summary>
-        /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.
-        /// </summary>
-        public bool IsRemoteIPFilterBlacklist { get; set; } = false;
-
-// #endif
-
         public bool EnableNormalizedItemByNameIds { get; set; } = true;
 
         /// <summary>
@@ -294,6 +225,11 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether quick connect is available for use on this server.
         /// </summary>
         public bool QuickConnectAvailable { get; set; } = false;
+       
+        /// <summary>
+        /// Gets or sets a value indicating whether access outside of the LAN is permitted.
+        /// </summary>
+        public bool EnableRemoteAccess { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
@@ -386,6 +322,36 @@ namespace MediaBrowser.Model.Configuration
 
         public string ServerName { get; set; } = string.Empty;
 
+        public string BaseUrl
+        {
+            get => _baseUrl;
+            set
+            {
+                // Normalize the start of the string
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    // If baseUrl is empty, set an empty prefix string
+                    _baseUrl = string.Empty;
+                    return;
+                }
+
+                if (value[0] != '/')
+                {
+                    // If baseUrl was not configured with a leading slash, append one for consistency
+                    value = "/" + value;
+                }
+
+                // Normalize the end of the string
+                if (value[value.Length - 1] == '/')
+                {
+                    // If baseUrl was configured with a trailing slash, remove it for consistency
+                    value = value.Remove(value.Length - 1);
+                }
+
+                _baseUrl = value;
+            }
+        }
+
         public string UICulture { get; set; } = "en-US";
 
         public bool SaveMetadataHidden { get; set; } = false;
@@ -400,13 +366,38 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the subnets that are deemed to make up the LAN.
+        /// </summary>
+        public string[] LocalNetworkSubnets { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets the interface addresses which Jellyfin will bind to. If empty, all interfaces will be used.
+        /// </summary>
+        public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
+
         public string[] CodecsUsed { get; set; } = Array.Empty<string>();
 
         public List<RepositoryInfo> PluginRepositories { get; set; } = new List<RepositoryInfo>();
 
         public bool EnableExternalContentInSuggestions { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the server should force connections over HTTPS.
+        /// </summary>
+        public bool RequireHttps { get; set; } = false;
+
         public bool EnableNewOmdbSupport { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
+        /// </summary>
+        public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.
+        /// </summary>
+        public bool IsRemoteIPFilterBlacklist { get; set; } = false;
 
         public int ImageExtractionTimeoutMs { get; set; } = 0;
 
@@ -430,5 +421,15 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the cors hosts.
         /// </summary>
         public string[] CorsHosts { get; set; } = new[] { "*" };
+
+        /// <summary>
+        /// Gets or sets the known proxies.
+        /// </summary>
+        public string[] KnownProxies { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets the number of days we should retain activity logs.
+        /// </summary>
+        public int? ActivityLogRetentionDays { get; set; } = 30;
     }
 }

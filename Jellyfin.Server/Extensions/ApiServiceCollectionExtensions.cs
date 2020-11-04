@@ -16,7 +16,6 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
-using Jellyfin.Api.ModelBinders;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -168,6 +167,7 @@ namespace Jellyfin.Server.Extensions
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
+
                     opts.InputFormatters.Add(new XmlSerializerInputFormatter(opts));
 
                     opts.ModelBinderProviders.Insert(0, new CommaDelimitedArrayModelBinderProvider());

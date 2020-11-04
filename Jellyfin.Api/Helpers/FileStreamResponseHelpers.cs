@@ -126,15 +126,8 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                logger?.LogDebug("Starting response...");
-                return new FileCallbackResult(new MediaTypeHeaderValue(contentType), async (outputStream, _) =>
-                    {
-                        logger?.LogDebug("downloading content.");
-                        await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None)
-                            .WriteToAsync(outputStream, CancellationToken.None).ConfigureAwait(false);
-                    });
-
-                // return new FileStreamResult(httpContext.Response.Body, contentType);
+                var stream = new ProgressiveFileStream(outputPath, job, transcodingJobHelper);
+                return new FileStreamResult(stream, contentType);
             }
             finally
             {

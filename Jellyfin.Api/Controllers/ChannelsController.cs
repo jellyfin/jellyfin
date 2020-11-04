@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -121,7 +122,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? sortOrder,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] string? sortBy,
             [FromQuery] string? fields)
         {
@@ -196,7 +197,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] string? fields,
             [FromQuery] string? channelIds)
         {

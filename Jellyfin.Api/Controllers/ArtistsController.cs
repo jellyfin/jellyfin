@@ -4,6 +4,7 @@ using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -90,7 +91,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? genres,
@@ -146,9 +147,9 @@ namespace Jellyfin.Api.Controllers
                 NameLessThan = nameLessThan,
                 NameStartsWith = nameStartsWith,
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
-                Tags = RequestHelpers.Split(tags, ',', true),
-                OfficialRatings = RequestHelpers.Split(officialRatings, ',', true),
-                Genres = RequestHelpers.Split(genres, ',', true),
+                Tags = RequestHelpers.Split(tags, '|', true),
+                OfficialRatings = RequestHelpers.Split(officialRatings, '|', true),
+                Genres = RequestHelpers.Split(genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(genreIds),
                 StudioIds = RequestHelpers.GetGuids(studioIds),
                 Person = person,
@@ -299,7 +300,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
             [FromQuery] string? genres,
@@ -355,9 +356,9 @@ namespace Jellyfin.Api.Controllers
                 NameLessThan = nameLessThan,
                 NameStartsWith = nameStartsWith,
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
-                Tags = RequestHelpers.Split(tags, ',', true),
-                OfficialRatings = RequestHelpers.Split(officialRatings, ',', true),
-                Genres = RequestHelpers.Split(genres, ',', true),
+                Tags = RequestHelpers.Split(tags, '|', true),
+                OfficialRatings = RequestHelpers.Split(officialRatings, '|', true),
+                Genres = RequestHelpers.Split(genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(genreIds),
                 StudioIds = RequestHelpers.GetGuids(studioIds),
                 Person = person,
