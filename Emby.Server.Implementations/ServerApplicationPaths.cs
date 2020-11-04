@@ -104,6 +104,6 @@ namespace Emby.Server.Implementations
         public string InternalMetadataPath { get; set; }
 
         /// <inheritdoc />
-        public string VirtualInternalMetadataPath { get; } = "%MetadataPath%";
+        public string VirtualInternalMetadataPath => "%MetadataPath%";
     }
 }

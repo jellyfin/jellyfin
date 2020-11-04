@@ -426,5 +426,10 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the known proxies.
         /// </summary>
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets the number of days we should retain activity logs.
+        /// </summary>
+        public int? ActivityLogRetentionDays { get; set; } = 30;
     }
 }
