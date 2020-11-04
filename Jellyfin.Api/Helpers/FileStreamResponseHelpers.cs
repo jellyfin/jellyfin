@@ -85,7 +85,6 @@ namespace Jellyfin.Api.Helpers
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
         /// <param name="ffmpegCommandLineArguments">The command line arguments to start ffmpeg.</param>
         /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
-        /// <param name="logger">Logger instance.</param>
         /// <param name="cancellationTokenSource">The <see cref="CancellationTokenSource"/>.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the transcoded file.</returns>
         public static async Task<ActionResult> GetTranscodedFile(
@@ -95,7 +94,6 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobHelper transcodingJobHelper,
             string ffmpegCommandLineArguments,
             TranscodingJobType transcodingJobType,
-            ILogger? logger,
             CancellationTokenSource cancellationTokenSource)
         {
             // Use the command line args with a dummy playlist path

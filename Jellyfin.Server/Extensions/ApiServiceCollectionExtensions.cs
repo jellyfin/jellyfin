@@ -169,8 +169,6 @@ namespace Jellyfin.Server.Extensions
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
 
                     opts.InputFormatters.Add(new XmlSerializerInputFormatter(opts));
-
-                    opts.ModelBinderProviders.Insert(0, new CommaDelimitedArrayModelBinderProvider());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up

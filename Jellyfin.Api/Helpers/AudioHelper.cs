@@ -190,7 +190,6 @@ namespace Jellyfin.Api.Helpers
                 _transcodingJobHelper,
                 ffmpegCommandLineArguments,
                 transcodingJobType,
-                null,
                 cancellationTokenSource).ConfigureAwait(false);
         }
     }
