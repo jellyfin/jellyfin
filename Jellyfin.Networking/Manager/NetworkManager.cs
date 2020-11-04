@@ -19,6 +19,8 @@ namespace Jellyfin.Networking.Manager
 {
     /// <summary>
     /// Class to take care of network interface management.
+    ///
+    /// Note: The normal collection methods and properties will not work with NetCollection. <see cref="MediaBrowser.Common.Net.NetworkExtensions"/>.
     /// </summary>
     public class NetworkManager : INetworkManager, IDisposable
     {
@@ -925,8 +927,8 @@ namespace Jellyfin.Networking.Manager
             // Read and parse bind addresses and exclusions, removing ones that don't exist.
             _bindAddresses = CreateIPCollection(lanAddresses).Union(_interfaceAddresses);
             _bindExclusions = CreateIPCollection(lanAddresses, true).Union(_interfaceAddresses);
-            _logger.LogInformation("Using bind addresses: {0}", _bindAddresses);
-            _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
+            _logger.LogInformation("Using bind addresses: {0}", _bindAddresses.AsString());
+            _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions.AsString());
         }
 
         private void InitialiseRemote(NetworkConfiguration config)
@@ -997,9 +999,9 @@ namespace Jellyfin.Networking.Manager
                     _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)));
                 }
 
-                _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
-                _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets);
-                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets).AsNetworks());
+                _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());
+                _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets.AsString());
+                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets).AsNetworks().AsString());
             }
         }
 
@@ -1090,7 +1092,7 @@ namespace Jellyfin.Networking.Manager
                     }
 
                     _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
-                    _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses);
+                    _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses.AsString());
 
                     // If for some reason we don't have an interface info, resolve our DNS name.
                     if (_interfaceAddresses.Count == 0)
