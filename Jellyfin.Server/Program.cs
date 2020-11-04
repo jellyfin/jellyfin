@@ -281,8 +281,8 @@ namespace Jellyfin.Server
                         if (appHost.ListenWithHttps)
                         {
                             options.Listen(
-                                netAdd.Address, 
-                                appHost.HttpsPort, 
+                                netAdd.Address,
+                                appHost.HttpsPort,
                                 listenOptions => listenOptions.UseHttps(appHost.Certificate));
                         }
                         else if (builderContext.HostingEnvironment.IsDevelopment())
@@ -292,7 +292,7 @@ namespace Jellyfin.Server
                                 options.Listen(
                                     netAdd.Address,
                                     appHost.HttpsPort,
-                                    listenOptions => listenOptions.UseHttps());   
+                                    listenOptions => listenOptions.UseHttps());
                             }
                             catch (InvalidOperationException)
                             {
