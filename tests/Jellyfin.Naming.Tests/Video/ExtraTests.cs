@@ -1,7 +1,9 @@
-﻿using Emby.Naming.Common;
+using System;
+using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.Entities;
 using Xunit;
+using MediaType = Emby.Naming.Common.MediaType;
 
 namespace Jellyfin.Naming.Tests.Video
 {
@@ -91,6 +93,27 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 Assert.Equal(expectedType, extraType);
             }
+        }
+
+        [Fact]
+        public void TestExtraInfo_InvalidRuleMediaType()
+        {
+            var options = new NamingOptions { VideoExtraRules = new[] { new ExtraRule(ExtraType.Unknown, ExtraRuleType.DirectoryName, " ", MediaType.Photo) } };
+            Assert.Throws<InvalidOperationException>(() => GetExtraTypeParser(options).GetExtraInfo("sample.jpg"));
+        }
+
+        [Fact]
+        public void TestExtraInfo_InvalidRuleType()
+        {
+            var options = new NamingOptions { VideoExtraRules = new[] { new ExtraRule(ExtraType.Unknown, ExtraRuleType.Regex, " ", MediaType.Video) } };
+            Assert.Throws<InvalidOperationException>(() => GetExtraTypeParser(options).GetExtraInfo("sample.mp4"));
+        }
+
+        [Fact]
+        public void TestFlagsParser()
+        {
+            var flags = new FlagParser(_videoOptions).GetFlags(string.Empty);
+            Assert.Empty(flags);
         }
 
         private ExtraResolver GetExtraTypeParser(NamingOptions videoOptions)

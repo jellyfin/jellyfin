@@ -45,7 +45,8 @@ namespace Emby.Naming.Video
             }
             else
             {
-                return result;
+                // Currently unreachable code if new rule.MediaType is desired add if clause with proper tests
+                throw new InvalidOperationException();
             }
 
             if (rule.RuleType == ExtraRuleType.Filename)
@@ -70,6 +71,9 @@ namespace Emby.Naming.Video
             }
             else if (rule.RuleType == ExtraRuleType.Regex)
             {
+                // Currently unreachable code if new rule.MediaType is desired add if clause with proper tests
+                throw new InvalidOperationException();
+                /*
                 var filename = Path.GetFileName(path);
 
                 var regex = new Regex(rule.Token, RegexOptions.IgnoreCase);
@@ -79,6 +83,7 @@ namespace Emby.Naming.Video
                     result.ExtraType = rule.ExtraType;
                     result.Rule = rule;
                 }
+                */
             }
             else if (rule.RuleType == ExtraRuleType.DirectoryName)
             {

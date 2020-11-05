@@ -8,6 +8,35 @@ namespace Emby.Naming.Video
     public class VideoFileInfo
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="VideoFileInfo"/> class.
+        /// </summary>
+        /// <param name="name">Name of file.</param>
+        /// <param name="path">Path to the file.</param>
+        /// <param name="container">Container type.</param>
+        /// <param name="year">Year of release.</param>
+        /// <param name="extraType">Extra type.</param>
+        /// <param name="extraRule">Extra rule.</param>
+        /// <param name="format3D">Format 3D.</param>
+        /// <param name="is3D">Is 3D.</param>
+        /// <param name="isStub">Is Stub.</param>
+        /// <param name="stubType">Stub type.</param>
+        /// <param name="isDirectory">Is directory.</param>
+        public VideoFileInfo(string name, string? path, string? container, int? year = default, ExtraType? extraType = default, ExtraRule? extraRule = default, string? format3D = default, bool is3D = default, bool isStub = default, string? stubType = default, bool isDirectory = default)
+        {
+            Path = path;
+            Container = container;
+            Name = name;
+            Year = year;
+            ExtraType = extraType;
+            ExtraRule = extraRule;
+            Format3D = format3D;
+            Is3D = is3D;
+            IsStub = isStub;
+            StubType = stubType;
+            IsDirectory = isDirectory;
+        }
+
+        /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
@@ -23,7 +52,7 @@ namespace Emby.Naming.Video
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the year.
@@ -84,8 +113,7 @@ namespace Emby.Naming.Video
         /// <inheritdoc />
         public override string ToString()
         {
-            // Makes debugging easier
-            return Name ?? base.ToString();
+            return "VideoFileInfo(Name: '" + Name + "')";
         }
     }
 }

@@ -86,10 +86,10 @@ namespace Emby.Naming.Video
 
                     if (match1.Success)
                     {
-                        var title1 = match1.Groups[1].Value;
-                        var volume1 = match1.Groups[2].Value;
-                        var ignore1 = match1.Groups[3].Value;
-                        var extension1 = match1.Groups[4].Value;
+                        var title1 = match1.Groups["title"].Value;
+                        var volume1 = match1.Groups["volume"].Value;
+                        var ignore1 = match1.Groups["ignore"].Value;
+                        var extension1 = match1.Groups["extension"].Value;
 
                         var j = i + 1;
                         while (j < list.Count)

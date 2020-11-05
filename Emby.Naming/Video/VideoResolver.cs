@@ -49,7 +49,7 @@ namespace Emby.Naming.Video
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException(nameof(path));
+                return null;
             }
 
             bool isStub = false;
@@ -99,20 +99,18 @@ namespace Emby.Naming.Video
                 }
             }
 
-            return new VideoFileInfo
-            {
-                Path = path,
-                Container = container,
-                IsStub = isStub,
-                Name = name,
-                Year = year,
-                StubType = stubType,
-                Is3D = format3DResult.Is3D,
-                Format3D = format3DResult.Format3D,
-                ExtraType = extraResult.ExtraType,
-                IsDirectory = isDirectory,
-                ExtraRule = extraResult.Rule
-            };
+            return new VideoFileInfo(
+                path: path,
+                container: container,
+                isStub: isStub,
+                name: name,
+                year: year,
+                stubType: stubType,
+                is3D: format3DResult.Is3D,
+                format3D: format3DResult.Format3D,
+                extraType: extraResult.ExtraType,
+                isDirectory: isDirectory,
+                extraRule: extraResult.Rule);
         }
 
         public bool IsVideoFile(string path)

@@ -14,7 +14,7 @@ namespace Emby.Naming.Video
         {
             stubType = default;
 
-            if (path == null)
+            if (string.IsNullOrEmpty(path))
             {
                 return false;
             }
