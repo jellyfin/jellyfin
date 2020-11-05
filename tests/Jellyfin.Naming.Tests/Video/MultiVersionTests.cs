@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System.Collections.Generic;
+using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.IO;
@@ -11,8 +12,8 @@ namespace Jellyfin.Naming.Tests.Video
         private readonly NamingOptions _namingOptions = new NamingOptions();
 
         // FIXME
-        // [Fact]
-        private void TestMultiEdition1()
+        [Fact]
+        public void TestMultiEdition1()
         {
             var files = new[]
             {
@@ -35,8 +36,8 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         // FIXME
-        // [Fact]
-        private void TestMultiEdition2()
+        [Fact]
+        public void TestMultiEdition2()
         {
             var files = new[]
             {
@@ -81,8 +82,8 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         // FIXME
-        // [Fact]
-        private void TestLetterFolders()
+        [Fact]
+        public void TestLetterFolders()
         {
             var files = new[]
             {
@@ -109,8 +110,8 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         // FIXME
-        // [Fact]
-        private void TestMultiVersionLimit()
+        [Fact]
+        public void TestMultiVersionLimit()
         {
             var files = new[]
             {
@@ -138,8 +139,8 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         // FIXME
-        // [Fact]
-        private void TestMultiVersionLimit2()
+        [Fact]
+        public void TestMultiVersionLimit2()
         {
             var files = new[]
             {
@@ -168,8 +169,8 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         // FIXME
-        // [Fact]
-        private void TestMultiVersion3()
+        [Fact]
+        public void TestMultiVersion3()
         {
             var files = new[]
             {
@@ -194,8 +195,8 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         // FIXME
-        // [Fact]
-        private void TestMultiVersion4()
+        [Fact]
+        public void TestMultiVersion4()
         {
             // Test for false positive
 
@@ -221,9 +222,8 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Empty(result[0].AlternateVersions);
         }
 
-        // FIXME
-        // [Fact]
-        private void TestMultiVersion5()
+        [Fact]
+        public void TestMultiVersion5()
         {
             var files = new[]
             {
@@ -254,8 +254,8 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         // FIXME
-        // [Fact]
-        private void TestMultiVersion6()
+        [Fact]
+        public void TestMultiVersion6()
         {
             var files = new[]
             {
@@ -285,9 +285,8 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.True(result[0].AlternateVersions[5].Is3D);
         }
 
-        // FIXME
-        // [Fact]
-        private void TestMultiVersion7()
+        [Fact]
+        public void TestMultiVersion7()
         {
             var files = new[]
             {
@@ -306,12 +305,9 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Equal(2, result.Count);
         }
 
-        // FIXME
-        // [Fact]
-        private void TestMultiVersion8()
+        [Fact]
+        public void TestMultiVersion8()
         {
-            // This is not actually supported yet
-
             var files = new[]
             {
                 @"/movies/Iron Man/Iron Man.mkv",
@@ -339,9 +335,8 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.True(result[0].AlternateVersions[4].Is3D);
         }
 
-        // FIXME
-        // [Fact]
-        private void TestMultiVersion9()
+        [Fact]
+        public void TestMultiVersion9()
         {
             // Test for false positive
 
@@ -367,9 +362,8 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Empty(result[0].AlternateVersions);
         }
 
-        // FIXME
-        // [Fact]
-        private void TestMultiVersion10()
+        [Fact]
+        public void TestMultiVersion10()
         {
             var files = new[]
             {
@@ -390,12 +384,9 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Single(result[0].AlternateVersions);
         }
 
-        // FIXME
-        // [Fact]
-        private void TestMultiVersion11()
+        [Fact]
+        public void TestMultiVersion11()
         {
-            // Currently not supported but we should probably handle this.
-
             var files = new[]
             {
                 @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) [1080p] Blu-ray.x264.DTS.mkv",
@@ -413,6 +404,16 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Single(result);
             Assert.Empty(result[0].Extras);
             Assert.Single(result[0].AlternateVersions);
+        }
+
+        [Fact]
+        public void TestEmptyList()
+        {
+            var resolver = GetResolver();
+
+            var result = resolver.Resolve(new List<FileSystemMetadata>()).ToList();
+
+            Assert.Empty(result);
         }
 
         private VideoListResolver GetResolver()

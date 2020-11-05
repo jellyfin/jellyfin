@@ -212,9 +212,15 @@ namespace Emby.Naming.Video
 
             if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
+                if (CleanStringParser.TryClean(testFilename, _options.CleanStringRegexes, out var cleanName))
+                {
+                    testFilename = cleanName.ToString();
+                }
+
                 testFilename = testFilename.Substring(folderName.Length).Trim();
                 return string.IsNullOrEmpty(testFilename)
                    || testFilename[0] == '-'
+                   || testFilename[0] == '_'
                    || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 
