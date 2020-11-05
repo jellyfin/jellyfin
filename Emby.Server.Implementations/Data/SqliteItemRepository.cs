@@ -5002,26 +5002,33 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var commandText = "select Distinct Name from People";
+            var commandText = new StringBuilder("select Distinct p.Name from People p");
+
+            if (query.User != null && query.IsFavorite.HasValue)
+            {
+                commandText.Append(" LEFT JOIN TypedBaseItems tbi ON tbi.Name=p.Name AND tbi.Type='");
+                commandText.Append(typeof(Person).FullName);
+                commandText.Append("' LEFT JOIN UserDatas ON tbi.UserDataKey=key AND userId=@UserId");
+            }
 
             var whereClauses = GetPeopleWhereClauses(query, null);
 
             if (whereClauses.Count != 0)
             {
-                commandText += "  where " + string.Join(" AND ", whereClauses);
+                commandText.Append(" where ").Append(string.Join(" AND ", whereClauses));
             }
 
-            commandText += " order by ListOrder";
+            commandText.Append(" order by ListOrder");
 
             if (query.Limit > 0)
             {
-                commandText += " LIMIT " + query.Limit;
+                commandText.Append(" LIMIT ").Append(query.Limit);
             }
 
             using (var connection = GetConnection(true))
             {
                 var list = new List<string>();
-                using (var statement = PrepareStatement(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText.ToString()))
                 {
                     // Run this again to bind the params
                     GetPeopleWhereClauses(query, statement);
@@ -5087,19 +5094,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (!query.ItemId.Equals(Guid.Empty))
             {
                 whereClauses.Add("ItemId=@ItemId");
-                if (statement != null)
-                {
-                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
-                }
+                statement?.TryBind("@ItemId", query.ItemId.ToByteArray());
             }
 
             if (!query.AppearsInItemId.Equals(Guid.Empty))
             {
-                whereClauses.Add("Name in (Select Name from People where ItemId=@AppearsInItemId)");
-                if (statement != null)
-                {
-                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToByteArray());
-                }
+                whereClauses.Add("p.Name in (Select Name from People where ItemId=@AppearsInItemId)");
+                statement?.TryBind("@AppearsInItemId", query.AppearsInItemId.ToByteArray());
             }
 
             var queryPersonTypes = query.PersonTypes.Where(IsValidPersonType).ToList();
@@ -5107,10 +5108,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (queryPersonTypes.Count == 1)
             {
                 whereClauses.Add("PersonType=@PersonType");
-                if (statement != null)
-                {
-                    statement.TryBind("@PersonType", queryPersonTypes[0]);
-                }
+                statement?.TryBind("@PersonType", queryPersonTypes[0]);
             }
             else if (queryPersonTypes.Count > 1)
             {
@@ -5124,10 +5122,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (queryExcludePersonTypes.Count == 1)
             {
                 whereClauses.Add("PersonType<>@PersonType");
-                if (statement != null)
-                {
-                    statement.TryBind("@PersonType", queryExcludePersonTypes[0]);
-                }
+                statement?.TryBind("@PersonType", queryExcludePersonTypes[0]);
             }
             else if (queryExcludePersonTypes.Count > 1)
             {
@@ -5139,19 +5134,24 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (query.MaxListOrder.HasValue)
             {
                 whereClauses.Add("ListOrder<=@MaxListOrder");
-                if (statement != null)
-                {
-                    statement.TryBind("@MaxListOrder", query.MaxListOrder.Value);
-                }
+                statement?.TryBind("@MaxListOrder", query.MaxListOrder.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
-                whereClauses.Add("Name like @NameContains");
-                if (statement != null)
-                {
-                    statement.TryBind("@NameContains", "%" + query.NameContains + "%");
-                }
+                whereClauses.Add("p.Name like @NameContains");
+                statement?.TryBind("@NameContains", "%" + query.NameContains + "%");
+            }
+
+            if (query.IsFavorite.HasValue)
+            {
+                whereClauses.Add("isFavorite=@IsFavorite");
+                statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
+            }
+
+            if (query.User != null)
+            {
+                statement?.TryBind("@UserId", query.User.InternalId);
             }
 
             return whereClauses;
@@ -5420,6 +5420,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 NameStartsWithOrGreater = query.NameStartsWithOrGreater,
                 Tags = query.Tags,
                 OfficialRatings = query.OfficialRatings,
+                StudioIds = query.StudioIds,
                 GenreIds = query.GenreIds,
                 Genres = query.Genres,
                 Years = query.Years,
