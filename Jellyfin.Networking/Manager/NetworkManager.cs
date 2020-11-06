@@ -60,7 +60,7 @@ namespace Jellyfin.Networking.Manager
         private bool _eventfire;
 
         /// <summary>
-        /// Unfiltered user defined LAN subnets. (Configuration.LocalNetworkSubnets).
+        /// Unfiltered user defined LAN subnets. (<see cref="Configuration.LocalNetworkSubnets"/>)
         /// or internal interface network subnets if undefined by user.
         /// </summary>
         private NetCollection _lanSubnets;
