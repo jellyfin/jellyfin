@@ -202,7 +202,8 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="address">IPAddress object to check.</param>
         /// <returns>True if it is a local link address.</returns>
-        /// <remarks>See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
+        /// <remarks>
+        /// See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
         /// it appears that the IPAddress.IsIPv6LinkLocal is out of date.
         /// </remarks>
         public static bool IsIPv6LinkLocal(IPAddress address)
