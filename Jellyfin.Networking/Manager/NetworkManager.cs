@@ -19,7 +19,6 @@ namespace Jellyfin.Networking.Manager
 {
     /// <summary>
     /// Class to take care of network interface management.
-    /// 
     /// Note: The normal collection methods and properties will not work with NetCollection. <see cref="MediaBrowser.Common.Net.NetworkExtensions"/>.
     /// </summary>
     public class NetworkManager : INetworkManager, IDisposable
