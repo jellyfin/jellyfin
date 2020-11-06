@@ -66,6 +66,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Music genres returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the queryresult of music genres.</returns>
         [HttpGet]
+        [Obsolete("Use GetGenres instead")]
         public ActionResult<QueryResult<BaseItemDto>> GetMusicGenres(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
