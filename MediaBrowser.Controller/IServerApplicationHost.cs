@@ -56,10 +56,11 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the system info.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
         /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken = default);
 
-        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
+        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request
@@ -67,7 +68,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
         /// <returns>A list containing all the local IP addresses of the server.</returns>
-        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken);
+        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
@@ -75,7 +76,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
         /// <returns>The server URL.</returns>
-        Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
+        Task<string> GetLocalApiUrl(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)
