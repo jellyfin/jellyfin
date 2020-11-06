@@ -50,9 +50,9 @@ namespace Jellyfin.Api.Helpers
 
             var returnItems = items;
 
-            if (limit.HasValue)
+            if (limit.HasValue && limit > returnItems.Count)
             {
-                returnItems = returnItems.Take(limit.Value).ToList();
+                returnItems = returnItems.GetRange(0, limit.Value);
             }
 
             var dtos = dtoService.GetBaseItemDtos(returnItems, dtoOptions, user);

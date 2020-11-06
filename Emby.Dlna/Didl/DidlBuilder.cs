@@ -123,7 +123,7 @@ namespace Emby.Dlna.Didl
         {
             foreach (var att in profile.XmlRootAttributes)
             {
-                var parts = att.Name.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                var parts = att.Name.Split(':', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 2)
                 {
                     writer.WriteAttributeString(parts[0], parts[1], null, att.Value);
