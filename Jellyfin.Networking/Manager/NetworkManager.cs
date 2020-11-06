@@ -19,7 +19,7 @@ namespace Jellyfin.Networking.Manager
 {
     /// <summary>
     /// Class to take care of network interface management.
-    /// Note: The normal collection methods and properties will not work with NetCollection. <see cref="MediaBrowser.Common.Net.NetworkExtensions"/>.
+    /// Note: The normal collection methods and properties will not work with Collection{IPObject}. <see cref="MediaBrowser.Common.Net.NetworkExtensions"/>.
     /// </summary>
     public class NetworkManager : INetworkManager, IDisposable
     {
@@ -60,7 +60,7 @@ namespace Jellyfin.Networking.Manager
         private bool _eventfire;
 
         /// <summary>
-        /// Unfiltered user defined LAN subnets. (<see cref="Configuration.LocalNetworkSubnets"/>)
+        /// Unfiltered user defined LAN subnets. (<see cref="NetworkConfiguration.LocalNetworkSubnets"/>)
         /// or internal interface network subnets if undefined by user.
         /// </summary>
         private NetCollection _lanSubnets;
@@ -1245,7 +1245,6 @@ namespace Jellyfin.Networking.Manager
 
                 if (isExternal)
                 {
-                    // TODO: remove this after testing.
                     _logger.LogWarning("{0}: External request received, however, only an internal interface bind found.", source);
                 }
 
@@ -1291,7 +1290,6 @@ namespace Jellyfin.Networking.Manager
 
             // Have to return something, so return an internal address
 
-            // TODO: remove this after testing.
             _logger.LogWarning("{0}: External request received, however, no WAN interface found.", source);
             return false;
         }
