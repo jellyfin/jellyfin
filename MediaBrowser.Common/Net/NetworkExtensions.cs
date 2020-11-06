@@ -47,7 +47,6 @@ namespace MediaBrowser.Common.Net
         /// <returns>Returns a string representation of this object.</returns>
         public static string AsString(this NetCollection source)
         {
-            var sb = new StringBuilder();
             string output = "[";
             if (source.Count > 0)
             {
