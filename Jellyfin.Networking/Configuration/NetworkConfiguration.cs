@@ -100,7 +100,7 @@ namespace Jellyfin.Networking.Configuration
 
         /// <summary>
         /// Gets or sets the UDPPortRange
-        /// Gets or sets client udp port range..
+        /// Gets or sets client udp port range.
         /// </summary>
         public string UDPPortRange { get; set; } = string.Empty;
 
