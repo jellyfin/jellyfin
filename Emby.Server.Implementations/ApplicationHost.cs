@@ -1195,7 +1195,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(IPAddress source)
+        public SystemInfo GetSystemInfo(HttpRequest source)
         {
             return new SystemInfo
             {
@@ -1231,7 +1231,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
+        public PublicSystemInfo GetPublicSystemInfo(HttpRequest source)
         {
             return new PublicSystemInfo
             {
