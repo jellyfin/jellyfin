@@ -27,7 +27,7 @@
     "HeaderRecordingGroups": "녹화 그룹",
     "HomeVideos": "홈 비디오",
     "Inherit": "상속",
-    "ItemAddedWithName": "{0}가 라이브러리에 추가됨",
+    "ItemAddedWithName": "{0}가 라이브러리에 추가되었습니다",
     "ItemRemovedWithName": "{0}가 라이브러리에서 제거됨",
     "LabelIpAddressValue": "IP 주소: {0}",
     "LabelRunningTimeValue": "상영 시간: {0}",
@@ -114,6 +114,6 @@
     "TaskCleanCache": "캐시 폴더 청소",
     "TasksChannelsCategory": "인터넷 채널",
     "TasksLibraryCategory": "라이브러리",
-    "TaskCleanActivityLogDescription": "구성된 기간보다 오래된 활동내역 삭제",
+    "TaskCleanActivityLogDescription": "구성된 기간보다 오래된 활동내역 삭제.",
     "TaskCleanActivityLog": "활동내역청소"
 }
