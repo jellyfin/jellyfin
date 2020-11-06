@@ -2,10 +2,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
-using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace MediaBrowser.Common.Net
 {
@@ -17,9 +17,9 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Add an address to the collection.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="ip">Item to add.</param>
-        public static void AddItem(this NetCollection source, IPAddress ip)
+        public static void AddItem(this Collection<IPObject> source, IPAddress ip)
         {
             if (!source.ContainsAddress(ip))
             {
@@ -30,9 +30,9 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Adds a network to the collection.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="item">Item to add.</param>
-        public static void AddItem(this NetCollection source, IPObject item)
+        public static void AddItem(this Collection<IPObject> source, IPObject item)
         {
             if (!source.ContainsAddress(item))
             {
@@ -43,9 +43,9 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Converts this object to a string.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <returns>Returns a string representation of this object.</returns>
-        public static string AsString(this NetCollection source)
+        public static string AsString(this Collection<IPObject> source)
         {
             string output = "[";
             if (source.Count > 0)
@@ -65,10 +65,10 @@ namespace MediaBrowser.Common.Net
         /// Returns true if the collection contains an item with the ip address,
         /// or the ip address falls within any of the collection's network ranges.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="item">The item to look for.</param>
         /// <returns>True if the collection contains the item.</returns>
-        public static bool ContainsAddress(this NetCollection source, IPAddress item)
+        public static bool ContainsAddress(this Collection<IPObject> source, IPAddress item)
         {
             if (source.Count == 0)
             {
@@ -100,10 +100,10 @@ namespace MediaBrowser.Common.Net
         /// Returns true if the collection contains an item with the ip address,
         /// or the ip address falls within any of the collection's network ranges.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="item">The item to look for.</param>
         /// <returns>True if the collection contains the item.</returns>
-        public static bool ContainsAddress(this NetCollection source, IPObject item)
+        public static bool ContainsAddress(this Collection<IPObject> source, IPObject item)
         {
             if (source.Count == 0)
             {
@@ -127,12 +127,12 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Compares two NetCollection objects. The order is ignored.
+        /// Compares two Collection{IPObject} objects. The order is ignored.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="dest">Item to compare to.</param>
         /// <returns>True if both are equal.</returns>
-        public static bool Compare(this NetCollection source, NetCollection dest)
+        public static bool Compare(this Collection<IPObject> source, Collection<IPObject> dest)
         {
             if (dest == null || source.Count != dest.Count)
             {
@@ -163,16 +163,16 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Returns a collection containing the subnets of this collection given.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
-        /// <returns>NetCollection object containing the subnets.</returns>
-        public static NetCollection AsNetworks(this NetCollection source)
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
+        /// <returns>Collection{IPObject} object containing the subnets.</returns>
+        public static Collection<IPObject> AsNetworks(this Collection<IPObject> source)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            NetCollection res = new NetCollection();
+            Collection<IPObject> res = new Collection<IPObject>();
 
             foreach (IPObject i in source)
             {
@@ -204,17 +204,17 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Excludes all the items from this list that are found in excludeList.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="excludeList">Items to exclude.</param>
         /// <returns>A new collection, with the items excluded.</returns>
-        public static NetCollection Exclude(this NetCollection source, NetCollection excludeList)
+        public static Collection<IPObject> Exclude(this Collection<IPObject> source, Collection<IPObject> excludeList)
         {
             if (source.Count == 0 || excludeList == null)
             {
-                return new NetCollection(source);
+                return new Collection<IPObject>(source);
             }
 
-            NetCollection results = new NetCollection();
+            Collection<IPObject> results = new Collection<IPObject>();
 
             bool found;
             foreach (var outer in source)
@@ -242,14 +242,14 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Returns all items that co-exist in this object and target.
         /// </summary>
-        /// <param name="source">The <see cref="NetCollection"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="target">Collection to compare with.</param>
         /// <returns>A collection containing all the matches.</returns>
-        public static NetCollection Union(this NetCollection source, NetCollection target)
+        public static Collection<IPObject> Union(this Collection<IPObject> source, Collection<IPObject> target)
         {
             if (source.Count == 0)
             {
-                return new NetCollection();
+                return new Collection<IPObject>();
             }
 
             if (target == null)
@@ -257,7 +257,7 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(target));
             }
 
-            NetCollection nc = new NetCollection();
+            Collection<IPObject> nc = new Collection<IPObject>();
 
             foreach (IPObject i in source)
             {

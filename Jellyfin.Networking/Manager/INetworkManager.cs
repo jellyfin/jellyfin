@@ -2,11 +2,11 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
-using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -33,7 +33,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Gets the remote address filter.
         /// </summary>
-        NetCollection RemoteAddressFilter { get; }
+        Collection<IPObject> RemoteAddressFilter { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether iP6 is enabled.
@@ -48,17 +48,17 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
-        /// <returns>A NetCollection object containing all the interfaces to bind.
+        /// <returns>A Collection{IPObject} object containing all the interfaces to bind.
         /// If all the interfaces are specified, and none are excluded, it returns zero items
         /// to represent any address.</returns>
         /// <param name="individualInterfaces">When false, return <see cref="IPAddress.Any"/> or <see cref="IPAddress.IPv6Any"/> for all interfaces.</param>
-        NetCollection GetAllBindInterfaces(bool individualInterfaces = false);
+        Collection<IPObject> GetAllBindInterfaces(bool individualInterfaces = false);
 
         /// <summary>
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
-        /// <returns>Netcollection.</returns>
-        NetCollection GetLoopbacks();
+        /// <returns>Collection{IPObject}.</returns>
+        Collection<IPObject> GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -180,21 +180,21 @@ namespace Jellyfin.Networking.Manager
         /// <param name="token">Token to parse.</param>
         /// <param name="result">Resultant object's ip addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string token, out NetCollection? result);
+        bool TryParseInterface(string token, out Collection<IPObject>? result);
 
         /// <summary>
-        /// Parses an array of strings into a NetCollection.
+        /// Parses an array of strings into a Collection{IPObject}.
         /// </summary>
         /// <param name="values">Values to parse.</param>
         /// <param name="bracketed">When true, only include values in []. When false, ignore bracketed values.</param>
         /// <returns>IPCollection object containing the value strings.</returns>
-        NetCollection CreateIPCollection(string[] values, bool bracketed = false);
+        Collection<IPObject> CreateIPCollection(string[] values, bool bracketed = false);
 
         /// <summary>
         /// Returns all the internal Bind interface addresses.
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
-        NetCollection GetInternalBindAddresses();
+        Collection<IPObject> GetInternalBindAddresses();
 
         /// <summary>
         /// Checks to see if an IP address is still a valid interface address.
@@ -222,7 +222,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
-        NetCollection GetFilteredLANSubnets(NetCollection? filter = null);
+        Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null);
 
         /// <summary>
         /// Reloads all settings and re-initialises the instance.

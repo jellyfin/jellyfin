@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -13,7 +14,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -36,7 +36,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// List of all interface addresses and masks.
         /// </summary>
-        private readonly NetCollection _interfaceAddresses;
+        private readonly Collection<IPObject> _interfaceAddresses;
 
         /// <summary>
         /// List of all interface MAC addresses.
@@ -63,27 +63,27 @@ namespace Jellyfin.Networking.Manager
         /// Unfiltered user defined LAN subnets. (<see cref="NetworkConfiguration.LocalNetworkSubnets"/>)
         /// or internal interface network subnets if undefined by user.
         /// </summary>
-        private NetCollection _lanSubnets;
+        private Collection<IPObject> _lanSubnets;
 
         /// <summary>
         /// User defined list of subnets to excluded from the LAN.
         /// </summary>
-        private NetCollection _excludedSubnets;
+        private Collection<IPObject> _excludedSubnets;
 
         /// <summary>
         /// List of interface addresses to bind the WS.
         /// </summary>
-        private NetCollection _bindAddresses;
+        private Collection<IPObject> _bindAddresses;
 
         /// <summary>
         /// List of interface addresses to exclude from bind.
         /// </summary>
-        private NetCollection _bindExclusions;
+        private Collection<IPObject> _bindExclusions;
 
         /// <summary>
         /// Caches list of all internal filtered interface addresses and masks.
         /// </summary>
-        private NetCollection _internalInterfaces;
+        private Collection<IPObject> _internalInterfaces;
 
         /// <summary>
         /// Flag set when no custom LAN has been defined in the config.
@@ -106,7 +106,7 @@ namespace Jellyfin.Networking.Manager
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
 
-            _interfaceAddresses = new NetCollection();
+            _interfaceAddresses = new Collection<IPObject>();
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new Dictionary<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
@@ -142,7 +142,7 @@ namespace Jellyfin.Networking.Manager
         public bool IsIP4Enabled { get; set; }
 
         /// <inheritdoc/>
-        public NetCollection RemoteAddressFilter { get; private set; }
+        public Collection<IPObject> RemoteAddressFilter { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
@@ -159,9 +159,9 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="source">Items to assign the collection, or null.</param>
         /// <returns>The collection created.</returns>
-        public static NetCollection CreateCollection(IEnumerable<IPObject>? source = null)
+        public static Collection<IPObject> CreateCollection(IEnumerable<IPObject>? source = null)
         {
-            var result = new NetCollection();
+            var result = new Collection<IPObject>();
             if (source != null)
             {
                 foreach (var item in source)
@@ -201,9 +201,9 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public NetCollection GetLoopbacks()
+        public Collection<IPObject> GetLoopbacks()
         {
-            NetCollection nc = new NetCollection();
+            Collection<IPObject> nc = new Collection<IPObject>();
             if (IsIP4Enabled)
             {
                 nc.AddItem(IPAddress.Loopback);
@@ -230,9 +230,9 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public NetCollection CreateIPCollection(string[] values, bool bracketed = false)
+        public Collection<IPObject> CreateIPCollection(string[] values, bool bracketed = false)
         {
-            NetCollection col = new NetCollection();
+            Collection<IPObject> col = new Collection<IPObject>();
             if (values == null)
             {
                 return col;
@@ -273,7 +273,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public NetCollection GetAllBindInterfaces(bool individualInterfaces = false)
+        public Collection<IPObject> GetAllBindInterfaces(bool individualInterfaces = false)
         {
             int count = _bindAddresses.Count;
 
@@ -287,11 +287,11 @@ namespace Jellyfin.Networking.Manager
 
                 if (individualInterfaces)
                 {
-                    return new NetCollection(_interfaceAddresses);
+                    return new Collection<IPObject>(_interfaceAddresses);
                 }
 
                 // No bind address and no exclusions, so listen on all interfaces.
-                NetCollection result = new NetCollection();
+                Collection<IPObject> result = new Collection<IPObject>();
 
                 if (IsIP4Enabled)
                 {
@@ -428,7 +428,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public NetCollection GetInternalBindAddresses()
+        public Collection<IPObject> GetInternalBindAddresses()
         {
             int count = _bindAddresses.Count;
 
@@ -444,7 +444,7 @@ namespace Jellyfin.Networking.Manager
                 return CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
             }
 
-            return new NetCollection(_bindAddresses);
+            return new Collection<IPObject>(_bindAddresses);
         }
 
         /// <inheritdoc/>
@@ -525,7 +525,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public NetCollection GetFilteredLANSubnets(NetCollection? filter = null)
+        public Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null)
         {
             if (filter == null)
             {
@@ -542,7 +542,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public bool TryParseInterface(string token, out NetCollection? result)
+        public bool TryParseInterface(string token, out Collection<IPObject>? result)
         {
             result = null;
             if (string.IsNullOrEmpty(token))
@@ -552,7 +552,7 @@ namespace Jellyfin.Networking.Manager
 
             if (_interfaceNames != null && _interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
             {
-                result = new NetCollection();
+                result = new Collection<IPObject>();
 
                 _logger.LogInformation("Interface {0} used in settings. Using its interface addresses.", token);
 
@@ -736,7 +736,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="col">Collection.</param>
         /// <param name="token">String to parse.</param>
-        private void AddToCollection(NetCollection col, string token)
+        private void AddToCollection(Collection<IPObject> col, string token)
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
@@ -882,7 +882,7 @@ namespace Jellyfin.Networking.Manager
                         {
                             _publishedServerUrls[new IPNetAddress(IPAddress.Any)] = replacement;
                         }
-                        else if (TryParseInterface(parts[0], out NetCollection? addresses) && addresses != null)
+                        else if (TryParseInterface(parts[0], out Collection<IPObject>? addresses) && addresses != null)
                         {
                             foreach (IPNetAddress na in addresses)
                             {
@@ -963,7 +963,7 @@ namespace Jellyfin.Networking.Manager
                     _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)));
 
                     // Subnets are the same as the calculated internal interface.
-                    _lanSubnets = new NetCollection();
+                    _lanSubnets = new Collection<IPObject>();
 
                     // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IsIP6Enabled)
@@ -1201,7 +1201,7 @@ namespace Jellyfin.Networking.Manager
             {
                 // Check to see if any of the bind interfaces are in the same subnet.
 
-                NetCollection bindResult;
+                Collection<IPObject> bindResult;
                 IPAddress? defaultGateway = null;
                 IPAddress? bindAddress;
 
