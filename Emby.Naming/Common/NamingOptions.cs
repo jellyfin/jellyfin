@@ -246,7 +246,7 @@ namespace Emby.Naming.Common
                 },
                 // <!-- foo.ep01, foo.EP_01 -->
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
-                new EpisodeExpression("([0-9]{4})[\\.-]([0-9]{2})[\\.-]([0-9]{2})", true)
+                new EpisodeExpression("(?<year>[0-9]{4})[\\.-](?<month>[0-9]{2})[\\.-](?<day>[0-9]{2})", true)
                 {
                     DateTimeFormats = new[]
                     {
@@ -255,7 +255,7 @@ namespace Emby.Naming.Common
                         "yyyy_MM_dd"
                     }
                 },
-                new EpisodeExpression("([0-9]{2})[\\.-]([0-9]{2})[\\.-]([0-9]{4})", true)
+                new EpisodeExpression(@"(?<day>[0-9]{2})[.-](?<month>[0-9]{2})[.-](?<year>[0-9]{4})", true)
                 {
                     DateTimeFormats = new[]
                     {
@@ -277,6 +277,11 @@ namespace Emby.Naming.Common
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
+
+                // Case Closed (1996-2007)/Case Closed - 317.mkv
+                // /server/anything_102.mp4
+                // /server/james.corden.2017.04.20.anne.hathaway.720p.hdtv.x264-crooks.mkv
+                // /server/anything_1996.11.14.mp4
                 new EpisodeExpression(@"[\\\\/\\._ -](?<seriesname>(?![0-9]+[0-9][0-9])([^\\\/])*)[\\\\/\\._ -](?<seasonnumber>[0-9]+)(?<epnumber>[0-9][0-9](?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([\\._ -][^\\\\/]*)$")
                 {
                     IsOptimistic = true,
