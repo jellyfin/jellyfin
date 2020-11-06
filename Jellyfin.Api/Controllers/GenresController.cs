@@ -66,7 +66,6 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Genres returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the queryresult of genres.</returns>
         [HttpGet]
-        [HttpGet("/MusicGenres", Name = "GetMusicGenres-Deprecated")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetGenres(
             [FromQuery] int? startIndex,
