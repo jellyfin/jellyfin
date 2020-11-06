@@ -166,7 +166,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo nohup /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
+      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
 
   - task: SSH@0
     displayName: 'Update Stable Repository'
@@ -175,7 +175,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo nohup /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
+      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
