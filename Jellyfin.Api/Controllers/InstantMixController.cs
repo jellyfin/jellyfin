@@ -316,7 +316,7 @@ namespace Jellyfin.Api.Controllers
                 TotalRecordCount = list.Count
             };
 
-            if (limit.HasValue && limit > list.Count)
+            if (limit.HasValue && limit < list.Count)
             {
                 list = list.GetRange(0, limit.Value);
             }

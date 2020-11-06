@@ -50,7 +50,7 @@ namespace Jellyfin.Api.Helpers
 
             var returnItems = items;
 
-            if (limit.HasValue && limit > returnItems.Count)
+            if (limit.HasValue && limit < returnItems.Count)
             {
                 returnItems = returnItems.GetRange(0, limit.Value);
             }
