@@ -11,7 +11,7 @@ namespace Jellyfin.Networking.Configuration
     public class NetworkConfiguration
     {
         /// <summary>
-        /// Gets the default http port.
+        /// The default value for <see cref="HttpServerPortNumber"/>.
         /// </summary>
         public const int DefaultHttpPort = 8096;
 
