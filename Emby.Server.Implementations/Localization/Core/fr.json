@@ -113,5 +113,7 @@
     "TaskCleanCache": "Vider le répertoire cache",
     "TasksApplicationCategory": "Application",
     "TasksLibraryCategory": "Bibliothèque",
-    "TasksMaintenanceCategory": "Maintenance"
+    "TasksMaintenanceCategory": "Maintenance",
+    "TaskCleanActivityLogDescription": "Supprime les entrées du journal d'activité antérieures à l'âge configuré.",
+    "TaskCleanActivityLog": "Nettoyer le journal d'activité"
 }
