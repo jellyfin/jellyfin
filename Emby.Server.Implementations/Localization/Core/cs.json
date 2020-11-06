@@ -113,5 +113,7 @@
     "TasksChannelsCategory": "Internetové kanály",
     "TasksApplicationCategory": "Aplikace",
     "TasksLibraryCategory": "Knihovna",
-    "TasksMaintenanceCategory": "Údržba"
+    "TasksMaintenanceCategory": "Údržba",
+    "TaskCleanActivityLogDescription": "Smazat záznamy o aktivitě, které jsou starší než zadaná doba.",
+    "TaskCleanActivityLog": "Smazat záznam aktivity"
 }
