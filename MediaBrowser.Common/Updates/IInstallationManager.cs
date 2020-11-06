@@ -11,29 +11,6 @@ namespace MediaBrowser.Common.Updates
 {
     public interface IInstallationManager : IDisposable
     {
-        event EventHandler<InstallationInfo> PackageInstalling;
-
-        event EventHandler<InstallationInfo> PackageInstallationCompleted;
-
-        event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
-
-        event EventHandler<InstallationInfo> PackageInstallationCancelled;
-
-        /// <summary>
-        /// Occurs when a plugin is uninstalled.
-        /// </summary>
-        event EventHandler<IPlugin> PluginUninstalled;
-
-        /// <summary>
-        /// Occurs when a plugin is updated.
-        /// </summary>
-        event EventHandler<InstallationInfo> PluginUpdated;
-
-        /// <summary>
-        /// Occurs when a plugin is installed.
-        /// </summary>
-        event EventHandler<InstallationInfo> PluginInstalled;
-
         /// <summary>
         /// Gets the completed installations.
         /// </summary>

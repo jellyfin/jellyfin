@@ -5,6 +5,7 @@ using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -159,7 +160,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
             [FromQuery] string? locationTypes,
-            [FromQuery] LocationType[] excludeLocationTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
             [FromQuery] double? minCommunityRating,
@@ -182,10 +183,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
-            [FromQuery] string? imageTypes,
+            [FromQuery] ImageType[] imageTypes,
             [FromQuery] string? sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery] string? genres,
@@ -194,7 +195,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? person,
             [FromQuery] string? personIds,
             [FromQuery] string? personTypes,
@@ -342,7 +343,7 @@ namespace Jellyfin.Api.Controllers
                     PersonIds = RequestHelpers.GetGuids(personIds),
                     PersonTypes = RequestHelpers.Split(personTypes, ',', true),
                     Years = RequestHelpers.Split(years, ',', true).Select(int.Parse).ToArray(),
-                    ImageTypes = RequestHelpers.Split(imageTypes, ',', true).Select(v => Enum.Parse<ImageType>(v, true)).ToArray(),
+                    ImageTypes = imageTypes,
                     VideoTypes = RequestHelpers.Split(videoTypes, ',', true).Select(v => Enum.Parse<VideoType>(v, true)).ToArray(),
                     AdjacentTo = adjacentTo,
                     ItemIds = RequestHelpers.GetGuids(ids),
@@ -536,7 +537,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? mediaTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
             [FromQuery] bool enableTotalRecordCount = true,

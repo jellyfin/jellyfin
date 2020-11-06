@@ -326,7 +326,7 @@ namespace Emby.Dlna.PlayTo
 
         public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
-            _logger.LogDebug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
+            _logger.LogDebug("{0} - Received PlayRequest: {1}", _session.DeviceName, command.PlayCommand);
 
             var user = command.ControllingUserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(command.ControllingUserId);
 
@@ -339,7 +339,7 @@ namespace Emby.Dlna.PlayTo
             var startIndex = command.StartIndex ?? 0;
             if (startIndex > 0)
             {
-                items = items.Skip(startIndex).ToList();
+                items = items.GetRange(startIndex, items.Count - startIndex);
             }
 
             var playlist = new List<PlaylistItem>();

@@ -88,16 +88,14 @@ namespace Jellyfin.Api.Controllers
         /// <response code="302">Redirected to remote audio stream.</response>
         /// <returns>A <see cref="Task"/> containing the audio file.</returns>
         [HttpGet("Audio/{itemId}/universal")]
-        [HttpGet("Audio/{itemId}/universal.{container}", Name = "GetUniversalAudioStream_2")]
         [HttpHead("Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
-        [HttpHead("Audio/{itemId}/universal.{container}", Name = "HeadUniversalAudioStream_2")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesAudioFile]
         public async Task<ActionResult> GetUniversalAudioStream(
             [FromRoute, Required] Guid itemId,
-            [FromRoute] string? container,
+            [FromQuery] string? container,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] Guid? userId,
@@ -270,20 +268,24 @@ namespace Jellyfin.Api.Controllers
         {
             var deviceProfile = new DeviceProfile();
 
-            var directPlayProfiles = new List<DirectPlayProfile>();
-
             var containers = RequestHelpers.Split(container, ',', true);
-
-            foreach (var cont in containers)
+            int len = containers.Length;
+            var directPlayProfiles = new DirectPlayProfile[len];
+            for (int i = 0; i < len; i++)
             {
-                var parts = RequestHelpers.Split(cont, ',', true);
+                var parts = RequestHelpers.Split(containers[i], '|', true);
 
-                var audioCodecs = parts.Length == 1 ? null : string.Join(",", parts.Skip(1).ToArray());
+                var audioCodecs = parts.Length == 1 ? null : string.Join(',', parts.Skip(1));
 
-                directPlayProfiles.Add(new DirectPlayProfile { Type = DlnaProfileType.Audio, Container = parts[0], AudioCodec = audioCodecs });
+                directPlayProfiles[i] = new DirectPlayProfile
+                {
+                    Type = DlnaProfileType.Audio,
+                    Container = parts[0],
+                    AudioCodec = audioCodecs
+                };
             }
 
-            deviceProfile.DirectPlayProfiles = directPlayProfiles.ToArray();
+            deviceProfile.DirectPlayProfiles = directPlayProfiles;
 
             deviceProfile.TranscodingProfiles = new[]
             {

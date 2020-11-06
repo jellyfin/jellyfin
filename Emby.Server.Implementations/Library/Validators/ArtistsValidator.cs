@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(MusicArtist).Name },
+                IncludeItemTypes = new[] { nameof(MusicArtist) },
                 IsDeadArtist = true,
                 IsLocked = false
             }).Cast<MusicArtist>().ToList();
