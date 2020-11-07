@@ -76,6 +76,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxAudioChannels">Optional. The maximum number of audio channels.</param>
         /// <param name="transcodingAudioChannels">Optional. The number of how many audio channels to transcode to.</param>
         /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
+        /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="startTimeTicks">Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms.</param>
         /// <param name="transcodingContainer">Optional. The container to transcode to.</param>
         /// <param name="transcodingProtocol">Optional. The transcoding protocol.</param>
@@ -102,7 +103,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? audioCodec,
             [FromQuery] int? maxAudioChannels,
             [FromQuery] int? transcodingAudioChannels,
-            [FromQuery] long? maxStreamingBitrate,
+            [FromQuery] int? maxStreamingBitrate,
+            [FromQuery] int? audioBitRate,
             [FromQuery] long? startTimeTicks,
             [FromQuery] string? transcodingContainer,
             [FromQuery] string? transcodingProtocol,
@@ -210,7 +212,7 @@ namespace Jellyfin.Api.Controllers
                     AudioSampleRate = maxAudioSampleRate,
                     MaxAudioChannels = maxAudioChannels,
                     MaxAudioBitDepth = maxAudioBitDepth,
-                    AudioChannels = isStatic ? (int?)null : Convert.ToInt32(Math.Min(maxStreamingBitrate ?? 192000, int.MaxValue)),
+                    AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                     StartTimeTicks = startTimeTicks,
                     SubtitleMethod = SubtitleDeliveryMethod.Hls,
                     RequireAvc = true,
@@ -242,7 +244,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames,
                 AudioSampleRate = maxAudioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = isStatic ? (int?)null : Convert.ToInt32(Math.Min(maxStreamingBitrate ?? 192000, int.MaxValue)),
+                AudioBitRate = isStatic ? (int?)null : (audioBitRate ?? maxStreamingBitrate),
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = maxAudioChannels,
                 CopyTimestamps = true,
