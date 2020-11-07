@@ -186,7 +186,7 @@ namespace Emby.Naming.TV
 
         private void FillAdditional(string path, EpisodePathParserResult info)
         {
-            var expressions = _options.MultipleEpisodeExpressions.ToList();
+            var expressions = _options.MultipleEpisodeExpressions.Where(i => i.IsNamed).ToList();
 
             if (string.IsNullOrEmpty(info.SeriesName))
             {
@@ -200,11 +200,6 @@ namespace Emby.Naming.TV
         {
             foreach (var i in expressions)
             {
-                if (!i.IsNamed)
-                {
-                    continue;
-                }
-
                 var result = Parse(path, i);
 
                 if (!result.Success)
