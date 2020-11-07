@@ -1136,11 +1136,19 @@ namespace Jellyfin.Api.Controllers
 
             var segmentLengths = GetSegmentLengths(state);
 
+            var segmentContainer = state.Request.SegmentContainer ?? "ts";
+
+            // http://ffmpeg.org/ffmpeg-all.html#toc-hls-2
+            var isHlsInFmp4 = string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase);
+            var hlsVersion = isHlsInFmp4 ? "7" : "3";
+
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U")
                 .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
-                .AppendLine("#EXT-X-VERSION:3")
+                .Append("#EXT-X-VERSION:")
+                .Append(hlsVersion)
+                .AppendLine()
                 .Append("#EXT-X-TARGETDURATION:")
                 .Append(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength))
                 .AppendLine()
@@ -1149,6 +1157,18 @@ namespace Jellyfin.Api.Controllers
             var index = 0;
             var segmentExtension = GetSegmentFileExtension(streamingRequest.SegmentContainer);
             var queryString = Request.QueryString;
+
+            if (isHlsInFmp4)
+            {
+                builder.Append("#EXT-X-MAP:URI=\"")
+                    .Append("hls1/")
+                    .Append(name)
+                    .Append("/-1")
+                    .Append(segmentExtension)
+                    .Append(queryString)
+                    .Append('"')
+                    .AppendLine();
+            }
 
             foreach (var length in segmentLengths)
             {
@@ -1232,7 +1252,13 @@ namespace Jellyfin.Api.Controllers
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
                     var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
 
-                    if (currentTranscodingIndex == null)
+                    if (segmentId == -1)
+                    {
+                        _logger.LogDebug("Starting transcoding because fmp4 header file is being requested");
+                        startTranscoding = true;
+                        segmentId = 0;
+                    }
+                    else if (currentTranscodingIndex == null)
                     {
                         _logger.LogDebug("Starting transcoding because currentTranscodingIndex=null");
                         startTranscoding = true;
@@ -1347,12 +1373,23 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
+            var outputPrefix = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath));
+            var outputExtension = GetSegmentFileExtension(state.Request.SegmentContainer);
+            var outputTsArg = outputPrefix + "%d" + outputExtension;
 
             var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
             {
                 segmentFormat = "mpegts";
+            }
+            else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                var outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
+                segmentFormat = "fmp4" + outputFmp4HeaderArg;
+            }
+            else
+            {
+                _logger.LogError("Invalid HLS segment container: " + segmentFormat);
             }
 
             var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize > 128
@@ -1384,7 +1421,7 @@ namespace Jellyfin.Api.Controllers
             {
                 if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
-                    return "-acodec copy";
+                    return "-acodec copy -strict -2";
                 }
 
                 var audioTranscodeParams = new List<string>();
@@ -1416,10 +1453,10 @@ namespace Jellyfin.Api.Controllers
 
                 if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
-                    return "-codec:a:0 copy -copypriorss:a:0 0";
+                    return "-codec:a:0 copy -strict -2 -copypriorss:a:0 0";
                 }
 
-                return "-codec:a:0 copy";
+                return "-codec:a:0 copy -strict -2";
             }
 
             var args = "-codec:a:0 " + audioCodec;
@@ -1458,6 +1495,15 @@ namespace Jellyfin.Api.Controllers
             var codec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
 
             var args = "-codec:v:0 " + codec;
+
+            // Prefer hvc1 to hev1
+            if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+            {
+                args += " -tag:v:0 hvc1";
+            }
 
             // if  (state.EnableMpegtsM2TsMode)
             // {
@@ -1505,16 +1551,30 @@ namespace Jellyfin.Api.Controllers
 
                 args += " " + _encodingHelper.GetVideoQualityParam(state, codec, encodingOptions, "veryfast");
 
-                // Unable to force key frames using these hw encoders, set key frames by GOP
+                // Unable to force key frames using these encoders, set key frames by GOP
                 if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase))
+                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "hevc_qsv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "hevc_amf", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " " + gopArg;
+                }
+                else if (string.Equals(codec, "libx264", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
+                {
+                    args += " " + keyFrameArg;
                 }
                 else
                 {
                     args += " " + keyFrameArg + gopArg;
+                }
+
+                // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now
+                if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
+                {
+                    args += " -bf 0";
                 }
 
                 // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";

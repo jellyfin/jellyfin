@@ -85,20 +85,21 @@ namespace Jellyfin.Api.Helpers
             // The h265 syntax is a bit of a mystery at the time this comment was written.
             // This is what I've found through various sources:
             // FORMAT: [codecTag].[profile].[constraint?].L[level * 30].[UNKNOWN]
-            StringBuilder result = new StringBuilder("hev1", 16);
+            StringBuilder result = new StringBuilder("hvc1", 16);
 
-            if (string.Equals(profile, "main10", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(profile, "main10", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(profile, "main 10", StringComparison.OrdinalIgnoreCase))
             {
-                result.Append(".2.6");
+                result.Append(".2.4");
             }
             else
             {
                 // Default to main if profile is invalid
-                result.Append(".1.6");
+                result.Append(".1.4");
             }
 
             result.Append(".L")
-                .Append(level * 3)
+                .Append(level)
                 .Append(".B0");
 
             return result.ToString();
@@ -120,6 +121,24 @@ namespace Jellyfin.Api.Helpers
         public static string GetEAC3String()
         {
             return "mp4a.a6";
+        }
+
+        /// <summary>
+        /// Gets an FLAC codec string.
+        /// </summary>
+        /// <returns>FLAC codec string.</returns>
+        public static string GetFLACString()
+        {
+            return "fLaC";
+        }
+
+        /// <summary>
+        /// Gets an ALAC codec string.
+        /// </summary>
+        /// <returns>ALAC codec string.</returns>
+        public static string GetALACString()
+        {
+            return "alac";
         }
     }
 }
