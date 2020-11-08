@@ -83,6 +83,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets Dlna media receiver registrar xml.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Dlna media receiver registrar xml returned.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/MediaReceiverRegistrar")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar", Name = "GetMediaReceiverRegistrar_2")]
@@ -105,6 +106,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets Dlna media receiver registrar xml.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Dlna media receiver registrar xml returned.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/ConnectionManager")]
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager", Name = "GetConnectionManager_2")]
@@ -127,9 +129,12 @@ namespace Jellyfin.Api.Controllers
         /// Process a content directory control request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ContentDirectory/Control")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute, Required] string serverId)
         {
             if (DlnaEntryPoint.ContentDirectory != null)
@@ -144,9 +149,12 @@ namespace Jellyfin.Api.Controllers
         /// Process a connection manager control request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ConnectionManager/Control")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute, Required] string serverId)
         {
             if (DlnaEntryPoint.ConnectionManager != null)
@@ -161,9 +169,12 @@ namespace Jellyfin.Api.Controllers
         /// Process a media receiver registrar control request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/MediaReceiverRegistrar/Control")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute, Required] string serverId)
         {
             if (DlnaEntryPoint.MediaReceiverRegistrar != null)
@@ -178,12 +189,16 @@ namespace Jellyfin.Api.Controllers
         /// Processes an event subscription request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [HttpUnsubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [Produces(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
             if (DlnaEntryPoint.MediaReceiverRegistrar != null)
@@ -198,12 +213,15 @@ namespace Jellyfin.Api.Controllers
         /// Processes an event subscription request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ContentDirectory/Events")]
         [HttpUnsubscribe("{serverId}/ContentDirectory/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string serverId)
         {
             if (DlnaEntryPoint.ContentDirectory != null)
@@ -218,12 +236,15 @@ namespace Jellyfin.Api.Controllers
         /// Processes an event subscription request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ConnectionManager/Events")]
         [HttpUnsubscribe("{serverId}/ConnectionManager/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string serverId)
         {
             if (DlnaEntryPoint.ConnectionManager != null)

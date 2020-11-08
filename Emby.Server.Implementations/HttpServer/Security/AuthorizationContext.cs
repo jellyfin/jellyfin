@@ -111,81 +111,89 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 Token = token
             };
 
-            AuthenticationInfo originalAuthenticationInfo = null;
-            if (!string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(token))
             {
-                var result = _authRepo.Get(new AuthenticationInfoQuery
+                // Request doesn't contain a token.
+                return (null, null);
+            }
+
+            var result = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                AccessToken = token
+            });
+
+            var originalAuthenticationInfo = result.Items.Count > 0 ? result.Items[0] : null;
+
+            if (originalAuthenticationInfo != null)
+            {
+                var updateToken = false;
+
+                // TODO: Remove these checks for IsNullOrWhiteSpace
+                if (string.IsNullOrWhiteSpace(authInfo.Client))
                 {
-                    AccessToken = token
-                });
+                    authInfo.Client = originalAuthenticationInfo.AppName;
+                }
 
-                originalAuthenticationInfo = result.Items.Count > 0 ? result.Items[0] : null;
-
-                if (originalAuthenticationInfo != null)
+                if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
                 {
-                    var updateToken = false;
+                    authInfo.DeviceId = originalAuthenticationInfo.DeviceId;
+                }
 
-                    // TODO: Remove these checks for IsNullOrWhiteSpace
-                    if (string.IsNullOrWhiteSpace(authInfo.Client))
-                    {
-                        authInfo.Client = originalAuthenticationInfo.AppName;
-                    }
+                // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
+                var allowTokenInfoUpdate = authInfo.Client == null || authInfo.Client.IndexOf("chromecast", StringComparison.OrdinalIgnoreCase) == -1;
 
-                    if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
+                if (string.IsNullOrWhiteSpace(authInfo.Device))
+                {
+                    authInfo.Device = originalAuthenticationInfo.DeviceName;
+                }
+                else if (!string.Equals(authInfo.Device, originalAuthenticationInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (allowTokenInfoUpdate)
                     {
-                        authInfo.DeviceId = originalAuthenticationInfo.DeviceId;
+                        updateToken = true;
+                        originalAuthenticationInfo.DeviceName = authInfo.Device;
                     }
+                }
 
-                    // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
-                    var allowTokenInfoUpdate = authInfo.Client == null || authInfo.Client.IndexOf("chromecast", StringComparison.OrdinalIgnoreCase) == -1;
+                if (string.IsNullOrWhiteSpace(authInfo.Version))
+                {
+                    authInfo.Version = originalAuthenticationInfo.AppVersion;
+                }
+                else if (!string.Equals(authInfo.Version, originalAuthenticationInfo.AppVersion, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (allowTokenInfoUpdate)
+                    {
+                        updateToken = true;
+                        originalAuthenticationInfo.AppVersion = authInfo.Version;
+                    }
+                }
 
-                    if (string.IsNullOrWhiteSpace(authInfo.Device))
-                    {
-                        authInfo.Device = originalAuthenticationInfo.DeviceName;
-                    }
-                    else if (!string.Equals(authInfo.Device, originalAuthenticationInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (allowTokenInfoUpdate)
-                        {
-                            updateToken = true;
-                            originalAuthenticationInfo.DeviceName = authInfo.Device;
-                        }
-                    }
+                if ((DateTime.UtcNow - originalAuthenticationInfo.DateLastActivity).TotalMinutes > 3)
+                {
+                    originalAuthenticationInfo.DateLastActivity = DateTime.UtcNow;
+                    updateToken = true;
+                }
 
-                    if (string.IsNullOrWhiteSpace(authInfo.Version))
-                    {
-                        authInfo.Version = originalAuthenticationInfo.AppVersion;
-                    }
-                    else if (!string.Equals(authInfo.Version, originalAuthenticationInfo.AppVersion, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (allowTokenInfoUpdate)
-                        {
-                            updateToken = true;
-                            originalAuthenticationInfo.AppVersion = authInfo.Version;
-                        }
-                    }
+                if (!originalAuthenticationInfo.UserId.Equals(Guid.Empty))
+                {
+                    authInfo.User = _userManager.GetUserById(originalAuthenticationInfo.UserId);
 
-                    if ((DateTime.UtcNow - originalAuthenticationInfo.DateLastActivity).TotalMinutes > 3)
+                    if (authInfo.User != null && !string.Equals(authInfo.User.Username, originalAuthenticationInfo.UserName, StringComparison.OrdinalIgnoreCase))
                     {
-                        originalAuthenticationInfo.DateLastActivity = DateTime.UtcNow;
+                        originalAuthenticationInfo.UserName = authInfo.User.Username;
                         updateToken = true;
                     }
 
-                    if (!originalAuthenticationInfo.UserId.Equals(Guid.Empty))
-                    {
-                        authInfo.User = _userManager.GetUserById(originalAuthenticationInfo.UserId);
+                    authInfo.IsApiKey = true;
+                }
+                else
+                {
+                    authInfo.IsApiKey = false;
+                }
 
-                        if (authInfo.User != null && !string.Equals(authInfo.User.Username, originalAuthenticationInfo.UserName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            originalAuthenticationInfo.UserName = authInfo.User.Username;
-                            updateToken = true;
-                        }
-                    }
-
-                    if (updateToken)
-                    {
-                        _authRepo.Update(originalAuthenticationInfo);
-                    }
+                if (updateToken)
+                {
+                    _authRepo.Update(originalAuthenticationInfo);
                 }
             }
 

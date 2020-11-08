@@ -461,9 +461,9 @@ namespace Emby.Dlna
                     continue;
                 }
 
-                var filename = Path.GetFileName(name).Substring(namespaceName.Length);
-
-                var path = Path.Combine(systemProfilesPath, filename);
+                var path = Path.Join(
+                    systemProfilesPath,
+                    Path.GetFileName(name.AsSpan()).Slice(namespaceName.Length));
 
                 using var stream = _assembly.GetManifestResourceStream(name);
                 var fileInfo = _fileSystem.GetFileInfo(path);

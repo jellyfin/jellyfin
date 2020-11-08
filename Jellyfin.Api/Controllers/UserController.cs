@@ -530,6 +530,33 @@ namespace Jellyfin.Api.Controllers
             return result;
         }
 
+        /// <summary>
+        /// Gets the user based on auth token.
+        /// </summary>
+        /// <response code="200">User returned.</response>
+        /// <response code="400">Token is not owned by a user.</response>
+        /// <returns>A <see cref="UserDto"/> for the authenticated user.</returns>
+        [HttpGet("Me")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult<UserDto> GetCurrentUser()
+        {
+            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
+            if (userId == null)
+            {
+                return BadRequest();
+            }
+
+            var user = _userManager.GetUserById(userId.Value);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
+            return _userManager.GetUserDto(user);
+        }
+
         private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
         {
             var users = _userManager.Users;

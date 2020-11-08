@@ -142,12 +142,12 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the MaxStreamingBitrate.
         /// </summary>
-        public long? MaxStreamingBitrate { get; set; }
+        public int? MaxStreamingBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the MaxStaticBitrate.
         /// </summary>
-        public long? MaxStaticBitrate { get; set; }
+        public int? MaxStaticBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the MusicStreamingTranscodingBitrate.

@@ -56,6 +56,8 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the system info.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
+        /// <returns>SystemInfo.</returns>
         /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
         SystemInfo GetSystemInfo(HttpRequest request);

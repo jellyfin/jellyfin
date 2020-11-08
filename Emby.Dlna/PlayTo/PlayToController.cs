@@ -368,7 +368,7 @@ namespace Emby.Dlna.PlayTo
             var startIndex = command.StartIndex ?? 0;
             if (startIndex > 0)
             {
-                items = items.Skip(startIndex).ToList();
+                items = items.GetRange(startIndex, items.Count - startIndex);
             }
 
             var playlist = new List<PlaylistItem>();
