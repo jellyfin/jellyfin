@@ -154,7 +154,7 @@ namespace MediaBrowser.Providers.Subtitles
             {
                 var response = await GetRemoteSubtitles(subtitleId, cancellationToken).ConfigureAwait(false);
 
-                await TrySaveSubtitle(video, libraryOptions, response);
+                await TrySaveSubtitle(video, libraryOptions, response).ConfigureAwait(false);
             }
             catch (RateLimitExceededException)
             {
@@ -174,10 +174,10 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public async Task UploadSubtitle(Video video, SubtitleResponse response)
+        public Task UploadSubtitle(Video video, SubtitleResponse response)
         {
             var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(video);
-            await TrySaveSubtitle(video, libraryOptions, response).ConfigureAwait(false);
+            return TrySaveSubtitle(video, libraryOptions, response);
         }
 
         private async Task TrySaveSubtitle(
