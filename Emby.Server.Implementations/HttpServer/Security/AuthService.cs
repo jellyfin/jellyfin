@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 
@@ -19,9 +20,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
         public AuthorizationInfo Authenticate(HttpRequest request)
         {
             var auth = _authorizationContext.GetAuthorizationInfo(request);
-            if (auth == null)
+            if (!auth.IsAuthenticated)
             {
-                throw new SecurityException("Unauthenticated request.");
+                throw new AuthenticationException("Invalid token.");
             }
 
             if (auth.User?.HasPermission(PermissionKind.IsDisabled) ?? false)
