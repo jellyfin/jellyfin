@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         {
             if (baseItem is Channel)
             {
-                // hack alert
+                // Hack alert.
                 return true;
             }
 
