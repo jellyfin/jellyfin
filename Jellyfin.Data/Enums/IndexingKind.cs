@@ -1,5 +1,8 @@
 ﻿namespace Jellyfin.Data.Enums
 {
+    /// <summary>
+    /// An enum representing a type of indexing in a user's display preferences.
+    /// </summary>
     public enum IndexingKind
     {
         /// <summary>

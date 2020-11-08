@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Drawing;
@@ -61,6 +64,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Create an image collage.
         /// </summary>
         /// <param name="options">The options to use when creating the collage.</param>
-        void CreateImageCollage(ImageCollageOptions options);
+        /// <param name="libraryName">Optional. </param>
+        void CreateImageCollage(ImageCollageOptions options, string? libraryName);
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -105,7 +106,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     .ConfigureAwait(false);
                 if (string.IsNullOrEmpty(episodeTvdbId))
                 {
-                    _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
+                    _logger.LogError(
+                        "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                         searchInfo.ParentIndexNumber, searchInfo.IndexNumber, seriesTvdbId);
                     return result;
                 }
@@ -140,6 +142,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Name = episode.EpisodeName,
                     Overview = episode.Overview,
                     CommunityRating = (float?)episode.SiteRating,
+                    OfficialRating = episode.ContentRating,
                 }
             };
             result.ResetPeople();
@@ -152,6 +155,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             {
                 item.IndexNumber = Convert.ToInt32(episode.DvdEpisodeNumber ?? episode.AiredEpisodeNumber);
                 item.ParentIndexNumber = episode.DvdSeason ?? episode.AiredSeason;
+            }
+            else if (string.Equals(id.SeriesDisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase))
+            {
+                if (episode.AbsoluteNumber.GetValueOrDefault() != 0)
+                {
+                    item.IndexNumber = episode.AbsoluteNumber;
+                }
             }
             else if (episode.AiredEpisodeNumber.HasValue)
             {
@@ -244,7 +254,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
 
         public int Order => 0;

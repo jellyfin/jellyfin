@@ -1,20 +1,21 @@
+#pragma warning disable CA2227
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a group.
     /// </summary>
-    public partial class Group : IHasPermissions, ISavingChanges
+    public class Group : IHasPermissions, IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Group"/> class.
-        /// Public constructor with required data.
         /// </summary>
         /// <param name="name">The name of the group.</param>
         public Group(string name)
@@ -28,24 +29,18 @@ namespace Jellyfin.Data.Entities
             Id = Guid.NewGuid();
 
             Permissions = new HashSet<Permission>();
-            ProviderMappings = new HashSet<ProviderMapping>();
             Preferences = new HashSet<Preference>();
-
-            Init();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Group"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
         /// </summary>
+        /// <remarks>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </remarks>
         protected Group()
         {
-            Init();
         }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
 
         /// <summary>
         /// Gets or sets the id of this group.
@@ -53,8 +48,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [Key]
-        [Required]
         public Guid Id { get; protected set; }
 
         /// <summary>
@@ -68,42 +61,19 @@ namespace Jellyfin.Data.Entities
         [StringLength(255)]
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the row version.
-        /// </summary>
-        /// <remarks>
-        /// Required, Concurrency Token.
-        /// </remarks>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
 
-        public void OnSavingChanges()
-        {
-            RowVersion++;
-        }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        [ForeignKey("Permission_GroupPermissions_Id")]
+        /// <summary>
+        /// Gets or sets a collection containing the group's permissions.
+        /// </summary>
         public virtual ICollection<Permission> Permissions { get; protected set; }
 
-        [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
-
-        [ForeignKey("Preference_Preferences_Id")]
-        public virtual ICollection<Preference> Preferences { get; protected set; }
-
         /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
+        /// Gets or sets a collection containing the group's preferences.
         /// </summary>
-        /// <param name="name">The name of this group.</param>
-        public static Group Create(string name)
-        {
-            return new Group(name);
-        }
+        public virtual ICollection<Preference> Preferences { get; protected set; }
 
         /// <inheritdoc/>
         public bool HasPermission(PermissionKind kind)
@@ -117,6 +87,10 @@ namespace Jellyfin.Data.Entities
             Permissions.First(p => p.Kind == kind).Value = value;
         }
 
-        partial void Init();
+        /// <inheritdoc />
+        public void OnSavingChanges()
+        {
+            RowVersion++;
+        }
     }
 }

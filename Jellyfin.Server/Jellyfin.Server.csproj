@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
   <PropertyGroup>
@@ -13,6 +13,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <DisableImplicitAspNetCoreAnalyzers>true</DisableImplicitAspNetCoreAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,10 +22,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources/Configuration/*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <!-- Code Analyzers-->
@@ -41,18 +38,20 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.6" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.6" />
-    <PackageReference Include="prometheus-net" Version="3.6.0" />
-    <PackageReference Include="prometheus-net.AspNetCore" Version="3.6.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.1.9" />
+    <PackageReference Include="prometheus-net" Version="4.0.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="4.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.Async" Version="1.4.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-    <PackageReference Include="Serilog.Sinks.Graylog" Version="2.1.3" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.3" />
+    <PackageReference Include="Serilog.Sinks.Graylog" Version="2.2.1" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.4" />
     <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.14" />
   </ItemGroup>
 
@@ -61,6 +60,18 @@
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
     <ProjectReference Include="..\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj" />
     <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="wwwroot\api-docs\redoc\custom.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="wwwroot\api-docs\swagger\custom.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="wwwroot\api-docs\banner-dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

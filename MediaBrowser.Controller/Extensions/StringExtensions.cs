@@ -1,3 +1,6 @@
+#nullable enable
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.Linq;
@@ -13,11 +16,6 @@ namespace MediaBrowser.Controller.Extensions
     {
         public static string RemoveDiacritics(this string text)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException(nameof(text));
-            }
-
             var chars = Normalize(text, NormalizationForm.FormD)
                 .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark);
 

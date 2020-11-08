@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Session
     {
         public string[] PlayableMediaTypes { get; set; }
 
-        public string[] SupportedCommands { get; set; }
+        public GeneralCommandType[] SupportedCommands { get; set; }
 
         public bool SupportsMediaControl { get; set; }
 
@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Session
         public ClientCapabilities()
         {
             PlayableMediaTypes = Array.Empty<string>();
-            SupportedCommands = Array.Empty<string>();
+            SupportedCommands = Array.Empty<GeneralCommandType>();
             SupportsPersistentIdentifier = true;
         }
     }

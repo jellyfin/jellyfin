@@ -37,7 +37,7 @@ namespace MediaBrowser.Model.MediaInfo
 
         public string PlaySessionId { get; set; }
 
-        public long? MaxStreamingBitrate { get; set; }
+        public int? MaxStreamingBitrate { get; set; }
 
         public long? StartTimeTicks { get; set; }
 

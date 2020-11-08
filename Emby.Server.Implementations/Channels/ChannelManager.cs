@@ -250,21 +250,16 @@ namespace Emby.Server.Implementations.Channels
             var all = channels;
             var totalCount = all.Count;
 
-            if (query.StartIndex.HasValue)
+            if (query.StartIndex.HasValue || query.Limit.HasValue)
             {
-                all = all.Skip(query.StartIndex.Value).ToList();
+                int startIndex = query.StartIndex ?? 0;
+                int count = query.Limit == null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
+                all = all.GetRange(startIndex, count);
             }
-
-            if (query.Limit.HasValue)
-            {
-                all = all.Take(query.Limit.Value).ToList();
-            }
-
-            var returnItems = all.ToArray();
 
             if (query.RefreshLatestChannelItems)
             {
-                foreach (var item in returnItems)
+                foreach (var item in all)
                 {
                     RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).GetAwaiter().GetResult();
                 }
@@ -272,7 +267,7 @@ namespace Emby.Server.Implementations.Channels
 
             return new QueryResult<Channel>
             {
-                Items = returnItems,
+                Items = all,
                 TotalRecordCount = totalCount
             };
         }
@@ -543,7 +538,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(
                 new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(Channel).Name },
+                    IncludeItemTypes = new[] { nameof(Channel) },
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
                 }).Select(i => GetChannelFeatures(i.ToString("N", CultureInfo.InvariantCulture))).ToArray();
         }
@@ -746,12 +741,21 @@ namespace Emby.Server.Implementations.Channels
             // null if came from cache
             if (itemsResult != null)
             {
-                var internalItems = itemsResult.Items
-                    .Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, parentItem, cancellationToken))
-                    .ToArray();
+                var items = itemsResult.Items;
+                var itemsLen = items.Count;
+                var internalItems = new Guid[itemsLen];
+                for (int i = 0; i < itemsLen; i++)
+                {
+                    internalItems[i] = (await GetChannelItemEntityAsync(
+                        items[i],
+                        channelProvider,
+                        channel.Id,
+                        parentItem,
+                        cancellationToken).ConfigureAwait(false)).Id;
+                }
 
                 var existingIds = _libraryManager.GetItemIds(query);
-                var deadIds = existingIds.Except(internalItems.Select(i => i.Id))
+                var deadIds = existingIds.Except(internalItems)
                     .ToArray();
 
                 foreach (var deadId in deadIds)
@@ -881,7 +885,7 @@ namespace Emby.Server.Implementations.Channels
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error writing to channel cache file: {path}", path);
+                _logger.LogError(ex, "Error writing to channel cache file: {Path}", path);
             }
         }
 
@@ -963,7 +967,7 @@ namespace Emby.Server.Implementations.Channels
             return item;
         }
 
-        private BaseItem GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntityAsync(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, BaseItem parentFolder, CancellationToken cancellationToken)
         {
             var parentFolderId = parentFolder.Id;
 
@@ -1165,7 +1169,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else if (forceUpdate)
             {
-                item.UpdateToRepository(ItemUpdateType.None, cancellationToken);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
             }
 
             if ((isNew || forceUpdate) && info.Type == ChannelItemType.Media)

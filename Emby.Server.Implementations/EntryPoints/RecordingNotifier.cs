@@ -5,10 +5,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -43,27 +45,27 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        private async void OnLiveTvManagerSeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerSeriesTimerCreated(object sender, GenericEventArgs<TimerEventInfo> e)
         {
-            await SendMessage("SeriesTimerCreated", e.Argument).ConfigureAwait(false);
+            await SendMessage(SessionMessageType.SeriesTimerCreated, e.Argument).ConfigureAwait(false);
         }
 
-        private async void OnLiveTvManagerTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerTimerCreated(object sender, GenericEventArgs<TimerEventInfo> e)
         {
-            await SendMessage("TimerCreated", e.Argument).ConfigureAwait(false);
+            await SendMessage(SessionMessageType.TimerCreated, e.Argument).ConfigureAwait(false);
         }
 
-        private async void OnLiveTvManagerSeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerSeriesTimerCancelled(object sender, GenericEventArgs<TimerEventInfo> e)
         {
-            await SendMessage("SeriesTimerCancelled", e.Argument).ConfigureAwait(false);
+            await SendMessage(SessionMessageType.SeriesTimerCancelled, e.Argument).ConfigureAwait(false);
         }
 
-        private async void OnLiveTvManagerTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerTimerCancelled(object sender, GenericEventArgs<TimerEventInfo> e)
         {
-            await SendMessage("TimerCancelled", e.Argument).ConfigureAwait(false);
+            await SendMessage(SessionMessageType.TimerCancelled, e.Argument).ConfigureAwait(false);
         }
 
-        private async Task SendMessage(string name, TimerEventInfo info)
+        private async Task SendMessage(SessionMessageType name, TimerEventInfo info)
         {
             var users = _userManager.Users.Where(i => i.HasPermission(PermissionKind.EnableLiveTvAccess)).Select(i => i.Id).ToList();
 

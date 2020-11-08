@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -10,8 +8,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
+    /// <summary>
+    /// Defines the <see cref="ControlHandler" />.
+    /// </summary>
     public class ControlHandler : BaseControlHandler
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ControlHandler"/> class.
+        /// </summary>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="ControlHandler"/> instance.</param>
+        /// <param name="logger">The <see cref="ILogger"/> for use with the <see cref="ControlHandler"/> instance.</param>
         public ControlHandler(IServerConfigurationManager config, ILogger logger)
             : base(config, logger)
         {
@@ -35,9 +41,17 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
 
+        /// <summary>
+        /// Records that the handle is authorized in the xml stream.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private static void HandleIsAuthorized(XmlWriter xmlWriter)
             => xmlWriter.WriteElementString("Result", "1");
 
+        /// <summary>
+        /// Records that the handle is validated in the xml stream.
+        /// </summary>
+        /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private static void HandleIsValidated(XmlWriter xmlWriter)
             => xmlWriter.WriteElementString("Result", "1");
     }

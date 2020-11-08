@@ -1,5 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -49,6 +52,14 @@ namespace MediaBrowser.Controller.Subtitles
         /// Downloads the subtitles.
         /// </summary>
         Task DownloadSubtitles(Video video, LibraryOptions libraryOptions, string subtitleId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Upload new subtitle.
+        /// </summary>
+        /// <param name="video">The video the subtitle belongs to.</param>
+        /// <param name="response">The subtitle response.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task UploadSubtitle(Video video, SubtitleResponse response);
 
         /// <summary>
         /// Gets the remote subtitles.

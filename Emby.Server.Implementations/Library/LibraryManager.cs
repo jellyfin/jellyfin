@@ -513,10 +513,11 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (key.StartsWith(_configurationManager.ApplicationPaths.ProgramDataPath, StringComparison.Ordinal))
+            string programDataPath = _configurationManager.ApplicationPaths.ProgramDataPath;
+            if (key.StartsWith(programDataPath, StringComparison.Ordinal))
             {
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
-                key = key.Substring(_configurationManager.ApplicationPaths.ProgramDataPath.Length)
+                key = key.Substring(programDataPath.Length)
                     .TrimStart('/', '\\')
                     .Replace('/', '\\');
             }
@@ -729,7 +730,7 @@ namespace Emby.Server.Implementations.Library
             Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
-                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
+                             ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
                              .DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
@@ -771,7 +772,7 @@ namespace Emby.Server.Implementations.Library
             if (folder.ParentId != rootFolder.Id)
             {
                 folder.ParentId = rootFolder.Id;
-                folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
+                folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             rootFolder.AddVirtualChild(folder);
@@ -871,17 +872,17 @@ namespace Emby.Server.Implementations.Library
 
         public Guid GetStudioId(string name)
         {
-            return GetItemByNameId<Studio>(Studio.GetPath, name);
+            return GetItemByNameId<Studio>(Studio.GetPath(name));
         }
 
         public Guid GetGenreId(string name)
         {
-            return GetItemByNameId<Genre>(Genre.GetPath, name);
+            return GetItemByNameId<Genre>(Genre.GetPath(name));
         }
 
         public Guid GetMusicGenreId(string name)
         {
-            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath, name);
+            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath(name));
         }
 
         /// <summary>
@@ -943,7 +944,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(T).Name },
+                    IncludeItemTypes = new[] { nameof(MusicArtist) },
                     Name = name,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
@@ -957,13 +958,11 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var id = GetItemByNameId<T>(getPathFn, name);
-
+            var path = getPathFn(name);
+            var id = GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
-
             if (item == null)
             {
-                var path = getPathFn(name);
                 item = new T
                 {
                     Name = name,
@@ -979,10 +978,9 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        private Guid GetItemByNameId<T>(Func<string, string> getPathFn, string name)
+        private Guid GetItemByNameId<T>(string path)
               where T : BaseItem, new()
         {
-            var path = getPathFn(name);
             var forceCaseInsensitiveId = _configurationManager.Configuration.EnableNormalizedItemByNameIds;
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
@@ -1805,21 +1803,18 @@ namespace Emby.Server.Implementations.Library
         /// <param name="items">The items.</param>
         /// <param name="parent">The parent item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
+        public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
-            // Don't iterate multiple times
-            var itemsList = items.ToList();
+            _itemRepository.SaveItems(items, cancellationToken);
 
-            _itemRepository.SaveItems(itemsList, cancellationToken);
-
-            foreach (var item in itemsList)
+            foreach (var item in items)
             {
                 RegisterItem(item);
             }
 
             if (ItemAdded != null)
             {
-                foreach (var item in itemsList)
+                foreach (var item in items)
                 {
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
@@ -1868,7 +1863,8 @@ namespace Emby.Server.Implementations.Library
             return image.Path != null && !image.IsLocalFile;
         }
 
-        public void UpdateImages(BaseItem item, bool forceUpdate = false)
+        /// <inheritdoc />
+        public async Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false)
         {
             if (item == null)
             {
@@ -1891,7 +1887,7 @@ namespace Emby.Server.Implementations.Library
                     try
                     {
                         var index = item.GetImageIndex(img);
-                        image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
+                        image = await ConvertImageToLocal(item, img, index).ConfigureAwait(false);
                     }
                     catch (ArgumentException)
                     {
@@ -1913,7 +1909,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                    _logger.LogError(ex, "Cannot get image dimensions for {0}", image.Path);
                     image.Width = 0;
                     image.Height = 0;
                     continue;
@@ -1943,10 +1939,8 @@ namespace Emby.Server.Implementations.Library
             RegisterItem(item);
         }
 
-        /// <summary>
-        /// Updates the item.
-        /// </summary>
-        public void UpdateItems(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
             foreach (var item in items)
             {
@@ -1957,7 +1951,7 @@ namespace Emby.Server.Implementations.Library
 
                 item.DateLastSaved = DateTime.UtcNow;
 
-                UpdateImages(item, updateReason >= ItemUpdateType.ImageUpdate);
+                await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
             }
 
             _itemRepository.SaveItems(items, cancellationToken);
@@ -1991,17 +1985,9 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        /// <summary>
-        /// Updates the item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parent">The parent item.</param>
-        /// <param name="updateReason">The update reason.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
-        {
-            UpdateItems(new[] { item }, parent, updateReason, cancellationToken);
-        }
+        /// <inheritdoc />
+        public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+            => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
 
         /// <summary>
         /// Reports the item removed.
@@ -2233,7 +2219,7 @@ namespace Emby.Server.Implementations.Library
 
             if (refresh)
             {
-                item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
+                item.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
                 ProviderManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
             }
 
@@ -2420,7 +2406,7 @@ namespace Emby.Server.Implementations.Library
             if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
             {
                 item.ViewType = viewType;
-                item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
@@ -2452,6 +2438,21 @@ namespace Emby.Server.Implementations.Library
             string[] files)
         {
             new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
+        }
+
+        public BaseItem GetParentItem(string parentId, Guid? userId)
+        {
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                return GetItemById(new Guid(parentId));
+            }
+
+            if (userId.HasValue && userId != Guid.Empty)
+            {
+                return GetUserRootFolder();
+            }
+
+            return RootFolder;
         }
 
         /// <inheritdoc />
@@ -2902,7 +2903,7 @@ namespace Emby.Server.Implementations.Library
 
                     await ProviderManager.SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
 
-                    item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+                    await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
                     return item.GetImageInfo(image.Type, imageIndex);
                 }
@@ -2920,7 +2921,7 @@ namespace Emby.Server.Implementations.Library
 
             // Remove this image to prevent it from retrying over and over
             item.RemoveImage(image);
-            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             throw new InvalidOperationException();
         }

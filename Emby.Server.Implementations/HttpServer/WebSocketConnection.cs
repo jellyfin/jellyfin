@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -179,7 +180,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            WebSocketMessage<object> stub;
+            WebSocketMessage<object>? stub;
             try
             {
 
@@ -209,6 +210,12 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
+            if (stub == null)
+            {
+                _logger.LogError("Error processing web socket message");
+                return;
+            }
+
             // Tell the PipeReader how much of the buffer we have consumed
             reader.AdvanceTo(buffer.End);
 
@@ -221,7 +228,7 @@ namespace Emby.Server.Implementations.HttpServer
                 Connection = this
             };
 
-            if (info.MessageType.Equals("KeepAlive", StringComparison.Ordinal))
+            if (info.MessageType == SessionMessageType.KeepAlive)
             {
                 await SendKeepAliveResponse().ConfigureAwait(false);
             }
@@ -238,7 +245,7 @@ namespace Emby.Server.Implementations.HttpServer
                 new WebSocketMessage<string>
                 {
                     MessageId = Guid.NewGuid(),
-                    MessageType = "KeepAlive"
+                    MessageType = SessionMessageType.KeepAlive
                 }, CancellationToken.None);
         }
 

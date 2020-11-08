@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
@@ -54,6 +55,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
+        // MediaEncoder is registered as a Singleton
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
+
         private List<string> _encoders = new List<string>();
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
@@ -75,6 +79,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _localization = localization;
             _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
+            _jsonSerializerOptions = JsonDefaults.GetOptions();
         }
 
         private EncodingHelper EncodingHelper => _encodingHelperFactory.Value;
@@ -195,9 +200,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     {
                         _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
                     }
-
-                    // ToDo - Enable the ffmpeg validator.  At the moment any version can be used.
-                    rc = true;
 
                     _ffmpegPath = path;
                     EncoderLocation = location;
@@ -377,7 +379,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
-            args = string.Format(args, probeSizeArgument, inputPath).Trim();
+            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath).Trim();
 
             var process = new Process
             {
@@ -417,6 +419,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     result = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(
                                         process.StandardOutput.BaseStream,
+                                        _jsonSerializerOptions,
                                         cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch
@@ -552,8 +555,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var thumbnail = enableThumbnail ? ",thumbnail=24" : string.Empty;
 
-            var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
-                string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
+            var args = useIFrame ? string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
+                string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
@@ -570,7 +573,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (offset.HasValue)
             {
-                args = string.Format("-ss {0} ", GetTimeParameter(offset.Value)) + args;
+                args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
             }
 
             if (videoStream != null)
@@ -641,7 +644,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (exitCode == -1 || !file.Exists || file.Length == 0)
                 {
-                    var msg = string.Format("ffmpeg image extraction failed for {0}", inputPath);
+                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath);
 
                     _logger.LogError(msg);
 
@@ -684,13 +687,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var maxWidthParam = maxWidth.Value.ToString(_usCulture);
 
-                vf += string.Format(",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
+                vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }
 
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
@@ -790,7 +793,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (exitCode == -1)
                 {
-                    var msg = string.Format("ffmpeg image extraction failed for {0}", inputArgument);
+                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputArgument);
 
                     _logger.LogError(msg);
 
@@ -856,7 +859,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:").Replace("'", "'\\\\\\''");
+            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", "'\\\\\\''", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />

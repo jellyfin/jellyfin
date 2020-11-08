@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -16,13 +18,9 @@ namespace MediaBrowser.Controller
     {
         event EventHandler HasUpdateAvailableChanged;
 
-        /// <summary>
-        /// Gets the system info.
-        /// </summary>
-        /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+        IServiceProvider ServiceProvider { get; }
 
-        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
+        bool CoreStartupHasCompleted { get; }
 
         bool CanLaunchWebBrowser { get; }
 
@@ -56,12 +54,21 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
+        /// Gets the system info.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
+        /// <returns>SystemInfo.</returns>
+        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken = default);
+
+        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request
         /// to the API that should exist at the address.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
         /// <returns>A list containing all the local IP addresses of the server.</returns>
-        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken);
+        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
@@ -69,7 +76,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
         /// <returns>The server URL.</returns>
-        Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
+        Task<string> GetLocalApiUrl(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)
@@ -108,13 +115,10 @@ namespace MediaBrowser.Controller
         /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
         void LaunchUrl(string url);
 
-        void EnableLoopback(string appName);
-
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
-        string ReverseVirtualPath(string path);
 
-        Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
+        string ReverseVirtualPath(string path);
     }
 }

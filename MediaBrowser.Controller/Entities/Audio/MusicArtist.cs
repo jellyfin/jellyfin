@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,7 +56,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             if (query.IncludeItemTypes.Length == 0)
             {
-                query.IncludeItemTypes = new[] { typeof(Audio).Name, typeof(MusicVideo).Name, typeof(MusicAlbum).Name };
+                query.IncludeItemTypes = new[] { nameof(Audio), nameof(MusicVideo), nameof(MusicAlbum) };
                 query.ArtistIds = new[] { Id };
             }
 

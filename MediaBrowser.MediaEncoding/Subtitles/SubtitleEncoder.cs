@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
@@ -54,7 +55,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -415,7 +416,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             // FFmpeg automatically convert character encoding when it is UTF-16
             // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
-            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) &&
+            if ((inputPath.EndsWith(".smi", StringComparison.Ordinal) || inputPath.EndsWith(".sami", StringComparison.Ordinal)) &&
                 (encodingParam.Equals("UTF-16BE", StringComparison.OrdinalIgnoreCase) ||
                  encodingParam.Equals("UTF-16LE", StringComparison.OrdinalIgnoreCase)))
             {
@@ -435,7 +436,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         CreateNoWindow = true,
                         UseShellExecute = false,
                         FileName = _mediaEncoder.EncoderPath,
-                        Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
+                        Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
                         WindowStyle = ProcessWindowStyle.Hidden,
                         ErrorDialog = false
                     },
@@ -506,7 +507,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     string.Format(CultureInfo.InvariantCulture, "ffmpeg subtitle conversion failed for {0}", inputPath));
             }
 
-            await SetAssFont(outputPath).ConfigureAwait(false);
+            await SetAssFont(outputPath, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("ffmpeg subtitle conversion succeeded for {Path}", inputPath);
         }
@@ -668,7 +669,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (string.Equals(outputCodec, "ass", StringComparison.OrdinalIgnoreCase))
             {
-                await SetAssFont(outputPath).ConfigureAwait(false);
+                await SetAssFont(outputPath, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -676,8 +677,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// Sets the ass font.
         /// </summary>
         /// <param name="file">The file.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <c>System.Threading.CancellationToken.None</c>.</param>
         /// <returns>Task.</returns>
-        private async Task SetAssFont(string file)
+        private async Task SetAssFont(string file, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Setting ass font within {File}", file);
 
@@ -692,14 +694,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 text = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
 
-            var newText = text.Replace(",Arial,", ",Arial Unicode MS,");
+            var newText = text.Replace(",Arial,", ",Arial Unicode MS,", StringComparison.Ordinal);
 
-            if (!string.Equals(text, newText))
+            if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
                 using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
                 using (var writer = new StreamWriter(fileStream, encoding))
                 {
-                    writer.Write(newText);
+                    await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -736,7 +738,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName;
 
                 // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
-                if ((path.EndsWith(".ass") || path.EndsWith(".ssa") || path.EndsWith(".srt"))
+                if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
                     && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -749,24 +751,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        private Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)
+        private async Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)
         {
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                    var opts = new HttpRequestOptions()
-                    {
-                        Url = path,
-                        CancellationToken = cancellationToken,
-
-                        // Needed for seeking
-                        BufferContent = true
-                    };
-
-                    return _httpClient.Get(opts);
+                {
+                    using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetAsync(path, cancellationToken)
+                        .ConfigureAwait(false);
+                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                }
 
                 case MediaProtocol.File:
-                    return Task.FromResult<Stream>(File.OpenRead(path));
+                    return File.OpenRead(path);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol));
             }

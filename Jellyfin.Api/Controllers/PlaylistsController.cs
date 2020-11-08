@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -83,12 +84,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpPost("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult AddToPlaylist(
-            [FromRoute] string? playlistId,
+        public async Task<ActionResult> AddToPlaylist(
+            [FromRoute, Required] Guid playlistId,
             [FromQuery] string? ids,
             [FromQuery] Guid? userId)
         {
-            _playlistManager.AddToPlaylist(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty);
+            await _playlistManager.AddToPlaylistAsync(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -102,12 +103,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpPost("{playlistId}/Items/{itemId}/Move/{newIndex}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult MoveItem(
-            [FromRoute] string? playlistId,
-            [FromRoute] string? itemId,
-            [FromRoute] int newIndex)
+        public async Task<ActionResult> MoveItem(
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] string itemId,
+            [FromRoute, Required] int newIndex)
         {
-            _playlistManager.MoveItem(playlistId, itemId, newIndex);
+            await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -120,9 +121,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpDelete("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveFromPlaylist([FromRoute] string? playlistId, [FromQuery] string? entryIds)
+        public async Task<ActionResult> RemoveFromPlaylist([FromRoute, Required] string playlistId, [FromQuery] string? entryIds)
         {
-            _playlistManager.RemoveFromPlaylist(playlistId, RequestHelpers.Split(entryIds, ',', true));
+            await _playlistManager.RemoveFromPlaylistAsync(playlistId, RequestHelpers.Split(entryIds, ',', true)).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -143,15 +144,15 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The original playlist items.</returns>
         [HttpGet("{playlistId}/Items")]
         public ActionResult<QueryResult<BaseItemDto>> GetPlaylistItems(
-            [FromRoute] Guid playlistId,
-            [FromRoute] Guid userId,
-            [FromRoute] int? startIndex,
-            [FromRoute] int? limit,
-            [FromRoute] string? fields,
-            [FromRoute] bool? enableImages,
-            [FromRoute] bool? enableUserData,
-            [FromRoute] int? imageTypeLimit,
-            [FromRoute] string? enableImageTypes)
+            [FromRoute, Required] Guid playlistId,
+            [FromQuery, Required] Guid userId,
+            [FromQuery] int? startIndex,
+            [FromQuery] int? limit,
+            [FromQuery] string? fields,
+            [FromQuery] bool? enableImages,
+            [FromQuery] bool? enableUserData,
+            [FromQuery] int? imageTypeLimit,
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
             if (playlist == null)

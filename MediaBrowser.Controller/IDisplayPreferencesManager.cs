@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Entities;
 
@@ -12,6 +12,9 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the display preferences for the user and client.
         /// </summary>
+        /// <remarks>
+        /// This will create the display preferences if it does not exist, but it will not save automatically.
+        /// </remarks>
         /// <param name="userId">The user's id.</param>
         /// <param name="client">The client string.</param>
         /// <returns>The associated display preferences.</returns>
@@ -20,6 +23,9 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the default item display preferences for the user and client.
         /// </summary>
+        /// <remarks>
+        /// This will create the item display preferences if it does not exist, but it will not save automatically.
+        /// </remarks>
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client string.</param>
@@ -35,15 +41,8 @@ namespace MediaBrowser.Controller
         IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client);
 
         /// <summary>
-        /// Saves changes to the provided display preferences.
+        /// Saves changes made to the database.
         /// </summary>
-        /// <param name="preferences">The display preferences to save.</param>
-        void SaveChanges(DisplayPreferences preferences);
-
-        /// <summary>
-        /// Saves changes to the provided item display preferences.
-        /// </summary>
-        /// <param name="preferences">The item display preferences to save.</param>
-        void SaveChanges(ItemDisplayPreferences preferences);
+        void SaveChanges();
     }
 }

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -256,16 +257,16 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return false;
         }
 
-        public static string GetOmdbUrl(string query, IApplicationHost appHost, CancellationToken cancellationToken)
+        public static string GetOmdbUrl(string query)
         {
-            const string url = "https://www.omdbapi.com?apikey=2c9d9507";
+            const string Url = "https://www.omdbapi.com?apikey=2c9d9507";
 
             if (string.IsNullOrWhiteSpace(query))
             {
-                return url;
+                return Url;
             }
 
-            return url + "&" + query;
+            return Url + "&" + query;
         }
 
         private async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)
@@ -290,9 +291,13 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 }
             }
 
-            var url = GetOmdbUrl(string.Format("i={0}&plot=short&tomatoes=true&r=json", imdbParam), _appHost, cancellationToken);
+            var url = GetOmdbUrl(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "i={0}&plot=short&tomatoes=true&r=json",
+                    imdbParam));
 
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(), url, cancellationToken).ConfigureAwait(false);
+            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -323,9 +328,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 }
             }
 
-            var url = GetOmdbUrl(string.Format("i={0}&season={1}&detail=full", imdbParam, seasonId), _appHost, cancellationToken);
+            var url = GetOmdbUrl(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "i={0}&season={1}&detail=full",
+                    imdbParam,
+                    seasonId));
 
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(), url, cancellationToken).ConfigureAwait(false);
+            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -348,7 +358,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 
-            var filename = string.Format("{0}.json", imdbId);
+            var filename = string.Format(CultureInfo.InvariantCulture, "{0}.json", imdbId);
 
             return Path.Combine(dataPath, filename);
         }
@@ -362,7 +372,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 
-            var filename = string.Format("{0}_season_{1}.json", imdbId, seasonId);
+            var filename = string.Format(CultureInfo.InvariantCulture, "{0}_season_{1}.json", imdbId, seasonId);
 
             return Path.Combine(dataPath, filename);
         }

@@ -81,7 +81,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] Guid? userId,
-            [FromQuery, Required] string? searchTerm,
+            [FromQuery, Required] string searchTerm,
             [FromQuery] string? includeItemTypes,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? mediaTypes,

@@ -4,10 +4,11 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -44,7 +45,7 @@ namespace Emby.Server.Implementations.Session
         private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
-        private readonly IHttpServer _httpServer;
+        private readonly IWebSocketManager _webSocketManager;
 
         /// <summary>
         /// The KeepAlive cancellation token.
@@ -72,19 +73,19 @@ namespace Emby.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        /// <param name="httpServer">The HTTP server.</param>
+        /// <param name="webSocketManager">The HTTP server.</param>
         public SessionWebSocketListener(
             ILogger<SessionWebSocketListener> logger,
             ISessionManager sessionManager,
             ILoggerFactory loggerFactory,
-            IHttpServer httpServer)
+            IWebSocketManager webSocketManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;
             _loggerFactory = loggerFactory;
-            _httpServer = httpServer;
+            _webSocketManager = webSocketManager;
 
-            httpServer.WebSocketConnected += OnServerManagerWebSocketConnected;
+            webSocketManager.WebSocketConnected += OnServerManagerWebSocketConnected;
         }
 
         private async void OnServerManagerWebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
@@ -121,7 +122,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public void Dispose()
         {
-            _httpServer.WebSocketConnected -= OnServerManagerWebSocketConnected;
+            _webSocketManager.WebSocketConnected -= OnServerManagerWebSocketConnected;
             StopKeepAlive();
         }
 
@@ -316,7 +317,7 @@ namespace Emby.Server.Implementations.Session
             return webSocket.SendAsync(
                 new WebSocketMessage<int>
                 {
-                    MessageType = "ForceKeepAlive",
+                    MessageType = SessionMessageType.ForceKeepAlive,
                     Data = WebSocketLostTimeout
                 },
                 CancellationToken.None);

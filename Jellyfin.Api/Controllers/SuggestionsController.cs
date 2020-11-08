@@ -1,5 +1,7 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
@@ -8,6 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +20,7 @@ namespace Jellyfin.Api.Controllers
     /// The suggestions controller.
     /// </summary>
     [Route("")]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class SuggestionsController : BaseJellyfinApiController
     {
         private readonly IDtoService _dtoService;
@@ -53,7 +57,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Suggestions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
-            [FromRoute] Guid userId,
+            [FromRoute, Required] Guid userId,
             [FromQuery] string? mediaType,
             [FromQuery] string? type,
             [FromQuery] int? startIndex,

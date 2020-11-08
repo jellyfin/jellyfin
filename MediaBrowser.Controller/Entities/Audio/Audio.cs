@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,7 +89,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             var list = base.GetUserDataKeys();
 
             var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
-
 
             if (ParentIndexNumber.HasValue)
             {

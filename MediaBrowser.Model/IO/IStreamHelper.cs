@@ -13,8 +13,6 @@ namespace MediaBrowser.Model.IO
 
         Task CopyToAsync(Stream source, Stream destination, int bufferSize, int emptyReadLimit, CancellationToken cancellationToken);
 
-        Task<int> CopyToAsync(Stream source, Stream destination, CancellationToken cancellationToken);
-
         Task CopyToAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken);
 
         Task CopyUntilCancelled(Stream source, Stream target, int bufferSize, CancellationToken cancellationToken);

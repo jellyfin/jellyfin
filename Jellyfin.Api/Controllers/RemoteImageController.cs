@@ -7,8 +7,10 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -69,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<RemoteImageResult>> GetRemoteImages(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] ImageType? type,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -132,7 +134,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -154,6 +156,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetRemoteImage([FromQuery, Required] string imageUrl)
         {
             var urlHash = imageUrl.GetMD5();
@@ -191,7 +194,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var contentType = MimeTypes.GetMimeType(contentPath);
-            return File(System.IO.File.OpenRead(contentPath), contentType);
+            return PhysicalFile(contentPath, contentType);
         }
 
         /// <summary>
@@ -208,7 +211,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DownloadRemoteImage(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery, Required] ImageType type,
             [FromQuery] string? imageUrl)
         {
@@ -221,7 +224,7 @@ namespace Jellyfin.Api.Controllers
             await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -244,7 +247,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Task.</returns>
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
             var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);

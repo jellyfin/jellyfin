@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -57,7 +59,13 @@ namespace MediaBrowser.Controller.Entities
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.GenreIds = new[] { Id };
-            query.ExcludeItemTypes = new[] { typeof(MusicVideo).Name, typeof(Audio.Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
+            query.ExcludeItemTypes = new[]
+            {
+                nameof(MusicVideo),
+                nameof(Entities.Audio.Audio),
+                nameof(MusicAlbum),
+                nameof(MusicArtist)
+            };
 
             return LibraryManager.GetItemList(query);
         }

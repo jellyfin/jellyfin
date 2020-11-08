@@ -1,12 +1,14 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
@@ -186,16 +188,16 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToAdminSessions<T>(SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user sessions.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken);
 
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, Func<T> dataFn, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.
@@ -206,7 +208,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserDeviceSessions<T>(string deviceId, SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the restart required message.
@@ -263,6 +265,14 @@ namespace MediaBrowser.Controller.Session
         /// <param name="request">The request.</param>
         /// <returns>Task{SessionInfo}.</returns>
         Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
+
+        /// <summary>
+        /// Authenticates a new session with quick connect.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="token">Quick connect access token.</param>
+        /// <returns>Task{SessionInfo}.</returns>
+        Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token);
 
         /// <summary>
         /// Creates the new session.

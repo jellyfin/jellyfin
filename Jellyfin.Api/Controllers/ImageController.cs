@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Configuration;
@@ -90,8 +92,8 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> PostUserImage(
-            [FromRoute] Guid userId,
-            [FromRoute] ImageType imageType,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
             [FromRoute] int? index = null)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
@@ -107,13 +109,13 @@ namespace Jellyfin.Api.Controllers
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage != null)
             {
-                _userManager.ClearProfileImage(user);
+                await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
             user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
 
             await _providerManager
-                .SaveImage(user, memoryStream, mimeType, user.ProfileImage.Path)
+                .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
@@ -136,9 +138,9 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult DeleteUserImage(
-            [FromRoute] Guid userId,
-            [FromRoute] ImageType imageType,
+        public async Task<ActionResult> DeleteUserImage(
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
             [FromRoute] int? index = null)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
@@ -156,7 +158,7 @@ namespace Jellyfin.Api.Controllers
                 _logger.LogError(e, "Error deleting user profile image:");
             }
 
-            _userManager.ClearProfileImage(user);
+            await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -174,9 +176,9 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteItemImage(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
+        public async Task<ActionResult> DeleteItemImage(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
             [FromRoute] int? imageIndex = null)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -185,7 +187,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            item.DeleteImage(imageType, imageIndex ?? 0);
+            await item.DeleteImageAsync(imageType, imageIndex ?? 0).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -205,8 +207,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> SetItemImage(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
             [FromRoute] int? imageIndex = null)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -218,7 +220,7 @@ namespace Jellyfin.Api.Controllers
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
             await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
-            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -237,10 +239,10 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateItemImageIndex(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int imageIndex,
+        public async Task<ActionResult> UpdateItemImageIndex(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
             [FromQuery] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -249,7 +251,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            item.SwapImages(imageType, imageIndex, newIndex);
+            await item.SwapImagesAsync(imageType, imageIndex, newIndex).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -264,7 +266,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ImageInfo>> GetItemImageInfos([FromRoute] Guid itemId)
+        public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -281,7 +283,7 @@ namespace Jellyfin.Api.Controllers
                 return list;
             }
 
-            _libraryManager.UpdateImages(item); // this makes sure dimensions and hashes are correct
+            await _libraryManager.UpdateImagesAsync(item).ConfigureAwait(false); // this makes sure dimensions and hashes are correct
 
             foreach (var image in itemImages)
             {
@@ -331,7 +333,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
         /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
@@ -351,17 +353,18 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "HeadItemImage_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetItemImage(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
             [FromQuery] string? tag,
             [FromQuery] bool? cropWhitespace,
-            [FromQuery] string? format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
             [FromQuery] int? unplayedCount,
@@ -429,24 +432,25 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}", Name = "HeadItemImage2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetItemImage2(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int maxWidth,
+            [FromRoute, Required] int maxHeight,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromRoute] string tag,
+            [FromRoute, Required] string tag,
             [FromQuery] bool? cropWhitespace,
-            [FromRoute] string format,
+            [FromRoute, Required] ImageFormat format,
             [FromQuery] bool? addPlayedIndicator,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] double percentPlayed,
+            [FromRoute, Required] int unplayedCount,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -507,15 +511,16 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Artists/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadArtistImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetArtistImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -524,7 +529,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetArtist(name);
             if (item == null)
@@ -585,15 +590,16 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Genres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetGenreImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -663,15 +669,16 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("MusicGenres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadMusicGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetMusicGenreImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -741,15 +748,16 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Persons/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadPersonImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetPersonImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -819,15 +827,16 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Studios/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadStudioImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetStudioImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] string tag,
+            [FromRoute, Required] ImageFormat format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -897,11 +906,12 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Users/{userId}/Images/{imageType}/{imageIndex?}", Name = "HeadUserImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetUserImage(
-            [FromRoute] Guid userId,
-            [FromRoute] ImageType imageType,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
             [FromQuery] string? tag,
-            [FromQuery] string? format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -1028,7 +1038,7 @@ namespace Jellyfin.Api.Controllers
             ImageType imageType,
             int? imageIndex,
             string? tag,
-            string? format,
+            ImageFormat? format,
             int? maxWidth,
             int? maxHeight,
             double? percentPlayed,
@@ -1118,12 +1128,11 @@ namespace Jellyfin.Api.Controllers
                 isHeadRequest).ConfigureAwait(false);
         }
 
-        private ImageFormat[] GetOutputFormats(string? format)
+        private ImageFormat[] GetOutputFormats(ImageFormat? format)
         {
-            if (!string.IsNullOrWhiteSpace(format)
-                && Enum.TryParse(format, true, out ImageFormat parsedFormat))
+            if (format.HasValue)
             {
-                return new[] { parsedFormat };
+                return new[] { format.Value };
             }
 
             return GetClientSupportedFormats();
@@ -1147,7 +1156,7 @@ namespace Jellyfin.Api.Controllers
 
             var acceptParam = Request.Query[HeaderNames.Accept];
 
-            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, "webp", false);
+            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, ImageFormat.Webp, false);
 
             if (!supportsWebP)
             {
@@ -1169,7 +1178,7 @@ namespace Jellyfin.Api.Controllers
             formats.Add(ImageFormat.Jpg);
             formats.Add(ImageFormat.Png);
 
-            if (SupportsFormat(supportedFormats, acceptParam, "gif", true))
+            if (SupportsFormat(supportedFormats, acceptParam, ImageFormat.Gif, true))
             {
                 formats.Add(ImageFormat.Gif);
             }
@@ -1177,9 +1186,10 @@ namespace Jellyfin.Api.Controllers
             return formats.ToArray();
         }
 
-        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, string format, bool acceptAll)
+        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, ImageFormat format, bool acceptAll)
         {
-            var mimeType = "image/" + format;
+            var normalized = format.ToString().ToLowerInvariant();
+            var mimeType = "image/" + normalized;
 
             if (requestAcceptTypes.Contains(mimeType))
             {
@@ -1191,7 +1201,7 @@ namespace Jellyfin.Api.Controllers
                 return true;
             }
 
-            return string.Equals(acceptParam, format, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(acceptParam, normalized, StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<ActionResult> GetImageResult(
@@ -1281,9 +1291,9 @@ namespace Jellyfin.Api.Controllers
                 Response.Headers.Add(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", new CultureInfo("en-US", false)));
 
                 // if the image was not modified since "ifModifiedSinceHeader"-header, return a HTTP status code 304 not modified
-                if (!(dateImageModified > ifModifiedSinceHeader))
+                if (!(dateImageModified > ifModifiedSinceHeader) && cacheDuration.HasValue)
                 {
-                    if (ifModifiedSinceHeader.Add(cacheDuration!.Value) < DateTime.UtcNow)
+                    if (ifModifiedSinceHeader.Add(cacheDuration.Value) < DateTime.UtcNow)
                     {
                         Response.StatusCode = StatusCodes.Status304NotModified;
                         return new ContentResult();
@@ -1297,8 +1307,7 @@ namespace Jellyfin.Api.Controllers
                 return NoContent();
             }
 
-            var stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
-            return File(stream, imageContentType);
+            return PhysicalFile(imagePath, imageContentType);
         }
     }
 }

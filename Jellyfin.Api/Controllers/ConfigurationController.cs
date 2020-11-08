@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
 using MediaBrowser.Common.Json;
@@ -73,7 +75,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Configuration.</returns>
         [HttpGet("Configuration/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<object> GetNamedConfiguration([FromRoute] string? key)
+        [ProducesFile(MediaTypeNames.Application.Json)]
+        public ActionResult<object> GetNamedConfiguration([FromRoute, Required] string key)
         {
             return _configurationManager.GetConfiguration(key);
         }
@@ -87,7 +90,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Configuration/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string? key)
+        public async Task<ActionResult> UpdateNamedConfiguration([FromRoute, Required] string key)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType, _serializerOptions).ConfigureAwait(false);
@@ -117,7 +120,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("MediaEncoder/Path")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdateMediaEncoderPath([FromForm, Required] MediaEncoderPathDto mediaEncoderPath)
+        public ActionResult UpdateMediaEncoderPath([FromBody, Required] MediaEncoderPathDto mediaEncoderPath)
         {
             _mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
             return NoContent();

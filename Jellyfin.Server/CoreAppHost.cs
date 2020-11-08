@@ -4,14 +4,19 @@ using System.IO;
 using System.Reflection;
 using Emby.Drawing;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Session;
+using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
@@ -33,30 +38,33 @@ namespace Jellyfin.Server
         /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="collection">The <see cref="IServiceCollection"/> to be used by the <see cref="CoreAppHost"/>.</param>
         public CoreAppHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            INetworkManager networkManager)
+            INetworkManager networkManager,
+            IServiceCollection collection)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
                 fileSystem,
-                networkManager)
+                networkManager,
+                collection)
         {
         }
 
         /// <inheritdoc/>
-        protected override void RegisterServices(IServiceCollection serviceCollection)
+        protected override void RegisterServices()
         {
             // Register an image encoder
             bool useSkiaEncoder = SkiaEncoder.IsNativeLibAvailable();
             Type imageEncoderType = useSkiaEncoder
                 ? typeof(SkiaEncoder)
                 : typeof(NullImageEncoder);
-            serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
+            ServiceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
 
             // Log a warning if the Skia encoder could not be used
             if (!useSkiaEncoder)
@@ -64,20 +72,26 @@ namespace Jellyfin.Server
                 Logger.LogWarning($"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
             }
 
-            // TODO: Set up scoping and use AddDbContextPool,
-            // can't register as Transient since tracking transient in GC is funky
-            // serviceCollection.AddDbContext<JellyfinDb>(
-            //     options => options
-            //         .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
-            //     ServiceLifetime.Transient);
+            ServiceCollection.AddDbContextPool<JellyfinDb>(
+                 options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
 
-            serviceCollection.AddSingleton<JellyfinDbProvider>();
+            ServiceCollection.AddEventServices();
+            ServiceCollection.AddSingleton<IEventManager, EventManager>();
+            ServiceCollection.AddSingleton<JellyfinDbProvider>();
 
-            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
-            serviceCollection.AddSingleton<IUserManager, UserManager>();
-            serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+            ServiceCollection.AddSingleton<IActivityManager, ActivityManager>();
+            ServiceCollection.AddSingleton<IUserManager, UserManager>();
+            ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
-            base.RegisterServices(serviceCollection);
+            ServiceCollection.AddScoped<IWebSocketListener, SessionWebSocketListener>();
+            ServiceCollection.AddScoped<IWebSocketListener, ActivityLogWebSocketListener>();
+            ServiceCollection.AddScoped<IWebSocketListener, ScheduledTasksWebSocketListener>();
+            ServiceCollection.AddScoped<IWebSocketListener, SessionInfoWebSocketListener>();
+
+            // TODO fix circular dependency on IWebSocketManager
+            ServiceCollection.AddScoped(serviceProvider => new Lazy<IEnumerable<IWebSocketListener>>(serviceProvider.GetRequiredService<IEnumerable<IWebSocketListener>>));
+
+            base.RegisterServices();
         }
 
         /// <inheritdoc />

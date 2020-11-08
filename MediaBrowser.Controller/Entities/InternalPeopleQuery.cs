@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -20,6 +23,10 @@ namespace MediaBrowser.Controller.Entities
         public Guid AppearsInItemId { get; set; }
 
         public string NameContains { get; set; }
+
+        public User User { get; set; }
+
+        public bool? IsFavorite { get; set; }
 
         public InternalPeopleQuery()
         {

@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("jellyfin")
-                .HasAnnotation("ProductVersion", "3.1.6");
+                .HasAnnotation("ProductVersion", "3.1.8");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -136,7 +136,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "Client")
                         .IsUnique();
 
                     b.ToTable("DisplayPreferences");
@@ -340,6 +342,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("LoginAttemptsBeforeLockout")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxActiveSessions")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("MaxParentalAgeRating")

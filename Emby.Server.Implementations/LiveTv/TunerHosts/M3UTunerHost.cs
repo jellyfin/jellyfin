@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -26,7 +27,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly INetworkManager _networkManager;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -37,14 +38,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IMediaSourceManager mediaSourceManager,
             ILogger<M3UTunerHost> logger,
             IFileSystem fileSystem,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             INetworkManager networkManager,
             IStreamHelper streamHelper,
             IMemoryCache memoryCache)
             : base(config, logger, fileSystem, memoryCache)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _networkManager = networkManager;
             _mediaSourceManager = mediaSourceManager;
@@ -64,7 +65,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var channelIdPrefix = GetFullChannelIdPrefix(info);
 
-            return await new M3uParser(Logger, _httpClient, _appHost).Parse(info.Url, channelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
+            return await new M3uParser(Logger, _httpClientFactory, _appHost)
+                .Parse(info, channelIdPrefix, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
@@ -116,7 +119,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config, _appHost, _streamHelper);
+                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }
             }
 
@@ -125,7 +128,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task Validate(TunerHostInfo info)
         {
-            using (var stream = await new M3uParser(Logger, _httpClient, _appHost).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await new M3uParser(Logger, _httpClientFactory, _appHost).GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
             {
             }
         }

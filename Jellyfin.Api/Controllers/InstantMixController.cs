@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -64,14 +65,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Songs/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromSong(
-            [FromRoute] Guid id,
+            [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes)
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -101,14 +102,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Albums/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromAlbum(
-            [FromRoute] Guid id,
+            [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes)
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var album = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -138,14 +139,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Playlists/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromPlaylist(
-            [FromRoute] Guid id,
+            [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes)
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -175,14 +176,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("MusicGenres/{name}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenre(
-            [FromRoute, Required] string? name,
+            [FromRoute, Required] string name,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes)
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -211,14 +212,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Artists/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists(
-            [FromRoute] Guid id,
+            [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes)
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -248,14 +249,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("MusicGenres/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenres(
-            [FromRoute] Guid id,
+            [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes)
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -285,14 +286,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Items/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromItem(
-            [FromRoute] Guid id,
+            [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes)
+            [FromQuery] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -315,9 +316,9 @@ namespace Jellyfin.Api.Controllers
                 TotalRecordCount = list.Count
             };
 
-            if (limit.HasValue)
+            if (limit.HasValue && limit < list.Count)
             {
-                list = list.Take(limit.Value).ToList();
+                list = list.GetRange(0, limit.Value);
             }
 
             var returnList = _dtoService.GetBaseItemDtos(list, dtoOptions, user);

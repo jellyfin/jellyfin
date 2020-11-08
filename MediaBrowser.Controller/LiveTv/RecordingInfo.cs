@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.LiveTv;
@@ -185,6 +187,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
         public bool? HasImage { get; set; }
+
         /// <summary>
         /// Gets or sets the show identifier.
         /// </summary>

@@ -42,7 +42,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             var info = new MediaInfo
             {
                 Path = path,
-                Protocol = protocol
+                Protocol = protocol,
+                VideoType = videoType
             };
 
             FFProbeHelpers.NormalizeFFProbeResult(data);
@@ -665,6 +666,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
 
+                // Interlaced video streams in Matroska containers return the field rate instead of the frame rate
+                // as both the average and real frame rate, so we half the returned frame rates to get the correct values
+                //
+                // https://gitlab.com/mbunkus/mkvtoolnix/-/wikis/Wrong-frame-rate-displayed
+                if (stream.IsInterlaced && formatInfo.FormatName.Contains("matroska", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.AverageFrameRate /= 2;
+                    stream.RealFrameRate /= 2;
+                }
+
                 if (isAudio || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
                 {
@@ -711,6 +722,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (streamInfo.Refs > 0)
                 {
                     stream.RefFrames = streamInfo.Refs;
+                }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorRange))
+                {
+                    stream.ColorRange = streamInfo.ColorRange;
+                }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorSpace))
+                {
+                    stream.ColorSpace = streamInfo.ColorSpace;
                 }
 
                 if (!string.IsNullOrEmpty(streamInfo.ColorTransfer))
@@ -1133,7 +1154,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Only use the comma as a delimeter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i) != -1) ?
+            var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i, StringComparison.Ordinal) != -1) ?
                 _nameDelimiters :
                 new[] { ',' };
 
@@ -1377,8 +1398,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                         if (subtitle.Contains('/', StringComparison.Ordinal)) // It contains a episode number and season number
                         {
                             string[] numbers = subtitle.Split(' ');
-                            video.IndexNumber = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[0]);
-                            int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[1]);
+                            video.IndexNumber = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[0], CultureInfo.InvariantCulture);
+                            int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[1], CultureInfo.InvariantCulture);
 
                             description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }

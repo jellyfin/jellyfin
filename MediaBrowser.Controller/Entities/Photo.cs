@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Text.Json.Serialization;
 using MediaBrowser.Model.Drawing;
 
@@ -13,7 +15,6 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
-
 
         [JsonIgnore]
         public PhotoAlbum AlbumEntity

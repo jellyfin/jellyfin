@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,28 +16,37 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The name.</value>
         string Name { get; }
+
         /// <summary>
         /// Gets the type.
         /// </summary>
         /// <value>The type.</value>
         string Type { get; }
+
+        bool IsSupported { get; }
+
         /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <returns>Task&lt;IEnumerable&lt;ChannelInfo&gt;&gt;.</returns>
         Task<List<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the tuner infos.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;List&lt;LiveTvTunerInfo&gt;&gt;.</returns>
         Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the channel stream.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="streamId">The stream identifier.</param>
+        /// <param name="currentLiveStreams">The current live streams.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
         Task<ILiveStream> GetChannelStream(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the channel stream media sources.
         /// </summary>
@@ -45,10 +56,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken);
 
         Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken);
-        bool IsSupported
-        {
-            get;
-        }
     }
 
     public interface IConfigurableTunerHost

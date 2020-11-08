@@ -16,12 +16,11 @@
     "Folders": "Папки",
     "Genres": "Жанры",
     "HeaderAlbumArtists": "Исполнители альбома",
-    "HeaderCameraUploads": "Камеры",
     "HeaderContinueWatching": "Продолжение просмотра",
     "HeaderFavoriteAlbums": "Избранные альбомы",
     "HeaderFavoriteArtists": "Избранные исполнители",
     "HeaderFavoriteEpisodes": "Избранные эпизоды",
-    "HeaderFavoriteShows": "Избранные передачи",
+    "HeaderFavoriteShows": "Избранные сериалы",
     "HeaderFavoriteSongs": "Избранные композиции",
     "HeaderLiveTV": "Эфир",
     "HeaderNextUp": "Очередное",
@@ -114,5 +113,7 @@
     "TaskCleanLogsDescription": "Удаляются файлы журнала, возраст которых превышает {0} дн(я/ей).",
     "TaskRefreshLibraryDescription": "Сканируется медиатека на новые файлы и обновляются метаданные.",
     "TaskRefreshChapterImagesDescription": "Создаются эскизы для видео, которые содержат сцены.",
-    "TaskCleanCacheDescription": "Удаляются файлы кэша, которые больше не нужны системе."
+    "TaskCleanCacheDescription": "Удаляются файлы кэша, которые больше не нужны системе.",
+    "TaskCleanActivityLogDescription": "Удаляет записи журнала активности старше установленного возраста.",
+    "TaskCleanActivityLog": "Очистить журнал активности"
 }

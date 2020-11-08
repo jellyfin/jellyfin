@@ -8,28 +8,17 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.IO
 {
     /// <summary>
-    /// Provides low level File access that is much faster than the File/Directory api's
+    /// Provides low level File access that is much faster than the File/Directory api's.
     /// </summary>
     public static class FileData
     {
-        private static Dictionary<string, FileSystemMetadata> GetFileSystemDictionary(FileSystemMetadata[] list)
-        {
-            var dict = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var file in list)
-            {
-                dict[file.FullName] = file;
-            }
-
-            return dict;
-        }
-
         /// <summary>
         /// Gets the filtered file system entries.
         /// </summary>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="path">The path.</param>
         /// <param name="fileSystem">The file system.</param>
+        /// <param name="appHost">The application host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="args">The args.</param>
         /// <param name="flattenFolderDepth">The flatten folder depth.</param>
@@ -122,5 +111,4 @@ namespace MediaBrowser.Controller.IO
             return returnResult;
         }
     }
-
 }

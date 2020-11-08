@@ -10,7 +10,8 @@ namespace Emby.Dlna.ContentDirectory
     {
         public string GetXml()
         {
-            return new ServiceXmlBuilder().GetXml(new ServiceActionListBuilder().GetActions(),
+            return new ServiceXmlBuilder().GetXml(
+                new ServiceActionListBuilder().GetActions(),
                 GetStateVariables());
         }
 
@@ -101,7 +102,7 @@ namespace Emby.Dlna.ContentDirectory
                 DataType = "string",
                 SendsEvents = false,
 
-                AllowedValues = new string[]
+                AllowedValues = new[]
                 {
                     "BrowseMetadata",
                     "BrowseDirectChildren"

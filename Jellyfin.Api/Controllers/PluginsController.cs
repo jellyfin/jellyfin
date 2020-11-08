@@ -64,7 +64,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UninstallPlugin([FromRoute] Guid pluginId)
+        public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId)
         {
             var plugin = _appHost.Plugins.FirstOrDefault(p => p.Id == pluginId);
             if (plugin == null)
@@ -86,7 +86,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{pluginId}/Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<BasePluginConfiguration> GetPluginConfiguration([FromRoute] Guid pluginId)
+        public ActionResult<BasePluginConfiguration> GetPluginConfiguration([FromRoute, Required] Guid pluginId)
         {
             if (!(_appHost.Plugins.FirstOrDefault(p => p.Id == pluginId) is IHasPluginConfiguration plugin))
             {
@@ -113,17 +113,21 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{pluginId}/Configuration")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> UpdatePluginConfiguration([FromRoute] Guid pluginId)
+        public async Task<ActionResult> UpdatePluginConfiguration([FromRoute, Required] Guid pluginId)
         {
             if (!(_appHost.Plugins.FirstOrDefault(p => p.Id == pluginId) is IHasPluginConfiguration plugin))
             {
                 return NotFound();
             }
 
-            var configuration = (BasePluginConfiguration)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType, _serializerOptions)
+            var configuration = (BasePluginConfiguration?)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType, _serializerOptions)
                 .ConfigureAwait(false);
 
-            plugin.UpdateConfiguration(configuration);
+            if (configuration != null)
+            {
+                plugin.UpdateConfiguration(configuration);
+            }
+
             return NoContent();
         }
 
@@ -168,7 +172,7 @@ namespace Jellyfin.Api.Controllers
         [Obsolete("This endpoint should not be used.")]
         [HttpPost("RegistrationRecords/{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<MBRegistrationRecord> GetRegistrationStatus([FromRoute] string? name)
+        public ActionResult<MBRegistrationRecord> GetRegistrationStatus([FromRoute, Required] string name)
         {
             return new MBRegistrationRecord
             {
@@ -190,7 +194,7 @@ namespace Jellyfin.Api.Controllers
         [Obsolete("Paid plugins are not supported")]
         [HttpGet("Registrations/{name}")]
         [ProducesResponseType(StatusCodes.Status501NotImplemented)]
-        public ActionResult GetRegistration([FromRoute] string? name)
+        public ActionResult GetRegistration([FromRoute, Required] string name)
         {
             // TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
             // delete all these registration endpoints. They are only kept for compatibility.

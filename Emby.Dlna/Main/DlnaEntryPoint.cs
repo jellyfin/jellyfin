@@ -2,6 +2,7 @@
 
 using System;
 using System.Globalization;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,13 +31,13 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
-    public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
+    public sealed class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly ISessionManager _sessionManager;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -54,20 +55,14 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
 
-        public IContentDirectory ContentDirectory { get; private set; }
-
-        public IConnectionManager ConnectionManager { get; private set; }
-
-        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
-
-        public static DlnaEntryPoint Current;
+        private bool _disposed;
 
         public DlnaEntryPoint(
             IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDlnaManager dlnaManager,
@@ -85,7 +80,7 @@ namespace Emby.Dlna.Main
             _config = config;
             _appHost = appHost;
             _sessionManager = sessionManager;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
@@ -99,33 +94,41 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
-            ContentDirectory = new ContentDirectory.ContentDirectory(
+            ContentDirectory = new ContentDirectory.ContentDirectoryService(
                 dlnaManager,
                 userDataManager,
                 imageProcessor,
                 libraryManager,
                 config,
                 userManager,
-                loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
-                httpClient,
+                loggerFactory.CreateLogger<ContentDirectory.ContentDirectoryService>(),
+                httpClientFactory,
                 localizationManager,
                 mediaSourceManager,
                 userViewManager,
                 mediaEncoder,
                 tvSeriesManager);
 
-            ConnectionManager = new ConnectionManager.ConnectionManager(
+            ConnectionManager = new ConnectionManager.ConnectionManagerService(
                 dlnaManager,
                 config,
-                loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
-                httpClient);
+                loggerFactory.CreateLogger<ConnectionManager.ConnectionManagerService>(),
+                httpClientFactory);
 
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
-                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
-                httpClient,
+            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
+                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
+                httpClientFactory,
                 config);
             Current = this;
         }
+
+        public static DlnaEntryPoint Current { get; private set; }
+
+        public IContentDirectory ContentDirectory { get; private set; }
+
+        public IConnectionManager ConnectionManager { get; private set; }
+
+        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public async Task RunAsync()
         {
@@ -254,9 +257,10 @@ namespace Emby.Dlna.Main
 
         private async Task RegisterServerEndpoints()
         {
-            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
+            var addresses = await _appHost.GetLocalIpAddresses().ConfigureAwait(false);
 
             var udn = CreateUuid(_appHost.SystemId);
+            var descriptorUri = "/dlna/" + udn + "/description.xml";
 
             foreach (var address in addresses)
             {
@@ -276,7 +280,6 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
 
                 var device = new SsdpRootDevice
@@ -362,7 +365,7 @@ namespace Emby.Dlna.Main
                         _appHost,
                         _imageProcessor,
                         _deviceDiscovery,
-                        _httpClient,
+                        _httpClientFactory,
                         _config,
                         _userDataManager,
                         _localization,
@@ -399,8 +402,24 @@ namespace Emby.Dlna.Main
             }
         }
 
+        public void DisposeDevicePublisher()
+        {
+            if (_publisher != null)
+            {
+                _logger.LogInformation("Disposing SsdpDevicePublisher");
+                _publisher.Dispose();
+                _publisher = null;
+            }
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             DisposeDevicePublisher();
             DisposePlayToManager();
             DisposeDeviceDiscovery();
@@ -416,16 +435,8 @@ namespace Emby.Dlna.Main
             ConnectionManager = null;
             MediaReceiverRegistrar = null;
             Current = null;
-        }
 
-        public void DisposeDevicePublisher()
-        {
-            if (_publisher != null)
-            {
-                _logger.LogInformation("Disposing SsdpDevicePublisher");
-                _publisher.Dispose();
-                _publisher = null;
-            }
+            _disposed = true;
         }
     }
 }

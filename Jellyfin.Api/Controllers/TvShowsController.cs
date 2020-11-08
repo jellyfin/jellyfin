@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -69,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("NextUp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetNextUp(
-            [FromQuery, Required] Guid? userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -77,7 +78,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -127,14 +128,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Upcoming")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetUpcomingEpisodes(
-            [FromQuery, Required] Guid? userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -194,8 +195,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
-            [FromRoute, Required] string? seriesId,
-            [FromQuery, Required] Guid? userId,
+            [FromRoute, Required] string seriesId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? fields,
             [FromQuery] int? season,
             [FromQuery] string? seasonId,
@@ -206,7 +207,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy)
         {
@@ -317,15 +318,15 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
-            [FromRoute, Required] string? seriesId,
-            [FromQuery, Required] Guid? userId,
+            [FromRoute, Required] string seriesId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
             [FromQuery] string? adjacentTo,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)

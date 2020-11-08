@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -154,6 +156,7 @@ namespace MediaBrowser.Controller.Library
         }
 
         // REVIEW: @bond
+
         /// <summary>
         /// Gets the physical locations.
         /// </summary>

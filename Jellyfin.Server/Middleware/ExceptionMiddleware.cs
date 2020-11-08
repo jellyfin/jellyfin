@@ -125,7 +125,8 @@ namespace Jellyfin.Server.Middleware
             switch (ex)
             {
                 case ArgumentException _: return StatusCodes.Status400BadRequest;
-                case SecurityException _: return StatusCodes.Status401Unauthorized;
+                case AuthenticationException _: return StatusCodes.Status401Unauthorized;
+                case SecurityException _: return StatusCodes.Status403Forbidden;
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
                 case ResourceNotFoundException _: return StatusCodes.Status404NotFound;

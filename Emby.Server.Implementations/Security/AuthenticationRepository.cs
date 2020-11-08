@@ -54,7 +54,8 @@ namespace Emby.Server.Implementations.Security
             {
                 if (tableNewlyCreated && TableExists(connection, "AccessTokens"))
                 {
-                    connection.RunInTransaction(db =>
+                    connection.RunInTransaction(
+                    db =>
                     {
                         var existingColumnNames = GetColumnNames(db, "AccessTokens");
 
@@ -88,7 +89,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("insert into Tokens (AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity) values (@AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @UserName, @IsActive, @DateCreated, @DateLastActivity)"))
                     {
@@ -119,7 +121,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("Update Tokens set AccessToken=@AccessToken, DeviceId=@DeviceId, AppName=@AppName, AppVersion=@AppVersion, DeviceName=@DeviceName, UserId=@UserId, UserName=@UserName, DateCreated=@DateCreated, DateLastActivity=@DateLastActivity where Id=@Id"))
                     {
@@ -151,7 +154,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("Delete from Tokens where Id=@Id"))
                     {
@@ -257,8 +261,7 @@ namespace Emby.Server.Implementations.Security
                 connection.RunInTransaction(
                     db =>
                     {
-                        var statements = PrepareAll(db, statementTexts)
-                            .ToList();
+                        var statements = PrepareAll(db, statementTexts);
 
                         using (var statement = statements[0])
                         {
@@ -282,7 +285,7 @@ namespace Emby.Server.Implementations.Security
                     ReadTransactionMode);
             }
 
-            result.Items = list.ToArray();
+            result.Items = list;
             return result;
         }
 
@@ -347,7 +350,8 @@ namespace Emby.Server.Implementations.Security
         {
             using (var connection = GetConnection(true))
             {
-                return connection.RunInTransaction(db =>
+                return connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = base.PrepareStatement(db, "select CustomName from Devices where Id=@DeviceId"))
                     {
@@ -378,7 +382,8 @@ namespace Emby.Server.Implementations.Security
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var statement = db.PrepareStatement("replace into devices (Id, CustomName, Capabilities) VALUES (@Id, @CustomName, (Select Capabilities from Devices where Id=@Id))"))
                     {

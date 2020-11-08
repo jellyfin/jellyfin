@@ -1,3 +1,5 @@
+#pragma warning disable CA2227
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -6,13 +8,14 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a user.
     /// </summary>
-    public partial class User : IHasPermissions, ISavingChanges
+    public class User : IHasPermissions, IHasConcurrencyToken
     {
         /// <summary>
         /// The values being delimited here are Guids, so commas work as they do not appear in Guids.
@@ -72,7 +75,6 @@ namespace Jellyfin.Data.Entities
 
             AddDefaultPermissions();
             AddDefaultPreferences();
-            Init();
         }
 
         /// <summary>
@@ -81,12 +83,7 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         protected User()
         {
-            Init();
         }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
 
         /// <summary>
         /// Gets or sets the Id of the user.
@@ -94,8 +91,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [Key]
-        [Required]
         [JsonIgnore]
         public Guid Id { get; set; }
 
@@ -136,7 +131,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool MustUpdatePassword { get; set; }
 
         /// <summary>
@@ -177,7 +171,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public int InvalidLoginAttemptCount { get; set; }
 
         /// <summary>
@@ -196,12 +189,16 @@ namespace Jellyfin.Data.Entities
         public int? LoginAttemptsBeforeLockout { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of active sessions the user can have at once.
+        /// </summary>
+        public int MaxActiveSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the subtitle mode.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public SubtitlePlaybackMode SubtitleMode { get; set; }
 
         /// <summary>
@@ -210,7 +207,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool PlayDefaultAudioTrack { get; set; }
 
         /// <summary>
@@ -229,7 +225,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool DisplayMissingEpisodes { get; set; }
 
         /// <summary>
@@ -238,7 +233,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool DisplayCollectionsView { get; set; }
 
         /// <summary>
@@ -247,7 +241,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableLocalPassword { get; set; }
 
         /// <summary>
@@ -256,7 +249,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool HidePlayedInLatest { get; set; }
 
         /// <summary>
@@ -265,7 +257,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool RememberAudioSelections { get; set; }
 
         /// <summary>
@@ -274,7 +265,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool RememberSubtitleSelections { get; set; }
 
         /// <summary>
@@ -283,7 +273,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableNextEpisodeAutoPlay { get; set; }
 
         /// <summary>
@@ -292,7 +281,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableAutoLogin { get; set; }
 
         /// <summary>
@@ -301,7 +289,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableUserPreferenceAccess { get; set; }
 
         /// <summary>
@@ -319,7 +306,6 @@ namespace Jellyfin.Data.Entities
         /// This is a temporary stopgap for until the library db is migrated.
         /// This corresponds to the value of the index of this user in the library db.
         /// </summary>
-        [Required]
         public long InternalId { get; set; }
 
         /// <summary>
@@ -337,7 +323,9 @@ namespace Jellyfin.Data.Entities
         [Required]
         public virtual DisplayPreferences DisplayPreferences { get; set; }
 
-        [Required]
+        /// <summary>
+        /// Gets or sets the level of sync play permissions this user has.
+        /// </summary>
         public SyncPlayAccess SyncPlayAccess { get; set; }
 
         /// <summary>
@@ -347,12 +335,7 @@ namespace Jellyfin.Data.Entities
         /// Required, Concurrency Token.
         /// </remarks>
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
 
         /// <summary>
         /// Gets or sets the list of access schedules this user has.
@@ -391,18 +374,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [ForeignKey("Preference_Preferences_Guid")]
         public virtual ICollection<Preference> Preferences { get; protected set; }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="username">The username for the created user.</param>
-        /// <param name="authenticationProviderId">The Id of the user's authentication provider.</param>
-        /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
-        /// <returns>The created instance.</returns>
-        public static User Create(string username, string authenticationProviderId, string passwordResetProviderId)
-        {
-            return new User(username, authenticationProviderId, passwordResetProviderId);
-        }
 
         /// <inheritdoc/>
         public void OnSavingChanges()
@@ -516,7 +487,5 @@ namespace Jellyfin.Data.Entities
                 Preferences.Add(new Preference(val, string.Empty));
             }
         }
-
-        partial void Init();
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Model.Channels;
 
@@ -5,6 +7,14 @@ namespace MediaBrowser.Controller.Channels
 {
     public class InternalChannelFeatures
     {
+        public InternalChannelFeatures()
+        {
+            MediaTypes = new List<ChannelMediaType>();
+            ContentTypes = new List<ChannelMediaContentType>();
+
+            DefaultSortFields = new List<ChannelItemSortField>();
+        }
+
         /// <summary>
         /// Gets or sets the media types.
         /// </summary>
@@ -32,6 +42,7 @@ namespace MediaBrowser.Controller.Channels
         /// Indicates if a sort ascending/descending toggle is supported or not.
         /// </summary>
         public bool SupportsSortOrderToggle { get; set; }
+
         /// <summary>
         /// Gets or sets the automatic refresh levels.
         /// </summary>
@@ -43,18 +54,11 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <value>The daily download limit.</value>
         public int? DailyDownloadLimit { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports downloading].
         /// </summary>
         /// <value><c>true</c> if [supports downloading]; otherwise, <c>false</c>.</value>
         public bool SupportsContentDownloading { get; set; }
-
-        public InternalChannelFeatures()
-        {
-            MediaTypes = new List<ChannelMediaType>();
-            ContentTypes = new List<ChannelMediaContentType>();
-
-            DefaultSortFields = new List<ChannelItemSortField>();
-        }
     }
 }

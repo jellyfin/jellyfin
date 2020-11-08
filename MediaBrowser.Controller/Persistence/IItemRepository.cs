@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -98,6 +100,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;Guid&gt;.</returns>
         QueryResult<Guid> GetItemIds(InternalItemsQuery query);
+
         /// <summary>
         /// Gets the items.
         /// </summary>
@@ -156,15 +159,23 @@ namespace MediaBrowser.Controller.Persistence
         int GetCount(InternalItemsQuery query);
 
         QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+
         QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         List<string> GetMusicGenreNames();
+
         List<string> GetStudioNames();
+
         List<string> GetGenreNames();
+
         List<string> GetAllArtistNames();
     }
 }

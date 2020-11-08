@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,12 +28,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="itemId">The item identifier.</param>
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
         List<MediaStream> GetMediaStreams(Guid itemId);
+
         /// <summary>
         /// Gets the media streams.
         /// </summary>
         /// <param name="mediaSourceId">The media source identifier.</param>
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
         List<MediaStream> GetMediaStreams(string mediaSourceId);
+
         /// <summary>
         /// Gets the media streams.
         /// </summary>
@@ -111,5 +115,7 @@ namespace MediaBrowser.Controller.Library
     public interface IDirectStreamProvider
     {
         Task CopyToAsync(Stream stream, CancellationToken cancellationToken);
+
+        string GetFilePath();
     }
 }

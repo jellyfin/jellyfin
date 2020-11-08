@@ -3,9 +3,11 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -82,6 +84,16 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
+        public virtual void RegisterServices(IServiceCollection serviceCollection)
+        {
+        }
+
+        /// <inheritdoc />
+        public virtual void UnregisterServices(IServiceCollection serviceCollection)
+        {
+        }
+
+        /// <inheritdoc />
         public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
         {
             AssemblyFilePath = assemblyFilePath;
@@ -129,6 +141,30 @@ namespace MediaBrowser.Common.Plugins
         {
             ApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
+            if (this is IPluginAssembly assemblyPlugin)
+            {
+                var assembly = GetType().Assembly;
+                var assemblyName = assembly.GetName();
+                var assemblyFilePath = assembly.Location;
+
+                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
+
+                assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
+
+                var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
+                if (idAttributes.Length > 0)
+                {
+                    var attribute = (GuidAttribute)idAttributes[0];
+                    var assemblyId = new Guid(attribute.Value);
+
+                    assemblyPlugin.SetId(assemblyId);
+                }
+            }
+
+            if (this is IHasPluginConfiguration hasPluginConfiguration)
+            {
+                hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
+            }
         }
 
         /// <summary>

@@ -43,9 +43,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
         public ActionResult<DisplayPreferencesDto> GetDisplayPreferences(
-            [FromRoute] string? displayPreferencesId,
-            [FromQuery] [Required] Guid userId,
-            [FromQuery] [Required] string? client)
+            [FromRoute, Required] string displayPreferencesId,
+            [FromQuery, Required] Guid userId,
+            [FromQuery, Required] string client)
         {
             var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, client);
             var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client);
@@ -81,6 +81,9 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
 
+            // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
+            _displayPreferencesManager.SaveChanges();
+
             return dto;
         }
 
@@ -97,9 +100,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
         public ActionResult UpdateDisplayPreferences(
-            [FromRoute] string? displayPreferencesId,
+            [FromRoute, Required] string displayPreferencesId,
             [FromQuery, Required] Guid userId,
-            [FromQuery, Required] string? client,
+            [FromQuery, Required] string client,
             [FromBody, Required] DisplayPreferencesDto displayPreferences)
         {
             HomeSectionType[] defaults =
@@ -153,7 +156,6 @@ namespace Jellyfin.Api.Controllers
             {
                 var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Parse(key.Substring("landing-".Length)), existingDisplayPreferences.Client);
                 itemPreferences.ViewType = Enum.Parse<ViewType>(displayPreferences.ViewType);
-                _displayPreferencesManager.SaveChanges(itemPreferences);
             }
 
             var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Empty, existingDisplayPreferences.Client);
@@ -167,8 +169,7 @@ namespace Jellyfin.Api.Controllers
                 itemPrefs.ViewType = viewType;
             }
 
-            _displayPreferencesManager.SaveChanges(existingDisplayPreferences);
-            _displayPreferencesManager.SaveChanges(itemPrefs);
+            _displayPreferencesManager.SaveChanges();
 
             return NoContent();
         }

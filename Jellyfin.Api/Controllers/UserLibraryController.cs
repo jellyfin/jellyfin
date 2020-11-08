@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the d item.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<BaseItemDto>> GetItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public async Task<ActionResult<BaseItemDto>> GetItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -93,7 +94,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the user's root folder.</returns>
         [HttpGet("Users/{userId}/Items/Root")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetRootFolder([FromRoute] Guid userId)
+        public ActionResult<BaseItemDto> GetRootFolder([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
             var item = _libraryManager.GetUserRootFolder();
@@ -110,7 +111,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the intros to play.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/Intros")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -138,7 +139,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpPost("Users/{userId}/FavoriteItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             return MarkFavorite(userId, itemId, true);
         }
@@ -152,7 +153,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpDelete("Users/{userId}/FavoriteItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             return MarkFavorite(userId, itemId, false);
         }
@@ -166,7 +167,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpDelete("Users/{userId}/Items/{itemId}/Rating")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             return UpdateUserItemRatingInternal(userId, itemId, null);
         }
@@ -181,7 +182,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpPost("Users/{userId}/Items/{itemId}/Rating")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId, [FromQuery] bool? likes)
+        public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery] bool? likes)
         {
             return UpdateUserItemRatingInternal(userId, itemId, likes);
         }
@@ -195,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The items local trailers.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/LocalTrailers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -230,7 +231,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the special features.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/SpecialFeatures")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -264,14 +265,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Items/Latest")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<BaseItemDto>> GetLatestMedia(
-            [FromRoute] Guid userId,
+            [FromRoute, Required] Guid userId,
             [FromQuery] Guid? parentId,
             [FromQuery] string? fields,
             [FromQuery] string? includeItemTypes,
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] int limit = 20,
             [FromQuery] bool groupItems = true)

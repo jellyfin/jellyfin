@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -75,8 +76,8 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> AddVirtualFolder(
             [FromQuery] string? name,
             [FromQuery] string? collectionType,
-            [FromQuery] string[] paths,
-            [FromBody] LibraryOptionsDto? libraryOptionsDto,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] paths,
+            [FromBody] AddVirtualFolderDto? libraryOptionsDto,
             [FromQuery] bool refreshLibrary = false)
         {
             var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
@@ -312,19 +313,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Update library options.
         /// </summary>
-        /// <param name="id">The library name.</param>
-        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="request">The library name and options.</param>
         /// <response code="204">Library updated.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("LibraryOptions")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateLibraryOptions(
-            [FromQuery] string? id,
-            [FromBody] LibraryOptions? libraryOptions)
+            [FromBody] UpdateLibraryOptionsDto request)
         {
-            var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(id);
+            var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(request.Id);
 
-            collectionFolder.UpdateLibraryOptions(libraryOptions);
+            collectionFolder.UpdateLibraryOptions(request.LibraryOptions);
             return NoContent();
         }
     }

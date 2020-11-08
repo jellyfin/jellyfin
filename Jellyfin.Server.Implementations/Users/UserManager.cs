@@ -2,6 +2,7 @@
 #pragma warning disable CA1307
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,18 +11,20 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
+using Jellyfin.Data.Events.Users;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -34,6 +37,7 @@ namespace Jellyfin.Server.Implementations.Users
     public class UserManager : IUserManager
     {
         private readonly JellyfinDbProvider _dbProvider;
+        private readonly IEventManager _eventManager;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
@@ -45,10 +49,13 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
+        private readonly IDictionary<Guid, User> _users;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
+        /// <param name="eventManager">The event manager.</param>
         /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
@@ -56,6 +63,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="logger">The logger.</param>
         public UserManager(
             JellyfinDbProvider dbProvider,
+            IEventManager eventManager,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
@@ -63,6 +71,7 @@ namespace Jellyfin.Server.Implementations.Users
             ILogger<UserManager> logger)
         {
             _dbProvider = dbProvider;
+            _eventManager = eventManager;
             _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
             _appHost = appHost;
@@ -75,49 +84,28 @@ namespace Jellyfin.Server.Implementations.Users
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
-        }
 
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserPasswordChanged;
+            _users = new ConcurrentDictionary<Guid, User>();
+            using var dbContext = _dbProvider.CreateContext();
+            foreach (var user in dbContext.Users
+                .Include(user => user.Permissions)
+                .Include(user => user.Preferences)
+                .Include(user => user.AccessSchedules)
+                .Include(user => user.ProfileImage)
+                .AsEnumerable())
+            {
+                _users.Add(user.Id, user);
+            }
+        }
 
         /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserCreated;
+        public IEnumerable<User> Users => _users.Values;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserDeleted;
-
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserLockedOut;
-
-        /// <inheritdoc/>
-        public IEnumerable<User> Users
-        {
-            get
-            {
-                using var dbContext = _dbProvider.CreateContext();
-                return dbContext.Users
-                    .Include(user => user.Permissions)
-                    .Include(user => user.Preferences)
-                    .Include(user => user.AccessSchedules)
-                    .Include(user => user.ProfileImage)
-                    .ToList();
-            }
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds
-        {
-            get
-            {
-                using var dbContext = _dbProvider.CreateContext();
-                return dbContext.Users
-                    .Select(user => user.Id)
-                    .ToList();
-            }
-        }
+        public IEnumerable<Guid> UsersIds => _users.Keys;
 
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
@@ -127,13 +115,8 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
-            return dbContext.Users
-                .Include(user => user.Permissions)
-                .Include(user => user.Preferences)
-                .Include(user => user.AccessSchedules)
-                .Include(user => user.ProfileImage)
-                .FirstOrDefault(user => user.Id == id);
+            _users.TryGetValue(id, out var user);
+            return user;
         }
 
         /// <inheritdoc/>
@@ -144,14 +127,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
-            return dbContext.Users
-                .Include(user => user.Permissions)
-                .Include(user => user.Preferences)
-                .Include(user => user.AccessSchedules)
-                .Include(user => user.ProfileImage)
-                .AsEnumerable()
-                .FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
+            return _users.Values.FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <inheritdoc/>
@@ -206,17 +182,21 @@ namespace Jellyfin.Server.Implementations.Users
         internal async Task<User> CreateUserInternalAsync(string name, JellyfinDb dbContext)
         {
             // TODO: Remove after user item data is migrated.
-            var max = await dbContext.Users.AnyAsync().ConfigureAwait(false)
-                ? await dbContext.Users.Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
+            var max = await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false)
+                ? await dbContext.Users.AsQueryable().Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
                 : 0;
 
-            return new User(
+            var user = new User(
                 name,
                 _defaultAuthenticationProvider.GetType().FullName,
                 _defaultPasswordResetProvider.GetType().FullName)
             {
                 InternalId = max + 1
             };
+
+            _users.Add(user.Id, user);
+
+            return user;
         }
 
         /// <inheritdoc/>
@@ -227,14 +207,14 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
             }
 
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
 
             var newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
 
             dbContext.Users.Add(newUser);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
-            OnUserCreated?.Invoke(this, new GenericEventArgs<User>(newUser));
+            await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
 
             return newUser;
         }
@@ -242,28 +222,12 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void DeleteUser(Guid userId)
         {
-            using var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users
-                .Include(u => u.Permissions)
-                .Include(u => u.Preferences)
-                .Include(u => u.AccessSchedules)
-                .Include(u => u.ProfileImage)
-                .FirstOrDefault(u => u.Id == userId);
-            if (user == null)
+            if (!_users.TryGetValue(userId, out var user))
             {
                 throw new ResourceNotFoundException(nameof(userId));
             }
 
-            if (dbContext.Users.Find(user.Id) == null)
-            {
-                throw new ArgumentException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "The user cannot be deleted because there is no user with the Name {0} and Id {1}.",
-                    user.Username,
-                    user.Id));
-            }
-
-            if (dbContext.Users.Count() == 1)
+            if (_users.Count == 1)
             {
                 throw new InvalidOperationException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -282,6 +246,8 @@ namespace Jellyfin.Server.Implementations.Users
                     nameof(userId));
             }
 
+            using var dbContext = _dbProvider.CreateContext();
+
             // Clear all entities related to the user from the database.
             if (user.ProfileImage != null)
             {
@@ -293,7 +259,9 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             dbContext.SaveChanges();
-            OnUserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
+            _users.Remove(userId);
+
+            _eventManager.Publish(new UserDeletedEventArgs(user));
         }
 
         /// <inheritdoc/>
@@ -319,7 +287,7 @@ namespace Jellyfin.Server.Implementations.Users
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
 
-            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
+            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -338,7 +306,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.EasyPassword = newPasswordSha1;
             UpdateUser(user);
 
-            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
+            _eventManager.Publish(new UserPasswordChangedEventArgs(user));
         }
 
         /// <inheritdoc/>
@@ -384,6 +352,7 @@ namespace Jellyfin.Server.Implementations.Users
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout ?? -1,
+                    MaxActiveSessions = user.MaxActiveSessions,
                     IsAdministrator = user.HasPermission(PermissionKind.IsAdministrator),
                     IsHidden = user.HasPermission(PermissionKind.IsHidden),
                     IsDisabled = user.HasPermission(PermissionKind.IsDisabled),
@@ -407,13 +376,13 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
-                    EnabledChannels = user.GetPreference(PreferenceKind.EnabledChannels),
+                    EnabledChannels = user.GetPreference(PreferenceKind.EnabledChannels)?.Select(Guid.Parse).ToArray(),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
-                    EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders),
+                    EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders)?.Select(Guid.Parse).ToArray(),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
                     SyncPlayAccess = user.SyncPlayAccess,
-                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels),
-                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders),
+                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels)?.Select(Guid.Parse).ToArray(),
+                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders)?.Select(Guid.Parse).ToArray(),
                     BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems).Select(Enum.Parse<UnratedItem>).ToArray()
                 }
             };
@@ -463,11 +432,9 @@ namespace Jellyfin.Server.Implementations.Users
                     // the authentication provider might have created it
                     user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user != null)
                     {
-                        UpdatePolicy(user.Id, hasNewUserPolicy.GetNewUserPolicy());
-
-                        await UpdateUserAsync(user).ConfigureAwait(false);
+                        await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
                     }
                 }
             }
@@ -592,9 +559,7 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task InitializeAsync()
         {
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-            using var dbContext = _dbProvider.CreateContext();
-
-            if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
+            if (_users.Any())
             {
                 return;
             }
@@ -607,6 +572,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
 
+            await using var dbContext = _dbProvider.CreateContext();
             var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
             newUser.SetPermission(PermissionKind.IsAdministrator, true);
             newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
@@ -647,9 +613,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void UpdateConfiguration(Guid userId, UserConfiguration config)
+        public async Task UpdateConfigurationAsync(Guid userId, UserConfiguration config)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -676,13 +642,13 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
             dbContext.Update(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public void UpdatePolicy(Guid userId, UserPolicy policy)
+        public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -706,6 +672,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.PasswordResetProviderId = policy.PasswordResetProviderId;
             user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
             user.LoginAttemptsBeforeLockout = maxLoginAttempts;
+            user.MaxActiveSessions = policy.MaxActiveSessions;
             user.SyncPlayAccess = policy.SyncPlayAccess;
             user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
             user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
@@ -740,21 +707,22 @@ namespace Jellyfin.Server.Implementations.Users
                 PreferenceKind.BlockUnratedItems,
                 policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
+            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
+            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public void ClearProfileImage(User user)
+        public async Task ClearProfileImageAsync(User user)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            user.ProfileImage = null;
         }
 
         private static bool IsValidUsername(string name)
@@ -804,7 +772,7 @@ namespace Jellyfin.Server.Implementations.Users
 
         private IList<IPasswordResetProvider> GetPasswordResetProviders(User user)
         {
-            var passwordResetProviderId = user?.PasswordResetProviderId;
+            var passwordResetProviderId = user.PasswordResetProviderId;
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();
 
             if (!string.IsNullOrEmpty(passwordResetProviderId))
@@ -901,7 +869,7 @@ namespace Jellyfin.Server.Implementations.Users
             if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
             {
                 user.SetPermission(PermissionKind.IsDisabled, true);
-                OnUserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
+                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
                 _logger.LogWarning(
                     "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
                     user.Username,

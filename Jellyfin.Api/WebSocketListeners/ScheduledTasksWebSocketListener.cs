@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -33,11 +34,14 @@ namespace Jellyfin.Api.WebSocketListeners
             _taskManager.TaskCompleted += OnTaskCompleted;
         }
 
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        protected override string Name => "ScheduledTasksInfo";
+        /// <inheritdoc />
+        protected override SessionMessageType Type => SessionMessageType.ScheduledTasksInfo;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StartType => SessionMessageType.ScheduledTasksInfoStart;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StopType => SessionMessageType.ScheduledTasksInfoStop;
 
         /// <summary>
         /// Gets the data to send.

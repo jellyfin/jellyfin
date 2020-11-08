@@ -78,7 +78,10 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
         public bool IsPortAuthorized { get; set; }
 
-        public bool AutoRunWebApp { get; set; }
+        /// <summary>
+        /// Gets or sets if quick connect is available for use on this server.
+        /// </summary>
+        public bool QuickConnectAvailable { get; set; }
 
         public bool EnableRemoteAccess { get; set; }
 
@@ -160,12 +163,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable dashboard response caching]; otherwise, <c>false</c>.</value>
         public bool EnableDashboardResponseCaching { get; set; }
-
-        /// <summary>
-        /// Gets or sets a custom path to serve the dashboard from.
-        /// </summary>
-        /// <value>The dashboard source path, or null if the default path should be used.</value>
-        public string DashboardSourcePath { get; set; }
 
         /// <summary>
         /// Gets or sets the image saving convention.
@@ -265,6 +262,21 @@ namespace MediaBrowser.Model.Configuration
         public long SlowResponseThresholdMs { get; set; }
 
         /// <summary>
+        /// Gets or sets the cors hosts.
+        /// </summary>
+        public string[] CorsHosts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the known proxies.
+        /// </summary>
+        public string[] KnownProxies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days we should retain activity logs.
+        /// </summary>
+        public int? ActivityLogRetentionDays { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -297,8 +309,8 @@ namespace MediaBrowser.Model.Configuration
             DisableLiveTvChannelUserDataName = true;
             EnableNewOmdbSupport = true;
 
-            AutoRunWebApp = true;
             EnableRemoteAccess = true;
+            QuickConnectAvailable = false;
 
             EnableUPnP = false;
             MinResumePct = 5;
@@ -372,6 +384,9 @@ namespace MediaBrowser.Model.Configuration
 
             EnableSlowResponseWarning = true;
             SlowResponseThresholdMs = 500;
+            CorsHosts = new[] { "*" };
+            KnownProxies = Array.Empty<string>();
+            ActivityLogRetentionDays = 30;
         }
     }
 

@@ -150,37 +150,11 @@ namespace MediaBrowser.Providers.Subtitles
             var parts = subtitleId.Split(new[] { '_' }, 2);
             var provider = GetProvider(parts[0]);
 
-            var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
-
             try
             {
                 var response = await GetRemoteSubtitles(subtitleId, cancellationToken).ConfigureAwait(false);
 
-                using (var stream = response.Stream)
-                using (var memoryStream = new MemoryStream())
-                {
-                    await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                    memoryStream.Position = 0;
-
-                    var savePaths = new List<string>();
-                    var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
-
-                    if (response.IsForced)
-                    {
-                        saveFileName += ".forced";
-                    }
-
-                    saveFileName += "." + response.Format.ToLowerInvariant();
-
-                    if (saveInMediaFolder)
-                    {
-                        savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
-                    }
-
-                    savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
-
-                    await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
-                }
+                await TrySaveSubtitle(video, libraryOptions, response).ConfigureAwait(false);
             }
             catch (RateLimitExceededException)
             {
@@ -196,6 +170,47 @@ namespace MediaBrowser.Providers.Subtitles
                 });
 
                 throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public Task UploadSubtitle(Video video, SubtitleResponse response)
+        {
+            var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(video);
+            return TrySaveSubtitle(video, libraryOptions, response);
+        }
+
+        private async Task TrySaveSubtitle(
+            Video video,
+            LibraryOptions libraryOptions,
+            SubtitleResponse response)
+        {
+            var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
+
+            using (var stream = response.Stream)
+            using (var memoryStream = new MemoryStream())
+            {
+                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                memoryStream.Position = 0;
+
+                var savePaths = new List<string>();
+                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+
+                if (response.IsForced)
+                {
+                    saveFileName += ".forced";
+                }
+
+                saveFileName += "." + response.Format.ToLowerInvariant();
+
+                if (saveInMediaFolder)
+                {
+                    savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
+                }
+
+                savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+
+                await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
             }
         }
 
@@ -303,7 +318,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private ISubtitleProvider GetProvider(string id)
         {
-            return _subtitleProviders.First(i => string.Equals(id, GetProviderId(i.Name)));
+            return _subtitleProviders.First(i => string.Equals(id, GetProviderId(i.Name), StringComparison.Ordinal));
         }
 
         /// <inheritdoc />

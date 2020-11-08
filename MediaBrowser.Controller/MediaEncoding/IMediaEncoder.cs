@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -66,7 +68,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
-        Task ExtractVideoImagesOnInterval(string[] inputFiles,
+        Task ExtractVideoImagesOnInterval(
+            string[] inputFiles,
             string container,
             MediaStream videoStream,
             MediaProtocol protocol,

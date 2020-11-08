@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,6 +113,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         // Program properties
         public int? SeasonNumber { get; set; }
+
         /// <summary>
         /// Gets or sets the episode number.
         /// </summary>

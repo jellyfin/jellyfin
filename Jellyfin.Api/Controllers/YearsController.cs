@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
@@ -9,6 +10,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -76,7 +78,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? sortBy,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] ImageType[] enableImageTypes,
             [FromQuery] Guid? userId,
             [FromQuery] bool recursive = true,
             [FromQuery] bool? enableImages = true)
@@ -179,7 +181,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{year}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<BaseItemDto> GetYear([FromRoute] int year, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetYear([FromRoute, Required] int year, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetYear(year);
             if (item == null)
