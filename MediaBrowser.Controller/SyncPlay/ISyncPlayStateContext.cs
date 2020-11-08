@@ -18,6 +18,18 @@ namespace MediaBrowser.Controller.SyncPlay
         long DefaultPing { get; }
 
         /// <summary>
+        /// Gets the maximum time offset error accepted for dates reported by clients, in milliseconds.
+        /// </summary>
+        /// <value>The maximum offset error accepted, in milliseconds.</value>
+        long TimeSyncOffset { get; }
+
+        /// <summary>
+        /// Gets the maximum offset error accepted for position reported by clients, in milliseconds.
+        /// </summary>
+        /// <value>The maximum offset error accepted, in milliseconds.</value>
+        long MaxPlaybackOffset { get; }
+
+        /// <summary>
         /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>

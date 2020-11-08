@@ -423,28 +423,42 @@ namespace MediaBrowser.Controller.SyncPlay
                 return;
             }
 
-            var requestTicks = context.SanitizePositionTicks(request.PositionTicks);
+            // Compute elapsed time between the client reported time and now.
+            // Elapsed time is used to estimate the client position when playback is unpaused.
+            // Ideally, the request is received and handled without major delays.
+            // However, to avoid waiting indefinitely when a client is not reporting a correct time,
+            // the elapsed time is ignored after a certain threshold.
             var currentTime = DateTime.UtcNow;
-            var elapsedTime = currentTime - request.When;
+            var elapsedTime = currentTime.Subtract(request.When);
+            var timeSyncThresholdTicks = TimeSpan.FromMilliseconds(context.TimeSyncOffset).Ticks;
+            if (Math.Abs(elapsedTime.Ticks) > timeSyncThresholdTicks)
+            {
+                _logger.LogWarning("HandleRequest: {0} in group {1}, {2} is not time syncing properly. Ignoring elapsed time.",
+                    request.GetRequestType(), context.GroupId.ToString(), session.Id);
+
+                elapsedTime = TimeSpan.Zero;
+            }
+
+            // Ignore elapsed time if client is paused.
             if (!request.IsPlaying)
             {
                 elapsedTime = TimeSpan.Zero;
             }
 
+            var requestTicks = context.SanitizePositionTicks(request.PositionTicks);
             var clientPosition = TimeSpan.FromTicks(requestTicks) + elapsedTime;
             var delayTicks = context.PositionTicks - clientPosition.Ticks;
+            var maxPlaybackOffsetTicks = TimeSpan.FromMilliseconds(context.MaxPlaybackOffset).Ticks;
 
-            if (delayTicks > TimeSpan.FromSeconds(5).Ticks)
-            {
-                // The client is really behind, other participants will have to wait a lot of time...
-                _logger.LogWarning("HandleRequest: {0} in group {1}, {2} got lost in time.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
-            }
+            _logger.LogDebug("HandleRequest: {0} in group {1}, {2} at {3} (delay of {4} seconds).",
+                request.GetRequestType(), context.GroupId.ToString(), session.Id, clientPosition, TimeSpan.FromTicks(delayTicks).TotalSeconds);
 
             if (ResumePlaying)
             {
                 // Handle case where session reported as ready but in reality
                 // it has no clue of the real position nor the playback state.
-                if (!request.IsPlaying && Math.Abs(context.PositionTicks - requestTicks) > TimeSpan.FromSeconds(0.5).Ticks) {
+                if (!request.IsPlaying && Math.Abs(delayTicks) > maxPlaybackOffsetTicks)
+                {
                     // Session not ready at all.
                     context.SetBuffering(session, true);
 
@@ -455,7 +469,8 @@ namespace MediaBrowser.Controller.SyncPlay
                     // Notify relevant state change event.
                     SendGroupStateUpdate(context, request, session, cancellationToken);
 
-                    _logger.LogDebug("HandleRequest: {0} in group {1}, {2} got lost in time, correcting.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                    _logger.LogWarning("HandleRequest: {0} in group {1}, {2} got lost in time, correcting.",
+                        request.GetRequestType(), context.GroupId.ToString(), session.Id);
                     return;
                 }
 
@@ -470,7 +485,8 @@ namespace MediaBrowser.Controller.SyncPlay
                     command.When = context.DateToUTCString(pauseAtTime);
                     context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
 
-                    _logger.LogDebug("HandleRequest: {0} in group {1}, others still buffering, {2} will pause when ready.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                    _logger.LogInformation("HandleRequest: {0} in group {1}, others still buffering, {2} will pause when ready in {3} seconds.",
+                        request.GetRequestType(), context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
                 }
                 else
                 {
@@ -489,7 +505,8 @@ namespace MediaBrowser.Controller.SyncPlay
 
                         context.SendCommand(session, filter, command, cancellationToken);
 
-                        _logger.LogDebug("HandleRequest: {0} in group {1}, {2} is recovering, notifying others to resume.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                        _logger.LogInformation("HandleRequest: {0} in group {1}, {2} is recovering, notifying others to resume in {3} seconds.",
+                            request.GetRequestType(), context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
                     }
                     else
                     {
@@ -502,7 +519,8 @@ namespace MediaBrowser.Controller.SyncPlay
                         var command = context.NewSyncPlayCommand(SendCommandType.Unpause);
                         context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
 
-                        _logger.LogDebug("HandleRequest: {0} in group {1}, {2} resumed playback but did not update others in time.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                        _logger.LogWarning("HandleRequest: {0} in group {1}, {2} resumed playback but did not update others in time. {3} seconds to recover.",
+                            request.GetRequestType(), context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
                     }
 
                     // Change state.
@@ -513,12 +531,11 @@ namespace MediaBrowser.Controller.SyncPlay
             }
             else
             {
-                // Check that session is really ready, tollerate half second difference to account for player imperfections.
-                if (Math.Abs(context.PositionTicks - requestTicks) > TimeSpan.FromSeconds(0.5).Ticks)
+                // Check that session is really ready, tollerate player imperfections under a certain threshold.
+                if (Math.Abs(context.PositionTicks - requestTicks) > maxPlaybackOffsetTicks)
                 {
                     // Session still not ready.
                     context.SetBuffering(session, true);
-
                     // Session is seeking to wrong position, correcting.
                     var command = context.NewSyncPlayCommand(SendCommandType.Seek);
                     context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
@@ -526,7 +543,8 @@ namespace MediaBrowser.Controller.SyncPlay
                     // Notify relevant state change event.
                     SendGroupStateUpdate(context, request, session, cancellationToken);
 
-                    _logger.LogDebug("HandleRequest: {0} in group {1}, {2} was seeking to wrong position, correcting.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                    _logger.LogWarning("HandleRequest: {0} in group {1}, {2} was seeking to wrong position, correcting.",
+                        request.GetRequestType(), context.GroupId.ToString(), session.Id);
                     return;
                 } else {
                     // Session is ready.
@@ -550,7 +568,8 @@ namespace MediaBrowser.Controller.SyncPlay
                         pausedState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
                     }
 
-                    _logger.LogDebug("HandleRequest: {0} in group {1}, {2} is ready, returning to previous state.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                    _logger.LogDebug("HandleRequest: {0} in group {1}, {2} is ready, returning to previous state.",
+                        request.GetRequestType(), context.GroupId.ToString(), session.Id);
                 }
             }
         }

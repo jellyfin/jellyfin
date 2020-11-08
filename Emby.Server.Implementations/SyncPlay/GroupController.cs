@@ -29,6 +29,16 @@ namespace Emby.Server.Implementations.SyncPlay
         public long DefaultPing { get; } = 500;
 
         /// <summary>
+        /// Gets the maximum time offset error accepted for dates reported by clients, in milliseconds.
+        /// </summary>
+        public long TimeSyncOffset { get; } = 2000;
+
+        /// <summary>
+        /// Gets the maximum offset error accepted for position reported by clients, in milliseconds.
+        /// </summary>
+        public long MaxPlaybackOffset { get; } = 500;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         private readonly ILogger _logger;
