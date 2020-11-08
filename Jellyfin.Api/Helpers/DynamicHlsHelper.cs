@@ -532,6 +532,7 @@ namespace Jellyfin.Api.Helpers
             {
                 return parsedLevel;
             }
+
             return null;
         }
 
@@ -693,8 +694,8 @@ namespace Jellyfin.Api.Helpers
         private string ReplaceProfile(string url, string codec, string oldValue, string newValue)
         {
             return url.Replace(
-                codec + "-profile=" + oldValue.ToString(),
-                codec + "-profile=" + newValue.ToString(),
+                codec + "-profile=" + oldValue,
+                codec + "-profile=" + newValue,
                 StringComparison.OrdinalIgnoreCase);
         }
 
