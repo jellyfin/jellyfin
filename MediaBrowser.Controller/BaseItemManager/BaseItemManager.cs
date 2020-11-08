@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.BaseItemManager
 
             if (baseItem.SourceType == SourceType.Channel)
             {
-                // hack alert
+                // Hack alert.
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
