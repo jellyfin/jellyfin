@@ -459,7 +459,7 @@ namespace Jellyfin.Api.Controllers
 
                 if (fontFile != null && fileSize != null && fileSize > 0)
                 {
-                    _logger.LogDebug("Fallback font size is {FileSize} Bytes", fileSize);
+                    _logger.LogDebug("Fallback font size is {fileSize} Bytes", fileSize);
                     return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
                 }
                 else
