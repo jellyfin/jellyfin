@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1373,7 +1374,8 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputPrefix = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath));
+            var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
+            var outputPrefix = Path.Combine(Path.GetDirectoryName(outputPath), outputFileNameWithoutExtension);
             var outputExtension = GetSegmentFileExtension(state.Request.SegmentContainer);
             var outputTsArg = outputPrefix + "%d" + outputExtension;
 
@@ -1384,7 +1386,19 @@ namespace Jellyfin.Api.Controllers
             }
             else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
             {
-                var outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
+                var outputFmp4HeaderArg = string.Empty;
+                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                if (isWindows)
+                {
+                    // on Windows, the path of fmp4 header file needs to be configured
+                    outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
+                }
+                else
+                {
+                    // on Linux/Unix, ffmpeg generate fmp4 header file to m3u8 output folder
+                    outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputFileNameWithoutExtension + "-1" + outputExtension + "\"";
+                }
+
                 segmentFormat = "fmp4" + outputFmp4HeaderArg;
             }
             else
