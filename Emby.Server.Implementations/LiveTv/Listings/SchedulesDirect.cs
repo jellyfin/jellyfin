@@ -647,7 +647,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/token");
             var hashedPasswordBytes = _cryptoProvider.ComputeHash("SHA1", Encoding.ASCII.GetBytes(password), Array.Empty<byte>());
-            string hashedPassword = string.Concat(hashedPasswordBytes.Select(b => b.ToString("x2", CultureInfo.InvariantCulture)));
+            string hashedPassword = Hex.Encode(hashedPasswordBytes);
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             using var response = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
