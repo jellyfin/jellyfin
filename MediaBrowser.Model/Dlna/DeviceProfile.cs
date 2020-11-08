@@ -62,9 +62,9 @@ namespace MediaBrowser.Model.Dlna
 
         public int? MaxIconHeight { get; set; }
 
-        public long? MaxStreamingBitrate { get; set; }
+        public int? MaxStreamingBitrate { get; set; }
 
-        public long? MaxStaticBitrate { get; set; }
+        public int? MaxStaticBitrate { get; set; }
 
         public int? MusicStreamingTranscodingBitrate { get; set; }
 
@@ -277,7 +277,8 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public ResponseProfile GetVideoMediaProfile(string container,
+        public ResponseProfile GetVideoMediaProfile(
+            string container,
             string audioCodec,
             string videoCodec,
             int? width,

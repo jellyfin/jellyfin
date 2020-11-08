@@ -32,7 +32,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <value>The priority.</value>
         public override ResolverPriority Priority => ResolverPriority.Fourth;
 
-        public MultiItemResolverResult ResolveMultiple(Folder parent,
+        public MultiItemResolverResult ResolveMultiple(
+            Folder parent,
             List<FileSystemMetadata> files,
             string collectionType,
             IDirectoryService directoryService)
@@ -50,7 +51,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             return result;
         }
 
-        private MultiItemResolverResult ResolveMultipleInternal(Folder parent,
+        private MultiItemResolverResult ResolveMultipleInternal(
+            Folder parent,
             List<FileSystemMetadata> files,
             string collectionType,
             IDirectoryService directoryService)

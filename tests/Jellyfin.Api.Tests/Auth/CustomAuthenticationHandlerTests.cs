@@ -8,6 +8,7 @@ using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -68,14 +69,14 @@ namespace Jellyfin.Api.Tests.Auth
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsyncShouldFailOnSecurityException()
+        public async Task HandleAuthenticateAsyncShouldFailOnAuthenticationException()
         {
             var errorMessage = _fixture.Create<string>();
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>()))
-                .Throws(new SecurityException(errorMessage));
+                .Throws(new AuthenticationException(errorMessage));
 
             var authenticateResult = await _sut.AuthenticateAsync();
 
@@ -128,6 +129,7 @@ namespace Jellyfin.Api.Tests.Auth
             var authorizationInfo = _fixture.Create<AuthorizationInfo>();
             authorizationInfo.User = _fixture.Create<User>();
             authorizationInfo.User.SetPermission(PermissionKind.IsAdministrator, isAdmin);
+            authorizationInfo.IsApiKey = false;
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(

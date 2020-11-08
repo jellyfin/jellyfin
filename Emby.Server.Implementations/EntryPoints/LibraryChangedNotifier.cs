@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -106,7 +107,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _sessionManager.SendMessageToAdminSessions("RefreshProgress", dict, CancellationToken.None);
+                _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, dict, CancellationToken.None);
             }
             catch
             {
@@ -124,7 +125,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    _sessionManager.SendMessageToAdminSessions("RefreshProgress", collectionFolderDict, CancellationToken.None);
+                    _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, collectionFolderDict, CancellationToken.None);
                 }
                 catch
                 {
@@ -348,7 +349,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "LibraryChanged", info, cancellationToken).ConfigureAwait(false);
+                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, SessionMessageType.LibraryChanged, info, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

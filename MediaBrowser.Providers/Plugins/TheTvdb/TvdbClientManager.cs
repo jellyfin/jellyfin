@@ -80,32 +80,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             return TryGetValue(cacheKey, language, () => TvDbClient.Episodes.GetAsync(episodeTvdbId, cancellationToken));
         }
 
-        public async Task<List<EpisodeRecord>> GetAllEpisodesAsync(int tvdbId, string language,
-            CancellationToken cancellationToken)
-        {
-            // Traverse all episode pages and join them together
-            var episodes = new List<EpisodeRecord>();
-            var episodePage = await GetEpisodesPageAsync(tvdbId, new EpisodeQuery(), language, cancellationToken)
-                .ConfigureAwait(false);
-            episodes.AddRange(episodePage.Data);
-            if (!episodePage.Links.Next.HasValue || !episodePage.Links.Last.HasValue)
-            {
-                return episodes;
-            }
-
-            int next = episodePage.Links.Next.Value;
-            int last = episodePage.Links.Last.Value;
-
-            for (var page = next; page <= last; ++page)
-            {
-                episodePage = await GetEpisodesPageAsync(tvdbId, page, new EpisodeQuery(), language, cancellationToken)
-                    .ConfigureAwait(false);
-                episodes.AddRange(episodePage.Data);
-            }
-
-            return episodes;
-        }
-
         public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByImdbIdAsync(
             string imdbId,
             string language,
@@ -176,7 +150,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             string language,
             CancellationToken cancellationToken)
         {
-            searchInfo.SeriesProviderIds.TryGetValue(nameof(MetadataProvider.Tvdb),
+            searchInfo.SeriesProviderIds.TryGetValue(
+                nameof(MetadataProvider.Tvdb),
                 out var seriesTvdbId);
 
             var episodeQuery = new EpisodeQuery();

@@ -123,9 +123,8 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None)
-                    .WriteToAsync(httpContext.Response.Body, CancellationToken.None).ConfigureAwait(false);
-                return new FileStreamResult(httpContext.Response.Body, contentType);
+                var stream = new ProgressiveFileStream(outputPath, job, transcodingJobHelper);
+                return new FileStreamResult(stream, contentType);
             }
             finally
             {

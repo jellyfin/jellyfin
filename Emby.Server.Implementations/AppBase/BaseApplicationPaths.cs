@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <inheritdoc />
-        public string VirtualDataPath { get; } = "%AppDataPath%";
+        public string VirtualDataPath => "%AppDataPath%";
 
         /// <summary>
         /// Gets the image cache path.

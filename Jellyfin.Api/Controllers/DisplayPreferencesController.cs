@@ -81,6 +81,9 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
 
+            // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
+            _displayPreferencesManager.SaveChanges();
+
             return dto;
         }
 

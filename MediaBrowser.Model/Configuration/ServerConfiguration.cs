@@ -271,6 +271,10 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public string[] KnownProxies { get; set; }
 
+        /// Gets or sets the number of days we should retain activity logs.
+        /// </summary>
+        public int? ActivityLogRetentionDays { get; set; }
+
         /// <summary>
         /// Gets or sets the how the library scan fans out.
         /// </summary>
@@ -391,8 +395,9 @@ namespace MediaBrowser.Model.Configuration
             SlowResponseThresholdMs = 500;
             CorsHosts = new[] { "*" };
             KnownProxies = Array.Empty<string>();
-            LibraryMetadataRefreshConcurrency = 0;
+            ActivityLogRetentionDays = 30;
             LibraryScanFanoutConcurrency = 0;
+            LibraryMetadataRefreshConcurrency = 0;
         }
     }
 

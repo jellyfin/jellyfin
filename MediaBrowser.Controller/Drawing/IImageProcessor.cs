@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -75,7 +76,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options);
+        Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
         /// Gets the supported image output formats.
@@ -87,7 +88,8 @@ namespace MediaBrowser.Controller.Drawing
         /// Creates the image collage.
         /// </summary>
         /// <param name="options">The options.</param>
-        void CreateImageCollage(ImageCollageOptions options);
+        /// <param name="libraryName">The library name to draw onto the collage.</param>
+        void CreateImageCollage(ImageCollageOptions options, string? libraryName);
 
         bool SupportsTransparency(string path);
     }

@@ -189,6 +189,11 @@ namespace Jellyfin.Data.Entities
         public int? LoginAttemptsBeforeLockout { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of active sessions the user can have at once.
+        /// </summary>
+        public int MaxActiveSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the subtitle mode.
         /// </summary>
         /// <remarks>
