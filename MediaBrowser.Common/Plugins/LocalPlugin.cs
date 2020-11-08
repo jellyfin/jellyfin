@@ -7,10 +7,10 @@ namespace MediaBrowser.Common.Plugins
     /// <summary>
     /// Local plugin struct.
     /// </summary>
-    public readonly struct LocalPlugin : IEquatable<LocalPlugin>
+    public class LocalPlugin : IEquatable<LocalPlugin>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocalPlugin"/> struct.
+        /// Initializes a new instance of the <see cref="LocalPlugin"/> class.
         /// </summary>
         /// <param name="id">The plugin id.</param>
         /// <param name="name">The plugin name.</param>
