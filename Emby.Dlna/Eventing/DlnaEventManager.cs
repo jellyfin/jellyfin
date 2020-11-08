@@ -168,7 +168,7 @@ namespace Emby.Dlna.Eventing
 
             builder.Append("</e:propertyset>");
 
-            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"),  subscription.CallbackUrl);
+            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"), subscription.CallbackUrl);
             options.Content = new StringContent(builder.ToString(), Encoding.UTF8, MediaTypeNames.Text.Xml);
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");

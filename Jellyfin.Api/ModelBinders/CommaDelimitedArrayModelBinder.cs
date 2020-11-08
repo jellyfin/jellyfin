@@ -15,7 +15,7 @@ namespace Jellyfin.Api.ModelBinders
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-            var elementType = bindingContext.ModelType.GetElementType();
+            var elementType = bindingContext.ModelType.GetElementType() ?? bindingContext.ModelType.GenericTypeArguments[0];
             var converter = TypeDescriptor.GetConverter(elementType);
 
             if (valueProviderResult.Length > 1)

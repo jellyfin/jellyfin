@@ -166,7 +166,7 @@ namespace Jellyfin.Api.Helpers
             MediaSourceInfo mediaSource,
             DeviceProfile profile,
             AuthorizationInfo auth,
-            long? maxBitrate,
+            int? maxBitrate,
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,
@@ -551,7 +551,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private long? GetMaxBitrate(long? clientMaxBitrate, User user, string ipAddress)
+        private int? GetMaxBitrate(int? clientMaxBitrate, User user, string ipAddress)
         {
             var maxBitrate = clientMaxBitrate;
             var remoteClientMaxBitrate = user.RemoteClientBitrateLimit ?? 0;

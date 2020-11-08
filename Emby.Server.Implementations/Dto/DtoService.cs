@@ -465,7 +465,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 var parentAlbumIds = _libraryManager.GetItemIds(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                    IncludeItemTypes = new[] { nameof(MusicAlbum) },
                     Name = item.Album,
                     Limit = 1
                 });
