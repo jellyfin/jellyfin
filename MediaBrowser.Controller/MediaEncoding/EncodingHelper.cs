@@ -662,6 +662,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Transcode to level 5.0 and lower for maximum compatibility
+                    // level 5.0 is suitable for up to 4k 30fps hevc encoding, otherwise let the encoder to handle it
+                    // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
+                    // MaxLumaSampleRate = 3840*2160*30 = 248832000 < 267386880,
                     if (requestLevel >= 150)
                     {
                         return "150";
@@ -3293,7 +3297,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
                 {
-                    args += " -copyts -avoid_negative_ts disabled -start_at_zero";
+                    args += " -copyts -avoid_negative_ts 0 -start_at_zero";
                 }
 
                 if (!state.RunTimeTicks.HasValue)
@@ -3341,7 +3345,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         args += " -copyts";
                     }
 
-                    args += " -avoid_negative_ts disabled";
+                    args += " -avoid_negative_ts 0";
 
                     if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
                     {

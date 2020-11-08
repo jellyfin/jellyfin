@@ -10,12 +10,37 @@ namespace Jellyfin.Api.Helpers
     public static class HlsCodecStringHelpers
     {
         /// <summary>
+        /// Codec name for MP3.
+        /// </summary>
+        public const string MP3 = "mp4a.40.34";
+
+        /// <summary>
+        /// Codec name for AC-3.
+        /// </summary>
+        public const string AC3 = "mp4a.a5";
+
+        /// <summary>
+        /// Codec name for E-AC-3.
+        /// </summary>
+        public const string EAC3 = "mp4a.a6";
+
+        /// <summary>
+        /// Codec name for FLAC.
+        /// </summary>
+        public const string FLAC = "fLaC";
+
+        /// <summary>
+        /// Codec name for ALAC.
+        /// </summary>
+        public const string ALAC = "alac";
+
+        /// <summary>
         /// Gets a MP3 codec string.
         /// </summary>
         /// <returns>MP3 codec string.</returns>
         public static string GetMP3String()
         {
-            return "mp4a.40.34";
+            return MP3;
         }
 
         /// <summary>
@@ -38,6 +63,42 @@ namespace Jellyfin.Api.Helpers
             }
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets an AC-3 codec string.
+        /// </summary>
+        /// <returns>AC-3 codec string.</returns>
+        public static string GetAC3String()
+        {
+            return AC3;
+        }
+
+        /// <summary>
+        /// Gets an E-AC-3 codec string.
+        /// </summary>
+        /// <returns>E-AC-3 codec string.</returns>
+        public static string GetEAC3String()
+        {
+            return EAC3;
+        }
+
+        /// <summary>
+        /// Gets an FLAC codec string.
+        /// </summary>
+        /// <returns>FLAC codec string.</returns>
+        public static string GetFLACString()
+        {
+            return FLAC;
+        }
+
+        /// <summary>
+        /// Gets an ALAC codec string.
+        /// </summary>
+        /// <returns>ALAC codec string.</returns>
+        public static string GetALACString()
+        {
+            return ALAC;
         }
 
         /// <summary>
@@ -103,42 +164,6 @@ namespace Jellyfin.Api.Helpers
                 .Append(".B0");
 
             return result.ToString();
-        }
-
-        /// <summary>
-        /// Gets an AC-3 codec string.
-        /// </summary>
-        /// <returns>AC-3 codec string.</returns>
-        public static string GetAC3String()
-        {
-            return "mp4a.a5";
-        }
-
-        /// <summary>
-        /// Gets an E-AC-3 codec string.
-        /// </summary>
-        /// <returns>E-AC-3 codec string.</returns>
-        public static string GetEAC3String()
-        {
-            return "mp4a.a6";
-        }
-
-        /// <summary>
-        /// Gets an FLAC codec string.
-        /// </summary>
-        /// <returns>FLAC codec string.</returns>
-        public static string GetFLACString()
-        {
-            return "fLaC";
-        }
-
-        /// <summary>
-        /// Gets an ALAC codec string.
-        /// </summary>
-        /// <returns>ALAC codec string.</returns>
-        public static string GetALACString()
-        {
-            return "alac";
         }
     }
 }
