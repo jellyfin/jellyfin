@@ -19,12 +19,12 @@ namespace Emby.Server.Implementations.HttpServer.Security
         public AuthorizationInfo Authenticate(HttpRequest request)
         {
             var auth = _authorizationContext.GetAuthorizationInfo(request);
-            if (auth?.User == null)
+            if (auth == null)
             {
-                return null;
+                throw new SecurityException("Unauthenticated request.");
             }
 
-            if (auth.User.HasPermission(PermissionKind.IsDisabled))
+            if (auth.User?.HasPermission(PermissionKind.IsDisabled) ?? false)
             {
                 throw new SecurityException("User account has been disabled.");
             }
