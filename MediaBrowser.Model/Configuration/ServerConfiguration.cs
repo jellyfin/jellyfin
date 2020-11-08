@@ -271,6 +271,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public string[] KnownProxies { get; set; }
 
+        /// <summary>
         /// Gets or sets the number of days we should retain activity logs.
         /// </summary>
         public int? ActivityLogRetentionDays { get; set; }
