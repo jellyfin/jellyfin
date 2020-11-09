@@ -58,17 +58,17 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(HttpRequest request);
+        SystemInfo GetSystemInfo(Microsoft.AspNetCore.Http.HttpRequest request);
 
-        PublicSystemInfo GetPublicSystemInfo(HttpRequest request);
+        PublicSystemInfo GetPublicSystemInfo(Microsoft.AspNetCore.Http.HttpRequest request);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
-        /// <param name="request">The <see cref="HttpRequest"/> instance.</param>
+        /// <param name="request">The <see cref="Microsoft.AspNetCore.Http.HttpRequest"/> instance.</param>
         /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(HttpRequest request, int? port = null);
+        string GetSmartApiUrl(Microsoft.AspNetCore.Http.HttpRequest request, int? port = null);
 
         /// <summary>
         /// Gets a URL specific for the request.
