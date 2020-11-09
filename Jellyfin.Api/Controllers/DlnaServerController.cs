@@ -197,7 +197,6 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
@@ -309,11 +308,9 @@ namespace Jellyfin.Api.Controllers
             {
                 if (DlnaEntryPoint.PlayToManager != null)
                 {
-                    using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
-                    {
-                        var response = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        await DlnaEntryPoint.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);
-                    }
+                    using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+                    var response = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    await DlnaEntryPoint.PlayToManager.NotifyDevice(new DlnaEventArgs(id, response)).ConfigureAwait(false);
                 }
             }
             catch
