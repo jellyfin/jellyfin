@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -65,7 +66,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<RecommendationDto>> GetMovieRecommendations(
             [FromQuery] Guid? userId,
             [FromQuery] string? parentId,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] int categoryLimit = 5,
             [FromQuery] int itemLimit = 8)
         {

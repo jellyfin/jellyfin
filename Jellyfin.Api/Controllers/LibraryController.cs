@@ -12,6 +12,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Progress;
@@ -693,7 +694,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? excludeArtistIds,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
         {
             var item = itemId.Equals(Guid.Empty)
                 ? (!userId.Equals(Guid.Empty)

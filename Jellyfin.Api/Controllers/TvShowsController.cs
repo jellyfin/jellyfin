@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -73,7 +74,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? seriesId,
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
@@ -130,7 +131,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
             [FromQuery] int? imageTypeLimit,
@@ -195,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
             [FromRoute, Required] string seriesId,
             [FromQuery] Guid? userId,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] int? season,
             [FromQuery] string? seasonId,
             [FromQuery] bool? isMissing,
@@ -317,7 +318,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
             [FromRoute, Required] string seriesId,
             [FromQuery] Guid? userId,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
             [FromQuery] string? adjacentTo,

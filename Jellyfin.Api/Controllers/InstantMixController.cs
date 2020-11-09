@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -68,7 +69,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -104,7 +105,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -140,7 +141,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -176,7 +177,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -211,7 +212,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -247,7 +248,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -283,7 +284,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,

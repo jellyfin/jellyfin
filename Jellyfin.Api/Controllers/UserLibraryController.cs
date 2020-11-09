@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -267,7 +268,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<BaseItemDto>> GetLatestMedia(
             [FromRoute, Required] Guid userId,
             [FromQuery] Guid? parentId,
-            [FromQuery] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? includeItemTypes,
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
