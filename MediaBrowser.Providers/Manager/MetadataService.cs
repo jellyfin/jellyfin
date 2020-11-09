@@ -252,7 +252,13 @@ namespace MediaBrowser.Providers.Manager
 
                     if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
                     {
-                        await AddPersonImageAsync(personEntity, libraryOptions, person.ImageUrl, cancellationToken).ConfigureAwait(false);
+                        personEntity.SetImage(
+                            new ItemImageInfo
+                            {
+                                Path = person.ImageUrl,
+                                Type = ImageType.Primary
+                            },
+                            0);
 
                         saveEntity = true;
                         updateType |= ItemUpdateType.ImageUpdate;
@@ -264,27 +270,6 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
-        }
-
-        private async Task AddPersonImageAsync(Person personEntity, LibraryOptions libraryOptions, string imageUrl, CancellationToken cancellationToken)
-        {
-            try
-            {
-                await ProviderManager.SaveImage(personEntity, imageUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error in AddPersonImage");
-            }
-
-            personEntity.SetImage(
-                new ItemImageInfo
-                {
-                    Path = imageUrl,
-                    Type = ImageType.Primary
-                },
-                0);
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
