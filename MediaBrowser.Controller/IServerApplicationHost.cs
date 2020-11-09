@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the system info.
         /// </summary>
-        /// <param name="source">The originator of the request.</param>
+        /// <param name="request">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
         SystemInfo GetSystemInfo(Microsoft.AspNetCore.Http.HttpRequest request);
 
