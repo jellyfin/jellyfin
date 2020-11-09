@@ -9,8 +9,10 @@ namespace MediaBrowser.Common.Plugins
     {
         /// <summary>
         /// Registers the plugin's services with the service collection.
-        /// This object is created prior to the plugin creation, so access to other classes is limited.
         /// </summary>
+        /// <remarks>
+        /// This interface is only used for service registration and requires a parameterless constructor.
+        /// </remarks>
         /// <param name="serviceCollection">The service collection.</param>
         void RegisterServices(IServiceCollection serviceCollection);
     }
