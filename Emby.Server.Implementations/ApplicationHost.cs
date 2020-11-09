@@ -830,7 +830,7 @@ namespace Emby.Server.Implementations
             {
                 try
                 {
-                    var instance = (IPluginServiceRegistrator)Activator.CreateInstance(pluginServiceRegistrar);
+                    var instance = (IPluginServiceRegistrator)Activator.CreateInstance(pluginServiceRegistrator);
                     instance.RegisterServices(ServiceCollection);
                 }
                 catch (Exception ex)
