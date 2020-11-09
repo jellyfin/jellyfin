@@ -11,6 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.SubtitleDtos;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -21,6 +24,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Subtitles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +38,7 @@ namespace Jellyfin.Api.Controllers
     [Route("")]
     public class SubtitleController : BaseJellyfinApiController
     {
+        private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ISubtitleEncoder _subtitleEncoder;
@@ -46,6 +51,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleController"/> class.
         /// </summary>
+        /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
         /// <param name="subtitleManager">Instance of <see cref="ISubtitleManager"/> interface.</param>
         /// <param name="subtitleEncoder">Instance of <see cref="ISubtitleEncoder"/> interface.</param>
@@ -55,6 +61,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of <see cref="ILogger{SubtitleController}"/> interface.</param>
         public SubtitleController(
+            IServerConfigurationManager serverConfigurationManager,
             ILibraryManager libraryManager,
             ISubtitleManager subtitleManager,
             ISubtitleEncoder subtitleEncoder,
@@ -64,6 +71,7 @@ namespace Jellyfin.Api.Controllers
             IAuthorizationContext authContext,
             ILogger<SubtitleController> logger)
         {
+            _serverConfigurationManager = serverConfigurationManager;
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _subtitleEncoder = subtitleEncoder;
@@ -320,6 +328,33 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
+        /// Upload an external subtitle file.
+        /// </summary>
+        /// <param name="itemId">The item the subtitle belongs to.</param>
+        /// <param name="body">The request body.</param>
+        /// <response code="204">Subtitle uploaded.</response>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
+        [HttpPost("Videos/{itemId}/Subtitles")]
+        public async Task<ActionResult> UploadSubtitle(
+            [FromRoute, Required] Guid itemId,
+            [FromBody, Required] UploadSubtitleDto body)
+        {
+            var video = (Video)_libraryManager.GetItemById(itemId);
+            var data = Convert.FromBase64String(body.Data);
+            await using var memoryStream = new MemoryStream(data);
+            await _subtitleManager.UploadSubtitle(
+                video,
+                new SubtitleResponse
+                {
+                    Format = body.Format,
+                    Language = body.Language,
+                    IsForced = body.IsForced,
+                    Stream = memoryStream
+                }).ConfigureAwait(false);
+            return NoContent();
+        }
+
+        /// <summary>
         /// Encodes a subtitle in the specified format.
         /// </summary>
         /// <param name="id">The media id.</param>
@@ -350,6 +385,96 @@ namespace Jellyfin.Api.Controllers
                 endPositionTicks ?? 0,
                 copyTimestamps,
                 CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets a list of available fallback font files.
+        /// </summary>
+        /// <response code="200">Information retrieved.</response>
+        /// <returns>An array of <see cref="FontFile"/> with the available font files.</returns>
+        [HttpGet("FallbackFont/Fonts")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IEnumerable<FontFile> GetFallbackFontList()
+        {
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                var files = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
+                var fontFiles = files
+                    .Select(i => new FontFile
+                    {
+                        Name = i.Name,
+                        Size = i.Length,
+                        DateCreated = _fileSystem.GetCreationTimeUtc(i),
+                        DateModified = _fileSystem.GetLastWriteTimeUtc(i)
+                    })
+                    .OrderBy(i => i.Size)
+                    .ThenBy(i => i.Name)
+                    .ThenByDescending(i => i.DateModified)
+                    .ThenByDescending(i => i.DateCreated);
+                // max total size 20M
+                const int MaxSize = 20971520;
+                var sizeCounter = 0L;
+                foreach (var fontFile in fontFiles)
+                {
+                    sizeCounter += fontFile.Size;
+                    if (sizeCounter >= MaxSize)
+                    {
+                        _logger.LogWarning("Some fonts will not be sent due to size limitations");
+                        yield break;
+                    }
+
+                    yield return fontFile;
+                }
+            }
+            else
+            {
+                _logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a fallback font file.
+        /// </summary>
+        /// <param name="name">The name of the fallback font file to get.</param>
+        /// <response code="200">Fallback font file retrieved.</response>
+        /// <returns>The fallback font file.</returns>
+        [HttpGet("FallbackFont/Fonts/{name}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult GetFallbackFont([FromRoute, Required] string name)
+        {
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                var fontFile = _fileSystem.GetFiles(fallbackFontPath)
+                    .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+                var fileSize = fontFile?.Length;
+
+                if (fontFile != null && fileSize != null && fileSize > 0)
+                {
+                    _logger.LogDebug("Fallback font size is {fileSize} Bytes", fileSize);
+                    return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
+                }
+                else
+                {
+                    _logger.LogWarning("The selected font is null or empty");
+                }
+            }
+            else
+            {
+                _logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
+
+            // returning HTTP 204 will break the SubtitlesOctopus
+            return Ok();
         }
     }
 }

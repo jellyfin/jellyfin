@@ -590,7 +590,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 SeriesTimerId = seriesTimerId,
-                Genres = RequestHelpers.Split(genres, ',', true),
+                Genres = RequestHelpers.Split(genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(genreIds)
             };
 
@@ -645,7 +645,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = body.IsKids,
                 IsSports = body.IsSports,
                 SeriesTimerId = body.SeriesTimerId,
-                Genres = RequestHelpers.Split(body.Genres, ',', true),
+                Genres = RequestHelpers.Split(body.Genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(body.GenreIds)
             };
 
@@ -1215,11 +1215,8 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await using var memoryStream = new MemoryStream();
-            await new ProgressiveFileCopier(liveStreamInfo, null, _transcodingJobHelper, CancellationToken.None)
-                .WriteToAsync(memoryStream, CancellationToken.None)
-                .ConfigureAwait(false);
-            return File(memoryStream, MimeTypes.GetMimeType("file." + container));
+            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetFilePath(), null, _transcodingJobHelper);
+            return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file." + container));
         }
 
         private void AssertUserCanManageLiveTv()

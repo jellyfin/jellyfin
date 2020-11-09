@@ -309,9 +309,9 @@ namespace Jellyfin.Api.Controllers
                 TotalRecordCount = list.Count
             };
 
-            if (limit.HasValue)
+            if (limit.HasValue && limit < list.Count)
             {
-                list = list.Take(limit.Value).ToList();
+                list = list.GetRange(0, limit.Value);
             }
 
             var returnList = _dtoService.GetBaseItemDtos(list, dtoOptions, user);

@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
@@ -158,6 +163,68 @@ namespace Jellyfin.Api.Helpers
                 }).Where(i => i.HasValue)
                 .Select(i => i!.Value)
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Gets the item fields.
+        /// </summary>
+        /// <param name="imageTypes">The image types string.</param>
+        /// <returns>IEnumerable{ItemFields}.</returns>
+        internal static ImageType[] GetImageTypes(string? imageTypes)
+        {
+            if (string.IsNullOrEmpty(imageTypes))
+            {
+                return Array.Empty<ImageType>();
+            }
+
+            return Split(imageTypes, ',', true)
+                .Select(v =>
+                {
+                    if (Enum.TryParse(v, true, out ImageType value))
+                    {
+                        return (ImageType?)value;
+                    }
+
+                    return null;
+                })
+                .Where(i => i.HasValue)
+                .Select(i => i!.Value)
+                .ToArray();
+        }
+
+        internal static QueryResult<BaseItemDto> CreateQueryResult(
+            QueryResult<(BaseItem, ItemCounts)> result,
+            DtoOptions dtoOptions,
+            IDtoService dtoService,
+            bool includeItemTypes,
+            User? user)
+        {
+            var dtos = result.Items.Select(i =>
+            {
+                var (baseItem, counts) = i;
+                var dto = dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
+
+                if (includeItemTypes)
+                {
+                    dto.ChildCount = counts.ItemCount;
+                    dto.ProgramCount = counts.ProgramCount;
+                    dto.SeriesCount = counts.SeriesCount;
+                    dto.EpisodeCount = counts.EpisodeCount;
+                    dto.MovieCount = counts.MovieCount;
+                    dto.TrailerCount = counts.TrailerCount;
+                    dto.AlbumCount = counts.AlbumCount;
+                    dto.SongCount = counts.SongCount;
+                    dto.ArtistCount = counts.ArtistCount;
+                }
+
+                return dto;
+            });
+
+            return new QueryResult<BaseItemDto>
+            {
+                Items = dtos.ToArray(),
+                TotalRecordCount = result.TotalRecordCount
+            };
         }
     }
 }

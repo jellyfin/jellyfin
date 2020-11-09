@@ -1346,8 +1346,8 @@ namespace Emby.Dlna.ContentDirectory
             {
                 if (id.StartsWith(name + "_", StringComparison.OrdinalIgnoreCase))
                 {
-                    stubType = (StubType)Enum.Parse(typeof(StubType), name, true);
-                    id = id.Split(new[] { '_' }, 2)[1];
+                    stubType = Enum.Parse<StubType>(name, true);
+                    id = id.Split('_', 2)[1];
 
                     break;
                 }

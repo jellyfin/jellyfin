@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -30,7 +29,6 @@ using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
@@ -993,62 +991,36 @@ namespace Emby.Server.Implementations
 
         protected abstract void RestartInternal();
 
-        /// <summary>
-        /// Comparison function used in <see cref="GetPlugins" />.
-        /// </summary>
-        /// <param name="a">Item to compare.</param>
-        /// <param name="b">Item to compare with.</param>
-        /// <returns>Boolean result of the operation.</returns>
-        private static int VersionCompare(
-            (Version PluginVersion, string Name, string Path) a,
-            (Version PluginVersion, string Name, string Path) b)
+        /// <inheritdoc/>
+        public IEnumerable<LocalPlugin> GetLocalPlugins(string path, bool cleanup = true)
         {
-            int compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
-
-            if (compare == 0)
-            {
-                return a.PluginVersion.CompareTo(b.PluginVersion);
-            }
-
-            return compare;
-        }
-
-        /// <summary>
-        /// Returns a list of plugins to install.
-        /// </summary>
-        /// <param name="path">Path to check.</param>
-        /// <param name="cleanup">True if an attempt should be made to delete old plugs.</param>
-        /// <returns>Enumerable list of dlls to load.</returns>
-        private IEnumerable<string> GetPlugins(string path, bool cleanup = true)
-        {
-            var dllList = new List<string>();
-            var versions = new List<(Version PluginVersion, string Name, string Path)>();
+            var minimumVersion = new Version(0, 0, 0, 1);
+            var versions = new List<LocalPlugin>();
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
-            string metafile;
 
             foreach (var dir in directories)
             {
                 try
                 {
-                    metafile = Path.Combine(dir, "meta.json");
+                    var metafile = Path.Combine(dir, "meta.json");
                     if (File.Exists(metafile))
                     {
                         var manifest = _jsonSerializer.DeserializeFromFile<PluginManifest>(metafile);
 
                         if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                         {
-                            targetAbi = new Version(0, 0, 0, 1);
+                            targetAbi = minimumVersion;
                         }
 
                         if (!Version.TryParse(manifest.Version, out var version))
                         {
-                            version = new Version(0, 0, 0, 1);
+                            version = minimumVersion;
                         }
 
                         if (ApplicationVersion >= targetAbi)
                         {
                             // Only load Plugins if the plugin is built for this version or below.
-                            versions.Add((version, manifest.Name, dir));
+                            versions.Add(new LocalPlugin(manifest.Guid, manifest.Name, version, dir));
                         }
                     }
                     else
@@ -1057,15 +1029,15 @@ namespace Emby.Server.Implementations
                         metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
 
                         int versionIndex = dir.LastIndexOf('_');
-                        if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
+                        if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version parsedVersion))
                         {
                             // Versioned folder.
-                            versions.Add((ver, metafile, dir));
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir));
                         }
                         else
                         {
                             // Un-versioned folder - Add it under the path name and version 0.0.0.1.
-                            versions.Add((new Version(0, 0, 0, 1), metafile, dir));
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, minimumVersion, dir));
                         }
                     }
                 }
@@ -1076,14 +1048,14 @@ namespace Emby.Server.Implementations
             }
 
             string lastName = string.Empty;
-            versions.Sort(VersionCompare);
+            versions.Sort(LocalPlugin.Compare);
             // Traverse backwards through the list.
             // The first item will be the latest version.
             for (int x = versions.Count - 1; x >= 0; x--)
             {
                 if (!string.Equals(lastName, versions[x].Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    dllList.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
+                    versions[x].DllFiles.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
                     lastName = versions[x].Name;
                     continue;
                 }
@@ -1091,6 +1063,7 @@ namespace Emby.Server.Implementations
                 if (!string.IsNullOrEmpty(lastName) && cleanup)
                 {
                     // Attempt a cleanup of old folders.
+                    versions.RemoveAt(x);
                     try
                     {
                         Logger.LogDebug("Deleting {Path}", versions[x].Path);
@@ -1103,7 +1076,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            return dllList;
+            return versions;
         }
 
         /// <summary>
@@ -1114,21 +1087,24 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in GetPlugins(ApplicationPaths.PluginsPath))
+                foreach (var plugin in GetLocalPlugins(ApplicationPaths.PluginsPath))
                 {
-                    Assembly plugAss;
-                    try
+                    foreach (var file in plugin.DllFiles)
                     {
-                        plugAss = Assembly.LoadFrom(file);
-                    }
-                    catch (FileLoadException ex)
-                    {
-                        Logger.LogError(ex, "Failed to load assembly {Path}", file);
-                        continue;
-                    }
+                        Assembly plugAss;
+                        try
+                        {
+                            plugAss = Assembly.LoadFrom(file);
+                        }
+                        catch (FileLoadException ex)
+                        {
+                            Logger.LogError(ex, "Failed to load assembly {Path}", file);
+                            continue;
+                        }
 
-                    Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
-                    yield return plugAss;
+                        Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
+                        yield return plugAss;
+                    }
                 }
             }
 
