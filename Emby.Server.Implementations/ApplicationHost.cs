@@ -826,7 +826,7 @@ namespace Emby.Server.Implementations
 
         private void RegisterPluginServices()
         {
-            foreach (var pluginServiceRegistrar in GetExportTypes<IPluginServiceRegistrator>())
+            foreach (var pluginServiceRegistrator in GetExportTypes<IPluginServiceRegistrator>())
             {
                 try
                 {
