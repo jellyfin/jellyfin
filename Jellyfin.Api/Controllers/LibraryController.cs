@@ -12,6 +12,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Progress;
@@ -693,7 +694,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? excludeArtistIds,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
-            [FromQuery] string? fields)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
         {
             var item = itemId.Equals(Guid.Empty)
                 ? (!userId.Equals(Guid.Empty)
@@ -885,15 +886,14 @@ namespace Jellyfin.Api.Controllers
             string? excludeArtistIds,
             Guid? userId,
             int? limit,
-            string? fields,
+            ItemFields[] fields,
             string[] includeItemTypes,
             bool isMovie)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request);
 
             var query = new InternalItemsQuery(user)
