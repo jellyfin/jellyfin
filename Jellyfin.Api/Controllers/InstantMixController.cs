@@ -73,7 +73,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -109,7 +109,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var album = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -145,7 +145,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -181,7 +181,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -216,7 +216,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -252,7 +252,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -288,7 +288,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
             var user = userId.HasValue && !userId.Equals(Guid.Empty)

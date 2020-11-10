@@ -79,7 +79,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? sortBy,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] Guid? userId,
             [FromQuery] bool recursive = true,
             [FromQuery] bool? enableImages = true)

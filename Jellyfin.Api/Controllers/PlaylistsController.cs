@@ -153,7 +153,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
             if (playlist == null)

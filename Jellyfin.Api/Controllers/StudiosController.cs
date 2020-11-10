@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isFavorite,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] Guid? userId,
             [FromQuery] string? nameStartsWithOrGreater,
             [FromQuery] string? nameStartsWith,
