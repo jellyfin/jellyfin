@@ -9,15 +9,28 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolves alternative versions and extras from list of video files.
+    /// </summary>
     public class VideoListResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoListResolver"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing CleanStringRegexes and VideoFlagDelimiters and passes options to <see cref="StackResolver"/> and <see cref="VideoResolver"/>.</param>
         public VideoListResolver(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Resolves alternative versions and extras from list of video files.
+        /// </summary>
+        /// <param name="files">List of related video files.</param>
+        /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
+        /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files togeather when related.</returns>
         public IEnumerable<VideoInfo> Resolve(List<FileSystemMetadata> files, bool supportMultiVersion = true)
         {
             var videoResolver = new VideoResolver(_options);

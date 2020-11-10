@@ -4,15 +4,27 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Parste 3D format related flags.
+    /// </summary>
     public class Format3DParser
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Format3DParser"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFlagDelimiters and passes options to <see cref="FlagParser"/>.</param>
         public Format3DParser(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Parse 3D format related flags.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <returns>Returns <see cref="Format3DResult"/> object.</returns>
         public Format3DResult Parse(string path)
         {
             int oldLen = _options.VideoFlagDelimiters.Length;

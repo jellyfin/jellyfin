@@ -5,20 +5,32 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.Subtitles
 {
+    /// <summary>
+    /// Subtitle Parser class.
+    /// </summary>
     public class SubtitleParser
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SubtitleParser"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing SubtitleFileExtensions, SubtitleDefaultFlags, SubtitleForcedFlags and SubtitleFlagDelimiters.</param>
         public SubtitleParser(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Parse file to determine if is subtitle and <see cref="SubtitleInfo"/>.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <returns>Returns null or <see cref="SubtitleInfo"/> object if parsing is successful.</returns>
         public SubtitleInfo? ParseFile(string path)
         {
             if (path.Length == 0)
             {
-                throw new ArgumentException("File path can't be empty.", nameof(path));
+                return null;
             }
 
             var extension = Path.GetExtension(path);

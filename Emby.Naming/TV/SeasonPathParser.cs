@@ -4,6 +4,9 @@ using System.IO;
 
 namespace Emby.Naming.TV
 {
+    /// <summary>
+    /// Class to parse season paths.
+    /// </summary>
     public static class SeasonPathParser
     {
         /// <summary>
@@ -21,6 +24,13 @@ namespace Emby.Naming.TV
             "stagione"
         };
 
+        /// <summary>
+        /// Attempts to parse season number from path.
+        /// </summary>
+        /// <param name="path">Path to season.</param>
+        /// <param name="supportSpecialAliases">Support special aliases when parsing.</param>
+        /// <param name="supportNumericSeasonFolders">Support numeric season folders when parsing.</param>
+        /// <returns>Returns <see cref="SeasonPathParserResult"/> object.</returns>
         public static SeasonPathParserResult Parse(string path, bool supportSpecialAliases, bool supportNumericSeasonFolders)
         {
             var result = new SeasonPathParserResult();

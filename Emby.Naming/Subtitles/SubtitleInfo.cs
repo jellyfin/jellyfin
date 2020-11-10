@@ -1,7 +1,16 @@
 namespace Emby.Naming.Subtitles
 {
+    /// <summary>
+    /// Class holding information about subtitle.
+    /// </summary>
     public class SubtitleInfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SubtitleInfo"/> class.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <param name="isDefault">Is subtitle default.</param>
+        /// <param name="isForced">Is subtitle forced.</param>
         public SubtitleInfo(string path, bool isDefault, bool isForced)
         {
             Path = path;

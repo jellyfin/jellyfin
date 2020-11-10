@@ -1,5 +1,8 @@
 namespace Emby.Naming.Common
 {
+    /// <summary>
+    /// Type of audiovisual media.
+    /// </summary>
     public enum MediaType
     {
         /// <summary>

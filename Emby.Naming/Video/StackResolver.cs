@@ -9,25 +9,47 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolve <see cref="FileStack"/> from list of paths.
+    /// </summary>
     public class StackResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StackResolver"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileStackingRegexes and passes options to <see cref="VideoResolver"/>.</param>
         public StackResolver(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Resolves only directories from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
         public IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files)
         {
             return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }));
         }
 
+        /// <summary>
+        /// Resolves only files from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of files.</returns>
         public IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files)
         {
             return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }));
         }
 
+        /// <summary>
+        /// Resolves audiobooks from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
         public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
         {
             var groupedDirectoryFiles = files.GroupBy(file => Path.GetDirectoryName(file.Path));
@@ -56,6 +78,11 @@ namespace Emby.Naming.Video
             }
         }
 
+        /// <summary>
+        /// Resolves videos from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of videos.</returns>
         public IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files)
         {
             var resolver = new VideoResolver(_options);

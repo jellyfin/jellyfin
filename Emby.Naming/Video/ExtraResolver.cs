@@ -6,15 +6,27 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolve if file is extra for video.
+    /// </summary>
     public class ExtraResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtraResolver"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing VideoExtraRules and passed to <see cref="AudioFileParser"/> and <see cref="VideoResolver"/>.</param>
         public ExtraResolver(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Attempts to resolve if file is extra.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <returns>Returns <see cref="ExtraResult"/> object.</returns>
         public ExtraResult GetExtraInfo(string path)
         {
             return _options.VideoExtraRules

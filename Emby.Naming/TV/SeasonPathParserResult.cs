@@ -1,5 +1,8 @@
 namespace Emby.Naming.TV
 {
+    /// <summary>
+    /// Data object to pass result of <see cref="SeasonPathParser"/>.
+    /// </summary>
     public class SeasonPathParserResult
     {
         /// <summary>
@@ -14,6 +17,10 @@ namespace Emby.Naming.TV
         /// <value><c>true</c> if success; otherwise, <c>false</c>.</value>
         public bool Success { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether "Is season folder".
+        /// Seems redundant and barely used.
+        /// </summary>
         public bool IsSeasonFolder { get; set; }
     }
 }

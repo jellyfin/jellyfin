@@ -8,8 +8,14 @@ using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Common
 {
+    /// <summary>
+    /// Big ugly class containing lot of different naming options that should be split and injected instead of passes everywhere.
+    /// </summary>
     public class NamingOptions
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NamingOptions"/> class.
+        /// </summary>
         public NamingOptions()
         {
             VideoFileExtensions = new[]
@@ -644,58 +650,139 @@ namespace Emby.Naming.Common
             Compile();
         }
 
+        /// <summary>
+        /// Gets or sets list of audio file extensions.
+        /// </summary>
         public string[] AudioFileExtensions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of album stacking prefixes.
+        /// </summary>
         public string[] AlbumStackingPrefixes { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of subtitle file extensions.
+        /// </summary>
         public string[] SubtitleFileExtensions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of subtitles flag delimiters.
+        /// </summary>
         public char[] SubtitleFlagDelimiters { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of subtitle forced flags.
+        /// </summary>
         public string[] SubtitleForcedFlags { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of subtitle default flags.
+        /// </summary>
         public string[] SubtitleDefaultFlags { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of episode regular expressions.
+        /// </summary>
         public EpisodeExpression[] EpisodeExpressions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of raw episode without season regular expressions strings.
+        /// </summary>
         public string[] EpisodeWithoutSeasonExpressions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of raw multi-part episodes regular expressions strings.
+        /// </summary>
         public string[] EpisodeMultiPartExpressions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of video file extensions.
+        /// </summary>
         public string[] VideoFileExtensions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of video stub file extensions.
+        /// </summary>
         public string[] StubFileExtensions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of raw audiobook parts regular expressions strings.
+        /// </summary>
         public string[] AudioBookPartsExpressions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of raw audiobook names regular expressions strings.
+        /// </summary>
         public string[] AudioBookNamesExpressions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of stub type rules.
+        /// </summary>
         public StubTypeRule[] StubTypes { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of video flag delimiters.
+        /// </summary>
         public char[] VideoFlagDelimiters { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of 3D Format rules.
+        /// </summary>
         public Format3DRule[] Format3DRules { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of raw video file-stacking expressions strings.
+        /// </summary>
         public string[] VideoFileStackingExpressions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of raw clean DateTimes regular expressions strings.
+        /// </summary>
         public string[] CleanDateTimes { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of raw clean strings regular expressions strings.
+        /// </summary>
         public string[] CleanStrings { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of multi-episode regular expressions.
+        /// </summary>
         public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of extra rules for videos.
+        /// </summary>
         public ExtraRule[] VideoExtraRules { get; set; }
 
+        /// <summary>
+        /// Gets list of video file-stack regular expressions.
+        /// </summary>
         public Regex[] VideoFileStackingRegexes { get; private set; } = Array.Empty<Regex>();
 
+        /// <summary>
+        /// Gets list of clean datetime regular expressions.
+        /// </summary>
         public Regex[] CleanDateTimeRegexes { get; private set; } = Array.Empty<Regex>();
 
+        /// <summary>
+        /// Gets list of clean string regular expressions.
+        /// </summary>
         public Regex[] CleanStringRegexes { get; private set; } = Array.Empty<Regex>();
 
+        /// <summary>
+        /// Gets list of episode without season regular expressions.
+        /// </summary>
         public Regex[] EpisodeWithoutSeasonRegexes { get; private set; } = Array.Empty<Regex>();
 
+        /// <summary>
+        /// Gets list of multi-part episode regular expressions.
+        /// </summary>
         public Regex[] EpisodeMultiPartRegexes { get; private set; } = Array.Empty<Regex>();
 
+        /// <summary>
+        /// Compiles raw regex strings into regexes.
+        /// </summary>
         public void Compile()
         {
             VideoFileStackingRegexes = VideoFileStackingExpressions.Select(Compile).ToArray();

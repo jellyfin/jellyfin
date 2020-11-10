@@ -5,10 +5,18 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolves <see cref="VideoFileInfo"/> from file path.
+    /// </summary>
     public class VideoResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoResolver"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileExtensions, StubFileExtensions, CleanStringRegexes and CleanDateTimeRegexes
+        /// and passes options in <see cref="StubResolver"/>, <see cref="FlagParser"/>, <see cref="Format3DParser"/> and <see cref="ExtraResolver"/>.</param>
         public VideoResolver(NamingOptions options)
         {
             _options = options;
@@ -110,23 +118,44 @@ namespace Emby.Naming.Video
                 extraRule: extraResult.Rule);
         }
 
+        /// <summary>
+        /// Determines if path is video file based on extension.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <returns>True if is video file.</returns>
         public bool IsVideoFile(string path)
         {
             var extension = Path.GetExtension(path) ?? string.Empty;
             return _options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Determines if path is video file stub based on extension.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <returns>True if is video file stub.</returns>
         public bool IsStubFile(string path)
         {
             var extension = Path.GetExtension(path) ?? string.Empty;
             return _options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Tries to clean name of clutter.
+        /// </summary>
+        /// <param name="name">Raw name.</param>
+        /// <param name="newName">Clean name.</param>
+        /// <returns>True if cleaning of name was successful.</returns>
         public bool TryCleanString(string name, out ReadOnlySpan<char> newName)
         {
             return CleanStringParser.TryClean(name, _options.CleanStringRegexes, out newName);
         }
 
+        /// <summary>
+        /// Tries to get name and year from raw name.
+        /// </summary>
+        /// <param name="name">Raw name.</param>
+        /// <returns>Returns <see cref="CleanDateTimeResult"/> with name and optional year.</returns>
         public CleanDateTimeResult CleanDateTime(string name)
         {
             return CleanDateTimeParser.Clean(name, _options.CleanDateTimeRegexes);

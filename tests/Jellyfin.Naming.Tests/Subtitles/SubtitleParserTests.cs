@@ -31,17 +31,12 @@ namespace Jellyfin.Naming.Tests.Subtitles
 
         [Theory]
         [InlineData("The Skin I Live In (2011).mp4")]
+        [InlineData("")]
         public void SubtitleParser_InvalidFileName_ReturnsNull(string input)
         {
             var parser = new SubtitleParser(_namingOptions);
 
             Assert.Null(parser.ParseFile(input));
-        }
-
-        [Fact]
-        public void SubtitleParser_EmptyFileName_ThrowsArgumentException()
-        {
-            Assert.Throws<ArgumentException>(() => new SubtitleParser(_namingOptions).ParseFile(string.Empty));
         }
     }
 }

@@ -8,6 +8,13 @@ namespace Emby.Naming.Video
     /// </summary>
     public class ExtraRule
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtraRule"/> class.
+        /// </summary>
+        /// <param name="extraType">Type of extra.</param>
+        /// <param name="ruleType">Type of rule.</param>
+        /// <param name="token">Token.</param>
+        /// <param name="mediaType">Media type.</param>
         public ExtraRule(ExtraType extraType, ExtraRuleType ruleType, string token, MediaType mediaType)
         {
             Token = token;

@@ -1,7 +1,15 @@
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Data holder class for 3D format rule.
+    /// </summary>
     public class Format3DRule
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Format3DRule"/> class.
+        /// </summary>
+        /// <param name="token">Token.</param>
+        /// <param name="precedingToken">Token present before current token.</param>
         public Format3DRule(string token, string? precedingToken = null)
         {
             Token = token;

@@ -2,6 +2,9 @@ using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Holder object for passing results from ExtraResolver.
+    /// </summary>
     public class ExtraResult
     {
         /// <summary>
