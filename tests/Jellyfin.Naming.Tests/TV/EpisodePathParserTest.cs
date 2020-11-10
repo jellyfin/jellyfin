@@ -82,6 +82,10 @@ namespace Jellyfin.Naming.Tests.TV
             Assert.True(res!.IsStub);
         }
 
+        /*
+         * EpisodePathParser.cs:130 is currently unreachable, but the piece of code is useful and could be reached with addition of new EpisodeExpressions.
+         * In order to preserve it but achieve 100% code coverage the test case below with made up expressions and filename is used.
+         */
         [Fact]
         public void EpisodePathParserTest_EmptyDateParsers()
         {
