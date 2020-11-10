@@ -31,15 +31,15 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <inheritdoc/>
         public void Perform()
         {
-            var virtual_folders = _libraryManager.GetVirtualFolders(false);
+            var virtualFolders = _libraryManager.GetVirtualFolders(false);
             _logger.LogInformation("Removing 'RemoveDownloadImagesInAdvance' settings in all the libraries");
-            foreach (var virtual_folder in virtual_folders)
+            foreach (var virtualFolder in virtualFolders)
             {
-                var library_options = virtual_folder.LibraryOptions;
-                var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(virtual_folder.ItemId);
+                var libraryOptions = virtualFolder.LibraryOptions;
+                var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(virtualFolder.ItemId);
                 // The property no longer exists in LibraryOptions, so we just re-save the options to get old data removed.
-                collectionFolder.UpdateLibraryOptions(library_options);
-                _logger.LogInformation("Removed from '{VirtualFolder}'", virtual_folder.Name);
+                collectionFolder.UpdateLibraryOptions(libraryOptions);
+                _logger.LogInformation("Removed from '{VirtualFolder}'", virtualFolder.Name);
             }
         }
     }
