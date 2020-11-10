@@ -1,7 +1,8 @@
-#pragma warning disable CS1591
-
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Extra rules type to determine against what <see cref="ExtraRule.Token"/> should be matched.
+    /// </summary>
     public enum ExtraRuleType
     {
         /// <summary>

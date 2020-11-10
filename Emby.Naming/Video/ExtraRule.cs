@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using MediaBrowser.Model.Entities;
 using MediaType = Emby.Naming.Common.MediaType;
 

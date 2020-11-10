@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,15 +8,27 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.AudioBook
 {
+    /// <summary>
+    /// Class used to resolve Name, Year, alternative files and extras from stack of files.
+    /// </summary>
     public class AudioBookListResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioBookListResolver"/> class.
+        /// </summary>
+        /// <param name="options">Naming options passed along to <see cref="AudioBookResolver"/> and <see cref="AudioBookNameParser"/>.</param>
         public AudioBookListResolver(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Resolves Name, Year and differentiate alternative files and extras from regular audiobook files.
+        /// </summary>
+        /// <param name="files">List of files related to audiobook.</param>
+        /// <returns>Returns IEnumerable of <see cref="AudioBookInfo"/>.</returns>
         public IEnumerable<AudioBookInfo> Resolve(IEnumerable<FileSystemMetadata> files)
         {
             var audioBookResolver = new AudioBookResolver(_options);

@@ -1,21 +1,30 @@
-#nullable enable
-#pragma warning disable CS1591
-
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
 
 namespace Emby.Naming.AudioBook
 {
+    /// <summary>
+    /// Helper class to retrieve name and year from audiobook previously retrieved name.
+    /// </summary>
     public class AudioBookNameParser
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioBookNameParser"/> class.
+        /// </summary>
+        /// <param name="options">Naming options containing AudioBookNamesExpressions.</param>
         public AudioBookNameParser(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Parse name and year from previously determined name of audiobook.
+        /// </summary>
+        /// <param name="name">Name of the audiobook.</param>
+        /// <returns>Returns <see cref="AudioBookNameParserResult"/> object.</returns>
         public AudioBookNameParserResult Parse(string name)
         {
             AudioBookNameParserResult result = default;
