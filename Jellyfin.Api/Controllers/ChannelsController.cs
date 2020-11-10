@@ -183,7 +183,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">Optional. User Id.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="channelIds">Optional. Specify one or more channel id's, comma delimited.</param>
         /// <response code="200">Latest channel items returned.</response>

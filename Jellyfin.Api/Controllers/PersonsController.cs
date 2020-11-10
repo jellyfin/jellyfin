@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="searchTerm">The search term.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not. userId is required.</param>
         /// <param name="enableUserData">Optional, include user data.</param>
         /// <param name="imageTypeLimit">Optional, the max number of images to return, per image type.</param>
