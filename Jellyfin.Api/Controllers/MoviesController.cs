@@ -85,8 +85,8 @@ namespace Jellyfin.Api.Controllers
                 IncludeItemTypes = new[]
                 {
                     nameof(Movie),
-                    // typeof(Trailer).Name,
-                    // typeof(LiveTvProgram).Name
+                    // nameof(Trailer),
+                    // nameof(LiveTvProgram)
                 },
                 // IsMovie = true
                 OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),

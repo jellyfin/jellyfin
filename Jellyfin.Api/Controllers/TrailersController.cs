@@ -1,5 +1,6 @@
 ﻿using System;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -125,7 +126,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
             [FromQuery] string? locationTypes,
-            [FromQuery] LocationType[] excludeLocationTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
             [FromQuery] double? minCommunityRating,
@@ -147,10 +148,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? parentId,
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
-            [FromQuery] ImageType[] imageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
             [FromQuery] string? sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery] string? genres,
@@ -159,7 +160,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? person,
             [FromQuery] string? personIds,
             [FromQuery] string? personTypes,

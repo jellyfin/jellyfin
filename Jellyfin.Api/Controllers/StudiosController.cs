@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -46,7 +46,6 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets all studios from a given item, folder, or the entire library.
         /// </summary>
-        /// <param name="minCommunityRating">Optional filter by minimum community rating.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="searchTerm">Optional. Search term.</param>
@@ -54,22 +53,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
-        /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
-        /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimited.</param>
-        /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
-        /// <param name="officialRatings">Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimited.</param>
-        /// <param name="tags">Optional. If specified, results will be filtered based on tag. This allows multiple, pipe delimited.</param>
-        /// <param name="years">Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimited.</param>
         /// <param name="enableUserData">Optional, include user data.</param>
         /// <param name="imageTypeLimit">Optional, the max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <param name="person">Optional. If specified, results will be filtered to include only those containing the specified person.</param>
-        /// <param name="personIds">Optional. If specified, results will be filtered to include only those containing the specified person ids.</param>
-        /// <param name="personTypes">Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited.</param>
-        /// <param name="studios">Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimited.</param>
-        /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
         /// <param name="userId">User id.</param>
         /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
         /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
@@ -81,7 +68,6 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetStudios(
-            [FromQuery] double? minCommunityRating,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
@@ -89,22 +75,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
-            [FromQuery] string? mediaTypes,
-            [FromQuery] string? genres,
-            [FromQuery] string? genreIds,
-            [FromQuery] string? officialRatings,
-            [FromQuery] string? tags,
-            [FromQuery] string? years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
-            [FromQuery] string? person,
-            [FromQuery] string? personIds,
-            [FromQuery] string? personTypes,
-            [FromQuery] string? studios,
-            [FromQuery] string? studioIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] Guid? userId,
             [FromQuery] string? nameStartsWithOrGreater,
             [FromQuery] string? nameStartsWith,
@@ -117,44 +91,23 @@ namespace Jellyfin.Api.Controllers
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = null;
-            BaseItem parentItem;
+            User? user = userId.HasValue && userId != Guid.Empty ? _userManager.GetUserById(userId.Value) : null;
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
-            {
-                user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
-            }
-            else
-            {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
-            }
+            var parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             var excludeItemTypesArr = RequestHelpers.Split(excludeItemTypes, ',', true);
             var includeItemTypesArr = RequestHelpers.Split(includeItemTypes, ',', true);
-            var mediaTypesArr = RequestHelpers.Split(mediaTypes, ',', true);
 
             var query = new InternalItemsQuery(user)
             {
                 ExcludeItemTypes = excludeItemTypesArr,
                 IncludeItemTypes = includeItemTypesArr,
-                MediaTypes = mediaTypesArr,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
                 NameLessThan = nameLessThan,
                 NameStartsWith = nameStartsWith,
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
-                Tags = RequestHelpers.Split(tags, ',', true),
-                OfficialRatings = RequestHelpers.Split(officialRatings, ',', true),
-                Genres = RequestHelpers.Split(genres, ',', true),
-                GenreIds = RequestHelpers.GetGuids(genreIds),
-                StudioIds = RequestHelpers.GetGuids(studioIds),
-                Person = person,
-                PersonIds = RequestHelpers.GetGuids(personIds),
-                PersonTypes = RequestHelpers.Split(personTypes, ',', true),
-                Years = RequestHelpers.Split(years, ',', true).Select(int.Parse).ToArray(),
-                MinCommunityRating = minCommunityRating,
                 DtoOptions = dtoOptions,
                 SearchTerm = searchTerm,
                 EnableTotalRecordCount = enableTotalRecordCount
@@ -172,84 +125,9 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            // Studios
-            if (!string.IsNullOrEmpty(studios))
-            {
-                query.StudioIds = studios.Split('|').Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetStudio(i);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }).Where(i => i != null).Select(i => i!.Id)
-                    .ToArray();
-            }
-
-            foreach (var filter in filters)
-            {
-                switch (filter)
-                {
-                    case ItemFilter.Dislikes:
-                        query.IsLiked = false;
-                        break;
-                    case ItemFilter.IsFavorite:
-                        query.IsFavorite = true;
-                        break;
-                    case ItemFilter.IsFavoriteOrLikes:
-                        query.IsFavoriteOrLiked = true;
-                        break;
-                    case ItemFilter.IsFolder:
-                        query.IsFolder = true;
-                        break;
-                    case ItemFilter.IsNotFolder:
-                        query.IsFolder = false;
-                        break;
-                    case ItemFilter.IsPlayed:
-                        query.IsPlayed = true;
-                        break;
-                    case ItemFilter.IsResumable:
-                        query.IsResumable = true;
-                        break;
-                    case ItemFilter.IsUnplayed:
-                        query.IsPlayed = false;
-                        break;
-                    case ItemFilter.Likes:
-                        query.IsLiked = true;
-                        break;
-                }
-            }
-
-            var result = new QueryResult<(BaseItem, ItemCounts)>();
-            var dtos = result.Items.Select(i =>
-            {
-                var (baseItem, itemCounts) = i;
-                var dto = _dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
-
-                if (!string.IsNullOrWhiteSpace(includeItemTypes))
-                {
-                    dto.ChildCount = itemCounts.ItemCount;
-                    dto.ProgramCount = itemCounts.ProgramCount;
-                    dto.SeriesCount = itemCounts.SeriesCount;
-                    dto.EpisodeCount = itemCounts.EpisodeCount;
-                    dto.MovieCount = itemCounts.MovieCount;
-                    dto.TrailerCount = itemCounts.TrailerCount;
-                    dto.AlbumCount = itemCounts.AlbumCount;
-                    dto.SongCount = itemCounts.SongCount;
-                    dto.ArtistCount = itemCounts.ArtistCount;
-                }
-
-                return dto;
-            });
-
-            return new QueryResult<BaseItemDto>
-            {
-                Items = dtos.ToArray(),
-                TotalRecordCount = result.TotalRecordCount
-            };
+            var result = _libraryManager.GetStudios(query);
+            var shouldIncludeItemTypes = !string.IsNullOrEmpty(includeItemTypes);
+            return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, shouldIncludeItemTypes, user);
         }
 
         /// <summary>

@@ -113,5 +113,7 @@
     "TaskCleanCacheDescription": "删除系统不再需要的缓存文件。",
     "TaskCleanCache": "清理缓存目录",
     "TasksApplicationCategory": "应用程序",
-    "TasksMaintenanceCategory": "维护"
+    "TasksMaintenanceCategory": "维护",
+    "TaskCleanActivityLog": "清理程序日志",
+    "TaskCleanActivityLogDescription": "删除早于设置时间的活动日志条目。"
 }

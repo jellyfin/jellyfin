@@ -14,6 +14,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
@@ -146,7 +147,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isDisliked,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy,
@@ -263,7 +264,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? seriesTimerId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool? isMovie,
@@ -350,7 +351,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? seriesTimerId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
@@ -561,7 +562,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? genreIds,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? seriesTimerId,
             [FromQuery] Guid? librarySeriesId,
@@ -592,7 +593,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 SeriesTimerId = seriesTimerId,
-                Genres = RequestHelpers.Split(genres, ',', true),
+                Genres = RequestHelpers.Split(genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(genreIds)
             };
 
@@ -648,7 +649,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = body.IsKids,
                 IsSports = body.IsSports,
                 SeriesTimerId = body.SeriesTimerId,
-                Genres = RequestHelpers.Split(body.Genres, ',', true),
+                Genres = RequestHelpers.Split(body.Genres, '|', true),
                 GenreIds = RequestHelpers.GetGuids(body.GenreIds)
             };
 
@@ -705,7 +706,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSports,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? genreIds,
             [FromQuery] string? fields,
             [FromQuery] bool? enableUserData,
@@ -1220,11 +1221,8 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await using var memoryStream = new MemoryStream();
-            await new ProgressiveFileCopier(liveStreamInfo, null, _transcodingJobHelper, CancellationToken.None)
-                .WriteToAsync(memoryStream, CancellationToken.None)
-                .ConfigureAwait(false);
-            return File(memoryStream, MimeTypes.GetMimeType("file." + container));
+            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetFilePath(), null, _transcodingJobHelper);
+            return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file." + container));
         }
 
         private void AssertUserCanManageLiveTv()

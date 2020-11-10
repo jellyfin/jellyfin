@@ -517,13 +517,8 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
             }
-
-            if (libraryOptions.DownloadImagesInAdvance)
-            {
-                return false;
-            }
-
-            return true;
+            // We always want to use prefetched images
+            return false;
         }
 
         private void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls)

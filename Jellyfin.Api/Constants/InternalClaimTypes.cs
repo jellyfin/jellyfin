@@ -34,5 +34,10 @@
         /// Token.
         /// </summary>
         public const string Token = "Jellyfin-Token";
+
+        /// <summary>
+        /// Is Api Key.
+        /// </summary>
+        public const string IsApiKey = "Jellyfin-IsApiKey";
     }
 }

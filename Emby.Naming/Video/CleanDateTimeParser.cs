@@ -15,6 +15,11 @@ namespace Emby.Naming.Video
         public static CleanDateTimeResult Clean(string name, IReadOnlyList<Regex> cleanDateTimeRegexes)
         {
             CleanDateTimeResult result = new CleanDateTimeResult(name);
+            if (string.IsNullOrEmpty(name))
+            {
+                return result;
+            }
+
             var len = cleanDateTimeRegexes.Count;
             for (int i = 0; i < len; i++)
             {
