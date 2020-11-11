@@ -1390,7 +1390,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
             {
-                return .5;
+                return .6;
             }
 
             return 1;
@@ -1424,34 +1424,46 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? GetAudioBitrateParam(BaseEncodingJobOptions request, MediaStream audioStream)
         {
-            if (audioStream == null)
-            {
-                return null;
-            }
-
-            if (request.AudioBitRate.HasValue)
-            {
-                // Don't encode any higher than this
-                return Math.Min(384000, request.AudioBitRate.Value);
-            }
-
-            // Empty bitrate area is not allow on iOS
-            // Default audio bitrate to 128K if it is not being requested
-            // https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options
-            return 128000;
+            return GetAudioBitrateParam(request.AudioBitRate, request.AudioCodec, audioStream);
         }
 
-        public int? GetAudioBitrateParam(int? audioBitRate, MediaStream audioStream)
+        public int? GetAudioBitrateParam(int? audioBitRate, string audioCodec, MediaStream audioStream)
         {
             if (audioStream == null)
             {
                 return null;
             }
 
-            if (audioBitRate.HasValue)
+            if (audioBitRate.HasValue && string.IsNullOrEmpty(audioCodec))
             {
-                // Don't encode any higher than this
                 return Math.Min(384000, audioBitRate.Value);
+            }
+
+            if (audioBitRate.HasValue && !string.IsNullOrEmpty(audioCodec))
+            {
+                if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((audioStream.Channels ?? 0) >= 6)
+                    {
+                        return Math.Min(640000, audioBitRate.Value);
+                    }
+
+                    return Math.Min(384000, audioBitRate.Value);
+                }
+
+                if (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((audioStream.Channels ?? 0) >= 6)
+                    {
+                        return Math.Min(3584000, audioBitRate.Value);
+                    }
+
+                    return Math.Min(1536000, audioBitRate.Value);
+                }
             }
 
             // Empty bitrate area is not allow on iOS

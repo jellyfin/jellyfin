@@ -222,7 +222,7 @@ namespace Jellyfin.Api.Helpers
 
                         EncodingHelper encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
                         var sdrOutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec) ?? 0;
-                        var sdrOutputAudioBitrate = encodingHelper.GetAudioBitrateParam(state.VideoRequest.AudioBitRate, state.AudioStream) ?? 0;
+                        var sdrOutputAudioBitrate = encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream) ?? 0;
                         var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
 
                         AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);

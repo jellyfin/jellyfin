@@ -872,11 +872,34 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private static int GetDefaultAudioBitrateIfUnknown(MediaStream audioStream)
+        private static int GetDefaultAudioBitrate(string audioCodec, int? audioChannels)
         {
-            if ((audioStream.Channels ?? 0) >= 6)
+            if (!string.IsNullOrEmpty(audioCodec))
             {
-                return 384000;
+                // Default to a higher bitrate for stream copy
+                if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((audioChannels ?? 0) < 2)
+                    {
+                        return 128000;
+                    }
+
+                    return (audioChannels ?? 0) >= 6 ? 640000 : 384000;
+                }
+
+                if (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((audioChannels ?? 0) < 2)
+                    {
+                        return 768000;
+                    }
+
+                    return (audioChannels ?? 0) >= 6 ? 3584000 : 1536000;
+                }
             }
 
             return 192000;
@@ -897,14 +920,27 @@ namespace MediaBrowser.Model.Dlna
             }
             else
             {
-                if (targetAudioChannels.HasValue && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
+                if (targetAudioChannels.HasValue
+                    && audioStream.Channels.HasValue
+                    && audioStream.Channels.Value > targetAudioChannels.Value)
                 {
-                    // Reduce the bitrate if we're downmixing
-                    defaultBitrate = targetAudioChannels.Value < 2 ? 128000 : 192000;
+                    // Reduce the bitrate if we're downmixing.
+                    defaultBitrate = GetDefaultAudioBitrate(targetAudioCodec, targetAudioChannels);
+                }
+                else if (targetAudioChannels.HasValue
+                        && audioStream.Channels.HasValue
+                        && audioStream.Channels.Value <= targetAudioChannels.Value
+                        && !string.IsNullOrEmpty(audioStream.Codec)
+                        && targetAudioCodecs != null
+                        && targetAudioCodecs.Length > 0
+                        && !Array.Exists(targetAudioCodecs, elem => string.Equals(audioStream.Codec, elem, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Shift the bitrate if we're transcoding to a different audio codec.
+                    defaultBitrate = GetDefaultAudioBitrate(targetAudioCodec, audioStream.Channels.Value);
                 }
                 else
                 {
-                    defaultBitrate = audioStream.BitRate ?? GetDefaultAudioBitrateIfUnknown(audioStream);
+                    defaultBitrate = audioStream.BitRate ?? GetDefaultAudioBitrate(targetAudioCodec, targetAudioChannels);
                 }
 
                 // Seeing webm encoding failures when source has 1 audio channel and 22k bitrate.
@@ -938,8 +974,28 @@ namespace MediaBrowser.Model.Dlna
             {
                 return 448000;
             }
+            else if (totalBitrate <= 4000000)
+            {
+                return 640000;
+            }
+            else if (totalBitrate <= 5000000)
+            {
+                return 768000;
+            }
+            else if (totalBitrate <= 10000000)
+            {
+                return 1536000;
+            }
+            else if (totalBitrate <= 15000000)
+            {
+                return 2304000;
+            }
+            else if (totalBitrate <= 20000000)
+            {
+                return 3584000;
+            }
 
-            return 640000;
+            return 7168000;
         }
 
         private (PlayMethod?, List<TranscodeReason>) GetVideoDirectPlayProfile(
