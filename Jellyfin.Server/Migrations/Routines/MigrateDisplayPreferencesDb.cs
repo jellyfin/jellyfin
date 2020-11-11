@@ -9,6 +9,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
@@ -26,6 +27,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private readonly IServerApplicationPaths _paths;
         private readonly JellyfinDbProvider _provider;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IUserManager _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MigrateDisplayPreferencesDb"/> class.
@@ -33,11 +35,17 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="logger">The logger.</param>
         /// <param name="paths">The server application paths.</param>
         /// <param name="provider">The database provider.</param>
-        public MigrateDisplayPreferencesDb(ILogger<MigrateDisplayPreferencesDb> logger, IServerApplicationPaths paths, JellyfinDbProvider provider)
+        /// <param name="userManager">The user manager.</param>
+        public MigrateDisplayPreferencesDb(
+            ILogger<MigrateDisplayPreferencesDb> logger,
+            IServerApplicationPaths paths,
+            JellyfinDbProvider provider,
+            IUserManager userManager)
         {
             _logger = logger;
             _paths = paths;
             _provider = provider;
+            _userManager = userManager;
             _jsonOptions = new JsonSerializerOptions();
             _jsonOptions.Converters.Add(new JsonStringEnumConverter());
         }
@@ -86,11 +94,19 @@ namespace Jellyfin.Server.Migrations.Routines
                         continue;
                     }
 
+                    var dtoUserId = new Guid(result[1].ToBlob());
+                    var existingUser = _userManager.GetUserById(dtoUserId);
+                    if (existingUser == null)
+                    {
+                        _logger.LogWarning("User with ID {userId} does not exist in the database, skipping migration.", dtoUserId);
+                        continue;
+                    }
+
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
                         ? chromecastDict[version]
                         : ChromecastVersion.Stable;
 
-                    var displayPreferences = new DisplayPreferences(new Guid(result[1].ToBlob()), result[2].ToString())
+                    var displayPreferences = new DisplayPreferences(dtoUserId, result[2].ToString())
                     {
                         IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null,
                         ShowBackdrop = dto.ShowBackdrop,
