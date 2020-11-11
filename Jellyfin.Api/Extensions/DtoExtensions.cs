@@ -14,42 +14,6 @@ namespace Jellyfin.Api.Extensions
     public static class DtoExtensions
     {
         /// <summary>
-        /// Add Dto Item fields.
-        /// </summary>
-        /// <remarks>
-        /// Converted from IHasItemFields.
-        /// Legacy order: 1.
-        /// </remarks>
-        /// <param name="dtoOptions">DtoOptions object.</param>
-        /// <param name="fields">Comma delimited string of fields.</param>
-        /// <returns>Modified DtoOptions object.</returns>
-        internal static DtoOptions AddItemFields(this DtoOptions dtoOptions, string? fields)
-        {
-            if (string.IsNullOrEmpty(fields))
-            {
-                dtoOptions.Fields = Array.Empty<ItemFields>();
-            }
-            else
-            {
-                dtoOptions.Fields = fields.Split(',')
-                    .Select(v =>
-                    {
-                        if (Enum.TryParse(v, true, out ItemFields value))
-                        {
-                            return (ItemFields?)value;
-                        }
-
-                        return null;
-                    })
-                    .Where(i => i.HasValue)
-                    .Select(i => i!.Value)
-                    .ToArray();
-            }
-
-            return dtoOptions;
-        }
-
-        /// <summary>
         /// Add additional fields depending on client.
         /// </summary>
         /// <remarks>
@@ -126,7 +90,7 @@ namespace Jellyfin.Api.Extensions
             bool? enableImages,
             bool? enableUserData,
             int? imageTypeLimit,
-            string? enableImageTypes)
+            ImageType[] enableImageTypes)
         {
             dtoOptions.EnableImages = enableImages ?? true;
 
@@ -140,11 +104,9 @@ namespace Jellyfin.Api.Extensions
                 dtoOptions.EnableUserData = enableUserData.Value;
             }
 
-            if (!string.IsNullOrWhiteSpace(enableImageTypes))
+            if (enableImageTypes.Length != 0)
             {
-                dtoOptions.ImageTypes = enableImageTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true))
-                    .ToArray();
+                dtoOptions.ImageTypes = enableImageTypes;
             }
 
             return dtoOptions;

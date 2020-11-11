@@ -1,7 +1,7 @@
 using System;
-using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -39,19 +39,19 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{ActivityLogEntry}"/> containing the log entries.</returns>
         [HttpGet("Entries")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<ActivityLogEntry>> GetLogEntries(
+        public async Task<ActionResult<QueryResult<ActivityLogEntry>>> GetLogEntries(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] DateTime? minDate,
             [FromQuery] bool? hasUserId)
         {
-            var filterFunc = new Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>>(
-                entries => entries.Where(entry => entry.DateCreated >= minDate
-                                                  && (!hasUserId.HasValue || (hasUserId.Value
-                                                      ? entry.UserId != Guid.Empty
-                                                      : entry.UserId == Guid.Empty))));
-
-            return _activityManager.GetPagedResult(filterFunc, startIndex, limit);
+            return await _activityManager.GetPagedResultAsync(new ActivityLogQuery
+            {
+                StartIndex = startIndex,
+                Limit = limit,
+                MinDate = minDate,
+                HasUserId = hasUserId
+            }).ConfigureAwait(false);
         }
     }
 }
