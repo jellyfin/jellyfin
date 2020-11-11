@@ -681,12 +681,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
         /// <response code="200">Similar items returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
-        [HttpGet("Artists/{itemId}/Similar", Name = "GetSimilarArtists2")]
+        [HttpGet("Artists/{itemId}/Similar")]
         [HttpGet("Items/{itemId}/Similar")]
-        [HttpGet("Albums/{itemId}/Similar", Name = "GetSimilarAlbums2")]
-        [HttpGet("Shows/{itemId}/Similar", Name = "GetSimilarShows2")]
-        [HttpGet("Movies/{itemId}/Similar", Name = "GetSimilarMovies2")]
-        [HttpGet("Trailers/{itemId}/Similar", Name = "GetSimilarTrailers2")]
+        [HttpGet("Albums/{itemId}/Similar")]
+        [HttpGet("Shows/{itemId}/Similar")]
+        [HttpGet("Movies/{itemId}/Similar")]
+        [HttpGet("Trailers/{itemId}/Similar")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
@@ -702,33 +702,71 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.RootFolder)
                 : _libraryManager.GetItemById(itemId);
 
-            var program = item as IHasProgramAttributes;
-            var isMovie = item is MediaBrowser.Controller.Entities.Movies.Movie || (program != null && program.IsMovie) || item is Trailer;
-            if (program != null && program.IsSeries)
-            {
-                return GetSimilarItemsResult(
-                    item,
-                    excludeArtistIds,
-                    userId,
-                    limit,
-                    fields,
-                    new[] { nameof(Series) },
-                    false);
-            }
-
-            if (item is MediaBrowser.Controller.Entities.TV.Episode || (item is IItemByName && !(item is MusicArtist)))
+            if (item is Episode || (item is IItemByName && !(item is MusicArtist)))
             {
                 return new QueryResult<BaseItemDto>();
             }
 
-            return GetSimilarItemsResult(
-                item,
-                excludeArtistIds,
-                userId,
-                limit,
-                fields,
-                new[] { item.GetType().Name },
-                isMovie);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
+            var dtoOptions = new DtoOptions { Fields = fields }
+                .AddClientFields(Request);
+
+            var program = item as IHasProgramAttributes;
+            bool? isMovie = item is Movie || (program != null && program.IsMovie) || item is Trailer;
+            bool? isSeries = item is Series || (program != null && program.IsSeries);
+
+            var includeItemTypes = new List<string>();
+            if (isMovie.Value)
+            {
+                includeItemTypes.Add(nameof(Movie));
+                if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+                {
+                    includeItemTypes.Add(nameof(Trailer));
+                    includeItemTypes.Add(nameof(LiveTvProgram));
+                }
+            }
+            else if (isSeries.Value)
+            {
+                includeItemTypes.Add(nameof(Series));
+            }
+            else
+            {
+                // For non series and movie types these columns are typically null
+                isSeries = null;
+                isMovie = null;
+                includeItemTypes.Add(item.GetType().Name);
+            }
+
+            var query = new InternalItemsQuery(user)
+            {
+                Limit = limit,
+                IncludeItemTypes = includeItemTypes.ToArray(),
+                IsMovie = isMovie,
+                IsSeries = isSeries,
+                SimilarTo = item,
+                DtoOptions = dtoOptions,
+                EnableTotalRecordCount = !isMovie ?? true,
+                EnableGroupByMetadataKey = isMovie ?? false,
+                MinSimilarityScore = 2 // A remnant from album/artist scoring
+            };
+
+            // ExcludeArtistIds
+            if (!string.IsNullOrEmpty(excludeArtistIds))
+            {
+                query.ExcludeArtistIds = RequestHelpers.GetGuids(excludeArtistIds);
+            }
+
+            List<BaseItem> itemsResult = _libraryManager.GetItemList(query);
+
+            var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
+
+            return new QueryResult<BaseItemDto>
+            {
+                Items = returnList,
+                TotalRecordCount = itemsResult.Count
+            };
         }
 
         /// <summary>
@@ -879,74 +917,6 @@ namespace Jellyfin.Api.Controllers
             {
                 // Logged at lower levels
             }
-        }
-
-        private QueryResult<BaseItemDto> GetSimilarItemsResult(
-            BaseItem item,
-            string? excludeArtistIds,
-            Guid? userId,
-            int? limit,
-            ItemFields[] fields,
-            string[] includeItemTypes,
-            bool isMovie)
-        {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
-            var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request);
-
-            var query = new InternalItemsQuery(user)
-            {
-                Limit = limit,
-                IncludeItemTypes = includeItemTypes,
-                IsMovie = isMovie,
-                SimilarTo = item,
-                DtoOptions = dtoOptions,
-                EnableTotalRecordCount = !isMovie,
-                EnableGroupByMetadataKey = isMovie
-            };
-
-            // ExcludeArtistIds
-            if (!string.IsNullOrEmpty(excludeArtistIds))
-            {
-                query.ExcludeArtistIds = RequestHelpers.GetGuids(excludeArtistIds);
-            }
-
-            List<BaseItem> itemsResult;
-
-            if (isMovie)
-            {
-                var itemTypes = new List<string> { nameof(MediaBrowser.Controller.Entities.Movies.Movie) };
-                if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
-                {
-                    itemTypes.Add(nameof(Trailer));
-                    itemTypes.Add(nameof(LiveTvProgram));
-                }
-
-                query.IncludeItemTypes = itemTypes.ToArray();
-                itemsResult = _libraryManager.GetArtists(query).Items.Select(i => i.Item1).ToList();
-            }
-            else if (item is MusicArtist)
-            {
-                query.IncludeItemTypes = Array.Empty<string>();
-
-                itemsResult = _libraryManager.GetArtists(query).Items.Select(i => i.Item1).ToList();
-            }
-            else
-            {
-                itemsResult = _libraryManager.GetItemList(query);
-            }
-
-            var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
-
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnList,
-                TotalRecordCount = itemsResult.Count
-            };
-
-            return result;
         }
 
         private static string[] GetRepresentativeItemTypes(string? contentType)
