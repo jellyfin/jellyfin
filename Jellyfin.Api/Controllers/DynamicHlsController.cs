@@ -1429,6 +1429,11 @@ namespace Jellyfin.Api.Controllers
 
         private string GetAudioArguments(StreamState state, EncodingOptions encodingOptions)
         {
+            if (state.AudioStream == null)
+            {
+                return string.Empty;
+            }
+
             var audioCodec = _encodingHelper.GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)

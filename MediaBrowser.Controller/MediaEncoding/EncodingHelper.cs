@@ -1518,6 +1518,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.Nullable{System.Int32}.</returns>
         public int? GetNumAudioChannelsParam(EncodingJobInfo state, MediaStream audioStream, string outputAudioCodec)
         {
+            if (audioStream == null)
+            {
+                return null;
+            }
+
             var request = state.BaseRequest;
 
             var inputChannels = audioStream?.Channels;
