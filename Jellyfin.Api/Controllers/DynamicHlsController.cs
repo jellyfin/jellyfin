@@ -1565,7 +1565,7 @@ namespace Jellyfin.Api.Controllers
 
                 args += " " + _encodingHelper.GetVideoQualityParam(state, codec, encodingOptions, "veryfast");
 
-                // Unable to force key frames using these encoders, set key frames by GOP
+                // Unable to force key frames using these encoders, set key frames by GOP.
                 if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase)
@@ -1587,7 +1587,7 @@ namespace Jellyfin.Api.Controllers
                     args += " " + keyFrameArg + gopArg;
                 }
 
-                // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now
+                // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
                 if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bf 0";

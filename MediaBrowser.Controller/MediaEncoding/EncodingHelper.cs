@@ -662,10 +662,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Transcode to level 5.0 and lower for maximum compatibility
-                    // level 5.0 is suitable for up to 4k 30fps hevc encoding, otherwise let the encoder to handle it
+                    // Transcode to level 5.0 and lower for maximum compatibility.
+                    // Level 5.0 is suitable for up to 4k 30fps hevc encoding, otherwise let the encoder to handle it.
                     // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
-                    // MaxLumaSampleRate = 3840*2160*30 = 248832000 < 267386880,
+                    // MaxLumaSampleRate = 3840*2160*30 = 248832000 < 267386880.
                     if (requestLevel >= 150)
                     {
                         return "150";
@@ -673,7 +673,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Clients may direct play higher than level 41, but there's no reason to transcode higher
+                    // Clients may direct play higher than level 41, but there's no reason to transcode higher.
                     if (requestLevel >= 41)
                     {
                         return "41";
@@ -843,7 +843,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
                 || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)) // hevc (hevc_nvenc)
             {
-                // following preset will be deprecated in ffmpeg 4.4, use p1~p7 instead
+                // following preset will be deprecated in ffmpeg 4.4, use p1~p7 instead.
                 switch (encodingOptions.EncoderPreset)
                 {
                     case "veryslow":
@@ -976,7 +976,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault();
             profile =  Regex.Replace(profile, @"\s+", String.Empty);
 
-            // only libx264 support encoding H264 High 10 Profile, otherwise force High Profile
+            // Only libx264 support encoding H264 High 10 Profile, otherwise force High Profile.
             if (!string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
                 && profile != null
                 && profile.IndexOf("high 10", StringComparison.OrdinalIgnoreCase) != -1)
@@ -985,7 +985,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // h264_vaapi does not support Baseline profile, force Constrained Baseline in this case,
-            // which is compatible (and ugly)
+            // which is compatible (and ugly).
             if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
                 && profile != null
                 && profile.IndexOf("baseline", StringComparison.OrdinalIgnoreCase) != -1)
@@ -993,7 +993,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = "constrained_baseline";
             }
 
-            // libx264, h264_qsv and h264_nvenc does not support Constrained Baseline profile, force Baseline in this case
+            // libx264, h264_qsv and h264_nvenc does not support Constrained Baseline profile, force Baseline in this case.
             if ((string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
@@ -1003,7 +1003,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = "baseline";
             }
 
-            // Currently hevc_amf only support encoding HEVC Main Profile, otherwise force Main Profile
+            // Currently hevc_amf only support encoding HEVC Main Profile, otherwise force Main Profile.
             if (!string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
                 && profile != null
                 && profile.IndexOf("main 10", StringComparison.OrdinalIgnoreCase) != -1)
@@ -1027,7 +1027,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 level = NormalizeTranscodingLevel(state, level);
 
-                // libx264, QSV, AMF, VAAPI can adjust the given level to match the output
+                // libx264, QSV, AMF, VAAPI can adjust the given level to match the output.
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1035,7 +1035,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (string.Equals(videoEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    // hevc_qsv use -level 51 instead of -level 153
+                    // hevc_qsv use -level 51 instead of -level 153.
                     if (double.TryParse(level, NumberStyles.Any, _usCulture, out double hevcLevel))
                     {
                         param += " -level " + hevcLevel / 3;
@@ -1066,10 +1066,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
             {
-                // libx265 only accept level option in -x265-params
-                // level option may cause libx265 to fail
-                // libx265 cannot adjust the given level, just throw an error
-                // TODO: set fine tuned params
+                // libx265 only accept level option in -x265-params.
+                // level option may cause libx265 to fail.
+                // libx265 cannot adjust the given level, just throw an error.
+                // TODO: set fine tuned params.
                 param += " -x265-params:0 no-info=1";
             }
 

@@ -206,7 +206,7 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoStream != null && state.VideoRequest != null)
             {
-                // Provide SDR HEVC entrance for backward compatibility
+                // Provide SDR HEVC entrance for backward compatibility.
                 if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                     && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
                     && string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
@@ -215,7 +215,7 @@ namespace Jellyfin.Api.Helpers
                     var requestedVideoProfiles = state.GetRequestedProfiles("hevc");
                     if (requestedVideoProfiles != null && requestedVideoProfiles.Length > 0)
                     {
-                        // Force HEVC Main Profile and disable video stream copy
+                        // Force HEVC Main Profile and disable video stream copy.
                         state.OutputVideoCodec = "hevc";
                         var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(",", requestedVideoProfiles), "main");
                         sdrVideoUrl += "&AllowVideoStreamCopy=false";
@@ -232,7 +232,7 @@ namespace Jellyfin.Api.Helpers
                     }
                 }
 
-                // Provide Level 5.0 entrance for backward compatibility
+                // Provide Level 5.0 entrance for backward compatibility.
                 // e.g. Apple A10 chips refuse the master playlist containing SDR HEVC Main Level 5.1 video,
                 // but in fact it is capable of playing videos up to Level 6.1.
                 if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
@@ -245,13 +245,13 @@ namespace Jellyfin.Api.Helpers
                     var playlistCodecsField = new StringBuilder();
                     AppendPlaylistCodecsField(playlistCodecsField, state);
 
-                    // Force the video level to 5.0
+                    // Force the video level to 5.0.
                     var originalLevel = state.VideoStream.Level;
                     state.VideoStream.Level = 150;
                     var newPlaylistCodecsField = new StringBuilder();
                     AppendPlaylistCodecsField(newPlaylistCodecsField, state);
 
-                    // Restore the video level
+                    // Restore the video level.
                     state.VideoStream.Level = originalLevel;
                     var newPlaylist = ReplacePlaylistCodecsField(basicPlaylist, playlistCodecsField, newPlaylistCodecsField);
                     builder.Append(newPlaylist);
@@ -333,7 +333,7 @@ namespace Jellyfin.Api.Helpers
                 }
                 else
                 {
-                    // Currently we only encode to SDR
+                    // Currently we only encode to SDR.
                     builder.Append(",VIDEO-RANGE=SDR");
                 }
             }
@@ -693,9 +693,10 @@ namespace Jellyfin.Api.Helpers
 
         private string ReplaceProfile(string url, string codec, string oldValue, string newValue)
         {
+            string profileStr = codec + "-profile=";
             return url.Replace(
-                codec + "-profile=" + oldValue,
-                codec + "-profile=" + newValue,
+                profileStr + oldValue,
+                profileStr + newValue,
                 StringComparison.OrdinalIgnoreCase);
         }
 
