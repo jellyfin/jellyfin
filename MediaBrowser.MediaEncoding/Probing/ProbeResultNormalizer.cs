@@ -823,7 +823,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 var bytes = GetNumberOfBytesFromTags(streamInfo);
                 if (durationInSeconds != null && bytes != null)
                 {
-                    var bps = Convert.ToInt32(bytes * 8 / durationInSeconds);
+                    var bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
                     if (bps > 0)
                     {
                         stream.BitRate = bps;
