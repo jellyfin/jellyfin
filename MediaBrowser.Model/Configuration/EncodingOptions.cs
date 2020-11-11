@@ -9,6 +9,10 @@ namespace MediaBrowser.Model.Configuration
 
         public string TranscodingTempPath { get; set; }
 
+        public string FallbackFontPath { get; set; }
+
+        public bool EnableFallbackFont { get; set; }
+
         public double DownMixAudioBoost { get; set; }
 
         public int MaxMuxingQueueSize { get; set; }
@@ -69,6 +73,7 @@ namespace MediaBrowser.Model.Configuration
 
         public EncodingOptions()
         {
+            EnableFallbackFont = false;
             DownMixAudioBoost = 2;
             MaxMuxingQueueSize = 2048;
             EnableThrottling = false;
