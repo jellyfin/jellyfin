@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.AppBase
         public virtual void RegisterConfiguration<T>()
             where T : IConfigurationFactory
         {
-            IConfigurationFactory factory = (IConfigurationFactory)Activator.CreateInstance(typeof(T));
+            IConfigurationFactory factory = Activator.CreateInstance<T>();
 
             if (_configurationFactories == null)
             {
