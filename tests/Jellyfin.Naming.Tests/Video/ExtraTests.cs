@@ -96,17 +96,13 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
-        public void TestExtraInfo_InvalidRuleMediaType()
-        {
-            var options = new NamingOptions { VideoExtraRules = new[] { new ExtraRule(ExtraType.Unknown, ExtraRuleType.DirectoryName, " ", MediaType.Photo) } };
-            Assert.Throws<InvalidOperationException>(() => GetExtraTypeParser(options).GetExtraInfo("sample.jpg"));
-        }
-
-        [Fact]
         public void TestExtraInfo_InvalidRuleType()
         {
-            var options = new NamingOptions { VideoExtraRules = new[] { new ExtraRule(ExtraType.Unknown, ExtraRuleType.Regex, " ", MediaType.Video) } };
-            Assert.Throws<InvalidOperationException>(() => GetExtraTypeParser(options).GetExtraInfo("sample.mp4"));
+            var rule = new ExtraRule(ExtraType.Unknown, ExtraRuleType.Regex, @"([eE]x(tra)?\.\w+)", MediaType.Video);
+            var options = new NamingOptions { VideoExtraRules = new[] { rule } };
+            var res = GetExtraTypeParser(options).GetExtraInfo("extra.mp4");
+
+            Assert.Equal(rule, res.Rule);
         }
 
         [Fact]

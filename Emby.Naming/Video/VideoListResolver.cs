@@ -230,8 +230,8 @@ namespace Emby.Naming.Video
 
                 testFilename = testFilename.Substring(folderName.Length).Trim();
                 return string.IsNullOrEmpty(testFilename)
-                   || testFilename[0] == '-'
-                   || testFilename[0].Equals( '_')
+                   || testFilename[0].Equals('-')
+                   || testFilename[0].Equals('_')
                    || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 
