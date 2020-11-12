@@ -33,7 +33,7 @@ namespace Emby.Naming.AudioBook
         {
             var audioBookResolver = new AudioBookResolver(_options);
 
-            // File with empty fullname will be sorted out here
+            // File with empty fullname will be sorted out here.
             var audiobookFileInfos = files
                 .Select(i => audioBookResolver.Resolve(i.FullName))
                 .OfType<AudioBookFileInfo>()
@@ -139,8 +139,8 @@ namespace Emby.Naming.AudioBook
 
         private AudioBookFileInfo FindMainAudioBookFile(List<AudioBookFileInfo> files, string name)
         {
-            var main = files.Find(x => Path.GetFileNameWithoutExtension(x.Path) == name);
-            main ??= files.FirstOrDefault(x => Path.GetFileNameWithoutExtension(x.Path) == "audiobook");
+            var main = files.Find(x => Path.GetFileNameWithoutExtension(x.Path).Equals(name));
+            main ??= files.FirstOrDefault(x => Path.GetFileNameWithoutExtension(x.Path).Equals("audiobook"));
             main ??= files.OrderBy(x => x.Container)
                 .ThenBy(x => x.Path)
                 .First();

@@ -147,7 +147,7 @@ namespace Emby.Naming.Video
             }
 
             // If there's only one video, accept all trailers
-            // Be lenient because people use all kinds of mishmash conventions with trailers
+            // Be lenient because people use all kinds of mishmash conventions with trailers.
             if (list.Count == 1)
             {
                 var trailers = remainingFiles
@@ -231,7 +231,7 @@ namespace Emby.Naming.Video
                 testFilename = testFilename.Substring(folderName.Length).Trim();
                 return string.IsNullOrEmpty(testFilename)
                    || testFilename[0] == '-'
-                   || testFilename[0] == '_'
+                   || testFilename[0].Equals( '_')
                    || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 
