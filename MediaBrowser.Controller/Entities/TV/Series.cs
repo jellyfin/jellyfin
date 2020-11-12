@@ -151,7 +151,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (query.IncludeItemTypes.Length == 0)
             {
-                query.IncludeItemTypes = new[] { typeof(Episode).Name };
+                query.IncludeItemTypes = new[] { nameof(Episode) };
             }
 
             query.IsVirtualItem = false;
@@ -207,7 +207,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             query.AncestorWithPresentationUniqueKey = null;
             query.SeriesPresentationUniqueKey = seriesKey;
-            query.IncludeItemTypes = new[] { typeof(Season).Name };
+            query.IncludeItemTypes = new[] { nameof(Season) };
             query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
 
             if (user != null && !user.DisplayMissingEpisodes)
@@ -233,7 +233,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (query.IncludeItemTypes.Length == 0)
                 {
-                    query.IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name };
+                    query.IncludeItemTypes = new[] { nameof(Episode), nameof(Season) };
                 }
 
                 query.IsVirtualItem = false;
@@ -253,7 +253,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name },
+                IncludeItemTypes = new[] { nameof(Episode), nameof(Season) },
                 OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 DtoOptions = options
             };
@@ -364,7 +364,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = queryFromSeries ? null : seriesKey,
                 SeriesPresentationUniqueKey = queryFromSeries ? seriesKey : null,
-                IncludeItemTypes = new[] { typeof(Episode).Name },
+                IncludeItemTypes = new[] { nameof(Episode) },
                 OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 DtoOptions = options
             };

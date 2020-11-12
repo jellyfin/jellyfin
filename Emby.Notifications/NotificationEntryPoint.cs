@@ -209,7 +209,10 @@ namespace Emby.Notifications
                 _libraryUpdateTimer = null;
             }
 
-            items = items.Take(10).ToList();
+            if (items.Count > 10)
+            {
+                items = items.GetRange(0, 10);
+            }
 
             foreach (var item in items)
             {

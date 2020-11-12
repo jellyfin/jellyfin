@@ -5,6 +5,7 @@ using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -159,7 +160,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
             [FromQuery] string? locationTypes,
-            [FromQuery] LocationType[] excludeLocationTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
             [FromQuery] double? minCommunityRating,
@@ -179,13 +180,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? searchTerm,
             [FromQuery] string? sortOrder,
             [FromQuery] string? parentId,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery] string? mediaTypes,
-            [FromQuery] string? imageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
             [FromQuery] string? sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery] string? genres,
@@ -194,7 +195,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? person,
             [FromQuery] string? personIds,
             [FromQuery] string? personTypes,
@@ -233,8 +234,7 @@ namespace Jellyfin.Api.Controllers
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -342,7 +342,7 @@ namespace Jellyfin.Api.Controllers
                     PersonIds = RequestHelpers.GetGuids(personIds),
                     PersonTypes = RequestHelpers.Split(personTypes, ',', true),
                     Years = RequestHelpers.Split(years, ',', true).Select(int.Parse).ToArray(),
-                    ImageTypes = RequestHelpers.Split(imageTypes, ',', true).Select(v => Enum.Parse<ImageType>(v, true)).ToArray(),
+                    ImageTypes = imageTypes,
                     VideoTypes = RequestHelpers.Split(videoTypes, ',', true).Select(v => Enum.Parse<VideoType>(v, true)).ToArray(),
                     AdjacentTo = adjacentTo,
                     ItemIds = RequestHelpers.GetGuids(ids),
@@ -532,11 +532,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
             [FromQuery] string? parentId,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? mediaTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? excludeItemTypes,
             [FromQuery] string? includeItemTypes,
             [FromQuery] bool enableTotalRecordCount = true,
@@ -544,8 +544,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
             var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId);
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 

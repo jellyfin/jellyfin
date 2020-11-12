@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsKids = query.IsKids,
                 IsSports = query.IsSports,
                 IsSeries = query.IsSeries,
-                IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
+                IncludeItemTypes = new[] { nameof(LiveTvChannel) },
                 TopParentIds = new[] { topFolder.Id },
                 IsFavorite = query.IsFavorite,
                 IsLiked = query.IsLiked,
@@ -808,7 +808,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { nameof(LiveTvProgram) },
                 MinEndDate = query.MinEndDate,
                 MinStartDate = query.MinStartDate,
                 MaxEndDate = query.MaxEndDate,
@@ -872,7 +872,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { nameof(LiveTvProgram) },
                 IsAiring = query.IsAiring,
                 HasAired = query.HasAired,
                 IsNews = query.IsNews,
@@ -1089,8 +1089,8 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (cleanDatabase)
             {
-                CleanDatabaseInternal(newChannelIdList.ToArray(), new[] { typeof(LiveTvChannel).Name }, progress, cancellationToken);
-                CleanDatabaseInternal(newProgramIdList.ToArray(), new[] { typeof(LiveTvProgram).Name }, progress, cancellationToken);
+                CleanDatabaseInternal(newChannelIdList.ToArray(), new[] { nameof(LiveTvChannel) }, progress, cancellationToken);
+                CleanDatabaseInternal(newProgramIdList.ToArray(), new[] { nameof(LiveTvProgram) }, progress, cancellationToken);
             }
 
             var coreService = _services.OfType<EmbyTV.EmbyTV>().FirstOrDefault();
@@ -1181,7 +1181,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                     var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
                     {
-                        IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                        IncludeItemTypes = new string[] { nameof(LiveTvProgram) },
                         ChannelIds = new Guid[] { currentChannel.Id },
                         DtoOptions = new DtoOptions(true)
                     }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
@@ -1346,11 +1346,11 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (query.IsMovie.Value)
                 {
-                    includeItemTypes.Add(typeof(Movie).Name);
+                    includeItemTypes.Add(nameof(Movie));
                 }
                 else
                 {
-                    excludeItemTypes.Add(typeof(Movie).Name);
+                    excludeItemTypes.Add(nameof(Movie));
                 }
             }
 
@@ -1358,11 +1358,11 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (query.IsSeries.Value)
                 {
-                    includeItemTypes.Add(typeof(Episode).Name);
+                    includeItemTypes.Add(nameof(Episode));
                 }
                 else
                 {
-                    excludeItemTypes.Add(typeof(Episode).Name);
+                    excludeItemTypes.Add(nameof(Episode));
                 }
             }
 
@@ -1883,7 +1883,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var programs = options.AddCurrentProgram ? _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { nameof(LiveTvProgram) },
                 ChannelIds = channelIds,
                 MaxStartDate = now,
                 MinEndDate = now,

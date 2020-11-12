@@ -295,6 +295,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -351,6 +352,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -403,7 +405,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -623,6 +625,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -677,6 +680,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -729,7 +733,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -959,6 +963,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -1017,6 +1022,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -1069,7 +1075,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
