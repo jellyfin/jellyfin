@@ -64,7 +64,7 @@ namespace Jellyfin.Api.ModelBinders
             {
                 try
                 {
-                    parsedValues[i] = converter.ConvertFromString(values[i]?.Trim());
+                    parsedValues[i] = converter.ConvertFromString(values[i].Trim());
                     convertedCount++;
                 }
                 catch (FormatException e)
