@@ -165,7 +165,9 @@ namespace Jellyfin.Api.Helpers
                 state.DirectStreamProvider = liveStreamInfo.Item2;
             }
 
-            encodingHelper.AttachMediaSourceInfo(state, mediaSource, url);
+            var encodingOptions = serverConfigurationManager.GetEncodingOptions();
+
+            encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
 
             string? containerInternal = Path.GetExtension(state.RequestedUrl);
 

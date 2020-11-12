@@ -63,6 +63,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableHardwareEncoding { get; set; }
 
+        public bool AllowHevcEncoding { get; set; }
+
         public bool EnableSubtitleExtraction { get; set; }
 
         public string[] HardwareDecodingCodecs { get; set; }
@@ -94,6 +96,7 @@ namespace MediaBrowser.Model.Configuration
             EnableDecodingColorDepth10Hevc = true;
             EnableDecodingColorDepth10Vp9 = true;
             EnableHardwareEncoding = true;
+            AllowHevcEncoding = true;
             EnableSubtitleExtraction = true;
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }
