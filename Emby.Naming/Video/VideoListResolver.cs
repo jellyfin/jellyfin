@@ -37,7 +37,6 @@ namespace Emby.Naming.Video
 
             var videoInfos = files
                 .Select(i => videoResolver.Resolve(i.FullName, i.IsDirectory))
-                // .Where(i => i != null)
                 .OfType<VideoFileInfo>()
                 .ToList();
 
