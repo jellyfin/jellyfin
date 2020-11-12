@@ -1545,6 +1545,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // libmp3lame currently only supports two channel output
                 transcoderChannelLimit = 2;
             }
+            else if (codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                // aac is able to handle 8ch(7.1 layout)
+                transcoderChannelLimit = 8;
+            }
             else
             {
                 // If we don't have any media info then limit it to 6 to prevent encoding errors due to asking for too many channels
