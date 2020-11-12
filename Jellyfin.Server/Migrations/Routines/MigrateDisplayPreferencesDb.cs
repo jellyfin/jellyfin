@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     var existingUser = _userManager.GetUserById(dtoUserId);
                     if (existingUser == null)
                     {
-                        _logger.LogWarning("User with ID {userId} does not exist in the database, skipping migration.", dtoUserId);
+                        _logger.LogWarning("User with ID {UserId} does not exist in the database, skipping migration.", dtoUserId);
                         continue;
                     }
 
