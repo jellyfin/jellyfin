@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
 
@@ -17,8 +18,6 @@ namespace Jellyfin.Api.Models.MediaInfoDtos
         /// <summary>
         /// Gets or sets the device play protocols.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1819:DontReturnArrays", MessageId = "DevicePlayProtocols", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "SA1011:ClosingBracketsSpace", MessageId = "DevicePlayProtocols", Justification = "Imported from ServiceStack")]
-        public MediaProtocol[]? DirectPlayProtocols { get; set; }
+        public IReadOnlyList<MediaProtocol> DirectPlayProtocols { get; set; } = Array.Empty<MediaProtocol>();
     }
 }

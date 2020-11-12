@@ -1429,7 +1429,7 @@ namespace Emby.Server.Implementations.LiveTv
             return result;
         }
 
-        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, ItemFields[] fields, User user = null)
+        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, IReadOnlyList<ItemFields> fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string>>();
             var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
