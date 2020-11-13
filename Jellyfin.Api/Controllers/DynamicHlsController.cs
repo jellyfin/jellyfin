@@ -14,6 +14,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -1350,7 +1351,7 @@ namespace Jellyfin.Api.Controllers
             var directory = Path.GetDirectoryName(outputPath);
             if (directory == null)
             {
-                throw new NullReferenceException(nameof(directory));
+                throw new ResourceNotFoundException(nameof(directory));
             }
 
             var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
@@ -1574,7 +1575,7 @@ namespace Jellyfin.Api.Controllers
             var folder = Path.GetDirectoryName(playlist);
             if (folder == null)
             {
-                throw new NullReferenceException(nameof(folder));
+                throw new ResourceNotFoundException(nameof(folder));
             }
 
             var filename = Path.GetFileNameWithoutExtension(playlist);

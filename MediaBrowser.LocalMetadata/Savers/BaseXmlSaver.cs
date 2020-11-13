@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -130,7 +131,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             var directory = Path.GetDirectoryName(path);
             if (directory == null)
             {
-                throw new NullReferenceException(nameof(directory));
+                throw new ResourceNotFoundException(nameof(directory));
             }
 
             Directory.CreateDirectory(directory);

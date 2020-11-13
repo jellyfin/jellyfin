@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.EnvironmentDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -105,7 +106,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     if (validatePathDto.Path == null)
                     {
-                        throw new NullReferenceException(nameof(validatePathDto.Path));
+                        throw new ResourceNotFoundException(nameof(validatePathDto.Path));
                     }
 
                     var file = Path.Combine(validatePathDto.Path, Guid.NewGuid().ToString());

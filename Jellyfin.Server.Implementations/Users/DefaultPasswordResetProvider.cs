@@ -62,7 +62,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 if (spr == null)
                 {
-                    throw new NullReferenceException(nameof(spr));
+                    throw new ResourceNotFoundException(nameof(spr));
                 }
 
                 if (spr.ExpirationDate < DateTime.UtcNow)

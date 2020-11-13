@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -101,7 +102,7 @@ namespace Jellyfin.Api.Helpers
         {
             if (_httpContextAccessor.HttpContext == null)
             {
-                throw new NullReferenceException(nameof(_httpContextAccessor.HttpContext));
+                throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
             }
 
             bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using BlurHashSharp.SkiaSharp;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Drawing;
@@ -230,7 +231,7 @@ namespace Jellyfin.Drawing.Skia
             var directory = Path.GetDirectoryName(tempPath);
             if (directory == null)
             {
-                throw new NullReferenceException(nameof(directory));
+                throw new ResourceNotFoundException(nameof(directory));
             }
 
             Directory.CreateDirectory(directory);
@@ -501,7 +502,7 @@ namespace Jellyfin.Drawing.Skia
                 var outputDirectory = Path.GetDirectoryName(outputPath);
                 if (outputDirectory == null)
                 {
-                    throw new NullReferenceException(nameof(outputDirectory));
+                    throw new ResourceNotFoundException(nameof(outputDirectory));
                 }
 
                 Directory.CreateDirectory(outputDirectory);
@@ -554,7 +555,7 @@ namespace Jellyfin.Drawing.Skia
             var directory = Path.GetDirectoryName(outputPath);
             if (directory == null)
             {
-                throw new NullReferenceException(nameof(directory));
+                throw new ResourceNotFoundException(nameof(directory));
             }
 
             Directory.CreateDirectory(directory);

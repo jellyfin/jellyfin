@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
@@ -59,7 +60,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (sender == null)
             {
-                throw new NullReferenceException(nameof(sender));
+                throw new ResourceNotFoundException(nameof(sender));
             }
 
             var connection = (IWebSocketConnection)sender;

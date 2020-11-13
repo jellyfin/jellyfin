@@ -251,7 +251,7 @@ namespace Jellyfin.Api.Controllers
             using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
             if (response.Content.Headers.ContentType?.MediaType == null)
             {
-                throw new NullReferenceException(nameof(response.Content.Headers.ContentType));
+                throw new ResourceNotFoundException(nameof(response.Content.Headers.ContentType));
             }
 
             var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
@@ -260,7 +260,7 @@ namespace Jellyfin.Api.Controllers
             var fullCacheDirectory = Path.GetDirectoryName(fullCachePath);
             if (fullCacheDirectory == null)
             {
-                throw new NullReferenceException(nameof(fullCacheDirectory));
+                throw new ResourceNotFoundException(nameof(fullCacheDirectory));
             }
 
             Directory.CreateDirectory(fullCacheDirectory);
@@ -270,7 +270,7 @@ namespace Jellyfin.Api.Controllers
             var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath);
             if (pointerCacheDirectory == null)
             {
-                throw new NullReferenceException(nameof(pointerCacheDirectory));
+                throw new ResourceNotFoundException(nameof(pointerCacheDirectory));
             }
 
             Directory.CreateDirectory(pointerCacheDirectory);

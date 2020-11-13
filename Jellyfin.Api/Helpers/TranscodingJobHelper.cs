@@ -12,6 +12,7 @@ using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -198,7 +199,7 @@ namespace Jellyfin.Api.Helpers
             var job = (TranscodingJobDto?)state;
             if (job == null)
             {
-                throw new NullReferenceException(nameof(job));
+                throw new ResourceNotFoundException(nameof(job));
             }
 
             if (!job.HasExited && job.Type != TranscodingJobType.Progressive)
@@ -496,7 +497,7 @@ namespace Jellyfin.Api.Helpers
             var directory = Path.GetDirectoryName(outputPath);
             if (directory == null)
             {
-                throw new NullReferenceException(nameof(directory));
+                throw new ResourceNotFoundException(nameof(directory));
             }
 
             Directory.CreateDirectory(directory);

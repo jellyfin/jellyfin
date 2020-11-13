@@ -11,6 +11,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -364,7 +365,7 @@ namespace Jellyfin.Api.Controllers
             var directory = Path.GetDirectoryName(outputPath);
             if (directory == null)
             {
-                throw new NullReferenceException(nameof(directory));
+                throw new ResourceNotFoundException(nameof(directory));
             }
 
             var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + format;

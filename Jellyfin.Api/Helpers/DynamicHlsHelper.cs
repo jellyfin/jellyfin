@@ -132,7 +132,7 @@ namespace Jellyfin.Api.Helpers
         {
             if (_httpContextAccessor.HttpContext == null)
             {
-                throw new NullReferenceException(nameof(_httpContextAccessor.HttpContext));
+                throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
             }
 
             using var state = await StreamingHelpers.GetStreamingState(

@@ -8,6 +8,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
@@ -138,7 +139,7 @@ namespace Jellyfin.Api.Controllers
 
             if (playlistPath == null)
             {
-                throw new NullReferenceException(nameof(playlistPath));
+                throw new ResourceNotFoundException(nameof(playlistPath));
             }
 
             return GetFileResult(file, playlistPath);

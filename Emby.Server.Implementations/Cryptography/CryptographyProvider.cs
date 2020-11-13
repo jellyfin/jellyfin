@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Cryptography;
 using static MediaBrowser.Common.Cryptography.Constants;
 
@@ -83,7 +84,7 @@ namespace Emby.Server.Implementations.Cryptography
             using var h = HashAlgorithm.Create(hashMethod);
             if (h == null)
             {
-                throw new NullReferenceException(nameof(h));
+                throw new ResourceNotFoundException(nameof(h));
             }
 
             if (salt.Length == 0)

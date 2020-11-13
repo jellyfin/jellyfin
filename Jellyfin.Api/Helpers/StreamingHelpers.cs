@@ -85,7 +85,7 @@ namespace Jellyfin.Api.Helpers
             streamingRequest.StreamOptions = ParseStreamOptions(httpRequest.Query);
             if (httpRequest.Path.Value == null)
             {
-                throw new NullReferenceException(nameof(httpRequest.Path));
+                throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
 
             var url = httpRequest.Path.Value.Split('.').Last();

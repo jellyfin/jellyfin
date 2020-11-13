@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -47,7 +48,7 @@ namespace Jellyfin.Api.Helpers
                             var line = await reader.ReadLineAsync().ConfigureAwait(false);
                             if (line == null)
                             {
-                                throw new NullReferenceException(nameof(line));
+                                throw new ResourceNotFoundException(nameof(line));
                             }
 
                             if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)

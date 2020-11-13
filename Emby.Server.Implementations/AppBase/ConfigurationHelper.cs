@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.AppBase
@@ -36,7 +37,7 @@ namespace Emby.Server.Implementations.AppBase
             catch (Exception)
             {
                 var instanceConfiguration = Activator.CreateInstance(type);
-                configuration = instanceConfiguration ?? throw new NullReferenceException(nameof(instanceConfiguration));
+                configuration = instanceConfiguration ?? throw new ResourceNotFoundException(nameof(instanceConfiguration));
             }
 
             using var stream = new MemoryStream(buffer?.Length ?? 0);
@@ -52,7 +53,7 @@ namespace Emby.Server.Implementations.AppBase
                 var directory = Path.GetDirectoryName(path);
                 if (directory == null)
                 {
-                    throw new NullReferenceException(nameof(directory));
+                    throw new ResourceNotFoundException(nameof(directory));
                 }
 
                 Directory.CreateDirectory(directory);
