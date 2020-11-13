@@ -6,7 +6,8 @@
       "applicationUrl": "http://localhost:8096",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "commandLineArgs": "--webdir C:\\Users\\Cody\\Code\\Jellyfin\\jellyfin-web\\dist"
     },
     "Jellyfin.Server (nowebclient)": {
       "commandName": "Project",
