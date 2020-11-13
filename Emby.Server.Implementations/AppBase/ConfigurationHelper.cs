@@ -36,8 +36,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception)
             {
-                var instanceConfiguration = Activator.CreateInstance(type);
-                configuration = instanceConfiguration ?? throw new ResourceNotFoundException(nameof(instanceConfiguration));
+                configuration = Activator.CreateInstance(type) ?? throw new ResourceNotFoundException(nameof(type));
             }
 
             using var stream = new MemoryStream(buffer?.Length ?? 0);
