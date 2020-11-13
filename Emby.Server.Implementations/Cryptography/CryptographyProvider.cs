@@ -81,6 +81,11 @@ namespace Emby.Server.Implementations.Cryptography
             }
 
             using var h = HashAlgorithm.Create(hashMethod);
+            if (h == null)
+            {
+                throw new NullReferenceException(nameof(h));
+            }
+
             if (salt.Length == 0)
             {
                 return h.ComputeHash(bytes);

@@ -55,8 +55,13 @@ namespace Emby.Server.Implementations.Session
             connection.Closed += OnConnectionClosed;
         }
 
-        private void OnConnectionClosed(object sender, EventArgs e)
+        private void OnConnectionClosed(object? sender, EventArgs e)
         {
+            if (sender == null)
+            {
+                throw new NullReferenceException(nameof(sender));
+            }
+
             var connection = (IWebSocketConnection)sender;
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
             _sockets.Remove(connection);

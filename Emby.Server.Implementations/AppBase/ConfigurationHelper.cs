@@ -35,7 +35,8 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception)
             {
-                configuration = Activator.CreateInstance(type);
+                var instanceConfiguration = Activator.CreateInstance(type);
+                configuration = instanceConfiguration ?? throw new NullReferenceException(nameof(instanceConfiguration));
             }
 
             using var stream = new MemoryStream(buffer?.Length ?? 0);
@@ -48,8 +49,13 @@ namespace Emby.Server.Implementations.AppBase
             // If the file didn't exist before, or if something has changed, re-save
             if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                var directory = Path.GetDirectoryName(path);
+                if (directory == null)
+                {
+                    throw new NullReferenceException(nameof(directory));
+                }
 
+                Directory.CreateDirectory(directory);
                 // Save it after load in case we got new items
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
