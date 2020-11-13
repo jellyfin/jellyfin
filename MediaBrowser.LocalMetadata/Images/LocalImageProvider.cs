@@ -486,7 +486,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return false;
         }
 
-        private FileSystemMetadata GetImage(IEnumerable<FileSystemMetadata> files, string name)
+        private FileSystemMetadata? GetImage(IEnumerable<FileSystemMetadata> files, string name)
         {
             return files.FirstOrDefault(i => !i.IsDirectory && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase) && i.Length > 0);
         }
