@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -70,24 +72,78 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
+        /// Gets the extension of segment container.
+        /// </summary>
+        /// <param name="segmentContainer">The name of the segment container.</param>
+        /// <returns>The string text of extension.</returns>
+        public static string GetSegmentFileExtension(string? segmentContainer)
+        {
+            if (!string.IsNullOrWhiteSpace(segmentContainer))
+            {
+                return "." + segmentContainer;
+            }
+
+            return ".ts";
+        }
+
+        /// <summary>
+        /// Gets the #EXT-X-MAP string.
+        /// </summary>
+        /// <param name="outputPath">The output path of the file.</param>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <param name="isOsDepends">Get a normal string or depends on OS.</param>
+        /// <returns>The string text of #EXT-X-MAP.</returns>
+        public static string GetFmp4InitFileName(string outputPath, StreamState state, bool isOsDepends)
+        {
+            var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
+            var outputPrefix = Path.Combine(Path.GetDirectoryName(outputPath), outputFileNameWithoutExtension);
+            var outputExtension = GetSegmentFileExtension(state.Request.SegmentContainer);
+
+            // on Linux/Unix
+            // #EXT-X-MAP:URI="prefix-1.mp4"
+            var fmp4InitFileName = outputFileNameWithoutExtension + "-1" + outputExtension;
+            if (!isOsDepends)
+            {
+                return fmp4InitFileName;
+            }
+
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            if (isWindows)
+            {
+                // on Windows
+                // #EXT-X-MAP:URI="X:\transcodes\prefix-1.mp4"
+                fmp4InitFileName = outputPrefix + "-1" + outputExtension;
+            }
+
+            return fmp4InitFileName;
+        }
+
+        /// <summary>
         /// Gets the hls playlist text.
         /// </summary>
         /// <param name="path">The path to the playlist file.</param>
-        /// <param name="segmentLength">The segment length.</param>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
         /// <returns>The playlist text as a string.</returns>
-        public static string GetLivePlaylistText(string path, int segmentLength)
+        public static string GetLivePlaylistText(string path, StreamState state)
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(stream);
 
             var text = reader.ReadToEnd();
 
-            text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT", StringComparison.InvariantCulture);
+            var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
+            if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                var fmp4InitFileName = GetFmp4InitFileName(path, state, true);
+                var baseUrlParam = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "hls/{0}/",
+                    Path.GetFileNameWithoutExtension(path));
+                var newFmp4InitFileName = baseUrlParam + GetFmp4InitFileName(path, state, false);
 
-            var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(CultureInfo.InvariantCulture);
-
-            text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
-            // text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                // Replace fMP4 init file URI.
+                text = text.Replace(fmp4InitFileName, newFmp4InitFileName, StringComparison.InvariantCulture);
+            }
 
             return text;
         }
