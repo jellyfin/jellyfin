@@ -1,13 +1,13 @@
 using System.Threading;
-using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
     /// Class SeekGroupRequest.
     /// </summary>
-    public class SeekGroupRequest : IPlaybackGroupRequest
+    public class SeekGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
         /// Gets or sets the position ticks.
@@ -16,15 +16,12 @@ namespace MediaBrowser.Controller.SyncPlay
         public long PositionTicks { get; set; }
 
         /// <inheritdoc />
-        public PlaybackRequestType GetRequestType()
-        {
-            return PlaybackRequestType.Seek;
-        }
+        public PlaybackRequestType Type { get; } = PlaybackRequestType.Seek;
 
         /// <inheritdoc />
-        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
+            state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }
     }
 }

@@ -69,6 +69,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// A user is requesting previous track in playlist.
         /// </summary>
         PreviousTrack = 12,
+
         /// <summary>
         /// A user is setting the repeat mode.
         /// </summary>

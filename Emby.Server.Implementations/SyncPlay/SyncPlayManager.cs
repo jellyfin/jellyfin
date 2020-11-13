@@ -39,14 +39,14 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The map between sessions and groups.
         /// </summary>
-        private readonly Dictionary<string, ISyncPlayGroupController> _sessionToGroupMap =
-            new Dictionary<string, ISyncPlayGroupController>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, IGroupController> _sessionToGroupMap =
+            new Dictionary<string, IGroupController>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The groups.
         /// </summary>
-        private readonly Dictionary<Guid, ISyncPlayGroupController> _groups =
-            new Dictionary<Guid, ISyncPlayGroupController>();
+        private readonly Dictionary<Guid, IGroupController> _groups =
+            new Dictionary<Guid, IGroupController>();
 
         /// <summary>
         /// Lock used for accesing any group.
@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// Gets all groups.
         /// </summary>
         /// <value>All groups.</value>
-        public IEnumerable<ISyncPlayGroupController> Groups => _groups.Values;
+        public IEnumerable<IGroupController> Groups => _groups.Values;
 
         /// <inheritdoc />
         public void Dispose()
@@ -229,7 +229,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     LeaveGroup(session, cancellationToken);
                 }
 
-                var group = new SyncPlayGroupController(_logger, _userManager, _sessionManager, _libraryManager, this);
+                var group = new GroupController(_logger, _userManager, _sessionManager, _libraryManager, this);
                 _groups[group.GroupId] = group;
 
                 group.CreateGroup(session, request, cancellationToken);
@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             lock (_groupsLock)
             {
-                _groups.TryGetValue(groupId, out ISyncPlayGroupController group);
+                _groups.TryGetValue(groupId, out IGroupController group);
 
                 if (group == null)
                 {
@@ -346,7 +346,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void HandleRequest(SessionInfo session, IPlaybackGroupRequest request, CancellationToken cancellationToken)
+        public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
             // TODO: create abstract class for GroupRequests to avoid explicit request type here.
             if (!IsRequestValid(session, GroupRequestType.Playback, request))
@@ -375,16 +375,11 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void AddSessionToGroup(SessionInfo session, ISyncPlayGroupController group)
+        public void AddSessionToGroup(SessionInfo session, IGroupController group)
         {
             if (session == null)
             {
                 throw new InvalidOperationException("Session is null!");
-            }
-
-            if (group == null)
-            {
-                throw new InvalidOperationException("Group is null!");
             }
 
             if (IsSessionInGroup(session))
@@ -392,11 +387,11 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Session in other group already!");
             }
 
-            _sessionToGroupMap[session.Id] = group;
+            _sessionToGroupMap[session.Id] = group ?? throw new InvalidOperationException("Group is null!");
         }
 
         /// <inheritdoc />
-        public void RemoveSessionFromGroup(SessionInfo session, ISyncPlayGroupController group)
+        public void RemoveSessionFromGroup(SessionInfo session, IGroupController group)
         {
             if (session == null)
             {

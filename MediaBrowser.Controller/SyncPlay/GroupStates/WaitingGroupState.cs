@@ -15,23 +15,9 @@ namespace MediaBrowser.Controller.SyncPlay
     public class WaitingGroupState : AbstractGroupState
     {
         /// <summary>
-        /// Tells the state to switch to after buffering is done.
+        /// Initializes a new instance of the <see cref="WaitingGroupState"/> class.
         /// </summary>
-        public bool ResumePlaying { get; set; } = false;
-
-        /// <summary>
-        /// Whether the initial state has been set.
-        /// </summary>
-        private bool InitialStateSet { get; set; } = false;
-
-        /// <summary>
-        /// The group state before the first ever event.
-        /// </summary>
-        private GroupState InitialState { get; set; }
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         public WaitingGroupState(ILogger logger)
             : base(logger)
         {
@@ -39,13 +25,31 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override GroupState GetGroupState()
+        public override GroupStateType Type
         {
-            return GroupState.Waiting;
+            get
+            {
+                return GroupStateType.Waiting;
+            }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether playback should resume when group is ready.
+        /// </summary>
+        public bool ResumePlaying { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the initial state has been set.
+        /// </summary>
+        private bool InitialStateSet { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the group state before the first ever event.
+        /// </summary>
+        private GroupStateType InitialState { get; set; }
+
         /// <inheritdoc />
-        public override void SessionJoined(ISyncPlayStateContext context, GroupState prevState, SessionInfo session, CancellationToken cancellationToken)
+        public override void SessionJoined(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -54,7 +58,8 @@ namespace MediaBrowser.Controller.SyncPlay
                 InitialStateSet = true;
             }
 
-            if (prevState.Equals(GroupState.Playing)) {
+            if (prevState.Equals(GroupStateType.Playing))
+            {
                 ResumePlaying = true;
                 // Pause group and compute the media playback position.
                 var currentTime = DateTime.UtcNow;
@@ -82,7 +87,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override void SessionLeaving(ISyncPlayStateContext context, GroupState prevState, SessionInfo session, CancellationToken cancellationToken)
+        public override void SessionLeaving(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -98,26 +103,26 @@ namespace MediaBrowser.Controller.SyncPlay
                 if (ResumePlaying)
                 {
                     // Client, that was buffering, left the group.
-                    var playingState = new PlayingGroupState(_logger);
+                    var playingState = new PlayingGroupState(Logger);
                     context.SetState(playingState);
                     var unpauseRequest = new UnpauseGroupRequest();
-                    playingState.HandleRequest(context, GetGroupState(), unpauseRequest, session, cancellationToken);
+                    playingState.HandleRequest(context, Type, unpauseRequest, session, cancellationToken);
 
-                    _logger.LogDebug("SessionLeaving: {0} left the group {1}, notifying others to resume.", session.Id.ToString(), context.GroupId.ToString());
+                    Logger.LogDebug("SessionLeaving: {0} left the group {1}, notifying others to resume.", session.Id, context.GroupId.ToString());
                 }
                 else
                 {
                     // Group is ready, returning to previous state.
-                    var pausedState = new PausedGroupState(_logger);
+                    var pausedState = new PausedGroupState(Logger);
                     context.SetState(pausedState);
 
-                    _logger.LogDebug("SessionLeaving: {0} left the group {1}, returning to previous state.", session.Id.ToString(), context.GroupId.ToString());
+                    Logger.LogDebug("SessionLeaving: {0} left the group {1}, returning to previous state.", session.Id, context.GroupId.ToString());
                 }
             }
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PlayGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PlayGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -131,22 +136,14 @@ namespace MediaBrowser.Controller.SyncPlay
             var setQueueStatus = context.SetPlayQueue(request.PlayingQueue, request.PlayingItemPosition, request.StartPositionTicks);
             if (!setQueueStatus)
             {
-                _logger.LogError("HandleRequest: {0} in group {1}, unable to set playing queue.", request.GetRequestType(), context.GroupId.ToString());
+                Logger.LogError("HandleRequest: {0} in group {1}, unable to set playing queue.", request.Type, context.GroupId.ToString());
 
                 // Ignore request and return to previous state.
-                ISyncPlayState newState;
-                switch (prevState)
-                {
-                    case GroupState.Playing:
-                        newState = new PlayingGroupState(_logger);
-                        break;
-                    case GroupState.Paused:
-                        newState = new PausedGroupState(_logger);
-                        break;
-                    default:
-                        newState = new IdleGroupState(_logger);
-                        break;
-                }
+                IGroupState newState = prevState switch {
+                    GroupStateType.Playing => new PlayingGroupState(Logger),
+                    GroupStateType.Paused => new PausedGroupState(Logger),
+                    _ => new IdleGroupState(Logger)
+                };
 
                 context.SetState(newState);
                 return;
@@ -159,11 +156,11 @@ namespace MediaBrowser.Controller.SyncPlay
             // Reset status of sessions and await for all Ready events.
             context.SetAllBuffering(true);
 
-            _logger.LogDebug("HandleRequest: {0} in group {1}, {2} set a new play queue.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+            Logger.LogDebug("HandleRequest: {0} in group {1}, {2} set a new play queue.", request.Type, context.GroupId.ToString(), session.Id);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, SetPlaylistItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, SetPlaylistItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -187,28 +184,21 @@ namespace MediaBrowser.Controller.SyncPlay
             else
             {
                 // Return to old state.
-                ISyncPlayState newState;
-                switch (prevState)
+                IGroupState newState = prevState switch
                 {
-                    case GroupState.Playing:
-                        newState = new PlayingGroupState(_logger);
-                        break;
-                    case GroupState.Paused:
-                        newState = new PausedGroupState(_logger);
-                        break;
-                    default:
-                        newState = new IdleGroupState(_logger);
-                        break;
-                }
+                    GroupStateType.Playing => new PlayingGroupState(Logger),
+                    GroupStateType.Paused => new PausedGroupState(Logger),
+                    _ => new IdleGroupState(Logger)
+                };
 
                 context.SetState(newState);
 
-                _logger.LogDebug("HandleRequest: {0} in group {1}, unable to change current playing item.", request.GetRequestType(), context.GroupId.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, unable to change current playing item.", request.Type, context.GroupId.ToString());
             }
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, UnpauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, UnpauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -217,7 +207,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 InitialStateSet = true;
             }
 
-            if (prevState.Equals(GroupState.Idle))
+            if (prevState.Equals(GroupStateType.Idle))
             {
                 ResumePlaying = true;
                 context.RestartCurrentItem();
@@ -229,22 +219,24 @@ namespace MediaBrowser.Controller.SyncPlay
                 // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
 
-                _logger.LogDebug("HandleRequest: {0} in group {1}, waiting for all ready events.", request.GetRequestType(), context.GroupId.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, waiting for all ready events.", request.Type, context.GroupId.ToString());
             }
             else
             {
                 if (ResumePlaying)
                 {
-                    _logger.LogDebug("HandleRequest: {0} in group {1}, ignoring sessions that are not ready and forcing the playback to start.", request.GetRequestType(), context.GroupId.ToString());
+                    Logger.LogDebug("HandleRequest: {0} in group {1}, ignoring sessions that are not ready and forcing the playback to start.", request.Type, context.GroupId.ToString());
 
                     // An Unpause request is forcing the playback to start, ignoring sessions that are not ready.
                     context.SetAllBuffering(false);
 
                     // Change state.
-                    var playingState = new PlayingGroupState(_logger);
-                    playingState.IgnoreBuffering = true;
+                    var playingState = new PlayingGroupState(Logger)
+                    {
+                        IgnoreBuffering = true
+                    };
                     context.SetState(playingState);
-                    playingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+                    playingState.HandleRequest(context, Type, request, session, cancellationToken);
                 }
                 else
                 {
@@ -258,7 +250,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -275,7 +267,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, StopGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, StopGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -285,13 +277,13 @@ namespace MediaBrowser.Controller.SyncPlay
             }
 
             // Change state.
-            var idleState = new IdleGroupState(_logger);
+            var idleState = new IdleGroupState(Logger);
             context.SetState(idleState);
-            idleState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            idleState.HandleRequest(context, Type, request, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, SeekGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, SeekGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -300,11 +292,11 @@ namespace MediaBrowser.Controller.SyncPlay
                 InitialStateSet = true;
             }
 
-            if (prevState.Equals(GroupState.Playing))
+            if (prevState.Equals(GroupStateType.Playing))
             {
                 ResumePlaying = true;
             }
-            else if(prevState.Equals(GroupState.Paused))
+            else if (prevState.Equals(GroupStateType.Paused))
             {
                 ResumePlaying = false;
             }
@@ -327,7 +319,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, BufferGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, BufferGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -337,9 +329,9 @@ namespace MediaBrowser.Controller.SyncPlay
             }
 
             // Make sure the client is playing the correct item.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogDebug("HandleRequest: {0} in group {1}, {2} has wrong playlist item.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, {2} has wrong playlist item.", request.Type, context.GroupId.ToString(), session.Id);
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
                 var updateSession = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
@@ -349,7 +341,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 return;
             }
 
-            if (prevState.Equals(GroupState.Playing))
+            if (prevState.Equals(GroupStateType.Playing))
             {
                 // Resume playback when all ready.
                 ResumePlaying = true;
@@ -372,7 +364,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
                 context.SendCommand(session, SyncPlayBroadcastType.AllReady, command, cancellationToken);
             }
-            else if (prevState.Equals(GroupState.Paused))
+            else if (prevState.Equals(GroupStateType.Paused))
             {
                 // Don't resume playback when all ready.
                 ResumePlaying = false;
@@ -383,7 +375,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
                 context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
             }
-            else if (prevState.Equals(GroupState.Waiting))
+            else if (prevState.Equals(GroupStateType.Waiting))
             {
                 // Another session is now buffering.
                 context.SetBuffering(session, true);
@@ -401,7 +393,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, ReadyGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, ReadyGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -411,9 +403,9 @@ namespace MediaBrowser.Controller.SyncPlay
             }
 
             // Make sure the client is playing the correct item.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogDebug("HandleRequest: {0} in group {1}, {2} has wrong playlist item.", request.GetRequestType(), context.GroupId.ToString(), session.Id.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, {2} has wrong playlist item.", request.Type, context.GroupId.ToString(), session.Id);
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
@@ -433,8 +425,7 @@ namespace MediaBrowser.Controller.SyncPlay
             var timeSyncThresholdTicks = TimeSpan.FromMilliseconds(context.TimeSyncOffset).Ticks;
             if (Math.Abs(elapsedTime.Ticks) > timeSyncThresholdTicks)
             {
-                _logger.LogWarning("HandleRequest: {0} in group {1}, {2} is not time syncing properly. Ignoring elapsed time.",
-                    request.GetRequestType(), context.GroupId.ToString(), session.Id);
+                Logger.LogWarning("HandleRequest: {0} in group {1}, {2} is not time syncing properly. Ignoring elapsed time.", request.Type, context.GroupId.ToString(), session.Id);
 
                 elapsedTime = TimeSpan.Zero;
             }
@@ -450,8 +441,7 @@ namespace MediaBrowser.Controller.SyncPlay
             var delayTicks = context.PositionTicks - clientPosition.Ticks;
             var maxPlaybackOffsetTicks = TimeSpan.FromMilliseconds(context.MaxPlaybackOffset).Ticks;
 
-            _logger.LogDebug("HandleRequest: {0} in group {1}, {2} at {3} (delay of {4} seconds).",
-                request.GetRequestType(), context.GroupId.ToString(), session.Id, clientPosition, TimeSpan.FromTicks(delayTicks).TotalSeconds);
+            Logger.LogDebug("HandleRequest: {0} in group {1}, {2} at {3} (delay of {4} seconds).", request.Type, context.GroupId.ToString(), session.Id, clientPosition, TimeSpan.FromTicks(delayTicks).TotalSeconds);
 
             if (ResumePlaying)
             {
@@ -469,8 +459,7 @@ namespace MediaBrowser.Controller.SyncPlay
                     // Notify relevant state change event.
                     SendGroupStateUpdate(context, request, session, cancellationToken);
 
-                    _logger.LogWarning("HandleRequest: {0} in group {1}, {2} got lost in time, correcting.",
-                        request.GetRequestType(), context.GroupId.ToString(), session.Id);
+                    Logger.LogWarning("HandleRequest: {0} in group {1}, {2} got lost in time, correcting.", request.Type, context.GroupId.ToString(), session.Id);
                     return;
                 }
 
@@ -485,8 +474,7 @@ namespace MediaBrowser.Controller.SyncPlay
                     command.When = context.DateToUTCString(pauseAtTime);
                     context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
 
-                    _logger.LogInformation("HandleRequest: {0} in group {1}, others still buffering, {2} will pause when ready in {3} seconds.",
-                        request.GetRequestType(), context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
+                    Logger.LogInformation("HandleRequest: {0} in group {1}, others still buffering, {2} will pause when ready in {3} seconds.", request.Type, context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
                 }
                 else
                 {
@@ -505,8 +493,7 @@ namespace MediaBrowser.Controller.SyncPlay
 
                         context.SendCommand(session, filter, command, cancellationToken);
 
-                        _logger.LogInformation("HandleRequest: {0} in group {1}, {2} is recovering, notifying others to resume in {3} seconds.",
-                            request.GetRequestType(), context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
+                        Logger.LogInformation("HandleRequest: {0} in group {1}, {2} is recovering, notifying others to resume in {3} seconds.", request.Type, context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
                     }
                     else
                     {
@@ -519,14 +506,13 @@ namespace MediaBrowser.Controller.SyncPlay
                         var command = context.NewSyncPlayCommand(SendCommandType.Unpause);
                         context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
 
-                        _logger.LogWarning("HandleRequest: {0} in group {1}, {2} resumed playback but did not update others in time. {3} seconds to recover.",
-                            request.GetRequestType(), context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
+                        Logger.LogWarning("HandleRequest: {0} in group {1}, {2} resumed playback but did not update others in time. {3} seconds to recover.", request.Type, context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);
                     }
 
                     // Change state.
-                    var playingState = new PlayingGroupState(_logger);
+                    var playingState = new PlayingGroupState(Logger);
                     context.SetState(playingState);
-                    playingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+                    playingState.HandleRequest(context, Type, request, session, cancellationToken);
                 }
             }
             else
@@ -543,10 +529,11 @@ namespace MediaBrowser.Controller.SyncPlay
                     // Notify relevant state change event.
                     SendGroupStateUpdate(context, request, session, cancellationToken);
 
-                    _logger.LogWarning("HandleRequest: {0} in group {1}, {2} was seeking to wrong position, correcting.",
-                        request.GetRequestType(), context.GroupId.ToString(), session.Id);
+                    Logger.LogWarning("HandleRequest: {0} in group {1}, {2} was seeking to wrong position, correcting.", request.Type, context.GroupId.ToString(), session.Id);
                     return;
-                } else {
+                }
+                else
+                {
                     // Session is ready.
                     context.SetBuffering(session, false);
                 }
@@ -554,28 +541,27 @@ namespace MediaBrowser.Controller.SyncPlay
                 if (!context.IsBuffering())
                 {
                     // Group is ready, returning to previous state.
-                    var pausedState = new PausedGroupState(_logger);
+                    var pausedState = new PausedGroupState(Logger);
                     context.SetState(pausedState);
 
-                    if (InitialState.Equals(GroupState.Playing))
+                    if (InitialState.Equals(GroupStateType.Playing))
                     {
                         // Group went from playing to waiting state and a pause request occured while waiting.
                         var pauserequest = new PauseGroupRequest();
-                        pausedState.HandleRequest(context, GetGroupState(), pauserequest, session, cancellationToken);
+                        pausedState.HandleRequest(context, Type, pauserequest, session, cancellationToken);
                     }
-                    else if (InitialState.Equals(GroupState.Paused))
+                    else if (InitialState.Equals(GroupStateType.Paused))
                     {
-                        pausedState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+                        pausedState.HandleRequest(context, Type, request, session, cancellationToken);
                     }
 
-                    _logger.LogDebug("HandleRequest: {0} in group {1}, {2} is ready, returning to previous state.",
-                        request.GetRequestType(), context.GroupId.ToString(), session.Id);
+                    Logger.LogDebug("HandleRequest: {0} in group {1}, {2} is ready, returning to previous state.", request.Type, context.GroupId.ToString(), session.Id);
                 }
             }
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -587,9 +573,9 @@ namespace MediaBrowser.Controller.SyncPlay
             ResumePlaying = true;
 
             // Make sure the client knows the playing item, to avoid duplicate requests.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist identifier.", request.GetRequestType(), context.GroupId.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist identifier.", request.Type, context.GroupId.ToString());
                 return;
             }
 
@@ -607,28 +593,21 @@ namespace MediaBrowser.Controller.SyncPlay
             else
             {
                 // Return to old state.
-                ISyncPlayState newState;
-                switch (prevState)
+                IGroupState newState = prevState switch
                 {
-                    case GroupState.Playing:
-                        newState = new PlayingGroupState(_logger);
-                        break;
-                    case GroupState.Paused:
-                        newState = new PausedGroupState(_logger);
-                        break;
-                    default:
-                        newState = new IdleGroupState(_logger);
-                        break;
-                }
+                    GroupStateType.Playing => new PlayingGroupState(Logger),
+                    GroupStateType.Paused => new PausedGroupState(Logger),
+                    _ => new IdleGroupState(Logger)
+                };
 
                 context.SetState(newState);
 
-                _logger.LogDebug("HandleRequest: {0} in group {1}, no next track available.", request.GetRequestType(), context.GroupId.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, no next track available.", request.Type, context.GroupId.ToString());
             }
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -640,9 +619,9 @@ namespace MediaBrowser.Controller.SyncPlay
             ResumePlaying = true;
 
             // Make sure the client knows the playing item, to avoid duplicate requests.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist identifier.", request.GetRequestType(), context.GroupId.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, client provided the wrong playlist identifier.", request.Type, context.GroupId.ToString());
                 return;
             }
 
@@ -660,23 +639,16 @@ namespace MediaBrowser.Controller.SyncPlay
             else
             {
                 // Return to old state.
-                ISyncPlayState newState;
-                switch (prevState)
+                IGroupState newState = prevState switch
                 {
-                    case GroupState.Playing:
-                        newState = new PlayingGroupState(_logger);
-                        break;
-                    case GroupState.Paused:
-                        newState = new PausedGroupState(_logger);
-                        break;
-                    default:
-                        newState = new IdleGroupState(_logger);
-                        break;
-                }
+                    GroupStateType.Playing => new PlayingGroupState(Logger),
+                    GroupStateType.Paused => new PausedGroupState(Logger),
+                    _ => new IdleGroupState(Logger)
+                };
 
                 context.SetState(newState);
 
-                _logger.LogDebug("HandleRequest: {0} in group {1}, no previous track available.", request.GetRequestType(), context.GroupId.ToString());
+                Logger.LogDebug("HandleRequest: {0} in group {1}, no previous track available.", request.Type, context.GroupId.ToString());
             }
         }
     }

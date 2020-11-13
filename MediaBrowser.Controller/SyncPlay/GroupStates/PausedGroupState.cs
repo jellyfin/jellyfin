@@ -15,8 +15,9 @@ namespace MediaBrowser.Controller.SyncPlay
     public class PausedGroupState : AbstractGroupState
     {
         /// <summary>
-        /// Default constructor.
+        /// Initializes a new instance of the <see cref="PausedGroupState"/> class.
         /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         public PausedGroupState(ILogger logger)
             : base(logger)
         {
@@ -24,48 +25,51 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override GroupState GetGroupState()
+        public override GroupStateType Type
         {
-            return GroupState.Paused;
+            get
+            {
+                return GroupStateType.Paused;
+            }
         }
 
         /// <inheritdoc />
-        public override void SessionJoined(ISyncPlayStateContext context, GroupState prevState, SessionInfo session, CancellationToken cancellationToken)
+        public override void SessionJoined(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             // Wait for session to be ready.
-            var waitingState = new WaitingGroupState(_logger);
+            var waitingState = new WaitingGroupState(Logger);
             context.SetState(waitingState);
-            waitingState.SessionJoined(context, GetGroupState(), session, cancellationToken);
+            waitingState.SessionJoined(context, Type, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void SessionLeaving(ISyncPlayStateContext context, GroupState prevState, SessionInfo session, CancellationToken cancellationToken)
+        public override void SessionLeaving(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             // Do nothing.
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PlayGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PlayGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(_logger);
+            var waitingState = new WaitingGroupState(Logger);
             context.SetState(waitingState);
-            waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, UnpauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, UnpauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var playingState = new PlayingGroupState(_logger);
+            var playingState = new PlayingGroupState(Logger);
             context.SetState(playingState);
-            playingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            playingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            if (!prevState.Equals(GetGroupState()))
+            if (!prevState.Equals(Type))
             {
                 // Pause group and compute the media playback position.
                 var currentTime = DateTime.UtcNow;
@@ -94,42 +98,42 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, StopGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, StopGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var idleState = new IdleGroupState(_logger);
+            var idleState = new IdleGroupState(Logger);
             context.SetState(idleState);
-            idleState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            idleState.HandleRequest(context, Type, request, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, SeekGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, SeekGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(_logger);
+            var waitingState = new WaitingGroupState(Logger);
             context.SetState(waitingState);
-            waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, BufferGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, BufferGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(_logger);
+            var waitingState = new WaitingGroupState(Logger);
             context.SetState(waitingState);
-            waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, ReadyGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, ReadyGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            if (prevState.Equals(GetGroupState()))
+            if (prevState.Equals(Type))
             {
                 // Client got lost, sending current state.
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
                 context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
             }
-            else if (prevState.Equals(GroupState.Waiting))
+            else if (prevState.Equals(GroupStateType.Waiting))
             {
                 // Sending current state to all clients.
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
@@ -141,21 +145,21 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(_logger);
+            var waitingState = new WaitingGroupState(Logger);
             context.SetState(waitingState);
-            waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(ISyncPlayStateContext context, GroupState prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(_logger);
+            var waitingState = new WaitingGroupState(Logger);
             context.SetState(waitingState);
-            waitingState.HandleRequest(context, GetGroupState(), request, session, cancellationToken);
+            waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
     }
 }

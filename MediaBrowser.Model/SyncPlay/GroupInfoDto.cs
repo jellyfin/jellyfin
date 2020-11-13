@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the group state.
         /// </summary>
         /// <value>The group state.</value>
-        public GroupState State { get; set; }
+        public GroupStateType State { get; set; }
 
         /// <summary>
         /// Gets or sets the participants.

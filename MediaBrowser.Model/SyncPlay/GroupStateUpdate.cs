@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
@@ -11,7 +9,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the state of the group.
         /// </summary>
         /// <value>The state of the group.</value>
-        public GroupState State { get; set; }
+        public GroupStateType State { get; set; }
 
         /// <summary>
         /// Gets or sets the reason of the state change.

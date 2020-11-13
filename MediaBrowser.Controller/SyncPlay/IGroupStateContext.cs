@@ -1,15 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Interface ISyncPlayStateContext.
+    /// Interface IGroupStateContext.
     /// </summary>
-    public interface ISyncPlayStateContext
+    public interface IGroupStateContext
     {
         /// <summary>
         /// Gets the default ping value used for sessions, in milliseconds.
@@ -57,11 +58,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Sets a new state.
         /// </summary>
         /// <param name="state">The new state.</param>
-        void SetState(ISyncPlayState state);
+        void SetState(IGroupState state);
 
         /// <summary>
         /// Sends a GroupUpdate message to the interested sessions.
         /// </summary>
+        /// <typeparam name="T">The type of the data of the message.</typeparam>
         /// <param name="from">The current session.</param>
         /// <param name="type">The filtering type.</param>
         /// <param name="message">The message to send.</param>
@@ -89,6 +91,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Builds a new group update message.
         /// </summary>
+        /// <typeparam name="T">The type of the data of the message.</typeparam>
         /// <param name="type">The update type.</param>
         /// <param name="data">The data to send.</param>
         /// <returns>The group update.</returns>
@@ -154,7 +157,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="playingItemPosition">The playing item position in the play queue.</param>
         /// <param name="startPositionTicks">The start position ticks.</param>
         /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
-        bool SetPlayQueue(Guid[] playQueue, int playingItemPosition, long startPositionTicks);
+        bool SetPlayQueue(IEnumerable<Guid> playQueue, int playingItemPosition, long startPositionTicks);
 
         /// <summary>
         /// Sets the playing item.
@@ -168,7 +171,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="playlistItemIds">The items to remove.</param>
         /// <returns><c>true</c> if playing item got removed; <c>false</c> otherwise.</returns>
-        bool RemoveFromPlayQueue(string[] playlistItemIds);
+        bool RemoveFromPlayQueue(IEnumerable<string> playlistItemIds);
 
         /// <summary>
         /// Moves an item in the play queue.
@@ -184,7 +187,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="newItems">The new items to add to the play queue.</param>
         /// <param name="mode">The mode with which the items will be added.</param>
         /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
-        bool AddToPlayQueue(Guid[] newItems, string mode);
+        bool AddToPlayQueue(IEnumerable<Guid> newItems, string mode);
 
         /// <summary>
         /// Restarts current item in play queue.

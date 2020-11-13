@@ -1,13 +1,13 @@
 using System.Threading;
-using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
     /// Class MovePlaylistItemGroupRequest.
     /// </summary>
-    public class MovePlaylistItemGroupRequest : IPlaybackGroupRequest
+    public class MovePlaylistItemGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
         /// Gets or sets the playlist identifier of the item.
@@ -22,15 +22,12 @@ namespace MediaBrowser.Controller.SyncPlay
         public int NewIndex { get; set; }
 
         /// <inheritdoc />
-        public PlaybackRequestType GetRequestType()
-        {
-            return PlaybackRequestType.MovePlaylistItem;
-        }
+        public PlaybackRequestType Type { get; } = PlaybackRequestType.MovePlaylistItem;
 
         /// <inheritdoc />
-        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
+            state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }
     }
 }

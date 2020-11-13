@@ -125,10 +125,10 @@ namespace Jellyfin.Api.Controllers
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlayGroupRequest()
             {
-                PlayingQueue = RequestHelpers.GetGuids(playingQueue),
                 PlayingItemPosition = playingItemPosition,
                 StartPositionTicks = startPositionTicks
             };
+            syncPlayRequest.PlayingQueue.AddRange(RequestHelpers.GetGuids(playingQueue));
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -165,10 +165,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string[] playlistItemIds)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new RemoveFromPlaylistGroupRequest()
-            {
-                PlaylistItemIds = playlistItemIds
-            };
+            var syncPlayRequest = new RemoveFromPlaylistGroupRequest();
+            syncPlayRequest.PlaylistItemIds.AddRange(playlistItemIds);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -212,9 +210,9 @@ namespace Jellyfin.Api.Controllers
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new QueueGroupRequest()
             {
-                ItemIds = RequestHelpers.GetGuids(itemIds),
                 Mode = mode
             };
+            syncPlayRequest.ItemIds.AddRange(RequestHelpers.GetGuids(itemIds));
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -304,7 +302,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] bool bufferingDone)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            IPlaybackGroupRequest syncPlayRequest;
+            IGroupPlaybackRequest syncPlayRequest;
             if (!bufferingDone)
             {
                 syncPlayRequest = new BufferGroupRequest()

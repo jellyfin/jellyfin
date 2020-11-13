@@ -5,6 +5,7 @@ namespace MediaBrowser.Model.SyncPlay
     /// <summary>
     /// Class GroupUpdate.
     /// </summary>
+    /// <typeparam name="T">The type of the data of the message.</typeparam>
     public class GroupUpdate<T>
     {
         /// <summary>

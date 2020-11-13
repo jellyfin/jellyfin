@@ -1,5 +1,7 @@
 #nullable disable
 
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
@@ -23,7 +25,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the playlist.
         /// </summary>
         /// <value>The playlist.</value>
-        public QueueItem[] Playlist { get; set; }
+        public IReadOnlyList<QueueItem> Playlist { get; set; }
 
         /// <summary>
         /// Gets or sets the playing item index in the playlist.

@@ -1,20 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
-using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
     /// Class QueueGroupRequest.
     /// </summary>
-    public class QueueGroupRequest : IPlaybackGroupRequest
+    public class QueueGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets the items to queue.
+        /// Gets the items to queue.
         /// </summary>
         /// <value>The items to queue.</value>
-        public Guid[] ItemIds { get; set; }
+        public List<Guid> ItemIds { get; } = new List<Guid>();
 
         /// <summary>
         /// Gets or sets the mode in which to add the new items.
@@ -23,15 +24,12 @@ namespace MediaBrowser.Controller.SyncPlay
         public string Mode { get; set; }
 
         /// <inheritdoc />
-        public PlaybackRequestType GetRequestType()
-        {
-            return PlaybackRequestType.Queue;
-        }
+        public PlaybackRequestType Type { get; } = PlaybackRequestType.Queue;
 
         /// <inheritdoc />
-        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
+            state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }
     }
 }

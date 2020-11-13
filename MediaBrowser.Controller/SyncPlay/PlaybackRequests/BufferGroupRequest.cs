@@ -1,14 +1,14 @@
 using System;
 using System.Threading;
-using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
     /// Class BufferGroupRequest.
     /// </summary>
-    public class BufferGroupRequest : IPlaybackGroupRequest
+    public class BufferGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
         /// Gets or sets when the request has been made by the client.
@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.SyncPlay
         public long PositionTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the client playback status.
+        /// Gets or sets a value indicating whether the client playback is unpaused.
         /// </summary>
         /// <value>The client playback status.</value>
         public bool IsPlaying { get; set; }
@@ -35,15 +35,12 @@ namespace MediaBrowser.Controller.SyncPlay
         public string PlaylistItemId { get; set; }
 
         /// <inheritdoc />
-        public PlaybackRequestType GetRequestType()
-        {
-            return PlaybackRequestType.Buffer;
-        }
+        public PlaybackRequestType Type { get; } = PlaybackRequestType.Buffer;
 
         /// <inheritdoc />
-        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
+            state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }
     }
 }

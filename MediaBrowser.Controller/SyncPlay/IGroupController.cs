@@ -7,9 +7,9 @@ using MediaBrowser.Model.SyncPlay;
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Interface ISyncPlayGroupController.
+    /// Interface IGroupController.
     /// </summary>
-    public interface ISyncPlayGroupController
+    public interface IGroupController
     {
         /// <summary>
         /// Gets the group identifier.
@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Checks if the group is empty.
         /// </summary>
-        /// <returns><c>true</c> if the group is empty, <c>false</c> otherwise</returns>
+        /// <returns><c>true</c> if the group is empty, <c>false</c> otherwise.</returns>
         bool IsGroupEmpty();
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="request">The requested action.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void HandleRequest(SessionInfo session, IPlaybackGroupRequest request, CancellationToken cancellationToken);
+        void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the info about the group for the clients.
@@ -80,6 +80,5 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if the user can access the play queue; <c>false</c> otherwise.</returns>
         bool HasAccessToPlayQueue(User user);
-
     }
 }

@@ -1,20 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
-using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
     /// Class PlayGroupRequest.
     /// </summary>
-    public class PlayGroupRequest : IPlaybackGroupRequest
+    public class PlayGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets the playing queue.
+        /// Gets the playing queue.
         /// </summary>
         /// <value>The playing queue.</value>
-        public Guid[] PlayingQueue { get; set; }
+        public List<Guid> PlayingQueue { get; } = new List<Guid>();
 
         /// <summary>
         /// Gets or sets the playing item from the queue.
@@ -29,15 +30,12 @@ namespace MediaBrowser.Controller.SyncPlay
         public long StartPositionTicks { get; set; }
 
         /// <inheritdoc />
-        public PlaybackRequestType GetRequestType()
-        {
-            return PlaybackRequestType.Play;
-        }
+        public PlaybackRequestType Type { get; } = PlaybackRequestType.Play;
 
         /// <inheritdoc />
-        public void Apply(ISyncPlayStateContext context, ISyncPlayState state, SessionInfo session, CancellationToken cancellationToken)
+        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            state.HandleRequest(context, state.GetGroupState(), this, session, cancellationToken);
+            state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }
     }
 }
