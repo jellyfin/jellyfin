@@ -177,7 +177,7 @@ namespace MediaBrowser.Model.Net
 
             var ext = Path.GetExtension(path);
 
-            if (_mimeTypeLookup.TryGetValue(ext, out string result))
+            if (_mimeTypeLookup.TryGetValue(ext, out string? result))
             {
                 return result;
             }
