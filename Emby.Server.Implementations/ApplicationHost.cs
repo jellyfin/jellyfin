@@ -996,6 +996,12 @@ namespace Emby.Server.Implementations
         {
             var minimumVersion = new Version(0, 0, 0, 1);
             var versions = new List<LocalPlugin>();
+            if (!Directory.Exists(path))
+            {
+                // Plugin path doesn't exist, don't try to enumerate subfolders.
+                return Enumerable.Empty<LocalPlugin>();
+            }
+
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
 
             foreach (var dir in directories)
