@@ -361,7 +361,13 @@ namespace Jellyfin.Api.Controllers
             var threads = _encodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
             var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
             var format = !string.IsNullOrWhiteSpace(state.Request.SegmentContainer) ? "." + state.Request.SegmentContainer : ".ts";
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + format;
+            var directory = Path.GetDirectoryName(outputPath);
+            if (directory == null)
+            {
+                throw new NullReferenceException(nameof(directory));
+            }
+
+            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + format;
 
             var segmentFormat = format.TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))

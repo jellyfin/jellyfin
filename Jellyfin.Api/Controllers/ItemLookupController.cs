@@ -334,10 +334,21 @@ namespace Jellyfin.Api.Controllers
         private async Task DownloadImage(string providerName, string url, Guid urlHash, string pointerCachePath)
         {
             using var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
+            if (result.Content.Headers.ContentType?.MediaType == null)
+            {
+                throw new NullReferenceException(nameof(result.Content.Headers.ContentType));
+            }
+
             var ext = result.Content.Headers.ContentType.MediaType.Split('/')[^1];
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+            var directory = Path.GetDirectoryName(fullCachePath);
+            if (directory == null)
+            {
+                throw new NullReferenceException(nameof(directory));
+            }
+
+            Directory.CreateDirectory(directory);
             using (var stream = result.Content)
             {
                 await using var fileStream = new FileStream(
@@ -351,7 +362,13 @@ namespace Jellyfin.Api.Controllers
                 await stream.CopyToAsync(fileStream).ConfigureAwait(false);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath);
+            if (pointerCacheDirectory == null)
+            {
+                throw new NullReferenceException(nameof(pointerCacheDirectory));
+            }
+
+            Directory.CreateDirectory(pointerCacheDirectory);
             await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath).ConfigureAwait(false);
         }
 

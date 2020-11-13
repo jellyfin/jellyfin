@@ -136,6 +136,11 @@ namespace Jellyfin.Api.Controllers
                     string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase)
                     && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1);
 
+            if (playlistPath == null)
+            {
+                throw new NullReferenceException(nameof(playlistPath));
+            }
+
             return GetFileResult(file, playlistPath);
         }
 

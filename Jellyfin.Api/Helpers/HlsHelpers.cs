@@ -45,6 +45,10 @@ namespace Jellyfin.Api.Helpers
                         while (!reader.EndOfStream)
                         {
                             var line = await reader.ReadLineAsync().ConfigureAwait(false);
+                            if (line == null)
+                            {
+                                throw new NullReferenceException(nameof(line));
+                            }
 
                             if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                             {

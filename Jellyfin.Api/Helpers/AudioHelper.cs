@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -98,6 +99,11 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                throw new NullReferenceException(nameof(_httpContextAccessor.HttpContext));
+            }
+
             bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
 

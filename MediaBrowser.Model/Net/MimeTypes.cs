@@ -210,9 +210,9 @@ namespace MediaBrowser.Model.Net
             return enableStreamDefault ? "application/octet-stream" : null;
         }
 
-        public static string? ToExtension(string mimeType)
+        public static string? ToExtension(string? mimeType)
         {
-            if (mimeType.Length == 0)
+            if (string.IsNullOrEmpty(mimeType))
             {
                 throw new ArgumentException("String can't be empty.", nameof(mimeType));
             }
@@ -220,7 +220,7 @@ namespace MediaBrowser.Model.Net
             // handle text/html; charset=UTF-8
             mimeType = mimeType.Split(';')[0];
 
-            if (_extensionLookup.TryGetValue(mimeType, out string result))
+            if (_extensionLookup.TryGetValue(mimeType, out string? result))
             {
                 return result;
             }

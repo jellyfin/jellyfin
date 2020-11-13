@@ -90,6 +90,11 @@ namespace Jellyfin.Api.Helpers
                     allowAsyncFileRead = true;
                 }
 
+                if (_path == null)
+                {
+                    throw new NullReferenceException(nameof(_path));
+                }
+
                 await using var inputStream = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, fileOptions);
 
                 var eofCount = 0;

@@ -1347,7 +1347,13 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
+            var directory = Path.GetDirectoryName(outputPath);
+            if (directory == null)
+            {
+                throw new NullReferenceException(nameof(directory));
+            }
+
+            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
 
             var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1566,6 +1572,10 @@ namespace Jellyfin.Api.Controllers
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
             var folder = Path.GetDirectoryName(playlist);
+            if (folder == null)
+            {
+                throw new NullReferenceException(nameof(folder));
+            }
 
             var filename = Path.GetFileNameWithoutExtension(playlist);
 

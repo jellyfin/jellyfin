@@ -54,6 +54,11 @@ namespace Jellyfin.Api.Controllers
                     string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid))
                 .FirstOrDefault();
 
+            if (result == null)
+            {
+                return NotFound();
+            }
+
             return result;
         }
 

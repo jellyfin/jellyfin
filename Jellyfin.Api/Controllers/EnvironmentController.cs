@@ -103,6 +103,11 @@ namespace Jellyfin.Api.Controllers
 
                 if (validatePathDto.ValidateWritable)
                 {
+                    if (validatePathDto.Path == null)
+                    {
+                        throw new NullReferenceException(nameof(validatePathDto.Path));
+                    }
+
                     var file = Path.Combine(validatePathDto.Path, Guid.NewGuid().ToString());
                     try
                     {
