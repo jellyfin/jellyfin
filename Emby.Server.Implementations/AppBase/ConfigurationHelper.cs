@@ -50,11 +50,7 @@ namespace Emby.Server.Implementations.AppBase
             // If the file didn't exist before, or if something has changed, re-save
             if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
             {
-                var directory = Path.GetDirectoryName(path);
-                if (directory == null)
-                {
-                    throw new ResourceNotFoundException(nameof(directory));
-                }
+                var directory = Path.GetDirectoryName(path) ?? throw new ResourceNotFoundException(nameof(path));
 
                 Directory.CreateDirectory(directory);
                 // Save it after load in case we got new items

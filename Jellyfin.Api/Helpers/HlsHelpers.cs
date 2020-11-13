@@ -45,11 +45,8 @@ namespace Jellyfin.Api.Helpers
 
                         while (!reader.EndOfStream)
                         {
-                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
-                            if (line == null)
-                            {
-                                throw new ResourceNotFoundException(nameof(line));
-                            }
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false)
+                                ?? throw new ResourceNotFoundException(nameof(reader));
 
                             if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                             {

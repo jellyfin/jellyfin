@@ -57,12 +57,8 @@ namespace Jellyfin.Server.Implementations.Users
                 SerializablePasswordReset? spr;
                 await using (var str = File.OpenRead(resetFile))
                 {
-                    spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
-                }
-
-                if (spr == null)
-                {
-                    throw new ResourceNotFoundException(nameof(spr));
+                    spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false)
+                        ?? throw new ResourceNotFoundException(nameof(spr));
                 }
 
                 if (spr.ExpirationDate < DateTime.UtcNow)

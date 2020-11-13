@@ -1348,11 +1348,7 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var directory = Path.GetDirectoryName(outputPath);
-            if (directory == null)
-            {
-                throw new ResourceNotFoundException(nameof(directory));
-            }
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ResourceNotFoundException(nameof(outputPath));
 
             var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
 
@@ -1572,12 +1568,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = Path.GetDirectoryName(playlist);
-            if (folder == null)
-            {
-                throw new ResourceNotFoundException(nameof(folder));
-            }
-
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ResourceNotFoundException(nameof(playlist));
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
             return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + GetSegmentFileExtension(state.Request.SegmentContainer));

@@ -257,22 +257,12 @@ namespace Jellyfin.Api.Controllers
             var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            var fullCacheDirectory = Path.GetDirectoryName(fullCachePath);
-            if (fullCacheDirectory == null)
-            {
-                throw new ResourceNotFoundException(nameof(fullCacheDirectory));
-            }
-
+            var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException(nameof(fullCachePath));
             Directory.CreateDirectory(fullCacheDirectory);
             await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
             await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
-            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath);
-            if (pointerCacheDirectory == null)
-            {
-                throw new ResourceNotFoundException(nameof(pointerCacheDirectory));
-            }
-
+            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ResourceNotFoundException(nameof(pointerCachePath));
             Directory.CreateDirectory(pointerCacheDirectory);
             await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath, CancellationToken.None)
                 .ConfigureAwait(false);

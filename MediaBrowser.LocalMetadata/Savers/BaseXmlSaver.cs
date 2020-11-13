@@ -128,12 +128,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
-            var directory = Path.GetDirectoryName(path);
-            if (directory == null)
-            {
-                throw new ResourceNotFoundException(nameof(directory));
-            }
-
+            var directory = Path.GetDirectoryName(path) ?? throw new ResourceNotFoundException(nameof(path));
             Directory.CreateDirectory(directory);
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);

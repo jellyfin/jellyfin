@@ -196,12 +196,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="state">The state.</param>
         private async void OnTranscodeKillTimerStopped(object? state)
         {
-            var job = (TranscodingJobDto?)state;
-            if (job == null)
-            {
-                throw new ResourceNotFoundException(nameof(job));
-            }
-
+            var job = state as TranscodingJobDto ?? throw new ResourceNotFoundException(nameof(state));
             if (!job.HasExited && job.Type != TranscodingJobType.Progressive)
             {
                 var timeSinceLastPing = (DateTime.UtcNow - job.LastPingDate).TotalMilliseconds;
@@ -494,12 +489,7 @@ namespace Jellyfin.Api.Helpers
             CancellationTokenSource cancellationTokenSource,
             string? workingDirectory = null)
         {
-            var directory = Path.GetDirectoryName(outputPath);
-            if (directory == null)
-            {
-                throw new ResourceNotFoundException(nameof(directory));
-            }
-
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ResourceNotFoundException(nameof(outputPath));
             Directory.CreateDirectory(directory);
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
