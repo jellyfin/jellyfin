@@ -410,7 +410,7 @@ namespace Jellyfin.Api.Controllers
                     inputModifier,
                     _encodingHelper.GetInputArgument(state, _encodingOptions),
                     threads,
-                    _encodingHelper.GetMapArgs(state),
+                    mapArgs,
                     GetVideoArguments(state),
                     GetAudioArguments(state),
                     maxMuxingQueueSize,
