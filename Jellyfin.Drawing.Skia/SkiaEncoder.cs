@@ -227,8 +227,13 @@ namespace Jellyfin.Drawing.Skia
             }
 
             var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
+            var directory = Path.GetDirectoryName(tempPath);
+            if (directory == null)
+            {
+                throw new NullReferenceException(nameof(directory));
+            }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
+            Directory.CreateDirectory(directory);
             File.Copy(path, tempPath, true);
 
             return tempPath;
@@ -493,7 +498,13 @@ namespace Jellyfin.Drawing.Skia
             // If all we're doing is resizing then we can stop now
             if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                var outputDirectory = Path.GetDirectoryName(outputPath);
+                if (outputDirectory == null)
+                {
+                    throw new NullReferenceException(nameof(outputDirectory));
+                }
+
+                Directory.CreateDirectory(outputDirectory);
                 using var outputStream = new SKFileWStream(outputPath);
                 using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
                 resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
@@ -540,7 +551,13 @@ namespace Jellyfin.Drawing.Skia
                 DrawIndicator(canvas, width, height, options);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            var directory = Path.GetDirectoryName(outputPath);
+            if (directory == null)
+            {
+                throw new NullReferenceException(nameof(directory));
+            }
+
+            Directory.CreateDirectory(directory);
             using (var outputStream = new SKFileWStream(outputPath))
             {
                 using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
