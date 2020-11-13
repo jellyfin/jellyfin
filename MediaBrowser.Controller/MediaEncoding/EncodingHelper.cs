@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             // Only use alternative encoders for video files.
             // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
-            // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
+            // Since transcoding of folder rips is experimental anyway, it's not worth adding additional variables such as this.
             if (state.VideoType == VideoType.VideoFile)
             {
                 var hwType = encodingOptions.HardwareAccelerationType;
@@ -439,6 +439,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(codec, "opus", StringComparison.OrdinalIgnoreCase))
             {
                 return "libopus";
+            }
+
+            if (string.Equals(codec, "flac", StringComparison.OrdinalIgnoreCase))
+            {
+                // flac is experimental in mp4 muxer
+                return "flac -strict -2";
             }
 
             return codec.ToLowerInvariant();
