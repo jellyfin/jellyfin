@@ -596,10 +596,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || codec.IndexOf("hevc", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
-        // TODO This is auto inserted into the mpegts mux so it might not be needed
-        // https://www.ffmpeg.org/ffmpeg-bitstream-filters.html#h264_005fmp4toannexb
+        public bool IsAAC(MediaStream stream)
+        {
+            var codec = stream.Codec ?? string.Empty;
+
+            return codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1;
+        }
+
         public string GetBitStreamArgs(MediaStream stream)
         {
+            // TODO This is auto inserted into the mpegts mux so it might not be needed
+            // https://www.ffmpeg.org/ffmpeg-bitstream-filters.html#h264_005fmp4toannexb
             if (IsH264(stream))
             {
                 return "-bsf:v h264_mp4toannexb";
@@ -607,6 +614,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (IsH265(stream))
             {
                 return "-bsf:v hevc_mp4toannexb";
+            }
+            else if (IsAAC(stream))
+            {
+                // convert adts header(mpegts) to asc header(mp4)
+                return "-bsf:a aac_adtstoasc";
             }
             else
             {

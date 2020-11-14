@@ -439,7 +439,19 @@ namespace Jellyfin.Api.Controllers
             {
                 if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
-                    return "-acodec copy -strict -2";
+                    var segmentFormat = HlsHelpers.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
+                    var bitStreamArgs = string.Empty;
+
+                    // Apply aac_adtstoasc bitstream filter when media source is in mpegts.
+                    if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase)
+                        && (string.Equals(state.MediaSource.Container, "mpegts", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(state.MediaSource.Container, "hls", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.AudioStream);
+                        bitStreamArgs = !string.IsNullOrEmpty(bitStreamArgs) ? " " + bitStreamArgs : string.Empty;
+                    }
+
+                    return "-acodec copy -strict -2" + bitStreamArgs;
                 }
 
                 var audioTranscodeParams = new List<string>();
@@ -467,7 +479,19 @@ namespace Jellyfin.Api.Controllers
 
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
-                return "-codec:a:0 copy -strict -2";
+                var segmentFormat = HlsHelpers.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
+                var bitStreamArgs = string.Empty;
+
+                // Apply aac_adtstoasc bitstream filter when media source is in mpegts.
+                if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase)
+                    && (string.Equals(state.MediaSource.Container, "mpegts", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(state.MediaSource.Container, "hls", StringComparison.OrdinalIgnoreCase)))
+                {
+                    bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.AudioStream);
+                    bitStreamArgs = !string.IsNullOrEmpty(bitStreamArgs) ? " " + bitStreamArgs : string.Empty;
+                }
+
+                return "-acodec copy -strict -2" + bitStreamArgs;
             }
 
             var args = "-codec:a:0 " + audioCodec;
