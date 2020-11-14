@@ -8,21 +8,21 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// The group is in idle state. No media is playing.
         /// </summary>
-        Idle,
+        Idle = 0,
 
         /// <summary>
         /// The group is in wating state. Playback is paused. Will start playing when users are ready.
         /// </summary>
-        Waiting,
+        Waiting = 1,
 
         /// <summary>
         /// The group is in paused state. Playback is paused. Will resume on play command.
         /// </summary>
-        Paused,
+        Paused = 2,
 
         /// <summary>
         /// The group is in playing state. Playback is advancing.
         /// </summary>
-        Playing
+        Playing = 3
     }
 }

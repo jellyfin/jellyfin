@@ -4,7 +4,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class QueueGroupRequest.
@@ -12,16 +12,29 @@ namespace MediaBrowser.Controller.SyncPlay
     public class QueueGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets the items to queue.
+        /// Initializes a new instance of the <see cref="QueueGroupRequest"/> class.
         /// </summary>
-        /// <value>The items to queue.</value>
-        public List<Guid> ItemIds { get; } = new List<Guid>();
+        /// <param name="items">The items to add to the queue.</param>
+        /// <param name="mode">The enqueue mode.</param>
+        public QueueGroupRequest(Guid[] items, GroupQueueMode mode)
+        {
+            var list = new List<Guid>();
+            list.AddRange(items);
+            ItemIds = list;
+            Mode = mode;
+        }
 
         /// <summary>
-        /// Gets or sets the mode in which to add the new items.
+        /// Gets the items to enqueue.
         /// </summary>
-        /// <value>The mode.</value>
-        public string Mode { get; set; }
+        /// <value>The items to enqueue.</value>
+        public IReadOnlyList<Guid> ItemIds { get; }
+
+        /// <summary>
+        /// Gets the mode in which to add the new items.
+        /// </summary>
+        /// <value>The enqueue mode.</value>
+        public GroupQueueMode Mode { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.Queue;

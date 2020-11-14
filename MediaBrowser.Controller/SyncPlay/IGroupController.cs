@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.SyncPlay.Queue;
 using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay

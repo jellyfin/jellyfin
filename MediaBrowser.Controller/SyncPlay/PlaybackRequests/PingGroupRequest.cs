@@ -2,7 +2,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class PingGroupRequest.
@@ -10,10 +10,19 @@ namespace MediaBrowser.Controller.SyncPlay
     public class PingGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets the ping time.
+        /// Initializes a new instance of the <see cref="PingGroupRequest"/> class.
+        /// </summary>
+        /// <param name="ping">The ping time.</param>
+        public PingGroupRequest(long ping)
+        {
+            Ping = ping;
+        }
+
+        /// <summary>
+        /// Gets the ping time.
         /// </summary>
         /// <value>The ping time.</value>
-        public long Ping { get; set; }
+        public long Ping { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.Ping;

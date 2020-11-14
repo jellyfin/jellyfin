@@ -2,7 +2,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class IgnoreWaitGroupRequest.
@@ -10,10 +10,19 @@ namespace MediaBrowser.Controller.SyncPlay
     public class IgnoreWaitGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the client should be ignored.
+        /// Initializes a new instance of the <see cref="IgnoreWaitGroupRequest"/> class.
+        /// </summary>
+        /// <param name="ignoreWait">Whether the client should be ignored.</param>
+        public IgnoreWaitGroupRequest(bool ignoreWait)
+        {
+            IgnoreWait = ignoreWait;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the client should be ignored.
         /// </summary>
         /// <value>The client group-wait status.</value>
-        public bool IgnoreWait { get; set; }
+        public bool IgnoreWait { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.IgnoreWait;

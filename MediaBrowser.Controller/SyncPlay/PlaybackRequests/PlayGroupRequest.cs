@@ -4,7 +4,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class PlayGroupRequest.
@@ -12,22 +12,37 @@ namespace MediaBrowser.Controller.SyncPlay
     public class PlayGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="PlayGroupRequest"/> class.
+        /// </summary>
+        /// <param name="playingQueue">The playing queue.</param>
+        /// <param name="playingItemPosition">The playing item position.</param>
+        /// <param name="startPositionTicks">The start position ticks.</param>
+        public PlayGroupRequest(Guid[] playingQueue, int playingItemPosition, long startPositionTicks)
+        {
+            var list = new List<Guid>();
+            list.AddRange(playingQueue);
+            PlayingQueue = list;
+            PlayingItemPosition = playingItemPosition;
+            StartPositionTicks = startPositionTicks;
+        }
+
+        /// <summary>
         /// Gets the playing queue.
         /// </summary>
         /// <value>The playing queue.</value>
-        public List<Guid> PlayingQueue { get; } = new List<Guid>();
+        public IReadOnlyList<Guid> PlayingQueue { get; }
 
         /// <summary>
-        /// Gets or sets the playing item from the queue.
+        /// Gets the position of the playing item in the queue.
         /// </summary>
-        /// <value>The playing item.</value>
-        public int PlayingItemPosition { get; set; }
+        /// <value>The playing item position.</value>
+        public int PlayingItemPosition { get; }
 
         /// <summary>
-        /// Gets or sets the start position ticks.
+        /// Gets the start position ticks.
         /// </summary>
         /// <value>The start position ticks.</value>
-        public long StartPositionTicks { get; set; }
+        public long StartPositionTicks { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.Play;

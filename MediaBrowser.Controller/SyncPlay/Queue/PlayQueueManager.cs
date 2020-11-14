@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.Queue
 {
     /// <summary>
     /// Class PlayQueueManager.
@@ -563,11 +563,8 @@ namespace MediaBrowser.Controller.SyncPlay
             var list = new List<QueueItem>();
             foreach (var item in items)
             {
-                list.Add(new QueueItem()
-                {
-                    ItemId = item,
-                    PlaylistItemId = "syncPlayItem" + GetNextProgressiveId()
-                });
+                var queueItem = new QueueItem(item, "syncPlayItem" + GetNextProgressiveId());
+                list.Add(queueItem);
             }
 
             return list;

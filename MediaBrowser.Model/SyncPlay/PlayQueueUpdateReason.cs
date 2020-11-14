@@ -26,12 +26,12 @@ namespace MediaBrowser.Model.SyncPlay
         MoveItem = 3,
 
         /// <summary>
-        /// A user is making changes to the queue.
+        /// A user is adding items the queue.
         /// </summary>
         Queue = 4,
 
         /// <summary>
-        /// A user is making changes to the queue.
+        /// A user is adding items to the queue, after the currently playing item.
         /// </summary>
         QueueNext = 5,
 

@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 
 namespace MediaBrowser.Model.SyncPlay
@@ -10,15 +8,26 @@ namespace MediaBrowser.Model.SyncPlay
     public class QueueItem
     {
         /// <summary>
-        /// Gets or sets the item identifier.
+        /// Initializes a new instance of the <see cref="QueueItem"/> class.
         /// </summary>
-        /// <value>The item identifier.</value>
-        public Guid ItemId { get; set; }
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="playlistItemId">The playlist identifier of the item.</param>
+        public QueueItem(Guid itemId, string playlistItemId)
+        {
+            ItemId = itemId;
+            PlaylistItemId = playlistItemId;
+        }
 
         /// <summary>
-        /// Gets or sets the playlist identifier of the item.
+        /// Gets the item identifier.
+        /// </summary>
+        /// <value>The item identifier.</value>
+        public Guid ItemId { get; }
+
+        /// <summary>
+        /// Gets the playlist identifier of the item.
         /// </summary>
         /// <value>The playlist identifier of the item.</value>
-        public string PlaylistItemId { get; set; }
+        public string PlaylistItemId { get; }
     }
 }

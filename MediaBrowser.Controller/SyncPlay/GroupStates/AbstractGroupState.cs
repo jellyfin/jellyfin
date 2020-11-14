@@ -1,10 +1,10 @@
-using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.GroupStates
 {
     /// <summary>
     /// Class AbstractGroupState.
@@ -104,7 +104,11 @@ namespace MediaBrowser.Controller.SyncPlay
                 return;
             }
 
-            var reason = request.Mode.Equals("next", StringComparison.OrdinalIgnoreCase) ? PlayQueueUpdateReason.QueueNext : PlayQueueUpdateReason.Queue;
+            var reason = request.Mode switch
+            {
+                GroupQueueMode.QueueNext => PlayQueueUpdateReason.QueueNext,
+                _ => PlayQueueUpdateReason.Queue
+            };
             var playQueueUpdate = context.GetPlayQueueUpdate(reason);
             var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);

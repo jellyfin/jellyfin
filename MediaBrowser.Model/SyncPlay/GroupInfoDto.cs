@@ -1,5 +1,4 @@
-#nullable disable
-
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.SyncPlay
@@ -9,6 +8,16 @@ namespace MediaBrowser.Model.SyncPlay
     /// </summary>
     public class GroupInfoDto
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupInfoDto"/> class.
+        /// </summary>
+        public GroupInfoDto()
+        {
+            GroupId = string.Empty;
+            GroupName = string.Empty;
+            Participants = new List<string>();
+        }
+
         /// <summary>
         /// Gets or sets the group identifier.
         /// </summary>
@@ -37,6 +46,6 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the date when this dto has been updated.
         /// </summary>
         /// <value>The date when this dto has been updated.</value>
-        public string LastUpdatedAt { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
     }
 }

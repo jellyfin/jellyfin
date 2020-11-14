@@ -2,7 +2,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class SetShuffleModeGroupRequest.
@@ -10,10 +10,19 @@ namespace MediaBrowser.Controller.SyncPlay
     public class SetShuffleModeGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets the shuffle mode.
+        /// Initializes a new instance of the <see cref="SetShuffleModeGroupRequest"/> class.
+        /// </summary>
+        /// <param name="mode">The shuffle mode.</param>
+        public SetShuffleModeGroupRequest(GroupShuffleMode mode)
+        {
+            Mode = mode;
+        }
+
+        /// <summary>
+        /// Gets the shuffle mode.
         /// </summary>
         /// <value>The shuffle mode.</value>
-        public string Mode { get; set; }
+        public GroupShuffleMode Mode { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.SetShuffleMode;

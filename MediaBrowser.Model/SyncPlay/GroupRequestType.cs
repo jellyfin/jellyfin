@@ -8,26 +8,26 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// A user is requesting to create a new group.
         /// </summary>
-        NewGroup,
+        NewGroup = 0,
 
         /// <summary>
         /// A user is requesting to join a group.
         /// </summary>
-        JoinGroup,
+        JoinGroup = 1,
 
         /// <summary>
         /// A user is requesting to leave a group.
         /// </summary>
-        LeaveGroup,
+        LeaveGroup = 2,
 
         /// <summary>
         /// A user is requesting the list of available groups.
         /// </summary>
-        ListGroups,
+        ListGroups = 3,
 
         /// <summary>
         /// A user is sending a playback command to a group.
         /// </summary>
-        Playback
+        Playback = 4
     }
 }

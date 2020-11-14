@@ -1,10 +1,11 @@
 using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.GroupStates
 {
     /// <summary>
     /// Class WaitingGroupState.
@@ -464,8 +465,7 @@ namespace MediaBrowser.Controller.SyncPlay
                 {
                     // Others are still buffering, tell this client to pause when ready.
                     var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                    var pauseAtTime = currentTime.AddTicks(delayTicks);
-                    command.When = context.DateToUTCString(pauseAtTime);
+                    command.When = currentTime.AddTicks(delayTicks);
                     context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
 
                     Logger.LogInformation("HandleRequest: {0} in group {1}, others still buffering, {2} will pause when ready in {3} seconds.", request.Type, context.GroupId.ToString(), session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds);

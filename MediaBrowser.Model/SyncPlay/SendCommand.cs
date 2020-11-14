@@ -1,4 +1,4 @@
-#nullable disable
+using System;
 
 namespace MediaBrowser.Model.SyncPlay
 {
@@ -7,6 +7,15 @@ namespace MediaBrowser.Model.SyncPlay
     /// </summary>
     public class SendCommand
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SendCommand"/> class.
+        /// </summary>
+        public SendCommand()
+        {
+            GroupId = string.Empty;
+            PlaylistItemId = string.Empty;
+        }
+
         /// <summary>
         /// Gets or sets the group identifier.
         /// </summary>
@@ -23,7 +32,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the UTC time when to execute the command.
         /// </summary>
         /// <value>The UTC time when to execute the command.</value>
-        public string When { get; set; }
+        public DateTime When { get; set; }
 
         /// <summary>
         /// Gets or sets the position ticks.
@@ -41,6 +50,6 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the UTC time when this command has been emitted.
         /// </summary>
         /// <value>The UTC time when this command has been emitted.</value>
-        public string EmittedAt { get; set; }
+        public DateTime EmittedAt { get; set; }
     }
 }

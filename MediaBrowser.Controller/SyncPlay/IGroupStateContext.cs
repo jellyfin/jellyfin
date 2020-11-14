@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.SyncPlay.Queue;
 using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay
@@ -98,13 +99,6 @@ namespace MediaBrowser.Controller.SyncPlay
         GroupUpdate<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data);
 
         /// <summary>
-        /// Converts DateTime to UTC string.
-        /// </summary>
-        /// <param name="dateTime">The date to convert.</param>
-        /// <returns>The UTC string.</returns>
-        string DateToUTCString(DateTime dateTime);
-
-        /// <summary>
         /// Sanitizes the PositionTicks, considers the current playing item when available.
         /// </summary>
         /// <param name="positionTicks">The PositionTicks.</param>
@@ -187,7 +181,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="newItems">The new items to add to the play queue.</param>
         /// <param name="mode">The mode with which the items will be added.</param>
         /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
-        bool AddToPlayQueue(IEnumerable<Guid> newItems, string mode);
+        bool AddToPlayQueue(IEnumerable<Guid> newItems, GroupQueueMode mode);
 
         /// <summary>
         /// Restarts current item in play queue.
@@ -210,13 +204,13 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Sets the repeat mode.
         /// </summary>
         /// <param name="mode">The new mode.</param>
-        void SetRepeatMode(string mode);
+        void SetRepeatMode(GroupRepeatMode mode);
 
         /// <summary>
         /// Sets the shuffle mode.
         /// </summary>
         /// <param name="mode">The new mode.</param>
-        void SetShuffleMode(string mode);
+        void SetShuffleMode(GroupShuffleMode mode);
 
         /// <summary>
         /// Creates a play queue update.

@@ -7,6 +7,7 @@ using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
+using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -118,17 +119,12 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Play")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayPlay(
-            [FromQuery, Required] string playingQueue,
+            [FromQuery, Required] Guid[] playingQueue,
             [FromQuery, Required] int playingItemPosition,
             [FromQuery, Required] long startPositionTicks)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PlayGroupRequest()
-            {
-                PlayingItemPosition = playingItemPosition,
-                StartPositionTicks = startPositionTicks
-            };
-            syncPlayRequest.PlayingQueue.AddRange(RequestHelpers.GetGuids(playingQueue));
+            var syncPlayRequest = new PlayGroupRequest(playingQueue, playingItemPosition, startPositionTicks);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -145,10 +141,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string playlistItemId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new SetPlaylistItemGroupRequest()
-            {
-                PlaylistItemId = playlistItemId
-            };
+            var syncPlayRequest = new SetPlaylistItemGroupRequest(playlistItemId);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -165,8 +158,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string[] playlistItemIds)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new RemoveFromPlaylistGroupRequest();
-            syncPlayRequest.PlaylistItemIds.AddRange(playlistItemIds);
+            var syncPlayRequest = new RemoveFromPlaylistGroupRequest(playlistItemIds);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -185,11 +177,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] int newIndex)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new MovePlaylistItemGroupRequest()
-            {
-                PlaylistItemId = playlistItemId,
-                NewIndex = newIndex
-            };
+            var syncPlayRequest = new MovePlaylistItemGroupRequest(playlistItemId, newIndex);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -197,22 +185,18 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Request to queue items to the playlist of a SyncPlay group.
         /// </summary>
-        /// <param name="itemIds">The items to add. Item ids, comma delimited.</param>
-        /// <param name="mode">The mode in which to queue items.</param>
+        /// <param name="items">The items to add.</param>
+        /// <param name="mode">The mode in which to enqueue the items.</param>
         /// <response code="204">Queue update request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Queue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayQueue(
-            [FromQuery, Required] string itemIds,
-            [FromQuery, Required] string mode)
+            [FromQuery, Required] Guid[] items,
+            [FromQuery, Required] GroupQueueMode mode)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new QueueGroupRequest()
-            {
-                Mode = mode
-            };
-            syncPlayRequest.ItemIds.AddRange(RequestHelpers.GetGuids(itemIds));
+            var syncPlayRequest = new QueueGroupRequest(items, mode);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -274,10 +258,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] long positionTicks)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new SeekGroupRequest()
-            {
-                PositionTicks = positionTicks
-            };
+            var syncPlayRequest = new SeekGroupRequest(positionTicks);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -305,23 +286,11 @@ namespace Jellyfin.Api.Controllers
             IGroupPlaybackRequest syncPlayRequest;
             if (!bufferingDone)
             {
-                syncPlayRequest = new BufferGroupRequest()
-                {
-                    When = when,
-                    PositionTicks = positionTicks,
-                    IsPlaying = isPlaying,
-                    PlaylistItemId = playlistItemId
-                };
+                syncPlayRequest = new BufferGroupRequest(when, positionTicks, isPlaying, playlistItemId);
             }
             else
             {
-                syncPlayRequest = new ReadyGroupRequest()
-                {
-                    When = when,
-                    PositionTicks = positionTicks,
-                    IsPlaying = isPlaying,
-                    PlaylistItemId = playlistItemId
-                };
+                syncPlayRequest = new ReadyGroupRequest(when, positionTicks, isPlaying, playlistItemId);
             }
 
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
@@ -340,10 +309,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] bool ignoreWait)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new IgnoreWaitGroupRequest()
-            {
-                IgnoreWait = ignoreWait
-            };
+            var syncPlayRequest = new IgnoreWaitGroupRequest(ignoreWait);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -360,10 +326,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string playlistItemId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new NextTrackGroupRequest()
-            {
-                PlaylistItemId = playlistItemId
-            };
+            var syncPlayRequest = new NextTrackGroupRequest(playlistItemId);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -380,10 +343,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string playlistItemId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PreviousTrackGroupRequest()
-            {
-                PlaylistItemId = playlistItemId
-            };
+            var syncPlayRequest = new PreviousTrackGroupRequest(playlistItemId);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -397,13 +357,10 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SetRepeatMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySetRepeatMode(
-            [FromQuery, Required] string mode)
+            [FromQuery, Required] GroupRepeatMode mode)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new SetRepeatModeGroupRequest()
-            {
-                Mode = mode
-            };
+            var syncPlayRequest = new SetRepeatModeGroupRequest(mode);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -417,13 +374,10 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SetShuffleMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySetShuffleMode(
-            [FromQuery, Required] string mode)
+            [FromQuery, Required] GroupShuffleMode mode)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new SetShuffleModeGroupRequest()
-            {
-                Mode = mode
-            };
+            var syncPlayRequest = new SetShuffleModeGroupRequest(mode);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -440,10 +394,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] double ping)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PingGroupRequest()
-            {
-                Ping = Convert.ToInt64(ping)
-            };
+            var syncPlayRequest = new PingGroupRequest(Convert.ToInt64(ping));
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }

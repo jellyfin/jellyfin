@@ -2,7 +2,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class SeekGroupRequest.
@@ -10,10 +10,19 @@ namespace MediaBrowser.Controller.SyncPlay
     public class SeekGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Initializes a new instance of the <see cref="SeekGroupRequest"/> class.
+        /// </summary>
+        /// <param name="positionTicks">The position ticks.</param>
+        public SeekGroupRequest(long positionTicks)
+        {
+            PositionTicks = positionTicks;
+        }
+
+        /// <summary>
+        /// Gets the position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
-        public long PositionTicks { get; set; }
+        public long PositionTicks { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.Seek;

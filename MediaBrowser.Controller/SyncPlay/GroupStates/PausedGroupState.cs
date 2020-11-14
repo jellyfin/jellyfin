@@ -1,10 +1,11 @@
 using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.GroupStates
 {
     /// <summary>
     /// Class PausedGroupState.

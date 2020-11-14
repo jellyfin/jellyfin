@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
@@ -7,6 +5,14 @@ namespace MediaBrowser.Model.SyncPlay
     /// </summary>
     public class NewGroupRequest
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NewGroupRequest"/> class.
+        /// </summary>
+        public NewGroupRequest()
+        {
+            GroupName = string.Empty;
+        }
+
         /// <summary>
         /// Gets or sets the group name.
         /// </summary>

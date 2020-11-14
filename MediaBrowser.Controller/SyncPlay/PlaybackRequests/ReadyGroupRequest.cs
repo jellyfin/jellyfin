@@ -3,7 +3,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class ReadyGroupRequest.
@@ -11,28 +11,43 @@ namespace MediaBrowser.Controller.SyncPlay
     public class ReadyGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets when the request has been made by the client.
+        /// Initializes a new instance of the <see cref="ReadyGroupRequest"/> class.
+        /// </summary>
+        /// <param name="when">When the request has been made, as reported by the client.</param>
+        /// <param name="positionTicks">The position ticks.</param>
+        /// <param name="isPlaying">Whether the client playback is unpaused.</param>
+        /// <param name="playlistItemId">The playlist item identifier of the playing item.</param>
+        public ReadyGroupRequest(DateTime when, long positionTicks, bool isPlaying, string playlistItemId)
+        {
+            When = when;
+            PositionTicks = positionTicks;
+            IsPlaying = isPlaying;
+            PlaylistItemId = playlistItemId;
+        }
+
+        /// <summary>
+        /// Gets when the request has been made by the client.
         /// </summary>
         /// <value>The date of the request.</value>
-        public DateTime When { get; set; }
+        public DateTime When { get; }
 
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Gets the position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
-        public long PositionTicks { get; set; }
+        public long PositionTicks { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the client playback is unpaused.
+        /// Gets a value indicating whether the client playback is unpaused.
         /// </summary>
         /// <value>The client playback status.</value>
-        public bool IsPlaying { get; set; }
+        public bool IsPlaying { get; }
 
         /// <summary>
-        /// Gets or sets the playlist item identifier of the playing item.
+        /// Gets the playlist item identifier of the playing item.
         /// </summary>
         /// <value>The playlist item identifier.</value>
-        public string PlaylistItemId { get; set; }
+        public string PlaylistItemId { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.Ready;

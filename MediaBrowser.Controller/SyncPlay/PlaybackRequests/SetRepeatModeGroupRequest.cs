@@ -2,7 +2,7 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
     /// Class SetRepeatModeGroupRequest.
@@ -10,10 +10,19 @@ namespace MediaBrowser.Controller.SyncPlay
     public class SetRepeatModeGroupRequest : IGroupPlaybackRequest
     {
         /// <summary>
-        /// Gets or sets the repeat mode.
+        /// Initializes a new instance of the <see cref="SetRepeatModeGroupRequest"/> class.
+        /// </summary>
+        /// <param name="mode">The repeat mode.</param>
+        public SetRepeatModeGroupRequest(GroupRepeatMode mode)
+        {
+            Mode = mode;
+        }
+
+        /// <summary>
+        /// Gets the repeat mode.
         /// </summary>
         /// <value>The repeat mode.</value>
-        public string Mode { get; set; }
+        public GroupRepeatMode Mode { get; }
 
         /// <inheritdoc />
         public PlaybackRequestType Type { get; } = PlaybackRequestType.SetRepeatMode;

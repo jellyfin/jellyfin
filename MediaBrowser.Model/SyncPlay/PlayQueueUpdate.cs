@@ -1,5 +1,4 @@
-#nullable disable
-
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.SyncPlay
@@ -10,6 +9,14 @@ namespace MediaBrowser.Model.SyncPlay
     public class PlayQueueUpdate
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="PlayQueueUpdate"/> class.
+        /// </summary>
+        public PlayQueueUpdate()
+        {
+            Playlist = new List<QueueItem>();
+        }
+
+        /// <summary>
         /// Gets or sets the request type that originated this update.
         /// </summary>
         /// <value>The reason for the update.</value>
@@ -19,7 +26,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the UTC time of the last change to the playing queue.
         /// </summary>
         /// <value>The UTC time of the last change to the playing queue.</value>
-        public string LastUpdate { get; set; }
+        public DateTime LastUpdate { get; set; }
 
         /// <summary>
         /// Gets or sets the playlist.

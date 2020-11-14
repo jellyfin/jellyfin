@@ -10,6 +10,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
+using MediaBrowser.Controller.SyncPlay.GroupStates;
+using MediaBrowser.Controller.SyncPlay.Queue;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 
@@ -358,7 +360,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 GroupName = GroupName,
                 State = _state.Type,
                 Participants = Participants.Values.Select(session => session.Session.UserName).Distinct().ToList(),
-                LastUpdatedAt = DateToUTCString(DateTime.UtcNow)
+                LastUpdatedAt = DateTime.UtcNow
             };
         }
 
@@ -422,8 +424,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlaylistItemId = PlayQueue.GetPlayingItemPlaylistId(),
                 PositionTicks = PositionTicks,
                 Command = type,
-                When = DateToUTCString(LastActivity),
-                EmittedAt = DateToUTCString(DateTime.UtcNow)
+                When = LastActivity,
+                EmittedAt = DateTime.UtcNow
             };
         }
 
@@ -436,12 +438,6 @@ namespace Emby.Server.Implementations.SyncPlay
                 Type = type,
                 Data = data
             };
-        }
-
-        /// <inheritdoc />
-        public string DateToUTCString(DateTime dateTime)
-        {
-            return dateTime.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture);
         }
 
         /// <inheritdoc />
@@ -580,7 +576,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool AddToPlayQueue(IEnumerable<Guid> newItems, string mode)
+        public bool AddToPlayQueue(IEnumerable<Guid> newItems, GroupQueueMode mode)
         {
             // Ignore on empty list.
             if (!newItems.Any())
@@ -594,7 +590,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return false;
             }
 
-            if (mode.Equals("next", StringComparison.OrdinalIgnoreCase))
+            if (mode.Equals(GroupQueueMode.QueueNext))
             {
                 PlayQueue.QueueNext(newItems);
             }
@@ -648,36 +644,15 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void SetRepeatMode(string mode)
+        public void SetRepeatMode(GroupRepeatMode mode)
         {
-            switch (mode)
-            {
-                case "RepeatOne":
-                    PlayQueue.SetRepeatMode(GroupRepeatMode.RepeatOne);
-                    break;
-                case "RepeatAll":
-                    PlayQueue.SetRepeatMode(GroupRepeatMode.RepeatAll);
-                    break;
-                default:
-                    // On unknown values, default to repeat none.
-                    PlayQueue.SetRepeatMode(GroupRepeatMode.RepeatNone);
-                    break;
-            }
+            PlayQueue.SetRepeatMode(mode);
         }
 
         /// <inheritdoc />
-        public void SetShuffleMode(string mode)
+        public void SetShuffleMode(GroupShuffleMode mode)
         {
-            switch (mode)
-            {
-                case "Shuffle":
-                    PlayQueue.SetShuffleMode(GroupShuffleMode.Shuffle);
-                    break;
-                default:
-                    // On unknown values, default to sorted playlist.
-                    PlayQueue.SetShuffleMode(GroupShuffleMode.Sorted);
-                    break;
-            }
+            PlayQueue.SetShuffleMode(mode);
         }
 
         /// <inheritdoc />
@@ -701,7 +676,7 @@ namespace Emby.Server.Implementations.SyncPlay
             return new PlayQueueUpdate()
             {
                 Reason = reason,
-                LastUpdate = DateToUTCString(PlayQueue.LastChange),
+                LastUpdate = PlayQueue.LastChange,
                 Playlist = PlayQueue.GetPlaylist(),
                 PlayingItemIndex = PlayQueue.PlayingItemIndex,
                 StartPositionTicks = startPositionTicks,
