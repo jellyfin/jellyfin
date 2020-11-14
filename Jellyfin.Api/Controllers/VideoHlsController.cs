@@ -567,6 +567,8 @@ namespace Jellyfin.Api.Controllers
                         args += " " + bitStreamArgs;
                     }
                 }
+
+                args += " -start_at_zero";
             }
             else
             {

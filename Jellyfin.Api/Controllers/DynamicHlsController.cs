@@ -1579,6 +1579,8 @@ namespace Jellyfin.Api.Controllers
                     }
                 }
 
+                args += " -start_at_zero";
+
                 // args += " -flags -global_header";
             }
             else
