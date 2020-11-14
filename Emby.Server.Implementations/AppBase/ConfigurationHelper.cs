@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception)
             {
-                configuration = Activator.CreateInstance(type) ?? throw new ResourceNotFoundException(nameof(type));
+                configuration = Activator.CreateInstance(type) ?? throw new ArgumentException($"Provided path ({type}) is not valid.", nameof(type));
             }
 
             using var stream = new MemoryStream(buffer?.Length ?? 0);
@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.AppBase
             // If the file didn't exist before, or if something has changed, re-save
             if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
             {
-                var directory = Path.GetDirectoryName(path) ?? throw new ResourceNotFoundException(nameof(path));
+                var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
 
                 Directory.CreateDirectory(directory);
                 // Save it after load in case we got new items

@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Session
 
         private void OnConnectionClosed(object? sender, EventArgs e)
         {
-            var connection = sender as IWebSocketConnection ?? throw new ResourceNotFoundException(nameof(sender));
+            var connection = sender as IWebSocketConnection ?? throw new ArgumentException($"{nameof(sender)} is not of type {nameof(IWebSocketConnection)}", nameof(sender));
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
             _sockets.Remove(connection);
             connection.Closed -= OnConnectionClosed;

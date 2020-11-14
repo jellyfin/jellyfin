@@ -228,7 +228,7 @@ namespace Jellyfin.Drawing.Skia
             }
 
             var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
-            var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException(nameof(tempPath));
+            var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
             Directory.CreateDirectory(directory);
             File.Copy(path, tempPath, true);
 
@@ -494,7 +494,7 @@ namespace Jellyfin.Drawing.Skia
             // If all we're doing is resizing then we can stop now
             if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
             {
-                var outputDirectory = Path.GetDirectoryName(outputPath) ?? throw new ResourceNotFoundException(nameof(outputPath));
+                var outputDirectory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
                 Directory.CreateDirectory(outputDirectory);
                 using var outputStream = new SKFileWStream(outputPath);
                 using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
@@ -542,7 +542,7 @@ namespace Jellyfin.Drawing.Skia
                 DrawIndicator(canvas, width, height, options);
             }
 
-            var directory = Path.GetDirectoryName(outputPath) ?? throw new ResourceNotFoundException(nameof(outputPath));
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
             Directory.CreateDirectory(directory);
             using (var outputStream = new SKFileWStream(outputPath))
             {

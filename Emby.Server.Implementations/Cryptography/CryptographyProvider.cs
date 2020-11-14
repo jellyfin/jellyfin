@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Cryptography
                 throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
             }
 
-            using var h = HashAlgorithm.Create(hashMethod) ?? throw new ResourceNotFoundException(nameof(hashMethod));
+            using var h = HashAlgorithm.Create(hashMethod) ?? throw new ResourceNotFoundException($"Unknown hash method: {hashMethod}.");
             if (salt.Length == 0)
             {
                 return h.ComputeHash(bytes);

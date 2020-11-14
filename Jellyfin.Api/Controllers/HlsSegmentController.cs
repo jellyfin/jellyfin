@@ -136,7 +136,7 @@ namespace Jellyfin.Api.Controllers
                 .FirstOrDefault(i =>
                     string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase)
                     && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
-                ?? throw new ResourceNotFoundException(nameof(transcodeFolderPath));
+                ?? throw new ResourceNotFoundException($"Provided path ({transcodeFolderPath}) is not valid.");
 
             return GetFileResult(file, playlistPath);
         }
