@@ -605,7 +605,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetBitStreamArgs(MediaStream stream)
         {
-            // TODO This is auto inserted into the mpegts mux so it might not be needed
+            // TODO This is auto inserted into the mpegts mux so it might not be needed.
             // https://www.ffmpeg.org/ffmpeg-bitstream-filters.html#h264_005fmp4toannexb
             if (IsH264(stream))
             {
@@ -617,7 +617,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (IsAAC(stream))
             {
-                // convert adts header(mpegts) to asc header(mp4)
+                // Convert adts header(mpegts) to asc header(mp4).
                 return "-bsf:a aac_adtstoasc";
             }
             else

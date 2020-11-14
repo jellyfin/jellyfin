@@ -448,7 +448,7 @@ namespace Jellyfin.Api.Controllers
                             || string.Equals(state.MediaSource.Container, "hls", StringComparison.OrdinalIgnoreCase)))
                     {
                         bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.AudioStream);
-                        bitStreamArgs = !string.IsNullOrEmpty(bitStreamArgs) ? " " + bitStreamArgs : string.Empty;
+                        bitStreamArgs = string.IsNullOrEmpty(bitStreamArgs) ? string.Empty : " " + bitStreamArgs;;
                     }
 
                     return "-acodec copy -strict -2" + bitStreamArgs;
