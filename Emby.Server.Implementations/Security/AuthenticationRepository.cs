@@ -29,9 +29,6 @@ namespace Emby.Server.Implementations.Security
             {
                 "create table if not exists Tokens (Id INTEGER PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT NOT NULL, AppName TEXT NOT NULL, AppVersion TEXT NOT NULL, DeviceName TEXT NOT NULL, UserId TEXT, UserName TEXT, IsActive BIT NOT NULL, DateCreated DATETIME NOT NULL, DateLastActivity DATETIME NOT NULL)",
                 "create table if not exists Devices (Id TEXT NOT NULL PRIMARY KEY, CustomName TEXT, Capabilities TEXT)",
-                "drop index if exists idx_AccessTokens",
-                "drop index if exists Tokens1",
-                "drop index if exists Tokens2",
 
                 "create index if not exists IX_Tokens3 on Tokens (AccessToken, DateLastActivity)",
                 "create index if not exists IX_Tokens4 on Tokens (Id, DateLastActivity)",
@@ -43,40 +40,6 @@ namespace Emby.Server.Implementations.Security
                 var tableNewlyCreated = !TableExists(connection, "Tokens");
 
                 connection.RunQueries(queries);
-
-                TryMigrate(connection, tableNewlyCreated);
-            }
-        }
-
-        private void TryMigrate(ManagedConnection connection, bool tableNewlyCreated)
-        {
-            try
-            {
-                if (tableNewlyCreated && TableExists(connection, "AccessTokens"))
-                {
-                    connection.RunInTransaction(
-                    db =>
-                    {
-                        var existingColumnNames = GetColumnNames(db, "AccessTokens");
-
-                        AddColumn(db, "AccessTokens", "UserName", "TEXT", existingColumnNames);
-                        AddColumn(db, "AccessTokens", "DateLastActivity", "DATETIME", existingColumnNames);
-                        AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
-                    }, TransactionMode);
-
-                    connection.RunQueries(new[]
-                    {
-                        "update accesstokens set DateLastActivity=DateCreated where DateLastActivity is null",
-                        "update accesstokens set DeviceName='Unknown' where DeviceName is null",
-                        "update accesstokens set AppName='Unknown' where AppName is null",
-                        "update accesstokens set AppVersion='1' where AppVersion is null",
-                        "INSERT INTO Tokens (AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity) SELECT AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity FROM AccessTokens where deviceid not null and devicename not null and appname not null and isactive=1"
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error migrating authentication database");
             }
         }
 
