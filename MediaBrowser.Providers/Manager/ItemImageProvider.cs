@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -481,7 +482,7 @@ namespace MediaBrowser.Providers.Manager
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                     return true;
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     // Sometimes providers send back bad url's. Just move to the next image
                     if (ex.StatusCode.HasValue
@@ -595,7 +596,7 @@ namespace MediaBrowser.Providers.Manager
                         cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     // Sometimes providers send back bad urls. Just move onto the next image
                     if (ex.StatusCode.HasValue
