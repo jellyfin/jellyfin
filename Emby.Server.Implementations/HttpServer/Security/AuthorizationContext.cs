@@ -245,7 +245,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return null;
             }
 
-            var parts = authorizationHeader.Split(new[] { ' ' }, 2);
+            var parts = authorizationHeader.Split(' ', 2);
 
             // There should be at least to parts
             if (parts.Length != 2)
@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             foreach (var item in parts)
             {
-                var param = item.Trim().Split(new[] { '=' }, 2);
+                var param = item.Trim().Split('=', 2);
 
                 if (param.Length == 2)
                 {

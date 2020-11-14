@@ -1032,7 +1032,7 @@ namespace Emby.Server.Implementations
                     else
                     {
                         // No metafile, so lets see if the folder is versioned.
-                        metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
+                        metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
 
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version parsedVersion))
