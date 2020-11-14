@@ -42,7 +42,7 @@ namespace Jellyfin.Api.ModelBinders
 
                 if (value != null)
                 {
-                    var splitValues = value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                    var splitValues = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                     var typedValues = GetParsedResult(splitValues, elementType, converter);
                     bindingContext.Result = ModelBindingResult.Success(typedValues);
                 }
