@@ -249,7 +249,7 @@ namespace Jellyfin.Api.Controllers
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
-            var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
+            var ext = response.Content.Headers.ContentType.MediaType.Split('/')[^1];
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));

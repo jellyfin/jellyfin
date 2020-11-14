@@ -352,7 +352,7 @@ namespace MediaBrowser.Providers.Subtitles
             var parts = id.Split('_', 2);
 
             var provider = GetProvider(parts[0]);
-            id = parts[1];
+            id = parts[^1];
 
             return provider.GetSubtitles(id, cancellationToken);
         }
