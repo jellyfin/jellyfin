@@ -269,18 +269,8 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="itemId">The new playing item identifier.</param>
         public void SetPlayingItemById(Guid itemId)
         {
-            PlayingItemIndex = NoPlayingItemIndex;
-
             var playlist = GetPlaylistInternal();
-            foreach (var item in playlist)
-            {
-                if (item.ItemId.Equals(itemId))
-                {
-                    PlayingItemIndex = playlist.IndexOf(item);
-                    break;
-                }
-            }
-
+            PlayingItemIndex = playlist.FindIndex(item => item.ItemId.Equals(itemId));
             LastChange = DateTime.UtcNow;
         }
 
@@ -291,19 +281,10 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <returns><c>true</c> if playing item has been set; <c>false</c> if item is not in the playlist.</returns>
         public bool SetPlayingItemByPlaylistId(string playlistItemId)
         {
-            PlayingItemIndex = NoPlayingItemIndex;
-
             var playlist = GetPlaylistInternal();
-            foreach (var item in playlist)
-            {
-                if (item.PlaylistItemId.Equals(playlistItemId, StringComparison.OrdinalIgnoreCase))
-                {
-                    PlayingItemIndex = playlist.IndexOf(item);
-                    break;
-                }
-            }
-
+            PlayingItemIndex = playlist.FindIndex(item => item.PlaylistItemId.Equals(playlistItemId, StringComparison.OrdinalIgnoreCase));
             LastChange = DateTime.UtcNow;
+
             return PlayingItemIndex != NoPlayingItemIndex;
         }
 
@@ -380,16 +361,7 @@ namespace MediaBrowser.Controller.SyncPlay
             var playlist = GetPlaylistInternal();
             var playingItem = GetPlayingItem();
 
-            var oldIndex = -1;
-            foreach (var item in playlist)
-            {
-                if (item.PlaylistItemId.Equals(playlistItemId, StringComparison.OrdinalIgnoreCase))
-                {
-                    oldIndex = playlist.IndexOf(item);
-                    break;
-                }
-            }
-
+            var oldIndex = playlist.FindIndex(item => item.PlaylistItemId.Equals(playlistItemId, StringComparison.OrdinalIgnoreCase));
             if (oldIndex < 0)
             {
                 return false;
