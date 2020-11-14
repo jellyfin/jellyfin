@@ -25,13 +25,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override GroupStateType Type
-        {
-            get
-            {
-                return GroupStateType.Waiting;
-            }
-        }
+        public override GroupStateType Type { get; } = GroupStateType.Waiting;
 
         /// <summary>
         /// Gets or sets a value indicating whether playback should resume when group is ready.
@@ -649,6 +643,32 @@ namespace MediaBrowser.Controller.SyncPlay
                 context.SetState(newState);
 
                 Logger.LogDebug("HandleRequest: {0} in group {1}, no previous track available.", request.Type, context.GroupId.ToString());
+            }
+        }
+
+        /// <inheritdoc />
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, IgnoreWaitGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        {
+            context.SetIgnoreGroupWait(session, request.IgnoreWait);
+
+            if (!context.IsBuffering())
+            {
+                Logger.LogDebug("HandleRequest: {0} in group {1}, returning to previous state.", request.Type, context.GroupId.ToString());
+
+                if (ResumePlaying)
+                {
+                    // Client, that was buffering, stopped following playback.
+                    var playingState = new PlayingGroupState(Logger);
+                    context.SetState(playingState);
+                    var unpauseRequest = new UnpauseGroupRequest();
+                    playingState.HandleRequest(context, Type, unpauseRequest, session, cancellationToken);
+                }
+                else
+                {
+                    // Group is ready, returning to previous state.
+                    var pausedState = new PausedGroupState(Logger);
+                    context.SetState(pausedState);
+                }
             }
         }
     }

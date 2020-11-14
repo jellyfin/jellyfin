@@ -25,13 +25,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override GroupStateType Type
-        {
-            get
-            {
-                return GroupStateType.Paused;
-            }
-        }
+        public override GroupStateType Type { get; } = GroupStateType.Paused;
 
         /// <inheritdoc />
         public override void SessionJoined(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)

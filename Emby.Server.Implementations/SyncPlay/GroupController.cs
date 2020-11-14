@@ -372,12 +372,10 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetIgnoreGroupWait(SessionInfo session, bool ignoreGroupWait)
         {
-            if (!Participants.ContainsKey(session.Id))
+            if (Participants.TryGetValue(session.Id, out GroupMember value))
             {
-                return;
+                value.IgnoreGroupWait = ignoreGroupWait;
             }
-
-            Participants[session.Id].IgnoreGroupWait = ignoreGroupWait;
         }
 
         /// <inheritdoc />

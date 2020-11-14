@@ -25,13 +25,7 @@ namespace MediaBrowser.Controller.SyncPlay
         }
 
         /// <inheritdoc />
-        public override GroupStateType Type
-        {
-            get
-            {
-                return GroupStateType.Playing;
-            }
-        }
+        public override GroupStateType Type { get; } = GroupStateType.Playing;
 
         /// <summary>
         /// Gets or sets a value indicating whether requests for buffering should be ignored.
