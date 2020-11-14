@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
                 if (param.Length == 2)
                 {
-                    var value = NormalizeValue(param[1].Trim(new[] { '"' }));
+                    var value = NormalizeValue(param[1].Trim('"'));
                     result[param[0]] = value;
                 }
             }
