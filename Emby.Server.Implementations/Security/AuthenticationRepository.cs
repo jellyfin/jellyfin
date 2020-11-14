@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Security
         public AuthenticationRepository(ILogger<AuthenticationRepository> logger, IServerConfigurationManager config)
             : base(logger)
         {
-            DbFilePath = Path.Combine(config.ApplicationPaths.DataPath, "authentication.db");
+            DbFilePath = Path.Combine(config.ApplicationPaths.DataPath, "jellyfin.db");
         }
 
         public void Initialize()
@@ -33,9 +33,9 @@ namespace Emby.Server.Implementations.Security
                 "drop index if exists Tokens1",
                 "drop index if exists Tokens2",
 
-                "create index if not exists Tokens3 on Tokens (AccessToken, DateLastActivity)",
-                "create index if not exists Tokens4 on Tokens (Id, DateLastActivity)",
-                "create index if not exists Devices1 on Devices (Id)"
+                "create index if not exists IX_Tokens3 on Tokens (AccessToken, DateLastActivity)",
+                "create index if not exists IX_Tokens4 on Tokens (Id, DateLastActivity)",
+                "create index if not exists IX_Devices1 on Devices (Id)"
             };
 
             using (var connection = GetConnection())
