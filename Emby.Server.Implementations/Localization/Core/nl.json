@@ -113,5 +113,7 @@
     "TasksChannelsCategory": "Internet Kanalen",
     "TasksApplicationCategory": "Applicatie",
     "TasksLibraryCategory": "Bibliotheek",
-    "TasksMaintenanceCategory": "Onderhoud"
+    "TasksMaintenanceCategory": "Onderhoud",
+    "TaskCleanActivityLogDescription": "Verwijder activiteiten logs ouder dan de ingestelde tijd.",
+    "TaskCleanActivityLog": "Leeg activiteiten logboek"
 }

@@ -170,7 +170,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 _logger.LogError(e, "Failed to retrieve series with remote id {RemoteId}", id);
             }
 
-            return result?.Data.First().Id.ToString();
+            return result?.Data[0].Id.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>

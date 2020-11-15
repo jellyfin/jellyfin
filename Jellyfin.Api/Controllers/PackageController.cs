@@ -154,12 +154,13 @@ namespace Jellyfin.Api.Controllers
         /// <param name="repositoryInfos">The list of package repositories.</param>
         /// <response code="204">Package repositories saved.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpOptions("Repositories")]
+        [HttpPost("Repositories")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SetRepositories([FromBody] List<RepositoryInfo> repositoryInfos)
         {
             _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
+            _serverConfigurationManager.SaveConfiguration();
             return NoContent();
         }
     }

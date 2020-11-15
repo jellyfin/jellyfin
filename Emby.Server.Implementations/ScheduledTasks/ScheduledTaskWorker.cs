@@ -653,7 +653,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     try
                     {
                         _logger.LogInformation(Name + ": Waiting on Task");
-                        var exited = Task.WaitAll(new[] { task }, 2000);
+                        var exited = task.Wait(2000);
 
                         if (exited)
                         {

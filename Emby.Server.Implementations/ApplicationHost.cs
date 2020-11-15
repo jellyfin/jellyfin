@@ -126,7 +126,6 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpClientFactory _httpClientFactory;
-
         private string[] _urlPrefixes;
 
         /// <summary>
@@ -497,24 +496,11 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            if (Plugins != null)
-            {
-                var pluginBuilder = new StringBuilder();
-
-                foreach (var plugin in Plugins)
-                {
-                    pluginBuilder.Append(plugin.Name)
-                        .Append(' ')
-                        .Append(plugin.Version)
-                        .AppendLine();
-                }
-
-                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
-            }
-
             DiscoverTypes();
 
             RegisterServices();
+
+            RegisterPluginServices();
         }
 
         /// <summary>
@@ -779,9 +765,23 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _plugins = GetExports<IPlugin>()
-                        .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
+
+            if (Plugins != null)
+            {
+                var pluginBuilder = new StringBuilder();
+
+                foreach (var plugin in Plugins)
+                {
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
+                }
+
+                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
+            }
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
 
@@ -812,21 +812,6 @@ namespace Emby.Server.Implementations
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
 
-        private IPlugin LoadPlugin(IPlugin plugin)
-        {
-            try
-            {
-                plugin.RegisterServices(ServiceCollection);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
-                return null;
-            }
-
-            return plugin;
-        }
-
         /// <summary>
         /// Discovers the types.
         /// </summary>
@@ -835,6 +820,22 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Loading assemblies");
 
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
+        }
+
+        private void RegisterPluginServices()
+        {
+            foreach (var pluginServiceRegistrator in GetExportTypes<IPluginServiceRegistrator>())
+            {
+                try
+                {
+                    var instance = (IPluginServiceRegistrator)Activator.CreateInstance(pluginServiceRegistrator);
+                    instance.RegisterServices(ServiceCollection);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error registering plugin services from {Assembly}.", pluginServiceRegistrator.Assembly);
+                }
+            }
         }
 
         private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
@@ -996,6 +997,12 @@ namespace Emby.Server.Implementations
         {
             var minimumVersion = new Version(0, 0, 0, 1);
             var versions = new List<LocalPlugin>();
+            if (!Directory.Exists(path))
+            {
+                // Plugin path doesn't exist, don't try to enumerate subfolders.
+                return Enumerable.Empty<LocalPlugin>();
+            }
+
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
 
             foreach (var dir in directories)
@@ -1026,7 +1033,7 @@ namespace Emby.Server.Implementations
                     else
                     {
                         // No metafile, so lets see if the folder is versioned.
-                        metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
+                        metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
 
                         int versionIndex = dir.LastIndexOf('_');
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version parsedVersion))
