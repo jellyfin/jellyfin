@@ -49,21 +49,5 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Maps a session to a group.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <param name="group">The group.</param>
-        /// <exception cref="InvalidOperationException">Thrown when the user is in another group already.</exception>
-        void AddSessionToGroup(SessionInfo session, IGroupController group);
-
-        /// <summary>
-        /// Unmaps a session from a group.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <param name="group">The group.</param>
-        /// <exception cref="InvalidOperationException">Thrown when the user is not found in the specified group.</exception>
-        void RemoveSessionFromGroup(SessionInfo session, IGroupController group);
     }
 }

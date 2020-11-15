@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Controller.Session;
@@ -16,9 +17,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// <param name="items">The playlist ids of the items to remove.</param>
         public RemoveFromPlaylistGroupRequest(string[] items)
         {
-            var list = new List<string>();
-            list.AddRange(items);
-            PlaylistItemIds = list;
+            PlaylistItemIds = items ?? Array.Empty<string>();
         }
 
         /// <summary>

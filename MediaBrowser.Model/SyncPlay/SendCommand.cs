@@ -10,23 +10,33 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommand"/> class.
         /// </summary>
-        public SendCommand()
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="playlistItemId">The playlist identifier of the playing item.</param>
+        /// <param name="when">The UTC time when to execute the command.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="positionTicks">The position ticks, for commands that require it.</param>
+        /// <param name="emittedAt">The UTC time when this command has been emitted.</param>
+        public SendCommand(Guid groupId, string playlistItemId, DateTime when, SendCommandType command, long? positionTicks, DateTime emittedAt)
         {
-            GroupId = string.Empty;
-            PlaylistItemId = string.Empty;
+            GroupId = groupId;
+            PlaylistItemId = playlistItemId;
+            When = when;
+            Command = command;
+            PositionTicks = positionTicks;
+            EmittedAt = emittedAt;
         }
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
-        public string GroupId { get; set; }
+        public Guid GroupId { get; }
 
         /// <summary>
-        /// Gets or sets the playlist identifier of the playing item.
+        /// Gets the playlist identifier of the playing item.
         /// </summary>
         /// <value>The playlist identifier of the playing item.</value>
-        public string PlaylistItemId { get; set; }
+        public string PlaylistItemId { get; }
 
         /// <summary>
         /// Gets or sets the UTC time when to execute the command.
@@ -35,21 +45,21 @@ namespace MediaBrowser.Model.SyncPlay
         public DateTime When { get; set; }
 
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Gets the position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
-        public long? PositionTicks { get; set; }
+        public long? PositionTicks { get; }
 
         /// <summary>
-        /// Gets or sets the command.
+        /// Gets the command.
         /// </summary>
         /// <value>The command.</value>
-        public SendCommandType Command { get; set; }
+        public SendCommandType Command { get; }
 
         /// <summary>
-        /// Gets or sets the UTC time when this command has been emitted.
+        /// Gets the UTC time when this command has been emitted.
         /// </summary>
         /// <value>The UTC time when this command has been emitted.</value>
-        public DateTime EmittedAt { get; set; }
+        public DateTime EmittedAt { get; }
     }
 }

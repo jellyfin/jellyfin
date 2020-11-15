@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             if (playingItemRemoved && !context.PlayQueue.IsItemPlaying())
             {
-                Logger.LogDebug("HandleRequest: {0} in group {1}, play queue is empty.", request.Type, context.GroupId.ToString());
+                Logger.LogDebug("HandleRequest: {RequestType} in group {GroupId}, play queue is empty.", request.Type, context.GroupId.ToString());
 
                 IGroupState idleState = new IdleGroupState(Logger);
                 context.SetState(idleState);
@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             if (!result)
             {
-                Logger.LogError("HandleRequest: {0} in group {1}, unable to move item in play queue.", request.Type, context.GroupId.ToString());
+                Logger.LogError("HandleRequest: {RequestType} in group {GroupId}, unable to move item in play queue.", request.Type, context.GroupId.ToString());
                 return;
             }
 
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             if (!result)
             {
-                Logger.LogError("HandleRequest: {0} in group {1}, unable to add items to play queue.", request.Type, context.GroupId.ToString());
+                Logger.LogError("HandleRequest: {RequestType} in group {GroupId}, unable to add items to play queue.", request.Type, context.GroupId.ToString());
                 return;
             }
 
@@ -203,18 +203,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         protected void SendGroupStateUpdate(IGroupStateContext context, IGroupPlaybackRequest reason, SessionInfo session, CancellationToken cancellationToken)
         {
             // Notify relevant state change event.
-            var stateUpdate = new GroupStateUpdate()
-            {
-                State = Type,
-                Reason = reason.Type
-            };
+            var stateUpdate = new GroupStateUpdate(Type, reason.Type);
             var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.StateUpdate, stateUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
         }
 
         private void UnhandledRequest(IGroupPlaybackRequest request)
         {
-            Logger.LogWarning("HandleRequest: unhandled {0} request for {1} state.", request.Type, Type);
+            Logger.LogWarning("HandleRequest: unhandled {RequestType} request in {StateType} state.", request.Type, Type);
         }
     }
 }

@@ -94,7 +94,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Sets a new playlist. Playing item is reset.
         /// </summary>
         /// <param name="items">The new items of the playlist.</param>
-        public void SetPlaylist(IEnumerable<Guid> items)
+        public void SetPlaylist(IReadOnlyList<Guid> items)
         {
             SortedPlaylist.Clear();
             ShuffledPlaylist.Clear();
@@ -114,7 +114,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Appends new items to the playlist. The specified order is mantained.
         /// </summary>
         /// <param name="items">The items to add to the playlist.</param>
-        public void Queue(IEnumerable<Guid> items)
+        public void Queue(IReadOnlyList<Guid> items)
         {
             var newItems = CreateQueueItemsFromArray(items);
 
@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Adds new items to the playlist right after the playing item. The specified order is mantained.
         /// </summary>
         /// <param name="items">The items to add to the playlist.</param>
-        public void QueueNext(IEnumerable<Guid> items)
+        public void QueueNext(IReadOnlyList<Guid> items)
         {
             var newItems = CreateQueueItemsFromArray(items);
 
@@ -312,13 +312,12 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// </summary>
         /// <param name="playlistItemIds">The items to remove.</param>
         /// <returns><c>true</c> if playing item got removed; <c>false</c> otherwise.</returns>
-        public bool RemoveFromPlaylist(IEnumerable<string> playlistItemIds)
+        public bool RemoveFromPlaylist(IReadOnlyList<string> playlistItemIds)
         {
             var playingItem = GetPlayingItem();
-            var playlistItemIdsList = playlistItemIds.ToList();
 
-            SortedPlaylist.RemoveAll(item => playlistItemIdsList.Contains(item.PlaylistItemId));
-            ShuffledPlaylist.RemoveAll(item => playlistItemIdsList.Contains(item.PlaylistItemId));
+            SortedPlaylist.RemoveAll(item => playlistItemIds.Contains(item.PlaylistItemId));
+            ShuffledPlaylist.RemoveAll(item => playlistItemIds.Contains(item.PlaylistItemId));
 
             LastChange = DateTime.UtcNow;
 
@@ -369,8 +368,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
 
             var queueItem = playlist[oldIndex];
             playlist.RemoveAt(oldIndex);
-            newIndex = Math.Min(newIndex, playlist.Count);
-            newIndex = Math.Max(newIndex, 0);
+            newIndex = Math.Clamp(newIndex, 0, playlist.Count);
             playlist.Insert(newIndex, queueItem);
 
             LastChange = DateTime.UtcNow;
@@ -489,7 +487,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
                 }
                 else
                 {
-                    PlayingItemIndex--;
+                    PlayingItemIndex = SortedPlaylist.Count - 1;
                     return false;
                 }
             }
@@ -519,7 +517,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
                 }
                 else
                 {
-                    PlayingItemIndex++;
+                    PlayingItemIndex = 0;
                     return false;
                 }
             }
@@ -558,7 +556,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Creates a list from the array of items. Each item is given an unique playlist identifier.
         /// </summary>
         /// <returns>The list of queue items.</returns>
-        private List<QueueItem> CreateQueueItemsFromArray(IEnumerable<Guid> items)
+        private List<QueueItem> CreateQueueItemsFromArray(IReadOnlyList<Guid> items)
         {
             var list = new List<QueueItem>();
             foreach (var item in items)

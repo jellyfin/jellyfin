@@ -18,9 +18,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// <param name="mode">The enqueue mode.</param>
         public QueueGroupRequest(Guid[] items, GroupQueueMode mode)
         {
-            var list = new List<Guid>();
-            list.AddRange(items);
-            ItemIds = list;
+            ItemIds = items ?? Array.Empty<Guid>();
             Mode = mode;
         }
 

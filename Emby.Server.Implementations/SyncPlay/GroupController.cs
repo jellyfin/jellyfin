@@ -46,11 +46,6 @@ namespace Emby.Server.Implementations.SyncPlay
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The SyncPlay manager.
-        /// </summary>
-        private readonly ISyncPlayManager _syncPlayManager;
-
-        /// <summary>
         /// Internal group state.
         /// </summary>
         /// <value>The group's state.</value>
@@ -63,19 +58,16 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="userManager">The user manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="syncPlayManager">The SyncPlay manager.</param>
         public GroupController(
             ILogger logger,
             IUserManager userManager,
             ISessionManager sessionManager,
-            ILibraryManager libraryManager,
-            ISyncPlayManager syncPlayManager)
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _userManager = userManager;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
-            _syncPlayManager = syncPlayManager;
 
             _state = new IdleGroupState(_logger);
         }
@@ -168,7 +160,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// </summary>
         /// <param name="from">The current session.</param>
         /// <param name="type">The filtering type.</param>
-        /// <returns>The array of sessions matching the filter.</returns>
+        /// <returns>The list of sessions matching the filter.</returns>
         private IEnumerable<SessionInfo> FilterSessions(SessionInfo from, SyncPlayBroadcastType type)
         {
             return type switch
@@ -209,7 +201,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="user">The user.</param>
         /// <param name="queue">The queue.</param>
         /// <returns><c>true</c> if the user can access all the items in the queue, <c>false</c> otherwise.</returns>
-        private bool HasAccessToQueue(User user, IEnumerable<Guid> queue)
+        private bool HasAccessToQueue(User user, IReadOnlyList<Guid> queue)
         {
             // Check if queue is empty.
             if (!queue?.Any() ?? true)
@@ -234,7 +226,7 @@ namespace Emby.Server.Implementations.SyncPlay
             return true;
         }
 
-        private bool AllUsersHaveAccessToQueue(IEnumerable<Guid> queue)
+        private bool AllUsersHaveAccessToQueue(IReadOnlyList<Guid> queue)
         {
             // Check if queue is empty.
             if (!queue?.Any() ?? true)
@@ -262,7 +254,6 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             GroupName = request.GroupName;
             AddSession(session);
-            _syncPlayManager.AddSessionToGroup(session, this);
 
             var sessionIsPlayingAnItem = session.FullNowPlayingItem != null;
 
@@ -270,7 +261,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             if (sessionIsPlayingAnItem)
             {
-                var playlist = session.NowPlayingQueue.Select(item => item.Id);
+                var playlist = session.NowPlayingQueue.Select(item => item.Id).ToList();
                 PlayQueue.Reset();
                 PlayQueue.SetPlaylist(playlist);
                 PlayQueue.SetPlayingItemById(session.FullNowPlayingItem.Id);
@@ -290,14 +281,13 @@ namespace Emby.Server.Implementations.SyncPlay
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
-            _logger.LogInformation("InitGroup: {0} created group {1}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("InitGroup: {SessionId} created group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
         public void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
             AddSession(session);
-            _syncPlayManager.AddSessionToGroup(session, this);
 
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
@@ -307,7 +297,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
-            _logger.LogInformation("SessionJoin: {0} joined group {1}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("SessionJoin: {SessionId} joined group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
@@ -321,7 +311,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
-            _logger.LogInformation("SessionRestore: {0} re-joined group {1}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("SessionRestore: {SessionId} re-joined group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
@@ -330,7 +320,6 @@ namespace Emby.Server.Implementations.SyncPlay
             _state.SessionLeaving(this, _state.Type, session, cancellationToken);
 
             RemoveSession(session);
-            _syncPlayManager.RemoveSessionFromGroup(session, this);
 
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupLeft, GroupId.ToString());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
@@ -338,7 +327,7 @@ namespace Emby.Server.Implementations.SyncPlay
             var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserLeft, session.UserName);
             SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
-            _logger.LogInformation("SessionLeave: {0} left group {1}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("SessionLeave: {SessionId} left group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
@@ -347,27 +336,21 @@ namespace Emby.Server.Implementations.SyncPlay
             // The server's job is to maintain a consistent state for clients to reference
             // and notify clients of state changes. The actual syncing of media playback
             // happens client side. Clients are aware of the server's time and use it to sync.
-            _logger.LogInformation("HandleRequest: {0} requested {1}, group {2} in {3} state.", session.Id, request.Type, GroupId.ToString(), _state.Type);
+            _logger.LogInformation("HandleRequest: {SessionId} requested {RequestType}, group {GroupId} is {StateType}.", session.Id, request.Type, GroupId.ToString(), _state.Type);
             request.Apply(this, _state, session, cancellationToken);
         }
 
         /// <inheritdoc />
         public GroupInfoDto GetInfo()
         {
-            return new GroupInfoDto()
-            {
-                GroupId = GroupId.ToString(),
-                GroupName = GroupName,
-                State = _state.Type,
-                Participants = Participants.Values.Select(session => session.Session.UserName).Distinct().ToList(),
-                LastUpdatedAt = DateTime.UtcNow
-            };
+            var participants = Participants.Values.Select(session => session.Session.UserName).Distinct().ToList();
+            return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow);
         }
 
         /// <inheritdoc />
         public bool HasAccessToPlayQueue(User user)
         {
-            var items = PlayQueue.GetPlaylist().Select(item => item.ItemId);
+            var items = PlayQueue.GetPlaylist().Select(item => item.ItemId).ToList();
             return HasAccessToQueue(user, items);
         }
 
@@ -383,7 +366,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetState(IGroupState state)
         {
-            _logger.LogInformation("SetState: {0} switching from {1} to {2}.", GroupId.ToString(), _state.Type, state.Type);
+            _logger.LogInformation("SetState: {GroupId} switching from {FromStateType} to {ToStateType}.", GroupId.ToString(), _state.Type, state.Type);
             this._state = state;
         }
 
@@ -418,26 +401,19 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public SendCommand NewSyncPlayCommand(SendCommandType type)
         {
-            return new SendCommand()
-            {
-                GroupId = GroupId.ToString(),
-                PlaylistItemId = PlayQueue.GetPlayingItemPlaylistId(),
-                PositionTicks = PositionTicks,
-                Command = type,
-                When = LastActivity,
-                EmittedAt = DateTime.UtcNow
-            };
+            return new SendCommand(
+                GroupId,
+                PlayQueue.GetPlayingItemPlaylistId(),
+                LastActivity,
+                type,
+                PositionTicks,
+                DateTime.UtcNow);
         }
 
         /// <inheritdoc />
         public GroupUpdate<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data)
         {
-            return new GroupUpdate<T>()
-            {
-                GroupId = GroupId.ToString(),
-                Type = type,
-                Data = data
-            };
+            return new GroupUpdate<T>(GroupId, type, data);
         }
 
         /// <inheritdoc />
@@ -501,10 +477,10 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool SetPlayQueue(IEnumerable<Guid> playQueue, int playingItemPosition, long startPositionTicks)
+        public bool SetPlayQueue(IReadOnlyList<Guid> playQueue, int playingItemPosition, long startPositionTicks)
         {
             // Ignore on empty queue or invalid item position.
-            if (!playQueue.Any() || playingItemPosition >= playQueue.Count() || playingItemPosition < 0)
+            if (playQueue.Count == 0 || playingItemPosition >= playQueue.Count || playingItemPosition < 0)
             {
                 return false;
             }
@@ -547,7 +523,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool RemoveFromPlayQueue(IEnumerable<string> playlistItemIds)
+        public bool RemoveFromPlayQueue(IReadOnlyList<string> playlistItemIds)
         {
             var playingItemRemoved = PlayQueue.RemoveFromPlaylist(playlistItemIds);
             if (playingItemRemoved)
@@ -576,10 +552,10 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool AddToPlayQueue(IEnumerable<Guid> newItems, GroupQueueMode mode)
+        public bool AddToPlayQueue(IReadOnlyList<Guid> newItems, GroupQueueMode mode)
         {
             // Ignore on empty list.
-            if (!newItems.Any())
+            if (newItems.Count == 0)
             {
                 return false;
             }
@@ -673,16 +649,14 @@ namespace Emby.Server.Implementations.SyncPlay
                 startPositionTicks += Math.Max(elapsedTime.Ticks, 0);
             }
 
-            return new PlayQueueUpdate()
-            {
-                Reason = reason,
-                LastUpdate = PlayQueue.LastChange,
-                Playlist = PlayQueue.GetPlaylist(),
-                PlayingItemIndex = PlayQueue.PlayingItemIndex,
-                StartPositionTicks = startPositionTicks,
-                ShuffleMode = PlayQueue.ShuffleMode,
-                RepeatMode = PlayQueue.RepeatMode
-            };
+            return new PlayQueueUpdate(
+                reason,
+                PlayQueue.LastChange,
+                PlayQueue.GetPlaylist(),
+                PlayQueue.PlayingItemIndex,
+                startPositionTicks,
+                PlayQueue.ShuffleMode,
+                PlayQueue.RepeatMode);
         }
     }
 }

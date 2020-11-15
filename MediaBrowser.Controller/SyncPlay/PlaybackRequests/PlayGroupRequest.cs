@@ -19,9 +19,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// <param name="startPositionTicks">The start position ticks.</param>
         public PlayGroupRequest(Guid[] playingQueue, int playingItemPosition, long startPositionTicks)
         {
-            var list = new List<Guid>();
-            list.AddRange(playingQueue);
-            PlayingQueue = list;
+            PlayingQueue = playingQueue ?? Array.Empty<Guid>();
             PlayingItemPosition = playingItemPosition;
             StartPositionTicks = startPositionTicks;
         }

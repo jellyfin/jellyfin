@@ -72,145 +72,14 @@ namespace Emby.Server.Implementations.SyncPlay
             _userManager = userManager;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
-
             _sessionManager.SessionStarted += OnSessionManagerSessionStarted;
-            _sessionManager.SessionEnded += OnSessionManagerSessionEnded;
-            _sessionManager.PlaybackStart += OnSessionManagerPlaybackStart;
-            _sessionManager.PlaybackStopped += OnSessionManagerPlaybackStopped;
         }
-
-        /// <summary>
-        /// Gets all groups.
-        /// </summary>
-        /// <value>All groups.</value>
-        public IEnumerable<IGroupController> Groups => _groups.Values;
 
         /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and optionally managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
-            _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
-            _sessionManager.PlaybackStart -= OnSessionManagerPlaybackStart;
-            _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
-
-            _disposed = true;
-        }
-
-        private void OnSessionManagerSessionStarted(object sender, SessionEventArgs e)
-        {
-            var session = e.SessionInfo;
-            if (!IsSessionInGroup(session))
-            {
-                return;
-            }
-
-            var groupId = GetSessionGroup(session) ?? Guid.Empty;
-            var request = new JoinGroupRequest()
-            {
-                GroupId = groupId
-            };
-            JoinGroup(session, groupId, request, CancellationToken.None);
-        }
-
-        private void OnSessionManagerSessionEnded(object sender, SessionEventArgs e)
-        {
-            var session = e.SessionInfo;
-            if (!IsSessionInGroup(session))
-            {
-                return;
-            }
-
-            // TODO: probably remove this event, not used at the moment.
-        }
-
-        private void OnSessionManagerPlaybackStart(object sender, PlaybackProgressEventArgs e)
-        {
-            var session = e.Session;
-            if (!IsSessionInGroup(session))
-            {
-                return;
-            }
-
-            // TODO: probably remove this event, not used at the moment.
-        }
-
-        private void OnSessionManagerPlaybackStopped(object sender, PlaybackStopEventArgs e)
-        {
-            var session = e.Session;
-            if (!IsSessionInGroup(session))
-            {
-                return;
-            }
-
-            // TODO: probably remove this event, not used at the moment.
-        }
-
-        private bool IsRequestValid<T>(SessionInfo session, GroupRequestType requestType, T request, bool checkRequest = true)
-        {
-            if (session == null || (request == null && checkRequest))
-            {
-                return false;
-            }
-
-            var user = _userManager.GetUserById(session.UserId);
-
-            if (user.SyncPlayAccess == SyncPlayAccess.None)
-            {
-                _logger.LogWarning("IsRequestValid: {0} does not have access to SyncPlay. Requested {1}.", session.Id, requestType);
-
-                var error = new GroupUpdate<string>()
-                {
-                    // TODO: rename to a more generic error. Next PR will fix this.
-                    Type = GroupUpdateType.JoinGroupDenied
-                };
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                return false;
-            }
-
-            if (requestType.Equals(GroupRequestType.NewGroup) && user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
-            {
-                _logger.LogWarning("IsRequestValid: {0} does not have permission to create groups.", session.Id);
-
-                var error = new GroupUpdate<string>
-                {
-                    Type = GroupUpdateType.CreateGroupDenied
-                };
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool IsRequestValid(SessionInfo session, GroupRequestType requestType)
-        {
-            return IsRequestValid(session, requestType, session, false);
-        }
-
-        private bool IsSessionInGroup(SessionInfo session)
-        {
-            return _sessionToGroupMap.ContainsKey(session.Id);
-        }
-
-        private Guid? GetSessionGroup(SessionInfo session)
-        {
-            _sessionToGroupMap.TryGetValue(session.Id, out var group);
-            return group?.GroupId;
         }
 
         /// <inheritdoc />
@@ -229,9 +98,10 @@ namespace Emby.Server.Implementations.SyncPlay
                     LeaveGroup(session, cancellationToken);
                 }
 
-                var group = new GroupController(_logger, _userManager, _sessionManager, _libraryManager, this);
+                var group = new GroupController(_logger, _userManager, _sessionManager, _libraryManager);
                 _groups[group.GroupId] = group;
 
+                AddSessionToGroup(session, group);
                 group.CreateGroup(session, request, cancellationToken);
             }
         }
@@ -253,25 +123,18 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("JoinGroup: {0} tried to join group {0} that does not exist.", session.Id, groupId);
+                    _logger.LogWarning("JoinGroup: {SessionId} tried to join group {GroupId} that does not exist.", session.Id, groupId);
 
-                    var error = new GroupUpdate<string>()
-                    {
-                        Type = GroupUpdateType.GroupDoesNotExist
-                    };
+                    var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.GroupDoesNotExist, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
                     return;
                 }
 
                 if (!group.HasAccessToPlayQueue(user))
                 {
-                    _logger.LogWarning("JoinGroup: {0} does not have access to some content from the playing queue of group {1}.", session.Id, group.GroupId.ToString());
+                    _logger.LogWarning("JoinGroup: {SessionId} does not have access to some content from the playing queue of group {GroupId}.", session.Id, group.GroupId.ToString());
 
-                    var error = new GroupUpdate<string>()
-                    {
-                        GroupId = group.GroupId.ToString(),
-                        Type = GroupUpdateType.LibraryAccessDenied
-                    };
+                    var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.LibraryAccessDenied, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
                     return;
                 }
@@ -287,6 +150,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     LeaveGroup(session, cancellationToken);
                 }
 
+                AddSessionToGroup(session, group);
                 group.SessionJoin(session, request, cancellationToken);
             }
         }
@@ -307,21 +171,19 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("LeaveGroup: {0} does not belong to any group.", session.Id);
+                    _logger.LogWarning("LeaveGroup: {SessionId} does not belong to any group.", session.Id);
 
-                    var error = new GroupUpdate<string>()
-                    {
-                        Type = GroupUpdateType.NotInGroup
-                    };
+                    var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
                     return;
                 }
 
+                RemoveSessionFromGroup(session, group);
                 group.SessionLeave(session, cancellationToken);
 
                 if (group.IsGroupEmpty())
                 {
-                    _logger.LogInformation("LeaveGroup: removing empty group {0}.", group.GroupId);
+                    _logger.LogInformation("LeaveGroup: removing empty group {GroupId}.", group.GroupId);
                     _groups.Remove(group.GroupId, out _);
                 }
             }
@@ -338,11 +200,14 @@ namespace Emby.Server.Implementations.SyncPlay
 
             var user = _userManager.GetUserById(session.UserId);
 
-            return _groups
-                .Values
-                .Where(group => group.HasAccessToPlayQueue(user))
-                .Select(group => group.GetInfo())
-                .ToList();
+            lock (_groupsLock)
+            {
+                return _groups
+                    .Values
+                    .Where(group => group.HasAccessToPlayQueue(user))
+                    .Select(group => group.GetInfo())
+                    .ToList();
+            }
         }
 
         /// <inheritdoc />
@@ -360,12 +225,9 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("HandleRequest: {0} does not belong to any group.", session.Id);
+                    _logger.LogWarning("HandleRequest: {SessionId} does not belong to any group.", session.Id);
 
-                    var error = new GroupUpdate<string>()
-                    {
-                        Type = GroupUpdateType.NotInGroup
-                    };
+                    var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
                     return;
                 }
@@ -374,8 +236,74 @@ namespace Emby.Server.Implementations.SyncPlay
             }
         }
 
-        /// <inheritdoc />
-        public void AddSessionToGroup(SessionInfo session, IGroupController group)
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
+            _disposed = true;
+        }
+
+        private void OnSessionManagerSessionStarted(object sender, SessionEventArgs e)
+        {
+            var session = e.SessionInfo;
+            lock (_groupsLock)
+            {
+                if (!IsSessionInGroup(session))
+                {
+                    return;
+                }
+
+                var groupId = GetSessionGroup(session);
+                var request = new JoinGroupRequest(groupId);
+                JoinGroup(session, groupId, request, CancellationToken.None);
+            }
+        }
+
+        /// <summary>
+        /// Checks if a given session has joined a group.
+        /// </summary>
+        /// <remarks>
+        /// Not thread-safe, call only under groups-lock.
+        /// </remarks>
+        /// <param name="session">The session.</param>
+        /// <returns><c>true</c> if the session has joined a group, <c>false</c> otherwise.</returns>
+        private bool IsSessionInGroup(SessionInfo session)
+        {
+            return _sessionToGroupMap.ContainsKey(session.Id);
+        }
+
+        /// <summary>
+        /// Gets the group joined by the given session, if any.
+        /// </summary>
+        /// <remarks>
+        /// Not thread-safe, call only under groups-lock.
+        /// </remarks>
+        /// <param name="session">The session.</param>
+        /// <returns>The group identifier if the session has joined a group, an empty identifier otherwise.</returns>
+        private Guid GetSessionGroup(SessionInfo session)
+        {
+            _sessionToGroupMap.TryGetValue(session.Id, out var group);
+            return group?.GroupId ?? Guid.Empty;
+        }
+
+        /// <summary>
+        /// Maps a session to a group.
+        /// </summary>
+        /// <remarks>
+        /// Not thread-safe, call only under groups-lock.
+        /// </remarks>
+        /// <param name="session">The session.</param>
+        /// <param name="group">The group.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the user is in another group already.</exception>
+        private void AddSessionToGroup(SessionInfo session, IGroupController group)
         {
             if (session == null)
             {
@@ -390,8 +318,16 @@ namespace Emby.Server.Implementations.SyncPlay
             _sessionToGroupMap[session.Id] = group ?? throw new InvalidOperationException("Group is null!");
         }
 
-        /// <inheritdoc />
-        public void RemoveSessionFromGroup(SessionInfo session, IGroupController group)
+        /// <summary>
+        /// Unmaps a session from a group.
+        /// </summary>
+        /// <remarks>
+        /// Not thread-safe, call only under groups-lock.
+        /// </remarks>
+        /// <param name="session">The session.</param>
+        /// <param name="group">The group.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the user is not found in the specified group.</exception>
+        private void RemoveSessionFromGroup(SessionInfo session, IGroupController group)
         {
             if (session == null)
             {
@@ -413,6 +349,56 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 throw new InvalidOperationException("Session was in wrong group!");
             }
+        }
+
+        /// <summary>
+        /// Checks if a given session is allowed to make a given request.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="requestType">The request type.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="checkRequest">Whether to check if request is null.</param>
+        /// <returns><c>true</c> if the request is valid, <c>false</c> otherwise. Will return <c>false</c> also when session is null.</returns>
+        private bool IsRequestValid<T>(SessionInfo session, GroupRequestType requestType, T request, bool checkRequest = true)
+        {
+            if (session == null || (request == null && checkRequest))
+            {
+                return false;
+            }
+
+            var user = _userManager.GetUserById(session.UserId);
+
+            if (user.SyncPlayAccess == SyncPlayAccess.None)
+            {
+                _logger.LogWarning("IsRequestValid: {SessionId} does not have access to SyncPlay. Requested {RequestType}.", session.Id, requestType);
+
+                // TODO: rename to a more generic error. Next PR will fix this.
+                var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.JoinGroupDenied, string.Empty);
+                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                return false;
+            }
+
+            if (requestType.Equals(GroupRequestType.NewGroup) && user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
+            {
+                _logger.LogWarning("IsRequestValid: {SessionId} does not have permission to create groups.", session.Id);
+
+                var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.CreateGroupDenied, string.Empty);
+                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if a given session is allowed to make a given type of request.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="requestType">The request type.</param>
+        /// <returns><c>true</c> if the request is valid, <c>false</c> otherwise. Will return <c>false</c> also when session is null.</returns>
+        private bool IsRequestValid(SessionInfo session, GroupRequestType requestType)
+        {
+            return IsRequestValid(session, requestType, session, false);
         }
     }
 }

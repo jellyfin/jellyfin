@@ -53,10 +53,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string groupName)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var newGroupRequest = new NewGroupRequest()
-            {
-                GroupName = groupName
-            };
+            var newGroupRequest = new NewGroupRequest(groupName);
             _syncPlayManager.NewGroup(currentSession, newGroupRequest, CancellationToken.None);
             return NoContent();
         }
@@ -73,10 +70,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] Guid groupId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var joinRequest = new JoinGroupRequest()
-            {
-                GroupId = groupId
-            };
+            var joinRequest = new JoinGroupRequest(groupId);
             _syncPlayManager.JoinGroup(currentSession, groupId, joinRequest, CancellationToken.None);
             return NoContent();
         }
@@ -185,18 +179,18 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Request to queue items to the playlist of a SyncPlay group.
         /// </summary>
-        /// <param name="items">The items to add.</param>
+        /// <param name="itemIds">The items to add.</param>
         /// <param name="mode">The mode in which to enqueue the items.</param>
         /// <response code="204">Queue update request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Queue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayQueue(
-            [FromQuery, Required] Guid[] items,
+            [FromQuery, Required] Guid[] itemIds,
             [FromQuery, Required] GroupQueueMode mode)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new QueueGroupRequest(items, mode);
+            var syncPlayRequest = new QueueGroupRequest(itemIds, mode);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }

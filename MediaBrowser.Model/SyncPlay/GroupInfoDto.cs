@@ -11,41 +11,48 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupInfoDto"/> class.
         /// </summary>
-        public GroupInfoDto()
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupName">The group name.</param>
+        /// <param name="state">The group state.</param>
+        /// <param name="participants">The participants.</param>
+        /// <param name="lastUpdatedAt">The date when this DTO has been created.</param>
+        public GroupInfoDto(Guid groupId, string groupName, GroupStateType state, IReadOnlyList<string> participants, DateTime lastUpdatedAt)
         {
-            GroupId = string.Empty;
-            GroupName = string.Empty;
-            Participants = new List<string>();
+            GroupId = groupId;
+            GroupName = groupName;
+            State = state;
+            Participants = participants;
+            LastUpdatedAt = lastUpdatedAt;
         }
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
-        public string GroupId { get; set; }
+        public Guid GroupId { get; }
 
         /// <summary>
-        /// Gets or sets the group name.
+        /// Gets the group name.
         /// </summary>
         /// <value>The group name.</value>
-        public string GroupName { get; set; }
+        public string GroupName { get; }
 
         /// <summary>
-        /// Gets or sets the group state.
+        /// Gets the group state.
         /// </summary>
         /// <value>The group state.</value>
-        public GroupStateType State { get; set; }
+        public GroupStateType State { get; }
 
         /// <summary>
-        /// Gets or sets the participants.
+        /// Gets the participants.
         /// </summary>
         /// <value>The participants.</value>
-        public IReadOnlyList<string> Participants { get; set; }
+        public IReadOnlyList<string> Participants { get; }
 
         /// <summary>
-        /// Gets or sets the date when this dto has been updated.
+        /// Gets the date when this DTO has been created.
         /// </summary>
-        /// <value>The date when this dto has been updated.</value>
-        public DateTime LastUpdatedAt { get; set; }
+        /// <value>The date when this DTO has been created.</value>
+        public DateTime LastUpdatedAt { get; }
     }
 }

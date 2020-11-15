@@ -8,15 +8,16 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// Initializes a new instance of the <see cref="NewGroupRequest"/> class.
         /// </summary>
-        public NewGroupRequest()
+        /// <param name="groupName">The name of the new group.</param>
+        public NewGroupRequest(string groupName)
         {
-            GroupName = string.Empty;
+            GroupName = groupName;
         }
 
         /// <summary>
-        /// Gets or sets the group name.
+        /// Gets the group name.
         /// </summary>
         /// <value>The name of the new group.</value>
-        public string GroupName { get; set; }
+        public string GroupName { get; }
     }
 }
