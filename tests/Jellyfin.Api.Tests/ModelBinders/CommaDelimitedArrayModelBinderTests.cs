@@ -177,7 +177,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
         {
             var queryParamName = "test";
             var queryParamString = "🔥,😢";
-            var queryParamType = typeof(TestType[]);
+            var queryParamType = typeof(IReadOnlyList<TestType>);
 
             var modelBinder = new CommaDelimitedArrayModelBinder(new NullLogger<CommaDelimitedArrayModelBinder>());
             var valueProvider = new QueryStringValueProvider(
@@ -192,7 +192,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             await modelBinder.BindModelAsync(bindingContextMock.Object);
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Empty((TestType[])bindingContextMock.Object.Result.Model);
+            Assert.Empty((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamName = "test";
             var queryParamString1 = "How";
             var queryParamString2 = "😱";
-            var queryParamType = typeof(TestType[]);
+            var queryParamType = typeof(IReadOnlyList<TestType>);
 
             var modelBinder = new CommaDelimitedArrayModelBinder(new NullLogger<CommaDelimitedArrayModelBinder>());
 
@@ -220,7 +220,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             await modelBinder.BindModelAsync(bindingContextMock.Object);
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Single((TestType[])bindingContextMock.Object.Result.Model);
+            Assert.Single((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model);
         }
     }
 }
