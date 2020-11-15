@@ -21,12 +21,17 @@ namespace DvdLib.Ifo
         private byte _cellCount;
         public readonly List<Cell> Cells;
 
-        public DvdTime PlaybackTime { get; private set; }
+
+        // Late-init in ParseHeader
+        public DvdTime PlaybackTime { get; private set; } = default!;
 
         public UserOperation ProhibitedUserOperations { get; private set; }
 
-        public byte[] AudioStreamControl { get; private set; } // 8*2 entries
-        public byte[] SubpictureStreamControl { get; private set; } // 32*4 entries
+        // Late-init in ParseHeader
+        public byte[] AudioStreamControl { get; private set; } = default!; // 8*2 entries
+
+        // Late-init in ParseHeader
+        public byte[] SubpictureStreamControl { get; private set; } = default!;  // 32*4 entries
 
         private ushort _nextProgramNumber;
 
@@ -34,13 +39,15 @@ namespace DvdLib.Ifo
 
         private ushort _goupProgramNumber;
 
-        public ProgramPlaybackMode PlaybackMode { get; private set; }
+        // Late-init in ParseHeader
+        public ProgramPlaybackMode PlaybackMode { get; private set; } = default!;
 
         public uint ProgramCount { get; private set; }
 
         public byte StillTime { get; private set; }
 
-        public byte[] Palette { get; private set; } // 16*4 entries
+        // Late-init in ParseHeader
+        public byte[] Palette { get; private set; } = default!; // 16*4 entries
 
         private ushort _commandTableOffset;
 
@@ -50,14 +57,14 @@ namespace DvdLib.Ifo
 
         public readonly uint VideoTitleSetIndex;
 
-        internal ProgramChain(uint vtsPgcNum)
+        protected ProgramChain(uint vtsPgcNum)
         {
             VideoTitleSetIndex = vtsPgcNum;
             Cells = new List<Cell>();
             Programs = new List<Program>();
         }
 
-        internal void ParseHeader(BinaryReader br)
+        protected void ParseHeader(BinaryReader br)
         {
             long startPos = br.BaseStream.Position;
 

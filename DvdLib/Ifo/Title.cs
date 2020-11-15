@@ -56,8 +56,7 @@ namespace DvdLib.Ifo
             long curPos = br.BaseStream.Position;
             br.BaseStream.Seek(startByte, SeekOrigin.Begin);
 
-            var pgc = new ProgramChain(pgcNum);
-            pgc.ParseHeader(br);
+            var pgc = new ProgramChainBuilder().Build(pgcNum, br);
             ProgramChains.Add(pgc);
             if (entryPgc)
             {
