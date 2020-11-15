@@ -96,15 +96,7 @@ namespace DvdLib.Ifo
             br.BaseStream.Seek(startPos + _cellPositionOffset, SeekOrigin.Begin);
             for (int cellNum = 0; cellNum < _cellCount; cellNum++)
             {
-                var c = new Cell();
-                c.ParsePosition(br);
-                Cells.Add(c);
-            }
-
-            br.BaseStream.Seek(startPos + _cellPlaybackOffset, SeekOrigin.Begin);
-            for (int cellNum = 0; cellNum < _cellCount; cellNum++)
-            {
-                Cells[cellNum].ParsePlayback(br);
+                Cells.Add(new Cell(br));
             }
 
             br.BaseStream.Seek(startPos + _programMapOffset, SeekOrigin.Begin);
