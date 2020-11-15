@@ -142,7 +142,7 @@ A second option is to build the project and then run the resulting executable fi
 
     ```bash
     dotnet build                # Build the project
-    cd bin/Debug/netcoreapp3.1  # Change into the build output directory
+    cd bin/Debug/net5.0  # Change into the build output directory
     ```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
