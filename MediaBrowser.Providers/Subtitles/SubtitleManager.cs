@@ -147,7 +147,7 @@ namespace MediaBrowser.Providers.Subtitles
             string subtitleId,
             CancellationToken cancellationToken)
         {
-            var parts = subtitleId.Split(new[] { '_' }, 2);
+            var parts = subtitleId.Split('_', 2);
             var provider = GetProvider(parts[0]);
 
             try
@@ -329,7 +329,7 @@ namespace MediaBrowser.Providers.Subtitles
                 Index = index,
                 ItemId = item.Id,
                 Type = MediaStreamType.Subtitle
-            }).First();
+            })[0];
 
             var path = stream.Path;
             _monitor.ReportFileSystemChangeBeginning(path);
@@ -349,10 +349,10 @@ namespace MediaBrowser.Providers.Subtitles
         /// <inheritdoc />
         public Task<SubtitleResponse> GetRemoteSubtitles(string id, CancellationToken cancellationToken)
         {
-            var parts = id.Split(new[] { '_' }, 2);
+            var parts = id.Split('_', 2);
 
             var provider = GetProvider(parts[0]);
-            id = parts.Last();
+            id = parts[^1];
 
             return provider.GetSubtitles(id, cancellationToken);
         }

@@ -254,7 +254,7 @@ namespace Jellyfin.Api.Controllers
                 throw new ResourceNotFoundException(nameof(response.Content.Headers.ContentType));
             }
 
-            var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
+            var ext = response.Content.Headers.ContentType.MediaType.Split('/')[^1];
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");

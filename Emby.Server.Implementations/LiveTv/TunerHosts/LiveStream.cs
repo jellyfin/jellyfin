@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (string.IsNullOrEmpty(currentFile))
             {
-                return (files.Last(), true);
+                return (files[^1], true);
             }
 
             var nextIndex = files.FindIndex(i => string.Equals(i, currentFile, StringComparison.OrdinalIgnoreCase)) + 1;

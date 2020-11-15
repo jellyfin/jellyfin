@@ -54,7 +54,7 @@ namespace Jellyfin.Server.Implementations.Users
             var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
-                SerializablePasswordReset? spr;
+                SerializablePasswordReset spr;
                 await using (var str = File.OpenRead(resetFile))
                 {
                     spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false)

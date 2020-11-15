@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Helpers
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
 
-            var url = httpRequest.Path.Value.Split('.').Last();
+            var url = httpRequest.Path.Value.Split('.')[^1];
 
             if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {

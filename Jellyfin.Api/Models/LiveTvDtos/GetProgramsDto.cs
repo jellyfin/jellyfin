@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace Jellyfin.Api.Models.LiveTvDtos
 {
@@ -142,8 +144,7 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Optional.
         /// </summary>
         [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "EnableImageTypes", Justification = "Imported from ServiceStack")]
-        public ImageType[] EnableImageTypes { get; set; } = Array.Empty<ImageType>();
+        public IReadOnlyList<ImageType> EnableImageTypes { get; set; } = Array.Empty<ImageType>();
 
         /// <summary>
         /// Gets or sets include user data.
@@ -167,6 +168,7 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Gets or sets specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.
         /// Optional.
         /// </summary>
-        public string? Fields { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<ItemFields> Fields { get; set; } = Array.Empty<ItemFields>();
     }
 }

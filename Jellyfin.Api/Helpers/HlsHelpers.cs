@@ -48,7 +48,7 @@ namespace Jellyfin.Api.Helpers
                             if (line == null)
                             {
                                 // Nothing currently in buffer.
-                                continue;
+                                break;
                             }
 
                             if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)

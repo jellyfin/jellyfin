@@ -1007,7 +1007,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var parts = value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split('|', StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var part in parts)
             {
@@ -1057,7 +1057,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var parts = value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split('|' , StringSplitOptions.RemoveEmptyEntries);
             var list = new List<ItemImageInfo>();
             foreach (var part in parts)
             {
@@ -1096,7 +1096,7 @@ namespace Emby.Server.Implementations.Data
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
-            var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
+            var parts = value.Split('*', StringSplitOptions.None);
 
             if (parts.Length < 3)
             {
@@ -1532,7 +1532,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Genres = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Genres = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1593,7 +1593,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     IEnumerable<MetadataField> GetLockedFields(string s)
                     {
-                        foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
                         {
                             if (Enum.TryParse(i, true, out MetadataField parsedValue))
                             {
@@ -1612,7 +1612,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Studios = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Studios = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1622,7 +1622,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Tags = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Tags = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1636,7 +1636,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         IEnumerable<TrailerType> GetTrailerTypes(string s)
                         {
-                            foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                            foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
                             {
                                 if (Enum.TryParse(i, true, out TrailerType parsedValue))
                                 {
@@ -1811,7 +1811,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.ProductionLocations = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    item.ProductionLocations = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries).ToArray();
                 }
 
                 index++;
@@ -1848,14 +1848,14 @@ namespace Emby.Server.Implementations.Data
             {
                 if (item is IHasArtist hasArtists && !reader.IsDBNull(index))
                 {
-                    hasArtists.Artists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    hasArtists.Artists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
 
                 if (item is IHasAlbumArtist hasAlbumArtists && !reader.IsDBNull(index))
                 {
-                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -2403,11 +2403,11 @@ namespace Emby.Server.Implementations.Data
 
                 if (string.IsNullOrEmpty(item.OfficialRating))
                 {
-                    builder.Append("((OfficialRating is null) * 10)");
+                    builder.Append("(OfficialRating is null * 10)");
                 }
                 else
                 {
-                    builder.Append("((OfficialRating=@ItemOfficialRating) * 10)");
+                    builder.Append("(OfficialRating=@ItemOfficialRating * 10)");
                 }
 
                 if (item.ProductionYear.HasValue)
@@ -2416,8 +2416,26 @@ namespace Emby.Server.Implementations.Data
                     builder.Append("+(Select Case When Abs(COALESCE(ProductionYear, 0) - @ItemProductionYear) < 5 Then 5 Else 0 End )");
                 }
 
-                //// genres, tags
-                builder.Append("+ ((Select count(CleanValue) from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId)) * 10)");
+                // genres, tags, studios, person, year?
+                builder.Append("+ (Select count(1) * 10 from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId))");
+
+                if (item is MusicArtist)
+                {
+                    // Match albums where the artist is AlbumArtist against other albums.
+                    // It is assumed that similar albums => similar artists.
+                    builder.Append(
+                        @"+ (WITH artistValues AS (
+	                            SELECT DISTINCT albumValues.CleanValue
+	                            FROM ItemValues albumValues
+	                            INNER JOIN ItemValues artistAlbums ON albumValues.ItemId = artistAlbums.ItemId
+	                            INNER JOIN TypedBaseItems artistItem ON artistAlbums.CleanValue = artistItem.CleanName AND artistAlbums.TYPE = 1 AND artistItem.Guid = @SimilarItemId
+                            ), similarArtist AS (
+	                            SELECT albumValues.ItemId
+	                            FROM ItemValues albumValues
+	                            INNER JOIN ItemValues artistAlbums ON albumValues.ItemId = artistAlbums.ItemId
+	                            INNER JOIN TypedBaseItems artistItem ON artistAlbums.CleanValue = artistItem.CleanName AND artistAlbums.TYPE = 1 AND artistItem.Guid = A.Guid
+                            ) SELECT COUNT(DISTINCT(CleanValue)) * 10 FROM ItemValues WHERE ItemId IN (SELECT ItemId FROM similarArtist) AND CleanValue IN (SELECT CleanValue FROM artistValues))");
+                }
 
                 builder.Append(") as SimilarityScore");
 
@@ -5052,7 +5070,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var commandText = "select ItemId, Name, Role, PersonType, SortOrder from People";
+            var commandText = "select ItemId, Name, Role, PersonType, SortOrder from People p";
 
             var whereClauses = GetPeopleWhereClauses(query, null);
 
@@ -5593,7 +5611,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 return counts;
             }
 
-            var allTypes = typeString.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+            var allTypes = typeString.Split('|', StringSplitOptions.RemoveEmptyEntries)
                 .ToLookup(x => x);
 
             foreach (var type in allTypes)
