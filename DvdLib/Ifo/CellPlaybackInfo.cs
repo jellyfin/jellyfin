@@ -44,7 +44,6 @@ namespace DvdLib.Ifo
 
         internal CellPlaybackInfo(BinaryReader br)
         {
-            br.BaseStream.Seek(0x4, SeekOrigin.Current);
             PlaybackTime = new DvdTime(br.ReadBytes(4));
             br.BaseStream.Seek(0x10, SeekOrigin.Current);
         }
