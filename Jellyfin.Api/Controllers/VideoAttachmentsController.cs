@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -43,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Video or attachment not found.</response>
         /// <returns>An <see cref="FileStreamResult"/> containing the attachment stream on success, or a <see cref="NotFoundResult"/> if the attachment could not be found.</returns>
         [HttpGet("{videoId}/{mediaSourceId}/Attachments/{index}")]
-        [Produces(MediaTypeNames.Application.Octet)]
+        [ProducesFile(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetAttachment(

@@ -1647,7 +1647,7 @@ namespace MediaBrowser.Model.Dlna
 
                                 // strip spaces to avoid having to encode
                                 var values = value
-                                    .Split('|', StringSplitOptions.RemoveEmptyEntries);
+                                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
                                 if (condition.Condition == ProfileConditionType.Equals || condition.Condition == ProfileConditionType.EqualsAny)
                                 {
