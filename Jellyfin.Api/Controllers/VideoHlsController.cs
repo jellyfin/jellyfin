@@ -11,6 +11,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -361,7 +362,8 @@ namespace Jellyfin.Api.Controllers
             var threads = _encodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
             var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
             var format = !string.IsNullOrWhiteSpace(state.Request.SegmentContainer) ? "." + state.Request.SegmentContainer : ".ts";
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + format;
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + format;
 
             var segmentFormat = format.TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))

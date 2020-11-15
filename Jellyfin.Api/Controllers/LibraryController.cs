@@ -456,7 +456,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
-            BaseItem parent = item.GetParent();
+            BaseItem? parent = item.GetParent();
 
             while (parent != null)
             {
@@ -467,7 +467,7 @@ namespace Jellyfin.Api.Controllers
 
                 baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
 
-                parent = parent.GetParent();
+                parent = parent?.GetParent();
             }
 
             return baseItemDtos;
@@ -893,7 +893,7 @@ namespace Jellyfin.Api.Controllers
             return _libraryManager.GetItemsResult(query).TotalRecordCount;
         }
 
-        private BaseItem TranslateParentItem(BaseItem item, User user)
+        private BaseItem? TranslateParentItem(BaseItem item, User user)
         {
             return item.GetParent() is AggregateFolder
                 ? _libraryManager.GetUserRootFolder().GetChildren(user, true)

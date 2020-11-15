@@ -139,7 +139,7 @@ namespace Jellyfin.Api.Controllers
         {
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 
-            MusicGenre item;
+            MusicGenre? item;
 
             if (genreName.IndexOf(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase) != -1)
             {
@@ -160,7 +160,7 @@ namespace Jellyfin.Api.Controllers
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }
 
-        private T GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
+        private T? GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
             where T : BaseItem, new()
         {
             var result = libraryManager.GetItemList(new InternalItemsQuery

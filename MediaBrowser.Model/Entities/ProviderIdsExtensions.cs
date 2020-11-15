@@ -48,7 +48,7 @@ namespace MediaBrowser.Model.Entities
                 return null;
             }
 
-            instance.ProviderIds.TryGetValue(name, out string id);
+            instance.ProviderIds.TryGetValue(name, out string? id);
             return id;
         }
 
