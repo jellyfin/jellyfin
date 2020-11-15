@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.Dlna
                 return Array.Empty<string>();
             }
 
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return value.Split(',', StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool ContainsContainer(string container)

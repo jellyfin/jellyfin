@@ -1007,7 +1007,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var parts = value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split('|', StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var part in parts)
             {
@@ -1057,7 +1057,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var parts = value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split('|' , StringSplitOptions.RemoveEmptyEntries);
             var list = new List<ItemImageInfo>();
             foreach (var part in parts)
             {
@@ -1096,7 +1096,7 @@ namespace Emby.Server.Implementations.Data
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
-            var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
+            var parts = value.Split('*', StringSplitOptions.None);
 
             if (parts.Length < 3)
             {
@@ -1532,7 +1532,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Genres = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Genres = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1593,7 +1593,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     IEnumerable<MetadataField> GetLockedFields(string s)
                     {
-                        foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
                         {
                             if (Enum.TryParse(i, true, out MetadataField parsedValue))
                             {
@@ -1612,7 +1612,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Studios = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Studios = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1622,7 +1622,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Tags = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Tags = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1636,7 +1636,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         IEnumerable<TrailerType> GetTrailerTypes(string s)
                         {
-                            foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                            foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
                             {
                                 if (Enum.TryParse(i, true, out TrailerType parsedValue))
                                 {
@@ -1811,7 +1811,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.ProductionLocations = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    item.ProductionLocations = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries).ToArray();
                 }
 
                 index++;
@@ -1848,14 +1848,14 @@ namespace Emby.Server.Implementations.Data
             {
                 if (item is IHasArtist hasArtists && !reader.IsDBNull(index))
                 {
-                    hasArtists.Artists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    hasArtists.Artists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
 
                 if (item is IHasAlbumArtist hasAlbumArtists && !reader.IsDBNull(index))
                 {
-                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -5611,7 +5611,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 return counts;
             }
 
-            var allTypes = typeString.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+            var allTypes = typeString.Split('|', StringSplitOptions.RemoveEmptyEntries)
                 .ToLookup(x => x);
 
             foreach (var type in allTypes)

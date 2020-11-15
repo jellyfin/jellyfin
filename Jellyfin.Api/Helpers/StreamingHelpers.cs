@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Helpers
 
             streamingRequest.StreamOptions = ParseStreamOptions(httpRequest.Query);
 
-            var url = httpRequest.Path.Value.Split('.').Last();
+            var url = httpRequest.Path.Value.Split('.')[^1];
 
             if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {
