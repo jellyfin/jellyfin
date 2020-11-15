@@ -19,7 +19,7 @@ namespace DvdLib.Ifo
         private byte _titleNumberInVTS;
         private uint _vtsStartSector; // relative to start of entire disk
 
-        public ProgramChain EntryProgramChain { get; private set; }
+        public ProgramChain? EntryProgramChain { get; private set; }
 
         public readonly List<ProgramChain> ProgramChains;
 
