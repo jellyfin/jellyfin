@@ -2705,7 +2705,7 @@ namespace Emby.Server.Implementations.Library
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
             if (currentVideo != null)
             {

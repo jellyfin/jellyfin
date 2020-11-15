@@ -22,11 +22,6 @@ namespace MediaBrowser.Model.Extensions
                 return str;
             }
 
-#if NETSTANDARD2_0
-            char[] a = str.ToCharArray();
-            a[0] = char.ToUpperInvariant(a[0]);
-            return new string(a);
-#else
             return string.Create(
                 str.Length,
                 str,
@@ -38,7 +33,6 @@ namespace MediaBrowser.Model.Extensions
                         chars[i] = buf[i];
                     }
                 });
-#endif
         }
     }
 }

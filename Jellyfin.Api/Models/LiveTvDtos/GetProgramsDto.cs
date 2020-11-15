@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using MediaBrowser.Common.Json.Converters;
@@ -143,8 +144,7 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Optional.
         /// </summary>
         [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "EnableImageTypes", Justification = "Imported from ServiceStack")]
-        public ImageType[] EnableImageTypes { get; set; } = Array.Empty<ImageType>();
+        public IReadOnlyList<ImageType> EnableImageTypes { get; set; } = Array.Empty<ImageType>();
 
         /// <summary>
         /// Gets or sets include user data.
@@ -169,7 +169,6 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Optional.
         /// </summary>
         [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "Fields", Justification = "Imported from ServiceStack")]
-        public ItemFields[] Fields { get; set; } = Array.Empty<ItemFields>();
+        public IReadOnlyList<ItemFields> Fields { get; set; } = Array.Empty<ItemFields>();
     }
 }

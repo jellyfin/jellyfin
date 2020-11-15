@@ -14,6 +14,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -1347,7 +1348,9 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+
+            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
 
             var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1565,8 +1568,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = Path.GetDirectoryName(playlist);
-
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException($"Provided path ({playlist}) is not valid.", nameof(playlist));
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
             return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + GetSegmentFileExtension(state.Request.SegmentContainer));

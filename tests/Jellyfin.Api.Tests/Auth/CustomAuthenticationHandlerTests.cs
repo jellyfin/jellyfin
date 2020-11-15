@@ -81,7 +81,7 @@ namespace Jellyfin.Api.Tests.Auth
             var authenticateResult = await _sut.AuthenticateAsync();
 
             Assert.False(authenticateResult.Succeeded);
-            Assert.Equal(errorMessage, authenticateResult.Failure.Message);
+            Assert.Equal(errorMessage, authenticateResult.Failure?.Message);
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace Jellyfin.Api.Tests.Auth
             var authorizationInfo = SetupUser();
             var authenticateResult = await _sut.AuthenticateAsync();
 
-            Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Name, authorizationInfo.User.Username));
+            Assert.True(authenticateResult.Principal?.HasClaim(ClaimTypes.Name, authorizationInfo.User.Username));
         }
 
         [Theory]
@@ -112,7 +112,7 @@ namespace Jellyfin.Api.Tests.Auth
             var authenticateResult = await _sut.AuthenticateAsync();
 
             var expectedRole = authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator) ? UserRoles.Administrator : UserRoles.User;
-            Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Role, expectedRole));
+            Assert.True(authenticateResult.Principal?.HasClaim(ClaimTypes.Role, expectedRole));
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Tests.Auth
             SetupUser();
             var authenticatedResult = await _sut.AuthenticateAsync();
 
-            Assert.Equal(_scheme.Name, authenticatedResult.Ticket.AuthenticationScheme);
+            Assert.Equal(_scheme.Name, authenticatedResult.Ticket?.AuthenticationScheme);
         }
 
         private AuthorizationInfo SetupUser(bool isAdmin = false)

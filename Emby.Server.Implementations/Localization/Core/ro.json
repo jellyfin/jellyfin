@@ -112,5 +112,7 @@
     "TasksChannelsCategory": "Canale de pe Internet",
     "TasksApplicationCategory": "Aplicație",
     "TasksLibraryCategory": "Librărie",
-    "TasksMaintenanceCategory": "Mentenanță"
+    "TasksMaintenanceCategory": "Mentenanță",
+    "TaskCleanActivityLogDescription": "Șterge intrările din jurnalul de activitate mai vechi de data configurată.",
+    "TaskCleanActivityLog": "Curăță Jurnalul de Activitate"
 }

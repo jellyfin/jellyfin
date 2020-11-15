@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var rate = part.Split(new[] { '=' }, 2)[^1];
+                    var rate = part.Split('=', 2)[^1];
 
                     if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
                     {
@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (state.RunTimeTicks.HasValue &&
                     part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var time = part.Split(new[] { '=' }, 2).Last();
+                    var time = part.Split('=', 2)[^1];
 
                     if (TimeSpan.TryParse(time, _usCulture, out var val))
                     {
@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var size = part.Split(new[] { '=' }, 2).Last();
+                    var size = part.Split('=', 2)[^1];
 
                     int? scale = null;
                     if (size.IndexOf("kb", StringComparison.OrdinalIgnoreCase) != -1)
@@ -135,7 +135,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var rate = part.Split(new[] { '=' }, 2).Last();
+                    var rate = part.Split('=', 2)[^1];
 
                     int? scale = null;
                     if (rate.IndexOf("kbits/s", StringComparison.OrdinalIgnoreCase) != -1)

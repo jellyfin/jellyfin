@@ -456,7 +456,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
-            BaseItem parent = item.GetParent();
+            BaseItem? parent = item.GetParent();
 
             while (parent != null)
             {
@@ -467,7 +467,7 @@ namespace Jellyfin.Api.Controllers
 
                 baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
 
-                parent = parent.GetParent();
+                parent = parent?.GetParent();
             }
 
             return baseItemDtos;
@@ -681,12 +681,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
         /// <response code="200">Similar items returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
-        [HttpGet("Artists/{itemId}/Similar")]
+        [HttpGet("Artists/{itemId}/Similar", Name = "GetSimilarArtists")]
         [HttpGet("Items/{itemId}/Similar")]
-        [HttpGet("Albums/{itemId}/Similar")]
-        [HttpGet("Shows/{itemId}/Similar")]
-        [HttpGet("Movies/{itemId}/Similar")]
-        [HttpGet("Trailers/{itemId}/Similar")]
+        [HttpGet("Albums/{itemId}/Similar", Name = "GetSimilarAlbums")]
+        [HttpGet("Shows/{itemId}/Similar", Name = "GetSimilarShows")]
+        [HttpGet("Movies/{itemId}/Similar", Name = "GetSimilarMovies")]
+        [HttpGet("Trailers/{itemId}/Similar", Name = "GetSimilarTrailers")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
@@ -893,7 +893,7 @@ namespace Jellyfin.Api.Controllers
             return _libraryManager.GetItemsResult(query).TotalRecordCount;
         }
 
-        private BaseItem TranslateParentItem(BaseItem item, User user)
+        private BaseItem? TranslateParentItem(BaseItem item, User user)
         {
             return item.GetParent() is AggregateFolder
                 ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
