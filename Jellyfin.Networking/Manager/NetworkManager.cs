@@ -719,8 +719,8 @@ namespace Jellyfin.Networking.Manager
 
                 foreach ((string interfc, int interfcIndex) in _interfaceNames)
                 {
-                    if ((!partial && string.Equals(interfc, token, StringComparison.OrdinalIgnoreCase)) ||
-                       (partial && interfc.StartsWith(token, true, CultureInfo.InvariantCulture)))
+                    if ((!partial && string.Equals(interfc, token, StringComparison.OrdinalIgnoreCase))
+                        || (partial && interfc.StartsWith(token, true, CultureInfo.InvariantCulture)))
                     {
                         index = interfcIndex;
                         return true;
