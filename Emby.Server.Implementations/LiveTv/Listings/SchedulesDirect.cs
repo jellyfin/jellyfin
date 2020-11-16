@@ -591,7 +591,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 savedToken.Value = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 return result;
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 if (ex.StatusCode.HasValue)
                 {
@@ -621,7 +621,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 _tokens.Clear();
 
@@ -711,7 +711,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 // Apparently we're supposed to swallow this
                 if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)

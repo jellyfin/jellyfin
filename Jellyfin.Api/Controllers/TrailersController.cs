@@ -146,7 +146,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? searchTerm,
             [FromQuery] string? sortOrder,
             [FromQuery] string? parentId,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,

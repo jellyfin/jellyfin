@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             return removeEmpty
-                ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
+                ? value.Split(separator, StringSplitOptions.RemoveEmptyEntries)
                 : value.Split(separator);
         }
 

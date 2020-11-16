@@ -119,7 +119,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">"Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="sortBy">Optional. Key to sort by.</param>
         /// <param name="sortOrder">Optional. Sort order.</param>
@@ -148,15 +148,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy,
             [FromQuery] SortOrder? sortOrder,
             [FromQuery] bool enableFavoriteSorting = false,
             [FromQuery] bool addCurrentProgram = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -240,7 +239,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="isMovie">Optional. Filter for movies.</param>
         /// <param name="isSeries">Optional. Filter for series.</param>
@@ -265,7 +264,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSeries,
@@ -275,8 +274,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isLibraryItem,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -297,7 +295,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 IsLibraryItem = isLibraryItem,
-                Fields = RequestHelpers.GetItemFields(fields),
+                Fields = fields,
                 ImageTypeLimit = imageTypeLimit,
                 EnableImages = enableImages
             }, dtoOptions);
@@ -317,7 +315,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="enableTotalRecordCount">Optional. Return total record count.</param>
         /// <response code="200">Live tv recordings returned.</response>
@@ -352,7 +350,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -531,7 +529,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="seriesTimerId">Optional. Filter by series timer id.</param>
         /// <param name="librarySeriesId">Optional. Filter by library series id.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
         /// <response code="200">Live tv epgs returned.</response>
         /// <returns>
@@ -566,7 +564,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] string? seriesTimerId,
             [FromQuery] Guid? librarySeriesId,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -607,8 +605,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
@@ -663,8 +660,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(body.Fields)
+            var dtoOptions = new DtoOptions { Fields = body.Fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
@@ -686,7 +682,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="genreIds">The genres to return guide information for.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. include user data.</param>
         /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
         /// <response code="200">Recommended epgs returned.</response>
@@ -708,7 +704,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? genreIds,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -730,8 +726,7 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = RequestHelpers.GetGuids(genreIds)
             };
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             return _liveTvManager.GetRecommendedPrograms(query, dtoOptions, CancellationToken.None);
@@ -1078,7 +1073,7 @@ namespace Jellyfin.Api.Controllers
             var client = _httpClientFactory.CreateClient(NamedClient.Default);
             // https://json.schedulesdirect.org/20141201/available/countries
             // Can't dispose the response as it's required up the call chain.
-            var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
+            var response = await client.GetAsync(new Uri("https://json.schedulesdirect.org/20141201/available/countries"))
                 .ConfigureAwait(false);
 
             return File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), MediaTypeNames.Application.Json);

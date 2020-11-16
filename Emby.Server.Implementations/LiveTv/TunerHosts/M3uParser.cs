@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
@@ -273,8 +273,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].Trim() : null;
 
             // Check for channel number with the format from SatIp
             // #EXTINF:0,84. VOX Schweiz
