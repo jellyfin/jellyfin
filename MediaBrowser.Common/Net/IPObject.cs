@@ -168,10 +168,10 @@ namespace MediaBrowser.Common.Net
 
                     byte[] octet = address.GetAddressBytes();
 
-                    return (octet[0] == 10) ||
-                        (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) || // RFC1918
-                        (octet[0] == 192 && octet[1] == 168) || // RFC1918
-                        (octet[0] == 127); // RFC1122
+                    return (octet[0] == 10)
+                           || (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) // RFC1918
+                           || (octet[0] == 192 && octet[1] == 168) // RFC1918
+                           || (octet[0] == 127); // RFC1122
                 }
                 else
                 {
