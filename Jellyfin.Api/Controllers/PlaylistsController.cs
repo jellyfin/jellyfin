@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
@@ -134,7 +135,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User id.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -148,11 +149,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] Guid userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] ImageType[] enableImageTypes)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
             if (playlist == null)
@@ -176,8 +177,7 @@ namespace Jellyfin.Api.Controllers
                 items = items.Take(limit.Value).ToArray();
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 

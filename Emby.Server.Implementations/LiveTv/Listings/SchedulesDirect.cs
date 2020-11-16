@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -33,17 +34,20 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
         private readonly IApplicationHost _appHost;
+        private readonly ICryptoProvider _cryptoProvider;
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
             IJsonSerializer jsonSerializer,
             IHttpClientFactory httpClientFactory,
-            IApplicationHost appHost)
+            IApplicationHost appHost,
+            ICryptoProvider cryptoProvider)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
+            _cryptoProvider = cryptoProvider;
         }
 
         private string UserAgent => _appHost.ApplicationUserAgent;
@@ -587,7 +591,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 savedToken.Value = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 return result;
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 if (ex.StatusCode.HasValue)
                 {
@@ -617,7 +621,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 _tokens.Clear();
 
@@ -642,7 +646,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             CancellationToken cancellationToken)
         {
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/token");
-            options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
+            var hashedPasswordBytes = _cryptoProvider.ComputeHash("SHA1", Encoding.ASCII.GetBytes(password), Array.Empty<byte>());
+            string hashedPassword = Hex.Encode(hashedPasswordBytes);
+            options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             using var response = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -705,7 +711,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 // Apparently we're supposed to swallow this
                 if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)

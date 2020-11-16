@@ -391,7 +391,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.Genres = Array.Empty<string>();
 
                 foreach (var genre in result.Genre
-                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(i => i.Trim())
                     .Where(i => !string.IsNullOrWhiteSpace(i)))
                 {

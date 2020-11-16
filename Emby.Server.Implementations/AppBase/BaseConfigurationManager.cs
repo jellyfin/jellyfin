@@ -134,6 +134,33 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <summary>
+        /// Manually pre-loads a factory so that it is available pre system initialisation.
+        /// </summary>
+        /// <typeparam name="T">Class to register.</typeparam>
+        public virtual void RegisterConfiguration<T>()
+            where T : IConfigurationFactory
+        {
+            IConfigurationFactory factory = Activator.CreateInstance<T>();
+
+            if (_configurationFactories == null)
+            {
+                _configurationFactories = new[] { factory };
+            }
+            else
+            {
+                var oldLen = _configurationFactories.Length;
+                var arr = new IConfigurationFactory[oldLen + 1];
+                _configurationFactories.CopyTo(arr, 0);
+                arr[oldLen] = factory;
+                _configurationFactories = arr;
+            }
+
+            _configurationStores = _configurationFactories
+                .SelectMany(i => i.GetConfigurations())
+                .ToArray();
+        }
+
+        /// <summary>
         /// Adds parts.
         /// </summary>
         /// <param name="factories">The configuration factories.</param>

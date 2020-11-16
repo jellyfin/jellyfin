@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Tests
 
             // Assert
             response.EnsureSuccessStatusCode();
-            Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType?.ToString());
 
             // Write out for publishing
             var responseBody = await response.Content.ReadAsStringAsync();

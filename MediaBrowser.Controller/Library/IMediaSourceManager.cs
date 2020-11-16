@@ -115,5 +115,7 @@ namespace MediaBrowser.Controller.Library
     public interface IDirectStreamProvider
     {
         Task CopyToAsync(Stream stream, CancellationToken cancellationToken);
+
+        string GetFilePath();
     }
 }

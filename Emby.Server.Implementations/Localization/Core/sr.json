@@ -112,5 +112,7 @@
     "TasksChannelsCategory": "Интернет канали",
     "TasksApplicationCategory": "Апликација",
     "TasksLibraryCategory": "Библиотека",
-    "TasksMaintenanceCategory": "Одржавање"
+    "TasksMaintenanceCategory": "Одржавање",
+    "TaskCleanActivityLogDescription": "Брише историју активности старију од конфигурисаног броја година.",
+    "TaskCleanActivityLog": "Очисти историју активности"
 }

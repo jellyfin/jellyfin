@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
@@ -1268,7 +1269,7 @@ namespace Jellyfin.Api.Controllers
                 Response.Headers.Add(key, value);
             }
 
-            Response.ContentType = imageContentType;
+            Response.ContentType = imageContentType ?? MediaTypeNames.Text.Plain;
             Response.Headers.Add(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
             Response.Headers.Add(HeaderNames.Vary, HeaderNames.Accept);
 

@@ -112,5 +112,7 @@
     "UserOnlineFromDevice": "{1} இருந்து {0} ஆன்லைன்",
     "HomeVideos": "முகப்பு வீடியோக்கள்",
     "UserStoppedPlayingItemWithValues": "{0} {2} இல் {1} முடித்துவிட்டது",
-    "UserStartedPlayingItemWithValues": "{0} {2}இல் {1} ஐ இயக்குகிறது"
+    "UserStartedPlayingItemWithValues": "{0} {2}இல் {1} ஐ இயக்குகிறது",
+    "TaskCleanActivityLogDescription": "உள்ளமைக்கப்பட்ட வயதை விட பழைய செயல்பாட்டு பதிவு உள்ளீடுகளை நீக்குகிறது.",
+    "TaskCleanActivityLog": "செயல்பாட்டு பதிவை அழி"
 }
