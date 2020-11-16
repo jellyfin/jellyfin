@@ -227,11 +227,10 @@ namespace MediaBrowser.Common.Net
         public static IPAddress CidrToMask(byte cidr, AddressFamily family)
         {
             uint addr = 0xFFFFFFFF << (family == AddressFamily.InterNetwork ? 32 : 128 - cidr);
-            addr =
-                ((addr & 0xff000000) >> 24) |
-                ((addr & 0x00ff0000) >> 8) |
-                ((addr & 0x0000ff00) << 8) |
-                ((addr & 0x000000ff) << 24);
+            addr = ((addr & 0xff000000) >> 24)
+                   | ((addr & 0x00ff0000) >> 8)
+                   | ((addr & 0x0000ff00) << 8)
+                   | ((addr & 0x000000ff) << 24);
             return new IPAddress(addr);
         }
 
