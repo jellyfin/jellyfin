@@ -92,13 +92,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets a value indicating whether the address has a value.
         /// </summary>
-        public bool HasAddress
-        {
-            get
-            {
-                return _addresses.Length > 0;
-            }
-        }
+        public bool HasAddress => _addresses.Length != 0;
 
         /// <summary>
         /// Gets the host name of this object.
