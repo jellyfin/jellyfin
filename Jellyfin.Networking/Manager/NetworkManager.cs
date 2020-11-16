@@ -638,7 +638,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Trys to identify the string and return an object of that class.
+        /// Tries to identify the string and return an object of that class.
         /// </summary>
         /// <param name="addr">String to parse.</param>
         /// <param name="result">IPObject to return.</param>
