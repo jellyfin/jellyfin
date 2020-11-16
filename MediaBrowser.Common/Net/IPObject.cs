@@ -81,22 +81,33 @@ namespace MediaBrowser.Common.Net
                 return (Address: address, PrefixLength: prefixLength);
             }
 
+            // An ip address is just a list of bytes, each one representing a segment on the network.
+            // This separates the IP address into octets and calculates how many octets will need to be altered or set to zero dependant upon the
+            // prefix length value. eg. /16 on a 4 octet ip4 address (192.168.2.240) will result in the 2 and the 240 being zeroed out.
+            // Where there is not an exact boundary (eg /23), mod is used to calculate how many bits of this value are to be kept.
+
             byte[] addressBytes = address.GetAddressBytes();
 
             int div = prefixLength / 8;
             int mod = prefixLength % 8;
             if (mod != 0)
             {
+                // Prefix length is counted right to left, so subtract 8 so we know how many bits to clear.
                 mod = 8 - mod;
+
+                // Shift out the bits from the octet that we don't want, by moving right then back left.
                 addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
+                // Move on the next byte.
                 div++;
             }
 
+            // Blank out the remaining octets from mod + 1 to the end of the byte array. (192.168.2.240/16 becomes 192.168.0.0)
             for (int octet = div; octet < addressBytes.Length; octet++)
             {
                 addressBytes[octet] = 0;
             }
 
+            // Return the network address for the prefix.
             return (Address: new IPAddress(addressBytes), PrefixLength: prefixLength);
         }
 
@@ -343,7 +354,7 @@ namespace MediaBrowser.Common.Net
         {
             if (other != null)
             {
-                return !Address.Equals(IPAddress.None) && Address.Equals(otherObj.Address);
+                return !Address.Equals(IPAddress.None) && Address.Equals(other.Address);
             }
 
             return false;

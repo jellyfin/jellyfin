@@ -63,7 +63,8 @@ namespace MediaBrowser.Common.Net
 
             set
             {
-                throw new NotImplementedException("Cannot assign an address to a host object.");
+                // Not implemented, as a host's address is determined by DNS.
+                throw new NotImplementedException("The address of a host is determined by DNS.");
             }
         }
 
@@ -80,8 +81,9 @@ namespace MediaBrowser.Common.Net
 
             set
             {
-                // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4),
-                // which is automatically determined by it's IP type.
+                // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
+                // which is automatically determined by it's IP type. Anything else is meaningless.
+                throw new NotImplementedException("The prefix length on a host cannot be set.");
             }
         }
 

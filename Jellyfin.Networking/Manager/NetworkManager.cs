@@ -573,10 +573,7 @@ namespace Jellyfin.Networking.Manager
             return false;
         }
 
-        /// <summary>
-        /// Reloads all settings and re-initialises the instance.
-        /// </summary>
-        /// <param name="configuration">The configuration to use.</param>
+        /// <inheritdoc/>
         public void UpdateSettings(NetworkConfiguration configuration)
         {
             NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -621,7 +618,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Protected implementation of Dispose pattern.
         /// </summary>
-        /// <param name="disposing">True to dispose the managed state.</param>
+        /// <param name="disposing"><c>True</c> to dispose the managed state.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -642,7 +639,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="addr">String to parse.</param>
         /// <param name="result">IPObject to return.</param>
-        /// <returns>True if the value parsed successfully.</returns>
+        /// <returns><c>true</c> if the value parsed successfully, <c>false</c> otherwise.</returns>
         private static bool TryParse(string addr, out IPObject result)
         {
             if (!string.IsNullOrEmpty(addr))
@@ -670,7 +667,7 @@ namespace Jellyfin.Networking.Manager
         /// Ipv6 addresses are returned in [ ], with their scope removed.
         /// </summary>
         /// <param name="address">Address to convert.</param>
-        /// <returns>URI save conversion of the address.</returns>
+        /// <returns>URI safe conversion of the address.</returns>
         private static string FormatIP6String(IPAddress address)
         {
             var str = address.ToString();
@@ -693,7 +690,7 @@ namespace Jellyfin.Networking.Manager
         {
             if (evt.Key.Equals("network", StringComparison.Ordinal))
             {
-                UpdateSettings(evt.NewConfiguration);
+                UpdateSettings((NetworkConfiguration)evt.NewConfiguration);
             }
         }
 
@@ -702,7 +699,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="token">String to check.</param>
         /// <param name="index">Interface index number.</param>
-        /// <returns>True if an interface name matches the token.</returns>
+        /// <returns><c>true</c> if an interface name matches the token, <c>False</c> otherwise.</returns>
         private bool IsInterface(string token, out int index)
         {
             index = -1;
@@ -732,10 +729,10 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Parses strings into the collection, replacing any interface references.
+        /// Parses a string and adds it into the the collection, replacing any interface references.
         /// </summary>
-        /// <param name="col">Collection.</param>
-        /// <param name="token">String to parse.</param>
+        /// <param name="col"><see cref="Collection{IPObject}"/>Collection.</param>
+        /// <param name="token">String value to parse.</param>
         private void AddToCollection(Collection<IPObject> col, string token)
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
@@ -790,7 +787,7 @@ namespace Jellyfin.Networking.Manager
         /// Handler for network change events.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Network availability information.</param>
+        /// <param name="e">A <see cref="NetworkAvailabilityEventArgs"/> containing network availability information.</param>
         private void OnNetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
         {
             _logger.LogDebug("Network availability changed.");
@@ -801,7 +798,7 @@ namespace Jellyfin.Networking.Manager
         /// Handler for network change events.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Event arguments.</param>
+        /// <param name="e">An <see cref="EventArgs"/>.</param>
         private void OnNetworkAddressChanged(object? sender, EventArgs e)
         {
             _logger.LogDebug("Network address change detected.");
@@ -811,7 +808,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Async task that waits for 2 seconds before re-initialising the settings, as typically these events fire multiple times in succession.
         /// </summary>
-        /// <returns>The network change async.</returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task OnNetworkChangeAsync()
         {
             try
@@ -902,6 +899,9 @@ namespace Jellyfin.Networking.Manager
             }
         }
 
+        /// <summary>
+        /// Initialises the network bind addresses.
+        /// </summary>
         private void InitialiseBind(NetworkConfiguration config)
         {
             string[] lanAddresses = config.LocalNetworkAddresses;
@@ -930,6 +930,9 @@ namespace Jellyfin.Networking.Manager
             _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions.AsString());
         }
 
+        /// <summary>
+        /// Initialises the remote address values.
+        /// </summary>
         private void InitialiseRemote(NetworkConfiguration config)
         {
             RemoteAddressFilter = CreateIPCollection(config.RemoteIPFilter);
@@ -1130,7 +1133,7 @@ namespace Jellyfin.Networking.Manager
         /// <param name="isExternal">True if the source is in the external subnet.</param>
         /// <param name="bindPreference">The published server url that matches the source address.</param>
         /// <param name="port">The resultant port, if one exists.</param>
-        /// <returns>True if a match is found.</returns>
+        /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
         private bool MatchesPublishedServerUrl(IPObject source, bool isExternal, out string bindPreference, out int? port)
         {
             bindPreference = string.Empty;
@@ -1184,7 +1187,7 @@ namespace Jellyfin.Networking.Manager
         /// <param name="source">IP source address to use.</param>
         /// <param name="isExternal">True if the source is in the external subnet.</param>
         /// <param name="result">The result, if a match is found.</param>
-        /// <returns>True if a match is found.</returns>
+        /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
         private bool MatchesBindInterface(IPObject source, bool isExternal, out string result)
         {
             result = string.Empty;
@@ -1259,7 +1262,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="source">IP source address to use.</param>
         /// <param name="result">The result, if a match is found.</param>
-        /// <returns>True if a match is found.</returns>
+        /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
         private bool MatchesExternalInterface(IPObject source, out string result)
         {
             result = string.Empty;

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 
@@ -227,7 +228,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
-        /// <param name="configuration">The configuration to use.</param>
-        void UpdateSettings(object configuration);
+        /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
+        void UpdateSettings(NetworkConfiguration configuration);
     }
 }
