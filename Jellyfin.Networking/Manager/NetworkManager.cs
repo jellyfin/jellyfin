@@ -1,5 +1,3 @@
-#pragma warning disable CA1021 // Avoid out parameters
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -188,16 +186,16 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public bool IsGatewayInterface(object? addressObj)
+        public bool IsGatewayInterface(IPObject? addressObj)
         {
-            var address = addressObj switch
-            {
-                IPAddress addressIp => addressIp,
-                IPObject addressIpObj => addressIpObj.Address,
-                _ => IPAddress.None
-            };
-
+            var address = addressObj?.Address ?? IPAddress.None;
             return _internalInterfaces.Any(i => i.Address.Equals(address) && i.Tag < 0);
+        }
+
+        /// <inheritdoc/>
+        public bool IsGatewayInterface(IPAddress? addressObj)
+        {
+            return _internalInterfaces.Any(i => i.Address.Equals(addressObj ?? IPAddress.None) && i.Tag < 0);
         }
 
         /// <inheritdoc/>
@@ -255,7 +253,7 @@ namespace Jellyfin.Networking.Manager
                     {
                         if (bracketed)
                         {
-                            AddToCollection(col, v.Substring(1));
+                            AddToCollection(col, v[1..]);
                         }
                     }
                     else if (!bracketed)

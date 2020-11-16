@@ -1,4 +1,3 @@
-#pragma warning disable CA1021 // Avoid out parameters
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -140,7 +139,14 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
         /// <returns>Result of the check.</returns>
-        bool IsGatewayInterface(object? addressObj);
+        bool IsGatewayInterface(IPObject? addressObj);
+
+        /// <summary>
+        /// Checks to see if the IP Address provided matches an interface that has a gateway.
+        /// </summary>
+        /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
+        /// <returns>Result of the check.</returns>
+        bool IsGatewayInterface(IPAddress? addressObj);
 
         /// <summary>
         /// Returns true if the address is a private address.
