@@ -136,7 +136,7 @@ namespace MediaBrowser.Common.Net
                 else
                 {
                     // See if it's an IPv6 in [] with no port.
-                    i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+                    i = host.IndexOf(']', StringComparison.OrdinalIgnoreCase);
                     if (i != -1)
                     {
                         return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
