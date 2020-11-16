@@ -292,7 +292,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="NoContentResult"/>.
         /// </returns>
-        [HttpPost("Items/RemoteSearch/Apply/{id}")]
+        [HttpPost("Items/RemoteSearch/Apply/{itemId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ApplySearchCriteria(
@@ -334,10 +334,16 @@ namespace Jellyfin.Api.Controllers
         private async Task DownloadImage(string providerName, string url, Guid urlHash, string pointerCachePath)
         {
             using var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
+            if (result.Content.Headers.ContentType?.MediaType == null)
+            {
+                throw new ResourceNotFoundException(nameof(result.Content.Headers.ContentType));
+            }
+
             var ext = result.Content.Headers.ContentType.MediaType.Split('/')[^1];
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+            var directory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
+            Directory.CreateDirectory(directory);
             using (var stream = result.Content)
             {
                 await using var fileStream = new FileStream(
@@ -351,7 +357,9 @@ namespace Jellyfin.Api.Controllers
                 await stream.CopyToAsync(fileStream).ConfigureAwait(false);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));
+
+            Directory.CreateDirectory(pointerCacheDirectory);
             await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath).ConfigureAwait(false);
         }
 

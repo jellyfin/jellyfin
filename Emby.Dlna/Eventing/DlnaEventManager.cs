@@ -83,7 +83,7 @@ namespace Emby.Dlna.Eventing
             if (!string.IsNullOrEmpty(header))
             {
                 // Starts with SECOND-
-                header = header.Split('-').Last();
+                header = header.Split('-')[^1];
 
                 if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
                 {
@@ -168,7 +168,7 @@ namespace Emby.Dlna.Eventing
 
             builder.Append("</e:propertyset>");
 
-            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"),  subscription.CallbackUrl);
+            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"), subscription.CallbackUrl);
             options.Content = new StringContent(builder.ToString(), Encoding.UTF8, MediaTypeNames.Text.Xml);
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");

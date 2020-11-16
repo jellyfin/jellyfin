@@ -225,12 +225,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, ItemFields[] fields, User user = null);
+        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, IReadOnlyList<ItemFields> fields, User user = null);
 
         /// <summary>
         /// Saves the tuner host.
         /// </summary>
         Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true);
+
         /// <summary>
         /// Saves the listing provider.
         /// </summary>

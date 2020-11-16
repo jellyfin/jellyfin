@@ -1,6 +1,6 @@
+#nullable enable
 #pragma warning disable CS1591
 
-using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -19,12 +19,7 @@ namespace Emby.Naming.AudioBook
 
         public AudioBookFilePathParserResult Parse(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            var result = new AudioBookFilePathParserResult();
+            AudioBookFilePathParserResult result = default;
             var fileName = Path.GetFileNameWithoutExtension(path);
             foreach (var expression in _options.AudioBookPartsExpressions)
             {

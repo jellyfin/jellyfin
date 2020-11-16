@@ -2,7 +2,7 @@ FROM ubuntu:bionic
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=3.1
+ARG SDK_VERSION=5.0
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -16,7 +16,7 @@ RUN apt-get update \
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/4f9b8a64-5e09-456c-a087-527cfc8b4cd2/15e14ec06eab947432de139f172f7a98/dotnet-sdk-3.1.401-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget https://download.visualstudio.microsoft.com/download/pr/820db713-c9a5-466e-b72a-16f2f5ed00e2/628aa2a75f6aa270e77f4a83b3742fb8/dotnet-sdk-5.0.100-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
  && mkdir -p dotnet-sdk \
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet

@@ -83,8 +83,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool QuickConnectAvailable { get; set; }
 
-        public bool AutoRunWebApp { get; set; }
-
         public bool EnableRemoteAccess { get; set; }
 
         /// <summary>
@@ -274,6 +272,11 @@ namespace MediaBrowser.Model.Configuration
         public string[] KnownProxies { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of days we should retain activity logs.
+        /// </summary>
+        public int? ActivityLogRetentionDays { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -306,7 +309,6 @@ namespace MediaBrowser.Model.Configuration
             DisableLiveTvChannelUserDataName = true;
             EnableNewOmdbSupport = true;
 
-            AutoRunWebApp = true;
             EnableRemoteAccess = true;
             QuickConnectAvailable = false;
 
@@ -384,6 +386,7 @@ namespace MediaBrowser.Model.Configuration
             SlowResponseThresholdMs = 500;
             CorsHosts = new[] { "*" };
             KnownProxies = Array.Empty<string>();
+            ActivityLogRetentionDays = 30;
         }
     }
 

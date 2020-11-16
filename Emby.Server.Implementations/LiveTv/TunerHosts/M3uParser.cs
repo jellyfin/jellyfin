@@ -13,6 +13,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
@@ -30,12 +31,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             _appHost = appHost;
         }
 
-        public async Task<List<ChannelInfo>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
+        public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
-            using (var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false)))
+            using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
             {
-                return GetChannels(reader, channelIdPrefix, tunerHostId);
+                return GetChannels(reader, channelIdPrefix, info.Id);
             }
         }
 
@@ -48,15 +49,24 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        public Task<Stream> GetListingsStream(string url, CancellationToken cancellationToken)
+        public async Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            if (info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return _httpClientFactory.CreateClient(NamedClient.Default)
-                    .GetStreamAsync(url);
+                using var requestMessage = new HttpRequestMessage(HttpMethod.Get, info.Url);
+                if (!string.IsNullOrEmpty(info.UserAgent))
+                {
+                    requestMessage.Headers.UserAgent.TryParseAdd(info.UserAgent);
+                }
+
+                var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(requestMessage, cancellationToken)
+                    .ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
 
-            return Task.FromResult((Stream)File.OpenRead(url));
+            return File.OpenRead(info.Url);
         }
 
         private const string ExtInfPrefix = "#EXTINF:";
@@ -153,7 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
@@ -263,8 +273,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].Trim() : null;
 
             // Check for channel number with the format from SatIp
             // #EXTINF:0,84. VOX Schweiz

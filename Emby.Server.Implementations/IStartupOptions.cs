@@ -17,11 +17,6 @@ namespace Emby.Server.Implementations
         bool IsService { get; }
 
         /// <summary>
-        /// Gets the value of the --noautorunwebapp command line option.
-        /// </summary>
-        bool NoAutoRunWebApp { get; }
-
-        /// <summary>
         /// Gets the value of the --package-name command line option.
         /// </summary>
         string PackageName { get; }

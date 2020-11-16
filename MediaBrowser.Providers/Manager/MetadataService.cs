@@ -252,7 +252,13 @@ namespace MediaBrowser.Providers.Manager
 
                     if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
                     {
-                        await AddPersonImageAsync(personEntity, libraryOptions, person.ImageUrl, cancellationToken).ConfigureAwait(false);
+                        personEntity.SetImage(
+                            new ItemImageInfo
+                            {
+                                Path = person.ImageUrl,
+                                Type = ImageType.Primary
+                            },
+                            0);
 
                         saveEntity = true;
                         updateType |= ItemUpdateType.ImageUpdate;
@@ -266,30 +272,6 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private async Task AddPersonImageAsync(Person personEntity, LibraryOptions libraryOptions, string imageUrl, CancellationToken cancellationToken)
-        {
-            if (libraryOptions.DownloadImagesInAdvance)
-            {
-                try
-                {
-                    await ProviderManager.SaveImage(personEntity, imageUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error in AddPersonImage");
-                }
-            }
-
-            personEntity.SetImage(
-                new ItemImageInfo
-                {
-                    Path = imageUrl,
-                    Type = ImageType.Primary
-                },
-                0);
-        }
-
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             item.AfterMetadataRefresh();
@@ -297,7 +279,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Befores the save.
+        /// Before the save.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
@@ -355,13 +337,12 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual IList<BaseItem> GetChildrenForMetadataUpdates(TItemType item)
         {
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 return folder.GetRecursiveChildren();
             }
 
-            return new List<BaseItem>();
+            return Array.Empty<BaseItem>();
         }
 
         protected virtual ItemUpdateType UpdateMetadataFromChildren(TItemType item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
@@ -814,7 +795,7 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
-                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
+                refreshResult.UpdateType |= await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -880,16 +861,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return refreshResult;
-        }
-
-        private string NormalizeLanguage(string language)
-        {
-            if (string.IsNullOrWhiteSpace(language))
-            {
-                return "en";
-            }
-
-            return language;
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)

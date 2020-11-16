@@ -57,21 +57,28 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 // Process images
                 try
                 {
-                    var episodeInfo = new EpisodeInfo
+                    string episodeTvdbId = null;
+
+                    if (episode.IndexNumber.HasValue && episode.ParentIndexNumber.HasValue)
                     {
-                        IndexNumber = episode.IndexNumber.Value,
-                        ParentIndexNumber = episode.ParentIndexNumber.Value,
-                        SeriesProviderIds = series.ProviderIds,
-                        SeriesDisplayOrder = series.DisplayOrder
-                    };
-                    string episodeTvdbId = await _tvdbClientManager
-                        .GetEpisodeTvdbId(episodeInfo, language, cancellationToken).ConfigureAwait(false);
+                        var episodeInfo = new EpisodeInfo
+                        {
+                            IndexNumber = episode.IndexNumber.Value,
+                            ParentIndexNumber = episode.ParentIndexNumber.Value,
+                            SeriesProviderIds = series.ProviderIds,
+                            SeriesDisplayOrder = series.DisplayOrder
+                        };
+
+                        episodeTvdbId = await _tvdbClientManager
+                            .GetEpisodeTvdbId(episodeInfo, language, cancellationToken).ConfigureAwait(false);
+                    }
+
                     if (string.IsNullOrEmpty(episodeTvdbId))
                     {
                         _logger.LogError(
                             "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
-                            episodeInfo.ParentIndexNumber,
-                            episodeInfo.IndexNumber,
+                            episode.ParentIndexNumber,
+                            episode.IndexNumber,
                             series.GetProviderId(MetadataProvider.Tvdb));
                         return imageResult;
                     }

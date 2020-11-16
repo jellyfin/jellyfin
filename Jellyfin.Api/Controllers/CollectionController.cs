@@ -83,14 +83,14 @@ namespace Jellyfin.Api.Controllers
         /// Adds items to a collection.
         /// </summary>
         /// <param name="collectionId">The collection id.</param>
-        /// <param name="itemIds">Item ids, comma delimited.</param>
+        /// <param name="ids">Item ids, comma delimited.</param>
         /// <response code="204">Items added to collection.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> AddToCollection([FromRoute, Required] Guid collectionId, [FromQuery, Required] string itemIds)
+        public async Task<ActionResult> AddToCollection([FromRoute, Required] Guid collectionId, [FromQuery, Required] string ids)
         {
-            await _collectionManager.AddToCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(true);
+            await _collectionManager.AddToCollectionAsync(collectionId, RequestHelpers.GetGuids(ids)).ConfigureAwait(true);
             return NoContent();
         }
 
@@ -98,14 +98,14 @@ namespace Jellyfin.Api.Controllers
         /// Removes items from a collection.
         /// </summary>
         /// <param name="collectionId">The collection id.</param>
-        /// <param name="itemIds">Item ids, comma delimited.</param>
+        /// <param name="ids">Item ids, comma delimited.</param>
         /// <response code="204">Items removed from collection.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpDelete("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemoveFromCollection([FromRoute, Required] Guid collectionId, [FromQuery, Required] string itemIds)
+        public async Task<ActionResult> RemoveFromCollection([FromRoute, Required] Guid collectionId, [FromQuery, Required] string ids)
         {
-            await _collectionManager.RemoveFromCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(false);
+            await _collectionManager.RemoveFromCollectionAsync(collectionId, RequestHelpers.GetGuids(ids)).ConfigureAwait(false);
             return NoContent();
         }
     }

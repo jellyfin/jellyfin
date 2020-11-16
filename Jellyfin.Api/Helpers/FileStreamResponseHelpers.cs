@@ -37,8 +37,8 @@ namespace Jellyfin.Api.Helpers
             }
 
             // Can't dispose the response as it's required up the call chain.
-            var response = await httpClient.GetAsync(state.MediaPath).ConfigureAwait(false);
-            var contentType = response.Content.Headers.ContentType.ToString();
+            var response = await httpClient.GetAsync(new Uri(state.MediaPath)).ConfigureAwait(false);
+            var contentType = response.Content.Headers.ContentType?.ToString();
 
             httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
@@ -123,9 +123,8 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None)
-                    .WriteToAsync(httpContext.Response.Body, CancellationToken.None).ConfigureAwait(false);
-                return new FileStreamResult(httpContext.Response.Body, contentType);
+                var stream = new ProgressiveFileStream(outputPath, job, transcodingJobHelper);
+                return new FileStreamResult(stream, contentType);
             }
             finally
             {

@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Users
         public string Name => "InvalidOrMissingAuthenticationProvider";
 
         /// <inheritdoc />
-        public bool IsEnabled => true;
+        public bool IsEnabled => false;
 
         /// <inheritdoc />
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password)

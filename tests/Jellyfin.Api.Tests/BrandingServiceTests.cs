@@ -25,7 +25,7 @@ namespace Jellyfin.Api.Tests
 
             // Assert
             response.EnsureSuccessStatusCode();
-            Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType?.ToString());
             var responseBody = await response.Content.ReadAsStreamAsync();
             _ = await JsonSerializer.DeserializeAsync<BrandingOptions>(responseBody);
         }
@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Tests
 
             // Assert
             response.EnsureSuccessStatusCode();
-            Assert.Equal("text/css; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            Assert.Equal("text/css; charset=utf-8", response.Content.Headers.ContentType?.ToString());
         }
     }
 }

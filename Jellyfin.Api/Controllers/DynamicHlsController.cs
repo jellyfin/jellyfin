@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -14,6 +14,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -113,7 +114,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets a video hls playlist stream.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -170,7 +170,6 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -223,7 +222,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new HlsVideoRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -281,7 +279,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets an audio hls playlist stream.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -299,6 +296,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -338,7 +336,6 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -356,6 +353,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -391,7 +389,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new HlsAudioRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -409,7 +406,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -449,7 +446,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets a video stream using HTTP live streaming.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -504,7 +500,6 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -557,7 +552,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -615,7 +609,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets an audio stream using HTTP live streaming.
         /// </summary>
         /// <param name="itemId">The item id.</param>
-        /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -633,6 +626,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -670,7 +664,6 @@ namespace Jellyfin.Api.Controllers
         [ProducesPlaylistFile]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
             [FromRoute, Required] Guid itemId,
-            [FromQuery, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -688,6 +681,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -723,7 +717,6 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new StreamingRequestDto
             {
                 Id = itemId,
-                Container = container,
                 Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
@@ -741,7 +734,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -841,7 +834,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
-            [FromRoute, Required] string container,
+            [FromRoute] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -971,6 +964,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -1011,7 +1005,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
-            [FromRoute, Required] string container,
+            [FromRoute] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -1029,6 +1023,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -1081,7 +1076,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -1144,30 +1139,30 @@ namespace Jellyfin.Api.Controllers
 
             var builder = new StringBuilder();
 
-            builder.AppendLine("#EXTM3U");
-            builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
-            builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(CultureInfo.InvariantCulture));
-            builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+            builder.AppendLine("#EXTM3U")
+                .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
+                .AppendLine("#EXT-X-VERSION:3")
+                .Append("#EXT-X-TARGETDURATION:")
+                .Append(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength))
+                .AppendLine()
+                .AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
-            var queryString = Request.QueryString;
             var index = 0;
-
             var segmentExtension = GetSegmentFileExtension(streamingRequest.SegmentContainer);
+            var queryString = Request.QueryString;
 
             foreach (var length in segmentLengths)
             {
-                builder.AppendLine("#EXTINF:" + length.ToString("0.0000", CultureInfo.InvariantCulture) + ", nodesc");
-                builder.AppendLine(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "hls1/{0}/{1}{2}{3}",
-                        name,
-                        index.ToString(CultureInfo.InvariantCulture),
-                        segmentExtension,
-                        queryString));
-
-                index++;
+                builder.Append("#EXTINF:")
+                    .Append(length.ToString("0.0000", CultureInfo.InvariantCulture))
+                    .AppendLine(", nodesc")
+                    .Append("hls1/")
+                    .Append(name)
+                    .Append('/')
+                    .Append(index++)
+                    .Append(segmentExtension)
+                    .Append(queryString)
+                    .AppendLine();
             }
 
             builder.AppendLine("#EXT-X-ENDLIST");
@@ -1353,7 +1348,9 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+
+            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
 
             var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1465,7 +1462,7 @@ namespace Jellyfin.Api.Controllers
 
             var args = "-codec:v:0 " + codec;
 
-            // if (state.EnableMpegtsM2TsMode)
+            // if  (state.EnableMpegtsM2TsMode)
             // {
             //     args += " -mpegts_m2ts_mode 1";
             // }
@@ -1571,8 +1568,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = Path.GetDirectoryName(playlist);
-
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException($"Provided path ({playlist}) is not valid.", nameof(playlist));
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
             return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + GetSegmentFileExtension(state.Request.SegmentContainer));

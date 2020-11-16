@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         {
             var seriesWithPerson = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { nameof(Series) },
                 PersonIds = new[] { item.Id },
                 DtoOptions = new DtoOptions(false)
                 {
