@@ -275,7 +275,7 @@ namespace Emby.Server.Implementations.Dto
                     continue;
                 }
 
-                var containers = container.Split(new[] { ',' });
+                var containers = container.Split(',');
                 if (containers.Length < 2)
                 {
                     continue;

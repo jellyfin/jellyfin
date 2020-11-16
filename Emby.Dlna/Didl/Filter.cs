@@ -26,7 +26,7 @@ namespace Emby.Dlna.Didl
         {
             _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);
 
-            _fields = (filter ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            _fields = (filter ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>

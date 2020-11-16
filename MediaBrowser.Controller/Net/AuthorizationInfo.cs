@@ -53,5 +53,10 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the user making the request.
         /// </summary>
         public User User { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the token is authenticated.
+        /// </summary>
+        public bool IsAuthenticated { get; set; }
     }
 }

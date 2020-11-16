@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 return discoverResponse;
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
@@ -664,7 +664,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var modelInfo = await GetModelInfo(info, true, CancellationToken.None).ConfigureAwait(false);
                 info.DeviceId = modelInfo.DeviceID;
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
                 {

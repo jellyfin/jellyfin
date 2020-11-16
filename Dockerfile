@@ -1,4 +1,4 @@
-ARG DOTNET_VERSION=3.1
+ARG DOTNET_VERSION=5.0
 
 FROM node:alpine as web-builder
 ARG JELLYFIN_WEB_VERSION=master
@@ -8,7 +8,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && yarn install \
  && mv dist /dist
 
-FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster as builder
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-buster-slim as builder
 WORKDIR /repo
 COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1

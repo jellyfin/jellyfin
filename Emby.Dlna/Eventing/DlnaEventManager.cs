@@ -112,7 +112,7 @@ namespace Emby.Dlna.Eventing
             if (!string.IsNullOrEmpty(header))
             {
                 // Starts with SECOND-
-                header = header.Split('-').Last();
+                header = header.Split('-')[^1];
 
                 if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
                 {

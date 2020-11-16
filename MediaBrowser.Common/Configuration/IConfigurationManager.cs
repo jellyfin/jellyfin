@@ -50,7 +50,8 @@ namespace MediaBrowser.Common.Configuration
         /// Manually pre-loads a factory so that it is available pre system initialisation.
         /// </summary>
         /// <typeparam name="T">Class to register.</typeparam>
-        void RegisterConfiguration<T>();
+        void RegisterConfiguration<T>()
+            where T : IConfigurationFactory;
 
         /// <summary>
         /// Gets the configuration.

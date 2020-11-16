@@ -112,5 +112,7 @@
     "Books": "Sách",
     "AuthenticationSucceededWithUserName": "{0} xác thực thành công",
     "Application": "Ứng Dụng",
-    "AppDeviceValues": "Ứng Dụng: {0}, Thiết Bị: {1}"
+    "AppDeviceValues": "Ứng Dụng: {0}, Thiết Bị: {1}",
+    "TaskCleanActivityLogDescription": "Xóa các mục nhật ký hoạt động cũ hơn độ tuổi đã cài đặt.",
+    "TaskCleanActivityLog": "Xóa Nhật Ký Hoạt Động"
 }

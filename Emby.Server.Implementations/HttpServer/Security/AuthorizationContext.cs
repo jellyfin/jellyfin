@@ -36,8 +36,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         public AuthorizationInfo GetAuthorizationInfo(HttpRequest requestContext)
         {
             var auth = GetAuthorizationDictionary(requestContext);
-            var (authInfo, _) =
-                GetAuthorizationInfoFromDictionary(auth, requestContext.Headers, requestContext.Query);
+            var authInfo = GetAuthorizationInfoFromDictionary(auth, requestContext.Headers, requestContext.Query);
             return authInfo;
         }
 
@@ -49,19 +48,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private AuthorizationInfo GetAuthorization(HttpContext httpReq)
         {
             var auth = GetAuthorizationDictionary(httpReq);
-            var (authInfo, originalAuthInfo) =
-                GetAuthorizationInfoFromDictionary(auth, httpReq.Request.Headers, httpReq.Request.Query);
-
-            if (originalAuthInfo != null)
-            {
-                httpReq.Request.HttpContext.Items["OriginalAuthenticationInfo"] = originalAuthInfo;
-            }
+            var authInfo = GetAuthorizationInfoFromDictionary(auth, httpReq.Request.Headers, httpReq.Request.Query);
 
             httpReq.Request.HttpContext.Items["AuthorizationInfo"] = authInfo;
             return authInfo;
         }
 
-        private (AuthorizationInfo authInfo, AuthenticationInfo originalAuthenticationInfo) GetAuthorizationInfoFromDictionary(
+        private AuthorizationInfo GetAuthorizationInfoFromDictionary(
             in Dictionary<string, string> auth,
             in IHeaderDictionary headers,
             in IQueryCollection queryString)
@@ -108,19 +101,25 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 Device = device,
                 DeviceId = deviceId,
                 Version = version,
-                Token = token
+                Token = token,
+                IsAuthenticated = false
             };
 
             if (string.IsNullOrWhiteSpace(token))
             {
                 // Request doesn't contain a token.
-                return (null, null);
+                return authInfo;
             }
 
             var result = _authRepo.Get(new AuthenticationInfoQuery
             {
                 AccessToken = token
             });
+
+            if (result.Items.Count > 0)
+            {
+                authInfo.IsAuthenticated = true;
+            }
 
             var originalAuthenticationInfo = result.Items.Count > 0 ? result.Items[0] : null;
 
@@ -197,7 +196,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 }
             }
 
-            return (authInfo, originalAuthenticationInfo);
+            return authInfo;
         }
 
         /// <summary>
@@ -246,7 +245,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return null;
             }
 
-            var parts = authorizationHeader.Split(new[] { ' ' }, 2);
+            var parts = authorizationHeader.Split(' ', 2);
 
             // There should be at least to parts
             if (parts.Length != 2)
@@ -270,11 +269,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             foreach (var item in parts)
             {
-                var param = item.Trim().Split(new[] { '=' }, 2);
+                var param = item.Trim().Split('=', 2);
 
                 if (param.Length == 2)
                 {
-                    var value = NormalizeValue(param[1].Trim(new[] { '"' }));
+                    var value = NormalizeValue(param[1].Trim('"'));
                     result[param[0]] = value;
                 }
             }

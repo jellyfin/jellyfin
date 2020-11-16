@@ -10,7 +10,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.AppBase
@@ -139,23 +138,21 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         /// <typeparam name="T">Class to register.</typeparam>
         public virtual void RegisterConfiguration<T>()
+            where T : IConfigurationFactory
         {
-            if (!typeof(IConfigurationFactory).IsAssignableFrom(typeof(T)))
-            {
-                throw new ArgumentException("Parameter does not implement IConfigurationFactory");
-            }
-
-            IConfigurationFactory factory = (IConfigurationFactory)Activator.CreateInstance(typeof(T));
+            IConfigurationFactory factory = Activator.CreateInstance<T>();
 
             if (_configurationFactories == null)
             {
-                _configurationFactories = new IConfigurationFactory[] { factory };
+                _configurationFactories = new[] { factory };
             }
             else
             {
-                var list = _configurationFactories.ToList<IConfigurationFactory>();
-                list.Add(factory);
-                _configurationFactories = list.ToArray();
+                var oldLen = _configurationFactories.Length;
+                var arr = new IConfigurationFactory[oldLen + 1];
+                _configurationFactories.CopyTo(arr, 0);
+                arr[oldLen] = factory;
+                _configurationFactories = arr;
             }
 
             _configurationStores = _configurationFactories

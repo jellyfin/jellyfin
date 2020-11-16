@@ -1,4 +1,4 @@
-ARG DOTNET_VERSION=3.1
+ARG DOTNET_VERSION=5.0
 
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster
 

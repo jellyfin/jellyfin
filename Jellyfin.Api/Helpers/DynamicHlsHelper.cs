@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Helpers
             StreamingRequestDto streamingRequest,
             bool enableAdaptiveBitrateStreaming)
         {
-            var isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == WebRequestMethods.Http.Head;
+            var isHeadRequest = _httpContextAccessor.HttpContext?.Request.Method == WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
             return await GetMasterPlaylistInternal(
                 streamingRequest,
@@ -130,6 +130,11 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
+            }
+
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     _httpContextAccessor.HttpContext.Request,
@@ -487,14 +492,14 @@ namespace Jellyfin.Api.Helpers
 
             if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
             {
-                string profile = state.GetRequestedProfiles("h264").FirstOrDefault();
+                string? profile = state.GetRequestedProfiles("h264").FirstOrDefault();
                 return HlsCodecStringHelpers.GetH264String(profile, level);
             }
 
             if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
-                string profile = state.GetRequestedProfiles("h265").FirstOrDefault();
+                string? profile = state.GetRequestedProfiles("h265").FirstOrDefault();
 
                 return HlsCodecStringHelpers.GetH265String(profile, level);
             }

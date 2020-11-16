@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.MediaInfo
@@ -55,6 +56,6 @@ namespace MediaBrowser.Model.MediaInfo
 
         public bool EnableDirectStream { get; set; }
 
-        public MediaProtocol[] DirectPlayProtocols { get; set; }
+        public IReadOnlyList<MediaProtocol> DirectPlayProtocols { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="profile">AAC profile.</param>
         /// <returns>AAC codec string.</returns>
-        public static string GetAACString(string profile)
+        public static string GetAACString(string? profile)
         {
             StringBuilder result = new StringBuilder("mp4a", 9);
 
@@ -46,7 +46,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="profile">H.264 profile.</param>
         /// <param name="level">H.264 level.</param>
         /// <returns>H.264 string.</returns>
-        public static string GetH264String(string profile, int level)
+        public static string GetH264String(string? profile, int level)
         {
             StringBuilder result = new StringBuilder("avc1", 11);
 
@@ -80,7 +80,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="profile">H.265 profile.</param>
         /// <param name="level">H.265 level.</param>
         /// <returns>H.265 string.</returns>
-        public static string GetH265String(string profile, int level)
+        public static string GetH265String(string? profile, int level)
         {
             // The h265 syntax is a bit of a mystery at the time this comment was written.
             // This is what I've found through various sources:

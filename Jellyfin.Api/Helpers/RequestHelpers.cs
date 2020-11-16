@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             return removeEmpty
-                ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
+                ? value.Split(separator, StringSplitOptions.RemoveEmptyEntries)
                 : value.Split(separator);
         }
 
@@ -161,33 +161,6 @@ namespace Jellyfin.Api.Helpers
 
                     return null;
                 }).Where(i => i.HasValue)
-                .Select(i => i!.Value)
-                .ToArray();
-        }
-
-        /// <summary>
-        /// Gets the item fields.
-        /// </summary>
-        /// <param name="imageTypes">The image types string.</param>
-        /// <returns>IEnumerable{ItemFields}.</returns>
-        internal static ImageType[] GetImageTypes(string? imageTypes)
-        {
-            if (string.IsNullOrEmpty(imageTypes))
-            {
-                return Array.Empty<ImageType>();
-            }
-
-            return Split(imageTypes, ',', true)
-                .Select(v =>
-                {
-                    if (Enum.TryParse(v, true, out ImageType value))
-                    {
-                        return (ImageType?)value;
-                    }
-
-                    return null;
-                })
-                .Where(i => i.HasValue)
                 .Select(i => i!.Value)
                 .ToArray();
         }

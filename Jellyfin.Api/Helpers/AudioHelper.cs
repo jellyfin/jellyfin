@@ -1,8 +1,10 @@
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -98,6 +100,11 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
+            }
+
             bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
 

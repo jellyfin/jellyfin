@@ -26,19 +26,40 @@ namespace MediaBrowser.Common.Json.Converters
         {
             if (reader.TokenType == JsonTokenType.String)
             {
-                var stringEntries = reader.GetString()?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var stringEntries = reader.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 if (stringEntries == null || stringEntries.Length == 0)
                 {
                     return Array.Empty<T>();
                 }
 
-                var entries = new T[stringEntries.Length];
+                var parsedValues = new object[stringEntries.Length];
+                var convertedCount = 0;
                 for (var i = 0; i < stringEntries.Length; i++)
                 {
-                    entries[i] = (T)_typeConverter.ConvertFrom(stringEntries[i].Trim());
+                    try
+                    {
+                        parsedValues[i] = _typeConverter.ConvertFrom(stringEntries[i].Trim());
+                        convertedCount++;
+                    }
+                    catch (FormatException)
+                    {
+                        // TODO log when upgraded to .Net5
+                        // _logger.LogWarning(e, "Error converting value.");
+                    }
                 }
 
-                return entries;
+                var typedValues = new T[convertedCount];
+                var typedValueIndex = 0;
+                for (var i = 0; i < stringEntries.Length; i++)
+                {
+                    if (parsedValues[i] != null)
+                    {
+                        typedValues.SetValue(parsedValues[i], typedValueIndex);
+                        typedValueIndex++;
+                    }
+                }
+
+                return typedValues;
             }
 
             return JsonSerializer.Deserialize<T[]>(ref reader, options);

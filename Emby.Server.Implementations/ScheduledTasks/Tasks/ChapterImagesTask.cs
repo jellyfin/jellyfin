@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 try
                 {
                     previouslyFailedImages = File.ReadAllText(failHistoryPath)
-                        .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Split('|', StringSplitOptions.RemoveEmptyEntries)
                         .ToList();
                 }
                 catch (IOException)

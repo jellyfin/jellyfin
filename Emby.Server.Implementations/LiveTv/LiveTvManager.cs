@@ -1429,7 +1429,7 @@ namespace Emby.Server.Implementations.LiveTv
             return result;
         }
 
-        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, ItemFields[] fields, User user = null)
+        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, IReadOnlyList<ItemFields> fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string>>();
             var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
@@ -2208,7 +2208,7 @@ namespace Emby.Server.Implementations.LiveTv
         /// <returns>Task.</returns>
         public Task ResetTuner(string id, CancellationToken cancellationToken)
         {
-            var parts = id.Split(new[] { '_' }, 2);
+            var parts = id.Split('_', 2);
 
             var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), parts[0], StringComparison.OrdinalIgnoreCase));
 
