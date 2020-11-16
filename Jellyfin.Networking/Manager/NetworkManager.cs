@@ -265,7 +265,7 @@ namespace Jellyfin.Networking.Manager
                 }
                 catch (ArgumentException e)
                 {
-                    _logger.LogInformation("Ignoring LAN value {value}. Reason : {reason}", v, e.Message);
+                    _logger.LogWarning(e, "Ignoring LAN value {value}.", v);
                 }
             }
 
