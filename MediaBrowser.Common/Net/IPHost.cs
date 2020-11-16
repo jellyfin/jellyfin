@@ -388,7 +388,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Attempt to resolve the ip address of a host.
         /// </summary>
-        /// <returns>The result of the comparison function.</returns>
+        /// <returns><c>true</c> if any addresses have been resolved, otherwise <c>false</c>.</returns>
         private bool ResolveHost()
         {
             // When was the last time we resolved?
