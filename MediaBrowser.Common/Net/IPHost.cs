@@ -411,7 +411,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Task that looks up a Host name and returns its IP addresses.
         /// </summary>
-        /// <returns>Array of IPAddress objects.</returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task ResolveHostInternal()
         {
             if (!string.IsNullOrEmpty(HostName))
