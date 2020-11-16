@@ -19,7 +19,7 @@ namespace MediaBrowser.Common.Net
         public static readonly IPHost None = new IPHost(string.Empty, IPAddress.None);
 
         /// <summary>
-        /// Time when last resolved.
+        /// Time when last resolved in ticks.
         /// </summary>
         private long _lastResolved;
 
@@ -63,7 +63,8 @@ namespace MediaBrowser.Common.Net
 
             set
             {
-                // Not implemented.
+                // Not implemented, as a host's address is determined by DNS.
+                throw new NotImplementedException("The address of a host is determined by DNS.");
             }
         }
 
@@ -75,12 +76,14 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                return (byte)(ResolveHost() ? 128 : 0);
+                return (byte)(ResolveHost() ? 128 : 32);
             }
 
             set
             {
-                // Not implemented.
+                // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
+                // which is automatically determined by it's IP type. Anything else is meaningless.
+                throw new NotImplementedException("The prefix length on a host cannot be set.");
             }
         }
 
@@ -92,13 +95,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets a value indicating whether the address has a value.
         /// </summary>
-        public bool HasAddress
-        {
-            get
-            {
-                return _addresses.Length > 0;
-            }
-        }
+        public bool HasAddress => _addresses.Length != 0;
 
         /// <summary>
         /// Gets the host name of this object.
@@ -128,7 +125,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="host">Host name to parse.</param>
         /// <param name="hostObj">Object representing the string, if it has successfully been parsed.</param>
-        /// <returns>Success result of the parsing.</returns>
+        /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
         public static bool TryParse(string host, out IPHost hostObj)
         {
             if (!string.IsNullOrEmpty(host))
@@ -142,7 +139,7 @@ namespace MediaBrowser.Common.Net
                 else
                 {
                     // See if it's an IPv6 in [] with no port.
-                    i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+                    i = host.IndexOf(']', StringComparison.OrdinalIgnoreCase);
                     if (i != -1)
                     {
                         return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
@@ -394,19 +391,19 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Attempt to resolve the ip address of a host.
         /// </summary>
-        /// <returns>The result of the comparison function.</returns>
+        /// <returns><c>true</c> if any addresses have been resolved, otherwise <c>false</c>.</returns>
         private bool ResolveHost()
         {
             // When was the last time we resolved?
             if (_lastResolved == 0)
             {
-                _lastResolved = DateTime.Now.Ticks;
+                _lastResolved = DateTime.UtcNow.Ticks;
             }
 
             // If we haven't resolved before, or out timer has run out...
-            if ((_addresses.Length == 0 && !Resolved) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > Timeout))
+            if ((_addresses.Length == 0 && !Resolved) || (TimeSpan.FromTicks(DateTime.UtcNow.Ticks - _lastResolved).TotalMinutes > Timeout))
             {
-                _lastResolved = DateTime.Now.Ticks;
+                _lastResolved = DateTime.UtcNow.Ticks;
                 ResolveHostInternal().GetAwaiter().GetResult();
                 Resolved = true;
             }
@@ -417,7 +414,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Task that looks up a Host name and returns its IP addresses.
         /// </summary>
-        /// <returns>Array of IPAddress objects.</returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task ResolveHostInternal()
         {
             if (!string.IsNullOrEmpty(HostName))

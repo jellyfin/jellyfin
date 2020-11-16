@@ -278,7 +278,7 @@ namespace Emby.Dlna.Net
                 else if (searchTarget.Trim().StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
                 {
                     devices = (from device in Flatten<SsdpDevice>(_devices)
-                               where string.Equals(device.Uuid, searchTarget.Substring(5), StringComparison.OrdinalIgnoreCase)
+                               where string.Equals(device.Uuid, searchTarget[5..], StringComparison.OrdinalIgnoreCase)
                                select device).ToArray();
                 }
                 else if (searchTarget.StartsWith("urn:", StringComparison.OrdinalIgnoreCase))
@@ -501,7 +501,6 @@ namespace Emby.Dlna.Net
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "byebye", Justification = "Correct value for this type of notification in SSDP.")]
         private Task SendByeByeNotification(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
             var addr = device.ToRootDevice().Address;
@@ -515,7 +514,7 @@ namespace Emby.Dlna.Net
             return _ssdpServer.SendMulticastSSDP(values, SsdpNotify, addr, _disposed ? 1 : _ssdpServer.UdpSendCount);
         }
 
-        private async void RequestReceived(object sender, SsdpEventArgs e)
+        private async void RequestReceived(object? sender, SsdpEventArgs e)
         {
             ThrowIfDisposed();
 

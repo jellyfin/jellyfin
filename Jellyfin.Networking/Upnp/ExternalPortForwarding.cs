@@ -127,7 +127,7 @@ namespace Jellyfin.Networking.UPnP
         /// </summary>
         /// <param name="sender">Owner of the event.</param>
         /// <param name="e">Event parameters.</param>
-        private void OnConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs e)
         {
             if (e.Key.Equals("Network", StringComparison.Ordinal))
             {
@@ -187,7 +187,7 @@ namespace Jellyfin.Networking.UPnP
         /// </summary>
         /// <param name="sender">INetworkManager object.</param>
         /// <param name="e">Event arguments.</param>
-        private void OnNetworkChange(object sender, EventArgs e)
+        private void OnNetworkChange(object? sender, EventArgs e)
         {
             if (_disposed)
             {
@@ -246,7 +246,7 @@ namespace Jellyfin.Networking.UPnP
         /// </summary>
         /// <param name="sender">Objects triggering the event.</param>
         /// <param name="e">Event arguments.</param>
-        private async void KnownDeviceFound(object sender, DeviceEventArgs e)
+        private async void KnownDeviceFound(object? sender, DeviceEventArgs e)
         {
             if (_disposed)
             {

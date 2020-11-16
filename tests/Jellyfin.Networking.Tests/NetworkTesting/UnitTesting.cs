@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using Emby.Dlna.PlayTo;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
@@ -8,8 +7,8 @@ using MediaBrowser.Common.Net;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
-using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 using XMLProperties = System.Collections.Generic.Dictionary<string, string>;
+using System.Collections.ObjectModel;
 
 namespace NetworkTesting
 {
@@ -44,7 +43,7 @@ namespace NetworkTesting
         }
 
 
-        private IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
             {
@@ -162,7 +161,7 @@ namespace NetworkTesting
             var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);
+            var nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.True(string.Equals(nc?.AsString(), result1, System.StringComparison.OrdinalIgnoreCase));
 
             // Text excluded, non IP6.
@@ -202,8 +201,8 @@ namespace NetworkTesting
 
             var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            NetCollection nc1 = nm.CreateIPCollection(settings.Split(","), false);
-            NetCollection nc2 = nm.CreateIPCollection(compare.Split(","), false);
+            var nc1 = nm.CreateIPCollection(settings.Split(","), false);
+            var nc2 = nm.CreateIPCollection(compare.Split(","), false);
 
             Assert.True(nc1.Union(nc2).AsString() == result);
         }
@@ -276,12 +275,7 @@ namespace NetworkTesting
         {
             Assert.True(TryParse(network, out IPObject? networkObj));
             Assert.True(TryParse(ip, out IPObject? ipObj));
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8604 // Possible null reference argument.
             Assert.True(networkObj.Contains(ipObj));
-#pragma warning restore CS8604 // Possible null reference argument.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         [Theory]
@@ -302,10 +296,10 @@ namespace NetworkTesting
             var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
-            NetCollection ncDest = nm.CreateIPCollection(dest.Split(","));
-            NetCollection ncResult = ncSource.Union(ncDest);
-            NetCollection resultCollection = nm.CreateIPCollection(result.Split(","));
+            var ncSource = nm.CreateIPCollection(source.Split(","));
+            var ncDest = nm.CreateIPCollection(dest.Split(","));
+            var ncResult = ncSource.Union(ncDest);
+            var resultCollection = nm.CreateIPCollection(result.Split(","));
             Assert.True(ncResult.Compare(resultCollection));
         }
 
@@ -354,7 +348,7 @@ namespace NetworkTesting
             var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            _ = nm.TryParseInterface(result, out NetCollection? resultObj);
+            _ = nm.TryParseInterface(result, out Collection<IPObject>? resultObj);
 
             if (resultObj != null)
             {
@@ -411,7 +405,7 @@ namespace NetworkTesting
             var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            if (nm.TryParseInterface(result, out NetCollection? resultObj) && resultObj != null)
+            if (nm.TryParseInterface(result, out Collection<IPObject>? resultObj) && resultObj != null)
             {
                 // Parse out IPAddresses so we can do a string comparison. (Ignore subnet masks).
                 result = ((IPNetAddress)resultObj[0]).ToString(true);

@@ -98,7 +98,7 @@ namespace Emby.Dlna.PlayTo.Devices
         /// </summary>
         /// <param name="other">Item to compare.</param>
         /// <returns>True if other matches this object.</returns>
-        public bool Equals(SsdpRootDevice other)
+        public bool Equals(SsdpRootDevice? other)
         {
             if (other == null)
             {
@@ -109,7 +109,7 @@ namespace Emby.Dlna.PlayTo.Devices
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is SsdpRootDevice && Equals(obj);
+        public override bool Equals(object? obj) => obj is SsdpRootDevice && Equals(obj);
 
         /// <inheritdoc/>
         public override int GetHashCode() => base.GetHashCode();

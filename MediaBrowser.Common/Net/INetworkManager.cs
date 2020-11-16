@@ -137,7 +137,14 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
         /// <returns>Result of the check.</returns>
-        bool IsGatewayInterface(object? addressObj);
+        bool IsGatewayInterface(IPObject? addressObj);
+
+        /// <summary>
+        /// Checks to see if the IP Address provided matches an interface that has a gateway.
+        /// </summary>
+        /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
+        /// <returns>Result of the check.</returns>
+        bool IsGatewayInterface(IPAddress? addressObj);
 
         /// <summary>
         /// Returns true if the address is a private address.
@@ -221,11 +228,5 @@ namespace MediaBrowser.Common.Net
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         NetCollection GetFilteredLANSubnets(NetCollection? filter = null);
-
-        /// <summary>
-        /// Reloads all settings and re-initialises the instance.
-        /// </summary>
-        /// <param name="configuration">The configuration to use.</param>
-        void UpdateSettings(object configuration);
     }
 }

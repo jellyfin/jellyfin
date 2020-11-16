@@ -253,7 +253,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         // Ignore.
                     }
-                    catch (HttpException ex)
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, "{0}: Error getting device volume.", Properties.Name);
                     }
@@ -560,7 +560,7 @@ namespace Emby.Dlna.PlayTo
                 {
                     return;
                 }
-                catch (HttpException ex)
+                catch (Exception ex)
                 {
                     if (Tracing)
                     {
@@ -781,7 +781,7 @@ namespace Emby.Dlna.PlayTo
         {
             var uBase = new UBaseObject();
 
-            if (properties.TryGetValue("res.protocolInfo", out string value) && !string.IsNullOrEmpty(value))
+            if (properties.TryGetValue("res.protocolInfo", out string? value) && !string.IsNullOrEmpty(value))
             {
                 uBase.ProtocolInfo = value.Split(':');
             }
@@ -817,7 +817,7 @@ namespace Emby.Dlna.PlayTo
                     properties.TryGetValue("TrackURI", out value);
                 }
 
-                uBase.Url = value.Replace("&amp;", "&", StringComparison.OrdinalIgnoreCase);
+                uBase.Url = value!.Replace("&amp;", "&", StringComparison.OrdinalIgnoreCase);
             }
 
             if (properties.TryGetValue("album", out value))
@@ -1012,7 +1012,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
@@ -1266,7 +1266,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         return;
                     }
-                    catch (HttpException)
+                    catch (Exception)
                     {
                         // Ignore.
                     }
@@ -1513,9 +1513,9 @@ namespace Emby.Dlna.PlayTo
                 return true;
             }
 
-            string fault = string.Empty;
-            string errorCode = string.Empty;
-            string errorDescription = string.Empty;
+            string? fault = string.Empty;
+            string? errorCode = string.Empty;
+            string? errorDescription = string.Empty;
             if (result != null)
             {
                 result.TryGetValue("faultstring", out fault);
@@ -1541,14 +1541,14 @@ namespace Emby.Dlna.PlayTo
         /// <param name="service">The service<see cref="DeviceService"/>.</param>
         /// <param name="sid">The SID for renewal, or null for subscription.</param>
         /// <returns>Task.</returns>
-        private async Task<string> SubscribeInternalAsync(DeviceService service, string? sid)
+        private async Task<string> SubscribeInternalAsync(DeviceService? service, string? sid)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(string.Empty);
             }
 
-            if (service.EventSubUrl != null)
+            if (service?.EventSubUrl != null)
             {
                 var url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl);
                 using var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
@@ -1592,6 +1592,12 @@ namespace Emby.Dlna.PlayTo
                     using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                         .SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                         .ConfigureAwait(false);
+                    if (response == null)
+                    {
+                        _logger.LogDebug("{0}:<- Error: Response is null.", Properties.Name);
+                        return string.Empty;
+                    }
+
                     if (!response.IsSuccessStatusCode)
                     {
                         _logger.LogDebug("{0}:<- Error:{1} : {2}", Properties.Name, response.StatusCode, response.ReasonPhrase);
@@ -1602,16 +1608,16 @@ namespace Emby.Dlna.PlayTo
 
                     if (!_subscribed)
                     {
-                        return response.Headers.GetValues("SID").FirstOrDefault();
+                        return response.Headers.GetValues("SID")?.FirstOrDefault() ?? string.Empty;
                     }
                 }
                 catch (TaskCanceledException)
                 {
                     _logger.LogError("{0}: SUBSCRIBE timed out: {1}.", Properties.Name);
                 }
-                catch (HttpException ex)
+                catch (Exception ex)
                 {
-                    _logger.LogError(ex, "{0}: SUBSCRIBE failed: {1}", Properties.Name, ex.StatusCode);
+                    _logger.LogError(ex, "{0}: SUBSCRIBE failed: {1}", Properties.Name, ex.Message);
                 }
                 finally
                 {
@@ -1677,7 +1683,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="service">The service<see cref="DeviceService"/>.</param>
         /// <param name="sid">The sid.</param>
         /// <returns>Returns success of the task.</returns>
-        private async Task<bool> UnSubscribeInternalAsync(DeviceService service, string? sid)
+        private async Task<bool> UnSubscribeInternalAsync(DeviceService? service, string? sid)
         {
             if (_disposed)
             {
@@ -1720,9 +1726,9 @@ namespace Emby.Dlna.PlayTo
                 {
                     _logger.LogError("{0}: UNSUBSCRIBE timed out: {1}.", Properties.Name);
                 }
-                catch (HttpException ex)
+                catch (Exception ex)
                 {
-                    _logger.LogError(ex, "{0}: UNSUBSCRIBE failed.", Properties.Name);
+                    _logger.LogError(ex, "{0}: UNSUBSCRIBE failed. {1}", Properties.Name, ex.Message);
                 }
                 finally
                 {
@@ -1773,7 +1779,7 @@ namespace Emby.Dlna.PlayTo
         /// </summary>
         /// <param name="sender">PlayToController object.</param>
         /// <param name="args">Arguments passed from DLNA player.</param>
-        private async void ProcessSubscriptionEvent(object sender, DlnaEventArgs args)
+        private async void ProcessSubscriptionEvent(object? sender, DlnaEventArgs args)
         {
             if (args.Id == _sessionId)
             {
@@ -1789,7 +1795,7 @@ namespace Emby.Dlna.PlayTo
                         _logger.LogDebug("{0}: Processing a subscription event.", Properties.Name);
 
                         // Render events.
-                        if (reply.TryGetValue("Mute.val", out string value) && int.TryParse(value, out int mute))
+                        if (reply.TryGetValue("Mute.val", out string? value) && int.TryParse(value, out int mute))
                         {
                             _lastMuteRefresh = DateTime.UtcNow;
                             _logger.LogDebug("Muted: {0}", mute);
@@ -1873,7 +1879,7 @@ namespace Emby.Dlna.PlayTo
                 {
                     // Ignore.
                 }
-                catch (HttpException ex)
+                catch (Exception ex)
                 {
                     _logger.LogError("{0}: Unable to parse event response.", Properties.Name);
                     _logger.LogDebug(ex, "{0}: Received:\r\n", Properties.Name, args.Response);
@@ -1925,12 +1931,12 @@ namespace Emby.Dlna.PlayTo
                                 return;
                             }
 
-                            if (response.TryGetValue("TrackDuration", out string duration) && TimeSpan.TryParse(duration, _usCulture, out TimeSpan dur))
+                            if (response.TryGetValue("TrackDuration", out string? duration) && TimeSpan.TryParse(duration, _usCulture, out TimeSpan dur))
                             {
                                 Duration = dur;
                             }
 
-                            if (response.TryGetValue("RelTime", out string position) && TimeSpan.TryParse(position, _usCulture, out TimeSpan rel))
+                            if (response.TryGetValue("RelTime", out string? position) && TimeSpan.TryParse(position, _usCulture, out TimeSpan rel))
                             {
                                 Position = rel;
                             }
@@ -1965,7 +1971,7 @@ namespace Emby.Dlna.PlayTo
             {
                 return;
             }
-            catch (HttpException ex)
+            catch (Exception ex)
             {
                 if (_disposed)
                 {
@@ -2016,7 +2022,7 @@ namespace Emby.Dlna.PlayTo
                 return true;
             }
 
-            string volume = string.Empty;
+            string? volume = string.Empty;
             try
             {
                 XMLProperties? response = await SendCommandResponseRequired(RenderingControlService, "GetVolume").ConfigureAwait(false);
@@ -2064,7 +2070,7 @@ namespace Emby.Dlna.PlayTo
             try
             {
                 XMLProperties? response = await SendCommandResponseRequired(ConnectionManagerService, "GetProtocolInfo").ConfigureAwait(false);
-                if (response != null && response.TryGetValue("Sink", out string settings))
+                if (response != null && response.TryGetValue("Sink", out string? settings))
                 {
                     return settings;
                 }
@@ -2149,7 +2155,7 @@ namespace Emby.Dlna.PlayTo
             XMLProperties? response = await SendCommandResponseRequired(TransportAVService, "GetTransportInfo").ConfigureAwait(false);
             if (response != null && response.ContainsKey("GetTransportInfoResponse"))
             {
-                if (response.TryGetValue("CurrentTransportState", out string transportState))
+                if (response.TryGetValue("CurrentTransportState", out string? transportState))
                 {
                     if (Enum.TryParse(transportState, true, out TransportState state))
                     {
@@ -2203,7 +2209,7 @@ namespace Emby.Dlna.PlayTo
             XMLProperties? response = await SendCommandResponseRequired(RenderingControlService, "GetMute").ConfigureAwait(false);
             if (response != null && response.ContainsKey("GetMuteResponse"))
             {
-                if (response.TryGetValue("CurrentMute", out string muted))
+                if (response.TryGetValue("CurrentMute", out string? muted))
                 {
                     IsMuted = string.Equals(muted, "1", StringComparison.OrdinalIgnoreCase);
                     return true;
@@ -2237,7 +2243,7 @@ namespace Emby.Dlna.PlayTo
                 var dictionary = new Dictionary<string, string>
                 {
                     { "CurrentURI", settings.Url },
-                    { "CurrentURIMetaData", SecurityElement.Escape(settings.Metadata) }
+                    { "CurrentURIMetaData", SecurityElement.Escape(settings.Metadata) ?? string.Empty }
                 };
 
                 result = await SendCommand(
@@ -2288,7 +2294,7 @@ namespace Emby.Dlna.PlayTo
                 RestartTimer(Normal);
 
                 var retVal = new UBaseObject();
-                if (response.TryGetValue("item.id", out string value))
+                if (response.TryGetValue("item.id", out string? value))
                 {
                     retVal.Id = value;
                 }
@@ -2367,7 +2373,7 @@ namespace Emby.Dlna.PlayTo
                 XMLProperties? response = await SendCommandResponseRequired(TransportAVService, "GetPositionInfo").ConfigureAwait(false);
                 if (response != null && response.ContainsKey("GetPositionInfoResponse"))
                 {
-                    if (response.TryGetValue("TrackDuration", out string value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan d))
+                    if (response.TryGetValue("TrackDuration", out string? value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan d))
                     {
                         Duration = d;
                     }
@@ -2395,7 +2401,7 @@ namespace Emby.Dlna.PlayTo
         /// </summary>
         /// <param name="services">The service to extract.</param>
         /// <returns>The <see cref="Task{TransportCommands}"/>.</returns>
-        private async Task<TransportCommands?> GetProtocolAsync(DeviceService services)
+        private async Task<TransportCommands?> GetProtocolAsync(DeviceService? services)
         {
             if (_disposed)
             {
@@ -2478,48 +2484,48 @@ namespace Emby.Dlna.PlayTo
         /// Returns the Service:RenderingControl element of the device.
         /// </summary>
         /// <returns>The Service:RenderingControl <see cref="DeviceService"/>.</returns>
-        private DeviceService GetRenderingControl()
+        private DeviceService? GetRenderingControl()
         {
             var services = Properties.Services;
 
-            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:RenderingControl:1", StringComparison.OrdinalIgnoreCase)) ??
-                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:RenderingControl", StringComparison.OrdinalIgnoreCase));
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:RenderingControl:1", StringComparison.OrdinalIgnoreCase))
+                ?? services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:RenderingControl", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
         /// Returns the Service:ConnectionControl element of the device.
         /// </summary>
         /// <returns>The Service:ConnectionControl <see cref="DeviceService"/>.</returns>
-        private DeviceService GetConnectionManagerControl()
+        private DeviceService? GetConnectionManagerControl()
         {
             var services = Properties.Services;
 
-            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:ConnectionManager:1", StringComparison.OrdinalIgnoreCase)) ??
-                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:ConnectionManager", StringComparison.OrdinalIgnoreCase));
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:ConnectionManager:1", StringComparison.OrdinalIgnoreCase))
+                ?? services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:ConnectionManager", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
         /// Returns the AvTransportService element of the device.
         /// </summary>
         /// <returns>The AvTransportService <see cref="DeviceService"/>.</returns>
-        private DeviceService GetAvTransportService()
+        private DeviceService? GetAvTransportService()
         {
             var services = Properties.Services;
 
-            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:AVTransport:1", StringComparison.OrdinalIgnoreCase)) ??
-                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:AVTransport", StringComparison.OrdinalIgnoreCase));
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:AVTransport:1", StringComparison.OrdinalIgnoreCase))
+                ?? services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:AVTransport", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
         /// Returns the AvTransportService element of the device.
         /// </summary>
         /// <returns>The AvTransportService <see cref="DeviceService"/>.</returns>
-        private DeviceService GetConnectionManagerService()
+        private DeviceService? GetConnectionManagerService()
         {
             var services = Properties.Services;
 
-            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:ConnectionManager:1", StringComparison.OrdinalIgnoreCase)) ??
-                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:ConnectionManager", StringComparison.OrdinalIgnoreCase));
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:ConnectionManager:1", StringComparison.OrdinalIgnoreCase))
+                ?? services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:ConnectionManager", StringComparison.OrdinalIgnoreCase));
         }
 
 #pragma warning disable SA1401 // Fields should be private

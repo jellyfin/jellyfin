@@ -304,7 +304,7 @@ namespace Emby.Dlna.Ssdp
 
             if (!string.IsNullOrEmpty(filter))
             {
-                if (IPAddress.TryParse(filter, out IPAddress result))
+                if (IPAddress.TryParse(filter, out IPAddress? result))
                 {
                     _logger.LogDebug("Filtering on: {0}", result);
                     TracingFilter = result;
@@ -443,7 +443,7 @@ namespace Emby.Dlna.Ssdp
                     string propertyName = line.Substring(0, i).ToUpper(CultureInfo.InvariantCulture);
                     if (!result.ContainsKey(propertyName))
                     {
-                        result.Add(propertyName, line.Substring(i + 1).Trim());
+                        result.Add(propertyName, line[(i + 1)..].Trim());
                     }
                     else
                     {

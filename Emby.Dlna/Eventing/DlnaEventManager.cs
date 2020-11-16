@@ -103,6 +103,51 @@ namespace Emby.Dlna.Eventing
         }
 
         /// <summary>
+        /// Cancels a subscription.
+        /// </summary>
+        /// <param name="subscriptionId">The subscription id previously assigned.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the cancellation information.</returns>
+        public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
+        {
+            _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
+
+            _subscriptions.TryRemove(subscriptionId, out _);
+
+            return new EventSubscriptionResponse
+            {
+                Content = string.Empty,
+                ContentType = "text/plain"
+            };
+        }
+
+        /// <summary>
+        /// Triggers an event.
+        /// </summary>
+        /// <param name="notificationType">The event notification type.</param>
+        /// <param name="stateVariables">The state variables to include with the event.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
+        public Task TriggerEvent(string notificationType, IDictionary<string, string> stateVariables)
+        {
+            var subs = _subscriptions.Values
+                .Where(i => !i.IsExpired && string.Equals(notificationType, i.NotificationType, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var tasks = subs.Select(i => TriggerEvent(i, stateVariables));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Returns the event subscription record for the id provided.
+        /// </summary>
+        /// <param name="id">The id of the subscription.</param>
+        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
+        public EventSubscription? GetSubscription(string id)
+        {
+            return GetSubscription(id, false);
+        }
+
+        /// <summary>
         /// Parses a SSDP formatted time string.
         /// </summary>
         /// <param name="header">String to parse.</param>
@@ -121,24 +166,6 @@ namespace Emby.Dlna.Eventing
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Cancels a subscription.
-        /// </summary>
-        /// <param name="subscriptionId">The subscription id previously assigned.</param>
-        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the cancellation information.</returns>
-        public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
-        {
-            _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
-
-            _subscriptions.TryRemove(subscriptionId, out _);
-
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
         }
 
         /// <summary>
@@ -166,43 +193,16 @@ namespace Emby.Dlna.Eventing
         /// Returns the event subscription record for the id provided.
         /// </summary>
         /// <param name="id">The id of the subscription.</param>
-        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
-        public EventSubscription? GetSubscription(string id)
-        {
-            return GetSubscription(id, false);
-        }
-
-        /// <summary>
-        /// Returns the event subscription record for the id provided.
-        /// </summary>
-        /// <param name="id">The id of the subscription.</param>
         /// <param name="throwOnMissing">Set to true, if an exception is to be thrown if the id cannot be located.</param>
         /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
         private EventSubscription? GetSubscription(string id, bool throwOnMissing)
         {
-            if (!_subscriptions.TryGetValue(id, out EventSubscription e) && throwOnMissing)
+            if (!_subscriptions.TryGetValue(id, out EventSubscription? e) && throwOnMissing)
             {
                 throw new ResourceNotFoundException("Event with Id " + id + " not found.");
             }
 
             return e;
-        }
-
-        /// <summary>
-        /// Triggers an event.
-        /// </summary>
-        /// <param name="notificationType">The event notification type.</param>
-        /// <param name="stateVariables">The state variables to include with the event.</param>
-        /// <returns>An <see cref="EventSubscriptionResponse"/> containing the record, or null if not found.</returns>
-        public Task TriggerEvent(string notificationType, IDictionary<string, string> stateVariables)
-        {
-            var subs = _subscriptions.Values
-                .Where(i => !i.IsExpired && string.Equals(notificationType, i.NotificationType, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            var tasks = subs.Select(i => TriggerEvent(i, stateVariables));
-
-            return Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -232,8 +232,10 @@ namespace Emby.Dlna.Eventing
 
             builder.Append("</e:propertyset>");
 
-            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"), subscription.CallbackUrl);
-            options.Content = new StringContent(builder.ToString(), Encoding.UTF8, MediaTypeNames.Text.Xml);
+            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"), subscription.CallbackUrl)
+            {
+                Content = new StringContent(builder.ToString(), Encoding.UTF8, MediaTypeNames.Text.Xml)
+            };
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");
             options.Headers.TryAddWithoutValidation("SID", subscription.Id);

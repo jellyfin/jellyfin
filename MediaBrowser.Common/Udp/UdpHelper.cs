@@ -589,10 +589,10 @@ namespace MediaBrowser.Common.Udp
                 {
                     if (client.Tracing)
                     {
-                        client.Track("<- {0} : {1} : {2}", client.LocalEndPoint, remote, data);
+                        client.Track("<- {0} : {1} : {2}", client.LocalEndPoint, remote!, data);
                     }
 
-                    _ = client.Processor(client, data, remote);
+                    _ = client.Processor(client, data, remote!);
                 }
                 catch (ObjectDisposedException)
                 {

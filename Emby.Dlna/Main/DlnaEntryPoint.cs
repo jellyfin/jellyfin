@@ -106,7 +106,7 @@ namespace Emby.Dlna.Main
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
             Instance = this;
 
-            SsdpServer.HostName = _appHost.FriendlyName + SsdpServer.HostName.Substring(2);
+            SsdpServer.HostName = _appHost.FriendlyName + SsdpServer.HostName[2..];
             _networkManager.NetworkChanged += NetworkChanged;
         }
 
@@ -258,7 +258,7 @@ namespace Emby.Dlna.Main
         /// </summary>
         /// <param name="sender">Configuration instance.</param>
         /// <param name="e">Configuration that was updated.</param>
-        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
