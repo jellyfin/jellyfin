@@ -341,7 +341,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPObject? other)
         {
-            if (other != null && other is IPObject otherObj)
+            if (other != null)
             {
                 return !Address.Equals(IPAddress.None) && Address.Equals(otherObj.Address);
             }
