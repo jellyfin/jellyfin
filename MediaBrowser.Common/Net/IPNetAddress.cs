@@ -106,7 +106,7 @@ namespace MediaBrowser.Common.Net
                 addr = addr.Trim();
 
                 // Try to parse it as is.
-                if (IPAddress.TryParse(addr, out IPAddress res))
+                if (IPAddress.TryParse(addr, out IPAddress? res))
                 {
                     ip = new IPNetAddress(res);
                     return true;
@@ -130,7 +130,7 @@ namespace MediaBrowser.Common.Net
                         }
 
                         // Is the subnet in x.y.a.b form?
-                        if (IPAddress.TryParse(tokens[1], out IPAddress mask))
+                        if (IPAddress.TryParse(tokens[1], out IPAddress? mask))
                         {
                             ip = new IPNetAddress(res, MaskToCidr(mask));
                             return true;

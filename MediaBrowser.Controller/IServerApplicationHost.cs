@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.System;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller
 {
