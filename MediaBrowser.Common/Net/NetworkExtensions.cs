@@ -172,10 +172,10 @@ namespace MediaBrowser.Common.Net
                     na.Tag = i.Tag;
                     res.AddItem(na);
                 }
-                else
+                else if (i is IPHost ipHost)
                 {
                     // Flatten out IPHost and add all its ip addresses.
-                    foreach (var addr in ((IPHost)i).GetAddresses())
+                    foreach (var addr in ipHost.GetAddresses())
                     {
                         IPNetAddress host = new IPNetAddress(addr)
                         {
