@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Updates;
@@ -101,7 +102,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         throw;
                     }
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     _logger.LogError(ex, "Error downloading {0}", package.Name);
                 }

@@ -116,11 +116,6 @@ namespace Emby.Server.Implementations.Updates
                 _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
                 return Array.Empty<PackageInfo>();
             }
-            catch (HttpException ex)
-            {
-                _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
-                return Array.Empty<PackageInfo>();
-            }
             catch (HttpRequestException ex)
             {
                 _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
