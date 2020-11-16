@@ -230,11 +230,5 @@ namespace Jellyfin.Networking.Manager
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null);
-
-        /// <summary>
-        /// Reloads all settings and re-initialises the instance.
-        /// </summary>
-        /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
-        void UpdateSettings(NetworkConfiguration configuration);
     }
 }
