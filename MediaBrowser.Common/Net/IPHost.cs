@@ -394,7 +394,7 @@ namespace MediaBrowser.Common.Net
             // When was the last time we resolved?
             if (_lastResolved == 0)
             {
-                _lastResolved = DateTime.Now.Ticks;
+                _lastResolved = DateTime.UtcNow.Ticks;
             }
 
             // If we haven't resolved before, or out timer has run out...
