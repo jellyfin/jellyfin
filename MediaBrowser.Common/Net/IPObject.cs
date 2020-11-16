@@ -178,8 +178,8 @@ namespace MediaBrowser.Common.Net
                     byte[] octet = address.GetAddressBytes();
                     uint word = (uint)(octet[0] << 8) + octet[1];
 
-                    return (word >= 0xfe80 && word <= 0xfebf) || // fe80::/10 :Local link.
-                           (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
+                    return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
+                           || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
                 }
             }
 
