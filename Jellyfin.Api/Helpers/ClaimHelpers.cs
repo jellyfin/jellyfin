@@ -63,6 +63,19 @@ namespace Jellyfin.Api.Helpers
         public static string? GetToken(in ClaimsPrincipal user)
             => GetClaimValue(user, InternalClaimTypes.Token);
 
+        /// <summary>
+        /// Gets a flag specifying whether the request is using an api key.
+        /// </summary>
+        /// <param name="user">Current claims principal.</param>
+        /// <returns>The flag specifying whether the request is using an api key.</returns>
+        public static bool GetIsApiKey(in ClaimsPrincipal user)
+        {
+            var claimValue = GetClaimValue(user, InternalClaimTypes.IsApiKey);
+            return !string.IsNullOrEmpty(claimValue)
+                   && bool.TryParse(claimValue, out var parsedClaimValue)
+                   && parsedClaimValue;
+        }
+
         private static string? GetClaimValue(in ClaimsPrincipal user, string name)
         {
             return user?.Identities

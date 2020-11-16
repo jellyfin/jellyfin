@@ -14,6 +14,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -295,6 +296,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -351,6 +353,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -403,7 +406,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -623,6 +626,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -677,6 +681,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -729,7 +734,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -959,6 +964,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -1017,6 +1023,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -1069,7 +1076,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
@@ -1341,7 +1348,9 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+
+            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
 
             var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1559,8 +1568,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = Path.GetDirectoryName(playlist);
-
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException($"Provided path ({playlist}) is not valid.", nameof(playlist));
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
             return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + GetSegmentFileExtension(state.Request.SegmentContainer));

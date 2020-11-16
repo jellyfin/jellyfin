@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.ModelBinders
 {
@@ -11,25 +13,28 @@ namespace Jellyfin.Api.ModelBinders
     /// </summary>
     public class CommaDelimitedArrayModelBinder : IModelBinder
     {
+        private readonly ILogger<CommaDelimitedArrayModelBinder> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommaDelimitedArrayModelBinder"/> class.
+        /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger{CommaDelimitedArrayModelBinder}"/> interface.</param>
+        public CommaDelimitedArrayModelBinder(ILogger<CommaDelimitedArrayModelBinder> logger)
+        {
+            _logger = logger;
+        }
+
         /// <inheritdoc/>
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-            var elementType = bindingContext.ModelType.GetElementType();
+            var elementType = bindingContext.ModelType.GetElementType() ?? bindingContext.ModelType.GenericTypeArguments[0];
             var converter = TypeDescriptor.GetConverter(elementType);
 
             if (valueProviderResult.Length > 1)
             {
-                var result = Array.CreateInstance(elementType, valueProviderResult.Length);
-
-                for (int i = 0; i < valueProviderResult.Length; i++)
-                {
-                    var value = converter.ConvertFromString(valueProviderResult.Values[i].Trim());
-
-                    result.SetValue(value, i);
-                }
-
-                bindingContext.Result = ModelBindingResult.Success(result);
+                var typedValues = GetParsedResult(valueProviderResult.Values, elementType, converter);
+                bindingContext.Result = ModelBindingResult.Success(typedValues);
             }
             else
             {
@@ -37,13 +42,8 @@ namespace Jellyfin.Api.ModelBinders
 
                 if (value != null)
                 {
-                    var values = Array.ConvertAll(
-                        value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                        x => converter.ConvertFromString(x?.Trim()));
-
-                    var typedValues = Array.CreateInstance(elementType, values.Length);
-                    values.CopyTo(typedValues, 0);
-
+                    var splitValues = value.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    var typedValues = GetParsedResult(splitValues, elementType, converter);
                     bindingContext.Result = ModelBindingResult.Success(typedValues);
                 }
                 else
@@ -54,6 +54,37 @@ namespace Jellyfin.Api.ModelBinders
             }
 
             return Task.CompletedTask;
+        }
+
+        private Array GetParsedResult(IReadOnlyList<string> values, Type elementType, TypeConverter converter)
+        {
+            var parsedValues = new object?[values.Count];
+            var convertedCount = 0;
+            for (var i = 0; i < values.Count; i++)
+            {
+                try
+                {
+                    parsedValues[i] = converter.ConvertFromString(values[i].Trim());
+                    convertedCount++;
+                }
+                catch (FormatException e)
+                {
+                    _logger.LogWarning(e, "Error converting value.");
+                }
+            }
+
+            var typedValues = Array.CreateInstance(elementType, convertedCount);
+            var typedValueIndex = 0;
+            for (var i = 0; i < parsedValues.Length; i++)
+            {
+                if (parsedValues[i] != null)
+                {
+                    typedValues.SetValue(parsedValues[i], typedValueIndex);
+                    typedValueIndex++;
+                }
+            }
+
+            return typedValues;
         }
     }
 }

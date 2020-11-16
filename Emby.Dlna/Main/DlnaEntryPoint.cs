@@ -259,7 +259,10 @@ namespace Emby.Dlna.Main
 
         private void RegisterServerEndpoints()
         {
+            var addresses = await _appHost.GetLocalIpAddresses().ConfigureAwait(false);
+
             var udn = CreateUuid(_appHost.SystemId);
+            var descriptorUri = "/dlna/" + udn + "/description.xml";
 
             var bindAddresses = NetworkManager.CreateCollection(
                 _networkManager.GetInternalBindAddresses()

@@ -160,10 +160,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                throw new HttpException("Invalid image received.")
-                {
-                    StatusCode = response.StatusCode
-                };
+                throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
             var contentType = response.Content.Headers.ContentType.MediaType;
@@ -181,10 +178,7 @@ namespace MediaBrowser.Providers.Manager
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
             if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
-                throw new HttpException("Invalid image received.")
-                {
-                    StatusCode = HttpStatusCode.NotFound
-                };
+                throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

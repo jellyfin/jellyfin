@@ -104,7 +104,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<PlaybackInfoResponse>> GetPostedPlaybackInfo(
             [FromRoute, Required] Guid itemId,
             [FromQuery] Guid? userId,
-            [FromQuery] long? maxStreamingBitrate,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] long? startTimeTicks,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
@@ -234,7 +234,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? openToken,
             [FromQuery] Guid? userId,
             [FromQuery] string? playSessionId,
-            [FromQuery] long? maxStreamingBitrate,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] long? startTimeTicks,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
