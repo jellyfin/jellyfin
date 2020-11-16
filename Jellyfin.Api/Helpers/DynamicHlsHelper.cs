@@ -515,7 +515,7 @@ namespace Jellyfin.Api.Helpers
                 && state.VideoStream != null
                 && state.VideoStream.Level.HasValue)
             {
-                levelString = state.VideoStream.Level.ToString();
+                levelString = state.VideoStream.Level.ToString() ?? string.Empty;
             }
             else
             {
@@ -557,7 +557,7 @@ namespace Jellyfin.Api.Helpers
             }
             else if (!string.IsNullOrEmpty(codec))
             {
-                profileString = state.GetRequestedProfiles(codec).FirstOrDefault();
+                profileString = state.GetRequestedProfiles(codec).FirstOrDefault() ?? string.Empty;
                 if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
                     profileString = profileString ?? "high";

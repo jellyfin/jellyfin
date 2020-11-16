@@ -100,8 +100,9 @@ namespace Jellyfin.Api.Helpers
         /// <returns>The string text of #EXT-X-MAP.</returns>
         public static string GetFmp4InitFileName(string outputPath, StreamState state, bool isOsDepends)
         {
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
             var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
-            var outputPrefix = Path.Combine(Path.GetDirectoryName(outputPath), outputFileNameWithoutExtension);
+            var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
             var outputExtension = GetSegmentFileExtension(state.Request.SegmentContainer);
 
             // on Linux/Unix
