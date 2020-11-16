@@ -26,7 +26,7 @@ namespace MediaBrowser.Common.Net
         private IPObject? _networkAddress;
 
         /// <summary>
-        /// Gets or sets the user defined functions that need storage in this object.
+        /// Gets or sets a user defined value that is associated with this object.
         /// </summary>
         public int Tag { get; set; }
 
@@ -293,7 +293,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="family">Type of address to remove.</param>
         public virtual void Remove(AddressFamily family)
         {
-            // This method only peforms a function in the IPHost implementation of IPObject.
+            // This method only performs a function in the IPHost implementation of IPObject.
         }
 
         /// <summary>

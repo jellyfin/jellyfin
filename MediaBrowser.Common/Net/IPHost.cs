@@ -19,7 +19,7 @@ namespace MediaBrowser.Common.Net
         public static readonly IPHost None = new IPHost(string.Empty, IPAddress.None);
 
         /// <summary>
-        /// Time when last resolved.
+        /// Time when last resolved in ticks.
         /// </summary>
         private long _lastResolved;
 
@@ -63,7 +63,7 @@ namespace MediaBrowser.Common.Net
 
             set
             {
-                // Not implemented.
+                throw new NotImplementedException("Cannot assign an address to a host object.");
             }
         }
 
@@ -75,12 +75,13 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                return (byte)(ResolveHost() ? 128 : 0);
+                return (byte)(ResolveHost() ? 128 : 32);
             }
 
             set
             {
-                // Not implemented.
+                // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4),
+                // which is automatically determined by it's IP type.
             }
         }
 
@@ -122,7 +123,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="host">Host name to parse.</param>
         /// <param name="hostObj">Object representing the string, if it has successfully been parsed.</param>
-        /// <returns>Success result of the parsing.</returns>
+        /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
         public static bool TryParse(string host, out IPHost hostObj)
         {
             if (!string.IsNullOrEmpty(host))
