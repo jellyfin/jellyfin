@@ -56,7 +56,7 @@ namespace MediaBrowser.Common.Configuration
         /// <summary>
         /// Gets the configuration.
         /// </summary>
-        /// /// <param name="key">The key.</param>
+        /// <param name="key">The key.</param>
         /// <returns>System.Object.</returns>
         object GetConfiguration(string key);
 
