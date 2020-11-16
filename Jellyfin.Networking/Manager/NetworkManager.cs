@@ -559,9 +559,9 @@ namespace Jellyfin.Networking.Manager
                 // Replace interface tags with the interface IP's.
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
-                    if (Math.Abs(iface.Tag) == index &&
-                        ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) ||
-                         (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
+                    if (Math.Abs(iface.Tag) == index
+                        && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
+                            || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         result.AddItem(iface);
                     }
