@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            StartStreaming(
+            _ = StartStreaming(
                 udpClient,
                 hdHomerunManager,
                 remoteAddress,
@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await taskCompletionSource.Task.ConfigureAwait(false);
         }
 
-        private async void StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private async Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             using (udpClient)
             using (hdHomerunManager)
