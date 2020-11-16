@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -35,7 +36,7 @@ namespace Emby.Dlna.Ssdp
         private readonly Dictionary<string, List<EventHandler<SsdpEventArgs>>> _events;
         private readonly IsInLocalNetwork _isInLocalNetwork;
         private readonly object _eventFireLock;
-        private NetCollection _interfaces;
+        private Collection<IPObject> _interfaces;
         private bool _running;
         private bool _eventfire;
 
@@ -45,7 +46,7 @@ namespace Emby.Dlna.Ssdp
         /// <param name="logger">The logger instance.<see cref="ILogger"/>.</param>
         /// <param name="interfaces">Interfaces to use for the server.</param>
         /// <param name="isInLocalNetwork">Delegate used to check if a network address in part of the local LAN.</param>
-        private SsdpServer(ILogger logger, NetCollection interfaces, IsInLocalNetwork isInLocalNetwork)
+        private SsdpServer(ILogger logger, Collection<IPObject> interfaces, IsInLocalNetwork isInLocalNetwork)
         {
             _logger = logger;
             _eventFireLock = new object();
@@ -107,7 +108,7 @@ namespace Emby.Dlna.Ssdp
         /// <returns>The SsdpServer singleton instance.</returns>
         public static ISsdpServer GetOrCreateInstance(
             ILogger logger,
-            NetCollection interfaces,
+            Collection<IPObject> interfaces,
             IsInLocalNetwork isInLocalNetwork,
             bool ipv4Enabled = true,
             bool ipv6Enabled = true)
@@ -273,8 +274,8 @@ namespace Emby.Dlna.Ssdp
         /// <summary>
         /// Restarts the service with a different set of interfaces.
         /// </summary>
-        /// <param name="interfaces">A <see cref="NetCollection"/> containing a list of interfaces.</param>
-        public void UpdateInterfaces(NetCollection interfaces)
+        /// <param name="interfaces">A <see cref="Collection{IPObject}"/> containing a list of interfaces.</param>
+        public void UpdateInterfaces(Collection<IPObject> interfaces)
         {
             if (_running)
             {
@@ -302,7 +303,7 @@ namespace Emby.Dlna.Ssdp
 
             if (!string.IsNullOrEmpty(filter))
             {
-                if (IPAddress.TryParse(filter, out IPAddress result))
+                if (IPAddress.TryParse(filter, out IPAddress? result))
                 {
                     _logger.LogDebug("Filtering on: {0}", result);
                     TracingFilter = result;
@@ -483,17 +484,6 @@ namespace Emby.Dlna.Ssdp
                 // Not from the local LAN, so ignore it.
                 return Task.CompletedTask;
             }
-
-            // var from = _senders[receivedFrom.Address];
-            // if (from != null)
-            // {
-            //    var fromClient = (UdpProcess)from;
-            //    if (fromClient.LocalEndPoint.Equals(receivedFrom))
-            //    {
-            //        Logger.LogDebug("FILTERING: Message came from us {0}, {1}", fromClient.LocalEndPoint, receivedFrom);
-            //        return Task.CompletedTask;
-            //    }
-            // }
 
             string action;
 

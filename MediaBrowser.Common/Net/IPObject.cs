@@ -26,7 +26,7 @@ namespace MediaBrowser.Common.Net
         private IPObject? _networkAddress;
 
         /// <summary>
-        /// Gets or sets the user defined functions that need storage in this object.
+        /// Gets or sets a user defined value that is associated with this object.
         /// </summary>
         public int Tag { get; set; }
 
@@ -38,18 +38,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the object's network address.
         /// </summary>
-        public IPObject NetworkAddress
-        {
-            get
-            {
-                if (_networkAddress == null)
-                {
-                    _networkAddress = CalculateNetworkAddress();
-                }
-
-                return _networkAddress;
-            }
-        }
+        public IPObject NetworkAddress => _networkAddress ??= CalculateNetworkAddress();
 
         /// <summary>
         /// Gets or sets the object's IP address.
@@ -92,22 +81,33 @@ namespace MediaBrowser.Common.Net
                 return (Address: address, PrefixLength: prefixLength);
             }
 
+            // An ip address is just a list of bytes, each one representing a segment on the network.
+            // This separates the IP address into octets and calculates how many octets will need to be altered or set to zero dependant upon the
+            // prefix length value. eg. /16 on a 4 octet ip4 address (192.168.2.240) will result in the 2 and the 240 being zeroed out.
+            // Where there is not an exact boundary (eg /23), mod is used to calculate how many bits of this value are to be kept.
+
             byte[] addressBytes = address.GetAddressBytes();
 
             int div = prefixLength / 8;
             int mod = prefixLength % 8;
             if (mod != 0)
             {
+                // Prefix length is counted right to left, so subtract 8 so we know how many bits to clear.
                 mod = 8 - mod;
+
+                // Shift out the bits from the octet that we don't want, by moving right then back left.
                 addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
+                // Move on the next byte.
                 div++;
             }
 
+            // Blank out the remaining octets from mod + 1 to the end of the byte array. (192.168.2.240/16 becomes 192.168.0.0)
             for (int octet = div; octet < addressBytes.Length; octet++)
             {
                 addressBytes[octet] = 0;
             }
 
+            // Return the network address for the prefix.
             return (Address: new IPAddress(addressBytes), PrefixLength: prefixLength);
         }
 
@@ -179,18 +179,18 @@ namespace MediaBrowser.Common.Net
 
                     byte[] octet = address.GetAddressBytes();
 
-                    return (octet[0] == 10) ||
-                        (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) || // RFC1918
-                        (octet[0] == 192 && octet[1] == 168) || // RFC1918
-                        (octet[0] == 127); // RFC1122
+                    return (octet[0] == 10)
+                           || (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) // RFC1918
+                           || (octet[0] == 192 && octet[1] == 168) // RFC1918
+                           || (octet[0] == 127); // RFC1122
                 }
                 else
                 {
                     byte[] octet = address.GetAddressBytes();
                     uint word = (uint)(octet[0] << 8) + octet[1];
 
-                    return (word >= 0xfe80 && word <= 0xfebf) || // fe80::/10 :Local link.
-                           (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
+                    return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
+                           || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
                 }
             }
 
@@ -202,7 +202,8 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="address">IPAddress object to check.</param>
         /// <returns>True if it is a local link address.</returns>
-        /// <remarks>See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
+        /// <remarks>
+        /// See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
         /// it appears that the IPAddress.IsIPv6LinkLocal is out of date.
         /// </remarks>
         public static bool IsIPv6LinkLocal(IPAddress address)
@@ -237,11 +238,10 @@ namespace MediaBrowser.Common.Net
         public static IPAddress CidrToMask(byte cidr, AddressFamily family)
         {
             uint addr = 0xFFFFFFFF << (family == AddressFamily.InterNetwork ? 32 : 128 - cidr);
-            addr =
-                ((addr & 0xff000000) >> 24) |
-                ((addr & 0x00ff0000) >> 8) |
-                ((addr & 0x0000ff00) << 8) |
-                ((addr & 0x000000ff) << 24);
+            addr = ((addr & 0xff000000) >> 24)
+                   | ((addr & 0x00ff0000) >> 8)
+                   | ((addr & 0x0000ff00) << 8)
+                   | ((addr & 0x000000ff) << 24);
             return new IPAddress(addr);
         }
 
@@ -304,7 +304,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="family">Type of address to remove.</param>
         public virtual void Remove(AddressFamily family)
         {
-            // This method only peforms a function in the IPHost implementation of IPObject.
+            // This method only performs a function in the IPHost implementation of IPObject.
         }
 
         /// <summary>
@@ -352,18 +352,12 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPObject? other)
         {
-            if (other != null && other is IPObject otherObj)
+            if (other != null)
             {
-                return !Address.Equals(IPAddress.None) && Address.Equals(otherObj.Address);
+                return !Address.Equals(IPAddress.None) && Address.Equals(other.Address);
             }
 
             return false;
-        }
-
-        /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as IPObject);
         }
 
         /// <summary>
@@ -386,10 +380,16 @@ namespace MediaBrowser.Common.Net
             return Address.GetHashCode();
         }
 
+        /// <inheritdoc/>
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as IPObject);
+        }
+
         /// <summary>
         /// Calculates the network address of this object.
         /// </summary>
-        /// <returns>The network address of this object.</returns>
+        /// <returns>Returns the network address of this object.</returns>
         protected abstract IPObject CalculateNetworkAddress();
     }
 }

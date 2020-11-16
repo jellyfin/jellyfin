@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -55,8 +56,8 @@ namespace Emby.Dlna.Ssdp
         /// <summary>
         /// Restarts the service, assigning a different set of interfaces.
         /// </summary>
-        /// <param name="interfaces">A <see cref="NetCollection"/> containing a list of interfaces.</param>
-        public void UpdateInterfaces(NetCollection interfaces);
+        /// <param name="interfaces">A <see cref="Collection{IPObject}"/> containing a list of interfaces.</param>
+        public void UpdateInterfaces(Collection<IPObject> interfaces);
 
         /// <summary>
         /// Updates the ssdp tracing filter.

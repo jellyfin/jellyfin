@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -41,13 +42,13 @@ namespace Emby.Dlna
         /// Initializes a new instance of the <see cref="SsdpLocator"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
-        /// <param name="interfaces">A <see cref="NetCollection"/> of interface addresses to listen on.</param>
+        /// <param name="interfaces">A <see cref="Collection{IPObject}"/> of interface addresses to listen on.</param>
         /// <param name="filter">Array of Ssdp types which this instance should process.</param>
         /// <param name="activelySearch">True if this instance actively uses broadcasts to locate devices.</param>
         /// <param name="isInLocalNetwork">Delegate used to check if a network address in part of the local LAN.</param>
         /// <param name="ipv4Enabled">True if IPv4 is enabled.</param>
         /// <param name="ipv6Enabled">True if IPv6 is enabled.</param>
-        public SsdpLocator(ILogger logger, NetCollection interfaces, string[] filter, bool activelySearch, IsInLocalNetwork isInLocalNetwork, bool ipv4Enabled = true, bool ipv6Enabled = true)
+        public SsdpLocator(ILogger logger, Collection<IPObject> interfaces, string[] filter, bool activelySearch, IsInLocalNetwork isInLocalNetwork, bool ipv4Enabled = true, bool ipv6Enabled = true)
         {
             _timerLock = new object();
             _deviceLock = new object();

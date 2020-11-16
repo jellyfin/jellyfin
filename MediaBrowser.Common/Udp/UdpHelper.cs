@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -263,7 +264,7 @@ namespace MediaBrowser.Common.Udp
         /// <returns>A list of UdpProcesss.</returns>
         public static List<UdpProcess> CreateMulticastClients(
             int port,
-            NetCollection addresses,
+            Collection<IPObject> addresses,
             UdpProcessor? processor = null,
             ILogger? logger = null,
             FailureFunction? failure = null,
@@ -592,10 +593,10 @@ namespace MediaBrowser.Common.Udp
                 {
                     if (client.Tracing)
                     {
-                        client.Track("<- {0} : {1} : {2}", client.LocalEndPoint, remote, data);
+                        client.Track("<- {0} : {1} : {2}", client.LocalEndPoint, remote!, data);
                     }
 
-                    _ = client.Processor(client, data, remote);
+                    _ = client.Processor(client, data, remote!);
                 }
                 catch (ObjectDisposedException)
                 {
