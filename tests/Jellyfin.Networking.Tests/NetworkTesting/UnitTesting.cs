@@ -43,8 +43,7 @@ namespace NetworkTesting
             return false;
         }
 
-
-        private IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
             {
@@ -64,11 +63,11 @@ namespace NetworkTesting
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
-                LocalNetworkSubnets = lan.Split(';')
+                LocalNetworkSubnets = lan?.Split(';') ?? throw new ArgumentNullException(nameof(lan))
             };
 
             NetworkManager.MockNetworkSettings = interfaces;
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             Assert.True(string.Equals(nm.GetInternalBindAddresses().AsString(), value, StringComparison.Ordinal));
@@ -78,6 +77,11 @@ namespace NetworkTesting
         [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
         public void TextIsInNetwork(string network, string value)
         {
+            if (network == null)
+            {
+                throw new ArgumentNullException(nameof(network));
+            }
+
             var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
@@ -85,7 +89,7 @@ namespace NetworkTesting
                 LocalNetworkSubnets = network.Split(',')
             };
 
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             Assert.True(!nm.IsInLocalNetwork(value));
         }
@@ -153,16 +157,21 @@ namespace NetworkTesting
             "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
             };           
 
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);
+            NetCollection nc = nm.CreateIPCollection(settings.Split(","), false); 
             Assert.True(string.Equals(nc?.AsString(), result1, System.StringComparison.OrdinalIgnoreCase));
 
             // Text excluded, non IP6.
@@ -194,13 +203,29 @@ namespace NetworkTesting
         [InlineData("127.0.0.1", "127.0.0.1/8", "[127.0.0.1/32]")]
         public void UnionCheck(string settings, string compare, string result)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            if (compare == null)
+            {
+                throw new ArgumentNullException(nameof(compare));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+
             var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
             };
 
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             NetCollection nc1 = nm.CreateIPCollection(settings.Split(","), false);
             NetCollection nc2 = nm.CreateIPCollection(compare.Split(","), false);
@@ -276,12 +301,7 @@ namespace NetworkTesting
         {
             Assert.True(TryParse(network, out IPObject? networkObj));
             Assert.True(TryParse(ip, out IPObject? ipObj));
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8604 // Possible null reference argument.
             Assert.True(networkObj.Contains(ipObj));
-#pragma warning restore CS8604 // Possible null reference argument.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         [Theory]
@@ -293,13 +313,28 @@ namespace NetworkTesting
 
         public void TestMatches(string source, string dest, string result)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (dest == null)
+            {
+                throw new ArgumentNullException(nameof(dest));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true
             };
 
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
@@ -343,6 +378,21 @@ namespace NetworkTesting
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (bindAddresses == null)
+            {
+                throw new ArgumentNullException(nameof(bindAddresses));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var conf = new NetworkConfiguration()
             {
                 LocalNetworkAddresses = bindAddresses.Split(','),
@@ -351,7 +401,7 @@ namespace NetworkTesting
             };
 
             NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             _ = nm.TryParseInterface(result, out NetCollection? resultObj);
@@ -398,6 +448,16 @@ namespace NetworkTesting
 
         public void TestBindInterfaceOverrides(string source, string lan, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
         {
+            if (lan == null)
+            {
+                throw new ArgumentNullException(nameof(lan));
+            }
+
+            if (bindAddresses == null)
+            {
+                throw new ArgumentNullException(nameof(bindAddresses));
+            }
+
             var conf = new NetworkConfiguration()
             {
                 LocalNetworkSubnets = lan.Split(','),
@@ -408,7 +468,7 @@ namespace NetworkTesting
             };
 
             NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
-            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             if (nm.TryParseInterface(result, out NetCollection? resultObj) && resultObj != null)

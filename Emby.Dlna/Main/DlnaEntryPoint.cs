@@ -259,8 +259,6 @@ namespace Emby.Dlna.Main
 
         private void RegisterServerEndpoints()
         {
-            var addresses = await _appHost.GetLocalIpAddresses().ConfigureAwait(false);
-
             var udn = CreateUuid(_appHost.SystemId);
             var descriptorUri = "/dlna/" + udn + "/description.xml";
 
@@ -292,7 +290,6 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
 
                 var device = new SsdpRootDevice
