@@ -38,18 +38,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the object's network address.
         /// </summary>
-        public IPObject NetworkAddress
-        {
-            get
-            {
-                if (_networkAddress == null)
-                {
-                    _networkAddress = CalculateNetworkAddress();
-                }
-
-                return _networkAddress;
-            }
-        }
+        public IPObject NetworkAddress => _networkAddress ??= CalculateNetworkAddress();
 
         /// <summary>
         /// Gets or sets the object's IP address.
