@@ -47,18 +47,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Returns a string representation of this object.</returns>
         public static string AsString(this Collection<IPObject> source)
         {
-            string output = "[";
-            if (source.Count > 0)
-            {
-                foreach (var i in source)
-                {
-                    output += $"{i},";
-                }
-
-                output = output[0..^1];
-            }
-
-            return $"{output}]";
+            return $"[{string.Join(',', source)}]";
         }
 
         /// <summary>
