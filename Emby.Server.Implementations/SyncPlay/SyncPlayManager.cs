@@ -54,9 +54,14 @@ namespace Emby.Server.Implementations.SyncPlay
             new Dictionary<Guid, IGroupController>();
 
         /// <summary>
-        /// Lock used for accesing any group.
+        /// Lock used for accesing the list of groups.
         /// </summary>
         private readonly object _groupsLock = new object();
+
+        /// <summary>
+        /// Lock used for accesing the session-to-group map.
+        /// </summary>
+        private readonly object _mapsLock = new object();
 
         private bool _disposed = false;
 
@@ -97,18 +102,24 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
+            // Locking required to access list of groups.
             lock (_groupsLock)
             {
-                if (IsSessionInGroup(session))
+                // Locking required as session-to-group map will be edited.
+                // Locking the group is not required as it is not visible yet.
+                lock (_mapsLock)
                 {
-                    LeaveGroup(session, cancellationToken);
+                    if (IsSessionInGroup(session))
+                    {
+                        LeaveGroup(session, cancellationToken);
+                    }
+
+                    var group = new GroupController(_loggerFactory, _userManager, _sessionManager, _libraryManager);
+                    _groups[group.GroupId] = group;
+
+                    AddSessionToGroup(session, group);
+                    group.CreateGroup(session, request, cancellationToken);
                 }
-
-                var group = new GroupController(_loggerFactory, _userManager, _sessionManager, _libraryManager);
-                _groups[group.GroupId] = group;
-
-                AddSessionToGroup(session, group);
-                group.CreateGroup(session, request, cancellationToken);
             }
         }
 
@@ -123,6 +134,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             var user = _userManager.GetUserById(session.UserId);
 
+            // Locking required to access list of groups.
             lock (_groupsLock)
             {
                 _groups.TryGetValue(groupId, out IGroupController group);
@@ -136,28 +148,36 @@ namespace Emby.Server.Implementations.SyncPlay
                     return;
                 }
 
-                if (!group.HasAccessToPlayQueue(user))
+                // Locking required as session-to-group map will be edited.
+                lock (_mapsLock)
                 {
-                    _logger.LogWarning("Session {SessionId} tried to join group {GroupId} but does not have access to some content of the playing queue.", session.Id, group.GroupId.ToString());
-
-                    var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.LibraryAccessDenied, string.Empty);
-                    _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                    return;
-                }
-
-                if (IsSessionInGroup(session))
-                {
-                    if (GetSessionGroup(session).Equals(groupId))
+                    // Group lock required to let other requests end first.
+                    lock (group)
                     {
-                        group.SessionRestore(session, request, cancellationToken);
-                        return;
+                        if (!group.HasAccessToPlayQueue(user))
+                        {
+                            _logger.LogWarning("Session {SessionId} tried to join group {GroupId} but does not have access to some content of the playing queue.", session.Id, group.GroupId.ToString());
+
+                            var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.LibraryAccessDenied, string.Empty);
+                            _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                            return;
+                        }
+
+                        if (IsSessionInGroup(session))
+                        {
+                            if (FindJoinedGroupId(session).Equals(groupId))
+                            {
+                                group.SessionRestore(session, request, cancellationToken);
+                                return;
+                            }
+
+                            LeaveGroup(session, cancellationToken);
+                        }
+
+                        AddSessionToGroup(session, group);
+                        group.SessionJoin(session, request, cancellationToken);
                     }
-
-                    LeaveGroup(session, cancellationToken);
                 }
-
-                AddSessionToGroup(session, group);
-                group.SessionJoin(session, request, cancellationToken);
             }
         }
 
@@ -170,27 +190,34 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            // TODO: determine what happens to users that are in a group and get their permissions revoked.
+            // Locking required to access list of groups.
             lock (_groupsLock)
             {
-                _sessionToGroupMap.TryGetValue(session.Id, out var group);
-
-                if (group == null)
+                // Locking required as session-to-group map will be edited.
+                lock (_mapsLock)
                 {
-                    _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
+                    var group = FindJoinedGroup(session);
+                    if (group == null)
+                    {
+                        _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
 
-                    var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
-                    _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                    return;
-                }
+                        var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
+                        _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                        return;
+                    }
 
-                RemoveSessionFromGroup(session, group);
-                group.SessionLeave(session, cancellationToken);
+                    // Group lock required to let other requests end first.
+                    lock (group)
+                    {
+                        RemoveSessionFromGroup(session, group);
+                        group.SessionLeave(session, cancellationToken);
 
-                if (group.IsGroupEmpty())
-                {
-                    _logger.LogInformation("Group {GroupId} is empty, removing it.", group.GroupId);
-                    _groups.Remove(group.GroupId, out _);
+                        if (group.IsGroupEmpty())
+                        {
+                            _logger.LogInformation("Group {GroupId} is empty, removing it.", group.GroupId);
+                            _groups.Remove(group.GroupId, out _);
+                        }
+                    }
                 }
             }
         }
@@ -205,15 +232,25 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             var user = _userManager.GetUserById(session.UserId);
+            List<GroupInfoDto> list = new List<GroupInfoDto>();
 
+            // Locking required to access list of groups.
             lock (_groupsLock)
             {
-                return _groups
-                    .Values
-                    .Where(group => group.HasAccessToPlayQueue(user))
-                    .Select(group => group.GetInfo())
-                    .ToList();
+                foreach (var group in _groups.Values)
+                {
+                    // Locking required as group is not thread-safe.
+                    lock (group)
+                    {
+                        if (group.HasAccessToPlayQueue(user))
+                        {
+                            list.Add(group.GetInfo());
+                        }
+                    }
+                }
             }
+
+            return list;
         }
 
         /// <inheritdoc />
@@ -225,19 +262,19 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            lock (_groupsLock)
+            var group = FindJoinedGroup(session);
+            if (group == null)
             {
-                _sessionToGroupMap.TryGetValue(session.Id, out var group);
+                _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
 
-                if (group == null)
-                {
-                    _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
+                var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
+                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                return;
+            }
 
-                    var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
-                    _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                    return;
-                }
-
+            // Group lock required as GroupController is not thread-safe.
+            lock (group)
+            {
                 group.HandleRequest(session, request, cancellationToken);
             }
         }
@@ -260,52 +297,57 @@ namespace Emby.Server.Implementations.SyncPlay
         private void OnSessionManagerSessionStarted(object sender, SessionEventArgs e)
         {
             var session = e.SessionInfo;
-            lock (_groupsLock)
-            {
-                if (!IsSessionInGroup(session))
-                {
-                    return;
-                }
 
-                var groupId = GetSessionGroup(session);
-                var request = new JoinGroupRequest(groupId);
-                JoinGroup(session, groupId, request, CancellationToken.None);
+            Guid groupId = FindJoinedGroupId(session);
+            if (groupId.Equals(Guid.Empty))
+            {
+                return;
             }
+
+            var request = new JoinGroupRequest(groupId);
+            JoinGroup(session, groupId, request, CancellationToken.None);
         }
 
         /// <summary>
         /// Checks if a given session has joined a group.
         /// </summary>
-        /// <remarks>
-        /// Not thread-safe, call only under groups-lock.
-        /// </remarks>
         /// <param name="session">The session.</param>
         /// <returns><c>true</c> if the session has joined a group, <c>false</c> otherwise.</returns>
         private bool IsSessionInGroup(SessionInfo session)
         {
-            return _sessionToGroupMap.ContainsKey(session.Id);
+            lock (_mapsLock)
+            {
+                return _sessionToGroupMap.ContainsKey(session.Id);
+            }
         }
 
         /// <summary>
         /// Gets the group joined by the given session, if any.
         /// </summary>
-        /// <remarks>
-        /// Not thread-safe, call only under groups-lock.
-        /// </remarks>
+        /// <param name="session">The session.</param>
+        /// <returns>The group.</returns>
+        private IGroupController FindJoinedGroup(SessionInfo session)
+        {
+            lock (_mapsLock)
+            {
+                _sessionToGroupMap.TryGetValue(session.Id, out var group);
+                return group;
+            }
+        }
+
+        /// <summary>
+        /// Gets the group identifier joined by the given session, if any.
+        /// </summary>
         /// <param name="session">The session.</param>
         /// <returns>The group identifier if the session has joined a group, an empty identifier otherwise.</returns>
-        private Guid GetSessionGroup(SessionInfo session)
+        private Guid FindJoinedGroupId(SessionInfo session)
         {
-            _sessionToGroupMap.TryGetValue(session.Id, out var group);
-            return group?.GroupId ?? Guid.Empty;
+            return FindJoinedGroup(session)?.GroupId ?? Guid.Empty;
         }
 
         /// <summary>
         /// Maps a session to a group.
         /// </summary>
-        /// <remarks>
-        /// Not thread-safe, call only under groups-lock.
-        /// </remarks>
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException">Thrown when the user is in another group already.</exception>
@@ -316,20 +358,20 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Session is null!");
             }
 
-            if (IsSessionInGroup(session))
+            lock (_mapsLock)
             {
-                throw new InvalidOperationException("Session in other group already!");
-            }
+                if (IsSessionInGroup(session))
+                {
+                    throw new InvalidOperationException("Session in other group already!");
+                }
 
-            _sessionToGroupMap[session.Id] = group ?? throw new InvalidOperationException("Group is null!");
+                _sessionToGroupMap[session.Id] = group ?? throw new InvalidOperationException("Group is null!");
+            }
         }
 
         /// <summary>
         /// Unmaps a session from a group.
         /// </summary>
-        /// <remarks>
-        /// Not thread-safe, call only under groups-lock.
-        /// </remarks>
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException">Thrown when the user is not found in the specified group.</exception>
@@ -345,15 +387,18 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Group is null!");
             }
 
-            if (!IsSessionInGroup(session))
+            lock (_mapsLock)
             {
-                throw new InvalidOperationException("Session not in any group!");
-            }
+                if (!IsSessionInGroup(session))
+                {
+                    throw new InvalidOperationException("Session not in any group!");
+                }
 
-            _sessionToGroupMap.Remove(session.Id, out var tempGroup);
-            if (!tempGroup.GroupId.Equals(group.GroupId))
-            {
-                throw new InvalidOperationException("Session was in wrong group!");
+                _sessionToGroupMap.Remove(session.Id, out var tempGroup);
+                if (!tempGroup.GroupId.Equals(group.GroupId))
+                {
+                    throw new InvalidOperationException("Session was in wrong group!");
+                }
             }
         }
 
