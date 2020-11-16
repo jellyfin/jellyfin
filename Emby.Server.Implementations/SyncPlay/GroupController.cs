@@ -28,7 +28,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<GroupController> _logger;
+
+        /// <summary>
+        /// The logger factory.
+        /// </summary>
+        private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// The user manager.
@@ -46,6 +51,12 @@ namespace Emby.Server.Implementations.SyncPlay
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
+        /// The participants, or members of the group.
+        /// </summary>
+        private readonly Dictionary<string, GroupMember> _participants =
+            new Dictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Internal group state.
         /// </summary>
         /// <value>The group's state.</value>
@@ -54,37 +65,41 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupController" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         public GroupController(
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IUserManager userManager,
             ISessionManager sessionManager,
             ILibraryManager libraryManager)
         {
-            _logger = logger;
+            _loggerFactory = loggerFactory;
             _userManager = userManager;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
+            _logger = loggerFactory.CreateLogger<GroupController>();
 
-            _state = new IdleGroupState(_logger);
+            _state = new IdleGroupState(loggerFactory);
         }
 
         /// <summary>
         /// Gets the default ping value used for sessions.
         /// </summary>
+        /// <value>The default ping.</value>
         public long DefaultPing { get; } = 500;
 
         /// <summary>
         /// Gets the maximum time offset error accepted for dates reported by clients, in milliseconds.
         /// </summary>
+        /// <value>The maximum time offset error.</value>
         public long TimeSyncOffset { get; } = 2000;
 
         /// <summary>
         /// Gets the maximum offset error accepted for position reported by clients, in milliseconds.
         /// </summary>
+        /// <value>The maximum offset error.</value>
         public long MaxPlaybackOffset { get; } = 500;
 
         /// <summary>
@@ -124,23 +139,15 @@ namespace Emby.Server.Implementations.SyncPlay
         public DateTime LastActivity { get; set; }
 
         /// <summary>
-        /// Gets the participants.
-        /// </summary>
-        /// <value>The participants, or members of the group.</value>
-        public Dictionary<string, GroupMember> Participants { get; } =
-            new Dictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
         /// Adds the session to the group.
         /// </summary>
         /// <param name="session">The session.</param>
         private void AddSession(SessionInfo session)
         {
-            Participants.TryAdd(
+            _participants.TryAdd(
                 session.Id,
-                new GroupMember
+                new GroupMember(session)
                 {
-                    Session = session,
                     Ping = DefaultPing,
                     IsBuffering = false
                 });
@@ -152,7 +159,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="session">The session.</param>
         private void RemoveSession(SessionInfo session)
         {
-            Participants.Remove(session.Id);
+            _participants.Remove(session.Id);
         }
 
         /// <summary>
@@ -166,14 +173,14 @@ namespace Emby.Server.Implementations.SyncPlay
             return type switch
             {
                 SyncPlayBroadcastType.CurrentSession => new SessionInfo[] { from },
-                SyncPlayBroadcastType.AllGroup => Participants
+                SyncPlayBroadcastType.AllGroup => _participants
                     .Values
                     .Select(session => session.Session),
-                SyncPlayBroadcastType.AllExceptCurrentSession => Participants
+                SyncPlayBroadcastType.AllExceptCurrentSession => _participants
                     .Values
                     .Select(session => session.Session)
                     .Where(session => !session.Id.Equals(from.Id, StringComparison.OrdinalIgnoreCase)),
-                SyncPlayBroadcastType.AllReady => Participants
+                SyncPlayBroadcastType.AllReady => _participants
                     .Values
                     .Where(session => !session.IsBuffering)
                     .Select(session => session.Session),
@@ -204,7 +211,7 @@ namespace Emby.Server.Implementations.SyncPlay
         private bool HasAccessToQueue(User user, IReadOnlyList<Guid> queue)
         {
             // Check if queue is empty.
-            if (!queue?.Any() ?? true)
+            if (queue == null || queue.Count == 0)
             {
                 return true;
             }
@@ -229,13 +236,13 @@ namespace Emby.Server.Implementations.SyncPlay
         private bool AllUsersHaveAccessToQueue(IReadOnlyList<Guid> queue)
         {
             // Check if queue is empty.
-            if (!queue?.Any() ?? true)
+            if (queue == null || queue.Count == 0)
             {
                 return true;
             }
 
             // Get list of users.
-            var users = Participants
+            var users = _participants
                 .Values
                 .Select(participant => _userManager.GetUserById(participant.Session.UserId));
 
@@ -247,7 +254,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool IsGroupEmpty() => Participants.Count == 0;
+        public bool IsGroupEmpty() => _participants.Count == 0;
 
         /// <inheritdoc />
         public void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
@@ -268,8 +275,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 RunTimeTicks = session.FullNowPlayingItem.RunTimeTicks ?? 0;
                 PositionTicks = session.PlayState.PositionTicks ?? 0;
 
-                // Mantain playstate.
-                var waitingState = new WaitingGroupState(_logger)
+                // Maintain playstate.
+                var waitingState = new WaitingGroupState(_loggerFactory)
                 {
                     ResumePlaying = !session.PlayState.IsPaused
                 };
@@ -281,7 +288,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
-            _logger.LogInformation("InitGroup: {SessionId} created group {GroupId}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("Session {SessionId} created group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
@@ -297,7 +304,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
-            _logger.LogInformation("SessionJoin: {SessionId} joined group {GroupId}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("Session {SessionId} joined group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
@@ -311,7 +318,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
-            _logger.LogInformation("SessionRestore: {SessionId} re-joined group {GroupId}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("Session {SessionId} re-joined group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
@@ -327,7 +334,7 @@ namespace Emby.Server.Implementations.SyncPlay
             var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserLeft, session.UserName);
             SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
-            _logger.LogInformation("SessionLeave: {SessionId} left group {GroupId}.", session.Id, GroupId.ToString());
+            _logger.LogInformation("Session {SessionId} left group {GroupId}.", session.Id, GroupId.ToString());
         }
 
         /// <inheritdoc />
@@ -336,14 +343,14 @@ namespace Emby.Server.Implementations.SyncPlay
             // The server's job is to maintain a consistent state for clients to reference
             // and notify clients of state changes. The actual syncing of media playback
             // happens client side. Clients are aware of the server's time and use it to sync.
-            _logger.LogInformation("HandleRequest: {SessionId} requested {RequestType}, group {GroupId} is {StateType}.", session.Id, request.Type, GroupId.ToString(), _state.Type);
+            _logger.LogInformation("Session {SessionId} requested {RequestType} in group {GroupId} that is {StateType}.", session.Id, request.Type, GroupId.ToString(), _state.Type);
             request.Apply(this, _state, session, cancellationToken);
         }
 
         /// <inheritdoc />
         public GroupInfoDto GetInfo()
         {
-            var participants = Participants.Values.Select(session => session.Session.UserName).Distinct().ToList();
+            var participants = _participants.Values.Select(session => session.Session.UserName).Distinct().ToList();
             return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow);
         }
 
@@ -357,7 +364,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetIgnoreGroupWait(SessionInfo session, bool ignoreGroupWait)
         {
-            if (Participants.TryGetValue(session.Id, out GroupMember value))
+            if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
                 value.IgnoreGroupWait = ignoreGroupWait;
             }
@@ -366,7 +373,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetState(IGroupState state)
         {
-            _logger.LogInformation("SetState: {GroupId} switching from {FromStateType} to {ToStateType}.", GroupId.ToString(), _state.Type, state.Type);
+            _logger.LogInformation("Group {GroupId} switching from {FromStateType} to {ToStateType}.", GroupId.ToString(), _state.Type, state.Type);
             this._state = state;
         }
 
@@ -426,7 +433,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void UpdatePing(SessionInfo session, long ping)
         {
-            if (Participants.TryGetValue(session.Id, out GroupMember value))
+            if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
                 value.Ping = ping;
             }
@@ -436,7 +443,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public long GetHighestPing()
         {
             long max = long.MinValue;
-            foreach (var session in Participants.Values)
+            foreach (var session in _participants.Values)
             {
                 max = Math.Max(max, session.Ping);
             }
@@ -447,7 +454,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetBuffering(SessionInfo session, bool isBuffering)
         {
-            if (Participants.TryGetValue(session.Id, out GroupMember value))
+            if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
                 value.IsBuffering = isBuffering;
             }
@@ -456,7 +463,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetAllBuffering(bool isBuffering)
         {
-            foreach (var session in Participants.Values)
+            foreach (var session in _participants.Values)
             {
                 session.IsBuffering = isBuffering;
             }
@@ -465,7 +472,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public bool IsBuffering()
         {
-            foreach (var session in Participants.Values)
+            foreach (var session in _participants.Values)
             {
                 if (session.IsBuffering && !session.IgnoreGroupWait)
                 {

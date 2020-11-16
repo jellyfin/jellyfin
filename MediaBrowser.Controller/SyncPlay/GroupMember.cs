@@ -8,10 +8,19 @@ namespace MediaBrowser.Controller.SyncPlay
     public class GroupMember
     {
         /// <summary>
-        /// Gets or sets the session.
+        /// Initializes a new instance of the <see cref="GroupMember"/> class.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        public GroupMember(SessionInfo session)
+        {
+            Session = session;
+        }
+
+        /// <summary>
+        /// Gets the session.
         /// </summary>
         /// <value>The session.</value>
-        public SessionInfo Session { get; set; }
+        public SessionInfo Session { get; }
 
         /// <summary>
         /// Gets or sets the ping, in milliseconds.

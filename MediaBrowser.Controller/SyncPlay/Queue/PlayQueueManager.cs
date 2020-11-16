@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Random number generator used to shuffle lists.
         /// </summary>
         /// <value>The random number generator.</value>
-        private readonly Random randomNumberGenerator = new Random();
+        private readonly Random _randomNumberGenerator = new Random();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayQueueManager" /> class.
@@ -102,7 +102,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             SortedPlaylist = CreateQueueItemsFromArray(items);
             if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
-                ShuffledPlaylist = SortedPlaylist.ToList();
+                ShuffledPlaylist = new List<QueueItem>(SortedPlaylist);
                 Shuffle(ShuffledPlaylist);
             }
 
@@ -134,17 +134,17 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         {
             if (PlayingItemIndex == NoPlayingItemIndex)
             {
-                ShuffledPlaylist = SortedPlaylist.ToList();
+                ShuffledPlaylist = new List<QueueItem>(SortedPlaylist);
                 Shuffle(ShuffledPlaylist);
             }
             else if (ShuffleMode.Equals(GroupShuffleMode.Sorted))
             {
                 // First time shuffle.
                 var playingItem = SortedPlaylist[PlayingItemIndex];
-                ShuffledPlaylist = SortedPlaylist.ToList();
+                ShuffledPlaylist = new List<QueueItem>(SortedPlaylist);
                 ShuffledPlaylist.RemoveAt(PlayingItemIndex);
                 Shuffle(ShuffledPlaylist);
-                ShuffledPlaylist = ShuffledPlaylist.Prepend(playingItem).ToList();
+                ShuffledPlaylist.Insert(0, playingItem);
                 PlayingItemIndex = 0;
             }
             else
@@ -153,7 +153,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
                 var playingItem = ShuffledPlaylist[PlayingItemIndex];
                 ShuffledPlaylist.RemoveAt(PlayingItemIndex);
                 Shuffle(ShuffledPlaylist);
-                ShuffledPlaylist = ShuffledPlaylist.Prepend(playingItem).ToList();
+                ShuffledPlaylist.Insert(0, playingItem);
                 PlayingItemIndex = 0;
             }
 
@@ -236,14 +236,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         public string GetPlayingItemPlaylistId()
         {
             var playingItem = GetPlayingItem();
-            if (playingItem != null)
-            {
-                return playingItem.PlaylistItemId;
-            }
-            else
-            {
-                return null;
-            }
+            return playingItem?.PlaylistItemId;
         }
 
         /// <summary>
@@ -253,14 +246,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         public Guid GetPlayingItemId()
         {
             var playingItem = GetPlayingItem();
-            if (playingItem != null)
-            {
-                return playingItem.ItemId;
-            }
-            else
-            {
-                return Guid.Empty;
-            }
+            return playingItem?.ItemId ?? Guid.Empty;
         }
 
         /// <summary>
@@ -536,7 +522,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             while (n > 1)
             {
                 n--;
-                int k = randomNumberGenerator.Next(n + 1);
+                int k = _randomNumberGenerator.Next(n + 1);
                 T value = list[k];
                 list[k] = list[n];
                 list[n] = value;

@@ -15,13 +15,18 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
     public class IdleGroupState : AbstractGroupState
     {
         /// <summary>
+        /// The logger.
+        /// </summary>
+        private readonly ILogger<IdleGroupState> _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="IdleGroupState"/> class.
         /// </summary>
-        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
-        public IdleGroupState(ILogger logger)
-            : base(logger)
+        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        public IdleGroupState(ILoggerFactory loggerFactory)
+            : base(loggerFactory)
         {
-            // Do nothing.
+            _logger = LoggerFactory.CreateLogger<IdleGroupState>();
         }
 
         /// <inheritdoc />
@@ -43,7 +48,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PlayGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(Logger);
+            var waitingState = new WaitingGroupState(LoggerFactory);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
@@ -52,7 +57,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, UnpauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(Logger);
+            var waitingState = new WaitingGroupState(LoggerFactory);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
@@ -91,7 +96,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(Logger);
+            var waitingState = new WaitingGroupState(LoggerFactory);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
@@ -100,7 +105,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
-            var waitingState = new WaitingGroupState(Logger);
+            var waitingState = new WaitingGroupState(LoggerFactory);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }

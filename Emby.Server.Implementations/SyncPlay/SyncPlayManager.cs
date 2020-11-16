@@ -22,6 +22,11 @@ namespace Emby.Server.Implementations.SyncPlay
         private readonly ILogger<SyncPlayManager> _logger;
 
         /// <summary>
+        /// The logger factory.
+        /// </summary>
+        private readonly ILoggerFactory _loggerFactory;
+
+        /// <summary>
         /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
@@ -58,20 +63,21 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncPlayManager" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         public SyncPlayManager(
-            ILogger<SyncPlayManager> logger,
+            ILoggerFactory loggerFactory,
             IUserManager userManager,
             ISessionManager sessionManager,
             ILibraryManager libraryManager)
         {
-            _logger = logger;
+            _loggerFactory = loggerFactory;
             _userManager = userManager;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
+            _logger = loggerFactory.CreateLogger<SyncPlayManager>();
             _sessionManager.SessionStarted += OnSessionManagerSessionStarted;
         }
 
@@ -98,7 +104,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     LeaveGroup(session, cancellationToken);
                 }
 
-                var group = new GroupController(_logger, _userManager, _sessionManager, _libraryManager);
+                var group = new GroupController(_loggerFactory, _userManager, _sessionManager, _libraryManager);
                 _groups[group.GroupId] = group;
 
                 AddSessionToGroup(session, group);
@@ -123,7 +129,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("JoinGroup: {SessionId} tried to join group {GroupId} that does not exist.", session.Id, groupId);
+                    _logger.LogWarning("Session {SessionId} tried to join group {GroupId} that does not exist.", session.Id, groupId);
 
                     var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.GroupDoesNotExist, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
@@ -132,7 +138,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (!group.HasAccessToPlayQueue(user))
                 {
-                    _logger.LogWarning("JoinGroup: {SessionId} does not have access to some content from the playing queue of group {GroupId}.", session.Id, group.GroupId.ToString());
+                    _logger.LogWarning("Session {SessionId} tried to join group {GroupId} but does not have access to some content of the playing queue.", session.Id, group.GroupId.ToString());
 
                     var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.LibraryAccessDenied, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
@@ -171,7 +177,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("LeaveGroup: {SessionId} does not belong to any group.", session.Id);
+                    _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
 
                     var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
@@ -183,7 +189,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (group.IsGroupEmpty())
                 {
-                    _logger.LogInformation("LeaveGroup: removing empty group {GroupId}.", group.GroupId);
+                    _logger.LogInformation("Group {GroupId} is empty, removing it.", group.GroupId);
                     _groups.Remove(group.GroupId, out _);
                 }
             }
@@ -225,7 +231,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("HandleRequest: {SessionId} does not belong to any group.", session.Id);
+                    _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
 
                     var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
@@ -370,7 +376,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             if (user.SyncPlayAccess == SyncPlayAccess.None)
             {
-                _logger.LogWarning("IsRequestValid: {SessionId} does not have access to SyncPlay. Requested {RequestType}.", session.Id, requestType);
+                _logger.LogWarning("Session {SessionId} requested {RequestType} but does not have access to SyncPlay.", session.Id, requestType);
 
                 // TODO: rename to a more generic error. Next PR will fix this.
                 var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.JoinGroupDenied, string.Empty);
@@ -380,7 +386,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             if (requestType.Equals(GroupRequestType.NewGroup) && user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
             {
-                _logger.LogWarning("IsRequestValid: {SessionId} does not have permission to create groups.", session.Id);
+                _logger.LogWarning("Session {SessionId} does not have permission to create groups.", session.Id);
 
                 var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.CreateGroupDenied, string.Empty);
                 _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);

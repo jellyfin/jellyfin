@@ -15,21 +15,27 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
     public abstract class AbstractGroupState : IGroupState
     {
         /// <summary>
+        /// The logger.
+        /// </summary>
+        private readonly ILogger<AbstractGroupState> _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AbstractGroupState"/> class.
         /// </summary>
-        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
-        protected AbstractGroupState(ILogger logger)
+        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        protected AbstractGroupState(ILoggerFactory loggerFactory)
         {
-            Logger = logger;
+            LoggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<AbstractGroupState>();
         }
 
         /// <inheritdoc />
         public abstract GroupStateType Type { get; }
 
         /// <summary>
-        /// Gets the logger.
+        /// Gets the logger factory.
         /// </summary>
-        protected ILogger Logger { get; }
+        protected ILoggerFactory LoggerFactory { get; }
 
         /// <inheritdoc />
         public abstract void SessionJoined(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken);
@@ -52,7 +58,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         /// <inheritdoc />
         public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, SetPlaylistItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
-            var waitingState = new WaitingGroupState(Logger);
+            var waitingState = new WaitingGroupState(LoggerFactory);
             context.SetState(waitingState);
             waitingState.HandleRequest(context, Type, request, session, cancellationToken);
         }
@@ -68,9 +74,9 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             if (playingItemRemoved && !context.PlayQueue.IsItemPlaying())
             {
-                Logger.LogDebug("HandleRequest: {RequestType} in group {GroupId}, play queue is empty.", request.Type, context.GroupId.ToString());
+                _logger.LogDebug("Play queue in group {GroupId} is now empty.", context.GroupId.ToString());
 
-                IGroupState idleState = new IdleGroupState(Logger);
+                IGroupState idleState = new IdleGroupState(LoggerFactory);
                 context.SetState(idleState);
                 var stopRequest = new StopGroupRequest();
                 idleState.HandleRequest(context, Type, stopRequest, session, cancellationToken);
@@ -84,7 +90,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             if (!result)
             {
-                Logger.LogError("HandleRequest: {RequestType} in group {GroupId}, unable to move item in play queue.", request.Type, context.GroupId.ToString());
+                _logger.LogError("Unable to move item in group {GroupId}.", context.GroupId.ToString());
                 return;
             }
 
@@ -100,7 +106,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             if (!result)
             {
-                Logger.LogError("HandleRequest: {RequestType} in group {GroupId}, unable to add items to play queue.", request.Type, context.GroupId.ToString());
+                _logger.LogError("Unable to add items to play queue in group {GroupId}.", context.GroupId.ToString());
                 return;
             }
 
@@ -210,7 +216,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
         private void UnhandledRequest(IGroupPlaybackRequest request)
         {
-            Logger.LogWarning("HandleRequest: unhandled {RequestType} request in {StateType} state.", request.Type, Type);
+            _logger.LogWarning("Unhandled request of type {RequestType} in {StateType} state.", request.Type, Type);
         }
     }
 }
