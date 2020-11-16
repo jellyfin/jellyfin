@@ -849,7 +849,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Key can't be empty.", nameof(key));
             }
 
-            var keys = key.Split(new[] { LiveStreamIdDelimeter }, 2);
+            var keys = key.Split(LiveStreamIdDelimeter, 2);
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), keys[0], StringComparison.OrdinalIgnoreCase));
 

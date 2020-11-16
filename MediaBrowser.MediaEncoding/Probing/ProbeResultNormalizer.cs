@@ -149,7 +149,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 var iTunEXTC = FFProbeHelpers.GetDictionaryValue(tags, "iTunEXTC");
                 if (!string.IsNullOrWhiteSpace(iTunEXTC))
                 {
-                    var parts = iTunEXTC.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = iTunEXTC.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     // Example
                     // mpaa|G|100|For crude humor
                     if (parts.Length > 1)
@@ -1247,7 +1247,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            return value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            return value.Split('/', StringSplitOptions.RemoveEmptyEntries)
                 .Select(i => i.Trim())
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }

@@ -12,6 +12,7 @@ using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -102,7 +103,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="playSessionId">Playback session id.</param>
         /// <returns>The transcoding job.</returns>
-        public TranscodingJobDto GetTranscodingJob(string playSessionId)
+        public TranscodingJobDto? GetTranscodingJob(string playSessionId)
         {
             lock (_activeTranscodingJobs)
             {
@@ -116,7 +117,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="path">Path to the transcoding file.</param>
         /// <param name="type">The <see cref="TranscodingJobType"/>.</param>
         /// <returns>The transcoding job.</returns>
-        public TranscodingJobDto GetTranscodingJob(string path, TranscodingJobType type)
+        public TranscodingJobDto? GetTranscodingJob(string path, TranscodingJobType type)
         {
             lock (_activeTranscodingJobs)
             {
@@ -193,10 +194,9 @@ namespace Jellyfin.Api.Helpers
         /// Called when [transcode kill timer stopped].
         /// </summary>
         /// <param name="state">The state.</param>
-        private async void OnTranscodeKillTimerStopped(object state)
+        private async void OnTranscodeKillTimerStopped(object? state)
         {
-            var job = (TranscodingJobDto)state;
-
+            var job = state as TranscodingJobDto ?? throw new ArgumentException($"{nameof(state)} is not of type {nameof(TranscodingJobDto)}", nameof(state));
             if (!job.HasExited && job.Type != TranscodingJobType.Progressive)
             {
                 var timeSinceLastPing = (DateTime.UtcNow - job.LastPingDate).TotalMilliseconds;
@@ -489,7 +489,8 @@ namespace Jellyfin.Api.Helpers
             CancellationTokenSource cancellationTokenSource,
             string? workingDirectory = null)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+            Directory.CreateDirectory(directory);
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
@@ -523,7 +524,7 @@ namespace Jellyfin.Api.Helpers
                     RedirectStandardInput = true,
                     FileName = _mediaEncoder.EncoderPath,
                     Arguments = commandLineArguments,
-                    WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? null : workingDirectory,
+                    WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? string.Empty : workingDirectory,
                     ErrorDialog = false
                 },
                 EnableRaisingEvents = true
@@ -828,7 +829,7 @@ namespace Jellyfin.Api.Helpers
         {
             lock (_transcodingLocks)
             {
-                if (!_transcodingLocks.TryGetValue(outputPath, out SemaphoreSlim result))
+                if (!_transcodingLocks.TryGetValue(outputPath, out SemaphoreSlim? result))
                 {
                     result = new SemaphoreSlim(1, 1);
                     _transcodingLocks[outputPath] = result;
@@ -838,7 +839,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private void OnPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
             {

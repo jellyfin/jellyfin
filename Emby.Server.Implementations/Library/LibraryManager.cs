@@ -2440,6 +2440,21 @@ namespace Emby.Server.Implementations.Library
             new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
+        public BaseItem GetParentItem(string parentId, Guid? userId)
+        {
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                return GetItemById(new Guid(parentId));
+            }
+
+            if (userId.HasValue && userId != Guid.Empty)
+            {
+                return GetUserRootFolder();
+            }
+
+            return RootFolder;
+        }
+
         /// <inheritdoc />
         public bool IsVideoFile(string path)
         {
@@ -2690,7 +2705,7 @@ namespace Emby.Server.Implementations.Library
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
             if (currentVideo != null)
             {

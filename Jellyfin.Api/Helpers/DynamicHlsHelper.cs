@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Helpers
             StreamingRequestDto streamingRequest,
             bool enableAdaptiveBitrateStreaming)
         {
-            var isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == WebRequestMethods.Http.Head;
+            var isHeadRequest = _httpContextAccessor.HttpContext?.Request.Method == WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
             return await GetMasterPlaylistInternal(
                 streamingRequest,
@@ -130,6 +130,11 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
+            }
+
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     _httpContextAccessor.HttpContext.Request,

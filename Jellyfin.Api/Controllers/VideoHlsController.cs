@@ -12,6 +12,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -363,8 +364,9 @@ namespace Jellyfin.Api.Controllers
             var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
             var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
-            var outputPrefix = Path.Combine(Path.GetDirectoryName(outputPath), outputFileNameWithoutExtension);
+            var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
             var outputExtension = HlsHelpers.GetSegmentFileExtension(state.Request.SegmentContainer);
             var outputTsArg = outputPrefix + "%d" + outputExtension;
 
