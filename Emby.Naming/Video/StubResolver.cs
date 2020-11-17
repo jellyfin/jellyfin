@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-#nullable enable
-
 using System;
 using System.IO;
 using System.Linq;
@@ -8,13 +5,23 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolve if file is stub (.disc).
+    /// </summary>
     public static class StubResolver
     {
+        /// <summary>
+        /// Tries to resolve if file is stub (.disc).
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <param name="options">NamingOptions containing StubFileExtensions and StubTypes.</param>
+        /// <param name="stubType">Stub type.</param>
+        /// <returns>True if file is a stub.</returns>
         public static bool TryResolveFile(string path, NamingOptions options, out string? stubType)
         {
             stubType = default;
 
-            if (path == null)
+            if (string.IsNullOrEmpty(path))
             {
                 return false;
             }
