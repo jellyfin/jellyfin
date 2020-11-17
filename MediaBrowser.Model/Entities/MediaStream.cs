@@ -191,6 +191,11 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(Codec.ToUpperInvariant());
                         }
 
+                        if (!string.IsNullOrEmpty(VideoRange))
+                        {
+                            attributes.Add(VideoRange.ToUpperInvariant());
+                        }
+
                         if (!string.IsNullOrEmpty(Title))
                         {
                             var result = new StringBuilder(Title);
