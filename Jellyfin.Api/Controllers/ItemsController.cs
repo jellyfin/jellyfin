@@ -412,13 +412,9 @@ namespace Jellyfin.Api.Controllers
                     query.IsVirtualItem = false;
                 }
 
-                if (locationTypes.Length != 0)
+                if (locationTypes.Length > 0 && locationTypes.Length < 4)
                 {
-                    var requestedLocationTypes = locationTypes;
-                    if (requestedLocationTypes.Length > 0 && requestedLocationTypes.Length < 4)
-                    {
-                        query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual);
-                    }
+                    query.IsVirtualItem = locationTypes.Contains(LocationType.Virtual);
                 }
 
                 // Min official rating
