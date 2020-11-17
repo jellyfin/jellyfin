@@ -2344,7 +2344,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Automatic
             if (threads <= 0 || threads >= Environment.ProcessorCount)
             {
-                return 0;
+                return Environment.ProcessorCount;
             }
 
             return threads;
