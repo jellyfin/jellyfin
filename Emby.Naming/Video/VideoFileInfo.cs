@@ -1,3 +1,4 @@
+#nullable enable
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Video
@@ -21,7 +22,7 @@ namespace Emby.Naming.Video
         /// <param name="isStub">Is Stub.</param>
         /// <param name="stubType">Stub type.</param>
         /// <param name="isDirectory">Is directory.</param>
-        public VideoFileInfo(string name, string? path, string? container, int? year = default, ExtraType? extraType = default, ExtraRule? extraRule = default, string? format3D = default, bool is3D = default, bool isStub = default, string? stubType = default, bool isDirectory = default)
+        public VideoFileInfo(string name, string path, string? container, int? year = default, ExtraType? extraType = default, ExtraRule? extraRule = default, string? format3D = default, bool is3D = default, bool isStub = default, string? stubType = default, bool isDirectory = default)
         {
             Path = path;
             Container = container;
@@ -40,7 +41,7 @@ namespace Emby.Naming.Video
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string? Path { get; set; }
+        public string Path { get; set; }
 
         /// <summary>
         /// Gets or sets the container.
