@@ -24,8 +24,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.MigrateUserDb),
             typeof(Routines.ReaddDefaultPluginRepository),
             typeof(Routines.MigrateDisplayPreferencesDb),
-            typeof(Routines.RemoveDownloadImagesInAdvance),
-            typeof(Routines.DownloadTheTvdbPlugin)
+            typeof(Routines.RemoveDownloadImagesInAdvance)
         };
 
         /// <summary>
