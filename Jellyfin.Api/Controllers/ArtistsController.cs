@@ -105,7 +105,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? person,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
-            [FromQuery] string? studios,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] studioIds,
             [FromQuery] Guid? userId,
             [FromQuery] string? nameStartsWithOrGreater,
@@ -170,9 +170,9 @@ namespace Jellyfin.Api.Controllers
             }
 
             // Studios
-            if (!string.IsNullOrEmpty(studios))
+            if (studios.Length != 0)
             {
-                query.StudioIds = studios.Split('|').Select(i =>
+                query.StudioIds = studios.Select(i =>
                 {
                     try
                     {
@@ -309,7 +309,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? person,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
-            [FromQuery] string? studios,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] studioIds,
             [FromQuery] Guid? userId,
             [FromQuery] string? nameStartsWithOrGreater,
@@ -374,9 +374,9 @@ namespace Jellyfin.Api.Controllers
             }
 
             // Studios
-            if (!string.IsNullOrEmpty(studios))
+            if (studios.Length != 0)
             {
-                query.StudioIds = studios.Split('|').Select(i =>
+                query.StudioIds = studios.Select(i =>
                 {
                     try
                     {

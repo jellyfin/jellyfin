@@ -159,7 +159,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
-            [FromQuery] string? locationTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] locationTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
@@ -199,13 +199,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? person,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
-            [FromQuery] string? studios,
-            [FromQuery] string? artists,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] artists,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeArtistIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] artistIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumArtistIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] contributingArtistIds,
-            [FromQuery] string? albums,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] albums,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] VideoType[] videoTypes,
@@ -219,7 +219,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] bool? is3D,
-            [FromQuery] string? seriesStatus,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SeriesStatus[] seriesStatus,
             [FromQuery] string? nameStartsWithOrGreater,
             [FromQuery] string? nameStartsWith,
             [FromQuery] string? nameLessThan,
@@ -401,9 +401,9 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // Filter by Series Status
-                if (!string.IsNullOrEmpty(seriesStatus))
+                if(seriesStatus.Length != 0)
                 {
-                    query.SeriesStatuses = seriesStatus.Split(',').Select(d => (SeriesStatus)Enum.Parse(typeof(SeriesStatus), d, true)).ToArray();
+                    query.SeriesStatuses = seriesStatus;
                 }
 
                 // ExcludeLocationTypes
@@ -412,9 +412,9 @@ namespace Jellyfin.Api.Controllers
                     query.IsVirtualItem = false;
                 }
 
-                if (!string.IsNullOrEmpty(locationTypes))
+                if (locationTypes.Length != 0)
                 {
-                    var requestedLocationTypes = locationTypes.Split(',');
+                    var requestedLocationTypes = locationTypes;
                     if (requestedLocationTypes.Length > 0 && requestedLocationTypes.Length < 4)
                     {
                         query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual.ToString());
@@ -434,9 +434,9 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // Artists
-                if (!string.IsNullOrEmpty(artists))
+                if (artists.Length != 0)
                 {
-                    query.ArtistIds = artists.Split('|').Select(i =>
+                    query.ArtistIds = artists.Select(i =>
                     {
                         try
                         {
@@ -461,18 +461,18 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // Albums
-                if (!string.IsNullOrEmpty(albums))
+                if (albums.Length != 0)
                 {
-                    query.AlbumIds = albums.Split('|').SelectMany(i =>
+                    query.AlbumIds = albums.SelectMany(i =>
                     {
                         return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { nameof(MusicAlbum) }, Name = i, Limit = 1 });
                     }).ToArray();
                 }
 
                 // Studios
-                if (!string.IsNullOrEmpty(studios))
+                if (studios.Length != 0)
                 {
-                    query.StudioIds = studios.Split('|').Select(i =>
+                    query.StudioIds = studios.Select(i =>
                     {
                         try
                         {
