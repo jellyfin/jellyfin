@@ -64,6 +64,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
+        private int threads;
 
         public MediaEncoder(
             ILogger<MediaEncoder> logger,
@@ -129,6 +130,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
                 SetAvailableHwaccels(validator.GetHwaccels());
+                threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
             }
 
             _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
@@ -377,9 +379,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             CancellationToken cancellationToken)
         {
             var args = extractChapters
-                ? "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_chapters -show_format"
-                : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
-            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath).Trim();
+                ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
+                : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
+            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, threads).Trim();
 
             var process = new Process
             {
@@ -555,8 +557,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var thumbnail = enableThumbnail ? ",thumbnail=24" : string.Empty;
 
-            var args = useIFrame ? string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
-                string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
+            var args = useIFrame ? string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {5} -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail, threads) :
+                string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
@@ -693,7 +695,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf, threads);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);

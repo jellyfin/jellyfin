@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
@@ -25,6 +26,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IServerApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         private bool _hasExited;
         private Stream _logFileStream;
@@ -35,12 +37,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ILogger logger,
             IMediaEncoder mediaEncoder,
             IServerApplicationPaths appPaths,
-            IJsonSerializer json)
+            IJsonSerializer json,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
             _json = json;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         private static bool CopySubtitles => false;
@@ -179,15 +183,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var outputParam = string.Empty;
 
+            var threads = EncodingHelper.GetNumberOfThreads(null, _serverConfigurationManager.GetEncodingOptions(), null);
             var commandLineArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i \"{0}\" {2} -map_metadata -1 -threads 0 {3}{4}{5} -y \"{1}\"",
+                "-i \"{0}\" {2} -map_metadata -1 -threads {6} {3}{4}{5} -y \"{1}\"",
                 inputTempFile,
                 targetFile,
                 videoArgs,
                 GetAudioArgs(mediaSource),
                 subtitleArgs,
-                outputParam);
+                outputParam,
+                threads);
 
             return inputModifier + " " + commandLineArgs;
         }
