@@ -159,7 +159,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] locationTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] locationTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
@@ -401,7 +401,7 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // Filter by Series Status
-                if(seriesStatus.Length != 0)
+                if (seriesStatus.Length != 0)
                 {
                     query.SeriesStatuses = seriesStatus;
                 }
@@ -417,7 +417,7 @@ namespace Jellyfin.Api.Controllers
                     var requestedLocationTypes = locationTypes;
                     if (requestedLocationTypes.Length > 0 && requestedLocationTypes.Length < 4)
                     {
-                        query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual.ToString());
+                        query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual);
                     }
                 }
 
