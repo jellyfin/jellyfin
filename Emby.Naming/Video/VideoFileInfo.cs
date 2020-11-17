@@ -1,4 +1,3 @@
-#nullable enable
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Video
