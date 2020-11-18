@@ -480,7 +480,7 @@ namespace Emby.Dlna.PlayTo
                         return;
                     }
 
-                    // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
+                    // If we're not playing anything make sure we don't get data more often than necessary to keep the Session alive
                     if (transportState.Value == TransportState.Stopped)
                     {
                         RestartTimerInactive();
@@ -821,7 +821,7 @@ namespace Emby.Dlna.PlayTo
             {
             }
 
-            // first try to add a root node with a dlna namesapce
+            // first try to add a root node with a dlna namesake
             try
             {
                 return XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + xml + "</data>")

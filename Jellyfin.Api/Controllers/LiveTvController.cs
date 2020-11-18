@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -1155,7 +1155,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="newDevicesOnly">Only discover new tuners.</param>
         /// <response code="200">Tuners returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
-        [HttpGet("Tuners/Discvover")]
+        [HttpGet("Tuners/Discover")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<TunerHostInfo>>> DiscoverTuners([FromQuery] bool newDevicesOnly = false)

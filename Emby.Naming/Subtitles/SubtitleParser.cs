@@ -60,7 +60,7 @@ namespace Emby.Naming.Subtitles
 
         private string[] GetFlags(string path)
         {
-            // Note: the tags need be be surrounded be either a space ( ), hyphen -, dot . or underscore _.
+            // Note: the tags need be surrounded be either a space ( ), hyphen -, dot . or underscore _.
 
             var file = Path.GetFileName(path);
 
