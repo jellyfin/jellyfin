@@ -775,7 +775,7 @@ namespace Emby.Dlna.PlayTo
 
             if (track == null)
             {
-                // If track is null, some vendors do this, use GetMediaInfo instead
+                // If track is null, some vendors do this, use GetMediaInfo instead.
                 return (true, null);
             }
 
@@ -812,7 +812,7 @@ namespace Emby.Dlna.PlayTo
 
         private XElement ParseResponse(string xml)
         {
-            // Handle different variations sent back by devices
+            // Handle different variations sent back by devices.
             try
             {
                 return XElement.Parse(xml);
@@ -821,7 +821,7 @@ namespace Emby.Dlna.PlayTo
             {
             }
 
-            // first try to add a root node with a dlna namesake
+            // first try to add a root node with a dlna namespace.
             try
             {
                 return XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + xml + "</data>")
