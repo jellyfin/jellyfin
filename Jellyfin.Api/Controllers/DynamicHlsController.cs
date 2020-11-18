@@ -1329,7 +1329,7 @@ namespace Jellyfin.Api.Controllers
         {
             var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
 
-            var threads = _encodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec);
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec); // GetNumberOfThreads is static
 
             if (state.BaseRequest.BreakOnNonKeyFrames)
             {

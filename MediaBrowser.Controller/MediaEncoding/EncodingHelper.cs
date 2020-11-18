@@ -2329,20 +2329,23 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the number of threads.
         /// </summary>
-        public int GetNumberOfThreads(EncodingJobInfo state, EncodingOptions encodingOptions, string outputVideoCodec)
+        public static int GetNumberOfThreads(EncodingJobInfo state, EncodingOptions encodingOptions, string outputVideoCodec)
         {
-            if (string.Equals(outputVideoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
+            if (outputVideoCodec != null && string.Equals(outputVideoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
             {
                 // per docs:
                 // -threads    number of threads to use for encoding, can't be 0 [auto] with VP8
                 //             (recommended value : number of real cores - 1)
                 return Math.Max(Environment.ProcessorCount - 1, 1);
             }
-
-            var threads = state.BaseRequest.CpuCoreLimit ?? encodingOptions.EncodingThreadCount;
+            var threads = state?.BaseRequest.CpuCoreLimit ?? encodingOptions.EncodingThreadCount;
 
             // Automatic
-            if (threads <= 0 || threads >= Environment.ProcessorCount)
+            if (threads <= 0)
+            {
+                return 0;
+            } 
+            else if (threads >= Environment.ProcessorCount)
             {
                 return Environment.ProcessorCount;
             }

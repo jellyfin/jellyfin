@@ -524,26 +524,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar.
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
-            var vf = String.Empty;
+            var vf = string.Empty;
 
             if (threedFormat.HasValue)
             {
                 switch (threedFormat.Value)
                 {
                     case Video3DFormat.HalfSideBySide:
-                        vf = "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
+                        vf = "-vf crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
                         // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
                         break;
                     case Video3DFormat.FullSideBySide:
-                        vf = "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
+                        vf = "-vf crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
                         // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
                         break;
                     case Video3DFormat.HalfTopAndBottom:
-                        vf = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
+                        vf = "-vf crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
                         // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made
                         break;
                     case Video3DFormat.FullTopAndBottom:
-                        vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
+                        vf = "-vf crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
                         // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made
                         break;
                     default:
@@ -557,8 +557,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var thumbnail = enableThumbnail ? ",thumbnail=24" : string.Empty;
 
-            var args = useIFrame ? string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {5} -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail, threads) :
-                string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
+            var args = useIFrame ? string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {5} -v quiet -vframes 1 {2}{4} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail, threads) :
+                string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
@@ -695,7 +695,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf, threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, threads);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
