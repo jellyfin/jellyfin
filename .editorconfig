@@ -192,3 +192,8 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
+
+###############################
+# NET coding quality          #
+###############################
+dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = true
