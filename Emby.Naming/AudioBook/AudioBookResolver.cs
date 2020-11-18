@@ -30,13 +30,13 @@ namespace Emby.Naming.AudioBook
         {
             if (path.Length == 0 || Path.GetFileNameWithoutExtension(path).Length == 0)
             {
-                // Return null to indicate this path will not be used, instead of stopping whole process with exception
+                // Return null to indicate this path will not be used, instead of stopping whole process with exception.
                 return null;
             }
 
             var extension = Path.GetExtension(path);
 
-            // Check supported extensions
+            // Check supported extensions.
             if (!_options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
                 return null;

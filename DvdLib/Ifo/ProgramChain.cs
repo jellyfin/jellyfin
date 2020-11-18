@@ -25,8 +25,8 @@ namespace DvdLib.Ifo
 
         public UserOperation ProhibitedUserOperations { get; private set; }
 
-        public byte[] AudioStreamControl { get; private set; } // 8*2 entries
-        public byte[] SubpictureStreamControl { get; private set; } // 32*4 entries
+        public byte[] AudioStreamControl { get; private set; } // 8*2 entries.
+        public byte[] SubpictureStreamControl { get; private set; } // 32*4 entries.
 
         private ushort _nextProgramNumber;
 
@@ -40,7 +40,7 @@ namespace DvdLib.Ifo
 
         public byte StillTime { get; private set; }
 
-        public byte[] Palette { get; private set; } // 16*4 entries
+        public byte[] Palette { get; private set; } // 16*4 entries.
 
         private ushort _commandTableOffset;
 
@@ -92,7 +92,7 @@ namespace DvdLib.Ifo
             _cellPlaybackOffset = br.ReadUInt16();
             _cellPositionOffset = br.ReadUInt16();
 
-            // read position info
+            // read position info.
             br.BaseStream.Seek(startPos + _cellPositionOffset, SeekOrigin.Begin);
             for (int cellNum = 0; cellNum < _cellCount; cellNum++)
             {

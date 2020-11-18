@@ -63,14 +63,14 @@ namespace Emby.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    // play all
+                    // play all.
                     Container = string.Empty,
                     Type = DlnaProfileType.Video
                 },
 
                 new DirectPlayProfile
                 {
-                    // play all
+                    // play all.
                     Container = string.Empty,
                     Type = DlnaProfileType.Audio
                 }

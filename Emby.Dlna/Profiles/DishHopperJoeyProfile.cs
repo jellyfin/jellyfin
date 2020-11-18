@@ -194,7 +194,7 @@ namespace Emby.Dlna.Profiles
                     Type = CodecType.VideoAudio,
                     Conditions = new[]
                     {
-                        // The device does not have any audio switching capabilities
+                        // The device does not have any audio switching capabilities.
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.Equals,

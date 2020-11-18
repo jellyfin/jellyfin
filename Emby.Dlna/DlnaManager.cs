@@ -249,7 +249,7 @@ namespace Emby.Dlna
 
         private bool IsMatch(IHeaderDictionary headers, HttpHeaderInfo header)
         {
-            // Handle invalid user setup
+            // Handle invalid user setup.
             if (string.IsNullOrEmpty(header.Name))
             {
                 return false;
@@ -403,7 +403,7 @@ namespace Emby.Dlna
                 }
             }
 
-            // Not necessary, but just to make it easy to find
+            // Not necessary, but just to make it easy to find.
             Directory.CreateDirectory(UserProfilesPath);
         }
 

@@ -17,7 +17,7 @@ namespace DvdLib.Ifo
 
         private ushort _parentalManagementMask;
         private byte _titleNumberInVTS;
-        private uint _vtsStartSector; // relative to start of entire disk
+        private uint _vtsStartSector; // relative to start of entire disk.
 
         public ProgramChain EntryProgramChain { get; private set; }
 
@@ -41,7 +41,7 @@ namespace DvdLib.Ifo
         internal void ParseTT_SRPT(BinaryReader br)
         {
             byte titleType = br.ReadByte();
-            // TODO parse Title Type
+            // TODO parse Title Type.
 
             AngleCount = br.ReadByte();
             ChapterCount = br.ReadUInt16();

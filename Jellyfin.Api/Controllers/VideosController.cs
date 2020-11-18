@@ -467,7 +467,7 @@ namespace Jellyfin.Api.Controllers
                     }.WriteToAsync(Response.Body, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
+                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType.
                 return File(Response.Body, MimeTypes.GetMimeType("file.ts")!);
             }
 

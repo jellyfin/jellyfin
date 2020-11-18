@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         private T FindAudio<T>(ItemResolveArgs args, string path, Folder parent, List<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, string collectionType, bool parseName)
             where T : MediaBrowser.Controller.Entities.Audio.Audio, new()
         {
-            // TODO: Allow GetMultiDiscMovie in here
+            // TODO: Allow GetMultiDiscMovie in here.
             const bool supportsMultiVersion = false;
 
             var result = ResolveMultipleAudio<T>(parent, fileSystemEntries, directoryService, supportsMultiVersion, collectionType, parseName) ??
@@ -150,7 +150,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             if (result.Items.Count == 1)
             {
-                // If we were supporting this we'd be checking filesFromOtherItems
+                // If we were supporting this we'd be checking filesFromOtherItems.
                 var item = (T)result.Items[0];
                 item.IsInMixedFolder = false;
                 item.Name = Path.GetFileName(item.ContainingFolderPath);
@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             var items = new List<BaseItem>();
             var leftOver = new List<FileSystemMetadata>();
 
-            // Loop through each child file/folder and see if we find a video
+            // Loop through each child file/folder and see if we find a video.
             foreach (var child in fileSystemEntries)
             {
                 if (child.IsDirectory)
@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             {
                 if (resolvedItem.Files.Count > 1)
                 {
-                    // For now, until we sort out naming for multi-part books
+                    // For now, until we sort out naming for multi-part books.
                     continue;
                 }
 

@@ -739,7 +739,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // Local metadata is king - if any is found don't run remote providers
+            // Local metadata is king - if any is found don't run remote providers.
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !item.StopRefreshIfLocalMetadataFound))
             {
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
@@ -760,7 +760,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
+                        // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields.
                         MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
                         MergeData(temp, metadata, item.LockedFields, true, false);
                     }

@@ -61,7 +61,7 @@ namespace Jellyfin.Drawing.Skia
                 "ktx",
                 "pkm",
                 "wbmp",
-                // TODO: check if these are supported on multiple platforms
+                // TODO: check if these are supported on multiple platforms.
                 // https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
                 // working on windows at least
                 "cr2",
@@ -570,7 +570,7 @@ namespace Jellyfin.Drawing.Skia
             }
             else
             {
-                // TODO: Create Poster collage capability
+                // TODO: Create Poster collage capability.
                 new StripCollageBuilder(this).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
         }

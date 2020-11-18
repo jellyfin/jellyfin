@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 #pragma warning disable CA1307
 
 using System;
@@ -703,7 +703,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.AccessSchedules.Add(policyAccessSchedule);
             }
 
-            // TODO: fix this at some point
+            // TODO: fix this at some point.
             user.SetPreference(
                 PreferenceKind.BlockUnratedItems,
                 policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());

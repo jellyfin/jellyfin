@@ -360,8 +360,8 @@ namespace Jellyfin.Api.Helpers
                 if (char.IsLower(param.Key[0]))
                 {
                     // This was probably not parsed initially and should be a StreamOptions
-                    // or the generated URL should correctly serialize it
-                    // TODO: This should be incorporated either in the lower framework for parsing requests
+                    // or the generated URL should correctly serialize it.
+                    // TODO: This should be incorporated either in the lower framework for parsing requests.
                     streamOptions[param.Key] = param.Value;
                 }
             }

@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         {
             var result = new MetadataResult<MusicAlbum>();
 
-            // TODO maybe remove when artist metadata can be disabled
+            // TODO maybe remove when artist metadata can be disabled.
             if (!Plugin.Instance.Configuration.Enable)
             {
                 return result;

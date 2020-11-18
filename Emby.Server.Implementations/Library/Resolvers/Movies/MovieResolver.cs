@@ -427,7 +427,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            // TODO: Allow GetMultiDiscMovie in here
+            // TODO: Allow GetMultiDiscMovie in here.
             const bool SupportsMultiVersion = true;
 
             var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, SupportsMultiVersion, collectionType, parseName) ??

@@ -2206,7 +2206,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             foreach (var timer in timers.Skip(1))
             {
-                // TODO: Get smarter, prefer HD, etc
+                // TODO: Get smarter, prefer HD, etc.
 
                 timer.Status = RecordingStatus.Cancelled;
                 _timerProvider.Update(timer);

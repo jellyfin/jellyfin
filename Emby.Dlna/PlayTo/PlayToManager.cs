@@ -91,7 +91,7 @@ namespace Emby.Dlna.PlayTo
 
             string location = info.Location.ToString();
 
-            // It has to report that it's a media renderer
+            // It has to report that it's a media renderer.
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
                 nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
             {

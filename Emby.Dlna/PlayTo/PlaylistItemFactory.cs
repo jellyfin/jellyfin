@@ -53,7 +53,7 @@ namespace Emby.Dlna.PlayTo
 
             if (profile.Container.Length > 0)
             {
-                // Check container type
+                // Check container type.
                 var mediaContainer = (Path.GetExtension(mediaPath) ?? string.Empty).TrimStart('.');
 
                 if (!profile.SupportsContainer(mediaContainer))

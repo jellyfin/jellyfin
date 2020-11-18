@@ -38,7 +38,7 @@ namespace MediaBrowser.Common
         {
             var hexChars = lowercase ? HexCharsLower : HexCharsUpper;
 
-            // TODO: use string.Create when it's supports spans
+            // TODO: use string.Create when it's supports spans.
             // Ref: https://github.com/dotnet/corefx/issues/29120
             char[] s = new char[bytes.Length * 2];
             int j = 0;

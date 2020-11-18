@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Data
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
         private readonly ILocalizationManager _localization;
-        // TODO: Remove this dependency. GetImageCacheTag() is the only method used and it can be converted to a static helper method
+        // TODO: Remove this dependency. GetImageCacheTag() is the only method used and it can be converted to a static helper method.
         private readonly IImageProcessor _imageProcessor;
 
         private readonly TypeMapper _typeMapper;
@@ -1555,8 +1555,8 @@ namespace Emby.Server.Implementations.Data
 
             index++;
 
-            // TODO: Even if not needed by apps, the server needs it internally
-            // But get this excluded from contexts where it is not needed
+            // TODO: Even if not needed by apps, the server needs it internally.
+            // But get this excluded from contexts where it is not needed.
             if (hasServiceName)
             {
                 if (item is LiveTvChannel liveTvChannel)
@@ -2571,7 +2571,7 @@ namespace Emby.Server.Implementations.Data
 
             var now = DateTime.UtcNow;
 
-            // Hack for right now since we currently don't support filtering out these duplicates within a query
+            // Hack for right now since we currently don't support filtering out these duplicates within a query.
             if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
             {
                 query.Limit = query.Limit.Value + 4;
@@ -2623,7 +2623,7 @@ namespace Emby.Server.Implementations.Data
 
             var now = DateTime.UtcNow;
 
-            // Hack for right now since we currently don't support filtering out these duplicates within a query
+            // Hack for right now since we currently don't support filtering out these duplicates within a query.
             if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
             {
                 query.Limit = query.Limit.Value + 4;
@@ -2693,7 +2693,7 @@ namespace Emby.Server.Implementations.Data
                     }
                 }
 
-                // Hack for right now since we currently don't support filtering out these duplicates within a query
+                // Hack for right now since we currently don't support filtering out these duplicates within a query.
                 if (query.EnableGroupByMetadataKey)
                 {
                     var limit = query.Limit ?? int.MaxValue;
@@ -2873,7 +2873,7 @@ namespace Emby.Server.Implementations.Data
 
             var now = DateTime.UtcNow;
 
-            // Hack for right now since we currently don't support filtering out these duplicates within a query
+            // Hack for right now since we currently don't support filtering out these duplicates within a query.
             if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
             {
                 query.Limit = query.Limit.Value + 4;
@@ -4486,15 +4486,15 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    // TODO this seems to be an idea for a better schema where ProviderIds are their own table
-                    //      buut this is not implemented
+                    // TODO this seems to be an idea for a better schema where ProviderIds are their own table,
+                    //      but this is not implemented.
                     // hasProviderIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
 
                     // TODO this is a really BAD way to do it since the pair:
                     //      Tmdb, 1234 matches Tmdb=1234 but also Tmdb=1234567
                     //      and maybe even NotTmdb=1234.
 
-                    // this is a placeholder for this specific pair to correlate it in the bigger query
+                    // This is a placeholder for this specific pair to correlate it in the bigger query.
                     var paramName = "@HasAnyProviderId" + index;
 
                     // this is a search for the placeholder

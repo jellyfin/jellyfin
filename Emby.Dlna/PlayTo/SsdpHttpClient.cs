@@ -54,7 +54,7 @@ namespace Emby.Dlna.PlayTo
 
         private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
         {
-            // If it's already a complete url, don't stick anything onto the front of it
+            // If it's already a complete url, don't stick anything onto the front of it.
             if (serviceUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 return serviceUrl;

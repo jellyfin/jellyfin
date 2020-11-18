@@ -38,7 +38,7 @@ namespace Jellyfin.Server.Implementations.Users
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
             _appHost = appHost;
-            // TODO: Remove the circular dependency on UserManager
+            // TODO: Remove the circular dependency on UserManager.
         }
 
         /// <inheritdoc />

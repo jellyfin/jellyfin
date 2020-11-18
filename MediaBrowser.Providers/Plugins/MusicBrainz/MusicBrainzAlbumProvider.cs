@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Music
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
-            // TODO maybe remove when artist metadata can be disabled
+            // TODO maybe remove when artist metadata can be disabled.
             if (!Plugin.Instance.Configuration.Enable)
             {
                 return Enumerable.Empty<RemoteSearchResult>();
@@ -194,7 +194,7 @@ namespace MediaBrowser.Providers.Music
                 Item = new MusicAlbum()
             };
 
-            // TODO maybe remove when artist metadata can be disabled
+            // TODO maybe remove when artist metadata can be disabled.
             if (!Plugin.Instance.Configuration.Enable)
             {
                 return result;

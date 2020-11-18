@@ -238,7 +238,7 @@ namespace Jellyfin.Server.Extensions
                     Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = AuthenticationSchemes.CustomAuthentication },
                 };
 
-                // TODO: Apply this with an operation filter instead of globally
+                // TODO: Apply this with an operation filter instead of globally.
                 // https://github.com/domaindrivendev/Swashbuckle.AspNetCore#add-security-definitions-and-requirements
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
@@ -260,7 +260,7 @@ namespace Jellyfin.Server.Extensions
                 c.OrderActionsBy(description =>
                     $"{description.ActionDescriptor.RouteValues["controller"]}_{description.RelativePath}");
 
-                // Use method name as operationId
+                // Use method name as operationId.
                 c.CustomOperationIds(
                     description =>
                     {
@@ -271,7 +271,7 @@ namespace Jellyfin.Server.Extensions
                                ?? null;
                     });
 
-                // TODO - remove when all types are supported in System.Text.Json
+                // TODO remove when all types are supported in System.Text.Json.
                 c.AddSwaggerTypeMappings();
 
                 c.OperationFilter<FileResponseFilter>();
@@ -299,7 +299,7 @@ namespace Jellyfin.Server.Extensions
                 });
 
             /*
-             * Support BlurHash dictionary
+             * Support BlurHash dictionary.
              */
             options.MapType<Dictionary<ImageType, Dictionary<string, string>>>(() =>
                 new OpenApiSchema

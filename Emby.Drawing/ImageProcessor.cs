@@ -24,7 +24,7 @@ namespace Emby.Drawing
     /// </summary>
     public sealed class ImageProcessor : IImageProcessor, IDisposable
     {
-        // Increment this when there's a change requiring caches to be invalidated
+        // Increment this when there's a change requiring caches to be invalidated.
         private const string Version = "3";
 
         private static readonly HashSet<string> _transparentImageTypes
@@ -159,7 +159,7 @@ namespace Emby.Drawing
                 }
                 else
                 {
-                    // Orientation unknown, so do it
+                    // Orientation unknown, so do it.
                     autoOrient = true;
                     orientation = photo.Orientation;
                 }
@@ -167,7 +167,7 @@ namespace Emby.Drawing
 
             if (options.HasDefaultOptions(originalImagePath, originalImageSize) && (!autoOrient || !options.RequiresAutoOrientation))
             {
-                // Just spit out the original file if all the options are default
+                // Just spit out the original file if all the options are default.
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
@@ -198,7 +198,7 @@ namespace Emby.Drawing
             }
             catch (Exception ex)
             {
-                // If it fails for whatever reason, return the original image
+                // If it fails for whatever reason, return the original image.
                 _logger.LogError(ex, "Error encoding image");
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
@@ -208,13 +208,13 @@ namespace Emby.Drawing
         {
             var serverFormats = GetSupportedImageOutputFormats();
 
-            // Client doesn't care about format, so start with webp if supported
+            // Client doesn't care about format, so start with webp if supported.
             if (serverFormats.Contains(ImageFormat.Webp) && clientSupportedFormats.Contains(ImageFormat.Webp))
             {
                 return ImageFormat.Webp;
             }
 
-            // If transparency is needed and webp isn't supported, than png is the only option
+            // If transparency is needed and webp isn't supported, than png is the only option.
             if (requiresTransparency && clientSupportedFormats.Contains(ImageFormat.Png))
             {
                 return ImageFormat.Png;
@@ -228,7 +228,7 @@ namespace Emby.Drawing
                 }
             }
 
-            // We should never actually get here
+            // We should never actually get here.
             return ImageFormat.Jpg;
         }
 
@@ -326,7 +326,7 @@ namespace Emby.Drawing
 
             // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
             // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
-            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
+            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components.
             float xCompF = MathF.Sqrt(16.0f * size.Width / size.Height);
             float yCompF = xCompF * size.Height / size.Width;
 
@@ -364,7 +364,7 @@ namespace Emby.Drawing
                 .TrimStart('.')
                 .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
 
-            // These are just jpg files renamed as tbn
+            // These are just jpg files renamed as tbn.
             if (string.Equals(inputFormat, "tbn", StringComparison.OrdinalIgnoreCase))
             {
                 return (originalImagePath, dateModified);

@@ -88,7 +88,7 @@ namespace Jellyfin.Server
             ServiceCollection.AddScoped<IWebSocketListener, ScheduledTasksWebSocketListener>();
             ServiceCollection.AddScoped<IWebSocketListener, SessionInfoWebSocketListener>();
 
-            // TODO fix circular dependency on IWebSocketManager
+            // TODO fix circular dependency on IWebSocketManager.
             ServiceCollection.AddScoped(serviceProvider => new Lazy<IEnumerable<IWebSocketListener>>(serviceProvider.GetRequiredService<IEnumerable<IWebSocketListener>>));
 
             base.RegisterServices();

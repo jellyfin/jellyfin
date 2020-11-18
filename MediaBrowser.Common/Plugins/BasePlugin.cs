@@ -233,7 +233,7 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public void SetStartupInfo(Action<string> directoryCreateFn)
         {
-            // hack alert, until the .net core transition is complete
+            // hack alert, until the .net core transition is complete.
             _directoryCreateFn = directoryCreateFn;
         }
 

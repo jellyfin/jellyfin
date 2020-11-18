@@ -44,13 +44,13 @@ namespace Jellyfin.Api.Tests
         /// <inheritdoc/>
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            // Specify the startup command line options
+            // Specify the startup command line options.
             var commandLineOpts = new StartupOptions
             {
                 NoWebClient = true
             };
 
-            // Use a temporary directory for the application paths
+            // Use a temporary directory for the application paths.
             var webHostPathRoot = Path.Combine(_testPathRoot, "test-host-" + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
             Directory.CreateDirectory(Path.Combine(webHostPathRoot, "logs"));
             Directory.CreateDirectory(Path.Combine(webHostPathRoot, "config"));
@@ -64,17 +64,17 @@ namespace Jellyfin.Api.Tests
                 Path.Combine(webHostPathRoot, "jellyfin-web"));
 
             // Create the logging config file
-            // TODO: We shouldn't need to do this since we are only logging to console
+            // TODO: We shouldn't need to do this since we are only logging to console.
             Program.InitLoggingConfigFile(appPaths).GetAwaiter().GetResult();
 
-            // Create a copy of the application configuration to use for startup
+            // Create a copy of the application configuration to use for startup.
             var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
 
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
             var serviceCollection = new ServiceCollection();
             _disposableComponents.Add(loggerFactory);
 
-            // Create the app host and initialize it
+            // Create the app host and initialize it.
             var appHost = new CoreAppHost(
                 appPaths,
                 loggerFactory,
@@ -85,17 +85,17 @@ namespace Jellyfin.Api.Tests
             _disposableComponents.Add(appHost);
             appHost.Init();
 
-            // Configure the web host builder
+            // Configure the web host builder.
             Program.ConfigureWebHostBuilder(builder, appHost, serviceCollection, commandLineOpts, startupConfig, appPaths);
         }
 
         /// <inheritdoc/>
         protected override TestServer CreateServer(IWebHostBuilder builder)
         {
-            // Create the test server using the base implementation
+            // Create the test server using the base implementation.
             var testServer = base.CreateServer(builder);
 
-            // Finish initializing the app host
+            // Finish initializing the app host.
             var appHost = (CoreAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = testServer.Services;
             appHost.InitializeServices().GetAwaiter().GetResult();

@@ -299,7 +299,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            // TODO Need faster way to determine UDP vs HTTP
+            // TODO Need faster way to determine UDP vs HTTP.
             var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
 
             var hdHomerunChannelInfo = channels.FirstOrDefault() as HdHomerunChannelInfo;

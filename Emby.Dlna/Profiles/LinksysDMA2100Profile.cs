@@ -9,7 +9,7 @@ namespace Emby.Dlna.Profiles
     {
         public LinksysDMA2100Profile()
         {
-            // Linksys DMA2100us does not need any transcoding of the formats we support statically
+            // Linksys DMA2100us does not need any transcoding of the formats we support statically.
             Name = "Linksys DMA2100";
 
             Identification = new DeviceIdentification

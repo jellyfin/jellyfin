@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session, CancellationToken cancellationToken)
         {
-            // TODO: determine what happens to users that are in a group and get their permissions revoked
+            // TODO: determine what happens to users that are in a group and get their permissions revoked.
             lock (_groupsLock)
             {
                 _sessionToGroupMap.TryGetValue(session.Id, out var group);

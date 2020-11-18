@@ -87,7 +87,7 @@ namespace Emby.Dlna.Profiles
                     Container = "mp3",
                     AudioCodec = "mp3",
                     Type = DlnaProfileType.Audio,
-                    // Transcoded audio won't be playable at all without this
+                    // Transcoded audio won't be playable at all without this.
                     TranscodeSeekInfo = TranscodeSeekInfo.Bytes
                 },
                 new TranscodingProfile

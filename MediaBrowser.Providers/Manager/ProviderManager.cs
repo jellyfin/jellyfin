@@ -165,8 +165,8 @@ namespace MediaBrowser.Providers.Manager
 
             var contentType = response.Content.Headers.ContentType.MediaType;
 
-            // Workaround for tvheadend channel icons
-            // TODO: Isolate this hack into the tvh plugin
+            // Workaround for tvheadend channel icons.
+            // TODO: Isolate this hack into the tvh plugin.
             if (string.IsNullOrEmpty(contentType))
             {
                 if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
@@ -1015,7 +1015,7 @@ namespace MediaBrowser.Providers.Manager
             var id = item.Id;
             _logger.LogDebug("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
 
-            // TODO: Need to hunt down the conditions for this happening
+            // TODO: Need to hunt down the conditions for this happening.
             _activeRefreshes.AddOrUpdate(
                 id,
                 (_) => throw new Exception(

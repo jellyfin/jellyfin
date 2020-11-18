@@ -266,11 +266,11 @@ namespace Emby.Dlna.Main
             {
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    // Not supporting IPv6 right now
+                    // Not supporting IPv6 right now.
                     continue;
                 }
 
-                // Limit to LAN addresses only
+                // Limit to LAN addresses only.
                 if (!_networkManager.IsAddressInSubnets(address, true, true))
                 {
                     continue;

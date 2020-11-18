@@ -226,19 +226,19 @@ namespace Emby.Server.Implementations.AppBase
         {
             string cachePath;
 
-            // If the configuration file has no entry (i.e. not set in UI)
+            // If the configuration file has no entry (i.e. not set in UI).
             if (string.IsNullOrWhiteSpace(CommonConfiguration.CachePath))
             {
-                // If the current live configuration has no entry (i.e. not set on CLI/envvars, during startup)
+                // If the current live configuration has no entry (i.e. not set on CLI/envvars, during startup).
                 if (string.IsNullOrWhiteSpace(((BaseApplicationPaths)CommonApplicationPaths).CachePath))
                 {
-                    // Set cachePath to a default value under ProgramDataPath
+                    // Set cachePath to a default value under ProgramDataPath.
                     cachePath = Path.Combine(((BaseApplicationPaths)CommonApplicationPaths).ProgramDataPath, "cache");
                 }
                 else
                 {
-                    // Set cachePath to the existing live value; will require restart if UI value is removed (but not replaced)
-                    // TODO: Figure out how to re-grab this from the CLI/envvars while running
+                    // Set cachePath to the existing live value; will require restart if UI value is removed (but not replaced).
+                    // TODO: Figure out how to re-grab this from the CLI/envvars while running.
                     cachePath = ((BaseApplicationPaths)CommonApplicationPaths).CachePath;
                 }
             }

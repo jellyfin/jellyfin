@@ -82,7 +82,7 @@ namespace Emby.Dlna.Eventing
         {
             if (!string.IsNullOrEmpty(header))
             {
-                // Starts with SECOND-
+                // Starts with SECOND- .
                 header = header.Split('-')[^1];
 
                 if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
@@ -185,7 +185,7 @@ namespace Emby.Dlna.Eventing
             }
             catch
             {
-                // Already logged at lower levels
+                // Already logged at lower levels.
             }
             finally
             {

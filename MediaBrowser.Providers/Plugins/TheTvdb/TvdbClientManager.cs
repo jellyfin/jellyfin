@@ -241,7 +241,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 yield return KeyType.Fanart;
             }
 
-            // TODO seasonwide is not supported in TvDbSharper
+            // TODO season wide is not supported in TvDbSharper.
         }
 
         private async Task<T> TryGetValue<T>(string key, string language, Func<Task<T>> resultFactory)

@@ -295,7 +295,7 @@ namespace Emby.Server.Implementations.Session
                     _logger.LogInformation("Lost {0} WebSockets.", lost.Count);
                     foreach (var webSocket in lost)
                     {
-                        // TODO: handle session relative to the lost webSocket
+                        // TODO: handle session relative to the lost webSocket.
                         RemoveWebSocket(webSocket);
                     }
                 }

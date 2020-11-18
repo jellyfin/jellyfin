@@ -655,7 +655,7 @@ namespace Emby.Server.Implementations.Channels
 
             query.IsFolder = false;
 
-            // hack for trailers, figure out a better way later
+            // hack for trailers, figure out a better way later.
             var sortByPremiereDate = channels.Length == 1 && channels[0].GetType().Name.Contains("Trailer", StringComparison.Ordinal);
 
             if (sortByPremiereDate)

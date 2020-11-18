@@ -467,7 +467,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (SourceType == SourceType.Channel)
             {
-                // hack alert
+                // hack alert.
                 return !EnableMediaSourceDisplay;
             }
 
@@ -491,13 +491,13 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is Channel)
             {
-                // hack alert
+                // hack alert.
                 return true;
             }
 
             if (SourceType == SourceType.Channel)
             {
-                // hack alert
+                // hack alert.
                 return !EnableMediaSourceDisplay;
             }
 
@@ -2619,13 +2619,13 @@ namespace MediaBrowser.Controller.Entities
 
             if (info1 == null || info2 == null)
             {
-                // Nothing to do
+                // Nothing to do.
                 return Task.CompletedTask;
             }
 
             if (!info1.IsLocalFile || !info2.IsLocalFile)
             {
-                // TODO: Not supported  yet
+                // TODO: Not supported  yet.
                 return Task.CompletedTask;
             }
 
@@ -2634,7 +2634,7 @@ namespace MediaBrowser.Controller.Entities
 
             FileSystem.SwapFiles(path1, path2);
 
-            // Refresh these values
+            // Refresh these values.
             info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
             info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
 

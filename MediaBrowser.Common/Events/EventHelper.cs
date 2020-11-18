@@ -7,7 +7,7 @@ namespace MediaBrowser.Common.Events
     /// <summary>
     /// Class EventHelper.
     /// </summary>
-    // TODO: @bond Remove
+    // TODO: @bond Remove.
     public static class EventHelper
     {
         /// <summary>

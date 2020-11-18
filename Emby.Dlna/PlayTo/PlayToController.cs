@@ -114,7 +114,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                // Could throw if the session is already gone
+                // Could throw if the session is already gone.
                 _logger.LogError(ex, "Error reporting the end of session {Id}", _session.Id);
             }
         }
@@ -838,7 +838,7 @@ namespace Emby.Dlna.PlayTo
                 return SendGeneralCommand(data as GeneralCommand, cancellationToken);
             }
 
-            // Not supported or needed right now
+            // Not supported or needed right now.
             return Task.CompletedTask;
         }
 

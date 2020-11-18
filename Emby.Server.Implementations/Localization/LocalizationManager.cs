@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.Localization
                 return value.Value;
             }
 
-            // If we don't find anything check all ratings systems
+            // If we don't find anything check all ratings systems.
             foreach (var dictionary in _allParentalRatings.Values)
             {
                 if (dictionary.TryGetValue(rating, out value))
@@ -246,7 +246,7 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            // Try splitting by : to handle "Germany: FSK 18"
+            // Try splitting by : to handle "Germany: FSK 18".
             var index = rating.IndexOf(':', StringComparison.Ordinal);
             if (index != -1)
             {
@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            // TODO: Further improve by normalizing out all spaces and dashes
+            // TODO: Further improve by normalizing out all spaces and dashes.
             return null;
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsAudioSegmentLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string segmentId)
         {
-            // TODO: Deprecate with new iOS app
+            // TODO: Deprecate with new iOS app.
             var file = segmentId + Path.GetExtension(Request.Path);
             file = Path.Combine(_serverConfigurationManager.GetTranscodePath(), file);
 

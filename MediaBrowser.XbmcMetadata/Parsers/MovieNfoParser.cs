@@ -74,7 +74,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val) && movie != null)
                         {
-                            // TODO Handle this better later
+                            // TODO Handle this better later.
                             if (val.IndexOf('<', StringComparison.Ordinal) == -1)
                             {
                                 movie.CollectionName = val;

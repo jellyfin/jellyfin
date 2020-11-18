@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -138,7 +138,7 @@ namespace Jellyfin.Api.Controllers
 
             if (deviceProfile != null)
             {
-                // set device specific data
+                // Set device specific data.
                 var item = _libraryManager.GetItemById(itemId);
 
                 foreach (var sourceInfo in info.MediaSources)
@@ -190,8 +190,8 @@ namespace Jellyfin.Api.Controllers
             var isStatic = mediaSource.SupportsDirectStream;
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
-                // TODO: remove this when we switch back to the segment muxer
+                // hls segment container can only be mpegts or fmp4 per ffmpeg documentation.
+                // TODO: remove this when we switch back to the segment muxer.
                 var supportedHlsContainers = new[] { "mpegts", "fmp4" };
 
                 var dynamicHlsRequestDto = new HlsAudioRequestDto
@@ -200,7 +200,7 @@ namespace Jellyfin.Api.Controllers
                     Container = ".m3u8",
                     Static = isStatic,
                     PlaySessionId = info.PlaySessionId,
-                    // fallback to mpegts if device reports some weird value unsupported by hls
+                    // Fallback to mpegts if device reports some weird value unsupported by hls.
                     SegmentContainer = Array.Exists(supportedHlsContainers, element => element == transcodingContainer) ? transcodingContainer : "mpegts",
                     MediaSourceId = mediaSourceId,
                     DeviceId = deviceId,

@@ -200,7 +200,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.Credits?.Cast != null)
             {
-                // TODO configurable
+                // TODO configurable.
                 foreach (var actor in movieResult.Credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
                 {
                     var personInfo = new PersonInfo

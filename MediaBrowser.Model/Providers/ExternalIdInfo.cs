@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Providers
         /// <summary>
         /// Gets or sets the display name of the external id provider (IE: IMDB, MusicBrainz, etc).
         /// </summary>
-        // TODO: This should be renamed to ProviderName
+        // TODO: This should be renamed to ProviderName.
         public string? Name { get; set; }
 
         /// <summary>

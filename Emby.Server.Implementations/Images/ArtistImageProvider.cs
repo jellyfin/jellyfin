@@ -38,7 +38,7 @@ namespace Emby.Server.Implementations.Images
         {
             return Array.Empty<BaseItem>();
 
-            // TODO enable this when BaseDynamicImageProvider objects are configurable
+            // TODO enable this when BaseDynamicImageProvider objects are configurable.
             // return _libraryManager.GetItemList(new InternalItemsQuery
             // {
             //    ArtistIds = new[] { item.Id },

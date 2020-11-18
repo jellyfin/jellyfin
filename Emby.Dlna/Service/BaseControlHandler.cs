@@ -111,7 +111,7 @@ namespace Emby.Dlna.Service
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);
 
-            // Loop through each element
+            // Loop through each element.
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
@@ -156,7 +156,7 @@ namespace Emby.Dlna.Service
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);
 
-            // Loop through each element
+            // Loop through each element.
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
@@ -195,7 +195,7 @@ namespace Emby.Dlna.Service
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);
 
-            // Loop through each element
+            // Loop through each element.
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)

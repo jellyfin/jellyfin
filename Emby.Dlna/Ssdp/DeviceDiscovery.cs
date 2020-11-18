@@ -78,7 +78,7 @@ namespace Emby.Dlna.Ssdp
                     // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
                     // _DeviceLocator.NotificationFilter = "upnp:rootdevice";
 
-                    // Connect our event handler so we process devices as they are found
+                    // Connect our event handler so we process devices as they are found.
                     _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
                     _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
 
@@ -90,7 +90,7 @@ namespace Emby.Dlna.Ssdp
             }
         }
 
-        // Process each found device in the event handler
+        // Process each found device in the event handler.
         private void OnDeviceLocatorDeviceAvailable(object sender, DeviceAvailableEventArgs e)
         {
             var originalHeaders = e.DiscoveredDevice.ResponseHeaders;

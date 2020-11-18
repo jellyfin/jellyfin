@@ -268,8 +268,8 @@ namespace Emby.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            // Set it early and assume it will succeed
-            // Remote control will perform better
+            // Set it early and assume it will succeed.
+            // Remote control will perform better.
             Volume = value;
 
             await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType, value))
@@ -338,8 +338,8 @@ namespace Emby.Dlna.PlayTo
             }
             catch
             {
-                // Some devices will throw an error if you tell it to play when it's already playing
-                // Others won't
+                // Some devices will throw an error if you tell it to play when it's already playing.
+                // Others won't.
             }
 
             RestartTimer(true);
@@ -451,7 +451,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (transportState.HasValue)
                 {
-                    // If we're not playing anything no need to get additional data
+                    // If we're not playing anything no need to get additional data.
                     if (transportState.Value == TransportState.Stopped)
                     {
                         UpdateMediaInfo(null, transportState.Value);
@@ -480,7 +480,7 @@ namespace Emby.Dlna.PlayTo
                         return;
                     }
 
-                    // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
+                    // If we're not playing anything make sure we don't get data more often than necessary to keep the Session alive.
                     if (transportState.Value == TransportState.Stopped)
                     {
                         RestartTimerInactive();
@@ -775,7 +775,7 @@ namespace Emby.Dlna.PlayTo
 
             if (track == null)
             {
-                // If track is null, some vendors do this, use GetMediaInfo instead
+                // If track is null, some vendors do this, use GetMediaInfo instead.
                 return (true, null);
             }
 
@@ -821,7 +821,7 @@ namespace Emby.Dlna.PlayTo
             {
             }
 
-            // first try to add a root node with a dlna namesapce
+            // first try to add a root node with a dlna namespace.
             try
             {
                 return XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + xml + "</data>")
@@ -832,7 +832,7 @@ namespace Emby.Dlna.PlayTo
             {
             }
 
-            // some devices send back invalid xml
+            // some devices send back invalid xml.
             try
             {
                 return XElement.Parse(xml.Replace("&", "&amp;", StringComparison.Ordinal));
@@ -951,7 +951,7 @@ namespace Emby.Dlna.PlayTo
 
         private string NormalizeUrl(string baseUrl, string url)
         {
-            // If it's already a complete url, don't stick anything onto the front of it
+            // If it's already a complete url, don't stick anything onto the front of it.
             if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 return url;

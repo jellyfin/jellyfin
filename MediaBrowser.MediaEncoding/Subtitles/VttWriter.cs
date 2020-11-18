@@ -33,7 +33,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var startTime = TimeSpan.FromTicks(trackEvent.StartPositionTicks);
                     var endTime = TimeSpan.FromTicks(trackEvent.EndPositionTicks);
 
-                    // make sure the start and end times are different and sequential
+                    // Make sure the start and end times are different and sequential.
                     if (endTime.TotalMilliseconds <= startTime.TotalMilliseconds)
                     {
                         endTime = startTime.Add(TimeSpan.FromMilliseconds(1));
@@ -43,7 +43,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var text = trackEvent.Text;
 
-                    // TODO: Not sure how to handle these
+                    // TODO: Not sure how to handle these.
                     text = Regex.Replace(text, @"\\n", " ", RegexOptions.IgnoreCase);
 
                     writer.WriteLine(text);

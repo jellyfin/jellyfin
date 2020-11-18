@@ -589,7 +589,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || codec.IndexOf("hevc", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
-        // TODO This is auto inserted into the mpegts mux so it might not be needed
+        // TODO This is auto inserted into the mpegts mux so it might not be needed.
         // https://www.ffmpeg.org/ffmpeg-bitstream-filters.html#h264_005fmp4toannexb
         public string GetBitStreamArgs(MediaStream stream)
         {
@@ -1032,7 +1032,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
             {
-                // todo
+                // TODO
             }
 
             if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase)

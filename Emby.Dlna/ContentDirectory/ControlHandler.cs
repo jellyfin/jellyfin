@@ -288,7 +288,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The xml feature list.</returns>
         private static string WriteFeatureListXml()
         {
-            // TODO: clean this up
+            // TODO: clean this up.
             var builder = new StringBuilder();
 
             builder.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -337,8 +337,8 @@ namespace Emby.Dlna.ContentDirectory
 
             var provided = 0;
 
-            // Default to null instead of 0
-            // Upnp inspector sends 0 as requestedCount when it wants everything
+            // Default to null instead of 0.
+            // Upnp inspector sends 0 as requestedCount when it wants everything.
             int? requestedCount = null;
             int? start = 0;
 
@@ -439,7 +439,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <param name="deviceId">The device id.</param>
         private void HandleXBrowseByLetter(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
-            // TODO: Implement this method
+            // TODO: Implement this method.
             HandleSearch(xmlWriter, sparams, deviceId);
         }
 
@@ -455,10 +455,10 @@ namespace Emby.Dlna.ContentDirectory
             var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
             var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
 
-            // sort example: dc:title, dc:date
+            // sort example: dc:title, dc:date.
 
-            // Default to null instead of 0
-            // Upnp inspector sends 0 as requestedCount when it wants everything
+            // Default to null instead of 0.
+            // Upnp inspector sends 0 as requestedCount when it wants everything.
             int? requestedCount = null;
             int? start = 0;
 
@@ -1695,7 +1695,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             StubType? stubType = null;
 
-            // After using PlayTo, MediaMonkey sends a request to the server trying to get item info
+            // After using PlayTo, MediaMonkey sends a request to the server trying to get item info.
             const string ParamsSrch = "Params=";
             var paramsIndex = id.IndexOf(ParamsSrch, StringComparison.OrdinalIgnoreCase);
             if (paramsIndex != -1)

@@ -1111,7 +1111,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            // Add EpisodeInfo
+            // Add EpisodeInfo.
             if (item is Episode episode)
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
@@ -1130,8 +1130,8 @@ namespace Emby.Server.Implementations.Dto
 
                 Series episodeSeries = null;
 
-                // this block will add the series poster for episodes without a poster
-                // TODO maybe remove the if statement entirely
+                // this block will add the series poster for episodes without a poster.
+                // TODO maybe remove the if statement entirely.
                 // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
@@ -1152,7 +1152,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            // Add SeriesInfo
+            // Add SeriesInfo.
             if (item is Series series)
             {
                 dto.AirDays = series.AirDays;

@@ -557,14 +557,14 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
 
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
+            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required.
             ServiceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
 
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
+            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required.
             ServiceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
             ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
 
-            // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
+            // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required.
             ServiceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
             ServiceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             ServiceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
@@ -590,7 +590,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
+            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required.
             ServiceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
             ServiceCollection.AddSingleton<IDtoService, DtoService>();
 

@@ -490,7 +490,7 @@ namespace Emby.Server.Implementations.Library
                 _liveStreamSemaphore.Release();
             }
 
-            // TODO: Don't hardcode this
+            // TODO: Don't hardcode this.
             const bool isAudio = false;
 
             try
@@ -501,7 +501,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    // hack - these two values were taken from LiveTVMediaSourceProvider
+                    // hack - these two values were taken from LiveTVMediaSourceProvider.
                     string cacheKey = request.OpenToken;
 
                     await new LiveStreamHelper(_mediaEncoder, _logger, _jsonSerializer, _appPaths)
@@ -515,7 +515,7 @@ namespace Emby.Server.Implementations.Library
                 AddMediaInfo(mediaSource, isAudio);
             }
 
-            // TODO: @bond Fix
+            // TODO: @bond Fix.
             var json = _jsonSerializer.SerializeToString(mediaSource);
             _logger.LogInformation("Live stream opened: " + json);
             var clone = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);

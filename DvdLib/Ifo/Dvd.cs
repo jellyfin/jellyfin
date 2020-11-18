@@ -47,7 +47,7 @@ namespace DvdLib.Ifo
                         vmgFs.Seek(0x3E, SeekOrigin.Begin);
                         _titleSetCount = vmgRead.ReadUInt16();
 
-                        // read address of TT_SRPT
+                        // read address of TT_SRPT.
                         vmgFs.Seek(0xC4, SeekOrigin.Begin);
                         uint ttSectorPtr = vmgRead.ReadUInt32();
                         vmgFs.Seek(ttSectorPtr * 2048, SeekOrigin.Begin);
@@ -97,7 +97,7 @@ namespace DvdLib.Ifo
             {
                 using (var vtsRead = new BigEndianBinaryReader(vtsFs))
                 {
-                    // Read VTS_PTT_SRPT
+                    // Read VTS_PTT_SRPT.
                     vtsFs.Seek(0xC8, SeekOrigin.Begin);
                     uint vtsPttSrptSecPtr = vtsRead.ReadUInt32();
                     uint baseAddr = (vtsPttSrptSecPtr * 2048);
@@ -135,7 +135,7 @@ namespace DvdLib.Ifo
                         while (vtsFs.Position < (baseAddr + endaddr));
                     }
 
-                    // Read VTS_PGCI
+                    // Read VTS_PGCI.
                     vtsFs.Seek(0xCC, SeekOrigin.Begin);
                     uint vtsPgciSecPtr = vtsRead.ReadUInt32();
                     vtsFs.Seek(vtsPgciSecPtr * 2048, SeekOrigin.Begin);

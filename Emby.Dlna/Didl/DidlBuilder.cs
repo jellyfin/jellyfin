@@ -453,7 +453,7 @@ namespace Emby.Dlna.Didl
 
             if (context is Season season)
             {
-                // This is a special embedded within a season
+                // This is a special embedded within a season.
                 if (episode.ParentIndexNumber.HasValue && episode.ParentIndexNumber.Value == 0
                     && season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
                 {
@@ -463,13 +463,13 @@ namespace Emby.Dlna.Didl
                         episode.Name);
                 }
 
-                // inside a season use simple format (ex. '12 - Episode Name')
+                // inside a season use simple format (ex. '12 - Episode Name').
                 var epNumberName = GetEpisodeIndexFullName(episode);
                 components = new[] { epNumberName, episode.Name };
             }
             else
             {
-                // outside a season include series and season details (ex. 'TV Show - S05E11 - Episode Name')
+                // outside a season include series and season details (ex. 'TV Show - S05E11 - Episode Name').
                 var epNumberName = GetEpisodeNumberDisplayName(episode);
                 components = new[] { episode.SeriesName, epNumberName, episode.Name };
             }
@@ -625,7 +625,7 @@ namespace Emby.Dlna.Didl
         public static bool IsIdRoot(string id)
             => string.IsNullOrWhiteSpace(id)
                 || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
-                // Samsung sometimes uses 1 as root
+                // Samsung sometimes uses 1 as root.
                 || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase);
 
         public void WriteFolderElement(XmlWriter writer, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
@@ -689,7 +689,7 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            // Not a samsung device
+            // Not a samsung device.
             if (secAttribute == null)
             {
                 return;
@@ -713,8 +713,8 @@ namespace Emby.Dlna.Didl
         /// </summary>
         private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {
-            // Don't filter on dc:title because not all devices will include it in the filter
-            // MediaMonkey for example won't display content without a title
+            // Don't filter on dc:title because not all devices will include it in the filter.
+            // MediaMonkey for example won't display content without a title.
             // if (filter.Contains("dc:title"))
             {
                 AddValue(writer, "dc", "title", GetDisplayName(item, itemStubType, context), NsDc);
@@ -782,7 +782,7 @@ namespace Emby.Dlna.Didl
 
         private void WriteObjectClass(XmlWriter writer, BaseItem item, StubType? stubType)
         {
-            // More types here
+            // More types here.
             // http://oss.linn.co.uk/repos/Public/LibUpnpCil/DidlLite/UpnpAv/Test/TestDidlLite.cs
 
             writer.WriteStartElement("upnp", "class", NsUpnp);
@@ -873,7 +873,7 @@ namespace Emby.Dlna.Didl
             };
 
             // Seeing some LG models locking up due content with large lists of people
-            // The actual issue might just be due to processing a more metadata than it can handle
+            // The actual issue might just be due to processing a more metadata than it can handle.
             var people = _libraryManager.GetPeople(
                 new InternalPeopleQuery
                 {
@@ -903,7 +903,7 @@ namespace Emby.Dlna.Didl
                     AddValue(writer, "upnp", "artist", artist, NsUpnp);
                     AddValue(writer, "dc", "creator", artist, NsDc);
 
-                    // If it doesn't support album artists (musicvideo), then tag as both
+                    // If it doesn't support album artists (musicvideo), then tag as both.
                     if (hasAlbumArtists == null)
                     {
                         AddAlbumArtist(writer, artist);
@@ -980,7 +980,7 @@ namespace Emby.Dlna.Didl
             writer.WriteString(albumartUrlInfo.url);
             writer.WriteFullEndElement();
 
-            // TOOD: Remove these default values
+            // TOOD: Remove these default values.
             var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
             writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.url);
 
@@ -1028,7 +1028,7 @@ namespace Emby.Dlna.Didl
             writer.WriteStartElement(string.Empty, "res", NsDidl);
 
             // Images must have a reported size or many clients (Bubble upnp), will only use the first thumbnail
-            // rather than using a larger one when available
+            // rather than using a larger one when available.
             var width = albumartUrlInfo.width ?? maxWidth;
             var height = albumartUrlInfo.height ?? maxHeight;
 
@@ -1220,7 +1220,7 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            // just lie
+            // just lie.
             info.IsDirectStream = true;
 
             return (url, width, height);

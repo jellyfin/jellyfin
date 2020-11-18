@@ -35,12 +35,12 @@ namespace Emby.Naming.Audio
                 return false;
             }
 
-            // TODO: Move this logic into options object
-            // Even better, remove the prefixes and come up with regexes
-            // But Kodi documentation seems to be weak for audio
+            // TODO: Move this logic into options object.
+            // Even better, remove the prefixes and come up with regexes.
+            // But Kodi documentation seems to be weak for audio.
 
-            // Normalize
-            // Remove whitespace
+            // Normalize.
+            // Remove whitespace.
             filename = filename.Replace('-', ' ');
             filename = filename.Replace('.', ' ');
             filename = filename.Replace('(', ' ');

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Xunit;
@@ -33,7 +33,7 @@ namespace Jellyfin.Naming.Tests.Video
         {
             if (new VideoResolver(_namingOptions).TryCleanString(input, out ReadOnlySpan<char> newName))
             {
-                // TODO: compare spans when XUnit supports it
+                // TODO: compare spans when XUnit supports it.
                 Assert.Equal(expectedName, newName.ToString());
             }
             else

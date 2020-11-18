@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 var updateToken = false;
 
-                // TODO: Remove these checks for IsNullOrWhiteSpace
+                // TODO: Remove these checks for IsNullOrWhiteSpace.
                 if (string.IsNullOrWhiteSpace(authInfo.Client))
                 {
                     authInfo.Client = originalAuthenticationInfo.AppName;
@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     authInfo.DeviceId = originalAuthenticationInfo.DeviceId;
                 }
 
-                // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
+                // Temporary. TODO - allow clients to specify that the token has been shared with a casting device.
                 var allowTokenInfoUpdate = authInfo.Client == null || authInfo.Client.IndexOf("chromecast", StringComparison.OrdinalIgnoreCase) == -1;
 
                 if (string.IsNullOrWhiteSpace(authInfo.Device))

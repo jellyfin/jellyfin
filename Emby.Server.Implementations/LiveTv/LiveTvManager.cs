@@ -2149,7 +2149,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (dispose)
             {
-                // TODO: Dispose stuff
+                // TODO: Dispose stuff.
             }
 
             _services = null;
@@ -2281,8 +2281,8 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
-            // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
+            // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider.
+            // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider.
             info = JsonSerializer.Deserialize<ListingsProviderInfo>(JsonSerializer.Serialize(info));
 
             var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));

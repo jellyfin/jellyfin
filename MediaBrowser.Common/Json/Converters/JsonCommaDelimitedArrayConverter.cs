@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -43,7 +43,7 @@ namespace MediaBrowser.Common.Json.Converters
                     }
                     catch (FormatException)
                     {
-                        // TODO log when upgraded to .Net5
+                        // TODO log when upgraded to .Net5.
                         // _logger.LogWarning(e, "Error converting value.");
                     }
                 }
