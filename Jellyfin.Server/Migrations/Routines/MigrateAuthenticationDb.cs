@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using MediaBrowser.Controller;
-using Microsoft.Extensions.Logging;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
 namespace Jellyfin.Server.Migrations.Routines
@@ -58,7 +58,6 @@ namespace Jellyfin.Server.Migrations.Routines
                 connection.Execute("CREATE INDEX IF NOT EXISTS IX_Tokens3 on Tokens(AccessToken, DateLastActivity);");
                 connection.Execute("CREATE INDEX IF NOT EXISTS IX_Tokens4 on Tokens (Id, DateLastActivity);");
             }
-            
 
             try
             {
