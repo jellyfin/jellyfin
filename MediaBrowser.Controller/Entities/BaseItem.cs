@@ -2611,7 +2611,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!AllowsMultipleImages(type))
             {
-                throw new ArgumentException("The change index operation is only applicable to backdrops and screenshots");
+                throw new ArgumentException("The change index operation is only applicable to backdrops and screen shots");
             }
 
             var info1 = GetImageInfo(type, index1);

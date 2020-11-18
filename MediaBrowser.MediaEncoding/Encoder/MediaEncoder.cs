@@ -542,7 +542,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         break;
                     case Video3DFormat.FullTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
-                        // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made the scale width to 600
+                        // ftab crop height in half, set the display aspect,crop out any black bars we may have made the scale width to 600
                         break;
                     default:
                         break;
