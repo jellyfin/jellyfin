@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             _jsonSerializer.SerializeToFile(rootObject, path);
@@ -336,7 +336,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             _jsonSerializer.SerializeToFile(rootObject, path);

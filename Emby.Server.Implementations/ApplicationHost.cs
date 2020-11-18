@@ -1378,7 +1378,7 @@ namespace Emby.Server.Implementations
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 var result = await System.Text.Json.JsonSerializer.DeserializeAsync<string>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
                 var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 

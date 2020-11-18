@@ -77,11 +77,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
             // The media source if infinite so we need to handle stopping ourselves
-            var durationToken = new CancellationTokenSource(duration);
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            using var durationToken = new CancellationTokenSource(duration);
+            using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
+            cancellationToken = linkedCancellationToken.Token;
 
             await _streamHelper.CopyUntilCancelled(
-                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
                 output,
                 IODefaults.CopyToBufferSize,
                 cancellationToken).ConfigureAwait(false);

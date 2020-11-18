@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Music
                 var url = "/ws/2/artist/?query=arid:{0}" + musicBrainzId.ToString(CultureInfo.InvariantCulture);
 
                 using var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 return GetResultsFromResponse(stream);
             }
             else
@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Music
                 var url = string.Format(CultureInfo.InvariantCulture, "/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
 
                 using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
-                await using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                await using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
                 {
                     var results = GetResultsFromResponse(stream).ToList();
 
@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Music
                     url = string.Format(CultureInfo.InvariantCulture, "/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
                     using var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     return GetResultsFromResponse(stream);
                 }
             }
