@@ -359,7 +359,7 @@ namespace Jellyfin.Api.Controllers
         private string GetCommandLineArguments(string outputPath, StreamState state)
         {
             var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
-            var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec); // GetNumberOfThreads is static
+            var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec); // GetNumberOfThreads is static.
             var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
             var format = !string.IsNullOrWhiteSpace(state.Request.SegmentContainer) ? "." + state.Request.SegmentContainer : ".ts";
             var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
