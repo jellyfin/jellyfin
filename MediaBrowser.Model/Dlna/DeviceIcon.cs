@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace MediaBrowser.Model.Dlna
+namespace Emby.Dlna.Common
 {
     /// <summary>
     /// Defines the <see cref="DeviceIcon" />.
@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Dlna
     public class DeviceIcon
     {
         /// <summary>
-        /// Gets or sets the Url
+        /// Gets or sets the Url.
         /// </summary>
         public string Url { get; set; } = string.Empty;
 

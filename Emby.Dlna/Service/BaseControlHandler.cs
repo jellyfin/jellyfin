@@ -46,6 +46,8 @@ namespace Emby.Dlna.Service
             }
         }
 
+        protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
+
         private async Task<ControlResponse> ProcessControlRequestInternalAsync(ControlRequest request)
         {
             ControlRequestInfo requestInfo = null;
@@ -150,7 +152,7 @@ namespace Emby.Dlna.Service
             throw new EndOfStreamException("Stream ended but no body tag found.");
         }
 
-        private async Task<ControlRequestInfo> ParseBodyTagAsync(XmlReader reader)
+        private static async Task<ControlRequestInfo> ParseBodyTagAsync(XmlReader reader)
         {
             string namespaceURI = null, localName = null;
 
@@ -191,7 +193,7 @@ namespace Emby.Dlna.Service
             throw new EndOfStreamException("Stream ended but no control found.");
         }
 
-        private async Task ParseFirstBodyChildAsync(XmlReader reader, IDictionary<string, string> headers)
+        private static async Task ParseFirstBodyChildAsync(XmlReader reader, IDictionary<string, string> headers)
         {
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);
@@ -210,8 +212,6 @@ namespace Emby.Dlna.Service
                 }
             }
         }
-
-        protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
 
         private void LogRequest(ControlRequest request)
         {

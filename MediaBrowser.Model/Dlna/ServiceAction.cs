@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MediaBrowser.Model.Dlna
+namespace Emby.Dlna.Common
 {
     /// <summary>
     /// Defines the <see cref="ServiceAction" />.
