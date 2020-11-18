@@ -181,7 +181,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
             }
 
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await SaveImage(
                 item,
                 stream,

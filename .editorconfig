@@ -59,6 +59,11 @@ dotnet_style_prefer_conditional_expression_over_assignment = true:silent
 dotnet_style_prefer_conditional_expression_over_return = true:silent
 
 ###############################
+# NET coding quality          #
+###############################
+dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = true
+
+###############################
 # Naming Conventions          #
 ###############################
 # Style Definitions (From Roslyn)

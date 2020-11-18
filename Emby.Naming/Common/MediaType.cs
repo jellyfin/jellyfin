@@ -1,7 +1,8 @@
-#pragma warning disable CS1591
-
 namespace Emby.Naming.Common
 {
+    /// <summary>
+    /// Type of audiovisual media.
+    /// </summary>
     public enum MediaType
     {
         /// <summary>

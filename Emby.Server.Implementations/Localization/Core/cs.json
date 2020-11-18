@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "Knihovna",
     "TasksMaintenanceCategory": "Údržba",
     "TaskCleanActivityLogDescription": "Smazat záznamy o aktivitě, které jsou starší než zadaná doba.",
-    "TaskCleanActivityLog": "Smazat záznam aktivity"
+    "TaskCleanActivityLog": "Smazat záznam aktivity",
+    "Undefined": "Nedefinované",
+    "Forced": "Vynucené",
+    "Default": "Výchozí"
 }

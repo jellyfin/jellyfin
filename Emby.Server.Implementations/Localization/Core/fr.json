@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "Bibliothèque",
     "TasksMaintenanceCategory": "Maintenance",
     "TaskCleanActivityLogDescription": "Supprime les entrées du journal d'activité antérieures à l'âge configuré.",
-    "TaskCleanActivityLog": "Nettoyer le journal d'activité"
+    "TaskCleanActivityLog": "Nettoyer le journal d'activité",
+    "Undefined": "Non défini",
+    "Forced": "Forcé",
+    "Default": "Par défaut"
 }

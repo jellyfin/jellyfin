@@ -115,5 +115,8 @@
     "TaskDownloadMissingSubtitles": "Descargar los subtítulos que faltan",
     "TaskDownloadMissingSubtitlesDescription": "Busca en internet los subtítulos que falten en el contenido de tus bibliotecas, basándose en la configuración de los metadatos.",
     "TaskCleanActivityLogDescription": "Elimina todos los registros de actividad anteriores a la fecha configurada.",
-    "TaskCleanActivityLog": "Limpiar registro de actividad"
+    "TaskCleanActivityLog": "Limpiar registro de actividad",
+    "Undefined": "Indefinido",
+    "Forced": "Forzado",
+    "Default": "Predeterminado"
 }
