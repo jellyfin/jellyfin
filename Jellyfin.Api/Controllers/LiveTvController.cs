@@ -1155,6 +1155,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="newDevicesOnly">Only discover new tuners.</param>
         /// <response code="200">Tuners returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
+        [HttpGet("Tuners/Discvover", Name = "DiscvoverTuners")]
         [HttpGet("Tuners/Discover")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
