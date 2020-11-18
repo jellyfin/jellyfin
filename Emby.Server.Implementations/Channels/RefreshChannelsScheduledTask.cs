@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.Channels
         {
             return new[]
             {
-                // Every so often
+                // Every so often.
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks

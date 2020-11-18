@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Buffers;
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.HttpServer
             ValueWebSocketReceiveResult receiveresult;
             do
             {
-                // Allocate at least 512 bytes from the PipeWriter
+                // Allocate at least 512 bytes from the PipeWriter.
                 Memory<byte> memory = writer.GetMemory(512);
                 try
                 {
@@ -134,14 +134,14 @@ namespace Emby.Server.Implementations.HttpServer
                     break;
                 }
 
-                // Tell the PipeWriter how much was read from the Socket
+                // Tell the PipeWriter how much was read from the Socket.
                 writer.Advance(bytesRead);
 
-                // Make the data available to the PipeReader
+                // Make the data available to the PipeReader.
                 FlushResult flushResult = await writer.FlushAsync().ConfigureAwait(false);
                 if (flushResult.IsCompleted)
                 {
-                    // The PipeReader stopped reading
+                    // The PipeReader stopped reading.
                     break;
                 }
 
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (JsonException ex)
             {
-                // Tell the PipeReader how much of the buffer we have consumed
+                // Tell the PipeReader how much of the buffer we have consumed.
                 reader.AdvanceTo(buffer.End);
                 _logger.LogError(ex, "Error processing web socket message");
                 return;
@@ -216,7 +216,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            // Tell the PipeReader how much of the buffer we have consumed
+            // Tell the PipeReader how much of the buffer we have consumed.
             reader.AdvanceTo(buffer.End);
 
             _logger.LogDebug("WS {IP} received message: {@Message}", RemoteEndPoint, stub);
@@ -224,7 +224,7 @@ namespace Emby.Server.Implementations.HttpServer
             var info = new WebSocketMessageInfo
             {
                 MessageType = stub.MessageType,
-                Data = stub.Data?.ToString(), // Data can be null
+                Data = stub.Data?.ToString(), // Data can be null.
                 Connection = this
             };
 

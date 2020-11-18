@@ -144,8 +144,8 @@ namespace Emby.Server.Implementations.EntryPoints
                 throw new ObjectDisposedException(GetType().Name);
             }
 
-            // On some systems the device discovered event seems to fire repeatedly
-            // This check will help ensure we're not trying to port map the same device over and over
+            // On some systems the device discovered event seems to fire repeatedly.
+            // This check will help ensure we're not trying to port map the same device over and over.
             if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
             {
                 return Task.CompletedTask;

@@ -247,7 +247,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             var parts = authorizationHeader.Split(' ', 2);
 
-            // There should be at least to parts
+            // There should be at least to parts.
             if (parts.Length != 2)
             {
                 return null;
@@ -255,13 +255,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             var acceptedNames = new[] { "MediaBrowser", "Emby" };
 
-            // It has to be a digest request
+            // It has to be a digest request.
             if (!acceptedNames.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
             {
                 return null;
             }
 
-            // Remove uptil the first space
+            // Remove up until the first space.
             authorizationHeader = parts[1];
             parts = authorizationHeader.Split(',');
 

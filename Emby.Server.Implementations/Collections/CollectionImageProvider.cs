@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.Collections
         /// <inheritdoc />
         protected override bool Supports(BaseItem item)
         {
-            // Right now this is the only way to prevent this image from getting created ahead of internet image providers
+            // Right now this is the only way to prevent this image from getting created ahead of internet image providers.
             if (!item.IsLocked)
             {
                 return false;

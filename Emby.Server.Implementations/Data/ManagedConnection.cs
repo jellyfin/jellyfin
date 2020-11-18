@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Data
 
             _writeLock.Release();
 
-            _db = null; // Don't dispose it
+            _db = null; // Don't dispose it.
             _disposed = true;
         }
     }

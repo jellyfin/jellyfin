@@ -41,10 +41,10 @@ namespace Emby.Server.Implementations.Cryptography
         /// </summary>
         public CryptographyProvider()
         {
-            // FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
-            // Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
-            // there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
-            // Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
+            // FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto.
+            // Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1.
+            // there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one.
+            // Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1.
             _randomNumberGenerator = RandomNumberGenerator.Create();
         }
 
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Cryptography
         private byte[] PBKDF2(string method, byte[] bytes, byte[] salt, int iterations)
         {
             // downgrading for now as we need this library to be dotnetstandard compliant
-            // with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
+            // with this downgrade we'll add a check to make sure we're on the downgrade method at the moment.
             if (method != DefaultHashMethod)
             {
                 throw new CryptographicException($"Cannot currently use PBKDF2 with requested hash method: {method}");

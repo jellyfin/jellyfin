@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.Dto
                 }
                 catch (Exception ex)
                 {
-                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
+                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions.
                     _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {ItemName}", item.Name);
                 }
             }
@@ -335,7 +335,7 @@ namespace Emby.Server.Implementations.Dto
             }
             else
             {
-                // This populates them all and covers Genre, Person, Studio, Year
+                // This populates them all and covers Genre, Person, Studio, Year.
 
                 dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
@@ -367,7 +367,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
-                    // For these types we can try to optimize and assume these values will be equal
+                    // For these types we can try to optimize and assume these values will be equal.
                     if (item is MusicAlbum || item is Season || item is Playlist)
                     {
                         dto.ChildCount = dto.RecursiveItemCount;
@@ -414,8 +414,8 @@ namespace Emby.Server.Implementations.Dto
 
         private static int GetChildCount(Folder folder, User user)
         {
-            // Right now this is too slow to calculate for top level folders on a per-user basis
-            // Just return something so that apps that are expecting a value won't think the folders are empty
+            // Right now this is too slow to calculate for top level folders on a per-user basis.
+            // Just return something so that apps that are expecting a value won't think the folders are empty.
             if (folder is ICollectionFolder || folder is UserView)
             {
                 return new Random().Next(1, 10);
@@ -509,8 +509,8 @@ namespace Emby.Server.Implementations.Dto
         private void AttachPeople(BaseItemDto dto, BaseItem item)
         {
             // Ordering by person type to ensure actors and artists are at the front.
-            // This is taking advantage of the fact that they both begin with A
-            // This should be improved in the future
+            // This is taking advantage of the fact that they both begin with A.
+            // This should be improved in the future.
             var people = _libraryManager.GetPeople(item).OrderBy(i => i.SortOrder ?? int.MaxValue)
                 .ThenBy(i =>
                 {
@@ -761,7 +761,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.ImageTags = new Dictionary<ImageType, string>();
 
-                // Prevent implicitly captured closure
+                // Prevent implicitly captured closure.
                 var currentItem = item;
                 foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type)))
                 {
@@ -897,7 +897,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
             }
 
-            // Add audio info
+            // Add audio info.
             var audio = item as Audio;
             if (audio != null)
             {
@@ -917,7 +917,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // if (options.ContainsField(ItemFields.MediaSourceCount))
                 //{
-                // Songs always have one
+                // Songs always have one.
                 //}
             }
 
@@ -943,13 +943,13 @@ namespace Emby.Server.Implementations.Dto
                 //    })
                 //    .ToList();
 
-                // Include artists that are not in the database yet, e.g., just added via metadata editor
+                // Include artists that are not in the database yet, e.g., just added via metadata editor.
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
                 dto.ArtistItems = hasArtist.Artists
                     //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
-                        // This should not be necessary but we're seeing some cases of it
+                        // This should not be necessary but we're seeing some cases of it.
                         if (string.IsNullOrEmpty(i))
                         {
                             return null;
@@ -1022,7 +1022,7 @@ namespace Emby.Server.Implementations.Dto
                     }).Where(i => i != null).ToArray();
             }
 
-            // Add video info
+            // Add video info.
             var video = item as Video;
             if (video != null)
             {
@@ -1062,7 +1062,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.MediaStreams))
             {
-                // Add VideoInfo
+                // Add VideoInfo.
                 var iHasMediaSources = item as IHasMediaSources;
 
                 if (iHasMediaSources != null)
@@ -1160,7 +1160,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.Status = series.Status.HasValue ? series.Status.Value.ToString() : null;
             }
 
-            // Add SeasonInfo
+            // Add SeasonInfo.
             if (item is Season season)
             {
                 dto.SeriesName = season.SeriesName;
@@ -1177,8 +1177,8 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                // this block will add the series poster for seasons without a poster
-                // TODO maybe remove the if statement entirely
+                // This block will add the series poster for seasons without a poster.
+                // TODO maybe remove the if statement entirely.
                 // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     series = series ?? season.Series;
@@ -1228,7 +1228,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.IsHD))
             {
-                // Compatibility
+                // Compatibility.
                 if (item.IsHD)
                 {
                     dto.IsHD = true;
@@ -1285,7 +1285,7 @@ namespace Emby.Server.Implementations.Dto
             var thumbLimit = options.GetImageLimit(ImageType.Thumb);
             var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
 
-            // For now. Emby apps are not using this
+            // For now. Emby apps are not using this.
             artLimit = 0;
 
             if (logoLimit == 0 && artLimit == 0 && thumbLimit == 0 && backdropLimit == 0)

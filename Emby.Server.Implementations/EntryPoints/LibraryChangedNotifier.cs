@@ -275,7 +275,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             lock (_libraryChangedSyncLock)
             {
-                // Remove dupes in case some were saved multiple times
+                // Remove dupes in case some were saved multiple times.
                 var foldersAddedTo = _foldersAddedTo
                                         .GroupBy(x => x.Id)
                                         .Select(x => x.First())
@@ -412,7 +412,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             foreach (var item in items)
             {
-                // If the physical root changed, return the user root
+                // If the physical root changed, return the user root.
                 if (item is AggregateFolder)
                 {
                     continue;
@@ -439,13 +439,13 @@ namespace Emby.Server.Implementations.EntryPoints
         private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, bool includeIfNotFound = false)
             where T : BaseItem
         {
-            // If the physical root changed, return the user root
+            // If the physical root changed, return the user root.
             if (item is AggregateFolder)
             {
                 return new[] { _libraryManager.GetUserRootFolder() as T };
             }
 
-            // Return it only if it's in the user's library
+            // Return it only if it's in the user's library.
             if (includeIfNotFound || item.IsVisibleStandalone(user))
             {
                 return new[] { item };

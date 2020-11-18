@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.IO
                 catch (IOException ex)
                 {
                     // For now swallow and log.
-                    // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
+                    // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable).
                     // Should we remove it from it's parent?
                     _logger.LogError(ex, "Error refreshing {Name}", item.Name);
                 }
@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.IO
 
             if (item != null)
             {
-                // If the item has been deleted find the first valid parent that still exists
+                // If the item has been deleted find the first valid parent that still exists.
                 while (!Directory.Exists(item.Path) && !File.Exists(item.Path))
                 {
                     item = item.GetOwner() ?? item.GetParent();

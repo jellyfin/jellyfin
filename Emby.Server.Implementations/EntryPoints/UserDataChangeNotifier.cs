@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 var baseItem = e.Item;
 
-                // Go up one level for indicators
+                // Go up one level for indicators.
                 if (baseItem != null)
                 {
                     var parent = baseItem.GetOwner() ?? baseItem.GetParent();
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             lock (_syncLock)
             {
-                // Remove dupes in case some were saved multiple times
+                // Remove dupes in case some were saved multiple times.
                 var changes = _changedItems.ToList();
                 _changedItems.Clear();
 

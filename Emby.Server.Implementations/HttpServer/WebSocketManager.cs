@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.HttpServer
                 await connection.ProcessAsync().ConfigureAwait(false);
                 _logger.LogInformation("WS {IP} closed", context.Connection.RemoteIpAddress);
             }
-            catch (Exception ex) // Otherwise ASP.Net will ignore the exception
+            catch (Exception ex) // Otherwise ASP.Net will ignore the exception.
             {
                 _logger.LogError(ex, "WS {IP} WebSocketRequestHandler error", context.Connection.RemoteIpAddress);
                 if (!context.Response.HasStarted)

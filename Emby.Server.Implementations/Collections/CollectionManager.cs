@@ -136,9 +136,9 @@ namespace Emby.Server.Implementations.Collections
         {
             var name = options.Name;
 
-            // Need to use the [boxset] suffix
-            // If internet metadata is not found, or if xml saving is off there will be no collection.xml
-            // This could cause it to get re-resolved as a plain folder
+            // Need to use the [boxset] suffix.
+            // If internet metadata is not found, or if xml saving is off there will be no collection.xml.
+            // This could cause it to get re-resolved as a plain folder.
             var folderName = _fileSystem.GetValidFilename(name) + " [boxset]";
 
             var parentFolder = await GetCollectionsFolder(true).ConfigureAwait(false);

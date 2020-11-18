@@ -636,7 +636,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (query.ChannelIds.Length > 0)
             {
-                // Avoid implicitly captured closure
+                // Avoid implicitly captured closure.
                 var ids = query.ChannelIds;
                 channels = channels
                     .Where(i => ids.Contains(GetInternalChannelId(i.Name)))
@@ -711,10 +711,10 @@ namespace Emby.Server.Implementations.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItem>> GetChannelItemsInternal(InternalItemsQuery query, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            // Get the internal channel entity
+            // Get the internal channel entity.
             var channel = GetChannel(query.ChannelIds[0]);
 
-            // Find the corresponding channel provider plugin
+            // Find the corresponding channel provider plugin.
             var channelProvider = GetChannelProvider(channel);
 
             var parentItem = query.ParentId == Guid.Empty ? channel : _libraryManager.GetItemById(query.ParentId);
@@ -735,10 +735,10 @@ namespace Emby.Server.Implementations.Channels
 
             query.ChannelIds = Array.Empty<Guid>();
 
-            // Not yet sure why this is causing a problem
+            // Not yet sure why this is causing a problem.
             query.GroupByPresentationUniqueKey = false;
 
-            // null if came from cache
+            // null if came from cache.
             if (itemsResult != null)
             {
                 var items = itemsResult.Items;
@@ -932,8 +932,8 @@ namespace Emby.Server.Implementations.Channels
 
         private static string GetIdToHash(string externalId, string channelName)
         {
-            // Increment this as needed to force new downloads
-            // Incorporate Name because it's being used to convert channel entity to provider
+            // Increment this as needed to force new downloads.
+            // Incorporate Name because it's being used to convert channel entity to provider.
             return externalId + (channelName ?? string.Empty) + "16";
         }
 
@@ -1035,7 +1035,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else if (info.Type == ChannelItemType.Folder && info.FolderType == ChannelFolderType.Container)
             {
-                // At least update names of container folders
+                // At least update names of container folders.
                 if (item.Name != info.Name)
                 {
                     item.Name = info.Name;
@@ -1071,7 +1071,7 @@ namespace Emby.Server.Implementations.Channels
                 forceUpdate = true;
             }
 
-            // was used for status
+            // was used for status.
             // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
             //{
             //    item.ExternalEtag = info.Etag;

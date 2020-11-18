@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.Channels
         {
             _logger.LogInformation("Cleaning channel {0} from database", channel.Id);
 
-            // Delete all channel items
+            // Delete all channel items.
             var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 ChannelIds = new[] { channel.Id }
@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.Channels
                     false);
             }
 
-            // Finally, delete the channel itself
+            // Finally, delete the channel itself.
             _libraryManager.DeleteItem(
                 channel,
                 new DeleteOptions
