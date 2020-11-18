@@ -1,4 +1,4 @@
-namespace Emby.Dlna.Common
+namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
     /// DLNA Query parameter type, used when quering DLNA devices via SOAP.

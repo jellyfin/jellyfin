@@ -1,4 +1,4 @@
-namespace Emby.Dlna.Common
+namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
     /// Defines the <see cref="DeviceService" />.

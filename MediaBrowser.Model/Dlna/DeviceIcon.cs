@@ -1,6 +1,4 @@
-using System.Globalization;
-
-namespace Emby.Dlna.Common
+namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
     /// Defines the <see cref="DeviceIcon" />.
@@ -8,7 +6,7 @@ namespace Emby.Dlna.Common
     public class DeviceIcon
     {
         /// <summary>
-        /// Gets or sets the Url.
+        /// Gets or sets the Url of the icon.
         /// </summary>
         public string Url { get; set; } = string.Empty;
 
@@ -18,24 +16,24 @@ namespace Emby.Dlna.Common
         public string MimeType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the Width.
+        /// Gets or sets the Width of the icon.
         /// </summary>
         public int Width { get; set; }
 
         /// <summary>
-        /// Gets or sets the Height.
+        /// Gets or sets the Height of the icon.
         /// </summary>
         public int Height { get; set; }
 
         /// <summary>
-        /// Gets or sets the Depth.
+        /// Gets or sets the Depth of the icon.
         /// </summary>
         public string Depth { get; set; } = string.Empty;
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}x{1}", Height, Width);
+            return $"{Height}x{Width}";
         }
     }
 }

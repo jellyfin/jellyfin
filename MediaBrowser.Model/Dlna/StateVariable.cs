@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Emby.Dlna.Common
+namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
     /// Defines the <see cref="StateVariable" />.

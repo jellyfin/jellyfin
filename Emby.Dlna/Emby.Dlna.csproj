@@ -4,11 +4,6 @@
   <PropertyGroup>
     <ProjectGuid>{805844AB-E92F-45E6-9D99-4F6D48D129A5}</ProjectGuid>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Common\**" />
-    <EmbeddedResource Remove="Common\**" />
-    <None Remove="Common\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
@@ -86,6 +81,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\" />
   </ItemGroup>
 
 </Project>

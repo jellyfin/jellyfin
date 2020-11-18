@@ -1,5 +1,4 @@
 #nullable enable
-#pragma warning disable CA1819
 
 using System.Collections.Generic;
 
