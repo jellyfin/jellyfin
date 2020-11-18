@@ -54,12 +54,12 @@ namespace Emby.Server.Implementations.SyncPlay
             new Dictionary<Guid, IGroupController>();
 
         /// <summary>
-        /// Lock used for accesing the list of groups.
+        /// Lock used for accessing the list of groups.
         /// </summary>
         private readonly object _groupsLock = new object();
 
         /// <summary>
-        /// Lock used for accesing the session-to-group map.
+        /// Lock used for accessing the session-to-group map.
         /// </summary>
         private readonly object _mapsLock = new object();
 

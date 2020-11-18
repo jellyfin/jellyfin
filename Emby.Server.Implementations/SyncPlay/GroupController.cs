@@ -57,9 +57,8 @@ namespace Emby.Server.Implementations.SyncPlay
             new Dictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Internal group state.
+        /// The internal group state.
         /// </summary>
-        /// <value>The group's state.</value>
         private IGroupState _state;
 
         /// <summary>
