@@ -93,7 +93,7 @@ namespace Emby.Naming.TV
                 }
             }
 
-            // Look for one of the season folder names
+            // Look for one of the season folder names.
             foreach (var name in _seasonFolderNames)
             {
                 if (filename.Contains(name, StringComparison.OrdinalIgnoreCase))
@@ -150,7 +150,7 @@ namespace Emby.Naming.TV
             var hasOpenParenthesis = false;
             var isSeasonFolder = true;
 
-            // Find out where the numbers start, and then keep going until they end
+            // Find out where the numbers start, and then keep going until they end.
             for (var i = 0; i < path.Length; i++)
             {
                 if (char.IsNumber(path[i]))
@@ -167,7 +167,7 @@ namespace Emby.Naming.TV
                 }
                 else if (numericStart != -1)
                 {
-                    // There's other stuff after the season number, e.g. episode number
+                    // There's other stuff after the season number, e.g. episode number.
                     isSeasonFolder = false;
                     break;
                 }

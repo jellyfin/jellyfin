@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using Emby.Naming.Video;
 using MediaBrowser.Model.Entities;
 
-// ReSharper disable StringLiteralTypo
+// ReSharper disable StringLiteralTypo.
 
 namespace Emby.Naming.Common
 {
@@ -574,11 +574,11 @@ namespace Emby.Naming.Common
                 @"ch(?:apter)?[\s_-]?(?<chapter>[0-9]+)",
                 // Detect specified parts, like Part 02
                 @"p(?:ar)?t[\s_-]?(?<part>[0-9]+)",
-                // Chapter is often beginning of filename
+                // Chapter is often beginning of filename.
                 "^(?<chapter>[0-9]+)",
-                // Part if often ending of filename
+                // Part if often ending of filename.
                 @"(?<!ch(?:apter) )(?<part>[0-9]+)$",
-                // Sometimes named as 0001_005 (chapter_part)
+                // Sometimes named as 0001_005 (chapter_part).
                 "(?<chapter>[0-9]+)_(?<part>[0-9]+)",
                 // Some audiobooks are ripped from cd's, and will be named by disk number.
                 @"dis(?:c|k)[\s_-]?(?<chapter>[0-9]+)"
@@ -586,7 +586,7 @@ namespace Emby.Naming.Common
 
             AudioBookNamesExpressions = new[]
             {
-                // Detect year usually in brackets after name Batman (2020)
+                // Detect year usually in brackets after name Batman (2020).
                 @"^(?<name>.+?)\s*\(\s*(?<year>\d{4})\s*\)\s*$",
                 @"^\s*(?<name>[^ ].*?)\s*$"
             };

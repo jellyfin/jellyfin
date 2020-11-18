@@ -244,7 +244,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             else
             {
-                // Set cachePath to the new UI-set value
+                // Set cachePath to the new UI-set value.
                 cachePath = CommonConfiguration.CachePath;
             }
 

@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.AppBase
 
             byte[]? buffer = null;
 
-            // Use try/catch to avoid the extra file system lookup using File.Exists
+            // Use try/catch to avoid the extra file system lookup using File.Exists.
             try
             {
                 buffer = File.ReadAllBytes(path);
@@ -42,17 +42,17 @@ namespace Emby.Server.Implementations.AppBase
             using var stream = new MemoryStream(buffer?.Length ?? 0);
             xmlSerializer.SerializeToStream(configuration, stream);
 
-            // Take the object we just got and serialize it back to bytes
+            // Take the object we just got and serialize it back to bytes.
             byte[] newBytes = stream.GetBuffer();
             int newBytesLen = (int)stream.Length;
 
-            // If the file didn't exist before, or if something has changed, re-save
+            // If the file didn't exist before, or if something has changed, re-save.
             if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
             {
                 var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
 
                 Directory.CreateDirectory(directory);
-                // Save it after load in case we got new items
+                // Save it after load in case we got new items.
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
                     fs.Write(newBytes, 0, newBytesLen);

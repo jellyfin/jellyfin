@@ -272,7 +272,7 @@ namespace Emby.Server.Implementations
 
             _startupOptions = options;
 
-            // Initialize runtime stat collection
+            // Initialize runtime stat collection.
             if (ServerConfigurationManager.Configuration.EnableMetrics)
             {
                 DotNetRuntimeStatsBuilder.Default().StartCollecting();
@@ -419,7 +419,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc />
         public IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true)
         {
-            // Convert to list so this isn't executed for each iteration
+            // Convert to list so this isn't executed for each iteration.
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
                 .Where(i => i != null)
@@ -489,7 +489,7 @@ namespace Emby.Server.Implementations
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
 
-            // Safeguard against invalid configuration
+            // Safeguard against invalid configuration.
             if (HttpPort == HttpsPort)
             {
                 HttpPort = ServerConfiguration.DefaultHttpPort;
@@ -663,12 +663,12 @@ namespace Emby.Server.Implementations
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
         {
-            // Distinct these to prevent users from reporting problems that aren't actually problems
+            // Distinct these to prevent users from reporting problems that aren't actually problems.
             var commandLineArgs = Environment
                 .GetCommandLineArgs()
                 .Distinct();
 
-            // Get all relevant environment variables
+            // Get all relevant environment variables.
             var allEnvVars = Environment.GetEnvironmentVariables();
             var relevantEnvVars = new Dictionary<object, object>();
             foreach (var key in allEnvVars.Keys)
@@ -707,7 +707,7 @@ namespace Emby.Server.Implementations
                     return null;
                 }
 
-                // Don't use an empty string password
+                // Don't use an empty string password.
                 var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
 
                 var localCert = new X509Certificate2(certificateLocation, password);
@@ -732,7 +732,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void SetStaticProperties()
         {
-            // For now there's no real way to inject these properly
+            // For now there's no real way to inject these properly.
             BaseItem.Logger = Resolve<ILogger<BaseItem>>();
             BaseItem.ConfigurationManager = ServerConfigurationManager;
             BaseItem.LibraryManager = Resolve<ILibraryManager>();
@@ -901,10 +901,10 @@ namespace Emby.Server.Implementations
         {
             var requiresRestart = false;
 
-            // Don't do anything if these haven't been set yet
+            // Don't do anything if these haven't been set yet.
             if (HttpPort != 0 && HttpsPort != 0)
             {
-                // Need to restart if ports have changed
+                // Need to restart if ports have changed.
                 if (ServerConfigurationManager.Configuration.HttpServerPortNumber != HttpPort ||
                     ServerConfigurationManager.Configuration.HttpsPortNumber != HttpsPort)
                 {
@@ -1115,37 +1115,37 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            // Include composable parts in the Model assembly
+            // Include composable parts in the Model assembly.
             yield return typeof(SystemInfo).Assembly;
 
-            // Include composable parts in the Common assembly
+            // Include composable parts in the Common assembly.
             yield return typeof(IApplicationHost).Assembly;
 
-            // Include composable parts in the Controller assembly
+            // Include composable parts in the Controller assembly.
             yield return typeof(IServerApplicationHost).Assembly;
 
-            // Include composable parts in the Providers assembly
+            // Include composable parts in the Providers assembly.
             yield return typeof(ProviderUtils).Assembly;
 
-            // Include composable parts in the Photos assembly
+            // Include composable parts in the Photos assembly.
             yield return typeof(PhotoProvider).Assembly;
 
-            // Emby.Server implementations
+            // Emby.Server implementations.
             yield return typeof(InstallationManager).Assembly;
 
-            // MediaEncoding
+            // MediaEncoding.
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
-            // Dlna
+            // Dlna.
             yield return typeof(DlnaEntryPoint).Assembly;
 
-            // Local metadata
+            // Local metadata.
             yield return typeof(BoxSetXmlSaver).Assembly;
 
-            // Notifications
+            // Notifications.
             yield return typeof(NotificationManager).Assembly;
 
-            // Xbmc
+            // Xbmc.
             yield return typeof(ArtistNfoProvider).Assembly;
 
             foreach (var i in GetAssembliesWithPartsInternal())
@@ -1224,7 +1224,7 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                // Return the first matched address, if found, or the first known local address
+                // Return the first matched address, if found, or the first known local address.
                 var addresses = await GetLocalIpAddressesInternal(false, 1, cancellationToken).ConfigureAwait(false);
                 if (addresses.Count == 0)
                 {

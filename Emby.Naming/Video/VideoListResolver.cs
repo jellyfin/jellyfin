@@ -40,8 +40,8 @@ namespace Emby.Naming.Video
                 .OfType<VideoFileInfo>()
                 .ToList();
 
-            // Filter out all extras, otherwise they could cause stacks to not be resolved
-            // See the unit test TestStackedWithTrailer
+            // Filter out all extras, otherwise they could cause stacks to not be resolved.
+            // See the unit test TestStackedWithTrailer.
             var nonExtras = videoInfos
                 .Where(i => i.ExtraType == null)
                 .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = i.IsDirectory });
@@ -109,7 +109,7 @@ namespace Emby.Naming.Video
                     .ToList();
             }
 
-            // If there's only one resolved video, use the folder name as well to find extras
+            // If there's only one resolved video, use the folder name as well to find extras.
             if (list.Count == 1)
             {
                 var info = list[0];
@@ -132,7 +132,7 @@ namespace Emby.Naming.Video
                     }
                 }
 
-                // Add the extras that are just based on file name as well
+                // Add the extras that are just based on file name as well.
                 var extrasByFileName = remainingFiles
                     .Where(i => i.ExtraRule != null && i.ExtraRule.RuleType == ExtraRuleType.Filename)
                     .ToList();
@@ -145,7 +145,7 @@ namespace Emby.Naming.Video
                 info.Extras = extrasByFileName;
             }
 
-            // If there's only one video, accept all trailers
+            // If there's only one video, accept all trailers.
             // Be lenient because people use all kinds of mishmash conventions with trailers.
             if (list.Count == 1)
             {
@@ -161,7 +161,7 @@ namespace Emby.Naming.Video
                     .ToList();
             }
 
-            // Whatever files are left, just add them
+            // Whatever files are left, just add them.
             list.AddRange(remainingFiles.Select(i => new VideoInfo(i.Name)
             {
                 Files = new List<VideoFileInfo> { i },

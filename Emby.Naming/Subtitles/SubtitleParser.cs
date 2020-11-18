@@ -49,7 +49,7 @@ namespace Emby.Naming.Subtitles
                 && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
-            // Should have a name, language and file extension
+            // Should have a name, language and file extension.
             if (parts.Count >= 3)
             {
                 info.Language = parts[^2];

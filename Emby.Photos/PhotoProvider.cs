@@ -25,7 +25,7 @@ namespace Emby.Photos
         private readonly ILogger<PhotoProvider> _logger;
         private readonly IImageProcessor _imageProcessor;
 
-        // These are causing taglib to hang
+        // These are causing taglib to hang.
         private readonly string[] _includeExtensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2" };
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Emby.Photos
         {
             item.SetImagePath(ImageType.Primary, item.Path);
 
-            // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
+            // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs.
             if (_includeExtensions.Contains(Path.GetExtension(item.Path), StringComparer.OrdinalIgnoreCase))
             {
                 try
@@ -170,7 +170,7 @@ namespace Emby.Photos
                 }
                 catch (ArgumentException)
                 {
-                    // format not supported
+                    // format not supported.
                 }
             }
 

@@ -65,10 +65,10 @@ namespace Emby.Naming.Video
             {
                 var extension = Path.GetExtension(path);
 
-                // Check supported extensions
+                // Check supported extensions.
                 if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    // It's not supported. Check stub extensions
+                    // It's not supported. Check stub extensions.
                     if (!StubResolver.TryResolveFile(path, _options, out stubType))
                     {
                         return null;

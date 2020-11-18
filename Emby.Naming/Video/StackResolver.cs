@@ -155,7 +155,7 @@ namespace Emby.Naming.Video
                                         }
                                         else
                                         {
-                                            // Sequel
+                                            // Sequel.
                                             offset = 0;
                                             expressionIndex++;
                                             break;
@@ -163,13 +163,13 @@ namespace Emby.Naming.Video
                                     }
                                     else if (!string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        // False positive, try again with offset
+                                        // False positive, try again with offset.
                                         offset = match1.Groups[3].Index;
                                         break;
                                     }
                                     else
                                     {
-                                        // Extension mismatch
+                                        // Extension mismatch.
                                         offset = 0;
                                         expressionIndex++;
                                         break;
@@ -177,7 +177,7 @@ namespace Emby.Naming.Video
                                 }
                                 else
                                 {
-                                    // Title mismatch
+                                    // Title mismatch.
                                     offset = 0;
                                     expressionIndex++;
                                     break;
@@ -185,7 +185,7 @@ namespace Emby.Naming.Video
                             }
                             else
                             {
-                                // No match 2, next expression
+                                // No match 2, next expression.
                                 offset = 0;
                                 expressionIndex++;
                                 break;
@@ -201,7 +201,7 @@ namespace Emby.Naming.Video
                     }
                     else
                     {
-                        // No match 1
+                        // No match 1.
                         offset = 0;
                         expressionIndex++;
                     }
@@ -218,7 +218,7 @@ namespace Emby.Naming.Video
 
         private static string GetRegexInput(FileSystemMetadata file)
         {
-            // For directories, dummy up an extension otherwise the expressions will fail
+            // For directories, dummy up an extension otherwise the expressions will fail.
             var input = !file.IsDirectory
                 ? file.FullName
                 : file.FullName + ".mkv";
