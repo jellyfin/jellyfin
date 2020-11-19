@@ -275,7 +275,7 @@ namespace Emby.Server.Implementations.Dto
                     continue;
                 }
 
-                var containers = container.Split(new[] { ',' });
+                var containers = container.Split(',');
                 if (containers.Length < 2)
                 {
                     continue;
@@ -465,10 +465,9 @@ namespace Emby.Server.Implementations.Dto
             {
                 var parentAlbumIds = _libraryManager.GetItemIds(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                    IncludeItemTypes = new[] { nameof(MusicAlbum) },
                     Name = item.Album,
                     Limit = 1
-
                 });
 
                 if (parentAlbumIds.Count > 0)
@@ -1139,6 +1138,7 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
+                        AttachPrimaryImageAspectRatio(dto, episodeSeries);
                     }
                 }
 
@@ -1185,6 +1185,7 @@ namespace Emby.Server.Implementations.Dto
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
+                        AttachPrimaryImageAspectRatio(dto, series);
                     }
                 }
             }

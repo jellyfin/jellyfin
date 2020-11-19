@@ -178,7 +178,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 process.Start();
 
-                var ranToCompletion = await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                var ranToCompletion = await ProcessExtensions.WaitForExitAsync(process, cancellationToken).ConfigureAwait(false);
 
                 if (!ranToCompletion)
                 {

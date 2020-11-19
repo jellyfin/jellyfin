@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.TV
                 .GetItemList(
                     new InternalItemsQuery(user)
                     {
-                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        IncludeItemTypes = new[] { nameof(Episode) },
                         OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
@@ -214,7 +214,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
-                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    IncludeItemTypes = new[] { nameof(Episode) },
                     OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
                     Limit = 1,
                     IsPlayed = false,

@@ -87,6 +87,8 @@ namespace MediaBrowser.Controller.Entities
         public const string InterviewFolderName = "interviews";
         public const string SceneFolderName = "scenes";
         public const string SampleFolderName = "samples";
+        public const string ShortsFolderName = "shorts";
+        public const string FeaturettesFolderName = "featurettes";
 
         public static readonly string[] AllExtrasTypesFolderNames = {
             ExtrasFolderName,
@@ -94,7 +96,9 @@ namespace MediaBrowser.Controller.Entities
             DeletedScenesFolderName,
             InterviewFolderName,
             SceneFolderName,
-            SampleFolderName
+            SampleFolderName,
+            ShortsFolderName,
+            FeaturettesFolderName
         };
 
         [JsonIgnore]
@@ -197,6 +201,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool SupportsRemoteImageDownloading => true;
 
         private string _name;
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -661,6 +666,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private string _forcedSortName;
+
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Audio;
@@ -2440,6 +2441,21 @@ namespace Emby.Server.Implementations.Library
             new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
+        public BaseItem GetParentItem(string parentId, Guid? userId)
+        {
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                return GetItemById(new Guid(parentId));
+            }
+
+            if (userId.HasValue && userId != Guid.Empty)
+            {
+                return GetUserRootFolder();
+            }
+
+            return RootFolder;
+        }
+
         /// <inheritdoc />
         public bool IsVideoFile(string path)
         {
@@ -2470,9 +2486,10 @@ namespace Emby.Server.Implementations.Library
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
+            // TODO nullable - what are we trying to do there with empty episodeInfo?
             var episodeInfo = episode.IsFileProtocol
-                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo()
-                : new Naming.TV.EpisodeInfo();
+                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo(episode.Path)
+                : new Naming.TV.EpisodeInfo(episode.Path);
 
             try
             {
@@ -2561,12 +2578,12 @@ namespace Emby.Server.Implementations.Library
 
                 if (!episode.IndexNumberEnd.HasValue || forceRefresh)
                 {
-                    if (episode.IndexNumberEnd != episodeInfo.EndingEpsiodeNumber)
+                    if (episode.IndexNumberEnd != episodeInfo.EndingEpisodeNumber)
                     {
                         changed = true;
                     }
 
-                    episode.IndexNumberEnd = episodeInfo.EndingEpsiodeNumber;
+                    episode.IndexNumberEnd = episodeInfo.EndingEpisodeNumber;
                 }
 
                 if (!episode.ParentIndexNumber.HasValue || forceRefresh)
@@ -2690,7 +2707,7 @@ namespace Emby.Server.Implementations.Library
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
             if (currentVideo != null)
             {
@@ -2892,7 +2909,7 @@ namespace Emby.Server.Implementations.Library
 
                     return item.GetImageInfo(image.Type, imageIndex);
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     if (ex.StatusCode.HasValue
                         && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))

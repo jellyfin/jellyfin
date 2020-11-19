@@ -46,7 +46,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<FileStreamResult>> GetAttachment(
+        public async Task<ActionResult> GetAttachment(
             [FromRoute, Required] Guid videoId,
             [FromRoute, Required] string mediaSourceId,
             [FromRoute, Required] int index)

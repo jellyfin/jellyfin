@@ -158,6 +158,11 @@ namespace MediaBrowser.Providers.Manager
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
+            }
+
             var contentType = response.Content.Headers.ContentType.MediaType;
 
             // Workaround for tvheadend channel icons
@@ -173,13 +178,10 @@ namespace MediaBrowser.Providers.Manager
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
             if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
-                throw new HttpException("Invalid image received.")
-                {
-                    StatusCode = HttpStatusCode.NotFound
-                };
+                throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
             }
 
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await SaveImage(
                 item,
                 stream,

@@ -16,7 +16,6 @@
     "Folders": "Folders",
     "Genres": "Genres",
     "HeaderAlbumArtists": "Album Artists",
-    "HeaderCameraUploads": "Camera Uploads",
     "HeaderContinueWatching": "Continue Watching",
     "HeaderFavoriteAlbums": "Favourite Albums",
     "HeaderFavoriteArtists": "Favourite Artists",
@@ -114,5 +113,7 @@
     "TasksChannelsCategory": "Internet Channels",
     "TasksApplicationCategory": "Application",
     "TasksLibraryCategory": "Library",
-    "TasksMaintenanceCategory": "Maintenance"
+    "TasksMaintenanceCategory": "Maintenance",
+    "TaskCleanActivityLogDescription": "Deletes activity log entries older than the configured age.",
+    "TaskCleanActivityLog": "Clean Activity Log"
 }

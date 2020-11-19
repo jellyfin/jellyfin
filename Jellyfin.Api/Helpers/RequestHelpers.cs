@@ -1,11 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
@@ -57,18 +60,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Get parsed filters.
-        /// </summary>
-        /// <param name="filters">The filters.</param>
-        /// <returns>Item filters.</returns>
-        public static IEnumerable<ItemFilter> GetFilters(string? filters)
-        {
-            return string.IsNullOrEmpty(filters)
-                ? Array.Empty<ItemFilter>()
-                : filters.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
-        }
-
-        /// <summary>
         /// Splits a string at a separating character into an array of substrings.
         /// </summary>
         /// <param name="value">The string to split.</param>
@@ -83,7 +74,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             return removeEmpty
-                ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
+                ? value.Split(separator, StringSplitOptions.RemoveEmptyEntries)
                 : value.Split(separator);
         }
 
@@ -172,6 +163,41 @@ namespace Jellyfin.Api.Helpers
                 }).Where(i => i.HasValue)
                 .Select(i => i!.Value)
                 .ToArray();
+        }
+
+        internal static QueryResult<BaseItemDto> CreateQueryResult(
+            QueryResult<(BaseItem, ItemCounts)> result,
+            DtoOptions dtoOptions,
+            IDtoService dtoService,
+            bool includeItemTypes,
+            User? user)
+        {
+            var dtos = result.Items.Select(i =>
+            {
+                var (baseItem, counts) = i;
+                var dto = dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
+
+                if (includeItemTypes)
+                {
+                    dto.ChildCount = counts.ItemCount;
+                    dto.ProgramCount = counts.ProgramCount;
+                    dto.SeriesCount = counts.SeriesCount;
+                    dto.EpisodeCount = counts.EpisodeCount;
+                    dto.MovieCount = counts.MovieCount;
+                    dto.TrailerCount = counts.TrailerCount;
+                    dto.AlbumCount = counts.AlbumCount;
+                    dto.SongCount = counts.SongCount;
+                    dto.ArtistCount = counts.ArtistCount;
+                }
+
+                return dto;
+            });
+
+            return new QueryResult<BaseItemDto>
+            {
+                Items = dtos.ToArray(),
+                TotalRecordCount = result.TotalRecordCount
+            };
         }
     }
 }

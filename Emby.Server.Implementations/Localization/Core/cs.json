@@ -16,7 +16,6 @@
     "Folders": "Složky",
     "Genres": "Žánry",
     "HeaderAlbumArtists": "Umělci alba",
-    "HeaderCameraUploads": "Nahrané fotografie",
     "HeaderContinueWatching": "Pokračovat ve sledování",
     "HeaderFavoriteAlbums": "Oblíbená alba",
     "HeaderFavoriteArtists": "Oblíbení interpreti",
@@ -114,5 +113,10 @@
     "TasksChannelsCategory": "Internetové kanály",
     "TasksApplicationCategory": "Aplikace",
     "TasksLibraryCategory": "Knihovna",
-    "TasksMaintenanceCategory": "Údržba"
+    "TasksMaintenanceCategory": "Údržba",
+    "TaskCleanActivityLogDescription": "Smazat záznamy o aktivitě, které jsou starší než zadaná doba.",
+    "TaskCleanActivityLog": "Smazat záznam aktivity",
+    "Undefined": "Nedefinované",
+    "Forced": "Vynucené",
+    "Default": "Výchozí"
 }

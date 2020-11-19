@@ -103,6 +103,8 @@
  - [sl1288](https://github.com/sl1288)
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [sparky8251](https://github.com/sparky8251)
+ - [spookbits](https://github.com/spookbits)
+ - [ssenart] (https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
  - [stevehayles](https://github.com/stevehayles)
  - [SuperSandro2000](https://github.com/SuperSandro2000)
@@ -136,6 +138,7 @@
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
+ - [skyfrk](https://github.com/skyfrk)
 
 # Emby Contributors
 

@@ -149,7 +149,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 var iTunEXTC = FFProbeHelpers.GetDictionaryValue(tags, "iTunEXTC");
                 if (!string.IsNullOrWhiteSpace(iTunEXTC))
                 {
-                    var parts = iTunEXTC.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = iTunEXTC.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     // Example
                     // mpaa|G|100|For crude humor
                     if (parts.Length > 1)
@@ -666,6 +666,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
 
+                // Interlaced video streams in Matroska containers return the field rate instead of the frame rate
+                // as both the average and real frame rate, so we half the returned frame rates to get the correct values
+                //
+                // https://gitlab.com/mbunkus/mkvtoolnix/-/wikis/Wrong-frame-rate-displayed
+                if (stream.IsInterlaced && formatInfo.FormatName.Contains("matroska", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.AverageFrameRate /= 2;
+                    stream.RealFrameRate /= 2;
+                }
+
                 if (isAudio || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1129,7 +1139,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            return value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            return value.Split('/', StringSplitOptions.RemoveEmptyEntries)
                 .Select(i => i.Trim())
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
