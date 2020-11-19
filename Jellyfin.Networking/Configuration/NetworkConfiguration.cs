@@ -99,8 +99,7 @@ namespace Jellyfin.Networking.Configuration
         public bool UPnPCreateHttpPortMap { get; set; }
 
         /// <summary>
-        /// Gets or sets the UDPPortRange
-        /// Gets or sets client udp port range.
+        /// Gets or sets the UDPPortRange.
         /// </summary>
         public string UDPPortRange { get; set; } = string.Empty;
 
@@ -115,8 +114,8 @@ namespace Jellyfin.Networking.Configuration
         public bool EnableIPV4 { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether detailed ssdp logs are sent to the console/log.
-        /// "Emby.Dlna": "Debug" must be set in logging.default.json for this property to work.
+        /// Gets or sets a value indicating whether detailed SSDP logs are sent to the console/log.
+        /// "Emby.Dlna": "Debug" must be set in logging.default.json for this property to have any effect.
         /// </summary>
         public bool EnableSSDPTracing { get; set; }
 
@@ -143,7 +142,6 @@ namespace Jellyfin.Networking.Configuration
         public bool IgnoreVirtualInterfaces { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the VirtualInterfaceNames
         /// Gets or sets a value indicating the interfaces that should be ignored. The list can be comma separated. <seealso cref="IgnoreVirtualInterfaces"/>.
         /// </summary>
         public string VirtualInterfaceNames { get; set; } = "vEthernet*";

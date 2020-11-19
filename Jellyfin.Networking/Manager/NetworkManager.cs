@@ -575,7 +575,7 @@ namespace Jellyfin.Networking.Manager
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
         /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
-        public void UpdateSettings(NetworkConfiguration configuration)
+        public void UpdateSettings(object configuration)
         {
             NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
 
