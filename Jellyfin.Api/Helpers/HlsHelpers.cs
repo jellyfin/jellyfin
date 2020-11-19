@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -77,21 +78,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Gets the extension of segment container.
-        /// </summary>
-        /// <param name="segmentContainer">The name of the segment container.</param>
-        /// <returns>The string text of extension.</returns>
-        public static string GetSegmentFileExtension(string? segmentContainer)
-        {
-            if (!string.IsNullOrWhiteSpace(segmentContainer))
-            {
-                return "." + segmentContainer;
-            }
-
-            return ".ts";
-        }
-
-        /// <summary>
         /// Gets the #EXT-X-MAP string.
         /// </summary>
         /// <param name="outputPath">The output path of the file.</param>
@@ -103,7 +89,7 @@ namespace Jellyfin.Api.Helpers
             var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
             var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
             var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
-            var outputExtension = GetSegmentFileExtension(state.Request.SegmentContainer);
+            var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
 
             // on Linux/Unix
             // #EXT-X-MAP:URI="prefix-1.mp4"
@@ -137,7 +123,7 @@ namespace Jellyfin.Api.Helpers
 
             var text = reader.ReadToEnd();
 
-            var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
+            var segmentFormat = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
             {
                 var fmp4InitFileName = GetFmp4InitFileName(path, state, true);

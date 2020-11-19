@@ -367,7 +367,7 @@ namespace Jellyfin.Api.Controllers
             var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
             var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
             var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
-            var outputExtension = HlsHelpers.GetSegmentFileExtension(state.Request.SegmentContainer);
+            var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
             var outputTsArg = outputPrefix + "%d" + outputExtension;
 
             var segmentFormat = outputExtension.TrimStart('.');
@@ -441,57 +441,37 @@ namespace Jellyfin.Api.Controllers
             {
                 if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
-                    var segmentFormat = HlsHelpers.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
-                    var bitStreamArgs = string.Empty;
-
-                    // Apply aac_adtstoasc bitstream filter when media source is in mpegts.
-                    if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase)
-                        && (string.Equals(state.MediaSource.Container, "mpegts", StringComparison.OrdinalIgnoreCase)
-                            || string.Equals(state.MediaSource.Container, "hls", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.AudioStream);
-                        bitStreamArgs = string.IsNullOrEmpty(bitStreamArgs) ? string.Empty : " " + bitStreamArgs;
-                    }
+                    var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
                     return "-acodec copy -strict -2" + bitStreamArgs;
                 }
 
-                var audioTranscodeParams = new List<string>();
+                var audioTranscodeParams = string.Empty;
 
-                audioTranscodeParams.Add("-acodec " + audioCodec);
+                audioTranscodeParams += "-acodec " + audioCodec;
 
                 if (state.OutputAudioBitrate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (state.OutputAudioChannels.HasValue)
                 {
-                    audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (state.OutputAudioSampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
-                audioTranscodeParams.Add("-vn");
-                return string.Join(' ', audioTranscodeParams);
+                audioTranscodeParams += " -vn";
+                return audioTranscodeParams;
             }
 
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
-                var segmentFormat = HlsHelpers.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
-                var bitStreamArgs = string.Empty;
-
-                // Apply aac_adtstoasc bitstream filter when media source is in mpegts.
-                if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase)
-                    && (string.Equals(state.MediaSource.Container, "mpegts", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(state.MediaSource.Container, "hls", StringComparison.OrdinalIgnoreCase)))
-                {
-                    bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.AudioStream);
-                    bitStreamArgs = !string.IsNullOrEmpty(bitStreamArgs) ? " " + bitStreamArgs : string.Empty;
-                }
+                var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
                 return "-acodec copy -strict -2" + bitStreamArgs;
             }
@@ -517,7 +497,7 @@ namespace Jellyfin.Api.Controllers
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            args += " " + _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
+            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
 
             return args;
         }
@@ -563,7 +543,7 @@ namespace Jellyfin.Api.Controllers
                 // If h264_mp4toannexb is ever added, do not use it for live tv.
                 if (state.VideoStream != null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
-                    string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.VideoStream);
+                    string bitStreamArgs = EncodingHelper.GetBitStreamArgs(state.VideoStream);
                     if (!string.IsNullOrEmpty(bitStreamArgs))
                     {
                         args += " " + bitStreamArgs;
@@ -574,50 +554,10 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                var gopArg = string.Empty;
-                var keyFrameArg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -force_key_frames \"expr:gte(t,n_forced*{0})\"",
-                    state.SegmentLength.ToString(CultureInfo.InvariantCulture));
+                args += _encodingHelper.GetVideoQualityParam(state, codec, _encodingOptions, DefaultEncoderPreset);
 
-                var framerate = state.VideoStream?.RealFrameRate;
-                if (framerate.HasValue)
-                {
-                    // This is to make sure keyframe interval is limited to our segment,
-                    // as forcing keyframes is not enough.
-                    // Example: we encoded half of desired length, then codec detected
-                    // scene cut and inserted a keyframe; next forced keyframe would
-                    // be created outside of segment, which breaks seeking.
-                    // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe.
-                    gopArg = string.Format(
-                        CultureInfo.InvariantCulture,
-                        " -g {0} -keyint_min {0} -sc_threshold 0",
-                        Math.Ceiling(state.SegmentLength * framerate.Value));
-                }
-
-                args += " " + _encodingHelper.GetVideoQualityParam(state, codec, _encodingOptions, DefaultEncoderPreset);
-
-                // Unable to force key frames using these encoders, set key frames by GOP.
-                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "hevc_qsv", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "hevc_amf", StringComparison.OrdinalIgnoreCase))
-                {
-                    args += " " + gopArg;
-                }
-                else if (string.Equals(codec, "libx264", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(codec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(codec, "hevc_vaapi", StringComparison.OrdinalIgnoreCase))
-                {
-                    args += " " + keyFrameArg;
-                }
-                else
-                {
-                    args += " " + keyFrameArg + gopArg;
-                }
+                // Set the key frame params for video encoding to match the hls segment time.
+                args += _encodingHelper.GetHlsVideoKeyFrameArguments(state, codec, state.SegmentLength, true, null);
 
                 // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
                 if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
