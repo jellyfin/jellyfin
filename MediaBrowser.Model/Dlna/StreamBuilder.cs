@@ -928,12 +928,12 @@ namespace MediaBrowser.Model.Dlna
                     defaultBitrate = GetDefaultAudioBitrate(targetAudioCodec, targetAudioChannels);
                 }
                 else if (targetAudioChannels.HasValue
-                        && audioStream.Channels.HasValue
-                        && audioStream.Channels.Value <= targetAudioChannels.Value
-                        && !string.IsNullOrEmpty(audioStream.Codec)
-                        && targetAudioCodecs != null
-                        && targetAudioCodecs.Length > 0
-                        && !Array.Exists(targetAudioCodecs, elem => string.Equals(audioStream.Codec, elem, StringComparison.OrdinalIgnoreCase)))
+                         && audioStream.Channels.HasValue
+                         && audioStream.Channels.Value <= targetAudioChannels.Value
+                         && !string.IsNullOrEmpty(audioStream.Codec)
+                         && targetAudioCodecs != null
+                         && targetAudioCodecs.Length > 0
+                         && !Array.Exists(targetAudioCodecs, elem => string.Equals(audioStream.Codec, elem, StringComparison.OrdinalIgnoreCase)))
                 {
                     // Shift the bitrate if we're transcoding to a different audio codec.
                     defaultBitrate = GetDefaultAudioBitrate(targetAudioCodec, audioStream.Channels.Value);

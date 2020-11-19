@@ -578,7 +578,7 @@ namespace Jellyfin.Api.Controllers
                     args += _encodingHelper.GetOutputSizeParam(state, _encodingOptions, codec);
                 }
 
-                if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
+                if (state.SubtitleStream == null || !state.SubtitleStream.IsExternal || state.SubtitleStream.IsTextSubtitleStream)
                 {
                     args += " -start_at_zero";
                 }

@@ -1194,7 +1194,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
                 else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase))
+                         || string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -level " + level;
                 }
@@ -1205,7 +1205,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // NVENC cannot adjust the given level, just throw an error.
                 }
                 else if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase)
-                    || !string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
+                         || !string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -level " + level;
                 }
@@ -1931,7 +1931,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay\"";
             }
             else if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(outputVideoCodec, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
+                     || string.Equals(outputVideoCodec, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
             {
                 /*
                     QSV in FFMpeg can now setup hardware overlay for transcodes.

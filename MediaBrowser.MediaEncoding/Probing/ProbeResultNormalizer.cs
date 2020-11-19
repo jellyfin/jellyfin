@@ -1025,12 +1025,10 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo != null && streamInfo.Tags != null)
             {
                 var bps = GetDictionaryValue(streamInfo.Tags, "BPS-eng") ?? GetDictionaryValue(streamInfo.Tags, "BPS");
-                if (!string.IsNullOrEmpty(bps))
+                if (!string.IsNullOrEmpty(bps)
+                    && int.TryParse(bps, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedBps))
                 {
-                    if (int.TryParse(bps, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedBps))
-                    {
-                        return parsedBps;
-                    }
+                    return parsedBps;
                 }
             }
 
@@ -1042,12 +1040,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo != null && streamInfo.Tags != null)
             {
                 var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
-                if (!string.IsNullOrEmpty(duration))
+                if (!string.IsNullOrEmpty(duration) && TimeSpan.TryParse(duration, out var parsedDuration))
                 {
-                    if (TimeSpan.TryParse(duration, out var parsedDuration))
-                    {
-                        return parsedDuration.TotalSeconds;
-                    }
+                    return parsedDuration.TotalSeconds;
                 }
             }
 
@@ -1059,12 +1054,10 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo != null && streamInfo.Tags != null)
             {
                 var numberOfBytes = GetDictionaryValue(streamInfo.Tags, "NUMBER_OF_BYTES-eng") ?? GetDictionaryValue(streamInfo.Tags, "NUMBER_OF_BYTES");
-                if (!string.IsNullOrEmpty(numberOfBytes))
+                if (!string.IsNullOrEmpty(numberOfBytes)
+                    && long.TryParse(numberOfBytes, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedBytes))
                 {
-                    if (long.TryParse(numberOfBytes, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedBytes))
-                    {
-                        return parsedBytes;
-                    }
+                    return parsedBytes;
                 }
             }
 
