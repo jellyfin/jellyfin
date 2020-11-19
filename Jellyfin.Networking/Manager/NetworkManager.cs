@@ -1144,12 +1144,12 @@ namespace Jellyfin.Networking.Manager
             foreach (var addr in _publishedServerUrls)
             {
                 // Remaining. Match anything.
-                if (addr.Key.Equals(IPAddress.Broadcast))
+                if (addr.Key.Address.Equals(IPAddress.Broadcast))
                 {
                     bindPreference = addr.Value;
                     break;
                 }
-                else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && isExternal)
+                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isExternal)
                 {
                     // External.
                     bindPreference = addr.Value;
