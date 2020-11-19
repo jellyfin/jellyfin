@@ -93,17 +93,29 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <inheritdoc />
-        public async Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default)
+        public async Task<IList<PackageInfo>> GetPackages(string manifestName, string manifest, CancellationToken cancellationToken = default)
         {
             try
             {
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .GetAsync(manifest, cancellationToken).ConfigureAwait(false);
+                    .GetAsync(new Uri(manifest), cancellationToken).ConfigureAwait(false);
                 await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(stream).ConfigureAwait(false);
+                    var package = await _jsonSerializer.DeserializeFromStreamAsync<IList<PackageInfo>>(stream).ConfigureAwait(false);
+
+                    // Store the repository and repository url with each version, as they may be spread apart.
+                    foreach (var entry in package)
+                    {
+                        foreach (var ver in entry.versions)
+                        {
+                            ver.repositoryName = manifestName;
+                            ver.repositoryUrl = manifest;
+                        }
+                    }
+
+                    return package;
                 }
                 catch (SerializationException ex)
                 {
@@ -123,17 +135,69 @@ namespace Emby.Server.Implementations.Updates
             }
         }
 
+        private static void MergeSort(IList<VersionInfo> source, IList<VersionInfo> dest)
+        {
+            int sLength = source.Count - 1;
+            int dLength = dest.Count;
+            int s = 0, d = 0;
+            var sourceVersion = source[0].VersionNumber;
+            var destVersion = dest[0].VersionNumber;
+
+            while (d < dLength)
+            {
+                if (sourceVersion.CompareTo(destVersion) >= 0)
+                {
+                    if (s < sLength)
+                    {
+                        sourceVersion = source[++s].VersionNumber;
+                    }
+                    else
+                    {
+                        // Append all of destination to the end of source.
+                        while (d < dLength)
+                        {
+                            source.Add(dest[d++]);
+                        }
+
+                        break;
+                    }
+                }
+                else
+                {
+                    source.Insert(s++, dest[d++]);
+                    if (d >= dLength)
+                    {
+                        break;
+                    }
+
+                    sLength++;
+                    destVersion = dest[d].VersionNumber;
+                }
+            }
+        }
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
         {
             var result = new List<PackageInfo>();
             foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
             {
-                foreach (var package in await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true))
+                if (repository.Enabled)
                 {
-                    package.repositoryName = repository.Name;
-                    package.repositoryUrl = repository.Url;
-                    result.Add(package);
+                    // Where repositories have the same content, the details of the first is taken.
+                    foreach (var package in await GetPackages(repository.Name, repository.Url, cancellationToken).ConfigureAwait(true))
+                    {
+                        var existing = FilterPackages(result, package.name, Guid.Parse(package.guid)).FirstOrDefault();
+                        if (existing != null)
+                        {
+                            // Assumption is both lists are ordered, so slot these into the correct place.
+                            MergeSort(existing.versions, package.versions);
+                        }
+                        else
+                        {
+                            result.Add(package);
+                        }
+                    }
                 }
             }
 
@@ -144,7 +208,8 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
-            Guid guid = default)
+            Guid guid = default,
+            Version specificVersion = null)
         {
             if (name != null)
             {
@@ -154,6 +219,11 @@ namespace Emby.Server.Implementations.Updates
             if (guid != Guid.Empty)
             {
                 availablePackages = availablePackages.Where(x => Guid.Parse(x.guid) == guid);
+            }
+
+            if (specificVersion != null)
+            {
+                availablePackages = availablePackages.Where(x => x.versions.Where(y => y.VersionNumber.Equals(specificVersion)).Any());
             }
 
             return availablePackages;
@@ -167,7 +237,7 @@ namespace Emby.Server.Implementations.Updates
             Version minVersion = null,
             Version specificVersion = null)
         {
-            var package = FilterPackages(availablePackages, name, guid).FirstOrDefault();
+            var package = FilterPackages(availablePackages, name, guid, specificVersion).FirstOrDefault();
 
             // Package not found in repository
             if (package == null)
@@ -181,21 +251,21 @@ namespace Emby.Server.Implementations.Updates
 
             if (specificVersion != null)
             {
-                availableVersions = availableVersions.Where(x => new Version(x.version) == specificVersion);
+                availableVersions = availableVersions.Where(x => x.VersionNumber.Equals(specificVersion));
             }
             else if (minVersion != null)
             {
-                availableVersions = availableVersions.Where(x => new Version(x.version) >= minVersion);
+                availableVersions = availableVersions.Where(x => x.VersionNumber >= minVersion);
             }
 
-            foreach (var v in availableVersions.OrderByDescending(x => x.version))
+            foreach (var v in availableVersions.OrderByDescending(x => x.VersionNumber))
             {
                 yield return new InstallationInfo
                 {
                     Changelog = v.changelog,
                     Guid = new Guid(package.guid),
                     Name = package.name,
-                    Version = new Version(v.version),
+                    Version = v.VersionNumber,
                     SourceUrl = v.sourceUrl,
                     Checksum = v.checksum
                 };
@@ -322,7 +392,7 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(InstallationInfo package, CancellationToken cancellationToken)
         {
-            var extension = Path.GetExtension(package.SourceUrl);
+            var extension = Path.GetExtension(package.SourceUrl.ToString());
             if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError("Only zip packages are supported. {SourceUrl} is not a zip archive.", package.SourceUrl);

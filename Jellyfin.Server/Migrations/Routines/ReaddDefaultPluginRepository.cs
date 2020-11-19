@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
 
@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private readonly RepositoryInfo _defaultRepositoryInfo = new RepositoryInfo
         {
             Name = "Jellyfin Stable",
-            Url = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json"
+            Url = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
         };
 
         /// <summary>
