@@ -905,30 +905,33 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void InitialiseBind(NetworkConfiguration config)
         {
-            string[] lanAddresses = config.LocalNetworkAddresses;
-
-            // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
-
-            if (lanAddresses.Length == 1 && lanAddresses[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
+            lock (_intLock)
             {
-                lanAddresses = lanAddresses[0].Split(',');
+                string[] lanAddresses = config.LocalNetworkAddresses;
+
+                // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
+
+                if (lanAddresses.Length == 1 && lanAddresses[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    lanAddresses = lanAddresses[0].Split(',');
+                }
+
+                // TODO: end fix: https://github.com/jellyfin/jellyfin-web/issues/1334
+
+                // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
+                if (config.IgnoreVirtualInterfaces)
+                {
+                    var newList = lanAddresses.ToList();
+                    newList.AddRange(config.VirtualInterfaceNames.Split(',').ToList());
+                    lanAddresses = newList.ToArray();
+                }
+
+                // Read and parse bind addresses and exclusions, removing ones that don't exist.
+                _bindAddresses = CreateIPCollection(lanAddresses).Union(_interfaceAddresses);
+                _bindExclusions = CreateIPCollection(lanAddresses, true).Union(_interfaceAddresses);
+                _logger.LogInformation("Using bind addresses: {0}", _bindAddresses.AsString());
+                _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions.AsString());
             }
-
-            // TODO: end fix: https://github.com/jellyfin/jellyfin-web/issues/1334
-
-            // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
-            if (config.IgnoreVirtualInterfaces)
-            {
-                var newList = lanAddresses.ToList();
-                newList.AddRange(config.VirtualInterfaceNames.Split(',').ToList());
-                lanAddresses = newList.ToArray();
-            }
-
-            // Read and parse bind addresses and exclusions, removing ones that don't exist.
-            _bindAddresses = CreateIPCollection(lanAddresses).Union(_interfaceAddresses);
-            _bindExclusions = CreateIPCollection(lanAddresses, true).Union(_interfaceAddresses);
-            _logger.LogInformation("Using bind addresses: {0}", _bindAddresses.AsString());
-            _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions.AsString());
         }
 
         /// <summary>
@@ -936,7 +939,10 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void InitialiseRemote(NetworkConfiguration config)
         {
-            RemoteAddressFilter = CreateIPCollection(config.RemoteIPFilter);
+            lock (_intLock)
+            {
+                RemoteAddressFilter = CreateIPCollection(config.RemoteIPFilter);
+            }
         }
 
         /// <summary>
