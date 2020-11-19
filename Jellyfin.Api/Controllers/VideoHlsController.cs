@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Controllers
     public class VideoHlsController : BaseJellyfinApiController
     {
         private const string DefaultEncoderPreset = "superfast";
-        private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Hls;
+        private const TranscodingJobType _transcodingJobType = TranscodingJobType.Hls;
 
         private readonly EncodingHelper _encodingHelper;
         private readonly IDlnaManager _dlnaManager;
