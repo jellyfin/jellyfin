@@ -15,10 +15,13 @@ namespace Jellyfin.Server.Implementations.Activity
     /// </summary>
     public class ActivityManager : IActivityManager
     {
-        private readonly JellyfinDbProvider _provider;
+        /// <inheritdoc/>
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+
+        private JellyfinDbProvider _provider;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityManager"/> class.
+        /// Creates a new instance of the <see cref="ActivityManager"/> class.
         /// </summary>
         /// <param name="provider">The Jellyfin database provider.</param>
         public ActivityManager(JellyfinDbProvider provider)
@@ -27,15 +30,21 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+        public void Create(ActivityLog entry)
+        {
+            using var dbContext = _provider.GetConnection();
+            dbContext.ActivityLogs.Add(entry);
+            dbContext.SaveChanges();
+
+            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
+        }
 
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
         {
-            await using var dbContext = _provider.CreateContext();
-
-            dbContext.ActivityLogs.Add(entry);
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            using var dbContext = _provider.GetConnection();
+            await dbContext.ActivityLogs.AddAsync(entry);
+            await dbContext.SaveChangesAsync();
 
             EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
         }
@@ -92,7 +101,7 @@ namespace Jellyfin.Server.Implementations.Activity
                 Name = entry.Name,
                 Overview = entry.Overview,
                 ShortOverview = entry.ShortOverview,
-                Type = entry.Type,
+                Type = entry.Type.ToString(),
                 ItemId = entry.ItemId,
                 UserId = entry.UserId,
                 Date = entry.DateCreated,

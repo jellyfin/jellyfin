@@ -6,7 +6,9 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && yarn install \
- && mv dist /dist
+ && mv dist /dist \
+ && git clone https://github.com/jellyfin/jellyfin-noto \
+ && cp -r jellyfin-noto/subsetted/* /dist/assets/
 
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-buster-slim as builder
 WORKDIR /repo

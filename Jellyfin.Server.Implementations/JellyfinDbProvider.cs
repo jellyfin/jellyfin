@@ -1,13 +1,13 @@
 using System;
-using System.IO;
-using MediaBrowser.Common.Configuration;
-using Microsoft.EntityFrameworkCore;
+using Jellyfin.Data;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jellyfin.Server.Implementations
 {
     /// <summary>
-    /// Factory class for generating new <see cref="JellyfinDb"/> instances.
+    /// Acts as an intermediate layer between the application's service provider and
+    /// the rest of the application to provide access to a connection pool to the
+    /// underlying database.
     /// </summary>
     public class JellyfinDbProvider
     {
@@ -15,27 +15,23 @@ namespace Jellyfin.Server.Implementations
         private readonly IApplicationPaths _appPaths;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JellyfinDbProvider"/> class.
+        /// Creates a new instance of the <see cref="JellyfinDbProvider"/> class.
         /// </summary>
         /// <param name="serviceProvider">The application's service provider.</param>
         /// <param name="appPaths">The application paths.</param>
         public JellyfinDbProvider(IServiceProvider serviceProvider, IApplicationPaths appPaths)
         {
             _serviceProvider = serviceProvider;
-            _appPaths = appPaths;
-
-            using var jellyfinDb = CreateContext();
-            jellyfinDb.Database.Migrate();
+            serviceProvider.GetService<JellyfinDb>().Database.EnsureCreated();
         }
 
         /// <summary>
-        /// Creates a new <see cref="JellyfinDb"/> context.
+        /// Pulls a connection to the database from the underlying pool.
         /// </summary>
-        /// <returns>The newly created context.</returns>
-        public JellyfinDb CreateContext()
+        /// <returns>A connection to the database.</returns>
+        public JellyfinDb GetConnection()
         {
-            var contextOptions = new DbContextOptionsBuilder<JellyfinDb>().UseSqlite($"Filename={Path.Combine(_appPaths.DataPath, "jellyfin.db")}");
-            return ActivatorUtilities.CreateInstance<JellyfinDb>(_serviceProvider, contextOptions.Options);
+            return _serviceProvider.GetService<JellyfinDb>();
         }
     }
 }
