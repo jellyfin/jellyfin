@@ -56,10 +56,5 @@ namespace Emby.Server.Implementations.Plugins
         /// Gets or sets the Version number of the plugin.
         /// </summary>
         public string Version { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Repository where the plugin originated.
-        /// </summary>
-        public string Repository { get; set; }
     }
 }
