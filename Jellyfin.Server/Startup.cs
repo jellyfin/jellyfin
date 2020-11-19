@@ -66,13 +66,15 @@ namespace Jellyfin.Server
             var productHeader = new ProductInfoHeaderValue(
                 _serverApplicationHost.Name.Replace(' ', '-'),
                 _serverApplicationHost.ApplicationVersionString);
-            var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json);
-            var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*");
+            var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
+            var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
+            var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
             services
                 .AddHttpClient(NamedClient.Default, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
