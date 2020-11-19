@@ -1635,7 +1635,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _config);
             }
 
             return new DirectRecorder(_logger, _httpClientFactory, _streamHelper);
