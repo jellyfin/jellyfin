@@ -271,6 +271,19 @@ namespace MediaBrowser.Common.Plugins
                 XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
             }
         }
+        
+        /// <summary>
+        /// Saves the current configuration to the file system.
+        /// </summary>
+        public virtual void SaveConfiguration()
+        {
+            lock (_configurationSaveLock)
+            {
+                _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
+
+                XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
+            }
+        }
 
         /// <inheritdoc />
         public virtual void UpdateConfiguration(BasePluginConfiguration configuration)
