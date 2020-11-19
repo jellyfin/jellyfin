@@ -967,7 +967,8 @@ namespace Jellyfin.Networking.Manager
                 // If no LAN addresses are specified - all private subnets are deemed to be the LAN
                 _usingPrivateAddresses = _lanSubnets.Count == 0;
 
-                // NOTE: The order of the commands in this statement matters.
+                // NOTE: The order of the commands generating the collection in this statement matters.
+                // Altering the order will cause the collections to be created incorrectly.
                 if (_usingPrivateAddresses)
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
