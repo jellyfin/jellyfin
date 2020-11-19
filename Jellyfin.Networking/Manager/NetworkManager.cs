@@ -867,7 +867,7 @@ namespace Jellyfin.Networking.Manager
                     var parts = entry.Split('=');
                     if (parts.Length != 2)
                     {
-                        _logger.LogError("Unable to parse bind override. {0}", entry);
+                        _logger.LogError("Unable to parse bind override: {Entry}", entry);
                     }
                     else
                     {
