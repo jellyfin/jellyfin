@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -253,7 +253,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User id.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
-        /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.</param>
+        /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
         /// <param name="isPlayed">Filter by items that are played, or not.</param>
         /// <param name="enableImages">Optional. include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. the max number of images to return, per image type.</param>

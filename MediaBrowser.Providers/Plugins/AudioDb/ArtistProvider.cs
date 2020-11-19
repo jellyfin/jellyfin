@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 

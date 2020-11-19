@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             // Only use alternative encoders for video files.
             // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
-            // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
+            // Since transcoding of folder rips is experimental anyway, it's not worth adding additional variables such as this.
             if (state.VideoType == VideoType.VideoFile)
             {
                 var hwType = encodingOptions.HardwareAccelerationType;
@@ -247,7 +247,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
-            // Seeing reported failures here, not sure yet if this is related to specfying input format
+            // Seeing reported failures here, not sure yet if this is related to specifying input format
             if (string.Equals(container, "m4v", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
@@ -2757,7 +2757,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var videoType = state.MediaSource.VideoType ?? VideoType.VideoFile;
             // Only use alternative encoders for video files.
             // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
-            // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
+            // Since transcoding of folder rips is experimental anyway, it's not worth adding additional variables such as this.
             if (videoType != VideoType.VideoFile)
             {
                 return null;

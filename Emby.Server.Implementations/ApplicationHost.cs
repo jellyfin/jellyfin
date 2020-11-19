@@ -94,7 +94,6 @@ using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
-using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
@@ -520,7 +519,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
 
             ServiceCollection.AddSingleton(_fileSystemManager);
-            ServiceCollection.AddSingleton<TvdbClientManager>();
             ServiceCollection.AddSingleton<TmdbClientManager>();
 
             ServiceCollection.AddSingleton(_networkManager);
@@ -1070,7 +1068,6 @@ namespace Emby.Server.Implementations
                 if (!string.IsNullOrEmpty(lastName) && cleanup)
                 {
                     // Attempt a cleanup of old folders.
-                    versions.RemoveAt(x);
                     try
                     {
                         Logger.LogDebug("Deleting {Path}", versions[x].Path);
@@ -1080,6 +1077,8 @@ namespace Emby.Server.Implementations
                     {
                         Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
                     }
+
+                    versions.RemoveAt(x);
                 }
             }
 
@@ -1378,7 +1377,7 @@ namespace Emby.Server.Implementations
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 var result = await System.Text.Json.JsonSerializer.DeserializeAsync<string>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
                 var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 

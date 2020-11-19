@@ -113,5 +113,10 @@
     "TasksChannelsCategory": "Canales de internet",
     "TasksApplicationCategory": "Aplicación",
     "TasksLibraryCategory": "Biblioteca",
-    "TasksMaintenanceCategory": "Mantenimiento"
+    "TasksMaintenanceCategory": "Mantenimiento",
+    "TaskCleanActivityLogDescription": "Borrar log de actividades anteriores a la fecha establecida.",
+    "TaskCleanActivityLog": "Borrar log de actividades",
+    "Undefined": "Indefinido",
+    "Forced": "Forzado",
+    "Default": "Por Defecto"
 }

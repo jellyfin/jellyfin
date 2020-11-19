@@ -13,8 +13,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         public DefaultHttpClientHandler()
         {
-            // TODO change to DecompressionMethods.All with .NET5
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            AutomaticDecompression = DecompressionMethods.All;
         }
     }
 }

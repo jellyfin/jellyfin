@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "Bibliothek",
     "TasksMaintenanceCategory": "Wartung",
     "TaskCleanActivityLogDescription": "Löscht Aktivitätsprotokolleinträge, die älter als das konfigurierte Alter sind.",
-    "TaskCleanActivityLog": "Aktivitätsprotokoll aufräumen"
+    "TaskCleanActivityLog": "Aktivitätsprotokoll aufräumen",
+    "Undefined": "Undefiniert",
+    "Forced": "Erzwungen",
+    "Default": "Standard"
 }
