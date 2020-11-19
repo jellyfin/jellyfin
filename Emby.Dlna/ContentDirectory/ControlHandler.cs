@@ -1674,7 +1674,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Retreives the ServerItem id.
+        /// Retrieves the ServerItem id.
         /// </summary>
         /// <param name="id">The id<see cref="string"/>.</param>
         /// <returns>The <see cref="ServerItem"/>.</returns>
