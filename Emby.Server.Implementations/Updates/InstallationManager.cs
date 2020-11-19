@@ -392,7 +392,7 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(InstallationInfo package, CancellationToken cancellationToken)
         {
-            var extension = Path.GetExtension(package.SourceUrl.ToString());
+            var extension = Path.GetExtension(package.SourceUrl);
             if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError("Only zip packages are supported. {SourceUrl} is not a zip archive.", package.SourceUrl);
@@ -403,7 +403,7 @@ namespace Emby.Server.Implementations.Updates
             string targetDir = Path.Combine(_appPaths.PluginsPath, package.Name);
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(package.SourceUrl, cancellationToken).ConfigureAwait(false);
+                .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
