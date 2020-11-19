@@ -921,9 +921,11 @@ namespace Jellyfin.Networking.Manager
                 // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
                 if (config.IgnoreVirtualInterfaces)
                 {
-                    var newList = lanAddresses.ToList();
-                    newList.AddRange(config.VirtualInterfaceNames.Split(',').ToList());
-                    lanAddresses = newList.ToArray();
+                    var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',');
+                    var newList = new string[lanAddresses.Length + virtualInterfaceNames.Length];
+                    Array.Copy(lanAddresses, newList, lanAddresses.Length);
+                    Array.Copy(virtualInterfaceNames, 0, newList, lanAddresses.Length, virtualInterfaceNames.Length);
+                    lanAddresses = newList;
                 }
 
                 // Read and parse bind addresses and exclusions, removing ones that don't exist.
