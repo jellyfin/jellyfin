@@ -235,7 +235,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Returns a textual representation of this object.
         /// </summary>
-        /// <param name="shortVersion">Set to true, if the subnet is to be included as part of the address.</param>
+        /// <param name="shortVersion">Set to true, if the subnet is to be excluded as part of the address.</param>
         /// <returns>String representation of this object.</returns>
         public string ToString(bool shortVersion)
         {
