@@ -1029,6 +1029,7 @@ namespace Jellyfin.Networking.Manager
 
                 _interfaceNames.Clear();
                 _interfaceAddresses.Clear();
+                _macAddresses.Clear();
 
                 try
                 {
@@ -1060,7 +1061,7 @@ namespace Jellyfin.Networking.Manager
                                     };
 
                                     int tag = nw.Tag;
-                                    if ((ipProperties.GatewayAddresses.Count > 0) && !nw.IsLoopback())
+                                    if (ipProperties.GatewayAddresses.Count > 0 && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1081,7 +1082,7 @@ namespace Jellyfin.Networking.Manager
                                     };
 
                                     int tag = nw.Tag;
-                                    if ((ipProperties.GatewayAddresses.Count > 0) && !nw.IsLoopback())
+                                    if (ipProperties.GatewayAddresses.Count > 0 && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1109,8 +1110,7 @@ namespace Jellyfin.Networking.Manager
                     // If for some reason we don't have an interface info, resolve our DNS name.
                     if (_interfaceAddresses.Count == 0)
                     {
-                        _logger.LogWarning("No interfaces information available. Using loopback.");
-
+                        _logger.LogError("No interfaces information available. Resolving DNS name.");
                         IPHost host = new IPHost(Dns.GetHostName());
                         foreach (var a in host.GetAddresses())
                         {
@@ -1119,7 +1119,7 @@ namespace Jellyfin.Networking.Manager
 
                         if (_interfaceAddresses.Count == 0)
                         {
-                            _logger.LogError("No interfaces information available. Resolving DNS name.");
+                            _logger.LogWarning("No interfaces information available. Using loopback.");
                             // Last ditch attempt - use loopback address.
                             _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
                             if (IsIP6Enabled)
@@ -1140,11 +1140,11 @@ namespace Jellyfin.Networking.Manager
         /// Attempts to match the source against a user defined bind interface.
         /// </summary>
         /// <param name="source">IP source address to use.</param>
-        /// <param name="isExternal">True if the source is in the external subnet.</param>
+        /// <param name="isInExternalSubnet">True if the source is in the external subnet.</param>
         /// <param name="bindPreference">The published server url that matches the source address.</param>
         /// <param name="port">The resultant port, if one exists.</param>
         /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
-        private bool MatchesPublishedServerUrl(IPObject source, bool isExternal, out string bindPreference, out int? port)
+        private bool MatchesPublishedServerUrl(IPObject source, bool isInExternalSubnet, out string bindPreference, out int? port)
         {
             bindPreference = string.Empty;
             port = null;
@@ -1158,7 +1158,7 @@ namespace Jellyfin.Networking.Manager
                     bindPreference = addr.Value;
                     break;
                 }
-                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isExternal)
+                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
                 {
                     // External.
                     bindPreference = addr.Value;
