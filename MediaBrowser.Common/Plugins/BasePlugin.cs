@@ -266,7 +266,7 @@ namespace MediaBrowser.Common.Plugins
                 XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
             }
         }
-        
+
         /// <summary>
         /// Saves the current configuration to the file system.
         /// </summary>
