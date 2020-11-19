@@ -83,14 +83,13 @@ namespace MediaBrowser.Common.Net
             {
                 // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
                 // which is automatically determined by it's IP type. Anything else is meaningless.
-                throw new NotImplementedException("The prefix length on a host cannot be set.");
             }
         }
 
         /// <summary>
         /// Gets or sets timeout value before resolve required, in minutes.
         /// </summary>
-        public byte Timeout { get; set; } = 30;
+        public int Timeout { get; set; } = 30;
 
         /// <summary>
         /// Gets a value indicating whether the address has a value.
@@ -400,7 +399,7 @@ namespace MediaBrowser.Common.Net
                 _lastResolved = DateTime.UtcNow.Ticks;
             }
 
-            // If we haven't resolved before, or out timer has run out...
+            // If we haven't resolved before, or our timer has run out...
             if ((_addresses.Length == 0 && !Resolved) || (TimeSpan.FromTicks(DateTime.UtcNow.Ticks - _lastResolved).TotalMinutes > Timeout))
             {
                 _lastResolved = DateTime.UtcNow.Ticks;
