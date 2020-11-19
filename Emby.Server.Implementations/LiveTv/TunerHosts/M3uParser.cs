@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     .SendAsync(requestMessage, cancellationToken)
                     .ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             }
 
             return File.OpenRead(info.Url);

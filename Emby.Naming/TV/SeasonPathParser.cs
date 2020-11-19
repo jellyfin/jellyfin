@@ -1,11 +1,12 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Globalization;
 using System.IO;
 
 namespace Emby.Naming.TV
 {
+    /// <summary>
+    /// Class to parse season paths.
+    /// </summary>
     public static class SeasonPathParser
     {
         /// <summary>
@@ -23,6 +24,13 @@ namespace Emby.Naming.TV
             "stagione"
         };
 
+        /// <summary>
+        /// Attempts to parse season number from path.
+        /// </summary>
+        /// <param name="path">Path to season.</param>
+        /// <param name="supportSpecialAliases">Support special aliases when parsing.</param>
+        /// <param name="supportNumericSeasonFolders">Support numeric season folders when parsing.</param>
+        /// <returns>Returns <see cref="SeasonPathParserResult"/> object.</returns>
         public static SeasonPathParserResult Parse(string path, bool supportSpecialAliases, bool supportNumericSeasonFolders)
         {
             var result = new SeasonPathParserResult();
@@ -101,9 +109,9 @@ namespace Emby.Naming.TV
             }
 
             var parts = filename.Split(new[] { '.', '_', ' ', '-' }, StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < parts.Length; i++)
+            foreach (var part in parts)
             {
-                if (TryGetSeasonNumberFromPart(parts[i], out int seasonNumber))
+                if (TryGetSeasonNumberFromPart(part, out int seasonNumber))
                 {
                     return (seasonNumber, true);
                 }
@@ -139,7 +147,7 @@ namespace Emby.Naming.TV
             var numericStart = -1;
             var length = 0;
 
-            var hasOpenParenth = false;
+            var hasOpenParenthesis = false;
             var isSeasonFolder = true;
 
             // Find out where the numbers start, and then keep going until they end
@@ -147,7 +155,7 @@ namespace Emby.Naming.TV
             {
                 if (char.IsNumber(path[i]))
                 {
-                    if (!hasOpenParenth)
+                    if (!hasOpenParenthesis)
                     {
                         if (numericStart == -1)
                         {
@@ -167,11 +175,11 @@ namespace Emby.Naming.TV
                 var currentChar = path[i];
                 if (currentChar == '(')
                 {
-                    hasOpenParenth = true;
+                    hasOpenParenthesis = true;
                 }
                 else if (currentChar == ')')
                 {
-                    hasOpenParenth = false;
+                    hasOpenParenthesis = false;
                 }
             }
 

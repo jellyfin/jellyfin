@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var url = OmdbProvider.GetOmdbUrl(urlQuery);
 
             using var response = await OmdbProvider.GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var resultList = new List<SearchResult>();
 
             if (isSearch)

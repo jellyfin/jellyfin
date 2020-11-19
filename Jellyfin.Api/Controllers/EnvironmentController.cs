@@ -17,7 +17,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Environment Controller.
     /// </summary>
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
     public class EnvironmentController : BaseJellyfinApiController
     {
         private const char UncSeparator = '\\';

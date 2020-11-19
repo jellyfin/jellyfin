@@ -469,7 +469,7 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                     await _providerManager.SaveImage(
                         item,
@@ -586,7 +586,7 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
 
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await _providerManager.SaveImage(
                         item,
                         stream,
