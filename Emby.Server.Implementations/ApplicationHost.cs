@@ -999,7 +999,7 @@ namespace Emby.Server.Implementations
             var versions = new List<LocalPlugin>();
             if (!Directory.Exists(path))
             {
-                // Plugin path doesn't exist, don't try to enumerate sub-folders.
+                // Plugin path doesn't exist, don't try to enumerate subfolders.
                 return Enumerable.Empty<LocalPlugin>();
             }
 
@@ -1070,6 +1070,7 @@ namespace Emby.Server.Implementations
                 if (!string.IsNullOrEmpty(lastName) && cleanup)
                 {
                     // Attempt a cleanup of old folders.
+                    versions.RemoveAt(x);
                     try
                     {
                         Logger.LogDebug("Deleting {Path}", versions[x].Path);
@@ -1079,8 +1080,6 @@ namespace Emby.Server.Implementations
                     {
                         Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
                     }
-
-                    versions.RemoveAt(x);
                 }
             }
 
