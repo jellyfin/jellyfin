@@ -7,6 +7,7 @@
  - [anthonylavado](https://github.com/anthonylavado)
  - [Artiume](https://github.com/Artiume)
  - [AThomsen](https://github.com/AThomsen)
+ - [barongreenback](https://github.com/BaronGreenback)
  - [barronpm](https://github.com/barronpm)
  - [bilde2910](https://github.com/bilde2910)
  - [bfayers](https://github.com/bfayers)
