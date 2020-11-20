@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Controllers
     public class VideoHlsController : BaseJellyfinApiController
     {
         private const string DefaultEncoderPreset = "superfast";
-        private const TranscodingJobType _transcodingJobType = TranscodingJobType.Hls;
+        private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
 
         private readonly EncodingHelper _encodingHelper;
         private readonly IDlnaManager _dlnaManager;
@@ -292,7 +292,7 @@ namespace Jellyfin.Api.Controllers
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
-                    _transcodingJobType,
+                    TranscodingJobType,
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
@@ -315,7 +315,7 @@ namespace Jellyfin.Api.Controllers
                                     playlistPath,
                                     GetCommandLineArguments(playlistPath, state),
                                     Request,
-                                    _transcodingJobType,
+                                    TranscodingJobType,
                                     cancellationTokenSource)
                                 .ConfigureAwait(false);
                             job.IsLiveOutput = true;
@@ -339,7 +339,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+            job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
 
             if (job != null)
             {
