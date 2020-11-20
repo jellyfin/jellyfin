@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -432,9 +433,10 @@ namespace MediaBrowser.Common.Net
                         IPHostEntry ip = await Dns.GetHostEntryAsync(HostName).ConfigureAwait(false);
                         _addresses = ip.AddressList;
                     }
-                    catch (SocketException)
+                    catch (SocketException ex)
                     {
-                        // Ignore socket errors, as the result value will just be an empty array.
+                        // Log and then ignore socket errors, as the result value will just be an empty array.
+                        Debug.WriteLine("GetHostEntryAsync failed with {Message}.", ex.Message);
                     }
                 }
             }
