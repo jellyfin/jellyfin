@@ -779,7 +779,7 @@ namespace Emby.Server.Implementations
                         // Ensure the version number matches the Plugin Manifest information.
                         foreach (var item in _pluginsManifests)
                         {
-                            if (item.Path.Equals(plugin.AssemblyFilePath, StringComparison.OrdinalIgnoreCase))
+                            if (Path.GetDirectoryName(plugin.AssemblyFilePath).Equals(item.Path, StringComparison.OrdinalIgnoreCase))
                             {
                                 // Update version number to that of the manifest.
                                 assemblyPlugin.SetAttributes(
