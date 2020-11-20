@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations
 
         private IPlugin[] _plugins;
 
-        private IEnumerable<LocalPlugin> _pluginsManifests;
+        private IReadOnlyList<LocalPlugin> _pluginsManifests;
 
         /// <summary>
         /// Gets the plugins.
