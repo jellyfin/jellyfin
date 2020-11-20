@@ -1097,9 +1097,10 @@ namespace Jellyfin.Networking.Manager
                             }
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
-                        catch
+                        catch (Exception ex)
                         {
                             // Ignore error, and attempt to continue.
+                            _logger.LogError("{Exception} encountered parsing interfaces.", ex.Message);
                         }
 #pragma warning restore CA1031 // Do not catch general exception types
                     }
