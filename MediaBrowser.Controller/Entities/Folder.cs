@@ -224,7 +224,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Loads our children.  Validation will occur externally.
-        /// We want this sychronous.
+        /// We want this synchronous.
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {

@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.Library
 
         private static IEnumerable<MediaStream> GetSortedStreams(IEnumerable<MediaStream> streams, MediaStreamType type, string[] languagePreferences)
         {
-            // Give some preferance to external text subs for better performance
+            // Give some preference to external text subs for better performance
             return streams.Where(i => i.Type == type)
                 .OrderBy(i =>
             {

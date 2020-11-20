@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     .SendAsync(requestMessage, cancellationToken)
                     .ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             }
 
             return File.OpenRead(info.Url);
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 if (string.IsNullOrWhiteSpace(numberString))
                 {
                     // Using this as a fallback now as this leads to Problems with channels like "5 USA"
-                    // where 5 isnt ment to be the channel number
+                    // where 5 isn't ment to be the channel number
                     // Check for channel number with the format from SatIp
                     // #EXTINF:0,84. VOX Schweiz
                     // #EXTINF:0,84.0 - VOX Schweiz
@@ -273,8 +273,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].Trim() : null;
 
             // Check for channel number with the format from SatIp
             // #EXTINF:0,84. VOX Schweiz

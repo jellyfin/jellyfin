@@ -14,6 +14,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -119,7 +120,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -148,7 +149,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
@@ -284,7 +285,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -314,7 +315,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
@@ -451,7 +452,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -480,7 +481,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
@@ -614,7 +615,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -644,7 +645,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
@@ -811,7 +812,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
@@ -952,7 +953,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -982,7 +983,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
@@ -1328,7 +1329,7 @@ namespace Jellyfin.Api.Controllers
         {
             var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
 
-            var threads = _encodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec);
+            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec); // GetNumberOfThreads is static.
 
             if (state.BaseRequest.BreakOnNonKeyFrames)
             {
@@ -1347,7 +1348,9 @@ namespace Jellyfin.Api.Controllers
 
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+
+            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
 
             var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1565,8 +1568,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = Path.GetDirectoryName(playlist);
-
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException($"Provided path ({playlist}) is not valid.", nameof(playlist));
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
             return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + GetSegmentFileExtension(state.Request.SegmentContainer));

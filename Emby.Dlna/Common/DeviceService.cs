@@ -1,21 +1,36 @@
-#pragma warning disable CS1591
-
 namespace Emby.Dlna.Common
 {
+    /// <summary>
+    /// Defines the <see cref="DeviceService" />.
+    /// </summary>
     public class DeviceService
     {
-        public string ServiceType { get; set; }
+        /// <summary>
+        /// Gets or sets the Service Type.
+        /// </summary>
+        public string ServiceType { get; set; } = string.Empty;
 
-        public string ServiceId { get; set; }
+        /// <summary>
+        /// Gets or sets the Service Id.
+        /// </summary>
+        public string ServiceId { get; set; } = string.Empty;
 
-        public string ScpdUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the Scpd Url.
+        /// </summary>
+        public string ScpdUrl { get; set; } = string.Empty;
 
-        public string ControlUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the Control Url.
+        /// </summary>
+        public string ControlUrl { get; set; } = string.Empty;
 
-        public string EventSubUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the EventSubUrl.
+        /// </summary>
+        public string EventSubUrl { get; set; } = string.Empty;
 
         /// <inheritdoc />
-        public override string ToString()
-            => ServiceId;
+        public override string ToString() => ServiceId;
     }
 }

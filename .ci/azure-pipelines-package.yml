@@ -188,6 +188,12 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET 5.0 sdk'
+    inputs:
+      packageType: 'sdk'
+      version: '5.0.x'
+
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')

@@ -84,16 +84,6 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
-        public virtual void RegisterServices(IServiceCollection serviceCollection)
-        {
-        }
-
-        /// <inheritdoc />
-        public virtual void UnregisterServices(IServiceCollection serviceCollection)
-        {
-        }
-
-        /// <inheritdoc />
         public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
         {
             AssemblyFilePath = assemblyFilePath;
@@ -184,6 +174,11 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         /// <value>The type of the configuration.</value>
         public Type ConfigurationType => typeof(TConfigurationType);
+
+        /// <summary>
+        /// Gets or sets the event handler that is triggered when this configuration changes.
+        /// </summary>
+        public EventHandler<BasePluginConfiguration> ConfigurationChanged { get; set; }
 
         /// <summary>
         /// Gets the name the assembly file.
@@ -280,6 +275,8 @@ namespace MediaBrowser.Common.Plugins
             Configuration = (TConfigurationType)configuration;
 
             SaveConfiguration();
+
+            ConfigurationChanged?.Invoke(this, configuration);
         }
 
         /// <inheritdoc />

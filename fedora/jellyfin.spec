@@ -27,7 +27,7 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-3.1, dotnet-sdk-3.1
+BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web >= 10.6, %{name}-web < 10.7
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
@@ -82,7 +82,6 @@ EOF
 %{_libdir}/jellyfin/*
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
-%{_libdir}/jellyfin/SOS_README.md
 %{_unitdir}/jellyfin.service
 %{_libexecdir}/jellyfin/restart.sh
 %{_prefix}/lib/firewalld/services/jellyfin.xml

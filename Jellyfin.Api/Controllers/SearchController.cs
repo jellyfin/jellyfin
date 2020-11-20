@@ -260,7 +260,7 @@ namespace Jellyfin.Api.Controllers
             }
         }
 
-        private T GetParentWithImage<T>(BaseItem item, ImageType type)
+        private T? GetParentWithImage<T>(BaseItem item, ImageType type)
             where T : BaseItem
         {
             return item.GetParents().OfType<T>().FirstOrDefault(i => i.HasImage(type));

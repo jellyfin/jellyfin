@@ -8,6 +8,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
@@ -134,7 +135,8 @@ namespace Jellyfin.Api.Controllers
             var playlistPath = _fileSystem.GetFilePaths(transcodeFolderPath)
                 .FirstOrDefault(i =>
                     string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase)
-                    && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1);
+                    && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
+                ?? throw new ResourceNotFoundException($"Provided path ({transcodeFolderPath}) is not valid.");
 
             return GetFileResult(file, playlistPath);
         }

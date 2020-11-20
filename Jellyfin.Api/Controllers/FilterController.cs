@@ -78,8 +78,8 @@ namespace Jellyfin.Api.Controllers
             var query = new InternalItemsQuery
             {
                 User = user,
-                MediaTypes = (mediaTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
-                IncludeItemTypes = (includeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                MediaTypes = (mediaTypes ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries),
+                IncludeItemTypes = (includeItemTypes ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries),
                 Recursive = true,
                 EnableTotalRecordCount = false,
                 DtoOptions = new DtoOptions
@@ -168,7 +168,7 @@ namespace Jellyfin.Api.Controllers
             var genreQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes =
-                    (includeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                    (includeItemTypes ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries),
                 DtoOptions = new DtoOptions
                 {
                     Fields = Array.Empty<ItemFields>(),

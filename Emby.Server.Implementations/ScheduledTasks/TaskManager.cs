@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 var type = scheduledTask.ScheduledTask.GetType();
 
-                _logger.LogInformation("Queueing task {0}", type.Name);
+                _logger.LogInformation("Queuing task {0}", type.Name);
 
                 lock (_taskQueue)
                 {
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var type = task.ScheduledTask.GetType();
 
-            _logger.LogInformation("Queueing task {0}", type.Name);
+            _logger.LogInformation("Queuing task {0}", type.Name);
 
             lock (_taskQueue)
             {
