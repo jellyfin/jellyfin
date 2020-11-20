@@ -272,12 +272,7 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public virtual void SaveConfiguration()
         {
-            lock (_configurationSaveLock)
-            {
-                _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
-
-                XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
-            }
+            SaveConfiguration(Configuration);
         }
 
         /// <inheritdoc />
