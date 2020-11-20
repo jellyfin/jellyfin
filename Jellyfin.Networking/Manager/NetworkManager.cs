@@ -1100,7 +1100,7 @@ namespace Jellyfin.Networking.Manager
                         catch (Exception ex)
                         {
                             // Ignore error, and attempt to continue.
-                            _logger.LogError("{Exception} encountered parsing interfaces.", ex.Message);
+                            _logger.LogError(ex, "Error encountered parsing interfaces.");
                         }
 #pragma warning restore CA1031 // Do not catch general exception types
                     }
