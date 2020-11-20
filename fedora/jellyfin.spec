@@ -82,7 +82,6 @@ EOF
 %{_libdir}/jellyfin/*
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
-%{_libdir}/jellyfin/SOS_README.md
 %{_unitdir}/jellyfin.service
 %{_libexecdir}/jellyfin/restart.sh
 %{_prefix}/lib/firewalld/services/jellyfin.xml

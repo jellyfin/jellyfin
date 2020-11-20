@@ -1494,6 +1494,32 @@ namespace MediaBrowser.Model.Dlna
                             break;
                         }
 
+                    case ProfileConditionValue.AudioSampleRate:
+                        {
+                            if (!enableNonQualifiedConditions)
+                            {
+                                continue;
+                            }
+
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
+                            {
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.AudioSampleRate = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.AudioSampleRate = Math.Min(num, item.AudioSampleRate ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.AudioSampleRate = Math.Max(num, item.AudioSampleRate ?? num);
+                                }
+                            }
+
+                            break;
+                        }
+
                     case ProfileConditionValue.AudioChannels:
                         {
                             if (string.IsNullOrEmpty(qualifier))

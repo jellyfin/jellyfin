@@ -9,6 +9,7 @@
 jobs:
 - job: GenerateApiClients
   displayName: 'Generate Api Clients'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
   dependsOn: Test
 
   pool:
@@ -37,7 +38,6 @@ jobs:
 ## Generate npm api client
     - task: CmdLine@2
       displayName: 'Build stable typescript axios client'
-      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
       inputs:
         script: "bash ./apiclient/templates/typescript/axios/generate.sh $(System.ArtifactsDirectory)"
 
@@ -51,7 +51,6 @@ jobs:
 ## Publish npm packages
     - task: Npm@1
       displayName: 'Publish stable typescript axios client'
-      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
       inputs:
         command: publish
         publishRegistry: useExternalRegistry

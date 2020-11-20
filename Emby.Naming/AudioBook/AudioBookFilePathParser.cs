@@ -1,6 +1,3 @@
-#nullable enable
-#pragma warning disable CS1591
-
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -8,15 +5,27 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.AudioBook
 {
+    /// <summary>
+    /// Parser class to extract part and/or chapter number from audiobook filename.
+    /// </summary>
     public class AudioBookFilePathParser
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioBookFilePathParser"/> class.
+        /// </summary>
+        /// <param name="options">Naming options containing AudioBookPartsExpressions.</param>
         public AudioBookFilePathParser(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Based on regex determines if filename includes part/chapter number.
+        /// </summary>
+        /// <param name="path">Path to audiobook file.</param>
+        /// <returns>Returns <see cref="AudioBookFilePathParser"/> object.</returns>
         public AudioBookFilePathParserResult Parse(string path)
         {
             AudioBookFilePathParserResult result = default;
@@ -51,8 +60,6 @@ namespace Emby.Naming.AudioBook
                     }
                 }
             }
-
-            result.Success = result.ChapterNumber.HasValue || result.PartNumber.HasValue;
 
             return result;
         }

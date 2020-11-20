@@ -105,7 +105,7 @@ namespace Rssdp.Infrastructure
             var headerName = line.Substring(0, headerKeySeparatorIndex).Trim();
             var headerValue = line.Substring(headerKeySeparatorIndex + 1).Trim();
 
-            // Not sure how to determine where request headers and and content headers begin,
+            // Not sure how to determine where request headers and content headers begin,
             // at least not without a known set of headers (general headers first the content headers)
             // which seems like a bad way of doing it. So we'll assume if it's a known content header put it there
             // else use request headers.

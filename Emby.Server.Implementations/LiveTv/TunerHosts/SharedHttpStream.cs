@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
                     using var message = response;
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
                     await StreamHelper.CopyToAsync(
                         stream,

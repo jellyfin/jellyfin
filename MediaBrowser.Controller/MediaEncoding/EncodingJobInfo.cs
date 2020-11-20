@@ -409,7 +409,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // Don't exceed what the encoder supports
                     // Seeing issues of attempting to encode to 88200
-                    return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
+                    return BaseRequest.AudioSampleRate.Value;
                 }
 
                 return null;

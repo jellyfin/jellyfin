@@ -58,7 +58,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Investigates an caches a list of interface addresses, excluding local link and LAN excluded addresses.
         /// </summary>
-        /// <returns>The list of ipaddresses.</returns>
+        /// <returns>The list of ip addresses.</returns>
         IPAddress[] GetLocalIpAddresses();
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace MediaBrowser.Common.Net
         /// Returns true if address is in the LAN list in the config file.
         /// </summary>
         /// <param name="address">The address to check.</param>
-        /// <param name="excludeInterfaces">If true, check against addresses in the LAN settings which have [] arroud and return true if it matches the address give in address.</param>
+        /// <param name="excludeInterfaces">If true, check against addresses in the LAN settings which have [] around and return true if it matches the address give in address.</param>
         /// <param name="excludeRFC">If true, returns false if address is in the 127.x.x.x or 169.128.x.x range.</param>
         /// <returns><c>false</c>if the address isn't in the LAN list, <c>true</c> if the address has been defined as a LAN address.</returns>
         bool IsAddressInSubnets(IPAddress address, bool excludeInterfaces, bool excludeRFC);

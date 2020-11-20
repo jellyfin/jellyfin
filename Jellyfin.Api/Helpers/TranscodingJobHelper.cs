@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -582,7 +582,7 @@ namespace Jellyfin.Api.Helpers
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             _ = new JobLogger(_logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
 
-            // Wait for the file to exist before proceeeding
+            // Wait for the file to exist before proceeding
             var ffmpegTargetFile = state.WaitForPath ?? outputPath;
             _logger.LogDebug("Waiting for the creation of {0}", ffmpegTargetFile);
             while (!File.Exists(ffmpegTargetFile) && !transcodingJob.HasExited)

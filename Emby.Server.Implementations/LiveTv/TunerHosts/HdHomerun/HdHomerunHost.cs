@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(model.LineupURL, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var lineup = await JsonSerializer.DeserializeAsync<List<Channels>>(stream, cancellationToken: cancellationToken)
                 .ConfigureAwait(false) ?? new List<Channels>();
 
@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 return discoverResponse;
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var sr = new StreamReader(stream, System.Text.Encoding.UTF8);
             var tuners = new List<LiveTvTunerInfo>();
             while (!sr.EndOfStream)
@@ -663,7 +663,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var modelInfo = await GetModelInfo(info, true, CancellationToken.None).ConfigureAwait(false);
                 info.DeviceId = modelInfo.DeviceID;
             }
-            catch (HttpException ex)
+            catch (HttpRequestException ex)
             {
                 if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
                 {

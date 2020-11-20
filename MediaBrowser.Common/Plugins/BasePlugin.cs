@@ -276,7 +276,7 @@ namespace MediaBrowser.Common.Plugins
 
             SaveConfiguration();
 
-            ConfigurationChanged.Invoke(this, configuration);
+            ConfigurationChanged?.Invoke(this, configuration);
         }
 
         /// <inheritdoc />

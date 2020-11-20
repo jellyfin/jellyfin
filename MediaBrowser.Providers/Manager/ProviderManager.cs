@@ -13,6 +13,7 @@ using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -51,6 +52,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly IBaseItemManager _baseItemManager;
         private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new ConcurrentDictionary<Guid, double>();
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
@@ -74,6 +76,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="baseItemManager">The BaseItem manager.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -82,7 +85,8 @@ namespace MediaBrowser.Providers.Manager
             ILogger<ProviderManager> logger,
             IFileSystem fileSystem,
             IServerApplicationPaths appPaths,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IBaseItemManager baseItemManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -92,6 +96,7 @@ namespace MediaBrowser.Providers.Manager
             _appPaths = appPaths;
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
+            _baseItemManager = baseItemManager;
         }
 
         /// <inheritdoc/>
@@ -160,10 +165,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                throw new HttpException("Invalid image received.")
-                {
-                    StatusCode = response.StatusCode
-                };
+                throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
             var contentType = response.Content.Headers.ContentType.MediaType;
@@ -181,13 +183,10 @@ namespace MediaBrowser.Providers.Manager
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
             if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
-                throw new HttpException("Invalid image received.")
-                {
-                    StatusCode = HttpStatusCode.NotFound
-                };
+                throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
             }
 
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await SaveImage(
                 item,
                 stream,
@@ -398,7 +397,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteMetadataProvider)
                 {
-                    if (!forceEnableInternetMetadata && !item.IsMetadataFetcherEnabled(libraryOptions, provider.Name))
+                    if (!forceEnableInternetMetadata && !_baseItemManager.IsMetadataFetcherEnabled(item, libraryOptions, provider.Name))
                     {
                         return false;
                     }
@@ -442,7 +441,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
                 {
-                    if (!item.IsImageFetcherEnabled(libraryOptions, provider.Name))
+                    if (!_baseItemManager.IsImageFetcherEnabled(item, libraryOptions, provider.Name))
                     {
                         return false;
                     }

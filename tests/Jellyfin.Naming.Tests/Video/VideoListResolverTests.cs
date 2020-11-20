@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.IO;
@@ -370,6 +370,26 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
+        public void TestFourRooms()
+        {
+            var files = new[]
+            {
+                @"Four Rooms - A.avi",
+                @"Four Rooms - A.mp4"
+            };
+
+            var resolver = GetResolver();
+
+            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            {
+                IsDirectory = false,
+                FullName = i
+            }).ToList()).ToList();
+
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
         public void TestMovieTrailer()
         {
             var files = new[]
@@ -429,6 +449,13 @@ namespace Jellyfin.Naming.Tests.Video
             }).ToList()).ToList();
 
             Assert.Single(result);
+        }
+
+        [Fact]
+        public void TestDirectoryStack()
+        {
+            var stack = new FileStack();
+            Assert.False(stack.ContainsFile("XX", true));
         }
 
         private VideoListResolver GetResolver()

@@ -29,7 +29,7 @@ namespace MediaBrowser.Model.Dlna
             int? maxWidth,
             int? maxHeight)
         {
-            // If the bitrate isn't changing, then don't downlscale the resolution
+            // If the bitrate isn't changing, then don't downscale the resolution
             if (inputBitrate.HasValue && outputBitrate >= inputBitrate.Value)
             {
                 if (maxWidth.HasValue || maxHeight.HasValue)
