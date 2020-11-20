@@ -6,17 +6,17 @@ using System.Text.Json.Serialization;
 namespace MediaBrowser.Common.Json.Converters
 {
     /// <summary>
-    /// Convert comma delimited string to array of type.
+    /// Convert Pipe delimited string to array of type.
     /// </summary>
     /// <typeparam name="T">Type to convert to.</typeparam>
-    public class JsonCommaDelimitedArrayConverter<T> : JsonConverter<T[]>
+    public class JsonPipeDelimitedArrayConverter<T> : JsonConverter<T[]>
     {
         private readonly TypeConverter _typeConverter;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonCommaDelimitedArrayConverter{T}"/> class.
+        /// Initializes a new instance of the <see cref="JsonPipeDelimitedArrayConverter{T}"/> class.
         /// </summary>
-        public JsonCommaDelimitedArrayConverter()
+        public JsonPipeDelimitedArrayConverter()
         {
             _typeConverter = TypeDescriptor.GetConverter(typeof(T));
         }
@@ -26,7 +26,7 @@ namespace MediaBrowser.Common.Json.Converters
         {
             if (reader.TokenType == JsonTokenType.String)
             {
-                var stringEntries = reader.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var stringEntries = reader.GetString()?.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 if (stringEntries == null || stringEntries.Length == 0)
                 {
                     return Array.Empty<T>();

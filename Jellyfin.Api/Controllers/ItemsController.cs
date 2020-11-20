@@ -159,7 +159,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
             [FromQuery] bool? is4K,
-            [FromQuery] string? locationTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] locationTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
             [FromQuery] bool? isMissing,
             [FromQuery] bool? isUnaired,
@@ -173,7 +173,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasImdbId,
             [FromQuery] bool? hasTmdbId,
             [FromQuery] bool? hasTvdbId,
-            [FromQuery] string? excludeItemIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeItemIds,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] bool? recursive,
@@ -181,34 +181,34 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? sortOrder,
             [FromQuery] string? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
-            [FromQuery] string? mediaTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
             [FromQuery] string? sortBy,
             [FromQuery] bool? isPlayed,
-            [FromQuery] string? genres,
-            [FromQuery] string? officialRatings,
-            [FromQuery] string? tags,
-            [FromQuery] string? years,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] tags,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] int[] years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? person,
-            [FromQuery] string? personIds,
-            [FromQuery] string? personTypes,
-            [FromQuery] string? studios,
-            [FromQuery] string? artists,
-            [FromQuery] string? excludeArtistIds,
-            [FromQuery] string? artistIds,
-            [FromQuery] string? albumArtistIds,
-            [FromQuery] string? contributingArtistIds,
-            [FromQuery] string? albums,
-            [FromQuery] string? albumIds,
-            [FromQuery] string? ids,
-            [FromQuery] string? videoTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] artists,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeArtistIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] artistIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumArtistIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] contributingArtistIds,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] albums,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] VideoType[] videoTypes,
             [FromQuery] string? minOfficialRating,
             [FromQuery] bool? isLocked,
             [FromQuery] bool? isPlaceHolder,
@@ -219,12 +219,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] bool? is3D,
-            [FromQuery] string? seriesStatus,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SeriesStatus[] seriesStatus,
             [FromQuery] string? nameStartsWithOrGreater,
             [FromQuery] string? nameStartsWith,
             [FromQuery] string? nameLessThan,
-            [FromQuery] string? studioIds,
-            [FromQuery] string? genreIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] studioIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
@@ -238,8 +238,9 @@ namespace Jellyfin.Api.Controllers
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            if (string.Equals(includeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
+            if (includeItemTypes.Length == 1
+                && (includeItemTypes[0].Equals("Playlist", StringComparison.OrdinalIgnoreCase)
+                    || includeItemTypes[0].Equals("BoxSet", StringComparison.OrdinalIgnoreCase)))
             {
                 parentId = null;
             }
@@ -262,7 +263,7 @@ namespace Jellyfin.Api.Controllers
                 && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 recursive = true;
-                includeItemTypes = "Playlist";
+                includeItemTypes = new[] { "Playlist" };
             }
 
             bool isInEnabledFolder = user!.GetPreference(PreferenceKind.EnabledFolders).Any(i => new Guid(i) == item.Id)
@@ -291,14 +292,14 @@ namespace Jellyfin.Api.Controllers
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 
-            if ((recursive.HasValue && recursive.Value) || !string.IsNullOrEmpty(ids) || !(item is UserRootFolder))
+            if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || !(item is UserRootFolder))
             {
                 var query = new InternalItemsQuery(user!)
                 {
                     IsPlayed = isPlayed,
-                    MediaTypes = RequestHelpers.Split(mediaTypes, ',', true),
-                    IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
-                    ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
+                    MediaTypes = mediaTypes,
+                    IncludeItemTypes = includeItemTypes,
+                    ExcludeItemTypes = excludeItemTypes,
                     Recursive = recursive ?? false,
                     OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                     IsFavorite = isFavorite,
@@ -330,28 +331,28 @@ namespace Jellyfin.Api.Controllers
                     HasTrailer = hasTrailer,
                     IsHD = isHd,
                     Is4K = is4K,
-                    Tags = RequestHelpers.Split(tags, '|', true),
-                    OfficialRatings = RequestHelpers.Split(officialRatings, '|', true),
-                    Genres = RequestHelpers.Split(genres, '|', true),
-                    ArtistIds = RequestHelpers.GetGuids(artistIds),
-                    AlbumArtistIds = RequestHelpers.GetGuids(albumArtistIds),
-                    ContributingArtistIds = RequestHelpers.GetGuids(contributingArtistIds),
-                    GenreIds = RequestHelpers.GetGuids(genreIds),
-                    StudioIds = RequestHelpers.GetGuids(studioIds),
+                    Tags = tags,
+                    OfficialRatings = officialRatings,
+                    Genres = genres,
+                    ArtistIds = artistIds,
+                    AlbumArtistIds = albumArtistIds,
+                    ContributingArtistIds = contributingArtistIds,
+                    GenreIds = genreIds,
+                    StudioIds = studioIds,
                     Person = person,
-                    PersonIds = RequestHelpers.GetGuids(personIds),
-                    PersonTypes = RequestHelpers.Split(personTypes, ',', true),
-                    Years = RequestHelpers.Split(years, ',', true).Select(int.Parse).ToArray(),
+                    PersonIds = personIds,
+                    PersonTypes = personTypes,
+                    Years = years,
                     ImageTypes = imageTypes,
-                    VideoTypes = RequestHelpers.Split(videoTypes, ',', true).Select(v => Enum.Parse<VideoType>(v, true)).ToArray(),
+                    VideoTypes = videoTypes,
                     AdjacentTo = adjacentTo,
-                    ItemIds = RequestHelpers.GetGuids(ids),
+                    ItemIds = ids,
                     MinCommunityRating = minCommunityRating,
                     MinCriticRating = minCriticRating,
                     ParentId = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId),
                     ParentIndexNumber = parentIndexNumber,
                     EnableTotalRecordCount = enableTotalRecordCount,
-                    ExcludeItemIds = RequestHelpers.GetGuids(excludeItemIds),
+                    ExcludeItemIds = excludeItemIds,
                     DtoOptions = dtoOptions,
                     SearchTerm = searchTerm,
                     MinDateLastSaved = minDateLastSaved?.ToUniversalTime(),
@@ -360,7 +361,7 @@ namespace Jellyfin.Api.Controllers
                     MaxPremiereDate = maxPremiereDate?.ToUniversalTime(),
                 };
 
-                if (!string.IsNullOrWhiteSpace(ids) || !string.IsNullOrWhiteSpace(searchTerm))
+                if (ids.Length != 0 || !string.IsNullOrWhiteSpace(searchTerm))
                 {
                     query.CollapseBoxSetItems = false;
                 }
@@ -400,9 +401,9 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // Filter by Series Status
-                if (!string.IsNullOrEmpty(seriesStatus))
+                if (seriesStatus.Length != 0)
                 {
-                    query.SeriesStatuses = seriesStatus.Split(',').Select(d => (SeriesStatus)Enum.Parse(typeof(SeriesStatus), d, true)).ToArray();
+                    query.SeriesStatuses = seriesStatus;
                 }
 
                 // ExcludeLocationTypes
@@ -411,13 +412,9 @@ namespace Jellyfin.Api.Controllers
                     query.IsVirtualItem = false;
                 }
 
-                if (!string.IsNullOrEmpty(locationTypes))
+                if (locationTypes.Length > 0 && locationTypes.Length < 4)
                 {
-                    var requestedLocationTypes = locationTypes.Split(',');
-                    if (requestedLocationTypes.Length > 0 && requestedLocationTypes.Length < 4)
-                    {
-                        query.IsVirtualItem = requestedLocationTypes.Contains(LocationType.Virtual.ToString());
-                    }
+                    query.IsVirtualItem = locationTypes.Contains(LocationType.Virtual);
                 }
 
                 // Min official rating
@@ -433,9 +430,9 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // Artists
-                if (!string.IsNullOrEmpty(artists))
+                if (artists.Length != 0)
                 {
-                    query.ArtistIds = artists.Split('|').Select(i =>
+                    query.ArtistIds = artists.Select(i =>
                     {
                         try
                         {
@@ -449,29 +446,29 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 // ExcludeArtistIds
-                if (!string.IsNullOrWhiteSpace(excludeArtistIds))
+                if (excludeArtistIds.Length != 0)
                 {
-                    query.ExcludeArtistIds = RequestHelpers.GetGuids(excludeArtistIds);
+                    query.ExcludeArtistIds = excludeArtistIds;
                 }
 
-                if (!string.IsNullOrWhiteSpace(albumIds))
+                if (albumIds.Length != 0)
                 {
-                    query.AlbumIds = RequestHelpers.GetGuids(albumIds);
+                    query.AlbumIds = albumIds;
                 }
 
                 // Albums
-                if (!string.IsNullOrEmpty(albums))
+                if (albums.Length != 0)
                 {
-                    query.AlbumIds = albums.Split('|').SelectMany(i =>
+                    query.AlbumIds = albums.SelectMany(i =>
                     {
                         return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { nameof(MusicAlbum) }, Name = i, Limit = 1 });
                     }).ToArray();
                 }
 
                 // Studios
-                if (!string.IsNullOrEmpty(studios))
+                if (studios.Length != 0)
                 {
-                    query.StudioIds = studios.Split('|').Select(i =>
+                    query.StudioIds = studios.Select(i =>
                     {
                         try
                         {
@@ -533,12 +530,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? searchTerm,
             [FromQuery] string? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? mediaTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
@@ -569,13 +566,13 @@ namespace Jellyfin.Api.Controllers
                 ParentId = parentIdGuid,
                 Recursive = true,
                 DtoOptions = dtoOptions,
-                MediaTypes = RequestHelpers.Split(mediaTypes, ',', true),
+                MediaTypes = mediaTypes,
                 IsVirtualItem = false,
                 CollapseBoxSetItems = false,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 AncestorIds = ancestorIds,
-                IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
-                ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
+                IncludeItemTypes = includeItemTypes,
+                ExcludeItemTypes = excludeItemTypes,
                 SearchTerm = searchTerm
             });
 
