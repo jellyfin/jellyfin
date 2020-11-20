@@ -553,7 +553,9 @@ namespace Jellyfin.Api.Helpers
                     : "FFmpeg.DirectStream-";
             }
 
-            var logFilePath = Path.Combine(_serverConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss", CultureInfo.InvariantCulture) + "_" + state.Request.MediaSourceId + "_" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".log");
+            var logFilePath = Path.Combine(
+                _serverConfigurationManager.ApplicationPaths.LogDirectoryPath,
+                $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");
 
             // FFmpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
