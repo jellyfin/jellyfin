@@ -60,7 +60,7 @@ namespace Jellyfin.Api.Tests
                 .Returns(user);
 
             httpContextAccessorMock
-                .Setup(h => h.HttpContext.Connection.RemoteIpAddress)
+                .Setup(h => h.HttpContext!.Connection.RemoteIpAddress)
                 .Returns(new IPAddress(0));
 
             return new ClaimsPrincipal(identity);

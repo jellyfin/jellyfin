@@ -74,8 +74,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? searchTerm,
             [FromQuery] string? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery] bool? isFavorite,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
@@ -96,8 +96,8 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
-                IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
@@ -133,7 +133,7 @@ namespace Jellyfin.Api.Controllers
                 result = _libraryManager.GetGenres(query);
             }
 
-            var shouldIncludeItemTypes = !string.IsNullOrEmpty(includeItemTypes);
+            var shouldIncludeItemTypes = includeItemTypes.Length != 0;
             return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, shouldIncludeItemTypes, user);
         }
 
@@ -176,7 +176,7 @@ namespace Jellyfin.Api.Controllers
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }
 
-        private T GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
+        private T? GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
             where T : BaseItem, new()
         {
             var result = libraryManager.GetItemList(new InternalItemsQuery

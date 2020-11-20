@@ -1,58 +1,88 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolve <see cref="FileStack"/> from list of paths.
+    /// </summary>
     public class StackResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StackResolver"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileStackingRegexes and passes options to <see cref="VideoResolver"/>.</param>
         public StackResolver(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Resolves only directories from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
         public IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files)
         {
             return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }));
         }
 
+        /// <summary>
+        /// Resolves only files from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of files.</returns>
         public IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files)
         {
             return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }));
         }
 
-        public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<FileSystemMetadata> files)
+        /// <summary>
+        /// Resolves audiobooks from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
+        public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
         {
-            var groupedDirectoryFiles = files.GroupBy(file =>
-                file.IsDirectory
-                    ? file.FullName
-                    : Path.GetDirectoryName(file.FullName));
+            var groupedDirectoryFiles = files.GroupBy(file => Path.GetDirectoryName(file.Path));
 
             foreach (var directory in groupedDirectoryFiles)
             {
-                var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
-                foreach (var file in directory)
+                if (string.IsNullOrEmpty(directory.Key))
                 {
-                    if (file.IsDirectory)
+                    foreach (var file in directory)
                     {
-                        continue;
+                        var stack = new FileStack { Name = Path.GetFileNameWithoutExtension(file.Path), IsDirectoryStack = false };
+                        stack.Files.Add(file.Path);
+                        yield return stack;
+                    }
+                }
+                else
+                {
+                    var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
+                    foreach (var file in directory)
+                    {
+                        stack.Files.Add(file.Path);
                     }
 
-                    stack.Files.Add(file.FullName);
+                    yield return stack;
                 }
-
-                yield return stack;
             }
         }
 
+        /// <summary>
+        /// Resolves videos from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of videos.</returns>
         public IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files)
         {
             var resolver = new VideoResolver(_options);
@@ -81,10 +111,10 @@ namespace Emby.Naming.Video
 
                     if (match1.Success)
                     {
-                        var title1 = match1.Groups[1].Value;
-                        var volume1 = match1.Groups[2].Value;
-                        var ignore1 = match1.Groups[3].Value;
-                        var extension1 = match1.Groups[4].Value;
+                        var title1 = match1.Groups["title"].Value;
+                        var volume1 = match1.Groups["volume"].Value;
+                        var ignore1 = match1.Groups["ignore"].Value;
+                        var extension1 = match1.Groups["extension"].Value;
 
                         var j = i + 1;
                         while (j < list.Count)

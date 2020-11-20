@@ -1,9 +1,10 @@
-#pragma warning disable CS1591
-
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Holder object for passing results from ExtraResolver.
+    /// </summary>
     public class ExtraResult
     {
         /// <summary>
@@ -16,6 +17,6 @@ namespace Emby.Naming.Video
         /// Gets or sets the rule.
         /// </summary>
         /// <value>The rule.</value>
-        public ExtraRule Rule { get; set; }
+        public ExtraRule? Rule { get; set; }
     }
 }

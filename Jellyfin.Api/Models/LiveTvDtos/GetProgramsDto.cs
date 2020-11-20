@@ -16,7 +16,8 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// <summary>
         /// Gets or sets the channels to return guide information for.
         /// </summary>
-        public string? ChannelIds { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<Guid> ChannelIds { get; set; } = Array.Empty<Guid>();
 
         /// <summary>
         /// Gets or sets optional. Filter by user id.
@@ -115,12 +116,14 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// <summary>
         /// Gets or sets the genres to return guide information for.
         /// </summary>
-        public string? Genres { get; set; }
+        [JsonConverter(typeof(JsonPipeDelimitedArrayConverterFactory))]
+        public IReadOnlyList<string> Genres { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets the genre ids to return guide information for.
         /// </summary>
-        public string? GenreIds { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<Guid> GenreIds { get; set; } = Array.Empty<Guid>();
 
         /// <summary>
         /// Gets or sets include image information in output.

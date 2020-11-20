@@ -18,7 +18,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedStringArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new[] { "lol", "xd" };
+            IReadOnlyList<string> queryParamValues = new[] { "lol", "xd" };
             var queryParamString = "lol,xd";
             var queryParamType = typeof(string[]);
 
@@ -36,14 +36,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
             await modelBinder.BindModelAsync(bindingContextMock.Object);
 
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Equal((string[])bindingContextMock.Object.Result.Model, queryParamValues);
+            Assert.Equal((IReadOnlyList<string>?)bindingContextMock.Object?.Result.Model, queryParamValues);
         }
 
         [Fact]
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedIntArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new[] { 42, 0 };
+            IReadOnlyList<int> queryParamValues = new[] { 42, 0 };
             var queryParamString = "42,0";
             var queryParamType = typeof(int[]);
 
@@ -61,14 +61,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
             await modelBinder.BindModelAsync(bindingContextMock.Object);
 
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Equal((int[])bindingContextMock.Object.Result.Model, queryParamValues);
+            Assert.Equal((IReadOnlyList<int>?)bindingContextMock.Object.Result.Model, queryParamValues);
         }
 
         [Fact]
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedEnumArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new[] { TestType.How, TestType.Much };
+            IReadOnlyList<TestType> queryParamValues = new[] { TestType.How, TestType.Much };
             var queryParamString = "How,Much";
             var queryParamType = typeof(TestType[]);
 
@@ -86,14 +86,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
             await modelBinder.BindModelAsync(bindingContextMock.Object);
 
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Equal((TestType[])bindingContextMock.Object.Result.Model, queryParamValues);
+            Assert.Equal((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model, queryParamValues);
         }
 
         [Fact]
         public async Task BindModelAsync_CorrectlyBindsValidCommaDelimitedEnumArrayQueryWithDoubleCommas()
         {
             var queryParamName = "test";
-            var queryParamValues = new[] { TestType.How, TestType.Much };
+            IReadOnlyList<TestType> queryParamValues = new[] { TestType.How, TestType.Much };
             var queryParamString = "How,,Much";
             var queryParamType = typeof(TestType[]);
 
@@ -111,14 +111,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
             await modelBinder.BindModelAsync(bindingContextMock.Object);
 
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Equal((TestType[])bindingContextMock.Object.Result.Model, queryParamValues);
+            Assert.Equal((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model, queryParamValues);
         }
 
         [Fact]
         public async Task BindModelAsync_CorrectlyBindsValidEnumArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = new[] { TestType.How, TestType.Much };
+            IReadOnlyList<TestType> queryParamValues = new[] { TestType.How, TestType.Much };
             var queryParamString1 = "How";
             var queryParamString2 = "Much";
             var queryParamType = typeof(TestType[]);
@@ -141,14 +141,14 @@ namespace Jellyfin.Api.Tests.ModelBinders
             await modelBinder.BindModelAsync(bindingContextMock.Object);
 
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Equal((TestType[])bindingContextMock.Object.Result.Model, queryParamValues);
+            Assert.Equal((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model, queryParamValues);
         }
 
         [Fact]
         public async Task BindModelAsync_CorrectlyBindsEmptyEnumArrayQuery()
         {
             var queryParamName = "test";
-            var queryParamValues = Array.Empty<TestType>();
+            IReadOnlyList<TestType> queryParamValues = Array.Empty<TestType>();
             var queryParamType = typeof(TestType[]);
 
             var modelBinder = new CommaDelimitedArrayModelBinder(new NullLogger<CommaDelimitedArrayModelBinder>());
@@ -169,7 +169,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             await modelBinder.BindModelAsync(bindingContextMock.Object);
 
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Equal((TestType[])bindingContextMock.Object.Result.Model, queryParamValues);
+            Assert.Equal((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model, queryParamValues);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
         {
             var queryParamName = "test";
             var queryParamString = "🔥,😢";
-            var queryParamType = typeof(TestType[]);
+            var queryParamType = typeof(IReadOnlyList<TestType>);
 
             var modelBinder = new CommaDelimitedArrayModelBinder(new NullLogger<CommaDelimitedArrayModelBinder>());
             var valueProvider = new QueryStringValueProvider(
@@ -192,7 +192,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             await modelBinder.BindModelAsync(bindingContextMock.Object);
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Empty((TestType[])bindingContextMock.Object.Result.Model);
+            Assert.Empty((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamName = "test";
             var queryParamString1 = "How";
             var queryParamString2 = "😱";
-            var queryParamType = typeof(TestType[]);
+            var queryParamType = typeof(IReadOnlyList<TestType>);
 
             var modelBinder = new CommaDelimitedArrayModelBinder(new NullLogger<CommaDelimitedArrayModelBinder>());
 
@@ -220,7 +220,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             await modelBinder.BindModelAsync(bindingContextMock.Object);
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Single((TestType[])bindingContextMock.Object.Result.Model);
+            Assert.Single((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model);
         }
     }
 }

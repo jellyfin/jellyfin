@@ -26,22 +26,22 @@ namespace Jellyfin.Server.Filters
                 if (attribute is ProducesFileAttribute producesFileAttribute)
                 {
                     // Get operation response values.
-                    var (_, value) = operation.Responses
+                    var response = operation.Responses
                         .FirstOrDefault(o => o.Key.Equals(SuccessCode, StringComparison.Ordinal));
 
                     // Operation doesn't have a response.
-                    if (value == null)
+                    if (response.Value == null)
                     {
                         continue;
                     }
 
                     // Clear existing responses.
-                    value.Content.Clear();
+                    response.Value.Content.Clear();
 
                     // Add all content-types as file.
                     foreach (var contentType in producesFileAttribute.GetContentTypes())
                     {
-                        value.Content.Add(contentType, _openApiMediaType);
+                        response.Value.Content.Add(contentType, _openApiMediaType);
                     }
 
                     break;

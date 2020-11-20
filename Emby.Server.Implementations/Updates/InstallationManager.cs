@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .GetAsync(manifest, cancellationToken).ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                 try
                 {
@@ -114,11 +114,6 @@ namespace Emby.Server.Implementations.Updates
             catch (UriFormatException ex)
             {
                 _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
-                return Array.Empty<PackageInfo>();
-            }
-            catch (HttpException ex)
-            {
-                _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
                 return Array.Empty<PackageInfo>();
             }
             catch (HttpRequestException ex)
@@ -246,7 +241,8 @@ namespace Emby.Server.Implementations.Updates
                 _currentInstallations.Add(tuple);
             }
 
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token);
+            var linkedToken = linkedTokenSource.Token;
 
             await _eventManager.PublishAsync(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
 
@@ -338,7 +334,7 @@ namespace Emby.Server.Implementations.Updates
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(package.SourceUrl, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351

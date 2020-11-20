@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Loads our children.  Validation will occur externally.
-        /// We want this sychronous.
+        /// We want this synchronous.
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {
@@ -1067,12 +1067,12 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.Genres.Length > 0)
+            if (request.Genres.Count > 0)
             {
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1177,7 +1177,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
