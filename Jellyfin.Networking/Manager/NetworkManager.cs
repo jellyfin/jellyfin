@@ -1231,6 +1231,11 @@ namespace Jellyfin.Networking.Manager
                         {
                             bindAddress = addr.Address;
                         }
+                        
+                        if (defaultGateway != null && bindAddress != null)
+                        {
+                            break;
+                        }
                     }
                 }
                 else
