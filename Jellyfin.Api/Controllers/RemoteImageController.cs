@@ -157,9 +157,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
-        public async Task<ActionResult> GetRemoteImage([FromQuery, Required] string imageUrl)
+        public async Task<ActionResult> GetRemoteImage([FromQuery, Required] Uri imageUrl)
         {
-            var urlHash = imageUrl.GetMD5();
+            var urlHash = imageUrl.ToString().GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
 
             string? contentPath = null;
@@ -245,17 +245,25 @@ namespace Jellyfin.Api.Controllers
         /// <param name="urlHash">The URL hash.</param>
         /// <param name="pointerCachePath">The pointer cache path.</param>
         /// <returns>Task.</returns>
-        private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
+        private async Task DownloadImage(Uri url, Guid urlHash, string pointerCachePath)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
-            var ext = response.Content.Headers.ContentType.MediaType.Split('/').Last();
+            if (response.Content.Headers.ContentType?.MediaType == null)
+            {
+                throw new ResourceNotFoundException(nameof(response.Content.Headers.ContentType));
+            }
+
+            var ext = response.Content.Headers.ContentType.MediaType.Split('/')[^1];
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+            var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
+            Directory.CreateDirectory(fullCacheDirectory);
             await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
             await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+
+            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));
+            Directory.CreateDirectory(pointerCacheDirectory);
             await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath, CancellationToken.None)
                 .ConfigureAwait(false);
         }

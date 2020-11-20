@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Helpers
             StreamingRequestDto streamingRequest,
             bool enableAdaptiveBitrateStreaming)
         {
-            var isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == WebRequestMethods.Http.Head;
+            var isHeadRequest = _httpContextAccessor.HttpContext?.Request.Method == WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
             return await GetMasterPlaylistInternal(
                 streamingRequest,
@@ -130,6 +130,11 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
+            }
+
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     _httpContextAccessor.HttpContext.Request,
@@ -202,7 +207,61 @@ namespace Jellyfin.Api.Helpers
                 AddSubtitles(state, subtitleStreams, builder, _httpContextAccessor.HttpContext.User);
             }
 
-            AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
+            var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
+
+            if (state.VideoStream != null && state.VideoRequest != null)
+            {
+                // Provide SDR HEVC entrance for backward compatibility.
+                if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                    && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
+                    && string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+                {
+                    var requestedVideoProfiles = state.GetRequestedProfiles("hevc");
+                    if (requestedVideoProfiles != null && requestedVideoProfiles.Length > 0)
+                    {
+                        // Force HEVC Main Profile and disable video stream copy.
+                        state.OutputVideoCodec = "hevc";
+                        var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(",", requestedVideoProfiles), "main");
+                        sdrVideoUrl += "&AllowVideoStreamCopy=false";
+
+                        EncodingHelper encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
+                        var sdrOutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec) ?? 0;
+                        var sdrOutputAudioBitrate = encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream) ?? 0;
+                        var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
+
+                        AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
+
+                        // Restore the video codec
+                        state.OutputVideoCodec = "copy";
+                    }
+                }
+
+                // Provide Level 5.0 entrance for backward compatibility.
+                // e.g. Apple A10 chips refuse the master playlist containing SDR HEVC Main Level 5.1 video,
+                // but in fact it is capable of playing videos up to Level 6.1.
+                if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                    && state.VideoStream.Level.HasValue
+                    && state.VideoStream.Level > 150
+                    && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
+                    && string.Equals(state.VideoStream.VideoRange, "SDR", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+                {
+                    var playlistCodecsField = new StringBuilder();
+                    AppendPlaylistCodecsField(playlistCodecsField, state);
+
+                    // Force the video level to 5.0.
+                    var originalLevel = state.VideoStream.Level;
+                    state.VideoStream.Level = 150;
+                    var newPlaylistCodecsField = new StringBuilder();
+                    AppendPlaylistCodecsField(newPlaylistCodecsField, state);
+
+                    // Restore the video level.
+                    state.VideoStream.Level = originalLevel;
+                    var newPlaylist = ReplacePlaylistCodecsField(basicPlaylist, playlistCodecsField, newPlaylistCodecsField);
+                    builder.Append(newPlaylist);
+                }
+            }
 
             if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIp()))
             {
@@ -212,40 +271,77 @@ namespace Jellyfin.Api.Helpers
                 var variation = GetBitrateVariation(totalBitrate);
 
                 var newBitrate = totalBitrate - variation;
-                var variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
+                var variantUrl = ReplaceVideoBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
                 AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
 
                 variation *= 2;
                 newBitrate = totalBitrate - variation;
-                variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
+                variantUrl = ReplaceVideoBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
                 AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
             }
 
             return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
         }
 
-        private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)
+        private StringBuilder AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)
         {
-            builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
+            var playlistBuilder = new StringBuilder();
+            playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
                 .Append(bitrate.ToString(CultureInfo.InvariantCulture))
                 .Append(",AVERAGE-BANDWIDTH=")
                 .Append(bitrate.ToString(CultureInfo.InvariantCulture));
 
-            AppendPlaylistCodecsField(builder, state);
+            AppendPlaylistVideoRangeField(playlistBuilder, state);
 
-            AppendPlaylistResolutionField(builder, state);
+            AppendPlaylistCodecsField(playlistBuilder, state);
 
-            AppendPlaylistFramerateField(builder, state);
+            AppendPlaylistResolutionField(playlistBuilder, state);
+
+            AppendPlaylistFramerateField(playlistBuilder, state);
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
-                builder.Append(",SUBTITLES=\"")
+                playlistBuilder.Append(",SUBTITLES=\"")
                     .Append(subtitleGroup)
                     .Append('"');
             }
 
-            builder.Append(Environment.NewLine);
-            builder.AppendLine(url);
+            playlistBuilder.Append(Environment.NewLine);
+            playlistBuilder.AppendLine(url);
+            builder.Append(playlistBuilder);
+
+            return playlistBuilder;
+        }
+
+        /// <summary>
+        /// Appends a VIDEO-RANGE field containing the range of the output video stream.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistVideoRangeField(StringBuilder builder, StreamState state)
+        {
+            if (state.VideoStream != null && !string.IsNullOrEmpty(state.VideoStream.VideoRange))
+            {
+                var videoRange = state.VideoStream.VideoRange;
+                if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+                {
+                    if (string.Equals(videoRange, "SDR", StringComparison.OrdinalIgnoreCase))
+                    {
+                        builder.Append(",VIDEO-RANGE=SDR");
+                    }
+
+                    if (string.Equals(videoRange, "HDR", StringComparison.OrdinalIgnoreCase))
+                    {
+                        builder.Append(",VIDEO-RANGE=PQ");
+                    }
+                }
+                else
+                {
+                    // Currently we only encode to SDR.
+                    builder.Append(",VIDEO-RANGE=SDR");
+                }
+            }
         }
 
         /// <summary>
@@ -414,15 +510,27 @@ namespace Jellyfin.Api.Helpers
         /// <returns>H.26X level of the output video stream.</returns>
         private int? GetOutputVideoCodecLevel(StreamState state)
         {
-            string? levelString;
+            string levelString = string.Empty;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                && state.VideoStream != null
                 && state.VideoStream.Level.HasValue)
             {
-                levelString = state.VideoStream?.Level.ToString();
+                levelString = state.VideoStream.Level.ToString() ?? string.Empty;
             }
             else
             {
-                levelString = state.GetRequestedLevel(state.ActualOutputVideoCodec);
+                if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+                {
+                    levelString = state.GetRequestedLevel(state.ActualOutputVideoCodec) ?? "41";
+                    levelString = EncodingHelper.NormalizeTranscodingLevel(state, levelString);
+                }
+
+                if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+                {
+                    levelString = state.GetRequestedLevel("h265") ?? state.GetRequestedLevel("hevc") ?? "120";
+                    levelString = EncodingHelper.NormalizeTranscodingLevel(state, levelString);
+                }
             }
 
             if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
@@ -431,6 +539,38 @@ namespace Jellyfin.Api.Helpers
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get the H.26X profile of the output video stream.
+        /// </summary>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <param name="codec">Video codec.</param>
+        /// <returns>H.26X profile of the output video stream.</returns>
+        private string GetOutputVideoCodecProfile(StreamState state, string codec)
+        {
+            string profileString = string.Empty;
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                && !string.IsNullOrEmpty(state.VideoStream.Profile))
+            {
+                profileString = state.VideoStream.Profile;
+            }
+            else if (!string.IsNullOrEmpty(codec))
+            {
+                profileString = state.GetRequestedProfiles(codec).FirstOrDefault() ?? string.Empty;
+                if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+                {
+                    profileString = profileString ?? "high";
+                }
+
+                if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+                {
+                    profileString = profileString ?? "main";
+                }
+            }
+
+            return profileString;
         }
 
         /// <summary>
@@ -463,6 +603,16 @@ namespace Jellyfin.Api.Helpers
                 return HlsCodecStringHelpers.GetEAC3String();
             }
 
+            if (string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringHelpers.GetFLACString();
+            }
+
+            if (string.Equals(state.ActualOutputAudioCodec, "alac", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringHelpers.GetALACString();
+            }
+
             return string.Empty;
         }
 
@@ -487,15 +637,14 @@ namespace Jellyfin.Api.Helpers
 
             if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
             {
-                string profile = state.GetRequestedProfiles("h264").FirstOrDefault();
+                string profile = GetOutputVideoCodecProfile(state, "h264");
                 return HlsCodecStringHelpers.GetH264String(profile, level);
             }
 
             if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
-                string profile = state.GetRequestedProfiles("h265").FirstOrDefault();
-
+                string profile = GetOutputVideoCodecProfile(state, "hevc");
                 return HlsCodecStringHelpers.GetH265String(profile, level);
             }
 
@@ -539,11 +688,29 @@ namespace Jellyfin.Api.Helpers
             return variation;
         }
 
-        private string ReplaceBitrate(string url, int oldValue, int newValue)
+        private string ReplaceVideoBitrate(string url, int oldValue, int newValue)
         {
             return url.Replace(
                 "videobitrate=" + oldValue.ToString(CultureInfo.InvariantCulture),
                 "videobitrate=" + newValue.ToString(CultureInfo.InvariantCulture),
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string ReplaceProfile(string url, string codec, string oldValue, string newValue)
+        {
+            string profileStr = codec + "-profile=";
+            return url.Replace(
+                profileStr + oldValue,
+                profileStr + newValue,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string ReplacePlaylistCodecsField(StringBuilder playlist, StringBuilder oldValue, StringBuilder newValue)
+        {
+            var oldPlaylist = playlist.ToString();
+            return oldPlaylist.Replace(
+                oldValue.ToString(),
+                newValue.ToString(),
                 StringComparison.OrdinalIgnoreCase);
         }
     }

@@ -158,7 +158,6 @@ namespace Jellyfin.Server.Implementations.Users
 
             user.Username = newName;
             await UpdateUserAsync(user).ConfigureAwait(false);
-
             OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
@@ -167,6 +166,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             using var dbContext = _dbProvider.CreateContext();
             dbContext.Users.Update(user);
+            _users[user.Id] = user;
             dbContext.SaveChanges();
         }
 
@@ -175,7 +175,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             await using var dbContext = _dbProvider.CreateContext();
             dbContext.Users.Update(user);
-
+            _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
@@ -642,6 +642,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
             dbContext.Update(user);
+            _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
@@ -713,6 +714,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
+            _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
@@ -723,6 +725,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Remove(user.ProfileImage);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
             user.ProfileImage = null;
+            _users[user.Id] = user;
         }
 
         private static bool IsValidUsername(string name)

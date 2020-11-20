@@ -9,6 +9,10 @@ namespace MediaBrowser.Model.Configuration
 
         public string TranscodingTempPath { get; set; }
 
+        public string FallbackFontPath { get; set; }
+
+        public bool EnableFallbackFont { get; set; }
+
         public double DownMixAudioBoost { get; set; }
 
         public int MaxMuxingQueueSize { get; set; }
@@ -63,12 +67,15 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableHardwareEncoding { get; set; }
 
+        public bool AllowHevcEncoding { get; set; }
+
         public bool EnableSubtitleExtraction { get; set; }
 
         public string[] HardwareDecodingCodecs { get; set; }
 
         public EncodingOptions()
         {
+            EnableFallbackFont = false;
             DownMixAudioBoost = 2;
             MaxMuxingQueueSize = 2048;
             EnableThrottling = false;
@@ -94,6 +101,7 @@ namespace MediaBrowser.Model.Configuration
             EnableDecodingColorDepth10Hevc = true;
             EnableDecodingColorDepth10Vp9 = true;
             EnableHardwareEncoding = true;
+            AllowHevcEncoding = true;
             EnableSubtitleExtraction = true;
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }

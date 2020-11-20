@@ -16,7 +16,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Common.System;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
@@ -25,7 +25,6 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -49,7 +48,7 @@ namespace Emby.Server.Implementations.Updates
         /// Gets the application host.
         /// </summary>
         /// <value>The application host.</value>
-        private readonly IApplicationHost _applicationHost;
+        private readonly IServerApplicationHost _applicationHost;
 
         private readonly IZipClient _zipClient;
 
@@ -67,7 +66,7 @@ namespace Emby.Server.Implementations.Updates
 
         public InstallationManager(
             ILogger<InstallationManager> logger,
-            IApplicationHost appHost,
+            IServerApplicationHost appHost,
             IApplicationPaths appPaths,
             IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
@@ -100,7 +99,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .GetAsync(manifest, cancellationToken).ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                 try
                 {
@@ -115,11 +114,6 @@ namespace Emby.Server.Implementations.Updates
             catch (UriFormatException ex)
             {
                 _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
-                return Array.Empty<PackageInfo>();
-            }
-            catch (HttpException ex)
-            {
-                _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
                 return Array.Empty<PackageInfo>();
             }
             catch (HttpRequestException ex)
@@ -217,7 +211,8 @@ namespace Emby.Server.Implementations.Updates
 
         private IEnumerable<InstallationInfo> GetAvailablePluginUpdates(IReadOnlyList<PackageInfo> pluginCatalog)
         {
-            foreach (var plugin in _applicationHost.Plugins)
+            var plugins = _applicationHost.GetLocalPlugins(_appPaths.PluginsPath);
+            foreach (var plugin in plugins)
             {
                 var compatibleVersions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, minVersion: plugin.Version);
                 var version = compatibleVersions.FirstOrDefault(y => y.Version > plugin.Version);
@@ -246,7 +241,8 @@ namespace Emby.Server.Implementations.Updates
                 _currentInstallations.Add(tuple);
             }
 
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token);
+            var linkedToken = linkedTokenSource.Token;
 
             await _eventManager.PublishAsync(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
 
@@ -338,7 +334,7 @@ namespace Emby.Server.Implementations.Updates
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(package.SourceUrl, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351

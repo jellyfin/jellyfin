@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -12,6 +12,7 @@ using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -102,7 +103,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="playSessionId">Playback session id.</param>
         /// <returns>The transcoding job.</returns>
-        public TranscodingJobDto GetTranscodingJob(string playSessionId)
+        public TranscodingJobDto? GetTranscodingJob(string playSessionId)
         {
             lock (_activeTranscodingJobs)
             {
@@ -116,7 +117,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="path">Path to the transcoding file.</param>
         /// <param name="type">The <see cref="TranscodingJobType"/>.</param>
         /// <returns>The transcoding job.</returns>
-        public TranscodingJobDto GetTranscodingJob(string path, TranscodingJobType type)
+        public TranscodingJobDto? GetTranscodingJob(string path, TranscodingJobType type)
         {
             lock (_activeTranscodingJobs)
             {
@@ -144,7 +145,7 @@ namespace Jellyfin.Api.Helpers
             lock (_activeTranscodingJobs)
             {
                 // This is really only needed for HLS.
-                // Progressive streams can stop on their own reliably
+                // Progressive streams can stop on their own reliably.
                 jobs = _activeTranscodingJobs.Where(j => string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
@@ -193,10 +194,9 @@ namespace Jellyfin.Api.Helpers
         /// Called when [transcode kill timer stopped].
         /// </summary>
         /// <param name="state">The state.</param>
-        private async void OnTranscodeKillTimerStopped(object state)
+        private async void OnTranscodeKillTimerStopped(object? state)
         {
-            var job = (TranscodingJobDto)state;
-
+            var job = state as TranscodingJobDto ?? throw new ArgumentException($"{nameof(state)} is not of type {nameof(TranscodingJobDto)}", nameof(state));
             if (!job.HasExited && job.Type != TranscodingJobType.Progressive)
             {
                 var timeSinceLastPing = (DateTime.UtcNow - job.LastPingDate).TotalMilliseconds;
@@ -241,7 +241,7 @@ namespace Jellyfin.Api.Helpers
             lock (_activeTranscodingJobs)
             {
                 // This is really only needed for HLS.
-                // Progressive streams can stop on their own reliably
+                // Progressive streams can stop on their own reliably.
                 jobs.AddRange(_activeTranscodingJobs.Where(killJob));
             }
 
@@ -304,10 +304,10 @@ namespace Jellyfin.Api.Helpers
 
                         process!.StandardInput.WriteLine("q");
 
-                        // Need to wait because killing is asynchronous
+                        // Need to wait because killing is asynchronous.
                         if (!process.WaitForExit(5000))
                         {
-                            _logger.LogInformation("Killing ffmpeg process for {Path}", job.Path);
+                            _logger.LogInformation("Killing FFmpeg process for {Path}", job.Path);
                             process.Kill();
                         }
                     }
@@ -470,11 +470,11 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Starts the FFMPEG.
+        /// Starts FFmpeg.
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="outputPath">The output path.</param>
-        /// <param name="commandLineArguments">The command line arguments for ffmpeg.</param>
+        /// <param name="commandLineArguments">The command line arguments for FFmpeg.</param>
         /// <param name="request">The <see cref="HttpRequest"/>.</param>
         /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
@@ -489,7 +489,8 @@ namespace Jellyfin.Api.Helpers
             CancellationTokenSource cancellationTokenSource,
             string? workingDirectory = null)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+            Directory.CreateDirectory(directory);
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
@@ -500,13 +501,13 @@ namespace Jellyfin.Api.Helpers
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
 
-                    throw new ArgumentException("User does not have access to video transcoding");
+                    throw new ArgumentException("User does not have access to video transcoding.");
                 }
             }
 
             if (string.IsNullOrEmpty(_mediaEncoder.EncoderPath))
             {
-                throw new ArgumentException("FFMPEG path not set.");
+                throw new ArgumentException("FFmpeg path not set.");
             }
 
             var process = new Process
@@ -523,7 +524,7 @@ namespace Jellyfin.Api.Helpers
                     RedirectStandardInput = true,
                     FileName = _mediaEncoder.EncoderPath,
                     Arguments = commandLineArguments,
-                    WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? null : workingDirectory,
+                    WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? string.Empty : workingDirectory,
                     ErrorDialog = false
                 },
                 EnableRaisingEvents = true
@@ -543,18 +544,20 @@ namespace Jellyfin.Api.Helpers
             var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
             _logger.LogInformation(commandLineLogMessage);
 
-            var logFilePrefix = "ffmpeg-transcode";
+            var logFilePrefix = "FFmpeg.Transcode-";
             if (state.VideoRequest != null
                 && EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 logFilePrefix = EncodingHelper.IsCopyCodec(state.OutputAudioCodec)
-                    ? "ffmpeg-remux"
-                    : "ffmpeg-directstream";
+                    ? "FFmpeg.Remux-"
+                    : "FFmpeg.DirectStream-";
             }
 
-            var logFilePath = Path.Combine(_serverConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + "-" + Guid.NewGuid() + ".txt");
+            var logFilePath = Path.Combine(
+                _serverConfigurationManager.ApplicationPaths.LogDirectoryPath,
+                $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");
 
-            // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
+            // FFmpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(request.Path + Environment.NewLine + Environment.NewLine + JsonSerializer.Serialize(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
@@ -568,20 +571,20 @@ namespace Jellyfin.Api.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error starting ffmpeg");
+                _logger.LogError(ex, "Error starting FFmpeg");
 
                 this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
 
                 throw;
             }
 
-            _logger.LogDebug("Launched ffmpeg process");
+            _logger.LogDebug("Launched FFmpeg process");
             state.TranscodingJob = transcodingJob;
 
-            // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
+            // Important - don't await the log task or we won't be able to kill FFmpeg when the user stops playback
             _ = new JobLogger(_logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
 
-            // Wait for the file to exist before proceeeding
+            // Wait for the file to exist before proceeding
             var ffmpegTargetFile = state.WaitForPath ?? outputPath;
             _logger.LogDebug("Waiting for the creation of {0}", ffmpegTargetFile);
             while (!File.Exists(ffmpegTargetFile) && !transcodingJob.HasExited)
@@ -747,11 +750,11 @@ namespace Jellyfin.Api.Helpers
 
             if (process.ExitCode == 0)
             {
-                _logger.LogInformation("FFMpeg exited with code 0");
+                _logger.LogInformation("FFmpeg exited with code 0");
             }
             else
             {
-                _logger.LogError("FFMpeg exited with code {0}", process.ExitCode);
+                _logger.LogError("FFmpeg exited with code {0}", process.ExitCode);
             }
 
             process.Dispose();
@@ -770,8 +773,9 @@ namespace Jellyfin.Api.Helpers
                     new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
                     cancellationTokenSource.Token)
                     .ConfigureAwait(false);
+                var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-                _encodingHelper.AttachMediaSourceInfo(state, liveStreamResponse.MediaSource, state.RequestedUrl);
+                _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.RequestedUrl);
 
                 if (state.VideoRequest != null)
                 {
@@ -827,7 +831,7 @@ namespace Jellyfin.Api.Helpers
         {
             lock (_transcodingLocks)
             {
-                if (!_transcodingLocks.TryGetValue(outputPath, out SemaphoreSlim result))
+                if (!_transcodingLocks.TryGetValue(outputPath, out SemaphoreSlim? result))
                 {
                     result = new SemaphoreSlim(1, 1);
                     _transcodingLocks[outputPath] = result;
@@ -837,7 +841,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private void OnPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
             {

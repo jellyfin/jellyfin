@@ -13,6 +13,7 @@ using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
@@ -76,6 +77,7 @@ namespace Jellyfin.Server
                  options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
 
             ServiceCollection.AddEventServices();
+            ServiceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             ServiceCollection.AddSingleton<IEventManager, EventManager>();
             ServiceCollection.AddSingleton<JellyfinDbProvider>();
 
