@@ -794,7 +794,7 @@ namespace MediaBrowser.Model.Dlna
 
         public int? GetTargetAudioChannels(string codec)
         {
-            var defaultValue = GlobalMaxAudioChannels;
+            var defaultValue = GlobalMaxAudioChannels ?? TranscodingMaxAudioChannels;
 
             var value = GetOption(codec, "audiochannels");
             if (string.IsNullOrEmpty(value))
