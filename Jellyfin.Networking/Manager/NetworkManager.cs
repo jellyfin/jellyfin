@@ -182,7 +182,7 @@ namespace Jellyfin.Networking.Manager
         public IReadOnlyCollection<PhysicalAddress> GetMacAddresses()
         {
             // Populated in construction - so always has values.
-            return _macAddresses.AsReadOnly();
+            return _macAddresses;
         }
 
         /// <inheritdoc/>
