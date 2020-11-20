@@ -191,8 +191,11 @@ namespace Jellyfin.Api.Controllers
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
                 // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
+                // ffmpeg option -> file extension
+                //        mpegts -> ts
+                //          fmp4 -> mp4
                 // TODO: remove this when we switch back to the segment muxer
-                var supportedHlsContainers = new[] { "mpegts", "fmp4" };
+                var supportedHlsContainers = new[] { "ts", "mp4" };
 
                 var dynamicHlsRequestDto = new HlsAudioRequestDto
                 {
@@ -201,7 +204,7 @@ namespace Jellyfin.Api.Controllers
                     Static = isStatic,
                     PlaySessionId = info.PlaySessionId,
                     // fallback to mpegts if device reports some weird value unsupported by hls
-                    SegmentContainer = Array.Exists(supportedHlsContainers, element => element == transcodingContainer) ? transcodingContainer : "mpegts",
+                    SegmentContainer = Array.Exists(supportedHlsContainers, element => element == transcodingContainer) ? transcodingContainer : "ts",
                     MediaSourceId = mediaSourceId,
                     DeviceId = deviceId,
                     AudioCodec = audioCodec,

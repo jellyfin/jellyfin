@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +42,9 @@ namespace Jellyfin.Api.Controllers
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class DynamicHlsController : BaseJellyfinApiController
     {
+        private const string DefaultEncoderPreset = "veryfast";
+        private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
+
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -56,8 +60,7 @@ namespace Jellyfin.Api.Controllers
         private readonly ILogger<DynamicHlsController> _logger;
         private readonly EncodingHelper _encodingHelper;
         private readonly DynamicHlsHelper _dynamicHlsHelper;
-
-        private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Hls;
+        private readonly EncodingOptions _encodingOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicHlsController"/> class.
@@ -92,6 +95,8 @@ namespace Jellyfin.Api.Controllers
             ILogger<DynamicHlsController> logger,
             DynamicHlsHelper dynamicHlsHelper)
         {
+            _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
+
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
@@ -106,8 +111,7 @@ namespace Jellyfin.Api.Controllers
             _transcodingJobHelper = transcodingJobHelper;
             _logger = logger;
             _dynamicHlsHelper = dynamicHlsHelper;
-
-            _encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
+            _encodingOptions = serverConfigurationManager.GetEncodingOptions();
         }
 
         /// <summary>
@@ -272,7 +276,7 @@ namespace Jellyfin.Api.Controllers
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -439,7 +443,7 @@ namespace Jellyfin.Api.Controllers
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1129,7 +1133,7 @@ namespace Jellyfin.Api.Controllers
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
-                    _transcodingJobType,
+                    TranscodingJobType,
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
@@ -1137,11 +1141,19 @@ namespace Jellyfin.Api.Controllers
 
             var segmentLengths = GetSegmentLengths(state);
 
+            var segmentContainer = state.Request.SegmentContainer ?? "ts";
+
+            // http://ffmpeg.org/ffmpeg-all.html#toc-hls-2
+            var isHlsInFmp4 = string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase);
+            var hlsVersion = isHlsInFmp4 ? "7" : "3";
+
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U")
                 .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
-                .AppendLine("#EXT-X-VERSION:3")
+                .Append("#EXT-X-VERSION:")
+                .Append(hlsVersion)
+                .AppendLine()
                 .Append("#EXT-X-TARGETDURATION:")
                 .Append(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength))
                 .AppendLine()
@@ -1150,6 +1162,18 @@ namespace Jellyfin.Api.Controllers
             var index = 0;
             var segmentExtension = GetSegmentFileExtension(streamingRequest.SegmentContainer);
             var queryString = Request.QueryString;
+
+            if (isHlsInFmp4)
+            {
+                builder.Append("#EXT-X-MAP:URI=\"")
+                    .Append("hls1/")
+                    .Append(name)
+                    .Append("/-1")
+                    .Append(segmentExtension)
+                    .Append(queryString)
+                    .Append('"')
+                    .AppendLine();
+            }
 
             foreach (var length in segmentLengths)
             {
@@ -1194,7 +1218,7 @@ namespace Jellyfin.Api.Controllers
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
-                    _transcodingJobType,
+                    TranscodingJobType,
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
@@ -1208,7 +1232,7 @@ namespace Jellyfin.Api.Controllers
 
             if (System.IO.File.Exists(segmentPath))
             {
-                job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+                job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
             }
@@ -1222,7 +1246,7 @@ namespace Jellyfin.Api.Controllers
             {
                 if (System.IO.File.Exists(segmentPath))
                 {
-                    job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+                    job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     transcodingLock.Release();
                     released = true;
                     _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
@@ -1233,7 +1257,13 @@ namespace Jellyfin.Api.Controllers
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
                     var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
 
-                    if (currentTranscodingIndex == null)
+                    if (segmentId == -1)
+                    {
+                        _logger.LogDebug("Starting transcoding because fmp4 init file is being requested");
+                        startTranscoding = true;
+                        segmentId = 0;
+                    }
+                    else if (currentTranscodingIndex == null)
                     {
                         _logger.LogDebug("Starting transcoding because currentTranscodingIndex=null");
                         startTranscoding = true;
@@ -1265,13 +1295,12 @@ namespace Jellyfin.Api.Controllers
                             streamingRequest.StartTimeTicks = GetStartPositionTicks(state, segmentId);
 
                             state.WaitForPath = segmentPath;
-                            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
                             job = await _transcodingJobHelper.StartFfMpeg(
                                 state,
                                 playlistPath,
-                                GetCommandLineArguments(playlistPath, encodingOptions, state, true, segmentId),
+                                GetCommandLineArguments(playlistPath, state, true, segmentId),
                                 Request,
-                                _transcodingJobType,
+                                TranscodingJobType,
                                 cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
@@ -1284,7 +1313,7 @@ namespace Jellyfin.Api.Controllers
                     }
                     else
                     {
-                        job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+                        job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                         if (job?.TranscodingThrottler != null)
                         {
                             await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
@@ -1301,7 +1330,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             _logger.LogDebug("returning {0} [general case]", segmentPath);
-            job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+            job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
         }
 
@@ -1325,11 +1354,10 @@ namespace Jellyfin.Api.Controllers
             return result.ToArray();
         }
 
-        private string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding, int startNumber)
+        private string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding, int startNumber)
         {
-            var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
-
-            var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec); // GetNumberOfThreads is static.
+            var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+            var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
 
             if (state.BaseRequest.BreakOnNonKeyFrames)
             {
@@ -1341,36 +1369,57 @@ namespace Jellyfin.Api.Controllers
                 state.BaseRequest.BreakOnNonKeyFrames = false;
             }
 
-            var inputModifier = _encodingHelper.GetInputModifier(state, encodingOptions);
-
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? startNumber.ToString(CultureInfo.InvariantCulture) : "0";
-
+            var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
             var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+            var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
+            var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
+            var outputExtension = GetSegmentFileExtension(state.Request.SegmentContainer);
+            var outputTsArg = outputPrefix + "%d" + outputExtension;
 
-            var outputTsArg = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
-
-            var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
+            var segmentFormat = outputExtension.TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
             {
                 segmentFormat = "mpegts";
             }
+            else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                var outputFmp4HeaderArg = string.Empty;
+                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                if (isWindows)
+                {
+                    // on Windows, the path of fmp4 header file needs to be configured
+                    outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
+                }
+                else
+                {
+                    // on Linux/Unix, ffmpeg generate fmp4 header file to m3u8 output folder
+                    outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputFileNameWithoutExtension + "-1" + outputExtension + "\"";
+                }
 
-            var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize > 128
-                ? encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
+                segmentFormat = "fmp4" + outputFmp4HeaderArg;
+            }
+            else
+            {
+                _logger.LogError("Invalid HLS segment container: " + segmentFormat);
+            }
+
+            var maxMuxingQueueSize = _encodingOptions.MaxMuxingQueueSize > 128
+                ? _encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
                 : "128";
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -individual_header_trailer 0 -hls_segment_type {8} -start_number {9} -hls_segment_filename \"{10}\" -hls_playlist_type vod -hls_list_size 0 -y \"{11}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9} -hls_segment_filename \"{10}\" -hls_playlist_type vod -hls_list_size 0 -y \"{11}\"",
                 inputModifier,
-                _encodingHelper.GetInputArgument(state, encodingOptions),
+                _encodingHelper.GetInputArgument(state, _encodingOptions),
                 threads,
                 mapArgs,
-                GetVideoArguments(state, encodingOptions, startNumber),
-                GetAudioArguments(state, encodingOptions),
+                GetVideoArguments(state, startNumber),
+                GetAudioArguments(state),
                 maxMuxingQueueSize,
                 state.SegmentLength.ToString(CultureInfo.InvariantCulture),
                 segmentFormat,
@@ -1379,50 +1428,63 @@ namespace Jellyfin.Api.Controllers
                 outputPath).Trim();
         }
 
-        private string GetAudioArguments(StreamState state, EncodingOptions encodingOptions)
+        /// <summary>
+        /// Gets the audio arguments for transcoding.
+        /// </summary>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <returns>The command line arguments for audio transcoding.</returns>
+        private string GetAudioArguments(StreamState state)
         {
+            if (state.AudioStream == null)
+            {
+                return string.Empty;
+            }
+
             var audioCodec = _encodingHelper.GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)
             {
                 if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
-                    return "-acodec copy";
+                    var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
+
+                    return "-acodec copy -strict -2" + bitStreamArgs;
                 }
 
-                var audioTranscodeParams = new List<string>();
+                var audioTranscodeParams = string.Empty;
 
-                audioTranscodeParams.Add("-acodec " + audioCodec);
+                audioTranscodeParams += "-acodec " + audioCodec;
 
                 if (state.OutputAudioBitrate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (state.OutputAudioChannels.HasValue)
                 {
-                    audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (state.OutputAudioSampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
-                audioTranscodeParams.Add("-vn");
-                return string.Join(' ', audioTranscodeParams);
+                audioTranscodeParams += " -vn";
+                return audioTranscodeParams;
             }
 
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
-                var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
+                var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+                var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
                 if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
-                    return "-codec:a:0 copy -copypriorss:a:0 0";
+                    return "-codec:a:0 copy -strict -2 -copypriorss:a:0 0" + bitStreamArgs;
                 }
 
-                return "-codec:a:0 copy";
+                return "-codec:a:0 copy -strict -2" + bitStreamArgs;
             }
 
             var args = "-codec:a:0 " + audioCodec;
@@ -1446,94 +1508,89 @@ namespace Jellyfin.Api.Controllers
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            args += " " + _encodingHelper.GetAudioFilterParam(state, encodingOptions, true);
+            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
 
             return args;
         }
 
-        private string GetVideoArguments(StreamState state, EncodingOptions encodingOptions, int startNumber)
+        /// <summary>
+        /// Gets the video arguments for transcoding.
+        /// </summary>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <param name="startNumber">The first number in the hls sequence.</param>
+        /// <returns>The command line arguments for video transcoding.</returns>
+        private string GetVideoArguments(StreamState state, int startNumber)
         {
+            if (state.VideoStream == null)
+            {
+                return string.Empty;
+            }
+
             if (!state.IsOutputVideo)
             {
                 return string.Empty;
             }
 
-            var codec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
+            var codec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
 
             var args = "-codec:v:0 " + codec;
+
+            // Prefer hvc1 to hev1.
+            if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+            {
+                args += " -tag:v:0 hvc1";
+            }
 
             // if  (state.EnableMpegtsM2TsMode)
             // {
             //     args += " -mpegts_m2ts_mode 1";
             // }
 
-            // See if we can save come cpu cycles by avoiding encoding
+            // See if we can save come cpu cycles by avoiding encoding.
             if (EncodingHelper.IsCopyCodec(codec))
             {
                 if (state.VideoStream != null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
-                    string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.VideoStream);
+                    string bitStreamArgs = EncodingHelper.GetBitStreamArgs(state.VideoStream);
                     if (!string.IsNullOrEmpty(bitStreamArgs))
                     {
                         args += " " + bitStreamArgs;
                     }
                 }
 
+                args += " -start_at_zero";
+
                 // args += " -flags -global_header";
             }
             else
             {
-                var gopArg = string.Empty;
-                var keyFrameArg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
-                    startNumber * state.SegmentLength,
-                    state.SegmentLength);
+                args += _encodingHelper.GetVideoQualityParam(state, codec, _encodingOptions, DefaultEncoderPreset);
 
-                var framerate = state.VideoStream?.RealFrameRate;
+                // Set the key frame params for video encoding to match the hls segment time.
+                args += _encodingHelper.GetHlsVideoKeyFrameArguments(state, codec, state.SegmentLength, false, startNumber);
 
-                if (framerate.HasValue)
+                // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
+                if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
-                    // This is to make sure keyframe interval is limited to our segment,
-                    // as forcing keyframes is not enough.
-                    // Example: we encoded half of desired length, then codec detected
-                    // scene cut and inserted a keyframe; next forced keyframe would
-                    // be created outside of segment, which breaks seeking
-                    // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe
-                    gopArg = string.Format(
-                        CultureInfo.InvariantCulture,
-                        " -g {0} -keyint_min {0} -sc_threshold 0",
-                        Math.Ceiling(state.SegmentLength * framerate.Value));
-                }
-
-                args += " " + _encodingHelper.GetVideoQualityParam(state, codec, encodingOptions, "veryfast");
-
-                // Unable to force key frames using these hw encoders, set key frames by GOP
-                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase))
-                {
-                    args += " " + gopArg;
-                }
-                else
-                {
-                    args += " " + keyFrameArg + gopArg;
+                    args += " -bf 0";
                 }
 
                 // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                // This is for graphical subs
                 if (hasGraphicalSubs)
                 {
-                    args += _encodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
+                    // Graphical subs overlay and resolution params.
+                    args += _encodingHelper.GetGraphicalSubtitleParam(state, _encodingOptions, codec);
                 }
-
-                // Add resolution params, if specified
                 else
                 {
-                    args += _encodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
+                    // Resolution params.
+                    args += _encodingHelper.GetOutputSizeParam(state, _encodingOptions, codec);
                 }
 
                 // -start_at_zero is necessary to use with -ss when seeking,
@@ -1693,7 +1750,7 @@ namespace Jellyfin.Api.Controllers
 
         private int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
-            var job = _transcodingJobHelper.GetTranscodingJob(playlist, _transcodingJobType);
+            var job = _transcodingJobHelper.GetTranscodingJob(playlist, TranscodingJobType);
 
             if (job == null || job.HasExited)
             {

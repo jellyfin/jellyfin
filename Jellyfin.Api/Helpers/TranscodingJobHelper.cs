@@ -771,8 +771,9 @@ namespace Jellyfin.Api.Helpers
                     new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
                     cancellationTokenSource.Token)
                     .ConfigureAwait(false);
+                var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-                _encodingHelper.AttachMediaSourceInfo(state, liveStreamResponse.MediaSource, state.RequestedUrl);
+                _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.RequestedUrl);
 
                 if (state.VideoRequest != null)
                 {
