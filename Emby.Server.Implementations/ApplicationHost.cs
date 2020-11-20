@@ -774,7 +774,7 @@ namespace Emby.Server.Implementations
 
                 foreach (var plugin in Plugins)
                 {
-                    if (plugin is IPluginAssembly assemblyPlugin)
+                    if (_pluginsManifests != null && plugin is IPluginAssembly assemblyPlugin)
                     {
                         // Ensure the version number matches the Plugin Manifest information.
                         foreach (var item in _pluginsManifests)
