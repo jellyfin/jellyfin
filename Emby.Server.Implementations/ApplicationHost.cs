@@ -1112,7 +1112,7 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                _pluginsManifests = GetLocalPlugins(ApplicationPaths.PluginsPath);
+                _pluginsManifests = GetLocalPlugins(ApplicationPaths.PluginsPath).ToList();
                 foreach (var plugin in _pluginsManifests)
                 {
                     foreach (var file in plugin.DllFiles)
