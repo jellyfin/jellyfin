@@ -40,6 +40,7 @@ namespace Emby.Naming.Video
             var match = expression.Match(name);
 
             if (match.Success
+                && match.Groups.Count == 5
                 && match.Groups[1].Success
                 && match.Groups[2].Success
                 && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
