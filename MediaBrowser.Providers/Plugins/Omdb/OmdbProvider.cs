@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
-            if (seasonResult == null || seasonResult.Episodes == null)
+            if (seasonResult?.Episodes == null)
             {
                 return false;
             }
