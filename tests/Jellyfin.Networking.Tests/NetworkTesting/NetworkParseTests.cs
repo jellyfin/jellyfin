@@ -183,7 +183,7 @@ namespace Jellyfin.Networking.Tests
 
             // Test excluded, including IPv6.
             nc = nm.CreateIPCollection(settings.Split(","), true);
-            Assert.True(string.Equals(nc?.AsString(), result4, System.StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(nc.AsString(), result4);
 
             conf.EnableIPV6 = true;
             nm.UpdateSettings(conf);
