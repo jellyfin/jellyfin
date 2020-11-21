@@ -179,7 +179,7 @@ namespace Jellyfin.Networking.Tests
             
             // Test included, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), false);
-            Assert.True(string.Equals(nc?.AsString(), result2, System.StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(nc.AsString(), result2);
 
             // Test excluded, including IPv6.
             nc = nm.CreateIPCollection(settings.Split(","), true);
