@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using Emby.Dlna.PlayTo;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
