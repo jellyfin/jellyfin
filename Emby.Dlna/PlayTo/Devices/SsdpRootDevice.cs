@@ -69,7 +69,11 @@ namespace Emby.Dlna.PlayTo.Devices
         /// Gets or sets the base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
         /// </summary>
         /// <remarks>
-        /// <para>Defines the base URL. Used to construct fully-qualified URLs. All relative URLs that appear elsewhere in the description are combined with this base URL. If URLBase is empty or not given, the base URL is the URL from which the device description was retrieved (which is the preferred implementation; use of URLBase is no longer recommended). Specified by UPnP vendor. Single URL.</para>
+        /// <para>Defines the base URL. Used to construct fully-qualified URLs.
+        /// All relative URLs that appear elsewhere in the description are combined with this base URL.
+        /// If URLBase is empty or not given, the base URL is the URL from which the device description was
+        /// retrieved (which is the preferred implementation; use of URLBase is no longer recommended).
+        /// Specified by UPnP vendor. Single URL.</para>
         /// </remarks>
         public Uri UrlBase
         {
