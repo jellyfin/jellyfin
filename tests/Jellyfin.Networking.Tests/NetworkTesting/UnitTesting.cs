@@ -105,7 +105,6 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
-
         public void TestCollectionCreation(string address)
         {
             Assert.True(TryParse(address, out _));
