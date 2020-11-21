@@ -15,7 +15,6 @@ namespace Emby.Dlna.PlayTo
     {
         private readonly IConfigurationManager _configuration;
 
-#pragma warning disable CA1062 // Validate arguments of public methods
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpPlayToLocator"/> class.
         /// </summary>
@@ -28,10 +27,7 @@ namespace Emby.Dlna.PlayTo
             networkManager.GetInternalBindAddresses(),
             new string[] { "urn:schemas-upnp-org:device:MediaRenderer:" },
             true,
-            networkManager.IsInLocalNetwork,
-            networkManager.IsIP4Enabled,
-            networkManager.IsIP6Enabled)
-#pragma warning restore CA1062 // Validate arguments of public methods
+            networkManager)
         {
             _configuration = configurationManager;
         }

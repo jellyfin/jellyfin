@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -9,11 +10,11 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 using static Emby.Dlna.Ssdp.SsdpServer;
-using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
-using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Emby.Dlna.Ssdp
 {
+    using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
+
     /// <summary>
     /// Searches the network for a particular device, device types, or UPnP service types.
     /// Listenings for broadcast notifications of device availability and raises events to indicate changes in status.
@@ -41,13 +42,11 @@ namespace Emby.Dlna.Ssdp
         /// Initializes a new instance of the <see cref="SsdpLocator"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
-        /// <param name="interfaces">A <see cref="NetCollection"/> of interface addresses to listen on.</param>
+        /// <param name="interfaces">A <see cref="Collection{IPObject}"/> of interface addresses to listen on.</param>
         /// <param name="filter">Array of Ssdp types which this instance should process.</param>
         /// <param name="activelySearch">True if this instance actively uses broadcasts to locate devices.</param>
-        /// <param name="isInLocalNetwork">Delegate used to check if a network address in part of the local LAN.</param>
-        /// <param name="ipv4Enabled">True if IPv4 is enabled.</param>
-        /// <param name="ipv6Enabled">True if IPv6 is enabled.</param>
-        public SsdpLocator(ILogger logger, NetCollection interfaces, string[] filter, bool activelySearch, IsInLocalNetwork isInLocalNetwork, bool ipv4Enabled = true, bool ipv6Enabled = true)
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
+        public SsdpLocator(ILogger logger, Collection<IPObject> interfaces, string[] filter, bool activelySearch, INetworkManager networkManager)
         {
             _timerLock = new object();
             _deviceLock = new object();
@@ -56,7 +55,7 @@ namespace Emby.Dlna.Ssdp
             _defaultSearchWaitTime = TimeSpan.FromSeconds(4);
             _oneSecond = TimeSpan.FromSeconds(1);
             Devices = new List<DiscoveredSsdpDevice>();
-            _ssdpServer = SsdpServer.GetOrCreateInstance(logger, interfaces, isInLocalNetwork, ipv4Enabled, ipv6Enabled);
+            _ssdpServer = SsdpServer.GetOrCreateInstance(logger, interfaces, networkManager);
             _ssdpServer.AddEvent("HTTP/1.1 200 OK", ProcessSearchResponseMessage);
             _ssdpServer.AddEvent("NOTIFY", ProcessNotificationMessage);
             _enableBroadcast = activelySearch;
@@ -361,9 +360,7 @@ namespace Emby.Dlna.Ssdp
         /// </summary>
         private void RemoveExpiredDevicesFromCache()
         {
-#pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
             DiscoveredSsdpDevice[]? expiredDevices = null;
-#pragma warning restore SA1011 // Closing square brackets should be spaced correctly
 
             lock (_deviceLock)
             {

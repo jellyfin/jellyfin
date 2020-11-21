@@ -29,16 +29,6 @@ namespace Emby.Dlna.Ssdp
         int UdpSendCount { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether IPv4 is enabled.
-        /// </summary>
-        public bool IsIPv4Enabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether IPv6 is enabled.
-        /// </summary>
-        public bool IsIPv6Enabled { get; set; }
-
-        /// <summary>
         /// Adds an event.
         /// </summary>
         /// <param name="action">The string to event on.</param>

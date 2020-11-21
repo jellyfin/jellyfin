@@ -51,9 +51,7 @@ namespace Emby.Dlna.Net
             _ssdpServer = SsdpServer.GetOrCreateInstance(
                 loggerFactory.CreateLogger<SsdpServer>(),
                 networkManager.GetInternalBindAddresses(),
-                networkManager.IsInLocalNetwork,
-                networkManager.IsIP4Enabled,
-                networkManager.IsIP6Enabled);
+                networkManager);
             _ssdpServer.SetTracingFilter(DlnaEntryPoint.Instance.IsDLNADebuggingEnabled);
             _logger = loggerFactory.CreateLogger<SsdpServerPublisher>();
             _devices = new List<SsdpRootDevice>();
