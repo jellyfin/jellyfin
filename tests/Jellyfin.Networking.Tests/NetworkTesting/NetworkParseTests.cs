@@ -68,7 +68,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            Assert.True(string.Equals(nm.GetInternalBindAddresses().AsString(), value, StringComparison.Ordinal));
+            Assert.Equal(nm.GetInternalBindAddresses().AsString(), value);
         }
 
         [Theory]
