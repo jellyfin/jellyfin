@@ -476,7 +476,7 @@ namespace Jellyfin.Networking.Tests
 
             var intf = nm.GetBindInterface(source, out int? _);
 
-            Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(intf, result);
         }
     }
 }
