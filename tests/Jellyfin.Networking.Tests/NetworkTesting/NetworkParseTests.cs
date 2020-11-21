@@ -226,7 +226,7 @@ namespace Jellyfin.Networking.Tests
             Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(","), false);
             Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(","), false);
 
-            Assert.True(nc1.Union(nc2).AsString() == result);
+            Assert.Equal(nc1.Union(nc2).AsString(), result);
         }
 
         [Theory]
