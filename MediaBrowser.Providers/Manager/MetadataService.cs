@@ -229,7 +229,7 @@ namespace MediaBrowser.Providers.Manager
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
+        private Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
         {
             var personsToSave = new List<BaseItem>();
 
