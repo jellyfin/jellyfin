@@ -19,10 +19,11 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// Parses a plugin manifest at the supplied URL.
         /// </summary>
+        /// <param name="manifestName">Name of the repository.</param>
         /// <param name="manifest">The URL to query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
-        Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default);
+        Task<IList<PackageInfo>> GetPackages(string manifestName, string manifest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all available packages.
@@ -37,11 +38,13 @@ namespace MediaBrowser.Common.Updates
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name of the plugin.</param>
         /// <param name="guid">The id of the plugin.</param>
+        /// <param name="specificVersion">The version of the plugin.</param>
         /// <returns>All plugins matching the requirements.</returns>
         IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
-            Guid guid = default);
+            Guid guid = default,
+            Version specificVersion = null);
 
         /// <summary>
         /// Returns all compatible versions ordered from newest to oldest.
