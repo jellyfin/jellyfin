@@ -90,7 +90,7 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Assert.True(!nm.IsInLocalNetwork(value));
+            Assert.False(nm.IsInLocalNetwork(value));
         }
 
         [Theory]
