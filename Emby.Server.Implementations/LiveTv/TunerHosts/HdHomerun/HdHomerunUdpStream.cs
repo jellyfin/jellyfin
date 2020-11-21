@@ -67,9 +67,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         .Where(n => n.Port >= range.Min && n.Port <= range.Max)
                         .Select(n => n.Port);
 
-            return Enumerable.Range(range.Min, range.Max)
-                .Where(i => !udpListenerPorts.Contains(i))
-                .FirstOrDefault();
+            return Enumerable
+                .Range(range.Min, range.Max)
+                .FirstOrDefault(i => !udpListenerPorts.Contains(i));
         }
 
         public override async Task Open(CancellationToken openCancellationToken)
