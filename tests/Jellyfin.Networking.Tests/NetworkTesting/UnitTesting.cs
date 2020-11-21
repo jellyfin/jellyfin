@@ -8,13 +8,14 @@ using MediaBrowser.Common.Net;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using System.Collections.ObjectModel;
 
 namespace Jellyfin.Networking.Tests
 {
     public class NetworkParseTests
     {
         /// <summary>
-        /// Trys to identify the string and return an object of that class.
+        /// Tries to identify the string and return an object of that class.
         /// </summary>
         /// <param name="addr">String to parse.</param>
         /// <param name="result">IPObject to return.</param>
@@ -121,7 +122,6 @@ namespace Jellyfin.Networking.Tests
         }
 
         [Theory]
-        // Src, IncIP6, incIP4, exIP6, ecIP4, net
         [InlineData("127.0.0.1#",
             "[]",
             "[]",
@@ -168,10 +168,10 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            NetCollection nc = nm.CreateIPCollection(settings.Split(","), false); 
+            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false); 
             Assert.True(string.Equals(nc?.AsString(), result1, System.StringComparison.OrdinalIgnoreCase));
 
-            // Text excluded, non IP6.
+            // Test excluded, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), true);
             Assert.True(string.Equals(nc?.AsString(), result3, System.StringComparison.OrdinalIgnoreCase));
 
@@ -224,8 +224,8 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            NetCollection nc1 = nm.CreateIPCollection(settings.Split(","), false);
-            NetCollection nc2 = nm.CreateIPCollection(compare.Split(","), false);
+            Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(","), false);
+            Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(","), false);
 
             Assert.True(nc1.Union(nc2).AsString() == result);
         }
@@ -334,10 +334,10 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
-            NetCollection ncDest = nm.CreateIPCollection(dest.Split(","));
-            NetCollection ncResult = ncSource.Union(ncDest);
-            NetCollection resultCollection = nm.CreateIPCollection(result.Split(","));
+            Collection<IPObject> ncSource = nm.CreateIPCollection(source.Split(","));
+            Collection<IPObject> ncDest = nm.CreateIPCollection(dest.Split(","));
+            Collection<IPObject> ncResult = ncSource.Union(ncDest);
+            Collection<IPObject> resultCollection = nm.CreateIPCollection(result.Split(","));
             Assert.True(ncResult.Compare(resultCollection));
         }
 
@@ -401,7 +401,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            _ = nm.TryParseInterface(result, out NetCollection? resultObj);
+            _ = nm.TryParseInterface(result, out Collection<IPObject>? resultObj);
 
             if (resultObj != null)
             {
@@ -468,7 +468,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            if (nm.TryParseInterface(result, out NetCollection? resultObj) && resultObj != null)
+            if (nm.TryParseInterface(result, out Collection<IPObject>? resultObj) && resultObj != null)
             {
                 // Parse out IPAddresses so we can do a string comparison. (Ignore subnet masks).
                 result = ((IPNetAddress)resultObj[0]).ToString(true);

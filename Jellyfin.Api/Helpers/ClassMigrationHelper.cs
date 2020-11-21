@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Jellyfin.Api.Migrations
+namespace Jellyfin.Api.Helpers
 {
     /// <summary>
     /// A static class for copying matching properties from one object to another.
