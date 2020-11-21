@@ -191,7 +191,7 @@ namespace Jellyfin.Networking.Tests
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             nc = nc.AsNetworks();
-            Assert.True(string.Equals(nc?.AsString(), result5, System.StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(nc.AsString(), result5);
         }
 
         [Theory]
