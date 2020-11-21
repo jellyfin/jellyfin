@@ -407,7 +407,7 @@ namespace Jellyfin.Networking.Tests
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
                 var intf = nm.GetBindInterface(source, out int? _);
 
-                Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
+                Assert.Equal(intf, result);
             }
         }
 
