@@ -9,7 +9,7 @@ using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace NetworkTesting
+namespace Jellyfin.Networking.Tests
 {
     public class NetworkParseTests
     {
