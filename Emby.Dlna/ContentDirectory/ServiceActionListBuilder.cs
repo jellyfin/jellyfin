@@ -1,13 +1,18 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using Emby.Dlna.Common;
 
 namespace Emby.Dlna.ContentDirectory
 {
-    public class ServiceActionListBuilder
+    /// <summary>
+    /// Defines the <see cref="ServiceActionListBuilder" />.
+    /// </summary>
+    public static class ServiceActionListBuilder
     {
-        public IEnumerable<ServiceAction> GetActions()
+        /// <summary>
+        /// Returns a list of services that this instance provides.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{ServiceAction}"/>.</returns>
+        public static IEnumerable<ServiceAction> GetActions()
         {
             return new[]
             {
@@ -22,6 +27,10 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
+        /// <summary>
+        /// Returns the action details for "GetSystemUpdateID".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetGetSystemUpdateIDAction()
         {
             var action = new ServiceAction
@@ -39,6 +48,10 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "GetSearchCapabilities".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetSearchCapabilitiesAction()
         {
             var action = new ServiceAction
@@ -56,6 +69,10 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "GetSortCapabilities".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetSortCapabilitiesAction()
         {
             var action = new ServiceAction
@@ -73,6 +90,10 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "X_GetFeatureList".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetX_GetFeatureListAction()
         {
             var action = new ServiceAction
@@ -90,6 +111,10 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "Search".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetSearchAction()
         {
             var action = new ServiceAction
@@ -170,7 +195,11 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetBrowseAction()
+        /// <summary>
+        /// Returns the action details for "Browse".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetBrowseAction()
         {
             var action = new ServiceAction
             {
@@ -250,7 +279,11 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetBrowseByLetterAction()
+        /// <summary>
+        /// Returns the action details for "X_BrowseByLetter".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetBrowseByLetterAction()
         {
             var action = new ServiceAction
             {
@@ -337,7 +370,11 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetXSetBookmarkAction()
+        /// <summary>
+        /// Returns the action details for "X_SetBookmark".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetXSetBookmarkAction()
         {
             var action = new ServiceAction
             {

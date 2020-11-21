@@ -16,7 +16,6 @@
     "Folders": "資料夾",
     "Genres": "風格",
     "HeaderAlbumArtists": "專輯演出者",
-    "HeaderCameraUploads": "相機上傳",
     "HeaderContinueWatching": "繼續觀賞",
     "HeaderFavoriteAlbums": "最愛專輯",
     "HeaderFavoriteArtists": "最愛演出者",
@@ -113,5 +112,7 @@
     "TaskRefreshChapterImagesDescription": "為有章節的影片建立縮圖。",
     "TasksChannelsCategory": "網路頻道",
     "TasksApplicationCategory": "應用程式",
-    "TasksMaintenanceCategory": "維修"
+    "TasksMaintenanceCategory": "維護",
+    "TaskCleanActivityLogDescription": "刪除超過所設時間的活動紀錄。",
+    "TaskCleanActivityLog": "清除活動紀錄"
 }

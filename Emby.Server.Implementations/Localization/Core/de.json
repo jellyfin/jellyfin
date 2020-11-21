@@ -16,7 +16,6 @@
     "Folders": "Verzeichnisse",
     "Genres": "Genres",
     "HeaderAlbumArtists": "Album-Interpreten",
-    "HeaderCameraUploads": "Kamera-Uploads",
     "HeaderContinueWatching": "Fortsetzen",
     "HeaderFavoriteAlbums": "Lieblingsalben",
     "HeaderFavoriteArtists": "Lieblings-Interpreten",
@@ -114,5 +113,10 @@
     "TasksChannelsCategory": "Internet Kanäle",
     "TasksApplicationCategory": "Anwendung",
     "TasksLibraryCategory": "Bibliothek",
-    "TasksMaintenanceCategory": "Wartung"
+    "TasksMaintenanceCategory": "Wartung",
+    "TaskCleanActivityLogDescription": "Löscht Aktivitätsprotokolleinträge, die älter als das konfigurierte Alter sind.",
+    "TaskCleanActivityLog": "Aktivitätsprotokoll aufräumen",
+    "Undefined": "Undefiniert",
+    "Forced": "Erzwungen",
+    "Default": "Standard"
 }

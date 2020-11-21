@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -30,7 +29,6 @@ using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
@@ -96,7 +94,7 @@ using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
-using MediaBrowser.Providers.Plugins.TheTvdb;
+using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Mvc;
@@ -127,8 +125,6 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpClientFactory _httpClientFactory;
-        private IWebSocketManager _webSocketManager;
-
         private string[] _urlPrefixes;
 
         /// <summary>
@@ -258,8 +254,8 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();            
-            
+            _jsonSerializer = new JsonSerializer();
+
             ServiceCollection = serviceCollection;
 
             _networkManager = networkManager;
@@ -339,7 +335,7 @@ namespace Emby.Server.Implementations
         /// Gets the email address for use within a comment section of a user agent field.
         /// Presently used to provide contact information to MusicBrainz service.
         /// </summary>
-        public string ApplicationUserAgentAddress { get; } = "team@jellyfin.org";
+        public string ApplicationUserAgentAddress => "team@jellyfin.org";
 
         /// <summary>
         /// Gets the current application name.
@@ -403,7 +399,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Resolves this instance.
         /// </summary>
-        /// <typeparam name="T">The type</typeparam>
+        /// <typeparam name="T">The type.</typeparam>
         /// <returns>``0.</returns>
         public T Resolve<T>() => ServiceProvider.GetService<T>();
 
@@ -499,24 +495,11 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            if (Plugins != null)
-            {
-                var pluginBuilder = new StringBuilder();
-
-                foreach (var plugin in Plugins)
-                {
-                    pluginBuilder.Append(plugin.Name)
-                        .Append(' ')
-                        .Append(plugin.Version)
-                        .AppendLine();
-                }
-
-                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
-            }
-
             DiscoverTypes();
 
             RegisterServices();
+
+            RegisterPluginServices();
         }
 
         /// <summary>
@@ -536,7 +519,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
 
             ServiceCollection.AddSingleton(_fileSystemManager);
-            ServiceCollection.AddSingleton<TvdbClientManager>();
+            ServiceCollection.AddSingleton<TmdbClientManager>();
 
             ServiceCollection.AddSingleton(_networkManager);
 
@@ -665,7 +648,6 @@ namespace Emby.Server.Implementations
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpClientFactory = Resolve<IHttpClientFactory>();
-            _webSocketManager = Resolve<IWebSocketManager>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -781,12 +763,25 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _plugins = GetExports<IPlugin>()
-                        .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
 
+            if (Plugins != null)
+            {
+                var pluginBuilder = new StringBuilder();
+
+                foreach (var plugin in Plugins)
+                {
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
+                }
+
+                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
+            }
+
             _urlPrefixes = GetUrlPrefixes().ToArray();
-            _webSocketManager.Init(GetExports<IWebSocketListener>());
 
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -815,53 +810,6 @@ namespace Emby.Server.Implementations
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
 
-        private IPlugin LoadPlugin(IPlugin plugin)
-        {
-            try
-            {
-                if (plugin is IPluginAssembly assemblyPlugin)
-                {
-                    var assembly = plugin.GetType().Assembly;
-                    var assemblyName = assembly.GetName();
-                    var assemblyFilePath = assembly.Location;
-
-                    var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-
-                    assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
-
-                    try
-                    {
-                        var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-                        if (idAttributes.Length > 0)
-                        {
-                            var attribute = (GuidAttribute)idAttributes[0];
-                            var assemblyId = new Guid(attribute.Value);
-
-                            assemblyPlugin.SetId(assemblyId);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
-                    }
-                }
-
-                if (plugin is IHasPluginConfiguration hasPluginConfiguration)
-                {
-                    hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
-                }
-
-                plugin.RegisterServices(ServiceCollection);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
-                return null;
-            }
-
-            return plugin;
-        }
-
         /// <summary>
         /// Discovers the types.
         /// </summary>
@@ -870,6 +818,22 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Loading assemblies");
 
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
+        }
+
+        private void RegisterPluginServices()
+        {
+            foreach (var pluginServiceRegistrator in GetExportTypes<IPluginServiceRegistrator>())
+            {
+                try
+                {
+                    var instance = (IPluginServiceRegistrator)Activator.CreateInstance(pluginServiceRegistrator);
+                    instance.RegisterServices(ServiceCollection);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error registering plugin services from {Assembly}.", pluginServiceRegistrator.Assembly);
+                }
+            }
         }
 
         private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
@@ -1026,80 +990,60 @@ namespace Emby.Server.Implementations
 
         protected abstract void RestartInternal();
 
-        /// <summary>
-        /// Comparison function used in <see cref="GetPlugins" />.
-        /// </summary>
-        /// <param name="a">Item to compare.</param>
-        /// <param name="b">Item to compare with.</param>
-        /// <returns>Boolean result of the operation.</returns>
-        private static int VersionCompare(
-            (Version PluginVersion, string Name, string Path) a,
-            (Version PluginVersion, string Name, string Path) b)
+        /// <inheritdoc/>
+        public IEnumerable<LocalPlugin> GetLocalPlugins(string path, bool cleanup = true)
         {
-            int compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
-
-            if (compare == 0)
+            var minimumVersion = new Version(0, 0, 0, 1);
+            var versions = new List<LocalPlugin>();
+            if (!Directory.Exists(path))
             {
-                return a.PluginVersion.CompareTo(b.PluginVersion);
+                // Plugin path doesn't exist, don't try to enumerate subfolders.
+                return Enumerable.Empty<LocalPlugin>();
             }
 
-            return compare;
-        }
-
-        /// <summary>
-        /// Returns a list of plugins to install.
-        /// </summary>
-        /// <param name="path">Path to check.</param>
-        /// <param name="cleanup">True if an attempt should be made to delete old plugs.</param>
-        /// <returns>Enumerable list of dlls to load.</returns>
-        private IEnumerable<string> GetPlugins(string path, bool cleanup = true)
-        {
-            var dllList = new List<string>();
-            var versions = new List<(Version PluginVersion, string Name, string Path)>();
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
-            string metafile;
 
             foreach (var dir in directories)
             {
                 try
                 {
-                    metafile = Path.Combine(dir, "meta.json");
+                    var metafile = Path.Combine(dir, "meta.json");
                     if (File.Exists(metafile))
                     {
                         var manifest = _jsonSerializer.DeserializeFromFile<PluginManifest>(metafile);
 
                         if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                         {
-                            targetAbi = new Version(0, 0, 0, 1);
+                            targetAbi = minimumVersion;
                         }
 
                         if (!Version.TryParse(manifest.Version, out var version))
                         {
-                            version = new Version(0, 0, 0, 1);
+                            version = minimumVersion;
                         }
 
                         if (ApplicationVersion >= targetAbi)
                         {
                             // Only load Plugins if the plugin is built for this version or below.
-                            versions.Add((version, manifest.Name, dir));
+                            versions.Add(new LocalPlugin(manifest.Guid, manifest.Name, version, dir));
                         }
                     }
                     else
                     {
                         // No metafile, so lets see if the folder is versioned.
-                        metafile = dir.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)[^1];
-                        
+                        metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
+
                         int versionIndex = dir.LastIndexOf('_');
-                        if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version ver))
+                        if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version parsedVersion))
                         {
                             // Versioned folder.
-                            versions.Add((ver, metafile, dir));
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir));
                         }
                         else
                         {
-                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.                        
-                            versions.Add((new Version(0, 0, 0, 1), metafile, dir));
-                        }   
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, minimumVersion, dir));
+                        }
                     }
                 }
                 catch
@@ -1109,14 +1053,14 @@ namespace Emby.Server.Implementations
             }
 
             string lastName = string.Empty;
-            versions.Sort(VersionCompare);
+            versions.Sort(LocalPlugin.Compare);
             // Traverse backwards through the list.
             // The first item will be the latest version.
             for (int x = versions.Count - 1; x >= 0; x--)
             {
                 if (!string.Equals(lastName, versions[x].Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    dllList.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
+                    versions[x].DllFiles.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
                     lastName = versions[x].Name;
                     continue;
                 }
@@ -1133,10 +1077,12 @@ namespace Emby.Server.Implementations
                     {
                         Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
                     }
+
+                    versions.RemoveAt(x);
                 }
             }
 
-            return dllList;
+            return versions;
         }
 
         /// <summary>
@@ -1147,21 +1093,24 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in GetPlugins(ApplicationPaths.PluginsPath))
+                foreach (var plugin in GetLocalPlugins(ApplicationPaths.PluginsPath))
                 {
-                    Assembly plugAss;
-                    try
+                    foreach (var file in plugin.DllFiles)
                     {
-                        plugAss = Assembly.LoadFrom(file);
-                    }
-                    catch (FileLoadException ex)
-                    {
-                        Logger.LogError(ex, "Failed to load assembly {Path}", file);
-                        continue;
-                    }
+                        Assembly plugAss;
+                        try
+                        {
+                            plugAss = Assembly.LoadFrom(file);
+                        }
+                        catch (FileLoadException ex)
+                        {
+                            Logger.LogError(ex, "Failed to load assembly {Path}", file);
+                            continue;
+                        }
 
-                    Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
-                    yield return plugAss;
+                        Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
+                        yield return plugAss;
+                    }
                 }
             }
 
@@ -1428,7 +1377,7 @@ namespace Emby.Server.Implementations
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 var result = await System.Text.Json.JsonSerializer.DeserializeAsync<string>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
                 var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 

@@ -46,6 +46,7 @@ namespace MediaBrowser.Providers.Music
 
         private readonly string _musicBrainzBaseUrl;
 
+        private SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
         private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
 
         public MusicBrainzAlbumProvider(
@@ -124,7 +125,7 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrWhiteSpace(url))
             {
                 using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 return GetResultsFromResponse(stream);
             }
 
@@ -283,7 +284,7 @@ namespace MediaBrowser.Providers.Music
                 artistId);
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings
             {
@@ -306,7 +307,7 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(artistName));
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings()
             {
@@ -444,6 +445,7 @@ namespace MediaBrowser.Providers.Music
                                     result.Title = reader.ReadElementContentAsString();
                                     break;
                                 }
+
                             case "date":
                                 {
                                     var val = reader.ReadElementContentAsString();
@@ -454,17 +456,20 @@ namespace MediaBrowser.Providers.Music
 
                                     break;
                                 }
+
                             case "annotation":
                                 {
                                     result.Overview = reader.ReadElementContentAsString();
                                     break;
                                 }
+
                             case "release-group":
                                 {
                                     result.ReleaseGroupId = reader.GetAttribute("id");
                                     reader.Skip();
                                     break;
                                 }
+
                             case "artist-credit":
                                 {
                                     using (var subReader = reader.ReadSubtree())
@@ -617,7 +622,7 @@ namespace MediaBrowser.Providers.Music
             var url = "/ws/2/release?release-group=" + releaseGroupId.ToString(CultureInfo.InvariantCulture);
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings
             {
@@ -644,7 +649,7 @@ namespace MediaBrowser.Providers.Music
             var url = "/ws/2/release-group/?query=reid:" + releaseEntryId.ToString(CultureInfo.InvariantCulture);
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings
             {
@@ -738,48 +743,58 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         internal async Task<HttpResponseMessage> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
-            using var options = new HttpRequestMessage(HttpMethod.Get, _musicBrainzBaseUrl.TrimEnd('/') + url);
+            await _apiRequestLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
-            // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
-            options.Headers.UserAgent.ParseAdd(string.Format(
-                CultureInfo.InvariantCulture,
-                "{0} ( {1} )",
-                _appHost.ApplicationUserAgent,
-                _appHost.ApplicationUserAgentAddress));
-
-            HttpResponseMessage response;
-            var attempts = 0u;
-
-            do
+            try
             {
-                attempts++;
+                HttpResponseMessage response;
+                var attempts = 0u;
+                var requestUrl = _musicBrainzBaseUrl.TrimEnd('/') + url;
 
-                if (_stopWatchMusicBrainz.ElapsedMilliseconds < _musicBrainzQueryIntervalMs)
+                do
                 {
-                    // MusicBrainz is extremely adamant about limiting to one request per second
-                    var delayMs = _musicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
-                    await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
+                    attempts++;
+
+                    if (_stopWatchMusicBrainz.ElapsedMilliseconds < _musicBrainzQueryIntervalMs)
+                    {
+                        // MusicBrainz is extremely adamant about limiting to one request per second.
+                        var delayMs = _musicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
+                        await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    // Write time since last request to debug log as evidence we're meeting rate limit
+                    // requirement, before resetting stopwatch back to zero.
+                    _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
+                    _stopWatchMusicBrainz.Restart();
+
+                    using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+
+                    // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
+                    // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent .
+                    request.Headers.UserAgent.ParseAdd(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0} ( {1} )",
+                        _appHost.ApplicationUserAgent,
+                        _appHost.ApplicationUserAgentAddress));
+
+                    response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(request).ConfigureAwait(false);
+
+                    // We retry a finite number of times, and only whilst MB is indicating 503 (throttling).
+                }
+                while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
+
+                // Log error if unable to query MB database due to throttling.
+                if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                {
+                    _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, requestUrl);
                 }
 
-                // Write time since last request to debug log as evidence we're meeting rate limit
-                // requirement, before resetting stopwatch back to zero.
-                _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
-                _stopWatchMusicBrainz.Restart();
-
-                response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options).ConfigureAwait(false);
-
-                // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
+                return response;
             }
-            while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
-
-            // Log error if unable to query MB database due to throttling
-            if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
+            finally
             {
-                _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, options.RequestUri);
+                _apiRequestLock.Release();
             }
-
-            return response;
         }
 
         /// <inheritdoc />

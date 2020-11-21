@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -468,7 +469,7 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                     await _providerManager.SaveImage(
                         item,
@@ -481,7 +482,7 @@ namespace MediaBrowser.Providers.Manager
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                     return true;
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     // Sometimes providers send back bad url's. Just move to the next image
                     if (ex.StatusCode.HasValue
@@ -517,13 +518,8 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
             }
-
-            if (libraryOptions.DownloadImagesInAdvance)
-            {
-                return false;
-            }
-
-            return true;
+            // We always want to use prefetched images
+            return false;
         }
 
         private void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls)
@@ -590,7 +586,7 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
 
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await _providerManager.SaveImage(
                         item,
                         stream,
@@ -600,7 +596,7 @@ namespace MediaBrowser.Providers.Manager
                         cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     // Sometimes providers send back bad urls. Just move onto the next image
                     if (ex.StatusCode.HasValue

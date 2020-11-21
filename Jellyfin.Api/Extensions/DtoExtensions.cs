@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Api.Helpers;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -13,42 +15,6 @@ namespace Jellyfin.Api.Extensions
     /// </summary>
     public static class DtoExtensions
     {
-        /// <summary>
-        /// Add Dto Item fields.
-        /// </summary>
-        /// <remarks>
-        /// Converted from IHasItemFields.
-        /// Legacy order: 1.
-        /// </remarks>
-        /// <param name="dtoOptions">DtoOptions object.</param>
-        /// <param name="fields">Comma delimited string of fields.</param>
-        /// <returns>Modified DtoOptions object.</returns>
-        internal static DtoOptions AddItemFields(this DtoOptions dtoOptions, string? fields)
-        {
-            if (string.IsNullOrEmpty(fields))
-            {
-                dtoOptions.Fields = Array.Empty<ItemFields>();
-            }
-            else
-            {
-                dtoOptions.Fields = fields.Split(',')
-                    .Select(v =>
-                    {
-                        if (Enum.TryParse(v, true, out ItemFields value))
-                        {
-                            return (ItemFields?)value;
-                        }
-
-                        return null;
-                    })
-                    .Where(i => i.HasValue)
-                    .Select(i => i!.Value)
-                    .ToArray();
-            }
-
-            return dtoOptions;
-        }
-
         /// <summary>
         /// Add additional fields depending on client.
         /// </summary>
@@ -79,7 +45,7 @@ namespace Jellyfin.Api.Extensions
                     client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
                     client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    int oldLen = dtoOptions.Fields.Length;
+                    int oldLen = dtoOptions.Fields.Count;
                     var arr = new ItemFields[oldLen + 1];
                     dtoOptions.Fields.CopyTo(arr, 0);
                     arr[oldLen] = ItemFields.RecursiveItemCount;
@@ -97,7 +63,7 @@ namespace Jellyfin.Api.Extensions
                     client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
                     client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    int oldLen = dtoOptions.Fields.Length;
+                    int oldLen = dtoOptions.Fields.Count;
                     var arr = new ItemFields[oldLen + 1];
                     dtoOptions.Fields.CopyTo(arr, 0);
                     arr[oldLen] = ItemFields.ChildCount;
@@ -126,7 +92,7 @@ namespace Jellyfin.Api.Extensions
             bool? enableImages,
             bool? enableUserData,
             int? imageTypeLimit,
-            string? enableImageTypes)
+            IReadOnlyList<ImageType> enableImageTypes)
         {
             dtoOptions.EnableImages = enableImages ?? true;
 
@@ -140,11 +106,9 @@ namespace Jellyfin.Api.Extensions
                 dtoOptions.EnableUserData = enableUserData.Value;
             }
 
-            if (!string.IsNullOrWhiteSpace(enableImageTypes))
+            if (enableImageTypes.Count != 0)
             {
-                dtoOptions.ImageTypes = enableImageTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true))
-                    .ToArray();
+                dtoOptions.ImageTypes = enableImageTypes;
             }
 
             return dtoOptions;

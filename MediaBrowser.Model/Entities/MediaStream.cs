@@ -191,6 +191,11 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(Codec.ToUpperInvariant());
                         }
 
+                        if (!string.IsNullOrEmpty(VideoRange))
+                        {
+                            attributes.Add(VideoRange.ToUpperInvariant());
+                        }
+
                         if (!string.IsNullOrEmpty(Title))
                         {
                             var result = new StringBuilder(Title);
@@ -451,11 +456,13 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The method.</value>
         public SubtitleDeliveryMethod? DeliveryMethod { get; set; }
+
         /// <summary>
         /// Gets or sets the delivery URL.
         /// </summary>
         /// <value>The delivery URL.</value>
         public string DeliveryUrl { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is external URL.
         /// </summary>

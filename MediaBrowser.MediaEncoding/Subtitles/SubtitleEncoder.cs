@@ -758,9 +758,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 case MediaProtocol.Http:
                 {
                     using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .GetAsync(path, cancellationToken)
+                        .GetAsync(new Uri(path), cancellationToken)
                         .ConfigureAwait(false);
-                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 }
 
                 case MediaProtocol.File:

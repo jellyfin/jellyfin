@@ -4,6 +4,8 @@ using System.IO;
 using System.Reflection;
 using Emby.Drawing;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Session;
+using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
@@ -11,9 +13,11 @@ using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
@@ -73,12 +77,21 @@ namespace Jellyfin.Server
                  options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
 
             ServiceCollection.AddEventServices();
+            ServiceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             ServiceCollection.AddSingleton<IEventManager, EventManager>();
             ServiceCollection.AddSingleton<JellyfinDbProvider>();
 
             ServiceCollection.AddSingleton<IActivityManager, ActivityManager>();
             ServiceCollection.AddSingleton<IUserManager, UserManager>();
             ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+
+            ServiceCollection.AddScoped<IWebSocketListener, SessionWebSocketListener>();
+            ServiceCollection.AddScoped<IWebSocketListener, ActivityLogWebSocketListener>();
+            ServiceCollection.AddScoped<IWebSocketListener, ScheduledTasksWebSocketListener>();
+            ServiceCollection.AddScoped<IWebSocketListener, SessionInfoWebSocketListener>();
+
+            // TODO fix circular dependency on IWebSocketManager
+            ServiceCollection.AddScoped(serviceProvider => new Lazy<IEnumerable<IWebSocketListener>>(serviceProvider.GetRequiredService<IEnumerable<IWebSocketListener>>));
 
             base.RegisterServices();
         }

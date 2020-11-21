@@ -17,12 +17,6 @@ namespace MediaBrowser.Controller.Net
         event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
         /// <summary>
-        /// Inits this instance.
-        /// </summary>
-        /// <param name="listeners">The websocket listeners.</param>
-        void Init(IEnumerable<IWebSocketListener> listeners);
-
-        /// <summary>
         /// The HTTP request handler.
         /// </summary>
         /// <param name="context">The current HTTP context.</param>

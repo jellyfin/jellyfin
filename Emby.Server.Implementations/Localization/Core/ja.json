@@ -16,7 +16,6 @@
     "Folders": "フォルダー",
     "Genres": "ジャンル",
     "HeaderAlbumArtists": "アルバムアーティスト",
-    "HeaderCameraUploads": "カメラアップロード",
     "HeaderContinueWatching": "視聴を続ける",
     "HeaderFavoriteAlbums": "お気に入りのアルバム",
     "HeaderFavoriteArtists": "お気に入りのアーティスト",
@@ -97,7 +96,7 @@
     "TaskRefreshLibraryDescription": "メディアライブラリをスキャンして新しいファイルを探し、メタデータをリフレッシュします。",
     "TaskRefreshLibrary": "メディアライブラリのスキャン",
     "TaskCleanCacheDescription": "不要なキャッシュを消去します。",
-    "TaskCleanCache": "キャッシュの掃除",
+    "TaskCleanCache": "キャッシュを消去",
     "TasksChannelsCategory": "ネットチャンネル",
     "TasksApplicationCategory": "アプリケーション",
     "TasksLibraryCategory": "ライブラリ",
@@ -113,5 +112,7 @@
     "TaskDownloadMissingSubtitlesDescription": "メタデータ構成に基づいて、欠落している字幕をインターネットで検索します。",
     "TaskRefreshChapterImagesDescription": "チャプターのあるビデオのサムネイルを作成します。",
     "TaskRefreshChapterImages": "チャプター画像を抽出する",
-    "TaskDownloadMissingSubtitles": "不足している字幕をダウンロードする"
+    "TaskDownloadMissingSubtitles": "不足している字幕をダウンロードする",
+    "TaskCleanActivityLogDescription": "設定された期間よりも古いアクティビティの履歴を削除します。",
+    "TaskCleanActivityLog": "アクティビティの履歴を消去"
 }

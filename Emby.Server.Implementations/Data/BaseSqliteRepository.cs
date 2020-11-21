@@ -157,7 +157,8 @@ namespace Emby.Server.Implementations.Data
 
         protected bool TableExists(ManagedConnection connection, string name)
         {
-            return connection.RunInTransaction(db =>
+            return connection.RunInTransaction(
+            db =>
             {
                 using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
                 {

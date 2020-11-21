@@ -16,7 +16,6 @@
     "Folders": "Könyvtárak",
     "Genres": "Műfajok",
     "HeaderAlbumArtists": "Album előadók",
-    "HeaderCameraUploads": "Kamera feltöltések",
     "HeaderContinueWatching": "Megtekintés folytatása",
     "HeaderFavoriteAlbums": "Kedvenc albumok",
     "HeaderFavoriteArtists": "Kedvenc előadók",
@@ -114,5 +113,10 @@
     "TaskDownloadMissingSubtitles": "Hiányzó feliratok letöltése",
     "TaskRefreshChannelsDescription": "Frissíti az internetes csatornák adatait.",
     "TaskRefreshChannels": "Csatornák frissítése",
-    "TaskCleanTranscodeDescription": "Törli az egy napnál régebbi átkódolási fájlokat."
+    "TaskCleanTranscodeDescription": "Törli az egy napnál régebbi átkódolási fájlokat.",
+    "TaskCleanActivityLogDescription": "A beállítottnál korábbi bejegyzések törlése a tevékenységnaplóból.",
+    "TaskCleanActivityLog": "Tevékenységnapló törlése",
+    "Undefined": "Meghatározatlan",
+    "Forced": "Kényszerített",
+    "Default": "Alapértelmezett"
 }

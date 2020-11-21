@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         /// Start kill timer.
         /// </summary>
         /// <param name="callback">Callback action.</param>
-        public void StartKillTimer(Action<object> callback)
+        public void StartKillTimer(Action<object?> callback)
         {
             StartKillTimer(callback, PingTimeout);
         }
@@ -206,7 +206,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         /// </summary>
         /// <param name="callback">Callback action.</param>
         /// <param name="intervalMs">Callback interval.</param>
-        public void StartKillTimer(Action<object> callback, int intervalMs)
+        public void StartKillTimer(Action<object?> callback, int intervalMs)
         {
             if (HasExited)
             {

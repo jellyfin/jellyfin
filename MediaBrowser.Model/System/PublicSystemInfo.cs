@@ -43,7 +43,10 @@ namespace MediaBrowser.Model.System
         /// <summary>
         /// Gets or sets a value indicating whether the startup wizard is completed.
         /// </summary>
-        /// <value>The startup completion status.</value>
-        public bool StartupWizardCompleted { get; set; }
+        /// <remarks>
+        /// Nullable for OpenAPI specification only to retain backwards compatibility in apiclients.
+        /// </remarks>
+        /// <value>The startup completion status.</value>]
+        public bool? StartupWizardCompleted { get; set; }
     }
 }

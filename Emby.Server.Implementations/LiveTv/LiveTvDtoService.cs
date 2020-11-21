@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new string[] { nameof(Series) },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Thumb },
@@ -253,7 +253,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new string[] { nameof(Series) },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Thumb },
@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var program = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new string[] { nameof(Series) },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Primary },
@@ -307,7 +307,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 program = _libraryManager.GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                    IncludeItemTypes = new string[] { nameof(LiveTvProgram) },
                     ExternalSeriesId = programSeriesId,
                     Limit = 1,
                     ImageTypes = new ImageType[] { ImageType.Primary },

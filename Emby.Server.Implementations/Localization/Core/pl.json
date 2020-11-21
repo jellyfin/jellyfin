@@ -16,7 +16,6 @@
     "Folders": "Foldery",
     "Genres": "Gatunki",
     "HeaderAlbumArtists": "Wykonawcy albumów",
-    "HeaderCameraUploads": "Przekazane obrazy",
     "HeaderContinueWatching": "Kontynuuj odtwarzanie",
     "HeaderFavoriteAlbums": "Ulubione albumy",
     "HeaderFavoriteArtists": "Ulubieni wykonawcy",
@@ -114,5 +113,10 @@
     "TasksChannelsCategory": "Kanały internetowe",
     "TasksApplicationCategory": "Aplikacja",
     "TasksLibraryCategory": "Biblioteka",
-    "TasksMaintenanceCategory": "Konserwacja"
+    "TasksMaintenanceCategory": "Konserwacja",
+    "TaskCleanActivityLogDescription": "Usuwa wpisy dziennika aktywności starsze niż skonfigurowany wiek.",
+    "TaskCleanActivityLog": "Czyść dziennik aktywności",
+    "Undefined": "Nieustalony",
+    "Forced": "Wymuszony",
+    "Default": "Domyślne"
 }

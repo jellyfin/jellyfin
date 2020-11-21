@@ -83,7 +83,7 @@ namespace Emby.Notifications
             return Task.CompletedTask;
         }
 
-        private async void OnAppHostHasPendingRestartChanged(object sender, EventArgs e)
+        private async void OnAppHostHasPendingRestartChanged(object? sender, EventArgs e)
         {
             var type = NotificationType.ServerRestartRequired.ToString();
 
@@ -99,7 +99,7 @@ namespace Emby.Notifications
             await SendNotification(notification, null).ConfigureAwait(false);
         }
 
-        private async void OnActivityManagerEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
+        private async void OnActivityManagerEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)
         {
             var entry = e.Argument;
 
@@ -132,7 +132,7 @@ namespace Emby.Notifications
             return _config.GetConfiguration<NotificationOptions>("notifications");
         }
 
-        private async void OnAppHostHasUpdateAvailableChanged(object sender, EventArgs e)
+        private async void OnAppHostHasUpdateAvailableChanged(object? sender, EventArgs e)
         {
             if (!_appHost.HasUpdateAvailable)
             {
@@ -151,7 +151,7 @@ namespace Emby.Notifications
             await SendNotification(notification, null).ConfigureAwait(false);
         }
 
-        private void OnLibraryManagerItemAdded(object sender, ItemChangeEventArgs e)
+        private void OnLibraryManagerItemAdded(object? sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -197,7 +197,7 @@ namespace Emby.Notifications
             return item.SourceType == SourceType.Library;
         }
 
-        private async void LibraryUpdateTimerCallback(object state)
+        private async void LibraryUpdateTimerCallback(object? state)
         {
             List<BaseItem> items;
 
@@ -209,7 +209,10 @@ namespace Emby.Notifications
                 _libraryUpdateTimer = null;
             }
 
-            items = items.Take(10).ToList();
+            if (items.Count > 10)
+            {
+                items = items.GetRange(0, 10);
+            }
 
             foreach (var item in items)
             {

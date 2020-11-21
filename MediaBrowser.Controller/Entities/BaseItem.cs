@@ -87,6 +87,8 @@ namespace MediaBrowser.Controller.Entities
         public const string InterviewFolderName = "interviews";
         public const string SceneFolderName = "scenes";
         public const string SampleFolderName = "samples";
+        public const string ShortsFolderName = "shorts";
+        public const string FeaturettesFolderName = "featurettes";
 
         public static readonly string[] AllExtrasTypesFolderNames = {
             ExtrasFolderName,
@@ -94,7 +96,9 @@ namespace MediaBrowser.Controller.Entities
             DeletedScenesFolderName,
             InterviewFolderName,
             SceneFolderName,
-            SampleFolderName
+            SampleFolderName,
+            ShortsFolderName,
+            FeaturettesFolderName
         };
 
         [JsonIgnore]
@@ -197,6 +201,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool SupportsRemoteImageDownloading => true;
 
         private string _name;
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -458,60 +463,6 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public string PrimaryImagePath => this.GetImagePath(ImageType.Primary);
 
-        public bool IsMetadataFetcherEnabled(LibraryOptions libraryOptions, string name)
-        {
-            if (SourceType == SourceType.Channel)
-            {
-                // hack alert
-                return !EnableMediaSourceDisplay;
-            }
-
-            var typeOptions = libraryOptions.GetTypeOptions(GetType().Name);
-            if (typeOptions != null)
-            {
-                return typeOptions.MetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
-            }
-
-            if (!libraryOptions.EnableInternetProviders)
-            {
-                return false;
-            }
-
-            var itemConfig = ConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
-
-            return itemConfig == null || !itemConfig.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
-        }
-
-        public bool IsImageFetcherEnabled(LibraryOptions libraryOptions, string name)
-        {
-            if (this is Channel)
-            {
-                // hack alert
-                return true;
-            }
-
-            if (SourceType == SourceType.Channel)
-            {
-                // hack alert
-                return !EnableMediaSourceDisplay;
-            }
-
-            var typeOptions = libraryOptions.GetTypeOptions(GetType().Name);
-            if (typeOptions != null)
-            {
-                return typeOptions.ImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
-            }
-
-            if (!libraryOptions.EnableInternetProviders)
-            {
-                return false;
-            }
-
-            var itemConfig = ConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
-
-            return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
-        }
-
         public virtual bool CanDelete()
         {
             if (SourceType == SourceType.Channel)
@@ -661,6 +612,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private string _forcedSortName;
+
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>
@@ -2604,7 +2556,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!AllowsMultipleImages(type))
             {
-                throw new ArgumentException("The change index operation is only applicable to backdrops and screenshots");
+                throw new ArgumentException("The change index operation is only applicable to backdrops and screen shots");
             }
 
             var info1 = GetImageInfo(type, index1);

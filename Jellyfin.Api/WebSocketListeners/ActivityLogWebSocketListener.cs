@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.WebSocketListeners
@@ -29,11 +30,14 @@ namespace Jellyfin.Api.WebSocketListeners
             _activityManager.EntryCreated += OnEntryCreated;
         }
 
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        protected override string Name => "ActivityLogEntry";
+        /// <inheritdoc />
+        protected override SessionMessageType Type => SessionMessageType.ActivityLogEntry;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StartType => SessionMessageType.ActivityLogEntryStart;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StopType => SessionMessageType.ActivityLogEntryStop;
 
         /// <summary>
         /// Gets the data to send.
@@ -52,7 +56,7 @@ namespace Jellyfin.Api.WebSocketListeners
             base.Dispose(dispose);
         }
 
-        private void OnEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
+        private void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)
         {
             SendData(true);
         }

@@ -1,4 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using MediaBrowser.Common.Json.Converters;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace Jellyfin.Api.Models.LiveTvDtos
 {
@@ -10,7 +16,8 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// <summary>
         /// Gets or sets the channels to return guide information for.
         /// </summary>
-        public string? ChannelIds { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<Guid> ChannelIds { get; set; } = Array.Empty<Guid>();
 
         /// <summary>
         /// Gets or sets optional. Filter by user id.
@@ -109,12 +116,14 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// <summary>
         /// Gets or sets the genres to return guide information for.
         /// </summary>
-        public string? Genres { get; set; }
+        [JsonConverter(typeof(JsonPipeDelimitedArrayConverterFactory))]
+        public IReadOnlyList<string> Genres { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets the genre ids to return guide information for.
         /// </summary>
-        public string? GenreIds { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<Guid> GenreIds { get; set; } = Array.Empty<Guid>();
 
         /// <summary>
         /// Gets or sets include image information in output.
@@ -137,7 +146,8 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Gets or sets the image types to include in the output.
         /// Optional.
         /// </summary>
-        public string? EnableImageTypes { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<ImageType> EnableImageTypes { get; set; } = Array.Empty<ImageType>();
 
         /// <summary>
         /// Gets or sets include user data.
@@ -161,6 +171,7 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Gets or sets specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.
         /// Optional.
         /// </summary>
-        public string? Fields { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<ItemFields> Fields { get; set; } = Array.Empty<ItemFields>();
     }
 }

@@ -74,7 +74,6 @@
     "HeaderFavoriteArtists": "Омиљени извођачи",
     "HeaderFavoriteAlbums": "Омиљени албуми",
     "HeaderContinueWatching": "Настави гледање",
-    "HeaderCameraUploads": "Слања са камере",
     "HeaderAlbumArtists": "Извођачи албума",
     "Genres": "Жанрови",
     "Folders": "Фасцикле",
@@ -113,5 +112,7 @@
     "TasksChannelsCategory": "Интернет канали",
     "TasksApplicationCategory": "Апликација",
     "TasksLibraryCategory": "Библиотека",
-    "TasksMaintenanceCategory": "Одржавање"
+    "TasksMaintenanceCategory": "Одржавање",
+    "TaskCleanActivityLogDescription": "Брише историју активности старију од конфигурисаног броја година.",
+    "TaskCleanActivityLog": "Очисти историју активности"
 }

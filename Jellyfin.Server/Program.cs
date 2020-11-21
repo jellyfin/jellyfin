@@ -290,23 +290,19 @@ namespace Jellyfin.Server
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
+
                             if (appHost.ListenWithHttps)
                             {
-                                options.Listen(address, appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps(appHost.Certificate);
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
+                                options.Listen(
+                                    address,
+                                    appHost.HttpsPort,
+                                    listenOptions => listenOptions.UseHttps(appHost.Certificate));
                             }
                             else if (builderContext.HostingEnvironment.IsDevelopment())
                             {
                                 try
                                 {
-                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
-                                    {
-                                        listenOptions.UseHttps();
-                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                    });
+                                    options.Listen(address, appHost.HttpsPort, listenOptions => listenOptions.UseHttps());
                                 }
                                 catch (InvalidOperationException ex)
                                 {
@@ -322,21 +318,15 @@ namespace Jellyfin.Server
 
                         if (appHost.ListenWithHttps)
                         {
-                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
-                            {
-                                listenOptions.UseHttps(appHost.Certificate);
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                            });
+                            options.ListenAnyIP(
+                                appHost.HttpsPort,
+                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
                         }
                         else if (builderContext.HostingEnvironment.IsDevelopment())
                         {
                             try
                             {
-                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps();
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
+                                options.ListenAnyIP(appHost.HttpsPort, listenOptions => listenOptions.UseHttps());
                             }
                             catch (InvalidOperationException ex)
                             {
@@ -378,7 +368,7 @@ namespace Jellyfin.Server
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
-                    services.TryAdd(serviceCollection);
+                    services.Add(serviceCollection);
                 })
                 .UseStartup<Startup>();
         }

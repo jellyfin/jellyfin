@@ -18,12 +18,11 @@ namespace Emby.Server.Implementations.Networking
     public class NetworkManager : INetworkManager
     {
         private readonly ILogger<NetworkManager> _logger;
-
-        private IPAddress[] _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
-
         private readonly object _subnetLookupLock = new object();
         private readonly Dictionary<string, List<string>> _subnetLookup = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+
+        private IPAddress[] _localIpAddresses;
 
         private List<PhysicalAddress> _macAddresses;
 
@@ -157,7 +156,9 @@ namespace Emby.Server.Implementations.Networking
                 return false;
             }
 
-            byte[] octet = ipAddress.GetAddressBytes();
+            // GetAddressBytes
+            Span<byte> octet = stackalloc byte[ipAddress.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
+            ipAddress.TryWriteBytes(octet, out _);
 
             if ((octet[0] == 10) ||
                 (octet[0] == 172 && (octet[1] >= 16 && octet[1] <= 31)) || // RFC1918
@@ -260,7 +261,9 @@ namespace Emby.Server.Implementations.Networking
         /// <inheritdoc/>
         public bool IsAddressInSubnets(IPAddress address, bool excludeInterfaces, bool excludeRFC)
         {
-            byte[] octet = address.GetAddressBytes();
+            // GetAddressBytes
+            Span<byte> octet = stackalloc byte[address.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
+            address.TryWriteBytes(octet, out _);
 
             if ((octet[0] == 127) || // RFC1122
                 (octet[0] == 169 && octet[1] == 254)) // RFC3927
@@ -503,18 +506,25 @@ namespace Emby.Server.Implementations.Networking
 
         private IPAddress GetNetworkAddress(IPAddress address, IPAddress subnetMask)
         {
-            byte[] ipAdressBytes = address.GetAddressBytes();
-            byte[] subnetMaskBytes = subnetMask.GetAddressBytes();
+            int size = address.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
 
-            if (ipAdressBytes.Length != subnetMaskBytes.Length)
+            // GetAddressBytes
+            Span<byte> ipAddressBytes = stackalloc byte[size];
+            address.TryWriteBytes(ipAddressBytes, out _);
+
+            // GetAddressBytes
+            Span<byte> subnetMaskBytes = stackalloc byte[size];
+            subnetMask.TryWriteBytes(subnetMaskBytes, out _);
+
+            if (ipAddressBytes.Length != subnetMaskBytes.Length)
             {
                 throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
             }
 
-            byte[] broadcastAddress = new byte[ipAdressBytes.Length];
+            byte[] broadcastAddress = new byte[ipAddressBytes.Length];
             for (int i = 0; i < broadcastAddress.Length; i++)
             {
-                broadcastAddress[i] = (byte)(ipAdressBytes[i] & subnetMaskBytes[i]);
+                broadcastAddress[i] = (byte)(ipAddressBytes[i] & subnetMaskBytes[i]);
             }
 
             return new IPAddress(broadcastAddress);

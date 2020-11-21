@@ -16,7 +16,6 @@
     "Folders": "Mappen",
     "Genres": "Genres",
     "HeaderAlbumArtists": "Albumartiesten",
-    "HeaderCameraUploads": "Camera-uploads",
     "HeaderContinueWatching": "Kijken hervatten",
     "HeaderFavoriteAlbums": "Favoriete albums",
     "HeaderFavoriteArtists": "Favoriete artiesten",
@@ -114,5 +113,7 @@
     "TasksChannelsCategory": "Internet Kanalen",
     "TasksApplicationCategory": "Applicatie",
     "TasksLibraryCategory": "Bibliotheek",
-    "TasksMaintenanceCategory": "Onderhoud"
+    "TasksMaintenanceCategory": "Onderhoud",
+    "TaskCleanActivityLogDescription": "Verwijder activiteiten logs ouder dan de ingestelde tijd.",
+    "TaskCleanActivityLog": "Leeg activiteiten logboek"
 }

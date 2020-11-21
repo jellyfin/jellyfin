@@ -50,7 +50,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 var fileExtension = Path.GetExtension(f.FullName) ??
                                     string.Empty;
 
-                return _validExtensions.Contains(fileExtension,
+                return _validExtensions.Contains(
+                    fileExtension,
                                                 StringComparer
                                                     .OrdinalIgnoreCase);
             }).ToList();

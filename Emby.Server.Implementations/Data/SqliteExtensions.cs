@@ -107,20 +107,6 @@ namespace Emby.Server.Implementations.Data
             return null;
         }
 
-        public static void Attach(SQLiteDatabaseConnection db, string path, string alias)
-        {
-            var commandText = string.Format(
-                CultureInfo.InvariantCulture,
-                "attach @path as {0};",
-                alias);
-
-            using (var statement = db.PrepareStatement(commandText))
-            {
-                statement.TryBind("@path", path);
-                statement.MoveNext();
-            }
-        }
-
         public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)
         {
             return result[index].SQLiteType == SQLiteType.Null;

@@ -10,11 +10,18 @@ namespace Emby.Naming.AudioBook
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioBookInfo" /> class.
         /// </summary>
-        public AudioBookInfo()
+        /// <param name="name">Name of audiobook.</param>
+        /// <param name="year">Year of audiobook release.</param>
+        /// <param name="files">List of files composing the actual audiobook.</param>
+        /// <param name="extras">List of extra files.</param>
+        /// <param name="alternateVersions">Alternative version of files.</param>
+        public AudioBookInfo(string name, int? year, List<AudioBookFileInfo>? files, List<AudioBookFileInfo>? extras, List<AudioBookFileInfo>? alternateVersions)
         {
-            Files = new List<AudioBookFileInfo>();
-            Extras = new List<AudioBookFileInfo>();
-            AlternateVersions = new List<AudioBookFileInfo>();
+            Name = name;
+            Year = year;
+            Files = files ?? new List<AudioBookFileInfo>();
+            Extras = extras ?? new List<AudioBookFileInfo>();
+            AlternateVersions = alternateVersions ?? new List<AudioBookFileInfo>();
         }
 
         /// <summary>

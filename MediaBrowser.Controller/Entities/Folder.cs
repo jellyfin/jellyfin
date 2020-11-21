@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Loads our children.  Validation will occur externally.
-        /// We want this sychronous.
+        /// We want this synchronous.
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {
@@ -255,7 +255,8 @@ namespace MediaBrowser.Controller.Entities
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
                 {
-                    Logger.LogError("Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
+                    Logger.LogError(
+                        "Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -717,7 +718,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
         {
-            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase))
             {
                 Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
@@ -807,7 +808,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
+                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(nameof(Series)))
                 {
                     Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;
@@ -979,7 +980,8 @@ namespace MediaBrowser.Controller.Entities
             return items;
         }
 
-        private static bool CollapseBoxSetItems(InternalItemsQuery query,
+        private static bool CollapseBoxSetItems(
+            InternalItemsQuery query,
             BaseItem queryParent,
             User user,
             IServerConfigurationManager configurationManager)
@@ -1060,12 +1062,12 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.Genres.Length > 0)
+            if (request.Genres.Count > 0)
             {
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1170,7 +1172,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1381,7 +1383,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-
         /// <summary>
         /// Gets the linked children.
         /// </summary>
@@ -1589,7 +1590,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
-        public override void MarkPlayed(User user,
+        public override void MarkPlayed(
+            User user,
             DateTime? datePlayed,
             bool resetPosition)
         {

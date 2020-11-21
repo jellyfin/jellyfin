@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Cryptography;
 using static MediaBrowser.Common.Cryptography.Constants;
 
@@ -80,7 +81,7 @@ namespace Emby.Server.Implementations.Cryptography
                 throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
             }
 
-            using var h = HashAlgorithm.Create(hashMethod);
+            using var h = HashAlgorithm.Create(hashMethod) ?? throw new ResourceNotFoundException($"Unknown hash method: {hashMethod}.");
             if (salt.Length == 0)
             {
                 return h.ComputeHash(bytes);

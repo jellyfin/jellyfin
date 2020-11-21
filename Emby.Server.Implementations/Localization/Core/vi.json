@@ -103,7 +103,6 @@
     "HeaderFavoriteEpisodes": "Tập Phim Yêu Thích",
     "HeaderFavoriteArtists": "Nghệ Sĩ Yêu Thích",
     "HeaderFavoriteAlbums": "Album Ưa Thích",
-    "HeaderCameraUploads": "Máy Ảnh Tải Lên",
     "FailedLoginAttemptWithUserName": "Nỗ lực đăng nhập thất bại từ {0}",
     "DeviceOnlineWithName": "{0} đã kết nối",
     "DeviceOfflineWithName": "{0} đã ngắt kết nối",
@@ -113,5 +112,10 @@
     "Books": "Sách",
     "AuthenticationSucceededWithUserName": "{0} xác thực thành công",
     "Application": "Ứng Dụng",
-    "AppDeviceValues": "Ứng Dụng: {0}, Thiết Bị: {1}"
+    "AppDeviceValues": "Ứng Dụng: {0}, Thiết Bị: {1}",
+    "TaskCleanActivityLogDescription": "Xóa các mục nhật ký hoạt động cũ hơn độ tuổi đã cài đặt.",
+    "TaskCleanActivityLog": "Xóa Nhật Ký Hoạt Động",
+    "Undefined": "Không Xác Định",
+    "Forced": "Bắt Buộc",
+    "Default": "Mặc Định"
 }
