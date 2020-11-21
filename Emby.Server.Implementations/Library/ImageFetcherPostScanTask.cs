@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Library
                     {
                         await _libraryManager.UpdateImagesAsync(queuedItem.item, queuedItem.updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
                     }
-                    catch (HttpException ex)
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to fetch images for {Type} item with id {ItemId}", itemType, itemId);
                     }
