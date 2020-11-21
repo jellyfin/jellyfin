@@ -6,6 +6,7 @@ using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Api.Models.SessionDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -412,14 +413,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostFullCapabilities(
             [FromQuery] string? id,
-            [FromBody, Required] ClientCapabilities capabilities)
+            [FromBody, Required] ClientCapabilitiesDto capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 id = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
             }
 
-            _sessionManager.ReportCapabilities(id, capabilities);
+            _sessionManager.ReportCapabilities(id, capabilities.ToClientCapabilities());
 
             return NoContent();
         }
