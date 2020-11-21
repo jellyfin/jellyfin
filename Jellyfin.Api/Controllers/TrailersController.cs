@@ -198,7 +198,6 @@ namespace Jellyfin.Api.Controllers
             return _itemsController
                 .GetItems(
                     userId,
-                    userId,
                     maxOfficialRating,
                     hasThemeSong,
                     hasThemeVideo,
