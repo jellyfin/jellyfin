@@ -261,7 +261,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 Id = newID,
                 StartDate = startAt,
                 EndDate = endAt,
-                Name = details.titles[0].title120 ?? "Unkown",
+                Name = details.titles[0].title120 ?? "Unknown",
                 OfficialRating = null,
                 CommunityRating = null,
                 EpisodeTitle = episodeTitle,

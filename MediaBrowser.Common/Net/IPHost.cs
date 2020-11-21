@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -14,6 +15,11 @@ namespace MediaBrowser.Common.Net
     public class IPHost : IPObject
     {
         /// <summary>
+        /// Gets or sets timeout value before resolve required, in minutes.
+        /// </summary>
+        public const int Timeout = 30;
+
+        /// <summary>
         /// Represents an IPHost that has no value.
         /// </summary>
         public static readonly IPHost None = new IPHost(string.Empty, IPAddress.None);
@@ -21,7 +27,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Time when last resolved in ticks.
         /// </summary>
-        private long _lastResolved;
+        private DateTime? _lastResolved = null;
 
         /// <summary>
         /// Gets the IP Addresses, attempting to resolve the name, if there are none.
@@ -83,14 +89,8 @@ namespace MediaBrowser.Common.Net
             {
                 // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
                 // which is automatically determined by it's IP type. Anything else is meaningless.
-                throw new NotImplementedException("The prefix length on a host cannot be set.");
             }
         }
-
-        /// <summary>
-        /// Gets or sets timeout value before resolve required, in minutes.
-        /// </summary>
-        public byte Timeout { get; set; } = 30;
 
         /// <summary>
         /// Gets a value indicating whether the address has a value.
@@ -395,15 +395,15 @@ namespace MediaBrowser.Common.Net
         private bool ResolveHost()
         {
             // When was the last time we resolved?
-            if (_lastResolved == 0)
+            if (_lastResolved == null)
             {
-                _lastResolved = DateTime.UtcNow.Ticks;
+                _lastResolved = DateTime.UtcNow;
             }
 
-            // If we haven't resolved before, or out timer has run out...
-            if ((_addresses.Length == 0 && !Resolved) || (TimeSpan.FromTicks(DateTime.UtcNow.Ticks - _lastResolved).TotalMinutes > Timeout))
+            // If we haven't resolved before, or our timer has run out...
+            if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved?.AddMinutes(Timeout)))
             {
-                _lastResolved = DateTime.UtcNow.Ticks;
+                _lastResolved = DateTime.UtcNow;
                 ResolveHostInternal().GetAwaiter().GetResult();
                 Resolved = true;
             }
@@ -433,9 +433,10 @@ namespace MediaBrowser.Common.Net
                         IPHostEntry ip = await Dns.GetHostEntryAsync(HostName).ConfigureAwait(false);
                         _addresses = ip.AddressList;
                     }
-                    catch (SocketException)
+                    catch (SocketException ex)
                     {
-                        // Ignore socket errors, as the result value will just be an empty array.
+                        // Log and then ignore socket errors, as the result value will just be an empty array.
+                        Debug.WriteLine("GetHostEntryAsync failed with {Message}.", ex.Message);
                     }
                 }
             }

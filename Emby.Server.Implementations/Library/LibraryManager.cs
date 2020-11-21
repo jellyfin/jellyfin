@@ -1503,7 +1503,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (query.AncestorIds.Length == 0 &&
                 query.ParentId.Equals(Guid.Empty) &&
-                query.ChannelIds.Length == 0 &&
+                query.ChannelIds.Count == 0 &&
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
                 string.IsNullOrEmpty(query.SeriesPresentationUniqueKey) &&

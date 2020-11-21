@@ -198,7 +198,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? channelIds)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] channelIds)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -208,11 +208,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                ChannelIds = (channelIds ?? string.Empty)
-                    .Split(',')
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new Guid(i))
-                    .ToArray(),
+                ChannelIds = channelIds,
                 DtoOptions = new DtoOptions { Fields = fields }
             };
 

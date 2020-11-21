@@ -362,15 +362,14 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItems([FromQuery] string? ids)
+        public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids)
         {
-            if (string.IsNullOrEmpty(ids))
+            if (ids.Length == 0)
             {
                 return NoContent();
             }
 
-            var itemIds = RequestHelpers.Split(ids, ',', true);
-            foreach (var i in itemIds)
+            foreach (var i in ids)
             {
                 var item = _libraryManager.GetItemById(i);
                 var auth = _authContext.GetAuthorizationInfo(Request);
@@ -691,7 +690,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute, Required] Guid itemId,
-            [FromQuery] string? excludeArtistIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeArtistIds,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
@@ -753,9 +752,9 @@ namespace Jellyfin.Api.Controllers
             };
 
             // ExcludeArtistIds
-            if (!string.IsNullOrEmpty(excludeArtistIds))
+            if (excludeArtistIds.Length != 0)
             {
-                query.ExcludeArtistIds = RequestHelpers.GetGuids(excludeArtistIds);
+                query.ExcludeArtistIds = excludeArtistIds;
             }
 
             List<BaseItem> itemsResult = _libraryManager.GetItemList(query);

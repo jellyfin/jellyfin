@@ -73,9 +73,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
         {
-            _config.Configuration.UICulture = startupConfiguration.UICulture;
-            _config.Configuration.MetadataCountryCode = startupConfiguration.MetadataCountryCode;
-            _config.Configuration.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage;
+            _config.Configuration.UICulture = startupConfiguration.UICulture ?? string.Empty;
+            _config.Configuration.MetadataCountryCode = startupConfiguration.MetadataCountryCode ?? string.Empty;
+            _config.Configuration.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage ?? string.Empty;
             _config.SaveConfiguration();
             return NoContent();
         }
