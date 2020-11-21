@@ -272,6 +272,7 @@ namespace MediaBrowser.Providers.Manager
 
             LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload);
             LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
+            return Task.CompletedTask;
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
