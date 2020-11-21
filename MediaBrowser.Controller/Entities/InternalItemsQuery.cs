@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] ExcludeInheritedTags { get; set; }
 
-        public string[] Genres { get; set; }
+        public IReadOnlyList<string> Genres { get; set; }
 
         public bool? IsSpecialSeason { get; set; }
 
@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] StudioIds { get; set; }
 
-        public Guid[] GenreIds { get; set; }
+        public IReadOnlyList<Guid> GenreIds { get; set; }
 
         public ImageType[] ImageTypes { get; set; }
 
@@ -162,7 +162,7 @@ namespace MediaBrowser.Controller.Entities
 
         public double? MinCommunityRating { get; set; }
 
-        public Guid[] ChannelIds { get; set; }
+        public IReadOnlyList<Guid> ChannelIds { get; set; }
 
         public int? ParentIndexNumber { get; set; }
 

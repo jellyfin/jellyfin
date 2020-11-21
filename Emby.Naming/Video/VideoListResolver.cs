@@ -30,7 +30,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="files">List of related video files.</param>
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
-        /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files togeather when related.</returns>
+        /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
         public IEnumerable<VideoInfo> Resolve(List<FileSystemMetadata> files, bool supportMultiVersion = true)
         {
             var videoResolver = new VideoResolver(_options);

@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Playlists
 {
@@ -9,15 +10,10 @@ namespace MediaBrowser.Model.Playlists
     {
         public string Name { get; set; }
 
-        public Guid[] ItemIdList { get; set; }
+        public IReadOnlyList<Guid> ItemIdList { get; set; } = Array.Empty<Guid>();
 
         public string MediaType { get; set; }
 
         public Guid UserId { get; set; }
-
-        public PlaylistCreationRequest()
-        {
-            ItemIdList = Array.Empty<Guid>();
-        }
     }
 }

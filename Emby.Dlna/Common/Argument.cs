@@ -1,7 +1,7 @@
 namespace Emby.Dlna.Common
 {
     /// <summary>
-    /// DLNA Query parameter type, used when quering DLNA devices via SOAP.
+    /// DLNA Query parameter type, used when querying DLNA devices via SOAP.
     /// </summary>
     public class Argument
     {
