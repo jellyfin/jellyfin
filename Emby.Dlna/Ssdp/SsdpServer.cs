@@ -230,8 +230,8 @@ namespace Emby.Dlna.Ssdp
                     }
 
                     var mcast = addr.AddressFamily == AddressFamily.InterNetwork ?
-                        IPNetAddress.MulticastIPv4 : IPObject.IsIPv6LinkLocal(addr) ?
-                            IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal;
+                        IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(addr) ?
+                            IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal;
 
                     values["HOST"] = mcast.ToString() + ":1900";
 
