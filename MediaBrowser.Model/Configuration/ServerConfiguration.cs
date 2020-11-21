@@ -233,7 +233,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether quick connect is available for use on this server.
         /// </summary>
         public bool QuickConnectAvailable { get; set; } = false;
-       
+
         /// <summary>
         /// Gets or sets a value indicating whether access outside of the LAN is permitted.
         /// </summary>
