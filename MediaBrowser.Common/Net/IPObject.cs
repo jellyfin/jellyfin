@@ -86,7 +86,9 @@ namespace MediaBrowser.Common.Net
             // prefix length value. eg. /16 on a 4 octet ip4 address (192.168.2.240) will result in the 2 and the 240 being zeroed out.
             // Where there is not an exact boundary (eg /23), mod is used to calculate how many bits of this value are to be kept.
 
-            byte[] addressBytes = address.GetAddressBytes();
+            // GetAddressBytes
+            Span<byte> addressBytes = stackalloc byte[address.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
+            address.TryWriteBytes(addressBytes, out _);
 
             int div = prefixLength / 8;
             int mod = prefixLength % 8;
@@ -170,14 +172,16 @@ namespace MediaBrowser.Common.Net
 
             if (!address.Equals(IPAddress.None))
             {
+                if (address.IsIPv4MappedToIPv6)
+                {
+                    address = address.MapToIPv4();
+                }
+
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    if (address.IsIPv4MappedToIPv6)
-                    {
-                        address = address.MapToIPv4();
-                    }
-
-                    byte[] octet = address.GetAddressBytes();
+                    // GetAddressBytes
+                    Span<byte> octet = stackalloc byte[4];
+                    address.TryWriteBytes(octet, out _);
 
                     return (octet[0] == 10)
                            || (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) // RFC1918
@@ -186,7 +190,10 @@ namespace MediaBrowser.Common.Net
                 }
                 else
                 {
-                    byte[] octet = address.GetAddressBytes();
+                    // GetAddressBytes
+                    Span<byte> octet = stackalloc byte[16];
+                    address.TryWriteBytes(octet, out _);
+
                     uint word = (uint)(octet[0] << 8) + octet[1];
 
                     return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
@@ -223,7 +230,9 @@ namespace MediaBrowser.Common.Net
                 return false;
             }
 
-            byte[] octet = address.GetAddressBytes();
+            // GetAddressBytes
+            Span<byte> octet = stackalloc byte[16];
+            address.TryWriteBytes(octet, out _);
             uint word = (uint)(octet[0] << 8) + octet[1];
 
             return word >= 0xfe80 && word <= 0xfebf; // fe80::/10 :Local link.
@@ -261,7 +270,9 @@ namespace MediaBrowser.Common.Net
             byte cidrnet = 0;
             if (!mask.Equals(IPAddress.Any))
             {
-                byte[] bytes = mask.GetAddressBytes();
+                // GetAddressBytes
+                Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
+                mask.TryWriteBytes(bytes, out _);
 
                 var zeroed = false;
                 for (var i = 0; i < bytes.Length; i++)

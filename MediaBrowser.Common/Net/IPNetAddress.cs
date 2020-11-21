@@ -18,17 +18,17 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// IPv4 multicast address.
         /// </summary>
-        public static readonly IPAddress MulticastIPv4 = IPAddress.Parse("239.255.255.250");
+        public static readonly IPAddress SSDPMulticastIPv4 = IPAddress.Parse("239.255.255.250");
 
         /// <summary>
         /// IPv6 local link multicast address.
         /// </summary>
-        public static readonly IPAddress MulticastIPv6LinkLocal = IPAddress.Parse("ff02::C");
+        public static readonly IPAddress SSDPMulticastIPv6LinkLocal = IPAddress.Parse("ff02::C");
 
         /// <summary>
         /// IPv6 site local multicast address.
         /// </summary>
-        public static readonly IPAddress MulticastIPv6SiteLocal = IPAddress.Parse("ff05::C");
+        public static readonly IPAddress SSDPMulticastIPv6SiteLocal = IPAddress.Parse("ff05::C");
 
         /// <summary>
         /// IP4Loopback address host.
@@ -235,7 +235,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Returns a textual representation of this object.
         /// </summary>
-        /// <param name="shortVersion">Set to true, if the subnet is to be included as part of the address.</param>
+        /// <param name="shortVersion">Set to true, if the subnet is to be excluded as part of the address.</param>
         /// <returns>String representation of this object.</returns>
         public string ToString(bool shortVersion)
         {
