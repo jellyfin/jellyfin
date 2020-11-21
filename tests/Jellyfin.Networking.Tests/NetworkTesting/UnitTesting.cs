@@ -11,7 +11,7 @@ using Xunit;
 
 namespace NetworkTesting
 {
-    public class NetTesting
+    public class NetworkParseTests
     {
         /// <summary>
         /// Trys to identify the string and return an object of that class.
