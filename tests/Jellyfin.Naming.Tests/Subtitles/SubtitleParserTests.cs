@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emby.Naming.Common;
 using Emby.Naming.Subtitles;
 using Xunit;
@@ -26,21 +26,17 @@ namespace Jellyfin.Naming.Tests.Subtitles
             Assert.Equal(language, result?.Language, true);
             Assert.Equal(isDefault, result?.IsDefault);
             Assert.Equal(isForced, result?.IsForced);
+            Assert.Equal(input, result?.Path);
         }
 
         [Theory]
         [InlineData("The Skin I Live In (2011).mp4")]
+        [InlineData("")]
         public void SubtitleParser_InvalidFileName_ReturnsNull(string input)
         {
             var parser = new SubtitleParser(_namingOptions);
 
             Assert.Null(parser.ParseFile(input));
-        }
-
-        [Fact]
-        public void SubtitleParser_EmptyFileName_ThrowsArgumentException()
-        {
-            Assert.Throws<ArgumentException>(() => new SubtitleParser(_namingOptions).ParseFile(string.Empty));
         }
     }
 }

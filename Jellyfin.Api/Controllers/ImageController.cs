@@ -928,7 +928,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] int? imageIndex = null)
         {
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user?.ProfileImage == null)
             {
                 return NotFound();
             }

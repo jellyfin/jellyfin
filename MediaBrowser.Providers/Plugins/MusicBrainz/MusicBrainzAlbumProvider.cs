@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrWhiteSpace(url))
             {
                 using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 return GetResultsFromResponse(stream);
             }
 
@@ -284,7 +284,7 @@ namespace MediaBrowser.Providers.Music
                 artistId);
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings
             {
@@ -307,7 +307,7 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(artistName));
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings()
             {
@@ -622,7 +622,7 @@ namespace MediaBrowser.Providers.Music
             var url = "/ws/2/release?release-group=" + releaseGroupId.ToString(CultureInfo.InvariantCulture);
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings
             {
@@ -649,7 +649,7 @@ namespace MediaBrowser.Providers.Music
             var url = "/ws/2/release-group/?query=reid:" + releaseEntryId.ToString(CultureInfo.InvariantCulture);
 
             using var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var oReader = new StreamReader(stream, Encoding.UTF8);
             var settings = new XmlReaderSettings
             {

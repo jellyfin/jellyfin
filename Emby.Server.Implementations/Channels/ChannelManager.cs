@@ -634,7 +634,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var channels = GetAllChannels().Where(i => i is ISupportsLatestMedia).ToArray();
 
-            if (query.ChannelIds.Length > 0)
+            if (query.ChannelIds.Count > 0)
             {
                 // Avoid implicitly captured closure
                 var ids = query.ChannelIds;

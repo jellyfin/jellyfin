@@ -66,7 +66,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Data", "Jellyfin.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Implementations", "Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj", "{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "Jellyfin.Networking\Jellyfin.Networking.csproj", "{9B3CC491-F769-4EBD-8BB8-F78A5860ABE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "Jellyfin.Networking\Jellyfin.Networking.csproj", "{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -178,10 +178,10 @@ Global
 		{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B3CC491-F769-4EBD-8BB8-F78A5860ABE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B3CC491-F769-4EBD-8BB8-F78A5860ABE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B3CC491-F769-4EBD-8BB8-F78A5860ABE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B3CC491-F769-4EBD-8BB8-F78A5860ABE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

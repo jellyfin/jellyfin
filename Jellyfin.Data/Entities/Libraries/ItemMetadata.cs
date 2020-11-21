@@ -141,7 +141,7 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual ICollection<PersonRole> PersonRoles { get; protected set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the generes for this item.
+        /// Gets or sets a collection containing the genres for this item.
         /// </summary>
         public virtual ICollection<Genre> Genres { get; protected set; }
 

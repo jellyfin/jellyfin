@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var result = await GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
-            // Only take the name and rating if the user's language is set to english, since Omdb has no localization
+            // Only take the name and rating if the user's language is set to English, since Omdb has no localization
             if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
                 item.Name = result.Title;
@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
-            if (seasonResult == null)
+            if (seasonResult?.Episodes == null)
             {
                 return false;
             }
@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return false;
             }
 
-            // Only take the name and rating if the user's language is set to english, since Omdb has no localization
+            // Only take the name and rating if the user's language is set to English, since Omdb has no localization
             if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
                 item.Name = result.Title;
@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             _jsonSerializer.SerializeToFile(rootObject, path);
@@ -336,7 +336,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             _jsonSerializer.SerializeToFile(rootObject, path);
@@ -385,7 +385,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var isConfiguredForEnglish = IsConfiguredForEnglish(item) || _configurationManager.Configuration.EnableNewOmdbSupport;
 
             // Grab series genres because IMDb data is better than TVDB. Leave movies alone
-            // But only do it if english is the preferred language because this data will not be localized
+            // But only do it if English is the preferred language because this data will not be localized
             if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result.Genre))
             {
                 item.Genres = Array.Empty<string>();
@@ -401,7 +401,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             if (isConfiguredForEnglish)
             {
-                // Omdb is currently english only, so for other languages skip this and let secondary providers fill it in
+                // Omdb is currently English only, so for other languages skip this and let secondary providers fill it in
                 item.Overview = result.Plot;
             }
 
@@ -455,7 +455,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             var lang = item.GetPreferredMetadataLanguage();
 
-            // The data isn't localized and so can only be used for english users
+            // The data isn't localized and so can only be used for English users
             return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         }
 
