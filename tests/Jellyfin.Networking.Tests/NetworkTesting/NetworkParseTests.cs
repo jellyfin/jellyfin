@@ -172,7 +172,7 @@ namespace Jellyfin.Networking.Tests
 
             // Test excluded, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), true);
-            Assert.True(string.Equals(nc?.AsString(), result3, System.StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(nc.AsString(), result3);
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
