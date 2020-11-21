@@ -1,8 +1,5 @@
-using System;
-using System.ComponentModel;
 using System.Net.Http.Headers;
 using System.Net.Mime;
-using Jellyfin.Api.TypeConverters;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
@@ -164,9 +161,6 @@ namespace Jellyfin.Server
                     endpoints.MapHealthChecks("/health");
                 });
             });
-
-            // Add type descriptor for legacy datetime parsing.
-            TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));
         }
     }
 }
