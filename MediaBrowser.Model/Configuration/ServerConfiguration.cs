@@ -13,8 +13,16 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class ServerConfiguration : BaseApplicationConfiguration
     {
+        /// <summary>
+        /// The default value for <see cref="HttpServerPortNumber"/>.
+        /// </summary>
         public const int DefaultHttpPort = 8096;
+
+        /// <summary>
+        /// The default value for <see cref="PublicHttpsPort"/> and <see cref="HttpsPortNumber"/>.
+        /// </summary>
         public const int DefaultHttpsPort = 8920;
+
         private string _baseUrl = string.Empty;
 
         /// <summary>
