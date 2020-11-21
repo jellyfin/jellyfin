@@ -168,7 +168,7 @@ namespace Jellyfin.Networking.Tests
 
             // Test included, IP6.
             Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false); 
-            Assert.True(string.Equals(nc?.AsString(), result1, System.StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(nc.AsString(), result1);
 
             // Test excluded, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), true);
