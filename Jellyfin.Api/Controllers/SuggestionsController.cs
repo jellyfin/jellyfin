@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -58,8 +59,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
             [FromRoute, Required] Guid userId,
-            [FromQuery] string? mediaType,
-            [FromQuery] string? type,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaType,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] type,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] bool enableTotalRecordCount = false)
@@ -70,8 +71,8 @@ namespace Jellyfin.Api.Controllers
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
-                MediaTypes = RequestHelpers.Split(mediaType!, ',', true),
-                IncludeItemTypes = RequestHelpers.Split(type!, ',', true),
+                MediaTypes = mediaType,
+                IncludeItemTypes = type,
                 IsVirtualItem = false,
                 StartIndex = startIndex,
                 Limit = limit,

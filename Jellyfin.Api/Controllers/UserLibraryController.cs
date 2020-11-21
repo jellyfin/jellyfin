@@ -269,7 +269,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
@@ -296,7 +296,7 @@ namespace Jellyfin.Api.Controllers
                 new LatestItemsQuery
                 {
                     GroupItems = groupItems,
-                    IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
+                    IncludeItemTypes = includeItemTypes,
                     IsPlayed = isPlayed,
                     Limit = limit,
                     ParentId = parentId ?? Guid.Empty,

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -73,9 +73,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? sortOrder,
             [FromQuery] string? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
-            [FromQuery] string? mediaTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery] string? sortBy,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
@@ -103,19 +103,15 @@ namespace Jellyfin.Api.Controllers
 
             IList<BaseItem> items;
 
-            var excludeItemTypesArr = RequestHelpers.Split(excludeItemTypes, ',', true);
-            var includeItemTypesArr = RequestHelpers.Split(includeItemTypes, ',', true);
-            var mediaTypesArr = RequestHelpers.Split(mediaTypes, ',', true);
-
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = excludeItemTypesArr,
-                IncludeItemTypes = includeItemTypesArr,
-                MediaTypes = mediaTypesArr,
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
+                MediaTypes = mediaTypes,
                 DtoOptions = dtoOptions
             };
 
-            bool Filter(BaseItem i) => FilterItem(i, excludeItemTypesArr, includeItemTypesArr, mediaTypesArr);
+            bool Filter(BaseItem i) => FilterItem(i, excludeItemTypes, includeItemTypes, mediaTypes);
 
             if (parentItem.IsFolder)
             {

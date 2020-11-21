@@ -593,6 +593,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
+                if (VideoStream == null)
+                {
+                    return null;
+                }
+
                 if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.Codec;
@@ -606,6 +611,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
+                if (AudioStream == null)
+                {
+                    return null;
+                }
+
                 if (EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
                     return AudioStream?.Codec;

@@ -3611,12 +3611,12 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add($"type in ({inClause})");
             }
 
-            if (query.ChannelIds.Length == 1)
+            if (query.ChannelIds.Count == 1)
             {
                 whereClauses.Add("ChannelId=@ChannelId");
                 statement?.TryBind("@ChannelId", query.ChannelIds[0].ToString("N", CultureInfo.InvariantCulture));
             }
-            else if (query.ChannelIds.Length > 1)
+            else if (query.ChannelIds.Count > 1)
             {
                 var inClause = string.Join(",", query.ChannelIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
                 whereClauses.Add($"ChannelId in ({inClause})");
@@ -4076,7 +4076,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            if (query.GenreIds.Length > 0)
+            if (query.GenreIds.Count > 0)
             {
                 var clauses = new List<string>();
                 var index = 0;
@@ -4097,7 +4097,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            if (query.Genres.Length > 0)
+            if (query.Genres.Count > 0)
             {
                 var clauses = new List<string>();
                 var index = 0;

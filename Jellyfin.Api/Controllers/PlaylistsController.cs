@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -63,11 +63,10 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
             [FromBody, Required] CreatePlaylistDto createPlaylistRequest)
         {
-            Guid[] idGuidArray = RequestHelpers.GetGuids(createPlaylistRequest.Ids);
             var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
             {
                 Name = createPlaylistRequest.Name,
-                ItemIdList = idGuidArray,
+                ItemIdList = createPlaylistRequest.Ids,
                 UserId = createPlaylistRequest.UserId,
                 MediaType = createPlaylistRequest.MediaType
             }).ConfigureAwait(false);
@@ -87,10 +86,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> AddToPlaylist(
             [FromRoute, Required] Guid playlistId,
-            [FromQuery] string? ids,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
             [FromQuery] Guid? userId)
         {
-            await _playlistManager.AddToPlaylistAsync(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty).ConfigureAwait(false);
+            await _playlistManager.AddToPlaylistAsync(playlistId, ids, userId ?? Guid.Empty).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -122,9 +121,11 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpDelete("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemoveFromPlaylist([FromRoute, Required] string playlistId, [FromQuery] string? entryIds)
+        public async Task<ActionResult> RemoveFromPlaylist(
+            [FromRoute, Required] string playlistId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] entryIds)
         {
-            await _playlistManager.RemoveFromPlaylistAsync(playlistId, RequestHelpers.Split(entryIds, ',', true)).ConfigureAwait(false);
+            await _playlistManager.RemoveFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
             return NoContent();
         }
 

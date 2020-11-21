@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -77,8 +77,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery] string? excludePersonTypes,
-            [FromQuery] string? personTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludePersonTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
             [FromQuery] string? appearsInItemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool? enableImages = true)
@@ -97,8 +97,8 @@ namespace Jellyfin.Api.Controllers
             var isFavoriteInFilters = filters.Any(f => f == ItemFilter.IsFavorite);
             var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery
             {
-                PersonTypes = RequestHelpers.Split(personTypes, ',', true),
-                ExcludePersonTypes = RequestHelpers.Split(excludePersonTypes, ',', true),
+                PersonTypes = personTypes,
+                ExcludePersonTypes = excludePersonTypes,
                 NameContains = searchTerm,
                 User = user,
                 IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,

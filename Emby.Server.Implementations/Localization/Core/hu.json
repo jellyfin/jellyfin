@@ -115,5 +115,8 @@
     "TaskRefreshChannels": "Csatornák frissítése",
     "TaskCleanTranscodeDescription": "Törli az egy napnál régebbi átkódolási fájlokat.",
     "TaskCleanActivityLogDescription": "A beállítottnál korábbi bejegyzések törlése a tevékenységnaplóból.",
-    "TaskCleanActivityLog": "Tevékenységnapló törlése"
+    "TaskCleanActivityLog": "Tevékenységnapló törlése",
+    "Undefined": "Meghatározatlan",
+    "Forced": "Kényszerített",
+    "Default": "Alapértelmezett"
 }

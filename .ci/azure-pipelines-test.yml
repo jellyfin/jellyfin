@@ -30,11 +30,11 @@ jobs:
 
       # This is required for the SonarCloud analyzer
       - task: UseDotNet@2
-        displayName: "Install .NET Core SDK 2.1"
+        displayName: "Install .NET SDK 5.x"
         condition: eq(variables['ImageName'], 'ubuntu-latest')
         inputs:
           packageType: sdk
-          version: '2.1.805'
+          version: '5.x'
 
       - task: UseDotNet@2
         displayName: "Update DotNet"

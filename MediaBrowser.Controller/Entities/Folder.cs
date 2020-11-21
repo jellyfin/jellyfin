@@ -1099,12 +1099,12 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.Genres.Length > 0)
+            if (request.Genres.Count > 0)
             {
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1209,7 +1209,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
