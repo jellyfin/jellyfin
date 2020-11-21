@@ -54,6 +54,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         /// <summary>
         /// Returns an unused UDP port number in the range specified.
+        /// Temporarily placed here until future network PR merged.
         /// </summary>
         /// <param name="range">Upper and Lower boundary of ports to select.</param>
         /// <returns>System.Int32.</returns>
@@ -78,7 +79,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            // Temporary Code to reduce PR size.
+            // Temporary code to reduce PR size. This will be updated by a future network pr.
             var localPort = GetUdpPortFromRange((49152, 65535));
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));

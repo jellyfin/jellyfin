@@ -271,9 +271,10 @@ namespace Emby.Server.Implementations
             _fileSystemManager = fileSystem;
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+            // Have to migrate settings here as migration subsystem not yet initialised.
             MigrateNetworkConfiguration();
 
-            // Have to pre-register the NetworkConfigurationFactory.
+            // Have to pre-register the NetworkConfigurationFactory, as the configuration sub-system is not yet initialised.
             ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
             NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
@@ -301,6 +302,10 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
         }
 
+        /// <summary>
+        /// Temporary function to migration network settings out of system.xml and into network.xml.
+        /// TODO: remove at the point when a fixed migration path has been decided upon.
+        /// </summary>
         private void MigrateNetworkConfiguration()
         {
             string path = Path.Combine(ConfigurationManager.CommonApplicationPaths.ConfigurationDirectoryPath, "network.xml");
