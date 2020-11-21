@@ -51,6 +51,12 @@ namespace Jellyfin.Networking.Tests
             return (IConfigurationManager)configManager.Object;
         }
 
+        /// <summary>
+        /// Checks the ability to ignore interfaces
+        /// </summary>
+        /// <param name="interfaces">Mock network setup, in the format (IP address, interface index, interface name) : .... </param>
+        /// <param name="lan">LAN addresses.</param>
+        /// <param name="value">Bind addresses that are excluded.</param>
         [Theory]
         [InlineData("192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
         [InlineData("192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
@@ -71,9 +77,14 @@ namespace Jellyfin.Networking.Tests
             Assert.Equal(nm.GetInternalBindAddresses().AsString(), value);
         }
 
+        /// <summary>
+        /// Check that the value given is in the network provided.
+        /// </summary>
+        /// <param name="network">Network address.</param>
+        /// <param name="value">Value to check.</param>
         [Theory]
         [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
-        public void TextIsInNetwork(string network, string value)
+        public void IsInNetwork(string network, string value)
         {
             if (network == null)
             {
@@ -92,6 +103,10 @@ namespace Jellyfin.Networking.Tests
             Assert.False(nm.IsInLocalNetwork(value));
         }
 
+        /// <summary>
+        /// Checks IP address formats.
+        /// </summary>
+        /// <param name="address"></param>
         [Theory]
         [InlineData("127.0.0.1")]
         [InlineData("127.0.0.1:123")]
@@ -105,21 +120,36 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
-        public void TestCollectionCreation(string address)
+        public void ValidIPStrings(string address)
         {
             Assert.True(TryParse(address, out _));
         }
 
+
+        /// <summary>
+        /// All should be invalid address strings.
+        /// </summary>
+        /// <param name="address">Invalid address strings.</param>
         [Theory]
         [InlineData("256.128.0.0.0.1")]
         [InlineData("127.0.0.1#")]
         [InlineData("localhost!")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
-        public void TestInvalidCollectionCreation(string address)
+        public void InvalidAddressString(string address)
         {
             Assert.False(TryParse(address, out _));
         }
 
+
+        /// <summary>
+        /// Test collection parsing.
+        /// </summary>
+        /// <param name="settings">Collection to parse.</param>
+        /// <param name="result1">Included addresses from the collection.</param>
+        /// <param name="result2">Included IP4 addresses from the collection.</param>
+        /// <param name="result3">Excluded addresses from the collection.</param>
+        /// <param name="result4">Excluded IP4 addresses from the collection.</param>
+        /// <param name="result5">Network addresses of the collection.</param>
         [Theory]
         [InlineData("127.0.0.1#",
             "[]",
@@ -166,22 +196,22 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            // Test included, IP6.
+            // Test included.
             Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false); 
             Assert.Equal(nc.AsString(), result1);
 
-            // Test excluded, non IP6.
+            // Test excluded.
             nc = nm.CreateIPCollection(settings.Split(","), true);
             Assert.Equal(nc.AsString(), result3);
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
             
-            // Test included, non IP6.
+            // Test IP4 included.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.Equal(nc.AsString(), result2);
 
-            // Test excluded, including IPv6.
+            // Test IP4 excluded.
             nc = nm.CreateIPCollection(settings.Split(","), true);
             Assert.Equal(nc.AsString(), result4);
 
@@ -194,6 +224,12 @@ namespace Jellyfin.Networking.Tests
             Assert.Equal(nc.AsString(), result5);
         }
 
+        /// <summary>
+        /// Union two collections.
+        /// </summary>
+        /// <param name="settings">Source.</param>
+        /// <param name="compare">Destination.</param>
+        /// <param name="result">Result.</param>
         [Theory]
         [InlineData("127.0.0.1", "fd23:184f:2029:0:3139:7386:67d7:d517/64,fd23:184f:2029:0:c0f0:8a8a:7605:fffa/128,fe80::3139:7386:67d7:d517%16/64,192.168.1.208/24,::1/128,127.0.0.1/8", "[127.0.0.1/32]")]
         [InlineData("127.0.0.1", "127.0.0.1/8", "[127.0.0.1/32]")]
@@ -293,7 +329,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("10.10.10.0/24", "10.10.10.1/32")]
         [InlineData("10.10.10.0/255.255.255.0", "10.10.10.1")]
 
-        public void TestSubnets(string network, string ip)
+        public void TestSubnetContains(string network, string ip)
         {
             Assert.True(TryParse(network, out IPObject? networkObj));
             Assert.True(TryParse(ip, out IPObject? ipObj));
@@ -307,7 +343,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/24, 100.10.10.1", "192.168.1.2/24")]
         [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "194.168.1.2/24, 100.10.10.1", "")]
 
-        public void TestMatches(string source, string dest, string result)
+        public void TestCollectionEquality(string source, string dest, string result)
         {
             if (source == null)
             {
@@ -353,7 +389,7 @@ namespace Jellyfin.Networking.Tests
 
         [Theory]
 
-        // Testing bind interfaces. These are set for my system so won't work elsewhere.
+        // Testing bind interfaces.
         // On my system eth16 is internal, eth11 external (Windows defines the indexes).
         //
         // This test is to replicate how DNLA requests work throughout the system.
