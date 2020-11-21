@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
