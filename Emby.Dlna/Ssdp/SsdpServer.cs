@@ -18,11 +18,9 @@ using SsdpMessage = System.Collections.Generic.Dictionary<string, string>;
 namespace Emby.Dlna.Ssdp
 {
     /// <summary>
-    /// Provides the platform independent logic for publishing device existence and responding to search requests.
+    /// Publishing SSDP devices and responding to search requests.
     ///
     /// Is designed to work in conjunction with ExternalPortForwarding.
-    ///
-    /// Lazy implementation. Socks will only be created at first use.
     /// </summary>
     public class SsdpServer : ISsdpServer
     {
@@ -33,8 +31,8 @@ namespace Emby.Dlna.Ssdp
         private readonly ILogger _logger;
         private readonly Hashtable _listeners;
         private readonly Hashtable _senders;
+        private readonly INetworkManager _networkManager;
         private readonly Dictionary<string, List<EventHandler<SsdpEventArgs>>> _events;
-        private readonly IsInLocalNetwork _isInLocalNetwork;
         private readonly object _eventFireLock;
         private Collection<IPObject> _interfaces;
         private bool _running;
@@ -45,8 +43,8 @@ namespace Emby.Dlna.Ssdp
         /// </summary>
         /// <param name="logger">The logger instance.<see cref="ILogger"/>.</param>
         /// <param name="interfaces">Interfaces to use for the server.</param>
-        /// <param name="isInLocalNetwork">Delegate used to check if a network address in part of the local LAN.</param>
-        private SsdpServer(ILogger logger, Collection<IPObject> interfaces, IsInLocalNetwork isInLocalNetwork)
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance to use.</param>
+        private SsdpServer(ILogger logger, Collection<IPObject> interfaces, INetworkManager networkManager)
         {
             _logger = logger;
             _eventFireLock = new object();
@@ -55,32 +53,14 @@ namespace Emby.Dlna.Ssdp
             _senders = new Hashtable();
             _events = new Dictionary<string, List<EventHandler<SsdpEventArgs>>>();
             UdpSendCount = 2;
-            IsIPv4Enabled = true;
             _interfaces = interfaces;
-            _isInLocalNetwork = isInLocalNetwork;
+            _networkManager = networkManager;
         }
-
-        /// <summary>
-        /// Checks to see if an address is in the LAN.
-        /// </summary>
-        /// <param name="address">IP Address to check.</param>
-        /// <returns>True if the address is within the LAN.</returns>
-        public delegate bool IsInLocalNetwork(IPAddress address);
 
         /// <summary>
         /// Gets or sets the Host name to be used in SSDP packets.
         /// </summary>
         public static string HostName { get; set; } = $"OS/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
-
-        /// <summary>
-        /// Gets or sets a value indicating whether IPv4 is enabled.
-        /// </summary>
-        public bool IsIPv4Enabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether IPv6 is enabled.
-        /// </summary>
-        public bool IsIPv6Enabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating the number of times each udp packet should be sent.
@@ -98,29 +78,22 @@ namespace Emby.Dlna.Ssdp
         public IPAddress? TracingFilter { get; internal set; }
 
         /// <summary>
-        /// Gets or creates the singleton instance.
+        /// Gets or creates the singleton instance that is used by all objects.
         /// </summary>
         /// <param name="logger">Logger instance.</param>
         /// <param name="interfaces">Interfaces to use for the server.</param>
-        /// <param name="isInLocalNetwork">Delegate used to verify if a network address in part of the local LAN.</param>
-        /// <param name="ipv4Enabled">True if IPv4 is enabled.</param>
-        /// <param name="ipv6Enabled">True if IPv6 is enabled.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance to use.</param>
         /// <returns>The SsdpServer singleton instance.</returns>
         public static ISsdpServer GetOrCreateInstance(
             ILogger logger,
             Collection<IPObject> interfaces,
-            IsInLocalNetwork isInLocalNetwork,
-            bool ipv4Enabled = true,
-            bool ipv6Enabled = true)
+            INetworkManager networkManager)
         {
             // As this class is used in multiple areas, we only want to create it once.
             if (_instance == null)
             {
-                _instance = new SsdpServer(logger, interfaces, isInLocalNetwork);
+                _instance = new SsdpServer(logger, interfaces, networkManager);
             }
-
-            _instance.IsIPv6Enabled = ipv6Enabled;
-            _instance.IsIPv4Enabled = ipv4Enabled;
 
             return _instance;
         }
@@ -209,9 +182,9 @@ namespace Emby.Dlna.Ssdp
 
             if (advertising != null)
             {
-                // Don't advertise an addressfamily which we aren't enabled for.
-                if ((advertising.AddressFamily == AddressFamily.InterNetwork && !IsIPv4Enabled) ||
-                    (advertising.AddressFamily == AddressFamily.InterNetworkV6 && !IsIPv6Enabled))
+                // Don't advertise an address family which we aren't enabled for.
+                if ((advertising.AddressFamily == AddressFamily.InterNetwork && !_networkManager.IsIP4Enabled) ||
+                    (advertising.AddressFamily == AddressFamily.InterNetworkV6 && !_networkManager.IsIP6Enabled))
                 {
                     return;
                 }
@@ -401,7 +374,7 @@ namespace Emby.Dlna.Ssdp
 
             if (restrict)
             {
-                if (!_isInLocalNetwork(endPoint.Address))
+                if (!_networkManager.IsInLocalNetwork(endPoint.Address))
                 {
                     _logger.LogDebug("FILTERED: Sending to non-LAN address: {0}.", endPoint.Address);
                     return;
@@ -479,7 +452,7 @@ namespace Emby.Dlna.Ssdp
         /// <param name="receivedFrom">The remote endpoint.</param>
         private Task ProcessMessage(UdpProcess client, string data, IPEndPoint receivedFrom)
         {
-            if (!_isInLocalNetwork(receivedFrom.Address))
+            if (!_networkManager.IsInLocalNetwork(receivedFrom.Address))
             {
                 // Not from the local LAN, so ignore it.
                 return Task.CompletedTask;
