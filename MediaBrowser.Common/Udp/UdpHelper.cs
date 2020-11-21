@@ -89,8 +89,8 @@ namespace MediaBrowser.Common.Udp
 
             return new IPEndPoint(
                 localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
-                    IPNetAddress.MulticastIPv4 : IPObject.IsIPv6LinkLocal(localIPAddress) ?
-                        IPNetAddress.MulticastIPv6LinkLocal : IPNetAddress.MulticastIPv6SiteLocal, port);
+                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIPAddress) ?
+                        IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace MediaBrowser.Common.Udp
 
                     listener.Bind();
                     listener.EnableBroadcast = true;
-                    listener.JoinMulticastGroup(IPNetAddress.MulticastIPv4, address);
+                    listener.JoinMulticastGroup(IPNetAddress.SSDPMulticastIPv4, address);
                 }
                 else if (ip6 && address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
@@ -361,11 +361,11 @@ namespace MediaBrowser.Common.Udp
                     listener.EnableBroadcast = true;
                     if (IPObject.IsIPv6LinkLocal(address))
                     {
-                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.MulticastIPv6LinkLocal);
+                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6LinkLocal);
                     }
                     else
                     {
-                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.MulticastIPv6SiteLocal);
+                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6SiteLocal);
                     }
                 }
 
@@ -459,7 +459,7 @@ namespace MediaBrowser.Common.Udp
             }
 
             var intf = client.LocalEndPoint.Address;
-            IPEndPoint mcast = new IPEndPoint(IPNetAddress.MulticastIPv4, port);
+            IPEndPoint mcast = new IPEndPoint(IPNetAddress.SSDPMulticastIPv4, port);
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
             if (intf.AddressFamily == AddressFamily.InterNetwork)
             {
@@ -479,8 +479,8 @@ namespace MediaBrowser.Common.Udp
                 {
                     client.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastInterface, BitConverter.GetBytes((int)intf.ScopeId));
                     mcast = IPObject.IsIPv6LinkLocal(intf) ?
-                        new IPEndPoint(IPNetAddress.MulticastIPv6LinkLocal, port) :
-                        new IPEndPoint(IPNetAddress.MulticastIPv6SiteLocal, port);
+                        new IPEndPoint(IPNetAddress.SSDPMulticastIPv6LinkLocal, port) :
+                        new IPEndPoint(IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
                     client.Client.MulticastLoopback = true;
                 }
                 catch (SocketException ex)
