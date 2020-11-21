@@ -21,14 +21,15 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.100'
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
-
     - name: Autobuild
       uses: github/codeql-action/autobuild@v1
-
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
