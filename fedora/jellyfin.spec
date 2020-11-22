@@ -127,7 +127,8 @@ if [ $1 -gt 1 ] ; then
     if [ "${service_state}" = "active" ]; then
         systemctl start jellyfin.service
     fi
-    if [ "${service_state}" != "active" ]; then
+    if [ $1 -eq 1 ]; then
+        # On fresh install only, enable the jellyfin.service unit
         systemctl enable jellyfin.service
     fi
 fi
