@@ -53,6 +53,11 @@ namespace Jellyfin.Server.Middleware
             {
                 // Always redirect back to the default path if the base prefix is invalid or missing
                 _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
+
+                if (string.IsNullOrWhiteSpace(baseUrlPrefix)) {
+                    baseUrlPrefix = ".";
+                }
+
                 httpContext.Response.Redirect(baseUrlPrefix + "/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
                 return;
             }
