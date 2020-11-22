@@ -127,6 +127,9 @@ if [ $1 -gt 1 ] ; then
     if [ "${service_state}" = "active" ]; then
         systemctl start jellyfin.service
     fi
+    if [ "${service_state}" != "active" ]; then
+        systemctl enable jellyfin.service
+    fi
 fi
 %systemd_post jellyfin.service
 
