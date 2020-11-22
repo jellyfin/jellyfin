@@ -45,9 +45,9 @@ namespace Rssdp
         public IPAddress Address { get; set; }
 
         /// <summary>
-        /// Gets or sets the SubnetMask used to check if the received message from same interface with this device/tree. Required.
+        /// Gets or sets the prefix length used to check if the received message from same interface with this device/tree. Required.
         /// </summary>
-        public IPAddress SubnetMask { get; set; }
+        public byte PrefixLength { get; set; }
 
         /// <summary>
         /// The base URL to use for all relative url's provided in other properties (and those of child devices). Optional.

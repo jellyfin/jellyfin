@@ -64,9 +64,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Info")]
         [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<SystemInfo>> GetSystemInfo()
+        public ActionResult<SystemInfo> GetSystemInfo()
         {
-            return await _appHost.GetSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
         }
 
         /// <summary>
@@ -76,9 +76,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="PublicSystemInfo"/> with public info about the system.</returns>
         [HttpGet("Info/Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PublicSystemInfo>> GetPublicSystemInfo()
+        public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
         {
-            return await _appHost.GetPublicSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
         }
 
         /// <summary>

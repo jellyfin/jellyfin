@@ -352,7 +352,7 @@ namespace Rssdp.Infrastructure
 
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetLocalIpAddresses())
+                foreach (var address in _networkManager.GetInternalBindAddresses())
                 {
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
@@ -362,7 +362,7 @@ namespace Rssdp.Infrastructure
 
                     try
                     {
-                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
+                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address.Address, _LocalPort));
                     }
                     catch (Exception ex)
                     {

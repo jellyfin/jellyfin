@@ -40,8 +40,6 @@ namespace Emby.Dlna.Server
             _serverId = serverId;
         }
 
-        private static bool EnableAbsoluteUrls => false;
-
         public string GetXml()
         {
             var builder = new StringBuilder();
@@ -74,13 +72,6 @@ namespace Emby.Dlna.Server
             builder.Append("<major>1</major>");
             builder.Append("<minor>0</minor>");
             builder.Append("</specVersion>");
-
-            if (!EnableAbsoluteUrls)
-            {
-                builder.Append("<URLBase>")
-                    .Append(SecurityElement.Escape(_serverAddress))
-                    .Append("</URLBase>");
-            }
 
             AppendDeviceInfo(builder);
 
@@ -257,14 +248,7 @@ namespace Emby.Dlna.Server
                 return string.Empty;
             }
 
-            url = url.TrimStart('/');
-
-            url = "/dlna/" + _serverUdn + "/" + url;
-
-            if (EnableAbsoluteUrls)
-            {
-                url = _serverAddress.TrimEnd('/') + url;
-            }
+            url = _serverAddress.TrimEnd('/') + "/dlna/" + _serverUdn + "/" + url.TrimStart('/');
 
             return SecurityElement.Escape(url);
         }
