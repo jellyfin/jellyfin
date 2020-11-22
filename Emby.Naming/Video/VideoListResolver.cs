@@ -226,7 +226,8 @@ namespace Emby.Naming.Video
                 {
                     testFilename = cleanName.ToString();
                 }
-                else if (folderName.Length <= testFilename.Length)
+
+                if (folderName.Length <= testFilename.Length)
                 {
                     testFilename = testFilename.Substring(folderName.Length).Trim();
                 }
