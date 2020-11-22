@@ -122,7 +122,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
-                if (_serverConfigurationManager.Configuration.RequireHttps
+                if (_serverConfigurationManager.GetNetworkConfiguration().RequireHttps
                     && _serverApplicationHost.ListenWithHttps)
                 {
                     mainApp.UseHttpsRedirection();
