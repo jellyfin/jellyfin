@@ -61,7 +61,7 @@ namespace MediaBrowser.Common.Udp
         public IPEndPoint LocalEndPoint { get; }
 
         /// <summary>
-        /// Gets or sets the optional processing function. Called when data is recieved on this port.
+        /// Gets or sets the optional processing function. Called when data is received on this port.
         /// </summary>
         public UdpProcessor? Processor { get; set; }
 
@@ -112,10 +112,10 @@ namespace MediaBrowser.Common.Udp
         /// <param name="parameters">Optional parameters to include in the message.</param>
         public void Track(string msg, IPEndPoint localIpAddress, IPEndPoint remote, params object[] parameters)
         {
-            bool log = TracingFilter == null ||
-                       TracingFilter.Equals(localIpAddress) ||
-                       ((remote != null) && TracingFilter.Equals(remote.Address)) ||
-                       (localIpAddress != null && (localIpAddress.Equals(IPAddress.Any) || localIpAddress.Equals(IPAddress.IPv6Any)));
+            bool log = TracingFilter == null
+                       || TracingFilter.Equals(localIpAddress)
+                       || ((remote != null) && TracingFilter.Equals(remote.Address))
+                       || (localIpAddress != null && (localIpAddress.Equals(IPAddress.Any) || localIpAddress.Equals(IPAddress.IPv6Any)));
 
             if (log)
             {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -206,7 +206,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("Artists/InstantMix")]
+        [HttpGet("Artists/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists(
             [FromRoute, Required] Guid id,
@@ -242,7 +242,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("MusicGenres/InstantMix")]
+        [HttpGet("MusicGenres/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenres(
             [FromRoute, Required] Guid id,

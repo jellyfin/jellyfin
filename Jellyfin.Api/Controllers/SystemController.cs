@@ -66,7 +66,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<SystemInfo> GetSystemInfo()
         {
-            return _appHost.GetSystemInfo(Request);
+            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
         {
-            return _appHost.GetPublicSystemInfo(Request);
+            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
         }
 
         /// <summary>

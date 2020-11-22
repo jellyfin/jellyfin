@@ -1,10 +1,10 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
-using SsdpMessage = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Emby.Dlna.Ssdp
 {
@@ -45,8 +45,8 @@ namespace Emby.Dlna.Ssdp
         /// <summary>
         /// Restarts the service, assigning a different set of interfaces.
         /// </summary>
-        /// <param name="interfaces">A <see cref="NetCollection"/> containing a list of interfaces.</param>
-        public void UpdateInterfaces(NetCollection interfaces);
+        /// <param name="interfaces">A <see cref="Collection{IPObject}"/> containing a list of interfaces.</param>
+        public void UpdateInterfaces(Collection<IPObject> interfaces);
 
         /// <summary>
         /// Updates the ssdp tracing filter.
@@ -63,7 +63,7 @@ namespace Emby.Dlna.Ssdp
         /// <param name="advertising">If provided, contain the address embedded in the message that is being advertised.</param>
         /// <param name="sendCount">Optional value indicating the number of times to transmit the message.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task SendMulticastSSDP(SsdpMessage values, string classification, IPAddress? advertising = null, int? sendCount = null);
+        Task SendMulticastSSDP(Dictionary<string, string> values, string classification, IPAddress? advertising = null, int? sendCount = null);
 
         /// <summary>
         /// Unicasts an SSDP message.
@@ -73,6 +73,6 @@ namespace Emby.Dlna.Ssdp
         /// <param name="localIP">Local endpoint to use.</param>
         /// <param name="endPoint">Remote endpoint to transmit to.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task SendSSDP(SsdpMessage values, string classification, IPAddress localIP, IPEndPoint endPoint);
+        Task SendSSDP(Dictionary<string, string> values, string classification, IPAddress localIP, IPEndPoint endPoint);
     }
 }

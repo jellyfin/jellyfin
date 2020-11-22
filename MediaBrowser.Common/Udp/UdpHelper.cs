@@ -1,15 +1,16 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
-using NetCollection = System.Collections.ObjectModel.Collection<MediaBrowser.Common.Net.IPObject>;
 
 namespace MediaBrowser.Common.Udp
 {
@@ -39,7 +40,7 @@ namespace MediaBrowser.Common.Udp
     public static class UdpHelper
     {
         /// <summary>
-        /// Gets or sets a value indicating whether multisocket binding should be enabled.
+        /// Gets or sets a value indicating whether multi-socket binding should be enabled.
         /// </summary>
         public static bool EnableMultiSocketBinding { get; set; } = true;
 
@@ -229,6 +230,7 @@ namespace MediaBrowser.Common.Udp
             if (port == 0)
             {
                 port = GetPort(udpPortRange);
+
                 logger?.LogDebug("Selected udp port {0} from the config range : {1}", port, udpPortRange);
             }
 
@@ -262,7 +264,7 @@ namespace MediaBrowser.Common.Udp
         /// <returns>A list of UdpProcesss.</returns>
         public static List<UdpProcess> CreateMulticastClients(
             int port,
-            IEnumerable<IPObject> addresses,
+            Collection<IPObject> addresses,
             UdpProcessor? processor = null,
             ILogger? logger = null,
             FailureFunction? failure = null,
@@ -272,7 +274,7 @@ namespace MediaBrowser.Common.Udp
 
             foreach (IPObject ip in addresses ?? throw new ArgumentNullException(nameof(addresses)))
             {
-                var client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
+                UdpProcess? client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
                 if (client != null)
                 {
                     client.Tracing = enableTracing;
@@ -419,12 +421,12 @@ namespace MediaBrowser.Common.Udp
         }
 
         /// <summary>
-        /// Sends a packet via multicast over mulltiple sockets.
+        /// Sends a packet via multicast over multiple sockets.
         /// </summary>
         /// <param name="clients">UdpProcesses to use.</param>
         /// <param name="port">Port number to use.</param>
         /// <param name="packet">Packet to send.</param>
-        /// <param name="sendCount">Optional number of times to trasmit. Default is 1.</param>
+        /// <param name="sendCount">Optional number of times to transmit. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticasts(List<UdpProcess> clients, int port, string packet, int sendCount = 1)
         {
@@ -445,7 +447,7 @@ namespace MediaBrowser.Common.Udp
         /// <param name="client">UdpProcess to use.</param>
         /// <param name="port">Port number to use.</param>
         /// <param name="packet">Packet to send.</param>
-        /// <param name="sendCount">Optional number of times to trasmit. Default is 1.</param>
+        /// <param name="sendCount">Optional number of times to transmit. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticast(UdpProcess client, int port, string packet, int sendCount = 1)
         {
@@ -513,7 +515,7 @@ namespace MediaBrowser.Common.Udp
         /// </summary>
         /// <param name="address">Address of socket.</param>
         /// <param name="logger">Optional logger.</param>
-        /// <param name="dualSocket">Create a dualsocket regardless of what the address family specied is.</param>
+        /// <param name="dualSocket">Create a dual-socket regardless of what the address family specified is.</param>
         /// <returns>Socket instance.</returns>
         private static Socket PrepareSocket(IPAddress address, ILogger? logger, bool dualSocket = true)
         {
@@ -576,7 +578,7 @@ namespace MediaBrowser.Common.Udp
 
             UdpProcess client = (UdpProcess)result.AsyncState;
 
-            if (client == null || client.Processor == null)
+            if (client.Processor == null)
             {
                 return;
             }

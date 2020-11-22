@@ -16,14 +16,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Ssdp
 {
-    using SsdpMessage = System.Collections.Generic.Dictionary<string, string>;
-
     /// <summary>
-    /// Provides the platform independent logic for publishing device existence and responding to search requests.
+    /// Publishing SSDP devices and responding to search requests.
     ///
     /// Is designed to work in conjunction with ExternalPortForwarding.
-    ///
-    /// Lazy implementation. Socks will only be created at first use.
     /// </summary>
     public class SsdpServer : ISsdpServer
     {
@@ -34,9 +30,9 @@ namespace Emby.Dlna.Ssdp
         private readonly ILogger _logger;
         private readonly Hashtable _listeners;
         private readonly Hashtable _senders;
+        private readonly INetworkManager _networkManager;
         private readonly Dictionary<string, List<EventHandler<SsdpEventArgs>>> _events;
         private readonly object _eventFireLock;
-        private readonly INetworkManager _networkManager;
         private Collection<IPObject> _interfaces;
         private bool _running;
         private bool _eventfire;
@@ -46,7 +42,7 @@ namespace Emby.Dlna.Ssdp
         /// </summary>
         /// <param name="logger">The logger instance.<see cref="ILogger"/>.</param>
         /// <param name="interfaces">Interfaces to use for the server.</param>
-        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance to use.</param>
         private SsdpServer(ILogger logger, Collection<IPObject> interfaces, INetworkManager networkManager)
         {
             _logger = logger;
@@ -61,14 +57,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <summary>
-        /// Delegate to return whether an address is in the LAN.
-        /// </summary>
-        /// <param name="address">IPAddress to check.</param>
-        /// <returns>True if part of the LAN.</returns>
-        public delegate bool IsInLocalNetwork(IPAddress address);
-
-        /// <summary>
-        /// Gets or sets the Hostname used in SSDP packets.
+        /// Gets or sets the Host name to be used in SSDP packets.
         /// </summary>
         public static string HostName { get; set; } = $"OS/{Environment.OSVersion.VersionString} UPnP/1.0 RSSDP/1.0";
 
@@ -88,11 +77,11 @@ namespace Emby.Dlna.Ssdp
         public IPAddress? TracingFilter { get; internal set; }
 
         /// <summary>
-        /// Gets or creates the singleton instance.
+        /// Gets or creates the singleton instance that is used by all objects.
         /// </summary>
         /// <param name="logger">Logger instance.</param>
         /// <param name="interfaces">Interfaces to use for the server.</param>
-        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance to use.</param>
         /// <returns>The SsdpServer singleton instance.</returns>
         public static ISsdpServer GetOrCreateInstance(
             ILogger logger,
@@ -113,7 +102,7 @@ namespace Emby.Dlna.Ssdp
         /// </summary>
         /// <param name="m">Ssdp message to output.</param>
         /// <returns>Formatted message.</returns>
-        public static string DebugOutput(SsdpMessage m)
+        public static string DebugOutput(Dictionary<string, string> m)
         {
             StringBuilder sb = new StringBuilder();
             foreach (var l in m ?? throw new ArgumentNullException(nameof(m)))
@@ -183,7 +172,7 @@ namespace Emby.Dlna.Ssdp
         /// <param name="advertising">If provided, contain the address embedded in the message that is being advertised.</param>
         /// <param name="sendCount">Optional value indicating the number of times to transmit the message.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        public async Task SendMulticastSSDP(SsdpMessage values, string classification, IPAddress? advertising = null, int? sendCount = null)
+        public async Task SendMulticastSSDP(Dictionary<string, string> values, string classification, IPAddress? advertising = null, int? sendCount = null)
         {
             if (values == null)
             {
@@ -192,9 +181,9 @@ namespace Emby.Dlna.Ssdp
 
             if (advertising != null)
             {
-                // Don't advertise an addressfamily which we aren't enabled for.
-                if ((advertising.AddressFamily == AddressFamily.InterNetwork && !_networkManager.IsIP4Enabled) ||
-                    (advertising.AddressFamily == AddressFamily.InterNetworkV6 && !_networkManager.IsIP6Enabled))
+                // Don't advertise an address family which we aren't enabled for.
+                if ((advertising.AddressFamily == AddressFamily.InterNetwork && !_networkManager.IsIP4Enabled)
+                    || (advertising.AddressFamily == AddressFamily.InterNetworkV6 && !_networkManager.IsIP6Enabled))
                 {
                     return;
                 }
@@ -205,15 +194,16 @@ namespace Emby.Dlna.Ssdp
                 if (ipEntry != null)
                 {
                     var addr = (IPAddress)ipEntry;
-                    if (((advertising != null) &&
-                        (addr.AddressFamily != advertising.AddressFamily)) || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
+                    if (((advertising != null)
+                        && (addr.AddressFamily != advertising.AddressFamily))
+                            || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
                     {
                         continue;
                     }
 
-                    var mcast = addr.AddressFamily == AddressFamily.InterNetwork ?
-                        IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(addr) ?
-                            IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal;
+                    var mcast = addr.AddressFamily == AddressFamily.InterNetwork
+                        ? IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(addr)
+                            ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal;
 
                     values["HOST"] = mcast.ToString() + ":1900";
 
@@ -242,7 +232,7 @@ namespace Emby.Dlna.Ssdp
         /// <param name="localIP">Local endpoint to use.</param>
         /// <param name="endPoint">Remote endpoint to transmit to.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        public async Task SendSSDP(SsdpMessage values, string classification, IPAddress localIP, IPEndPoint endPoint)
+        public async Task SendSSDP(Dictionary<string, string> values, string classification, IPAddress localIP, IPEndPoint endPoint)
         {
             if (endPoint == null)
             {
@@ -330,7 +320,7 @@ namespace Emby.Dlna.Ssdp
         /// Builds an SSDP message.
         /// </summary>
         /// <param name="header">SSDP Header string.</param>
-        /// <param name="values">SSDP paramaters.</param>
+        /// <param name="values">SSDP parameters.</param>
         /// <returns>Formatted string.</returns>
         private static string BuildMessage(string header, Dictionary<string, string> values)
         {
@@ -365,10 +355,10 @@ namespace Emby.Dlna.Ssdp
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        /// <param name="message">The mesage to send.</param>
+        /// <param name="message">The message to send.</param>
         /// <param name="localIPAddress">The interface ip to use.</param>
         /// <param name="endPoint">The destination endpoint.</param>
-        /// <param name="restrict">True if the comms should be restricted to the LAN.</param>
+        /// <param name="restrict">True if the transmission should be restricted to the LAN.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private async Task SendMessageAsync(string message, IPAddress localIPAddress, IPEndPoint endPoint, bool restrict = false)
         {
@@ -412,9 +402,9 @@ namespace Emby.Dlna.Ssdp
         /// Sends a packet via unicast.
         /// </summary>
         /// <param name="data">Packet to send.</param>
-        private SsdpMessage ParseMessage(string data)
+        private Dictionary<string, string> ParseMessage(string data)
         {
-            var result = new SsdpMessage(StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             int i;
             var lines = data.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
             foreach (string line in lines)
@@ -468,17 +458,6 @@ namespace Emby.Dlna.Ssdp
                 return Task.CompletedTask;
             }
 
-            // var from = _senders[receivedFrom.Address];
-            // if (from != null)
-            // {
-            //    var fromClient = (UdpProcess)from;
-            //    if (fromClient.LocalEndPoint.Equals(receivedFrom))
-            //    {
-            //        Logger.LogDebug("FILTERING: Message came from us {0}, {1}", fromClient.LocalEndPoint, receivedFrom);
-            //        return Task.CompletedTask;
-            //    }
-            // }
-
             string action;
 
             var msg = ParseMessage(data);
@@ -525,7 +504,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <summary>
-        /// initialises the server, and starts listening on all internal interfaces.
+        /// Initialises the server, and starts listening on all internal interfaces.
         /// </summary>
         private void StartServer()
         {
@@ -577,7 +556,7 @@ namespace Emby.Dlna.Ssdp
         /// Handler for network change events.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Network availablity information.</param>
+        /// <param name="e">Network availability information.</param>
         private void OnNetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
         {
             _logger.LogDebug("Network availability changed.");

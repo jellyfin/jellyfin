@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,6 +92,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
+            if (localAddress.IsIPv4MappedToIPv6) {
+                localAddress = localAddress.MapToIPv4();
+            }
+
             var udpClient = new UdpClient(localPort, _networkManager.IsIP6Enabled ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork);
             var hdHomerunManager = new HdHomerunManager();
 
@@ -120,12 +126,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            await StartStreaming(
+            _ = StartStreaming(
                 udpClient,
                 hdHomerunManager,
                 remote.Address,
                 taskCompletionSource,
-                LiveStreamCancellationTokenSource.Token).ConfigureAwait(false);
+                LiveStreamCancellationTokenSource.Token);
 
             // OpenedMediaSource.Protocol = MediaProtocol.File;
             // OpenedMediaSource.Path = tempFile;
@@ -148,33 +154,30 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return TempFilePath;
         }
 
-        private Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private async Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            return Task.Run(async () =>
+            using (udpClient)
+            using (hdHomerunManager)
             {
-                using (udpClient)
-                using (hdHomerunManager)
+                try
                 {
-                    try
-                    {
-                        await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException ex)
-                    {
-                        Logger.LogInformation("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
-                        openTaskCompletionSource.TrySetException(ex);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error opening live stream:");
-                        openTaskCompletionSource.TrySetException(ex);
-                    }
-
-                    EnableStreamSharing = false;
+                    await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    Logger.LogInformation("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
+                    openTaskCompletionSource.TrySetException(ex);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error opening live stream:");
+                    openTaskCompletionSource.TrySetException(ex);
                 }
 
-                await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
-            });
+                EnableStreamSharing = false;
+            }
+
+            await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
         }
 
         private async Task CopyTo(UdpClient udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)

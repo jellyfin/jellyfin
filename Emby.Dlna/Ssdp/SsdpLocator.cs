@@ -7,17 +7,15 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
-using static Emby.Dlna.Ssdp.SsdpServer;
 
-namespace Emby.Dlna.Ssdp
+namespace Emby.Dlna
 {
-    using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
-
     /// <summary>
     /// Searches the network for a particular device, device types, or UPnP service types.
-    /// Listenings for broadcast notifications of device availability and raises events to indicate changes in status.
+    /// Listens for broadcast notifications of device availability and raises events to indicate changes in status.
     /// </summary>
     /// <remarks>
     /// Part of this code are taken from RSSDP.
@@ -141,7 +139,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <summary>
-        /// Called when a device has signalled it's leaving.
+        /// Called when a device has signaled it's leaving.
         /// Note: Not all leaving devices will trigger this event.
         /// </summary>
         /// <param name="args">Device details.</param>
@@ -160,8 +158,8 @@ namespace Emby.Dlna.Ssdp
         {
             foreach (var d in devices)
             {
-                if (string.Equals(d.NotificationType, notificationType, StringComparison.Ordinal) &&
-                    string.Equals(d.Usn, usn, StringComparison.Ordinal))
+                if (string.Equals(d.NotificationType, notificationType, StringComparison.Ordinal)
+                    && string.Equals(d.Usn, usn, StringComparison.Ordinal))
                 {
                     return d;
                 }
@@ -261,7 +259,7 @@ namespace Emby.Dlna.Ssdp
         {
             const string SsdpSearch = "M-SEARCH * HTTP/1.1";
 
-            var values = new SddpMessage(StringComparer.OrdinalIgnoreCase)
+            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["ST"] = "ssdp:all",
                 ["MAN"] = "\"ssdp:discover\"",
@@ -272,7 +270,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <summary>
-        /// Processes the seach response message.
+        /// Processes the search response message.
         /// </summary>
         /// <param name="sender">Sender of the event.</param>
         /// <param name="e">A <see cref="SsdpEventArgs"/> containing details of the event.</param>
@@ -360,7 +358,9 @@ namespace Emby.Dlna.Ssdp
         /// </summary>
         private void RemoveExpiredDevicesFromCache()
         {
+#pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
             DiscoveredSsdpDevice[]? expiredDevices = null;
+#pragma warning restore SA1011 // Closing square brackets should be spaced correctly
 
             lock (_deviceLock)
             {

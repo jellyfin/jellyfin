@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.System;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller
 {
@@ -56,19 +57,19 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the system info.
         /// </summary>
-        /// <param name="request">The originator of the request.</param>
+        /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(Microsoft.AspNetCore.Http.HttpRequest request);
+        SystemInfo GetSystemInfo(IPAddress source);
 
-        PublicSystemInfo GetPublicSystemInfo(Microsoft.AspNetCore.Http.HttpRequest request);
+        PublicSystemInfo GetPublicSystemInfo(IPAddress address);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
-        /// <param name="request">The <see cref="Microsoft.AspNetCore.Http.HttpRequest"/> instance.</param>
+        /// <param name="request">The <see cref="HttpRequest"/> instance.</param>
         /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(Microsoft.AspNetCore.Http.HttpRequest request, int? port = null);
+        string GetSmartApiUrl(HttpRequest request, int? port = null);
 
         /// <summary>
         /// Gets a URL specific for the request.

@@ -77,7 +77,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             var list = sources.ToList();
 
-
             foreach (var source in list)
             {
                 source.Type = MediaSourceType.Default;

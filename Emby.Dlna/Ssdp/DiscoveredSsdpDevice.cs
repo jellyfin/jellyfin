@@ -1,6 +1,5 @@
 using System;
-
-using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
+using System.Collections.Generic;
 
 namespace Emby.Dlna.Ssdp
 {
@@ -20,7 +19,7 @@ namespace Emby.Dlna.Ssdp
         /// <param name="asAt">Time data was received.</param>
         /// <param name="notificationType">Header name used for the notification type.</param>
         /// <param name="messageHeaders">Message headers.</param>
-        public DiscoveredSsdpDevice(DateTimeOffset asAt, string notificationType, SddpMessage messageHeaders)
+        public DiscoveredSsdpDevice(DateTimeOffset asAt, string notificationType, Dictionary<string, string> messageHeaders)
         {
             if (messageHeaders == null)
             {
@@ -56,7 +55,9 @@ namespace Emby.Dlna.Ssdp
             }
             catch
             {
-                throw new ArgumentException("Invalid structure passed to DiscoveredSsdpDevice\r\n{0}", SsdpServer.DebugOutput(messageHeaders));
+                throw new ArgumentException(
+                    "Invalid structure passed to DiscoveredSsdpDevice\r\n{0}",
+                    SsdpServer.DebugOutput(messageHeaders));
             }
         }
 
@@ -88,7 +89,7 @@ namespace Emby.Dlna.Ssdp
         /// <summary>
         /// Gets the headers from the SSDP device response message.
         /// </summary>
-        public SddpMessage Headers { get; }
+        public Dictionary<string, string> Headers { get; }
 
         /// <summary>
         /// Returns true if this device information has expired, based on the current date/time, and the <see cref="CacheLifetime"/> &amp; <see cref="AsAt"/> properties.

@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
-using Jellyfin.Api.Migrations;
 using Jellyfin.Api.Models.ConfigurationDtos;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Json;

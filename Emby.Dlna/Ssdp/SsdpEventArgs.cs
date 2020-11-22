@@ -1,10 +1,10 @@
+#nullable enable
 using System.Net;
 using System.Text;
+using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Emby.Dlna.Ssdp
 {
-    using SddpMessage = System.Collections.Generic.Dictionary<string, string>;
-
     /// <summary>
     /// Ssdp arguments class.
     /// </summary>

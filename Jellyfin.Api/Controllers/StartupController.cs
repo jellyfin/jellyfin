@@ -90,10 +90,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SetRemoteAccess([FromBody, Required] StartupRemoteAccessDto startupRemoteAccessDto)
         {
-            var config = _config.GetNetworkConfiguration();
-            config.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
-            config.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
-            _config.SaveConfiguration("network", config);
+            NetworkConfiguration settings = _config.GetNetworkConfiguration();
+            settings.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
+            settings.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
+            _config.SaveConfiguration("network", settings);
             return NoContent();
         }
 

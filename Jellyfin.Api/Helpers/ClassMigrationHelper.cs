@@ -1,10 +1,11 @@
 using System;
 using System.Reflection;
 
-namespace Jellyfin.Api.Migrations
+namespace Jellyfin.Api.Helpers
 {
     /// <summary>
-    /// A static class for reflection type functions. Temporary until web changed.
+    /// A static class for copying matching properties from one object to another.
+    /// TODO: remove at the point when a fixed migration path has been decided upon.
     /// </summary>
     public static class ClassMigrationHelper
     {
@@ -15,17 +16,17 @@ namespace Jellyfin.Api.Migrations
         /// <param name="destination">The destination.</param>
         public static void CopyProperties(this object source, object destination)
         {
-            // If any this null throw an exception
+            // If any this null throw an exception.
             if (source == null || destination == null)
             {
                 throw new Exception("Source or/and Destination Objects are null");
             }
 
-            // Getting the Types of the objects
+            // Getting the Types of the objects.
             Type typeDest = destination.GetType();
             Type typeSrc = source.GetType();
 
-            // Iterate the Properties of the source instance and populate them from their desination counterparts.
+            // Iterate the Properties of the source instance and populate them from their destination counterparts.
             PropertyInfo[] srcProps = typeSrc.GetProperties();
             foreach (PropertyInfo srcProp in srcProps)
             {
@@ -62,7 +63,7 @@ namespace Jellyfin.Api.Migrations
                     continue;
                 }
 
-                // Passed all tests, lets set the value
+                // Passed all tests, lets set the value.
                 targetProperty.SetValue(destination, srcProp.GetValue(source, null), null);
             }
         }

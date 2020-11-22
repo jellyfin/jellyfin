@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Jellyfin.Drawing.Skia;
 using Jellyfin.Server;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;

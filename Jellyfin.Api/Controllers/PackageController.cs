@@ -99,7 +99,7 @@ namespace Jellyfin.Api.Controllers
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             if (!string.IsNullOrEmpty(repositoryUrl))
             {
-                packages = packages.Where(p => p.repositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase))
+                packages = packages.Where(p => p.versions.Where(q => q.repositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)).Any())
                     .ToList();
             }
 

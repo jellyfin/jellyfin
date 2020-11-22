@@ -35,6 +35,7 @@ namespace Jellyfin.Server.Middleware
         {
             if (httpContext.IsLocal())
             {
+                // Running locally.
                 await _next(httpContext).ConfigureAwait(false);
                 return;
             }
@@ -59,7 +60,7 @@ namespace Jellyfin.Server.Middleware
 
                     if (!isListed)
                     {
-                        // If your name isn't on the list, you ain't coming in.
+                        // If your name isn't on the list, you arn't coming in.
                         return;
                     }
                 }

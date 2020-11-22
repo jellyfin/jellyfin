@@ -43,9 +43,8 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Migrations;
-using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Advertising;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Gateway;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.UPnP;
@@ -100,7 +99,7 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
-
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -270,9 +269,10 @@ namespace Emby.Server.Implementations
             _fileSystemManager = fileSystem;
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+            // Have to migrate settings here as migration subsystem not yet initialised.
             MigrateNetworkConfiguration();
 
-            // Have to pre-register the NetworkConfigurationFactory.
+            // Have to pre-register the NetworkConfigurationFactory, as the configuration sub-system is not yet initialised.
             ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
             NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
@@ -300,6 +300,10 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
         }
 
+        /// <summary>
+        /// Temporary function to migration network settings out of system.xml and into network.xml.
+        /// TODO: remove at the point when a fixed migration path has been decided upon.
+        /// </summary>
         private void MigrateNetworkConfiguration()
         {
             string path = Path.Combine(ConfigurationManager.CommonApplicationPaths.ConfigurationDirectoryPath, "network.xml");
@@ -501,11 +505,8 @@ namespace Emby.Server.Implementations
             // Safeguard against invalid configuration
             if (HttpPort == HttpsPort)
             {
-                networkConfiguration.HttpServerPortNumber = NetworkConfiguration.DefaultHttpPort;
-                networkConfiguration.HttpsPortNumber = NetworkConfiguration.DefaultHttpsPort;
                 HttpPort = NetworkConfiguration.DefaultHttpPort;
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
-                ServerConfigurationManager.SaveConfiguration("network", networkConfiguration);
             }
 
             DiscoverTypes();
@@ -1177,7 +1178,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(HttpRequest source)
+        public SystemInfo GetSystemInfo(IPAddress source)
         {
             return new SystemInfo
             {
@@ -1213,7 +1214,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(HttpRequest source)
+        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
         {
             return new PublicSystemInfo
             {
@@ -1316,9 +1317,6 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
-        /// <summary>
-        /// Gets the servers friendly name.
-        /// </summary>
         public string FriendlyName =>
             string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
                 ? Environment.MachineName
