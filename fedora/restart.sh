@@ -24,13 +24,13 @@ cmd="$( get_service_command )"
 echo "Detected service control platform '$cmd'; using it to restart Jellyfin..."
 case $cmd in
     'systemctl')
-        sleep 2; /usr/bin/sudo $( which systemctl ) restart jellyfin || /usr/bin/sudo $( which systemctl ) start jellyfin
+        echo "sleep 0.5; /usr/bin/sudo $( which systemctl ) start jellyfin" | at now 
         ;;
     'service')
-        sleep 2; /usr/bin/sudo $( which service ) jellyfin restart || /usr/bin/sudo $( which service ) jellyfin start
+        echo "sleep 0.5; /usr/bin/sudo $( which service ) jellyfin start" | at now 
         ;;
     'sysv')
-        sleep 2; /usr/bin/sudo /etc/init.d/jellyfin restart || /usr/bin/sudo /etc/init.d/jellyfin start
+        echo "sleep 0.5; /usr/bin/sudo /etc/init.d/jellyfin start" | at now 
         ;;
 esac
 exit 0
