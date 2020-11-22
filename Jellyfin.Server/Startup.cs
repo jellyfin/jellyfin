@@ -4,6 +4,7 @@ using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
+using Jellyfin.Server.Networking;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -122,7 +123,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
-                if (_serverConfigurationManager.Configuration.RequireHttps
+                if (_serverConfigurationManager.GetNetworkConfiguration().RequireHttps
                     && _serverApplicationHost.ListenWithHttps)
                 {
                     mainApp.UseHttpsRedirection();
