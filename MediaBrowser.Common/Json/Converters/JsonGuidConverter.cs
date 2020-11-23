@@ -15,6 +15,15 @@ namespace MediaBrowser.Common.Json.Converters
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
-            => writer.WriteStringValue(value);
+        {
+            if (value == Guid.Empty)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteStringValue(value);
+            }
+        }
     }
 }
