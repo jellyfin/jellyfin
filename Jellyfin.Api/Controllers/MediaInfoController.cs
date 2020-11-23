@@ -137,6 +137,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // Copy params from posted body
+            // TODO clean up when breaking API compatibility.
             userId ??= playbackInfoDto?.UserId;
             maxStreamingBitrate ??= playbackInfoDto?.MaxStreamingBitrate;
             startTimeTicks ??= playbackInfoDto?.StartTimeTicks;
