@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Session;
-using Newtonsoft.Json;
 
 namespace Jellyfin.Api.Models.SessionDtos
 {
@@ -15,6 +15,7 @@ namespace Jellyfin.Api.Models.SessionDtos
         /// <summary>
         /// Gets or sets the list of playable media types.
         /// </summary>
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
         public IReadOnlyList<string> PlayableMediaTypes { get; set; } = Array.Empty<string>();
 
         /// <summary>
