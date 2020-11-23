@@ -192,7 +192,7 @@ namespace MediaBrowser.Common.Net
         /// Parses an array of strings into a Collection{IPObject}.
         /// </summary>
         /// <param name="values">Values to parse.</param>
-        /// <param name="negated">When true, only include values in []. When false, ignore bracketed values.</param>
+        /// <param name="negated">When true, only include values beginning with !. When false, ignore ! values.</param>
         /// <returns>IPCollection object containing the value strings.</returns>
         Collection<IPObject> CreateIPCollection(string[] values, bool negated = false);
 
