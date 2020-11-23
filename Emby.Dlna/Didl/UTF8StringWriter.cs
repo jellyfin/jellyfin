@@ -1,14 +1,16 @@
-﻿#pragma warning disable CS1591
-#pragma warning disable CA1305
-
-using System;
 using System.IO;
 using System.Text;
 
 namespace Emby.Dlna.Didl
 {
+    /// <summary>
+    /// Defines the <see cref="UTF8StringWriter" />.
+    /// </summary>
     public class UTF8StringWriter : StringWriter
     {
+        /// <summary>
+        /// Gets the Encoding type of UTF8.
+        /// </summary>
         public override Encoding Encoding => Encoding.UTF8;
     }
 }
