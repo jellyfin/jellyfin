@@ -20,7 +20,7 @@ namespace Emby.Dlna.Service
                 CloseOutput = false
             };
 
-            StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
+            StringWriter builder = new UTF8StringWriter();
 
             using (var writer = XmlWriter.Create(builder, settings))
             {
