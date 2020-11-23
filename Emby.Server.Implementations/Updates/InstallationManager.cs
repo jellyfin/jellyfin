@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.Serialization;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -21,8 +23,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
 
@@ -40,9 +40,9 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationPaths _appPaths;
         private readonly IEventManager _eventManager;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
 
         /// <summary>
         /// Gets the application host.
@@ -70,7 +70,6 @@ namespace Emby.Server.Implementations.Updates
             IApplicationPaths appPaths,
             IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
-            IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             IZipClient zipClient)
@@ -83,10 +82,10 @@ namespace Emby.Server.Implementations.Updates
             _appPaths = appPaths;
             _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
-            _jsonSerializer = jsonSerializer;
             _config = config;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
+            _jsonSerializerOptions = JsonDefaults.GetOptions();
         }
 
         /// <inheritdoc />
@@ -97,31 +96,29 @@ namespace Emby.Server.Implementations.Updates
         {
             try
             {
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .GetAsync(new Uri(manifest), cancellationToken).ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
-                try
+                var packages = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .GetFromJsonAsync<List<PackageInfo>>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+                if (packages == null)
                 {
-                    var package = await _jsonSerializer.DeserializeFromStreamAsync<IList<PackageInfo>>(stream).ConfigureAwait(false);
-
-                    // Store the repository and repository url with each version, as they may be spread apart.
-                    foreach (var entry in package)
-                    {
-                        foreach (var ver in entry.versions)
-                        {
-                            ver.repositoryName = manifestName;
-                            ver.repositoryUrl = manifest;
-                        }
-                    }
-
-                    return package;
-                }
-                catch (SerializationException ex)
-                {
-                    _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
                     return Array.Empty<PackageInfo>();
                 }
+
+                // Store the repository and repository url with each version, as they may be spread apart.
+                foreach (var entry in packages)
+                {
+                    foreach (var ver in entry.versions)
+                    {
+                        ver.repositoryName = manifestName;
+                        ver.repositoryUrl = manifest;
+                    }
+                }
+
+                return packages;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
+                return Array.Empty<PackageInfo>();
             }
             catch (UriFormatException ex)
             {
@@ -187,7 +184,13 @@ namespace Emby.Server.Implementations.Updates
                     // Where repositories have the same content, the details of the first is taken.
                     foreach (var package in await GetPackages(repository.Name, repository.Url, cancellationToken).ConfigureAwait(true))
                     {
-                        var existing = FilterPackages(result, package.name, Guid.Parse(package.guid)).FirstOrDefault();
+                        if (!Guid.TryParse(package.guid, out var packageGuid))
+                        {
+                            // Package doesn't have a valid GUID, skip.
+                            continue;
+                        }
+
+                        var existing = FilterPackages(result, package.name, packageGuid).FirstOrDefault();
                         if (existing != null)
                         {
                             // Assumption is both lists are ordered, so slot these into the correct place.
