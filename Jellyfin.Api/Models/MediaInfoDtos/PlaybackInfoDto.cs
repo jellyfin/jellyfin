@@ -1,5 +1,5 @@
 ﻿using System;
-using Jellyfin.Api.Models.VideoDtos;
+using MediaBrowser.Model.Dlna;
 
 namespace Jellyfin.Api.Models.MediaInfoDtos
 {
@@ -51,7 +51,7 @@ namespace Jellyfin.Api.Models.MediaInfoDtos
         /// <summary>
         /// Gets or sets the device profile.
         /// </summary>
-        public DeviceProfileDto? DeviceProfile { get; set; }
+        public DeviceProfile? DeviceProfile { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable direct play.
