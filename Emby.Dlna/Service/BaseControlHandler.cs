@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -229,7 +230,7 @@ namespace Emby.Dlna.Service
                 return;
             }
 
-            Logger.LogDebug("Control response. Headers: {@Headers}\n{Xml}", response.Headers, response.Xml);
+            Logger.LogDebug("Control response. Headers: {@Headers}\n{Xml}", response.Headers, WebUtility.HtmlDecode(response.Xml));
         }
 
         private class ControlRequestInfo

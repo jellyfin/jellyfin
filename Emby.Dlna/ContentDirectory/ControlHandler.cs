@@ -117,7 +117,8 @@ namespace Emby.Dlna.ContentDirectory
                 mediaSourceManager,
                 Logger,
                 mediaEncoder,
-                libraryManager);
+                libraryManager,
+                config);
         }
 
         /// <inheritdoc />

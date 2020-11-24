@@ -487,7 +487,8 @@ namespace Emby.Dlna.PlayTo
                 _mediaSourceManager,
                 _logger,
                 _mediaEncoder,
-                _libraryManager)
+                _libraryManager,
+                _config)
                 .GetItemDidl(item, user, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;

@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 namespace Emby.Dlna.Configuration
 {
     /// <summary>
@@ -18,6 +16,8 @@ namespace Emby.Dlna.Configuration
             SendOnlyMatchedHost = true;
             ClientDiscoveryIntervalSeconds = 60;
             AliveMessageIntervalSeconds = 1800;
+            DefaultIconWidth = 48;
+            DefaultIconHeight = 48;
         }
 
         /// <summary>
@@ -32,13 +32,13 @@ namespace Emby.Dlna.Configuration
 
         /// <summary>
         /// Gets or sets a value indicating whether detailed dlna server logs are sent to the console/log.
-        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
+        /// If the setting "Emby.Dlna": "Debug" must be set in logging.default.json for this property to work.
         /// </summary>
         public bool EnableDebugLog { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether whether detailed playTo debug logs are sent to the console/log.
-        /// If the setting "Emby.Dlna.PlayTo": "Debug" msut be set in logging.default.json for this property to work.
+        /// Gets or sets a value indicating whether detailed playTo debug logs are sent to the console/log.
+        /// If the setting "Emby.Dlna.PlayTo": "Debug" must be set in logging.default.json for this property to work.
         /// </summary>
         public bool EnablePlayToTracing { get; set; }
 
@@ -85,8 +85,18 @@ namespace Emby.Dlna.Configuration
         public bool BlastAliveMessages { get; set; } = true;
 
         /// <summary>
-        /// gets or sets a value indicating whether to send only matched host.
+        /// Gets or sets a value indicating whether to send only matched host.
         /// </summary>
         public bool SendOnlyMatchedHost { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating the default icon width.
+        /// </summary>
+        public int DefaultIconWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the default icon height.
+        /// </summary>
+        public int DefaultIconHeight { get; set; }
     }
 }

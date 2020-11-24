@@ -30,7 +30,7 @@ namespace Emby.Dlna.Didl
         }
 
         /// <summary>
-        /// Returns true if the filter contains the field, taking into consideration wildcards.
+        /// Returns true if the filter contains the field, taking into consideration wild cards.
         /// </summary>
         /// <param name="field">The field to look for.</param>
         /// <returns>The result of the operation.</returns>
