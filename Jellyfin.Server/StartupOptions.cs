@@ -94,7 +94,7 @@ namespace Jellyfin.Server
 
             if (PublishedServerUrl != null)
             {
-                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.ToString());
+                config.Add(ConfigurationExtensions.AddressOverrideConfigKey, PublishedServerUrl.ToString());
             }
 
             if (FFmpegPath != null)
