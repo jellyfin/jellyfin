@@ -354,7 +354,7 @@ namespace Emby.Dlna.ContentDirectory
 
             int totalCount;
 
-            using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8)))
+            using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
             {
                 var settings = new XmlWriterSettings()
                 {
