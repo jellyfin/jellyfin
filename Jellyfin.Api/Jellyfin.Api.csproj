@@ -12,6 +12,9 @@
     <Nullable>enable</Nullable>
     <!-- https://github.com/microsoft/ApplicationInsights-dotnet/issues/2047 -->
     <NoWarn>AD0001</NoWarn>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageVersion>10.8.0.0</PackageVersion>
+    <Version>10.8.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,12 +28,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
+    <ProjectReference Include="..\Jellyfin.Networking\Jellyfin.Networking.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
 
   <!-- Code Analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />

@@ -13,6 +13,18 @@ namespace Jellyfin.Networking.Tests
 {
     public class NetworkParseTests
     {
+
+        /// <inheritdoc/>
+        public string GetBindInterface(NetworkManager nm, string source, out int? port)
+        {
+            if (!string.IsNullOrEmpty(source) && IPHost.TryParse(source, out IPHost host))
+            {
+                return nm.GetBindInterface(host, out port);
+            }
+
+            return nm.GetBindInterface(IPHost.None, out port);
+        }
+
         /// <summary>
         /// Tries to identify the string and return an object of that class.
         /// </summary>
@@ -441,7 +453,7 @@ namespace Jellyfin.Networking.Tests
             if (resultObj != null)
             {
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
-                var intf = nm.GetBindInterface(source, out int? _);
+                var intf = GetBindInterface(nm, source, out int? _);
 
                 Assert.Equal(intf, result);
             }
@@ -509,7 +521,7 @@ namespace Jellyfin.Networking.Tests
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
             }
 
-            var intf = nm.GetBindInterface(source, out int? _);
+            var intf = GetBindInterface(nm, source, out int? _);
 
             Assert.Equal(intf, result);
         }

@@ -1,11 +1,8 @@
 #pragma warning disable CA1062 // Validate arguments of public methods
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace MediaBrowser.Common.Net
 {
@@ -74,15 +71,7 @@ namespace MediaBrowser.Common.Net
                 item = item.MapToIPv4();
             }
 
-            foreach (var i in source)
-            {
-                if (i.Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return source.Any(i => i.Contains(item));
         }
 
         /// <summary>
@@ -104,15 +93,7 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(item));
             }
 
-            foreach (var i in source)
-            {
-                if (i.Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return source.Any(i => i.Contains(item));
         }
 
         /// <summary>
@@ -130,15 +111,7 @@ namespace MediaBrowser.Common.Net
 
             foreach (var sourceItem in source)
             {
-                bool found = false;
-                foreach (var destItem in dest)
-                {
-                    if (sourceItem.Equals(destItem))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
+                bool found = dest.Any(destItem => sourceItem.Equals(destItem));
 
                 if (!found)
                 {
@@ -205,19 +178,9 @@ namespace MediaBrowser.Common.Net
 
             Collection<IPObject> results = new Collection<IPObject>();
 
-            bool found;
             foreach (var outer in source)
             {
-                found = false;
-
-                foreach (var inner in excludeList)
-                {
-                    if (outer.Equals(inner))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
+                bool found = excludeList.Any(inner => outer.Equals(inner));
 
                 if (!found)
                 {

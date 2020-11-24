@@ -27,7 +27,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Time when last resolved in ticks.
         /// </summary>
-        private DateTime? _lastResolved = null;
+        private DateTime? _lastResolved;
 
         /// <summary>
         /// Gets the IP Addresses, attempting to resolve the name, if there are none.
@@ -53,7 +53,7 @@ namespace MediaBrowser.Common.Net
         private IPHost(string name, IPAddress address)
         {
             HostName = name ?? throw new ArgumentNullException(nameof(name));
-            _addresses = new IPAddress[] { address ?? throw new ArgumentNullException(nameof(address)) };
+            _addresses = new[] { address ?? throw new ArgumentNullException(nameof(address)) };
             Resolved = !address.Equals(IPAddress.None);
         }
 
@@ -208,25 +208,18 @@ namespace MediaBrowser.Common.Net
         /// Attempts to parse the host string, ensuring that it resolves only to a specific IP type.
         /// </summary>
         /// <param name="host">Host name to parse.</param>
-        /// <param name="family">Addressfamily filter.</param>
+        /// <param name="family">Address family filter.</param>
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
         public static IPHost Parse(string host, AddressFamily family)
         {
-            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost res))
+            if (string.IsNullOrEmpty(host) || !IPHost.TryParse(host, out IPHost res))
             {
-                if (family == AddressFamily.InterNetwork)
-                {
-                    res.Remove(AddressFamily.InterNetworkV6);
-                }
-                else
-                {
-                    res.Remove(AddressFamily.InterNetwork);
-                }
-
-                return res;
+                throw new InvalidCastException("Host does not contain a valid value. {host}");
             }
 
-            throw new InvalidCastException("Host does not contain a valid value. {host}");
+            res.Remove(family == AddressFamily.InterNetwork ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork);
+
+            return res;
         }
 
         /// <summary>
@@ -242,19 +235,21 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Contains(IPAddress address)
         {
-            if (address != null && !Address.Equals(IPAddress.None))
+            if (address == null || Address.Equals(IPAddress.None))
             {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
+                return false;
+            }
 
-                foreach (var addr in GetAddresses())
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
+            foreach (var addr in GetAddresses())
+            {
+                if (address.Equals(addr))
                 {
-                    if (address.Equals(addr))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -264,28 +259,30 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Equals(IPObject? other)
         {
-            if (other is IPHost otherObj)
+            if (!(other is IPHost otherObj))
             {
-                // Do we have the name Hostname?
-                if (string.Equals(otherObj.HostName, HostName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                return false;
+            }
 
-                if (!ResolveHost() || !otherObj.ResolveHost())
-                {
-                    return false;
-                }
+            // Do we have the name Hostname?
+            if (string.Equals(otherObj.HostName, HostName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
 
-                // Do any of our IP addresses match?
-                foreach (IPAddress addr in _addresses)
+            if (!ResolveHost() || !otherObj.ResolveHost())
+            {
+                return false;
+            }
+
+            // Do any of our IP addresses match?
+            foreach (IPAddress addr in _addresses)
+            {
+                foreach (IPAddress otherAddress in otherObj._addresses)
                 {
-                    foreach (IPAddress otherAddress in otherObj._addresses)
+                    if (addr.Equals(otherAddress))
                     {
-                        if (addr.Equals(otherAddress))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -297,20 +294,20 @@ namespace MediaBrowser.Common.Net
         public override bool IsIP6()
         {
             // Returns true if interfaces are only IP6.
-            if (ResolveHost())
+            if (!ResolveHost())
             {
-                foreach (IPAddress i in _addresses)
-                {
-                    if (i.AddressFamily != AddressFamily.InterNetworkV6)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                return false;
             }
 
-            return false;
+            foreach (IPAddress i in _addresses)
+            {
+                if (i.AddressFamily != AddressFamily.InterNetworkV6)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <inheritdoc/>
@@ -350,7 +347,7 @@ namespace MediaBrowser.Common.Net
                     }
                 }
 
-                output = output[0..^1];
+                output = output[..^1];
 
                 if (moreThanOne)
                 {
@@ -384,8 +381,8 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         protected override IPObject CalculateNetworkAddress()
         {
-            var netAddr = NetworkAddressOf(this[0], PrefixLength);
-            return new IPNetAddress(netAddr.Address, netAddr.PrefixLength);
+            var (address, prefixLength) = NetworkAddressOf(this[0], PrefixLength);
+            return new IPNetAddress(address, prefixLength);
         }
 
         /// <summary>
@@ -395,18 +392,17 @@ namespace MediaBrowser.Common.Net
         private bool ResolveHost()
         {
             // When was the last time we resolved?
-            if (_lastResolved == null)
-            {
-                _lastResolved = DateTime.UtcNow;
-            }
+            _lastResolved ??= DateTime.UtcNow;
 
             // If we haven't resolved before, or our timer has run out...
-            if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved?.AddMinutes(Timeout)))
+            if ((_addresses.Length != 0 || Resolved) && (!(DateTime.UtcNow > _lastResolved?.AddMinutes(Timeout))))
             {
-                _lastResolved = DateTime.UtcNow;
-                ResolveHostInternal().GetAwaiter().GetResult();
-                Resolved = true;
+                return _addresses.Length > 0;
             }
+
+            _lastResolved = DateTime.UtcNow;
+            ResolveHostInternal().GetAwaiter().GetResult();
+            Resolved = true;
 
             return _addresses.Length > 0;
         }
@@ -422,7 +418,7 @@ namespace MediaBrowser.Common.Net
                 // Resolves the host name - so save a DNS lookup.
                 if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    _addresses = new IPAddress[] { new IPAddress(Ipv4Loopback), new IPAddress(Ipv6Loopback) };
+                    _addresses = new[] { new IPAddress(Ipv4Loopback), new IPAddress(Ipv6Loopback) };
                     return;
                 }
 

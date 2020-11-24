@@ -16,6 +16,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <PackageId>Jellyfin.LocalMetadata</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

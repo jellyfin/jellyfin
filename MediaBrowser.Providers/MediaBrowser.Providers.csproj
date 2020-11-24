@@ -30,6 +30,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <PackageId>Jellyfin.Providers</PackageId>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

@@ -13,7 +13,6 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
-    <ProjectReference Include="..\RSSDP\RSSDP.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -21,6 +20,10 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Nullable>enable</Nullable>
+    <PackageVersion>10.8.0.0</PackageVersion>
+    <PackageId>Jellyfin.Dlna</PackageId>
   </PropertyGroup>
 
   <!-- Code Analyzers-->
@@ -34,19 +37,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Images\logo120.jpg" />
-    <EmbeddedResource Include="Images\logo120.png" />
-    <EmbeddedResource Include="Images\logo240.jpg" />
-    <EmbeddedResource Include="Images\logo240.png" />
-    <EmbeddedResource Include="Images\logo48.jpg" />
-    <EmbeddedResource Include="Images\logo48.png" />
-    <EmbeddedResource Include="Images\people48.jpg" />
-    <EmbeddedResource Include="Images\people48.png" />
-    <EmbeddedResource Include="Images\people480.jpg" />
-    <EmbeddedResource Include="Images\people480.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Default.xml" />
@@ -79,8 +69,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

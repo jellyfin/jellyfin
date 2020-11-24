@@ -30,8 +30,8 @@ namespace Emby.Dlna.Profiles
                 }
             };
 
-            var videoProfile = "high|main|baseline|constrained baseline";
-            var videoLevel = "41";
+            const string videoProfile = "high|main|baseline|constrained baseline";
+            const string videoLevel = "41";
 
             TranscodingProfiles = new[]
             {

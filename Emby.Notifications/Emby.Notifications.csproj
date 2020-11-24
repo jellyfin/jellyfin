@@ -11,6 +11,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <PackageId>Jellyfin.Notifications</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
