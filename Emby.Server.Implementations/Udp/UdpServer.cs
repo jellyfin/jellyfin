@@ -24,11 +24,6 @@ namespace Emby.Server.Implementations.Udp
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
 
-        /// <summary>
-        /// Address Override Configuration Key.
-        /// </summary>
-        public const string AddressOverrideConfigKey = "PublishedServerUrl";
-
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
         private readonly byte[] _receiveBuffer = new byte[8192];
