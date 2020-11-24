@@ -1882,6 +1882,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options) ?? string.Empty;
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
+            var isVaapiDecoder = videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
+            var isVaapiH264Encoder = outputVideoCodec.IndexOf("h264_vaapi", StringComparison.OrdinalIgnoreCase) != -1;
+            var isVaapiHevcEncoder = outputVideoCodec.IndexOf("hevc_vaapi", StringComparison.OrdinalIgnoreCase) != -1;
+            var isTonemappingSupported = IsTonemappingSupported(state, options);
+            var isTonemappingSupportedOnVaapi = string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase) && isVaapiDecoder && (isVaapiH264Encoder || isVaapiHevcEncoder);
+
+            // Tonemapping and burn-in graphical subtitles requires overlay_vaapi.
+            // But it's still in ffmpeg mailing list. Disable it for now.
+            if (isTonemappingSupported && isTonemappingSupportedOnVaapi)
+            {
+                return GetOutputSizeParam(state, options, outputVideoCodec);
+            }
+
             // Setup subtitle scaling
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
             {
