@@ -115,8 +115,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         private bool IsTonemappingSupported(EncodingJobInfo state, EncodingOptions options)
         {
             var videoStream = state.VideoStream;
-            var isColorDepth10 = IsColorDepth10(state);
-            return isColorDepth10 && _mediaEncoder.SupportsHwaccel("opencl") && options.EnableTonemapping && !string.IsNullOrEmpty(videoStream.VideoRange) && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase);
+            return IsColorDepth10(state)
+                   && _mediaEncoder.SupportsHwaccel("opencl")
+                   && options.EnableTonemapping
+                   && !string.IsNullOrEmpty(videoStream.VideoRange)
+                   && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
