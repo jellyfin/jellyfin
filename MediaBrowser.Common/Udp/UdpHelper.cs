@@ -7,9 +7,9 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Common.Udp
@@ -54,13 +54,14 @@ namespace MediaBrowser.Common.Udp
             var properties = IPGlobalProperties.GetIPGlobalProperties();
 
             // Get active udp listeners.
+            var (min, max) = range;
             var udpListenerPorts = properties.GetActiveUdpListeners()
-                        .Where(n => n.Port >= range.Min && n.Port <= range.Max)
+                        .Where(n => n.Port >= min && n.Port <= max)
                         .Select(n => n.Port);
 
-            return Enumerable.Range(range.Min, range.Max)
-                .Where(i => !udpListenerPorts.Contains(i))
-                .FirstOrDefault();
+            int? port = Enumerable.Range(min, max)?.FirstOrDefault(i => !udpListenerPorts.Contains(i));
+
+            return port ?? throw new SystemException($"No available UDP port in the range {min}-{max}");
         }
 
         /// <summary>
@@ -77,19 +78,19 @@ namespace MediaBrowser.Common.Udp
         /// Returns the correct multicast address based upon the value of the address provided.
         /// </summary>
         /// <param name="port">Port to use.</param>
-        /// <param name="localIPAddress">Optional IP address to use for comparison, or null to default.</param>
-        /// <param name="isIP6Enabled">True if IP6 is enabled (default).</param>
+        /// <param name="localIpAddress">Optional IP address to use for comparison, or null to default.</param>
+        /// <param name="isIp6Enabled">True if IP6 is enabled (default).</param>
         /// <returns>IPEndpoint set to the port provided.</returns>
-        public static IPEndPoint GetMulticastEndPoint(int port, IPAddress? localIPAddress = null, bool isIP6Enabled = true)
+        public static IPEndPoint GetMulticastEndPoint(int port, IPAddress? localIpAddress = null, bool isIp6Enabled = true)
         {
-            if (localIPAddress == null)
+            if (localIpAddress == null)
             {
-                localIPAddress = isIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+                localIpAddress = isIp6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
             }
 
             return new IPEndPoint(
-                localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
-                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIPAddress) ?
+                localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIpAddress) ?
                         IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
         }
 
@@ -142,7 +143,7 @@ namespace MediaBrowser.Common.Udp
             }
             catch
             {
-                retVal?.Dispose();
+                retVal.Dispose();
                 throw;
             }
 
@@ -195,7 +196,7 @@ namespace MediaBrowser.Common.Udp
             catch (Exception ex)
             {
                 logger?.LogError(ex, "Unable to bind to {0}/{1}.", address, port);
-                retVal?.Dispose();
+                retVal.Dispose();
                 throw;
             }
 
@@ -275,11 +276,13 @@ namespace MediaBrowser.Common.Udp
             foreach (IPObject ip in addresses ?? throw new ArgumentNullException(nameof(addresses)))
             {
                 UdpProcess? client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
-                if (client != null)
+                if (client == null)
                 {
-                    client.Tracing = enableTracing;
-                    clients.Add(client);
+                    continue;
                 }
+
+                client.Tracing = enableTracing;
+                clients.Add(client);
             }
 
             return clients;
@@ -357,14 +360,9 @@ namespace MediaBrowser.Common.Udp
 
                     listener.Bind();
                     listener.EnableBroadcast = true;
-                    if (IPObject.IsIPv6LinkLocal(address))
-                    {
-                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6LinkLocal);
-                    }
-                    else
-                    {
-                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6SiteLocal);
-                    }
+                    listener.JoinMulticastGroup(
+                        (int)address.ScopeId,
+                        IPObject.IsIPv6LinkLocal(address) ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal);
                 }
 
                 if (startListening)
@@ -553,7 +551,11 @@ namespace MediaBrowser.Common.Udp
                 logger?.LogWarning(ex, "Error setting socket as non exclusive. {0}", address);
             }
 
-            if (dualSocket)
+            if (!dualSocket)
+            {
+                return retVal;
+            }
+
             {
                 try
                 {
@@ -571,14 +573,9 @@ namespace MediaBrowser.Common.Udp
 
         private static void OnReceive(IAsyncResult result)
         {
-            if (result.AsyncState == null)
-            {
-                return;
-            }
+            UdpProcess? client = (UdpProcess?)result?.AsyncState;
 
-            UdpProcess client = (UdpProcess)result.AsyncState;
-
-            if (client.Processor == null)
+            if (client?.Processor == null)
             {
                 return;
             }
@@ -586,7 +583,7 @@ namespace MediaBrowser.Common.Udp
             try
             {
                 IPEndPoint? remote = null;
-                string data = Encoding.UTF8.GetString(client.EndReceive(result, ref remote));
+                string data = Encoding.UTF8.GetString(client.EndReceive(result!, ref remote));
                 try
                 {
                     if (client.Tracing)

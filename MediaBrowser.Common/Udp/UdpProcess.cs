@@ -113,32 +113,34 @@ namespace MediaBrowser.Common.Udp
         public void Track(string msg, IPEndPoint localIpAddress, IPEndPoint remote, params object[] parameters)
         {
             bool log = TracingFilter == null
-                       || TracingFilter.Equals(localIpAddress)
+                       || TracingFilter.Equals(localIpAddress.Address)
                        || ((remote != null) && TracingFilter.Equals(remote.Address))
-                       || (localIpAddress != null && (localIpAddress.Equals(IPAddress.Any) || localIpAddress.Equals(IPAddress.IPv6Any)));
+                       || (localIpAddress != null && (localIpAddress.Address.Equals(IPAddress.Any) || localIpAddress.Address.Equals(IPAddress.IPv6Any)));
 
-            if (log)
+            if (!log)
             {
-                switch (parameters.Length)
-                {
-                    case 0:
-                        Logger.LogDebug(msg, localIpAddress, remote);
-                        break;
-                    case 1:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0]);
-                        break;
-                    case 2:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1]);
-                        break;
-                    case 3:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2]);
-                        break;
-                    case 4:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2], parameters[3]);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(parameters), "Tracing only supports up to 4 parameters");
-                }
+                return;
+            }
+
+            switch (parameters.Length)
+            {
+                case 0:
+                    Logger.LogDebug(msg, localIpAddress, remote);
+                    break;
+                case 1:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0]);
+                    break;
+                case 2:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1]);
+                    break;
+                case 3:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2]);
+                    break;
+                case 4:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2], parameters[3]);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(parameters), "Tracing only supports up to 4 parameters");
             }
         }
     }
