@@ -4,7 +4,7 @@ using System.Text;
 namespace Emby.Dlna.Didl
 {
     /// <summary>
-    /// Defines the <see cref="UTF8StringWriter" />.
+    /// Defines the <see cref="Utf8StringWriter" />.
     /// </summary>
     public class Utf8StringWriter : StringWriter
     {
