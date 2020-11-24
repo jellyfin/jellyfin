@@ -640,7 +640,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
 
-            ServiceCollection.AddSingleton<IResourceFileManager, ResourceFileManager>();
             ServiceCollection.AddSingleton<EncodingHelper>();
 
             ServiceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
