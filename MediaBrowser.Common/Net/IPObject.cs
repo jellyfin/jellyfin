@@ -98,7 +98,7 @@ namespace MediaBrowser.Common.Net
                 mod = 8 - mod;
 
                 // Shift out the bits from the octet that we don't want, by moving right then back left.
-                addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
+                addressBytes[div] = (byte)(addressBytes[div] >> mod << mod);
                 // Move on the next byte.
                 div++;
             }
@@ -125,17 +125,17 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (!address.Equals(IPAddress.None))
+            if (address.Equals(IPAddress.None))
             {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
-
-                return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
+                return false;
             }
 
-            return false;
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
+            return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
         }
 
         /// <summary>
@@ -170,38 +170,38 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (!address.Equals(IPAddress.None))
+            if (address.Equals(IPAddress.None))
             {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
-
-                if (address.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    // GetAddressBytes
-                    Span<byte> octet = stackalloc byte[4];
-                    address.TryWriteBytes(octet, out _);
-
-                    return (octet[0] == 10)
-                           || (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) // RFC1918
-                           || (octet[0] == 192 && octet[1] == 168) // RFC1918
-                           || (octet[0] == 127); // RFC1122
-                }
-                else
-                {
-                    // GetAddressBytes
-                    Span<byte> octet = stackalloc byte[16];
-                    address.TryWriteBytes(octet, out _);
-
-                    uint word = (uint)(octet[0] << 8) + octet[1];
-
-                    return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
-                           || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
-                }
+                return false;
             }
 
-            return false;
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
+            if (address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                // GetAddressBytes
+                Span<byte> octet = stackalloc byte[4];
+                address.TryWriteBytes(octet, out _);
+
+                return (octet[0] == 10)
+                       || (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) // RFC1918
+                       || (octet[0] == 192 && octet[1] == 168) // RFC1918
+                       || (octet[0] == 127); // RFC1122
+            }
+            else
+            {
+                // GetAddressBytes
+                Span<byte> octet = stackalloc byte[16];
+                address.TryWriteBytes(octet, out _);
+
+                uint word = (uint)(octet[0] << 8) + octet[1];
+
+                return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
+                       || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
+            }
         }
 
         /// <summary>
@@ -268,31 +268,33 @@ namespace MediaBrowser.Common.Net
             }
 
             byte cidrnet = 0;
-            if (!mask.Equals(IPAddress.Any))
+            if (mask.Equals(IPAddress.Any))
             {
-                // GetAddressBytes
-                Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
-                mask.TryWriteBytes(bytes, out _);
+                return cidrnet;
+            }
 
-                var zeroed = false;
-                for (var i = 0; i < bytes.Length; i++)
+            // GetAddressBytes
+            Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
+            mask.TryWriteBytes(bytes, out _);
+
+            var zeroed = false;
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                for (int v = bytes[i]; (v & 0xFF) != 0; v <<= 1)
                 {
-                    for (int v = bytes[i]; (v & 0xFF) != 0; v <<= 1)
+                    if (zeroed)
                     {
-                        if (zeroed)
-                        {
-                            // Invalid netmask.
-                            return (byte)~cidrnet;
-                        }
+                        // Invalid netmask.
+                        return (byte)~cidrnet;
+                    }
 
-                        if ((v & 0x80) == 0)
-                        {
-                            zeroed = true;
-                        }
-                        else
-                        {
-                            cidrnet++;
-                        }
+                    if ((v & 0x80) == 0)
+                    {
+                        zeroed = true;
+                    }
+                    else
+                    {
+                        cidrnet++;
                     }
                 }
             }
@@ -304,7 +306,7 @@ namespace MediaBrowser.Common.Net
         /// Tests to see if this object is a Loopback address.
         /// </summary>
         /// <returns>True if it is.</returns>
-        public virtual bool IsLoopback()
+        public bool IsLoopback()
         {
             return IsLoopback(Address);
         }
@@ -331,7 +333,7 @@ namespace MediaBrowser.Common.Net
         /// Returns true if this IP address is in the RFC private address range.
         /// </summary>
         /// <returns>True this object has a private address.</returns>
-        public virtual bool IsPrivateAddressRange()
+        public bool IsPrivateAddressRange()
         {
             return IsPrivateAddressRange(Address);
         }
@@ -343,17 +345,17 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPAddress ip)
         {
-            if (ip != null)
+            if (ip == null)
             {
-                if (ip.IsIPv4MappedToIPv6)
-                {
-                    ip = ip.MapToIPv4();
-                }
-
-                return !Address.Equals(IPAddress.None) && Address.Equals(ip);
+                return false;
             }
 
-            return false;
+            if (ip.IsIPv4MappedToIPv6)
+            {
+                ip = ip.MapToIPv4();
+            }
+
+            return !Address.Equals(IPAddress.None) && Address.Equals(ip);
         }
 
         /// <summary>

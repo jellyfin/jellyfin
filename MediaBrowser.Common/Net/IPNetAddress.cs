@@ -171,8 +171,8 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
-            var altAddress = NetworkAddressOf(address, PrefixLength);
-            return NetworkAddress.Address.Equals(altAddress.Address) && NetworkAddress.PrefixLength >= altAddress.PrefixLength;
+            var (ipAddress, prefixLength) = NetworkAddressOf(address, PrefixLength);
+            return NetworkAddress.Address.Equals(ipAddress) && NetworkAddress.PrefixLength >= prefixLength;
         }
 
         /// <inheritdoc/>
@@ -239,39 +239,39 @@ namespace MediaBrowser.Common.Net
         /// <returns>String representation of this object.</returns>
         public string ToString(bool shortVersion)
         {
-            if (!Address.Equals(IPAddress.None))
+            if (Address.Equals(IPAddress.None))
             {
-                if (Address.Equals(IPAddress.Any))
-                {
-                    return "Any IP4 Address";
-                }
-
-                if (Address.Equals(IPAddress.IPv6Any))
-                {
-                    return "Any IP6 Address";
-                }
-
-                if (Address.Equals(IPAddress.Broadcast))
-                {
-                    return "Any Address";
-                }
-
-                if (shortVersion)
-                {
-                    return Address.ToString();
-                }
-
-                return $"{Address}/{PrefixLength}";
+                return string.Empty;
             }
 
-            return string.Empty;
+            if (Address.Equals(IPAddress.Any))
+            {
+                return "Any IP4 Address";
+            }
+
+            if (Address.Equals(IPAddress.IPv6Any))
+            {
+                return "Any IP6 Address";
+            }
+
+            if (Address.Equals(IPAddress.Broadcast))
+            {
+                return "Any Address";
+            }
+
+            if (shortVersion)
+            {
+                return Address.ToString();
+            }
+
+            return $"{Address}/{PrefixLength}";
         }
 
         /// <inheritdoc/>
         protected override IPObject CalculateNetworkAddress()
         {
-            var value = NetworkAddressOf(_address, PrefixLength);
-            return new IPNetAddress(value.Address, value.PrefixLength);
+            var (address, prefixLength) = NetworkAddressOf(_address, PrefixLength);
+            return new IPNetAddress(address, prefixLength);
         }
     }
 }
