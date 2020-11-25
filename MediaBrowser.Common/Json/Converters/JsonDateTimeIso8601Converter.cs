@@ -19,6 +19,10 @@ namespace MediaBrowser.Common.Json.Converters
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
-            => writer.WriteStringValue(value.ToString("O", CultureInfo.InvariantCulture));
+            // Must specify DateTime.Kind so the DateTime is properly formatted.
+            // Expected output 2000-01-01T00:00:00.0000000Z
+            => writer.WriteStringValue(
+                DateTime.SpecifyKind(value, DateTimeKind.Utc)
+                    .ToString("O", CultureInfo.InvariantCulture));
     }
 }
