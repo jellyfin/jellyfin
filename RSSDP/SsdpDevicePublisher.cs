@@ -16,7 +16,7 @@ namespace Rssdp.Infrastructure
     {
         private readonly INetworkManager _networkManager;
 
-        private ISsdpCommunicationsServer _CommsServer;
+        private ISsdpCommunicationsServer? _CommsServer;
         private string _OSName;
         private string _OSVersion;
         private bool _sendOnlyMatchedHost;
@@ -26,7 +26,7 @@ namespace Rssdp.Infrastructure
         private IList<SsdpRootDevice> _Devices;
         private IReadOnlyList<SsdpRootDevice> _ReadOnlyDevices;
 
-        private Timer _RebroadcastAliveNotificationsTimer;
+        private Timer? _RebroadcastAliveNotificationsTimer;
 
         private IDictionary<string, SearchRequest> _RecentSearchRequests;
 
@@ -220,13 +220,13 @@ namespace Rssdp.Infrastructure
                     }
                 }
 
-                _RecentSearchRequests = null;
+                _RecentSearchRequests.Clear();
             }
         }
 
         private void ProcessSearchRequest(
-            string mx,
-            string searchTarget,
+            string? mx,
+            string? searchTarget,
             IPEndPoint remoteEndPoint,
             IPAddress receivedOnlocalIpAddress,
             CancellationToken cancellationToken)
@@ -272,7 +272,7 @@ namespace Rssdp.Infrastructure
             Task.Delay(_Random.Next(16, (maxWaitInterval * 1000))).ContinueWith((parentTask) =>
             {
                 // Copying devices to local array here to avoid threading issues/enumerator exceptions.
-                IEnumerable<SsdpDevice> devices = null;
+                IEnumerable<SsdpDevice>? devices = null;
                 lock (_Devices)
                 {
                     if (String.Compare(SsdpConstants.SsdpDiscoverAllSTHeader, searchTarget, StringComparison.OrdinalIgnoreCase) == 0)
@@ -301,11 +301,14 @@ namespace Rssdp.Infrastructure
                     foreach (var device in deviceList)
                     {
                         var root = device.ToRootDevice();
-                        var source = new IPNetAddress(root.Address, root.PrefixLength);
-                        var destination = new IPNetAddress(remoteEndPoint.Address, root.PrefixLength);
-                        if (!_sendOnlyMatchedHost || source.NetworkAddress.Equals(destination.NetworkAddress))
+                        if (root != null)
                         {
-                            SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
+                            var source = new IPNetAddress(root.Address, root.PrefixLength);
+                            var destination = new IPNetAddress(remoteEndPoint.Address, root.PrefixLength);
+                            if (!_sendOnlyMatchedHost || source.NetworkAddress.Equals(destination.NetworkAddress))
+                            {
+                                SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
+                            }
                         }
                     }
                 }
@@ -361,22 +364,25 @@ namespace Rssdp.Infrastructure
 
             values["EXT"] = "";
             values["DATE"] = DateTime.UtcNow.ToString("r");
-            values["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds;
+            values["CACHE-CONTROL"] = "max-age = " + rootDevice?.CacheLifetime.TotalSeconds;
             values["ST"] = searchTarget;
             values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
             values["USN"] = uniqueServiceName;
-            values["LOCATION"] = rootDevice.Location.ToString();
+            values["LOCATION"] = rootDevice?.Location.ToString() ?? string.Empty;
 
             var message = BuildMessage(header, values);
 
             try
             {
-                await _CommsServer.SendMessage(
-                        System.Text.Encoding.UTF8.GetBytes(message),
-                        endPoint,
-                        receivedOnlocalIpAddress,
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                if (_CommsServer != null)
+                {
+                    await _CommsServer.SendMessage(
+                            System.Text.Encoding.UTF8.GetBytes(message),
+                            endPoint,
+                            receivedOnlocalIpAddress,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
             catch (Exception)
             {
@@ -389,7 +395,10 @@ namespace Rssdp.Infrastructure
         {
             var isDuplicateRequest = false;
 
-            var newRequest = new SearchRequest() { EndPoint = endPoint, SearchTarget = searchTarget, Received = DateTime.UtcNow };
+            var newRequest = new SearchRequest(
+                endPoint: endPoint,
+                searchTarget: searchTarget,
+                received: DateTime.UtcNow );
             lock (_RecentSearchRequests)
             {
                 if (_RecentSearchRequests.ContainsKey(newRequest.Key))
@@ -428,7 +437,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void SendAllAliveNotifications(object state)
+        private void SendAllAliveNotifications(object? state)
         {
             try
             {
@@ -495,8 +504,8 @@ namespace Rssdp.Infrastructure
             // If needed later for non-server devices, these headers will need to be dynamic
             values["HOST"] = "239.255.255.250:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
-            values["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds;
-            values["LOCATION"] = rootDevice.Location.ToString();
+            values["CACHE-CONTROL"] = "max-age = " + rootDevice?.CacheLifetime.TotalSeconds;
+            values["LOCATION"] = rootDevice?.Location.ToString() ?? string.Empty;
             values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
             values["NTS"] = "ssdp:alive";
             values["NT"] = notificationType;
@@ -504,7 +513,7 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage(header, values);
 
-            _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
+            _CommsServer?.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice?.Address : null, cancellationToken);
 
             // WriteTrace(String.Format("Sent alive notification"), device);
         }
@@ -551,7 +560,7 @@ namespace Rssdp.Infrastructure
 
             var sendCount = IsDisposed ? 1 : 3;
             WriteTrace(String.Format("Sent byebye notification"), device);
-            return _CommsServer.SendMulticastMessage(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null, cancellationToken);
+            return _CommsServer?.SendMulticastMessage(message, sendCount, _sendOnlyMatchedHost ? device?.ToRootDevice()?.Address : null, cancellationToken) ?? Task.CompletedTask;
         }
 
         private void DisposeRebroadcastTimer()
@@ -564,7 +573,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private TimeSpan GetMinimumNonZeroCacheLifetime()
+        private TimeSpan? GetMinimumNonZeroCacheLifetime()
         {
             var nonzeroCacheLifetimesQuery = (
                 from device
@@ -582,11 +591,10 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private string GetFirstHeaderValue(System.Net.Http.Headers.HttpRequestHeaders httpRequestHeaders, string headerName)
+        private string? GetFirstHeaderValue(System.Net.Http.Headers.HttpRequestHeaders httpRequestHeaders, string headerName)
         {
-            string retVal = null;
-            IEnumerable<String> values = null;
-            if (httpRequestHeaders.TryGetValues(headerName, out values) && values != null)
+            string? retVal = null;
+            if (httpRequestHeaders.TryGetValues(headerName, out var values) && values != null)
             {
                 retVal = values.FirstOrDefault();
             }
@@ -594,7 +602,7 @@ namespace Rssdp.Infrastructure
             return retVal;
         }
 
-        public Action<string> LogFunction { get; set; }
+        public Action<string>? LogFunction { get; set; }
 
         private void WriteTrace(string text)
         {
@@ -618,7 +626,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)
+        private void CommsServer_RequestReceived(object? sender, RequestReceivedEventArgs e)
         {
             if (this.IsDisposed)
             {
@@ -640,6 +648,13 @@ namespace Rssdp.Infrastructure
 
         private class SearchRequest
         {
+            public SearchRequest(IPEndPoint endPoint, DateTime received, string searchTarget)
+            {
+                EndPoint = endPoint;
+                Received = received;
+                SearchTarget = searchTarget;
+            }
+
             public IPEndPoint EndPoint { get; set; }
 
             public DateTime Received { get; set; }
