@@ -768,16 +768,7 @@ namespace MediaBrowser.Providers.Music
                     _stopWatchMusicBrainz.Restart();
 
                     using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-
-                    // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
-                    // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent .
-                    request.Headers.UserAgent.ParseAdd(string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0} ( {1} )",
-                        _appHost.ApplicationUserAgent,
-                        _appHost.ApplicationUserAgentAddress));
-
-                    response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(request).ConfigureAwait(false);
+                    response = await _httpClientFactory.CreateClient(NamedClient.MusicBrainz).SendAsync(request).ConfigureAwait(false);
 
                     // We retry a finite number of times, and only whilst MB is indicating 503 (throttling).
                 }
