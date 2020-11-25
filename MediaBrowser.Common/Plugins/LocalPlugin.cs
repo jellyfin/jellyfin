@@ -110,7 +110,7 @@ namespace MediaBrowser.Common.Plugins
             {
                 return false;
             }
-            
+
             return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase)
                    && Id.Equals(other.Id);
         }
