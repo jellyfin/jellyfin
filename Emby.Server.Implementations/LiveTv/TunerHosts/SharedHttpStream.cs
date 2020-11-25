@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var extension = "ts";
             var requiresRemux = false;
 
-            var contentType = response.Content.Headers.ContentType.ToString();
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
             if (contentType.IndexOf("matroska", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 requiresRemux = true;

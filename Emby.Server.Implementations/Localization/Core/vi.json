@@ -80,7 +80,7 @@
     "NotificationOptionApplicationUpdateAvailable": "Bản cập nhật ứng dụng hiện sẵn có",
     "NewVersionIsAvailable": "Một phiên bản mới của Jellyfin Server sẵn có để tải.",
     "NameSeasonUnknown": "Không Rõ Mùa",
-    "NameSeasonNumber": "Mùa {0}",
+    "NameSeasonNumber": "Phần {0}",
     "NameInstallFailed": "{0} cài đặt thất bại",
     "MusicVideos": "Video Nhạc",
     "Music": "Nhạc",

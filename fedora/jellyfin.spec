@@ -40,7 +40,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 Summary:        The Free Software Media System Server backend
 Requires(pre):  shadow-utils
 Requires:       ffmpeg
-Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
+Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at
 
 %description server
 The Jellyfin media server backend.
@@ -126,6 +126,10 @@ if [ $1 -gt 1 ] ; then
     fi
     if [ "${service_state}" = "active" ]; then
         systemctl start jellyfin.service
+    fi
+    if [ $1 -eq 1 ]; then
+        # On fresh install only, enable the jellyfin.service unit
+        systemctl enable --now jellyfin.service
     fi
 fi
 %systemd_post jellyfin.service

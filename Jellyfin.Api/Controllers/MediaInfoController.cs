@@ -8,7 +8,6 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
-using Jellyfin.Api.Models.VideoDtos;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -81,6 +80,9 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets live playback media info for an item.
         /// </summary>
+        /// <remarks>
+        /// For backwards compatibility parameters can be sent via Query or Body, with Query having higher precedence.
+        /// </remarks>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="maxStreamingBitrate">The maximum streaming bitrate.</param>
@@ -90,13 +92,13 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxAudioChannels">The maximum number of audio channels.</param>
         /// <param name="mediaSourceId">The media source id.</param>
         /// <param name="liveStreamId">The livestream id.</param>
-        /// <param name="deviceProfile">The device profile.</param>
         /// <param name="autoOpenLiveStream">Whether to auto open the livestream.</param>
         /// <param name="enableDirectPlay">Whether to enable direct play. Default: true.</param>
         /// <param name="enableDirectStream">Whether to enable direct stream. Default: true.</param>
         /// <param name="enableTranscoding">Whether to enable transcoding. Default: true.</param>
         /// <param name="allowVideoStreamCopy">Whether to allow to copy the video stream. Default: true.</param>
         /// <param name="allowAudioStreamCopy">Whether to allow to copy the audio stream. Default: true.</param>
+        /// <param name="playbackInfoDto">The playback info.</param>
         /// <response code="200">Playback info returned.</response>
         /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback info.</returns>
         [HttpPost("Items/{itemId}/PlaybackInfo")]
@@ -111,18 +113,17 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxAudioChannels,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? liveStreamId,
-            [FromBody] DeviceProfileDto? deviceProfile,
-            [FromQuery] bool autoOpenLiveStream = false,
-            [FromQuery] bool enableDirectPlay = true,
-            [FromQuery] bool enableDirectStream = true,
-            [FromQuery] bool enableTranscoding = true,
-            [FromQuery] bool allowVideoStreamCopy = true,
-            [FromQuery] bool allowAudioStreamCopy = true)
+            [FromQuery] bool? autoOpenLiveStream,
+            [FromQuery] bool? enableDirectPlay,
+            [FromQuery] bool? enableDirectStream,
+            [FromQuery] bool? enableTranscoding,
+            [FromQuery] bool? allowVideoStreamCopy,
+            [FromQuery] bool? allowAudioStreamCopy,
+            [FromBody] PlaybackInfoDto? playbackInfoDto)
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
-            var profile = deviceProfile?.DeviceProfile;
-
+            var profile = playbackInfoDto?.DeviceProfile;
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
             if (profile == null)
@@ -133,6 +134,23 @@ namespace Jellyfin.Api.Controllers
                     profile = caps.DeviceProfile;
                 }
             }
+
+            // Copy params from posted body
+            // TODO clean up when breaking API compatibility.
+            userId ??= playbackInfoDto?.UserId;
+            maxStreamingBitrate ??= playbackInfoDto?.MaxStreamingBitrate;
+            startTimeTicks ??= playbackInfoDto?.StartTimeTicks;
+            audioStreamIndex ??= playbackInfoDto?.AudioStreamIndex;
+            subtitleStreamIndex ??= playbackInfoDto?.SubtitleStreamIndex;
+            maxAudioChannels ??= playbackInfoDto?.MaxAudioChannels;
+            mediaSourceId ??= playbackInfoDto?.MediaSourceId;
+            liveStreamId ??= playbackInfoDto?.LiveStreamId;
+            autoOpenLiveStream ??= playbackInfoDto?.AutoOpenLiveStream ?? false;
+            enableDirectPlay ??= playbackInfoDto?.EnableDirectPlay ?? true;
+            enableDirectStream ??= playbackInfoDto?.EnableDirectStream ?? true;
+            enableTranscoding ??= playbackInfoDto?.EnableTranscoding ?? true;
+            allowVideoStreamCopy ??= playbackInfoDto?.AllowVideoStreamCopy ?? true;
+            allowAudioStreamCopy ??= playbackInfoDto?.AllowAudioStreamCopy ?? true;
 
             var info = await _mediaInfoHelper.GetPlaybackInfo(
                     itemId,
@@ -161,18 +179,18 @@ namespace Jellyfin.Api.Controllers
                         maxAudioChannels,
                         info!.PlaySessionId!,
                         userId ?? Guid.Empty,
-                        enableDirectPlay,
-                        enableDirectStream,
-                        enableTranscoding,
-                        allowVideoStreamCopy,
-                        allowAudioStreamCopy,
+                        enableDirectPlay.Value,
+                        enableDirectStream.Value,
+                        enableTranscoding.Value,
+                        allowVideoStreamCopy.Value,
+                        allowAudioStreamCopy.Value,
                         Request.HttpContext.GetNormalizedRemoteIp());
                 }
 
                 _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
             }
 
-            if (autoOpenLiveStream)
+            if (autoOpenLiveStream.Value)
             {
                 var mediaSource = string.IsNullOrWhiteSpace(mediaSourceId) ? info.MediaSources[0] : info.MediaSources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.Ordinal));
 
@@ -183,9 +201,9 @@ namespace Jellyfin.Api.Controllers
                         new LiveStreamRequest
                         {
                             AudioStreamIndex = audioStreamIndex,
-                            DeviceProfile = deviceProfile?.DeviceProfile,
-                            EnableDirectPlay = enableDirectPlay,
-                            EnableDirectStream = enableDirectStream,
+                            DeviceProfile = playbackInfoDto?.DeviceProfile,
+                            EnableDirectPlay = enableDirectPlay.Value,
+                            EnableDirectStream = enableDirectStream.Value,
                             ItemId = itemId,
                             MaxAudioChannels = maxAudioChannels,
                             MaxStreamingBitrate = maxStreamingBitrate,
