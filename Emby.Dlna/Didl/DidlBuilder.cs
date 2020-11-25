@@ -653,10 +653,10 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("id", clientId);
 
                 var parent = folder.DisplayParentId;
-                if (stubType != StubType.ContinueWatching)
+                if (stubType == StubType.ContinueWatching)
                 {
                     // Continue watching, parent is it's normal self.
-                    writer.WriteAttributeString("parentID", folder.Id.ToString());
+                    writer.WriteAttributeString("parentID", folder.Id.ToString("N", CultureInfo.InvariantCulture));
                 }
                 else if (parent.Equals(Guid.Empty)
                     || folder.Parent.IsRoot
