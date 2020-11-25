@@ -56,5 +56,10 @@ namespace Emby.Server.Implementations.Plugins
         /// Gets or sets the Version number of the plugin.
         /// </summary>
         public string Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image url for the package.
+        /// </summary>
+        public string ImageUrl { get; set; }
     }
 }

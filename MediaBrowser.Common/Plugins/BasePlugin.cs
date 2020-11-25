@@ -59,6 +59,12 @@ namespace MediaBrowser.Common.Plugins
             .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
 
         /// <summary>
+        /// Gets the image URL.
+        /// </summary>
+        /// <value>The image URL.</value>
+        public string ImageUrl { get; private set; }
+
+        /// <summary>
         /// Gets the plugin info.
         /// </summary>
         /// <returns>PluginInfo.</returns>
@@ -70,7 +76,8 @@ namespace MediaBrowser.Common.Plugins
                 Version = Version.ToString(),
                 Description = Description,
                 Id = Id.ToString(),
-                CanUninstall = CanUninstall
+                CanUninstall = CanUninstall,
+                ImageUrl = ImageUrl
             };
 
             return info;
@@ -84,11 +91,12 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
-        public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
+        public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion, string imageUrl)
         {
             AssemblyFilePath = assemblyFilePath;
             DataFolderPath = dataFolderPath;
             Version = assemblyVersion;
+            ImageUrl = imageUrl;
         }
 
         /// <inheritdoc />
@@ -139,7 +147,7 @@ namespace MediaBrowser.Common.Plugins
 
                 var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
 
-                assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
+                assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version, string.Empty);
 
                 var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
                 if (idAttributes.Length > 0)

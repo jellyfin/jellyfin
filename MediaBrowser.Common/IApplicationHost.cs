@@ -78,6 +78,11 @@ namespace MediaBrowser.Common
         IReadOnlyList<IPlugin> Plugins { get; }
 
         /// <summary>
+        /// Gets the plugin manifests.
+        /// </summary>
+        IReadOnlyList<LocalPlugin> PluginsManifests { get; }
+
+        /// <summary>
         /// Gets all plugin assemblies which implement a custom rest api.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{Assembly}"/> containing the plugin assemblies.</returns>

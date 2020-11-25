@@ -2,14 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.PluginDtos;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,12 +23,11 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Plugins controller.
     /// </summary>
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize(Policy = Policies.FirstTimeSetupOrDefault)]
     public class PluginsController : BaseJellyfinApiController
     {
         private readonly IApplicationHost _appHost;
         private readonly IInstallationManager _installationManager;
-
         private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.GetOptions();
 
         /// <summary>
@@ -94,6 +96,30 @@ namespace Jellyfin.Api.Controllers
             }
 
             return plugin.Configuration;
+        }
+
+        /// <summary>
+        /// Gets a plugin's image.
+        /// </summary>
+        /// <param name="pluginId">Plugin id.</param>
+        /// <response code="200">Plugin image returned.</response>
+        /// <returns>Plugin's image.</returns>
+        [HttpGet("{pluginId}/Image")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
+        [AllowAnonymous]
+        [Produces(MediaTypeNames.Application.Octet)]
+        public ActionResult GetPluginImage([FromRoute, Required] Guid pluginId)
+        {
+            var manifest = _appHost.PluginsManifests.FirstOrDefault(p => p.Id == pluginId);
+            if (manifest == null)
+            {
+                return NotFound();
+            }
+
+            var contentType = MimeTypes.GetMimeType(manifest.ImageUrl);
+            return File(System.IO.File.OpenRead(manifest.Path + '\\' + manifest.ImageUrl), contentType);
         }
 
         /// <summary>

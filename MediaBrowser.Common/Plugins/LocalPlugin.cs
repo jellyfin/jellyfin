@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
 namespace MediaBrowser.Common.Plugins
 {
     /// <summary>
-    /// Local plugin struct.
+    /// Local plugin class.
     /// </summary>
     public class LocalPlugin : IEquatable<LocalPlugin>
     {
@@ -16,13 +16,15 @@ namespace MediaBrowser.Common.Plugins
         /// <param name="name">The plugin name.</param>
         /// <param name="version">The plugin version.</param>
         /// <param name="path">The plugin path.</param>
-        public LocalPlugin(Guid id, string name, Version version, string path)
+        /// <param name="imageUrl">The plugin image.</param>
+        public LocalPlugin(Guid id, string name, Version version, string path, string imageUrl)
         {
             Id = id;
             Name = name;
             Version = version;
             Path = path;
             DllFiles = new List<string>();
+            ImageUrl = imageUrl;
         }
 
         /// <summary>
@@ -49,6 +51,11 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the list of dll files for this plugin.
         /// </summary>
         public List<string> DllFiles { get; }
+
+        /// <summary>
+        /// Gets the image for this manifest.
+        /// </summary>
+        public string ImageUrl { get; }
 
         /// <summary>
         /// == operator.
@@ -106,6 +113,11 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public bool Equals(LocalPlugin other)
         {
+            if (!(other is LocalPlugin))
+            {
+                return false;
+            }
+
             return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase)
                    && Id.Equals(other.Id);
         }

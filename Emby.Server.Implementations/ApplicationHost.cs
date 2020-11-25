@@ -191,6 +191,11 @@ namespace Emby.Server.Implementations
         private IPlugin[] _plugins;
 
         /// <summary>
+        /// Gets the plugin manifests.
+        /// </summary>
+        public IReadOnlyList<LocalPlugin> PluginsManifests { get; private set; }
+
+        /// <summary>
         /// Gets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
@@ -786,6 +791,40 @@ namespace Emby.Server.Implementations
 
                 foreach (var plugin in Plugins)
                 {
+                    if (PluginsManifests != null && plugin is IPluginAssembly assemblyPlugin)
+                    {
+                        // Ensure the version number matches the Plugin Manifest information.
+                        foreach (var item in PluginsManifests)
+                        {
+                            if (Path.GetDirectoryName(plugin.AssemblyFilePath).Equals(item.Path, StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Pass the url of the image to the plugin if it's remote or the controller api if it's local.
+                                var imgUrl = item.ImageUrl;
+                                if (!string.IsNullOrEmpty(imgUrl))
+                                {
+                                    try
+                                    {
+                                        if (Path.GetFileName(item.ImageUrl) != null)
+                                        {
+                                            imgUrl = plugin.Id + "/image";
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Ignore error - it's probably an url.
+                                    }
+                                }
+                                // Update version number to that of the manifest.
+                                assemblyPlugin.SetAttributes(
+                                    plugin.AssemblyFilePath,
+                                    Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(plugin.AssemblyFilePath)),
+                                    item.Version,
+                                    imgUrl);
+                                break;
+                            }
+                        }
+                    }
+
                     pluginBuilder.Append(plugin.Name)
                         .Append(' ')
                         .Append(plugin.Version)
@@ -1040,7 +1079,7 @@ namespace Emby.Server.Implementations
                         if (ApplicationVersion >= targetAbi)
                         {
                             // Only load Plugins if the plugin is built for this version or below.
-                            versions.Add(new LocalPlugin(manifest.Guid, manifest.Name, version, dir));
+                            versions.Add(new LocalPlugin(manifest.Guid, manifest.Name, version, dir, manifest.ImageUrl));
                         }
                     }
                     else
@@ -1052,12 +1091,12 @@ namespace Emby.Server.Implementations
                         if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version parsedVersion))
                         {
                             // Versioned folder.
-                            versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir));
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir, string.Empty));
                         }
                         else
                         {
                             // Un-versioned folder - Add it under the path name and version 0.0.0.1.
-                            versions.Add(new LocalPlugin(Guid.Empty, metafile, minimumVersion, dir));
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, minimumVersion, dir, string.Empty));
                         }
                     }
                 }
@@ -1108,7 +1147,8 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var plugin in GetLocalPlugins(ApplicationPaths.PluginsPath))
+                PluginsManifests = GetLocalPlugins(ApplicationPaths.PluginsPath).ToList();
+                foreach (var plugin in PluginsManifests)
                 {
                     foreach (var file in plugin.DllFiles)
                     {
