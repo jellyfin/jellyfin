@@ -317,18 +317,15 @@ namespace Emby.Dlna.Main
                 uri.Scheme = "http://";
                 uri.Port = _netConfig.PublicPort;
 
-                var device = new SsdpRootDevice
-                {
-                    CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
-                    Location = uri.Uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address.Address,
-                    PrefixLength = address.PrefixLength,
-                    FriendlyName = "Jellyfin",
-                    Manufacturer = "Jellyfin",
-                    ModelName = "Jellyfin Server",
-                    Uuid = udn
-                    // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
-                };
+                var device = new SsdpRootDevice(
+                    location: uri.Uri, // Must point to the URL that serves your devices UPnP description document.
+                    address: address.Address,
+                    friendlyName: "Jellyfin",
+                    manufacturer: "Jellyfin",
+                    modelName: "Jellyfin Server",
+                    uuid: udn, // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
+                    cacheLifetime: TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
+                    prefixLength: address.PrefixLength);
 
                 SetProperies(device, fullService);
                 _publisher.AddDevice(device);
@@ -342,14 +339,11 @@ namespace Emby.Dlna.Main
 
                 foreach (var subDevice in embeddedDevices)
                 {
-                    var embeddedDevice = new SsdpEmbeddedDevice
-                    {
-                        FriendlyName = device.FriendlyName,
-                        Manufacturer = device.Manufacturer,
-                        ModelName = device.ModelName,
-                        Uuid = udn
-                        // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
-                    };
+                    var embeddedDevice = new SsdpEmbeddedDevice(
+                        friendlyName: device.FriendlyName,
+                        manufacturer: device.Manufacturer,
+                        modelName: device.ModelName,
+                        uuid: udn ); // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
 
                     SetProperies(embeddedDevice, subDevice);
                     device.AddDevice(embeddedDevice);

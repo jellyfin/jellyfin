@@ -12,13 +12,17 @@ namespace Rssdp
     /// </remarks>
     public class SsdpRootDevice : SsdpDevice
     {
-        private Uri _UrlBase;
+        private Uri? _UrlBase;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpRootDevice() : base()
+        public SsdpRootDevice(string uuid, string friendlyName, string manufacturer, string modelName, TimeSpan cacheLifetime, Uri location, IPAddress address, byte prefixLength) : base(uuid, friendlyName, manufacturer, modelName)
         {
+            CacheLifetime = cacheLifetime;
+            Location = location;
+            Address = address;
+            PrefixLength = prefixLength;
         }
 
         /// <summary>

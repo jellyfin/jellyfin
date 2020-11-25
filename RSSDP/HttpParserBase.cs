@@ -127,14 +127,14 @@ namespace Rssdp.Infrastructure
         {
             // Blank line separates headers from content, so read headers until we find blank line.
             int lineIndex = 1;
-            string line = null, nextLine = null;
-            while (lineIndex + 1 < lines.Length && !String.IsNullOrEmpty((line = lines[lineIndex++])))
+            string? line, nextLine;
+            while (lineIndex + 1 < lines.Length && !string.IsNullOrEmpty(line = lines[lineIndex++]))
             {
                 // If the following line starts with space or tab (or any whitespace), it is really part of this header but split for human readability.
                 // Combine these lines into a single comma separated style header for easier parsing.
-                while (lineIndex < lines.Length && !String.IsNullOrEmpty((nextLine = lines[lineIndex])))
+                while (lineIndex < lines.Length && !string.IsNullOrEmpty(nextLine = lines[lineIndex]))
                 {
-                    if (nextLine.Length > 0 && Char.IsWhiteSpace(nextLine[0]))
+                    if (nextLine.Length > 0 && char.IsWhiteSpace(nextLine[0]))
                     {
                         line += "," + nextLine.TrimStart();
                         lineIndex++;

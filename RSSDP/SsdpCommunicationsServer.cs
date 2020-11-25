@@ -32,14 +32,14 @@ namespace Rssdp.Infrastructure
          * port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
          */
 
-        private object _BroadcastListenSocketSynchroniser = new object();
-        private ISocket _BroadcastListenSocket;
+        private readonly object _BroadcastListenSocketSynchroniser = new object();
+        private ISocket? _BroadcastListenSocket;
 
-        private object _SendSocketSynchroniser = new object();
-        private List<ISocket> _sendSockets;
+        private readonly object _SendSocketSynchroniser = new object();
+        private List<ISocket>? _sendSockets;
 
-        private HttpRequestParser _RequestParser;
-        private HttpResponseParser _ResponseParser;
+        private readonly HttpRequestParser _RequestParser;
+        private readonly HttpResponseParser _ResponseParser;
         private readonly ILogger _logger;
         private ISocketFactory _SocketFactory;
         private readonly INetworkManager _networkManager;        
@@ -53,12 +53,12 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
         /// </summary>
-        public event EventHandler<RequestReceivedEventArgs> RequestReceived;
+        public event EventHandler<RequestReceivedEventArgs>? RequestReceived;
 
         /// <summary>
         /// Raised when an HTTPU response message is received by a socket (unicast or multicast).
         /// </summary>
-        public event EventHandler<ResponseReceivedEventArgs> ResponseReceived;
+        public event EventHandler<ResponseReceivedEventArgs>? ResponseReceived;
 
         /// <summary>
         /// Minimum constructor.
@@ -200,10 +200,17 @@ namespace Rssdp.Infrastructure
 
         private List<ISocket> GetSendSockets(IPAddress fromLocalIpAddress, IPEndPoint destination)
         {
+            // Since lock and unlock we could lose the socket after creation and before next lock
             EnsureSendSocketCreated();
 
             lock (_SendSocketSynchroniser)
             {
+                // TODO should we use logic from the EnsureSendSocketCreated to be sure we have socket?
+                if (_sendSockets == null)
+                {
+                    return new List<ISocket>();
+                }
+
                 var sockets = _sendSockets.Where(i => i.LocalIPAddress.AddressFamily == fromLocalIpAddress.AddressFamily);
 
                 // Send from the Any socket and the socket with the matching address
@@ -232,7 +239,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        public Task SendMulticastMessage(string message, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
+        public Task SendMulticastMessage(string message, IPAddress? fromLocalIpAddress, CancellationToken cancellationToken)
         {
             return SendMulticastMessage(message, SsdpConstants.UdpResendCount, fromLocalIpAddress, cancellationToken);
         }
@@ -240,7 +247,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        public async Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
+        public async Task SendMulticastMessage(string message, int sendCount, IPAddress? fromLocalIpAddress, CancellationToken cancellationToken)
         {
             if (message == null)
             {
@@ -321,7 +328,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private Task SendMessageIfSocketNotDisposed(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
+        private Task SendMessageIfSocketNotDisposed(byte[] messageData, IPEndPoint destination, IPAddress? fromLocalIpAddress, CancellationToken cancellationToken)
         {
             var sockets = _sendSockets;
             if (sockets != null)
@@ -431,7 +438,7 @@ namespace Rssdp.Infrastructure
             // by checking for the HTTP/ prefix on the start of the message.
             if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
             {
-                HttpResponseMessage responseMessage = null;
+                HttpResponseMessage? responseMessage = null;
                 try
                 {
                     responseMessage = _ResponseParser.Parse(data);
@@ -448,7 +455,7 @@ namespace Rssdp.Infrastructure
             }
             else
             {
-                HttpRequestMessage requestMessage = null;
+                HttpRequestMessage? requestMessage = null;
                 try
                 {
                     requestMessage = _RequestParser.Parse(data);
@@ -470,7 +477,7 @@ namespace Rssdp.Infrastructure
             // SSDP specification says only * is currently used but other uri's might
             // be implemented in the future and should be ignored unless understood.
             // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
-            if (data.RequestUri.ToString() != "*")
+            if (data.RequestUri?.ToString() != "*")
             {
                 return;
             }
@@ -487,10 +494,7 @@ namespace Rssdp.Infrastructure
             var handlers = this.ResponseReceived;
             if (handlers != null)
             {
-                handlers(this, new ResponseReceivedEventArgs(data, endPoint)
-                {
-                    LocalIpAddress = localIpAddress
-                });
+                handlers(this, new ResponseReceivedEventArgs(data, endPoint, localIpAddress));
             }
         }
     }

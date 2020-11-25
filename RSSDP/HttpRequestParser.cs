@@ -21,7 +21,7 @@ namespace Rssdp.Infrastructure
         /// <returns>A <see cref="HttpRequestMessage"/> instance containing the parsed data.</returns>
         public override HttpRequestMessage Parse(string data)
         {
-            HttpRequestMessage retVal = null;
+            HttpRequestMessage? retVal = null;
 
             try
             {
@@ -64,8 +64,7 @@ namespace Rssdp.Infrastructure
             }
 
             message.Method = new HttpMethod(parts[0].Trim());
-            Uri requestUri;
-            if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out requestUri))
+            if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out var requestUri))
             {
                 message.RequestUri = requestUri;
             }
