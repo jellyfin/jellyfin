@@ -2370,6 +2370,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Currently only the HEVC/H265 format is supported with NVDEC decoder.
                 // NVIDIA Pascal and Turing or higher are recommended.
                 // AMD Polaris and Vega or higher are recommended.
+                // Intel Kaby Lake or newer is required.
                 if (isTonemappingSupported)
                 {
                     var parameters = "tonemap_opencl=format=nv12:primaries=bt709:transfer=bt709:matrix=bt709:tonemap={0}:desat={1}:threshold={2}:peak={3}";
@@ -2401,7 +2402,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                         // Convert to hardware pixel format p010 when using SW decoder.
                         filters.Add("format=p010");
+                    }
 
+                    if (isNvdecHevcDecoder || isSwDecoder || isD3d11vaDecoder)
+                    {
                         // Upload the HDR10 or HLG data to the OpenCL device,
                         // use tonemap_opencl filter for tone mapping,
                         // and then download the SDR data to memory.
@@ -2424,6 +2428,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 request.Height,
                                 request.MaxWidth,
                                 request.MaxHeight));
+
+                        // hwmap the HDR data to opencl device by cl-va p010 interop.
                         filters.Add("hwmap");
                     }
 
@@ -2438,10 +2444,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                             options.TonemappingParam,
                             options.TonemappingRange));
 
-                    if (isSwDecoder || isD3d11vaDecoder)
+                    if (isNvdecHevcDecoder || isSwDecoder || isD3d11vaDecoder)
                     {
                         filters.Add("hwdownload");
+                    }
 
+                    if (isSwDecoder || isD3d11vaDecoder)
+                    {
                         if (isLibX264Encoder
                             || isLibX265Encoder
                             || hasGraphicalSubs
@@ -2454,25 +2463,26 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (isVaapiDecoder)
                     {
+                        // Reverse the data route from opencl to vaapi.
                         filters.Add("hwmap=derive_device=vaapi:reverse=1");
                     }
                 }
             }
 
-            // When the input may or may not be hardware VAAPI decodable
+            // When the input may or may not be hardware VAAPI decodable.
             if ((isVaapiH264Encoder || isVaapiHevcEncoder) && !isTonemappingSupported && !isTonemappingSupportedOnVaapi)
             {
                 filters.Add("format=nv12|vaapi");
                 filters.Add("hwupload");
             }
 
-            // When burning in graphical subtitles using overlay_qsv, upload videostream to the same qsv context
+            // When burning in graphical subtitles using overlay_qsv, upload videostream to the same qsv context.
             else if (isLinux && hasGraphicalSubs && (isQsvH264Encoder || isQsvHevcEncoder))
             {
                 filters.Add("hwupload=extra_hw_frames=64");
             }
 
-            // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
+            // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first.
             else if (IsVaapiSupported(state) && isVaapiDecoder && (isLibX264Encoder || isLibX265Encoder))
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
@@ -2499,7 +2509,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            // Add hardware deinterlace filter before scaling filter
+            // Add hardware deinterlace filter before scaling filter.
             if (isDeinterlaceH264)
             {
                 if (isVaapiH264Encoder)
@@ -2512,7 +2522,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            // Add software deinterlace filter before scaling filter
+            // Add software deinterlace filter before scaling filter.
             if ((isDeinterlaceH264 || isDeinterlaceHevc)
                 && !isVaapiH264Encoder
                 && !isVaapiHevcEncoder
