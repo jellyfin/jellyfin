@@ -622,6 +622,11 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
+        /// <summary>
+        /// Return true if the <paramref name="id">id</paramref> is a root item.
+        /// </summary>
+        /// <param name="id">The id to search for.</param>
+        /// <returns>Result of the operation.</returns>
         public static bool IsIdRoot(string id)
             => string.IsNullOrWhiteSpace(id)
                 || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
@@ -647,21 +652,20 @@ namespace Emby.Dlna.Didl
             {
                 writer.WriteAttributeString("id", clientId);
 
-                if (context != null)
+                var parent = folder.DisplayParentId;
+                if (parent.Equals(Guid.Empty)
+                    || folder.Parent.IsRoot
+                    || folder.Parent.DisplayParentId.Equals(Guid.Empty))
+                {
+                    writer.WriteAttributeString("parentID", "0");
+                }
+                else if (context != null)
                 {
                     writer.WriteAttributeString("parentID", GetClientId(context, null));
                 }
                 else
                 {
-                    var parent = folder.DisplayParentId;
-                    if (parent.Equals(Guid.Empty))
-                    {
-                        writer.WriteAttributeString("parentID", "0");
-                    }
-                    else
-                    {
-                        writer.WriteAttributeString("parentID", GetClientId(parent, null));
-                    }
+                    writer.WriteAttributeString("parentID", GetClientId(parent, null));
                 }
             }
 
