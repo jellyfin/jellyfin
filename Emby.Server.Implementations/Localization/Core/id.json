@@ -112,5 +112,10 @@
     "TaskRefreshPeople": "Muat ulang Orang",
     "TaskCleanLogsDescription": "Menghapus file log yang lebih dari {0} hari.",
     "TaskCleanLogs": "Bersihkan Log Direktori",
-    "TaskRefreshLibrary": "Pindai Pustaka Media"
+    "TaskRefreshLibrary": "Pindai Pustaka Media",
+    "TaskCleanActivityLogDescription": "Menghapus log aktivitas yang lebih tua dari umur yang dikonfigurasi.",
+    "TaskCleanActivityLog": "Bersihkan Log Aktivitas",
+    "Undefined": "Tidak terdefinisi",
+    "Forced": "Dipaksa",
+    "Default": "Bawaan"
 }
