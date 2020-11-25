@@ -53,6 +53,11 @@ namespace MediaBrowser.Model.Updates
         public IList<VersionInfo> versions { get; set; }
 
         /// <summary>
+        /// Gets or sets the image url for the package.
+        /// </summary>
+        public string imageUrl { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PackageInfo"/> class.
         /// </summary>
         public PackageInfo()
