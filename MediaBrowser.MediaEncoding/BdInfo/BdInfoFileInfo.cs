@@ -7,7 +7,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 {
     public class BdInfoFileInfo : BDInfo.IO.IFileInfo
     {
-        private FileSystemMetadata _impl = null;
+        private FileSystemMetadata _impl;
 
         public BdInfoFileInfo(FileSystemMetadata impl)
         {
