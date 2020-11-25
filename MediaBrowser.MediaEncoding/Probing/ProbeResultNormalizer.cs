@@ -29,7 +29,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
-        private List<string> _splitWhiteList = null;
+        private List<string>? _splitWhiteList;
 
         public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
@@ -52,7 +52,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             var internalStreams = data.Streams ?? Array.Empty<MediaStreamInfo>();
 
             info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format))
-                .Where(i => i != null)
+                .OfType<MediaStream>()
                 // Drop subtitle streams if we don't know the codec because it will just cause failures if we don't know how to handle them
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
@@ -63,9 +63,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (data.Format != null)
             {
-                info.Container = NormalizeFormat(data.Format.FormatName);
+                info.Container = NormalizeFormat(data.Format?.FormatName);
 
-                if (!string.IsNullOrEmpty(data.Format.BitRate))
+                if (!string.IsNullOrEmpty(data.Format?.BitRate))
                 {
                     if (int.TryParse(data.Format.BitRate, NumberStyles.Any, _usCulture, out var value))
                     {
@@ -208,7 +208,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return info;
         }
 
-        private string NormalizeFormat(string format)
+        private string? NormalizeFormat(string? format)
         {
             if (string.IsNullOrWhiteSpace(format))
             {
@@ -344,7 +344,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void ReadFromDictNode(XmlReader reader, MediaInfo info)
         {
-            string currentKey = null;
+            string? currentKey = null;
             var pairs = new List<NameValuePair>();
 
             reader.MoveToContent();
@@ -499,10 +499,10 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.People = peoples.ToArray();
         }
 
-        private NameValuePair GetNameValuePair(XmlReader reader)
+        private NameValuePair? GetNameValuePair(XmlReader reader)
         {
-            string name = null;
-            string value = null;
+            string? name = null;
+            string? value = null;
 
             reader.MoveToContent();
             reader.Read();
@@ -544,7 +544,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             };
         }
 
-        private string NormalizeSubtitleCodec(string codec)
+        private string? NormalizeSubtitleCodec(string? codec)
         {
             if (string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase))
             {
@@ -567,7 +567,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <param name="streamInfo">The stream info.</param>
         /// <returns>MediaAttachments.</returns>
-        private MediaAttachment GetMediaAttachment(MediaStreamInfo streamInfo)
+        private MediaAttachment? GetMediaAttachment(MediaStreamInfo streamInfo)
         {
             if (!string.Equals(streamInfo.CodecType, "attachment", StringComparison.OrdinalIgnoreCase))
             {
@@ -602,7 +602,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
         /// <returns>MediaStream.</returns>
-        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
+        private MediaStream? GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo? formatInfo)
         {
             // These are mp4 chapters
             if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
@@ -863,7 +863,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
         /// <returns>System.String.</returns>
-        private string GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
+        private string? GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
         {
             if (tags == null)
             {
@@ -874,7 +874,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return val;
         }
 
-        private string ParseChannelLayout(string input)
+        private string? ParseChannelLayout(string? input)
         {
             if (string.IsNullOrEmpty(input))
             {
@@ -884,7 +884,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return input.Split('(').FirstOrDefault();
         }
 
-        private string GetAspectRatio(MediaStreamInfo info)
+        private string? GetAspectRatio(MediaStreamInfo info)
         {
             var original = info.DisplayAspectRatio;
 
@@ -964,7 +964,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>System.Nullable{System.Single}.</returns>
-        private float? GetFrameRate(string value)
+        private float? GetFrameRate(string? value)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -1002,7 +1002,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     // If it's not there go into format properties
                     if (string.IsNullOrEmpty(duration))
                     {
-                        duration = result.Format.Duration;
+                        duration = result.Format?.Duration;
                     }
 
                     // If we got something, parse it
@@ -1227,7 +1227,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
-        private string GetMultipleMusicBrainzId(string value)
+        private string? GetMultipleMusicBrainzId(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -1391,7 +1391,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (chapter.Tags != null)
             {
-                if (chapter.Tags.TryGetValue("title", out string name))
+                if (chapter.Tags.TryGetValue("title", out var name))
                 {
                     info.Name = name;
                 }

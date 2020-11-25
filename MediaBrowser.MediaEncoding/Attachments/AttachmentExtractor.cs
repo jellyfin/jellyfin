@@ -149,7 +149,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? string.Empty);
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,

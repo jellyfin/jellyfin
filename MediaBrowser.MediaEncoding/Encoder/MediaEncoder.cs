@@ -68,8 +68,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
 
-        private string _ffmpegPath = string.Empty;
-        private string _ffprobePath;
+        private string? _ffmpegPath = string.Empty;
+        private string? _ffprobePath;
         private int threads;
 
         public MediaEncoder(
@@ -90,7 +90,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
-        public string EncoderPath => _ffmpegPath;
+        public string? EncoderPath => _ffmpegPath;
 
         /// <inheritdoc />
         public FFmpegLocation EncoderLocation { get; private set; }
@@ -148,7 +148,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="pathType">The path type.</param>
         public void UpdateEncoderPath(string path, string pathType)
         {
-            string newPath;
+            string? newPath;
 
             _logger.LogInformation("Attempting to update encoder path to {Path}. pathType: {PathType}", path ?? string.Empty, pathType ?? string.Empty);
 
@@ -192,7 +192,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="path">FQPN to test.</param>
         /// <param name="location">Location (External, Custom, System) of tool.</param>
         /// <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
-        private bool ValidatePath(string path, FFmpegLocation location)
+        private bool ValidatePath(string? path, FFmpegLocation location)
         {
             bool rc = false;
 
@@ -219,7 +219,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return rc;
         }
 
-        private string GetEncoderPathFromDirectory(string path, string filename, bool recursive = false)
+        private string? GetEncoderPathFromDirectory(string path, string filename, bool recursive = false)
         {
             try
             {
@@ -242,7 +242,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="fileName">The filename.</param>
         /// <returns>The full path to the file.</returns>
-        private string ExistsOnSystemPath(string fileName)
+        private string? ExistsOnSystemPath(string fileName)
         {
             var inJellyfinPath = GetEncoderPathFromDirectory(AppContext.BaseDirectory, fileName, recursive: true);
             if (!string.IsNullOrEmpty(inJellyfinPath))
@@ -252,13 +252,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var values = Environment.GetEnvironmentVariable("PATH");
 
-            foreach (var path in values.Split(Path.PathSeparator))
+            if (values != null)
             {
-                var candidatePath = GetEncoderPathFromDirectory(path, fileName);
-
-                if (!string.IsNullOrEmpty(candidatePath))
+                foreach (var path in values.Split(Path.PathSeparator))
                 {
-                    return candidatePath;
+                    var candidatePath = GetEncoderPathFromDirectory(path, fileName);
+
+                    if (!string.IsNullOrEmpty(candidatePath))
+                    {
+                        return candidatePath;
+                    }
                 }
             }
 
@@ -396,7 +399,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.
                     RedirectStandardOutput = true,
 
-                    FileName = _ffprobePath,
+                    FileName = _ffprobePath ?? string.Empty,
                     Arguments = args,
 
                     WindowStyle = ProcessWindowStyle.Hidden,
@@ -419,7 +422,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.LogDebug("Starting ffprobe with args {Args}", args);
                 StartProcess(processWrapper);
 
-                InternalMediaInfoResult result;
+                InternalMediaInfoResult? result;
                 try
                 {
                     result = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(
@@ -482,8 +485,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async Task<string> ExtractImage(
             string inputFile,
-            string container,
-            MediaStream videoStream,
+            string? container,
+            MediaStream? videoStream,
             int? imageStreamIndex,
             MediaSourceInfo mediaSource,
             bool isAudio,
@@ -547,7 +550,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string? container, MediaStream? videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -555,7 +558,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
-            Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath) ?? string.Empty);
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar.
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
@@ -665,7 +668,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     CreateNoWindow = true,
                     UseShellExecute = false,
-                    FileName = _ffmpegPath,
+                    FileName = _ffmpegPath ?? string.Empty,
                     Arguments = args,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
@@ -795,7 +798,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
-                FileName = _ffmpegPath,
+                FileName = _ffmpegPath ?? string.Empty,
                 Arguments = args,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
@@ -1055,21 +1058,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             public int? ExitCode { get; private set; }
 
-            private void OnProcessExited(object sender, EventArgs e)
+            private void OnProcessExited(object? sender, EventArgs e)
             {
-                var process = (Process)sender;
+                var process = (Process?)sender;
 
                 HasExited = true;
 
                 try
                 {
-                    ExitCode = process.ExitCode;
+                    ExitCode = process?.ExitCode;
                 }
                 catch
                 {
                 }
 
-                DisposeProcess(process);
+                if (process != null)
+                {
+                    DisposeProcess(process);
+                }
             }
 
             private void DisposeProcess(Process process)
