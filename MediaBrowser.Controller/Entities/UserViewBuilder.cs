@@ -479,7 +479,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var itemsArray = totalRecordLimit.HasValue ? items.Take(totalRecordLimit.Value).ToArray() : items.ToArray();
-            var totalCount = itemsArray.Length;
 
             if (query.Limit.HasValue)
             {
@@ -489,6 +488,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 itemsArray = itemsArray.Skip(query.StartIndex.Value).ToArray();
             }
+
+            var totalCount = itemsArray.Length;
 
             return new QueryResult<BaseItem>
             {

@@ -653,10 +653,16 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("id", clientId);
 
                 var parent = folder.DisplayParentId;
-                if (parent.Equals(Guid.Empty)
+                if (stubType != StubType.ContinueWatching)
+                {
+                    // Continue watching, parent is it's normal self.
+                    writer.WriteAttributeString("parentID", folder.Id.ToString());
+                }
+                else if (parent.Equals(Guid.Empty)
                     || folder.Parent.IsRoot
                     || folder.Parent.DisplayParentId.Equals(Guid.Empty))
                 {
+                    // Override user roots that have parent values. We can't go any higher.
                     writer.WriteAttributeString("parentID", "0");
                 }
                 else if (context != null)

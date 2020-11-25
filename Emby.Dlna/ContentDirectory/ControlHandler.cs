@@ -408,7 +408,7 @@ namespace Emby.Dlna.ContentDirectory
 
                             if (childItem.IsDisplayedAsFolder || displayStubType.HasValue)
                             {
-                                var childCount = GetUserItems(childItem, displayStubType, _user, sortCriteria, null, 0)
+                                var childCount = GetUserItems(childItem, displayStubType, _user, sortCriteria, null, requestedCount)
                                     .TotalRecordCount;
 
                                 _didlBuilder.WriteFolderElement(writer, childItem, displayStubType, item, childCount, filter);
@@ -907,6 +907,16 @@ namespace Emby.Dlna.ContentDirectory
                     StubType = StubType.Genres
                 }
             };
+
+            // If Limit is < 6 then we return too many items, so we must remove some.
+            if (limit != null && limit < array.Length)
+            {
+                return new QueryResult<ServerItem>
+                {
+                    Items = array.ToArray().Take((int)limit).ToList(),
+                    TotalRecordCount = (int)limit
+                };
+            }
 
             return new QueryResult<ServerItem>
             {
