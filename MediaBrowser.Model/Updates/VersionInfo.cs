@@ -72,5 +72,10 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the repository url.
         /// </summary>
         public string repositoryUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image url for the package.
+        /// </summary>
+        public string imageUrl { get; set; }
     }
 }
