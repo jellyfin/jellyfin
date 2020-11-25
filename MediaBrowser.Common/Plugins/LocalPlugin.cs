@@ -5,7 +5,7 @@ using System.Globalization;
 namespace MediaBrowser.Common.Plugins
 {
     /// <summary>
-    /// Local plugin struct.
+    /// Local plugin class.
     /// </summary>
     public class LocalPlugin : IEquatable<LocalPlugin>
     {
@@ -106,6 +106,11 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public bool Equals(LocalPlugin other)
         {
+            if (!(other is LocalPlugin))
+            {
+                return false;
+            }
+            
             return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase)
                    && Id.Equals(other.Id);
         }
