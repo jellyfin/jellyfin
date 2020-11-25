@@ -4517,17 +4517,17 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.HasImdbId.HasValue)
+            if (query.HasImdbId.HasValue && query.HasImdbId.Value)
             {
                 whereClauses.Add("ProviderIds like '%imdb=%'");
             }
 
-            if (query.HasTmdbId.HasValue)
+            if (query.HasTmdbId.HasValue && query.HasTmdbId.Value)
             {
                 whereClauses.Add("ProviderIds like '%tmdb=%'");
             }
 
-            if (query.HasTvdbId.HasValue)
+            if (query.HasTvdbId.HasValue && query.HasTvdbId.Value)
             {
                 whereClauses.Add("ProviderIds like '%tvdb=%'");
             }
