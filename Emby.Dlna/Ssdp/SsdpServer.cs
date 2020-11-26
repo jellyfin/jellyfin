@@ -25,9 +25,9 @@ namespace Emby.Dlna.Ssdp
     {
         private static string _networkLocationSignature = Guid.NewGuid().ToString();
         private static int _networkChangeCount = 1;
+        private static readonly object _creationLock = new object();
         private static SsdpServer? _instance;
         private readonly object _synchroniser;
-        private readonly object _creationLock;
         private readonly ILogger _logger;
         private readonly Hashtable _listeners;
         private readonly Hashtable _senders;
@@ -49,7 +49,6 @@ namespace Emby.Dlna.Ssdp
             _logger = logger;
             _eventFireLock = new object();
             _synchroniser = new object();
-            _creationLock = new object();
             _listeners = new Hashtable();
             _senders = new Hashtable();
             _events = new Dictionary<string, List<EventHandler<SsdpEventArgs>>>();
