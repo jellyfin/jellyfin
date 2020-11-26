@@ -908,7 +908,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
             };
 
-            // If Limit is < 6 then we return too many items, so we must remove some.
+            // At this point, array contains six items. If Limit is < 6 then we return too many items, so the extra must be removed.
             if (limit != null && limit < array.Length)
             {
                 return new QueryResult<ServerItem>
