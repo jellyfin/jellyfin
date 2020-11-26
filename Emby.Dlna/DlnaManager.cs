@@ -391,7 +391,7 @@ namespace Emby.Dlna
                 {
                     var fileInfo = _fileSystem.GetFileInfo(path);
 
-                    if (!fileInfo.Exists || fileInfo.Length != stream.Length)
+                    if (stream != null && (!fileInfo.Exists || fileInfo.Length != stream.Length))
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 

@@ -133,7 +133,7 @@ namespace Jellyfin.Api.Controllers
                     stream = plugin.GetType().Assembly.GetManifestResourceStream(altPage.Item1.EmbeddedResourcePath);
 
                     isJs = string.Equals(Path.GetExtension(altPage.Item1.EmbeddedResourcePath), ".js", StringComparison.OrdinalIgnoreCase);
-                    isTemplate = altPage.Item1.EmbeddedResourcePath.EndsWith(".template.html", StringComparison.Ordinal);
+                    isTemplate = altPage.Item1.EmbeddedResourcePath?.EndsWith(".template.html", StringComparison.Ordinal) ?? false;
                 }
             }
 

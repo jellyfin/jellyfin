@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 #pragma warning disable CA1307
 
 using System;
@@ -232,10 +232,10 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new InvalidOperationException(string.Format(
                     CultureInfo.InvariantCulture,
                     "The user '{0}' cannot be deleted because there must be at least one user in the system.",
-                    user.Username));
+                    user!.Username));
             }
 
-            if (user.HasPermission(PermissionKind.IsAdministrator)
+            if (user!.HasPermission(PermissionKind.IsAdministrator)
                 && Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
             {
                 throw new ArgumentException(

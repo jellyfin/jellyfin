@@ -1791,6 +1791,10 @@ namespace Emby.Server.Implementations.Library
             if (comparer is IUserBaseItemComparer)
             {
                 var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType());
+                if (userComparer == null)
+                {
+                    return comparer;
+                }
 
                 userComparer.User = user;
                 userComparer.UserManager = _userManager;

@@ -58,7 +58,7 @@ namespace MediaBrowser.Common.Plugins
         /// <returns>Comparison result.</returns>
         public static bool operator ==(LocalPlugin left, LocalPlugin right)
         {
-            return left.Equals(right);
+            return left?.Equals(right) ?? false;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace MediaBrowser.Common.Plugins
         /// <returns>Comparison result.</returns>
         public static bool operator !=(LocalPlugin left, LocalPlugin right)
         {
-            return !left.Equals(right);
+            return !(left?.Equals(right) ?? true);
         }
 
         /// <summary>
