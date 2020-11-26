@@ -2,16 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Dlna
+namespace Emby.Dlna.Ssdp
 {
     /// <summary>
     /// Searches the network for a particular device, device types, or UPnP service types.
@@ -111,21 +111,20 @@ namespace Emby.Dlna
         /// <param name="disposing">True if managed resources should be disposed, or false is only unmanaged resources should be cleaned up.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!disposing)
             {
-                _disposed = true;
-                if (_ssdpServer != null)
-                {
-                    _ssdpServer.DeleteEvent("HTTP/1.1 200 OK", ProcessSearchResponseMessage);
-                    _ssdpServer.DeleteEvent("NOTIFY", ProcessNotificationMessage);
-                }
+                return;
+            }
 
-                _logger.LogDebug("Disposing instance.");
-                lock (_timerLock)
-                {
-                    _broadcastTimer?.Dispose();
-                    _broadcastTimer = null;
-                }
+            _disposed = true;
+            _ssdpServer.DeleteEvent("HTTP/1.1 200 OK", ProcessSearchResponseMessage);
+            _ssdpServer.DeleteEvent("NOTIFY", ProcessNotificationMessage);
+
+            _logger.LogDebug("Disposing instance.");
+            lock (_timerLock)
+            {
+                _broadcastTimer?.Dispose();
+                _broadcastTimer = null;
             }
         }
 
@@ -156,16 +155,8 @@ namespace Emby.Dlna
         /// <returns>Device if located, or null if not.</returns>
         private static DiscoveredSsdpDevice? FindExistingDevice(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
         {
-            foreach (var d in devices)
-            {
-                if (string.Equals(d.NotificationType, notificationType, StringComparison.Ordinal)
-                    && string.Equals(d.Usn, usn, StringComparison.Ordinal))
-                {
-                    return d;
-                }
-            }
-
-            return null;
+            return devices.FirstOrDefault(d => string.Equals(d.NotificationType, notificationType, StringComparison.Ordinal)
+              && string.Equals(d.Usn, usn, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -174,19 +165,9 @@ namespace Emby.Dlna
         /// <param name="devices">List of devices to search.</param>
         /// <param name="usn">USN criteria.</param>
         /// <returns>A <see cref="List{DiscoveredSsdpDevice}"/> containing the matching devices.</returns>
-        private static List<DiscoveredSsdpDevice> FindExistingDevices(IList<DiscoveredSsdpDevice> devices, string usn)
+        private static List<DiscoveredSsdpDevice> FindExistingDevices(IEnumerable<DiscoveredSsdpDevice> devices, string usn)
         {
-            var list = new List<DiscoveredSsdpDevice>();
-
-            foreach (var d in devices)
-            {
-                if (string.Equals(d.Usn, usn, StringComparison.Ordinal))
-                {
-                    list.Add(d);
-                }
-            }
-
-            return list;
+            return devices.Where(d => string.Equals(d.Usn, usn, StringComparison.Ordinal)).ToList();
         }
 
         /// <summary>
@@ -198,7 +179,7 @@ namespace Emby.Dlna
             try
             {
                 RemoveExpiredDevicesFromCache();
-                await BroadcastDiscoverMessage(SearchTimeToMXValue(_defaultSearchWaitTime)).ConfigureAwait(false);
+                await BroadcastDiscoverMessage(SearchTimeToMxValue(_defaultSearchWaitTime)).ConfigureAwait(false);
             }
             catch (ObjectDisposedException)
             {
@@ -248,7 +229,7 @@ namespace Emby.Dlna
         /// <returns>Result of the operation.</returns>
         private bool SsdpTypeMatchesFilter(DiscoveredSsdpDevice device)
         {
-            return _ssdpFilter.Where(m => device.NotificationType.StartsWith(m, StringComparison.OrdinalIgnoreCase)).Any();
+            return _ssdpFilter.Any(m => device.NotificationType.StartsWith(m, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -282,20 +263,22 @@ namespace Emby.Dlna
             }
 
             var location = e.Message["LOCATION"];
-            if (!string.IsNullOrEmpty(location))
+            if (string.IsNullOrEmpty(location))
             {
-                var device = new DiscoveredSsdpDevice(DateTimeOffset.Now, "ST", e.Message);
+                return;
+            }
 
-                if (!SsdpTypeMatchesFilter(device))
-                {
-                    // Filtered type - not interested.
-                    return;
-                }
+            var device = new DiscoveredSsdpDevice(DateTimeOffset.Now, "ST", e.Message);
 
-                if (AddOrUpdateDiscoveredDevice(device, e.ReceivedFrom.Address))
-                {
-                    _logger.LogDebug("Found DLNA Device : {0}", device.DescriptionLocation);
-                }
+            if (!SsdpTypeMatchesFilter(device))
+            {
+                // Filtered type - not interested.
+                return;
+            }
+
+            if (AddOrUpdateDiscoveredDevice(device, e.ReceivedFrom.Address))
+            {
+                _logger.LogDebug("Found DLNA Device : {DescriptionLocation}", device.DescriptionLocation);
             }
         }
 
@@ -318,39 +301,45 @@ namespace Emby.Dlna
                 return;
             }
 
-            IPAddress localIpAddress = e.LocalIPAddress;
+            IPAddress localIpAddress = e.LocalIpAddress;
             var notificationType = e.Message["NTS"];
             if (device.DescriptionLocation != null)
             {
                 if (string.Equals(notificationType, "ssdp:alive", StringComparison.OrdinalIgnoreCase))
                 {
                     // Process Alive Notification.
-                    if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
+                    if (!AddOrUpdateDiscoveredDevice(device, localIpAddress))
                     {
-                        if (_ssdpServer.Tracing && (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress)))
-                        {
-                            _logger.LogDebug("<- ssdpalive : {0} ", device.DescriptionLocation);
-                        }
+                        return;
+                    }
+
+                    if (_ssdpServer.Tracing && (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress)))
+                    {
+                        _logger.LogDebug("<- ssdpalive : {DescriptionLocation} ", device.DescriptionLocation);
                     }
 
                     return;
                 }
             }
 
-            if (!string.IsNullOrEmpty(device.NotificationType) && string.Equals(notificationType, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(device.NotificationType) || string.Equals(notificationType, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
             {
-                // Process ByeBye Notification.
-                if (!DeviceDied(device.Usn))
-                {
-                    if (_ssdpServer.Tracing && (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress)))
-                    {
-                        _logger.LogDebug("Byebye: {0}", device);
-                    }
-
-                    var args = new SsdpDeviceInfo(device.DescriptionLocation, device.Headers, localIpAddress);
-                    DeviceLeftEvent(args);
-                }
+                return;
             }
+
+            // Process ByeBye Notification.
+            if (DeviceDied(device.Usn))
+            {
+                return;
+            }
+
+            if (_ssdpServer.Tracing && (_ssdpServer.TracingFilter == null || _ssdpServer.TracingFilter.Equals(localIpAddress)))
+            {
+                _logger.LogDebug("Byebye: {Device}", device);
+            }
+
+            var args = new SsdpDeviceInfo(device.DescriptionLocation, device.Headers, localIpAddress);
+            DeviceLeftEvent(args);
         }
 
         /// <summary>
@@ -359,7 +348,7 @@ namespace Emby.Dlna
         private void RemoveExpiredDevicesFromCache()
         {
 #pragma warning disable SA1011 // Closing square brackets should be spaced correctly: Syntax checker cannot cope with a null array x[]?
-            DiscoveredSsdpDevice[]? expiredDevices = null;
+            DiscoveredSsdpDevice[]? expiredDevices;
 #pragma warning restore SA1011 // Closing square brackets should be spaced correctly
 
             lock (_deviceLock)
@@ -386,7 +375,7 @@ namespace Emby.Dlna
         /// <returns>True if the operation succeeded.</returns>
         private bool DeviceDied(string deviceUsn)
         {
-            List<DiscoveredSsdpDevice>? existingDevices = null;
+            List<DiscoveredSsdpDevice>? existingDevices;
             lock (_deviceLock)
             {
                 existingDevices = FindExistingDevices(Devices, deviceUsn);
@@ -396,19 +385,19 @@ namespace Emby.Dlna
                 }
             }
 
-            if (existingDevices != null && existingDevices.Count > 0)
+            if (existingDevices.Count == 0)
             {
-                foreach (var removedDevice in existingDevices)
-                {
-                    var args = new SsdpDeviceInfo(removedDevice.DescriptionLocation, removedDevice.Headers, IPAddress.Any);
-
-                    DeviceLeftEvent(args);
-                }
-
-                return true;
+                return false;
             }
 
-            return false;
+            foreach (var removedDevice in existingDevices)
+            {
+                var args = new SsdpDeviceInfo(removedDevice.DescriptionLocation, removedDevice.Headers, IPAddress.Any);
+
+                DeviceLeftEvent(args);
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -416,16 +405,14 @@ namespace Emby.Dlna
         /// </summary>
         /// <param name="searchWaitTime">Timespan to reduce.</param>
         /// <returns>The resultant timespan.</returns>
-        private TimeSpan SearchTimeToMXValue(TimeSpan searchWaitTime)
+        private TimeSpan SearchTimeToMxValue(TimeSpan searchWaitTime)
         {
             if (searchWaitTime.TotalSeconds < 2 || searchWaitTime == TimeSpan.Zero)
             {
                 return _oneSecond;
             }
-            else
-            {
-                return searchWaitTime.Subtract(_oneSecond);
-            }
+
+            return searchWaitTime.Subtract(_oneSecond);
         }
     }
 }

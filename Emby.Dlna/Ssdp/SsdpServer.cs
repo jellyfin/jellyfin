@@ -23,9 +23,9 @@ namespace Emby.Dlna.Ssdp
     /// </summary>
     public class SsdpServer : ISsdpServer
     {
+        private static readonly object _creationLock = new object();
         private static string _networkLocationSignature = Guid.NewGuid().ToString();
         private static int _networkChangeCount = 1;
-        private static readonly object _creationLock = new object();
         private static SsdpServer? _instance;
         private readonly object _synchroniser;
         private readonly ILogger _logger;
@@ -70,12 +70,12 @@ namespace Emby.Dlna.Ssdp
         /// <summary>
         /// Gets a value indicating whether detailed DNLA debug logging is active.
         /// </summary>
-        public bool Tracing { get; internal set; }
+        public bool Tracing { get; private set; }
 
         /// <summary>
         /// Gets a value indicating the tracing filter to be applied.
         /// </summary>
-        public IPAddress? TracingFilter { get; internal set; }
+        public IPAddress? TracingFilter { get; private set; }
 
         /// <summary>
         /// Gets or creates the singleton instance that is used by all objects.
@@ -90,7 +90,7 @@ namespace Emby.Dlna.Ssdp
             INetworkManager networkManager)
         {
             // As this class is used in multiple areas, we only want to create it once.
-            lock (_creationLock) 
+            lock (_creationLock)
             {
                 if (_instance == null)
                 {
@@ -109,11 +109,11 @@ namespace Emby.Dlna.Ssdp
         public static string DebugOutput(Dictionary<string, string> m)
         {
             StringBuilder sb = new StringBuilder();
-            foreach (var l in m ?? throw new ArgumentNullException(nameof(m)))
+            foreach (var (key, value) in m ?? throw new ArgumentNullException(nameof(m)))
             {
-                sb.Append(l.Key);
+                sb.Append(key);
                 sb.Append(": ");
-                sb.AppendLine(l.Value);
+                sb.AppendLine(value);
             }
 
             return sb.ToString();
@@ -195,33 +195,35 @@ namespace Emby.Dlna.Ssdp
 
             foreach (var ipEntry in _senders.Keys)
             {
-                if (ipEntry != null)
+                if (ipEntry == null)
                 {
-                    var addr = (IPAddress)ipEntry;
-                    if (((advertising != null)
-                        && (addr.AddressFamily != advertising.AddressFamily))
-                            || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    var mcast = addr.AddressFamily == AddressFamily.InterNetwork
-                        ? IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(addr)
-                            ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal;
+                var addr = (IPAddress)ipEntry;
+                if (((advertising != null)
+                    && (addr.AddressFamily != advertising.AddressFamily))
+                        || (addr.AddressFamily == AddressFamily.InterNetworkV6 && addr.ScopeId == 0))
+                {
+                    continue;
+                }
 
-                    values["HOST"] = mcast.ToString() + ":1900";
+                IPAddress mcast = addr.AddressFamily == AddressFamily.InterNetwork
+                    ? IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(addr)
+                        ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal;
 
-                    var message = BuildMessage(classification, values);
+                values["HOST"] = mcast.ToString() + ":1900";
 
-                    var client = _senders[ipEntry];
-                    if (client != null)
-                    {
-                        await UdpHelper.SendMulticast((UdpProcess)client, 1900, message, sendCount ?? UdpSendCount).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        _logger.LogError("Unable to find client for {0}", addr);
-                    }
+                var message = BuildMessage(classification, values);
+
+                var client = _senders[ipEntry];
+                if (client != null)
+                {
+                    await UdpHelper.SendMulticast((UdpProcess)client, 1900, message, sendCount ?? UdpSendCount).ConfigureAwait(false);
+                }
+                else
+                {
+                    _logger.LogError("Unable to find client for {0}", addr);
                 }
             }
 
@@ -295,27 +297,31 @@ namespace Emby.Dlna.Ssdp
                 _logger.LogDebug("Filtering : {0}", enabled);
             }
 
-            if (wasEnabled != Tracing || oldFilter != TracingFilter)
+            if (wasEnabled != Tracing || (oldFilter != null && !oldFilter.Equals(TracingFilter)))
             {
                 UdpProcess client;
                 foreach (var i in _listeners.Values)
                 {
-                    if (i != null)
+                    if (i == null)
                     {
-                        client = (UdpProcess)i;
-                        client.TracingFilter = TracingFilter;
-                        client.Tracing = enabled;
+                        continue;
                     }
+
+                    client = (UdpProcess)i;
+                    client.TracingFilter = TracingFilter;
+                    client.Tracing = enabled;
                 }
 
                 foreach (var i in _senders.Values)
                 {
-                    if (i != null)
+                    if (i == null)
                     {
-                        client = (UdpProcess)i;
-                        client.TracingFilter = TracingFilter;
-                        client.Tracing = enabled;
+                        continue;
                     }
+
+                    client = (UdpProcess)i;
+                    client.TracingFilter = TracingFilter;
+                    client.Tracing = enabled;
                 }
             }
         }
@@ -346,9 +352,9 @@ namespace Emby.Dlna.Ssdp
 
             builder.AppendFormat(CultureInfo.InvariantCulture, "{0}\r\n", header);
 
-            foreach (var pair in values)
+            foreach (var (key, value) in values)
             {
-                builder.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1}\r\n", pair.Key, pair.Value);
+                builder.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1}\r\n", key, value);
             }
 
             builder.Append("\r\n\r\n");
@@ -360,20 +366,20 @@ namespace Emby.Dlna.Ssdp
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        /// <param name="localIPAddress">The interface ip to use.</param>
+        /// <param name="localIpAddress">The interface ip to use.</param>
         /// <param name="endPoint">The destination endpoint.</param>
         /// <param name="restrict">True if the transmission should be restricted to the LAN.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private async Task SendMessageAsync(string message, IPAddress localIPAddress, IPEndPoint endPoint, bool restrict = false)
+        private async Task SendMessageAsync(string message, IPAddress localIpAddress, IPEndPoint endPoint, bool restrict = false)
         {
             if (endPoint == null)
             {
                 throw new ArgumentNullException(nameof(endPoint));
             }
 
-            if (localIPAddress == null)
+            if (localIpAddress == null)
             {
-                throw new ArgumentNullException(nameof(localIPAddress));
+                throw new ArgumentNullException(nameof(localIpAddress));
             }
 
             if (restrict)
@@ -385,14 +391,14 @@ namespace Emby.Dlna.Ssdp
                 }
             }
 
-            var client = _senders[localIPAddress];
+            var client = _senders[localIpAddress];
             if (client != null)
             {
                 await UdpHelper.SendUnicast((UdpProcess)client, message, endPoint).ConfigureAwait(false);
             }
             else
             {
-                _logger.LogError("Unable to find socket for {0}", localIPAddress);
+                _logger.LogError("Unable to find socket for {0}", localIpAddress);
             }
         }
 
@@ -409,11 +415,10 @@ namespace Emby.Dlna.Ssdp
         private Dictionary<string, string> ParseMessage(string data)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            int i;
             var lines = data.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
             foreach (string line in lines)
             {
-                i = line.IndexOf(':', StringComparison.OrdinalIgnoreCase);
+                int i = line.IndexOf(':', StringComparison.OrdinalIgnoreCase);
                 if (i != -1)
                 {
                     string propertyName = line.Substring(0, i).ToUpper(CultureInfo.InvariantCulture);
@@ -462,10 +467,8 @@ namespace Emby.Dlna.Ssdp
                 return Task.CompletedTask;
             }
 
-            string action;
-
             var msg = ParseMessage(data);
-            action = msg["ACTION"];
+            string action = msg["ACTION"];
 
             var localIpAddress = client.LocalEndPoint.Address;
 
@@ -473,7 +476,7 @@ namespace Emby.Dlna.Ssdp
             {
                 if (TracingFilter == null || TracingFilter.Equals(receivedFrom.Address) || TracingFilter.Equals(localIpAddress))
                 {
-                    _logger.LogDebug("<- {0} : {1} \r\n{3}", receivedFrom.Address, localIpAddress, DebugOutput(msg));
+                    _logger.LogDebug("<- {Address} : {LocalIpAddress} \r\n{Message}", receivedFrom.Address, localIpAddress, DebugOutput(msg));
                 }
             }
 
@@ -489,7 +492,7 @@ namespace Emby.Dlna.Ssdp
                 handlers = _events[action].ToList();
             }
 
-            var args = new SsdpEventArgs(data, msg, receivedFrom, localIpAddress, client == null);
+            var args = new SsdpEventArgs(msg, receivedFrom, localIpAddress);
             foreach (var handler in handlers)
             {
                 try
@@ -500,7 +503,7 @@ namespace Emby.Dlna.Ssdp
                 catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    _logger.LogError(ex, "Error firing event: {0}", action);
+                    _logger.LogError(ex, "Error firing event: {Action}", action);
                 }
             }
 
@@ -512,32 +515,36 @@ namespace Emby.Dlna.Ssdp
         /// </summary>
         private void StartServer()
         {
-            if (!_running)
+            if (_running)
             {
-                _running = true;
-                NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
-                NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+                return;
+            }
 
-                _logger.LogDebug("EnableMultiSocketBinding : {0}", UdpHelper.EnableMultiSocketBinding);
+            _running = true;
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
-                foreach (IPObject ip in _interfaces)
+            _logger.LogDebug("EnableMultiSocketBinding : {EnableMultiSocketBinding}", UdpHelper.EnableMultiSocketBinding);
+
+            foreach (IPObject ip in _interfaces)
+            {
+                var client = UdpHelper.CreateMulticastClient(ip.Address, 1900, ProcessMessage, _logger, OnFailure);
+                if (client != null)
                 {
-                    var client = UdpHelper.CreateMulticastClient(ip.Address, 1900, ProcessMessage, _logger, OnFailure);
-                    if (client != null)
-                    {
-                        client.TracingFilter = TracingFilter;
-                        client.Tracing = Tracing;
-                        _listeners[ip.Address] = client;
-                    }
-
-                    client = UdpHelper.CreateUnicastClient(ip.Address, 0, ProcessMessage, _logger, OnFailure);
-                    if (client != null)
-                    {
-                        client.TracingFilter = TracingFilter;
-                        client.Tracing = Tracing;
-                        _senders[ip.Address] = client;
-                    }
+                    client.TracingFilter = TracingFilter;
+                    client.Tracing = Tracing;
+                    _listeners[ip.Address] = client;
                 }
+
+                client = UdpHelper.CreateUnicastClient(ip.Address, 0, ProcessMessage, _logger, OnFailure);
+                if (client == null)
+                {
+                    continue;
+                }
+
+                client.TracingFilter = TracingFilter;
+                client.Tracing = Tracing;
+                _senders[ip.Address] = client;
             }
         }
 
@@ -546,14 +553,16 @@ namespace Emby.Dlna.Ssdp
         /// </summary>
         private void StopServer()
         {
-            if (_running)
+            if (!_running)
             {
-                _running = false;
-                NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
-                NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
-                _listeners.Clear();
-                _senders.Clear();
+                return;
             }
+
+            _running = false;
+            NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
+            _listeners.Clear();
+            _senders.Clear();
         }
 
         /// <summary>
@@ -615,13 +624,15 @@ namespace Emby.Dlna.Ssdp
         {
             lock (_eventFireLock)
             {
-                if (!_eventfire)
+                if (_eventfire)
                 {
-                    _logger.LogDebug("Network Address Change Event.");
-                    // As network events tend to fire one after the other only fire once every second.
-                    _eventfire = true;
-                    _ = OnNetworkChangeAsync();
+                    return;
                 }
+
+                _logger.LogDebug("Network Address Change Event.");
+                // As network events tend to fire one after the other only fire once every second.
+                _eventfire = true;
+                _ = OnNetworkChangeAsync();
             }
         }
     }
