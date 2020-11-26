@@ -913,8 +913,8 @@ namespace Emby.Dlna.ContentDirectory
             {
                 return new QueryResult<ServerItem>
                 {
-                    Items = array.ToArray().Take((int)limit).ToList(),
-                    TotalRecordCount = (int)limit
+                    Items = array.Take(limit.Value).ToList(),
+                    TotalRecordCount = limit.Value
                 };
             }
 
