@@ -1014,7 +1014,9 @@ namespace Jellyfin.Api.Controllers
             if (!string.IsNullOrEmpty(pw))
             {
                 using var sha = SHA1.Create();
-                listingsProviderInfo.Password = Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(pw)));
+                // TODO: remove ToLower when Convert.ToHexString supports lowercase
+                // Schedules Direct requires the hex to be lowercase
+                listingsProviderInfo.Password = Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(pw))).ToLowerInvariant();
             }
 
             return await _liveTvManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);
