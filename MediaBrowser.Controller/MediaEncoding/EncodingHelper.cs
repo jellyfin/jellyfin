@@ -1059,7 +1059,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (isColorDepth10
                     && _mediaEncoder.SupportsHwaccel("opencl")
                     && encodingOptions.EnableTonemapping
-                    && !string.IsNullOrEmpty(videoStream.VideoRange)
+                    && !string.IsNullOrEmpty(videoStream?.VideoRange)
                     && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase))
                 {
                     // Enhance workload when tone mapping with AMF on some APUs
@@ -1126,7 +1126,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault();
-            profile =  Regex.Replace(profile, @"\s+", String.Empty);
+            if (profile != null)
+            {
+                profile = Regex.Replace(profile, @"\s+", string.Empty);
+            }
 
             // Only libx264 support encoding H264 High 10 Profile, otherwise force High Profile.
             if (!string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
@@ -1952,7 +1955,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 retStr,
                 mapPrefix,
                 subtitleStreamIndex,
-                state.VideoStream.Index,
+                state.VideoStream?.Index,
                 outputSizeParam.ToString(),
                 videoSizeParam);
         }

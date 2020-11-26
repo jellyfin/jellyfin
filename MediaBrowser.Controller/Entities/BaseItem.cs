@@ -1146,7 +1146,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (protocol.HasValue && protocol.Value == MediaProtocol.File)
                         {
-                            info.Container = System.IO.Path.GetExtension(item.Path).TrimStart('.');
+                            info.Container = System.IO.Path.GetExtension(item.Path)?.TrimStart('.');
                         }
                     }
                 }
@@ -1156,7 +1156,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (protocol.HasValue && protocol.Value == MediaProtocol.File)
                 {
-                    info.Container = System.IO.Path.GetExtension(item.Path).TrimStart('.');
+                    info.Container = System.IO.Path.GetExtension(item.Path)?.TrimStart('.');
                 }
             }
 
@@ -1186,7 +1186,7 @@ namespace MediaBrowser.Controller.Entities
                 if (HasLocalAlternateVersions)
                 {
                     var displayName = System.IO.Path.GetFileNameWithoutExtension(path)
-                        .Replace(System.IO.Path.GetFileName(ContainingFolderPath), string.Empty, StringComparison.OrdinalIgnoreCase)
+                        .Replace(System.IO.Path.GetFileName(ContainingFolderPath) ?? string.Empty, string.Empty, StringComparison.OrdinalIgnoreCase)
                         .TrimStart(new char[] { ' ', '-' });
 
                     if (!string.IsNullOrEmpty(displayName))

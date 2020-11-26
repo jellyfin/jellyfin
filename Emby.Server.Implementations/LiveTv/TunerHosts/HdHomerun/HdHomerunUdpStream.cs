@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 try
                 {
                     await tcpClient.ConnectAsync(remoteAddress, HdHomerunManager.HdHomeRunPort).ConfigureAwait(false);
-                    localAddress = ((IPEndPoint)tcpClient.Client.LocalEndPoint).Address;
+                    localAddress = ((IPEndPoint)tcpClient.Client.LocalEndPoint)?.Address;
                     tcpClient.Close();
                 }
                 catch (Exception ex)
@@ -103,6 +103,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
+            if (localAddress == null)
+            {
+                Logger.LogError("Error opening live stream: LocalAddress is null.");
+                return;
+            }
+        
             if (localAddress.IsIPv4MappedToIPv6) {
                 localAddress = localAddress.MapToIPv4();
             }

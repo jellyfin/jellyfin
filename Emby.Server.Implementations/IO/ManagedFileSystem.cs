@@ -694,7 +694,7 @@ namespace Emby.Server.Implementations.IO
                 WindowStyle = ProcessWindowStyle.Normal
             }))
             {
-                process.WaitForExit();
+                process?.WaitForExit();
             }
         }
     }

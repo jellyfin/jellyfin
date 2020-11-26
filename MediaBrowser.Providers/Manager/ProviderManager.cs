@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
-            var contentType = response.Content.Headers.ContentType.MediaType;
+            var contentType = response.Content.Headers.ContentType?.MediaType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
@@ -178,10 +178,15 @@ namespace MediaBrowser.Providers.Manager
                 {
                     contentType = "image/png";
                 }
+                else
+                {
+                    // SaveImage needs a contentType.
+                    throw new HttpRequestException("Invalid contentType received.", null, HttpStatusCode.NotFound);
+                }
             }
 
-            // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
-            if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
+            // the tvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
+            else if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
                 throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
             }

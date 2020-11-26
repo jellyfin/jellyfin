@@ -63,12 +63,9 @@ namespace MediaBrowser.Controller.Entities
 
         public bool Equals(LinkedChild x, LinkedChild y)
         {
-            if (x.Type == y.Type)
-            {
-                return _fileSystem.AreEqual(x.Path, y.Path);
-            }
-
-            return false;
+            return (x != null && y != null)
+                && (x.Type == y.Type)
+                && _fileSystem.AreEqual(x.Path, y.Path);
         }
 
         public int GetHashCode(LinkedChild obj)

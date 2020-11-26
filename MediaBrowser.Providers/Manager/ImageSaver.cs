@@ -457,7 +457,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (type == ImageType.Primary && item is Episode)
                 {
-                    path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
+                    path = Path.Combine(Path.GetDirectoryName(item.Path) ?? string.Empty, "metadata", filename + extension);
                 }
                 else if (item.IsInMixedFolder)
                 {

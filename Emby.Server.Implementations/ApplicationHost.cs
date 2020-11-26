@@ -297,7 +297,7 @@ namespace Emby.Server.Implementations
             Certificate = GetCertificate(CertificateInfo);
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
-            ApplicationVersionString = ApplicationVersion.ToString(3);
+            ApplicationVersionString = ApplicationVersion?.ToString(3);
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
         }
 
@@ -355,7 +355,7 @@ namespace Emby.Server.Implementations
         /// Gets the current application name.
         /// </summary>
         /// <value>The application name.</value>
-        public string ApplicationProductName { get; } = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName;
+        public string ApplicationProductName { get; } = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly()!.Location).ProductName;
 
         private DeviceId _deviceId;
 
@@ -685,7 +685,7 @@ namespace Emby.Server.Implementations
             var relevantEnvVars = new Dictionary<object, object>();
             foreach (var key in allEnvVars.Keys)
             {
-                if (_relevantEnvVarPrefixes.Any(prefix => key.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                if (_relevantEnvVarPrefixes.Any(prefix => key.ToString()?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ?? false))
                 {
                     relevantEnvVars.Add(key, allEnvVars[key]);
                 }
@@ -841,7 +841,7 @@ namespace Emby.Server.Implementations
                 try
                 {
                     var instance = (IPluginServiceRegistrator)Activator.CreateInstance(pluginServiceRegistrator);
-                    instance.RegisterServices(ServiceCollection);
+                    instance?.RegisterServices(ServiceCollection);
                 }
                 catch (Exception ex)
                 {
@@ -1410,7 +1410,7 @@ namespace Emby.Server.Implementations
                 },
                 EnableRaisingEvents = true
             };
-            process.Exited += (sender, args) => ((Process)sender).Dispose();
+            process.Exited += (sender, args) => ((Process)sender)?.Dispose();
 
             try
             {

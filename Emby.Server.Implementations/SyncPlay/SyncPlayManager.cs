@@ -369,7 +369,7 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             _sessionToGroupMap.Remove(session.Id, out var tempGroup);
-            if (!tempGroup.GetGroupId().Equals(group.GetGroupId()))
+            if (!(tempGroup?.GetGroupId().Equals(group.GetGroupId()) ?? false))
             {
                 throw new InvalidOperationException("Session was in wrong group!");
             }

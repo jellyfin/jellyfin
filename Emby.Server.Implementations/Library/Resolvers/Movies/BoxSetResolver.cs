@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             // we need to only look at the name of this actual item (not parents)
             var justName = Path.GetFileName(item.Path);
 
-            var id = justName.GetAttributeValue("tmdbid");
+            var id = justName?.GetAttributeValue("tmdbid");
 
             if (!string.IsNullOrEmpty(id))
             {

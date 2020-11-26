@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -560,13 +560,13 @@ namespace Jellyfin.Api.Helpers
                 profileString = state.GetRequestedProfiles(codec).FirstOrDefault() ?? string.Empty;
                 if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
-                    profileString = profileString ?? "high";
+                    profileString ??= "high";
                 }
 
                 if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
                 {
-                    profileString = profileString ?? "main";
+                    profileString ??= "main";
                 }
             }
 

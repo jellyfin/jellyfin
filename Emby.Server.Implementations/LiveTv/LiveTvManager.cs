@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             info.RequiresClosing = true;
 
-            var idPrefix = service.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_";
+            var idPrefix = service.GetType().FullName?.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_";
 
             info.LiveStreamId = idPrefix + info.Id;
 
@@ -1879,7 +1879,10 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var now = DateTime.UtcNow;
 
-            var channelIds = tuples.Select(i => i.Item2.Id).Distinct().ToArray();
+            var channelIds = tuples.Select(i => i.Item2?.Id ?? Guid.Empty)
+                .Where(i => i != Guid.Empty)
+                .Distinct()
+                .ToArray();
 
             var programs = options.AddCurrentProgram ? _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -2044,7 +2047,7 @@ namespace Emby.Server.Implementations.LiveTv
             var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
             info.Priority = defaultValues.Priority;
 
-            string newTimerId = null;
+            string newTimerId = string.Empty;
             if (service is ISupportsNewTimerIds supportsNewTimerIds)
             {
                 newTimerId = await supportsNewTimerIds.CreateTimer(info, cancellationToken).ConfigureAwait(false);
@@ -2077,7 +2080,7 @@ namespace Emby.Server.Implementations.LiveTv
             var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
             info.Priority = defaultValues.Priority;
 
-            string newTimerId = null;
+            string newTimerId = string.Empty;
             if (service is ISupportsNewTimerIds supportsNewTimerIds)
             {
                 newTimerId = await supportsNewTimerIds.CreateSeriesTimer(info, cancellationToken).ConfigureAwait(false);
@@ -2210,7 +2213,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var parts = id.Split('_', 2);
 
-            var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), parts[0], StringComparison.OrdinalIgnoreCase));
+            var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName?.GetMD5().ToString("N", CultureInfo.InvariantCulture), parts[0], StringComparison.OrdinalIgnoreCase));
 
             if (service == null)
             {

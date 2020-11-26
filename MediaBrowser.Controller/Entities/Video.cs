@@ -313,7 +313,7 @@ namespace MediaBrowser.Controller.Entities
 
         private string GetUserDataKey(string providerId)
         {
-            var key = providerId + "-" + ExtraType.ToString().ToLowerInvariant();
+            var key = providerId + "-" + ExtraType?.ToString().ToLowerInvariant();
 
             // Make sure different trailers have their own data.
             if (RunTimeTicks.HasValue)

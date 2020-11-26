@@ -108,7 +108,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                             await using var readStream = File.OpenRead(channelCacheFile);
                             var channels = await JsonSerializer.DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken)
                                 .ConfigureAwait(false);
-                            list.AddRange(channels);
+                            if (channels != null)
+                            {
+                                list.AddRange(channels);
+                            }
                         }
                         catch (IOException)
                         {

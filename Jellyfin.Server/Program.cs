@@ -530,7 +530,7 @@ namespace Jellyfin.Server
             // Get a stream of the resource contents
             // NOTE: The .csproj name is used instead of the assembly name in the resource path
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+            await using Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file

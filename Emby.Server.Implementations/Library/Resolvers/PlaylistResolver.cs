@@ -24,30 +24,34 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <inheritdoc/>
         protected override Playlist Resolve(ItemResolveArgs args)
         {
+            if (args?.Path == null)
+            {
+                return null;
+            }
+
             if (args.IsDirectory)
             {
                 // It's a boxset if the path is a directory with [playlist] in it's the name
                 // TODO: Should this use Path.GetDirectoryName() instead?
-                bool isBoxSet = Path.GetFileName(args.Path)
-                    ?.Contains("[playlist]", StringComparison.OrdinalIgnoreCase)
-                    ?? false;
+                var name = Path.GetFileName(args.Path);
+                bool isBoxSet = name!.Contains("[playlist]", StringComparison.OrdinalIgnoreCase);
                 if (isBoxSet)
                 {
                     return new Playlist
                     {
                         Path = args.Path,
-                        Name = Path.GetFileName(args.Path).Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
+                        Name = name.Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
                     };
                 }
 
                 // It's a directory-based playlist if the directory contains a playlist file
-                var filePaths = Directory.EnumerateFiles(args.Path);
+                var filePaths = Directory.EnumerateFiles(args.Path!);
                 if (filePaths.Any(f => f.EndsWith(PlaylistXmlSaver.DefaultPlaylistFilename, StringComparison.OrdinalIgnoreCase)))
                 {
                     return new Playlist
                     {
                         Path = args.Path,
-                        Name = Path.GetFileName(args.Path)
+                        Name = name
                     };
                 }
             }

@@ -157,11 +157,35 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.SetStudios(data.Studios);
             }
 
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist));
-            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, data.GetProviderId(MetadataProvider.MusicBrainzArtist));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, data.GetProviderId(MetadataProvider.MusicBrainzAlbum));
-            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup));
-            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, data.GetProviderId(MetadataProvider.MusicBrainzTrack));
+            var provider = data.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
+            if (!string.IsNullOrEmpty(provider))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, provider);
+            }
+
+            provider = data.GetProviderId(MetadataProvider.MusicBrainzArtist);
+            if (!string.IsNullOrEmpty(provider))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzArtist, provider);
+            }
+
+            provider = data.GetProviderId(MetadataProvider.MusicBrainzAlbum);
+            if (!string.IsNullOrEmpty(provider))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, provider);
+            }
+
+            provider = data.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
+            if (!string.IsNullOrEmpty(provider))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, provider);
+            }
+
+            provider = data.GetProviderId(MetadataProvider.MusicBrainzTrack);
+            if (!string.IsNullOrEmpty(provider))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzTrack, provider);
+            }
         }
     }
 }

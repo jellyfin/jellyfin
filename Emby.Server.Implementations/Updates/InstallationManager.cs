@@ -518,7 +518,7 @@ namespace Emby.Server.Implementations.Updates
         {
             lock (_currentInstallationsLock)
             {
-                var install = _currentInstallations.Find(x => x.info.Guid == id);
+                var install = _currentInstallations.Find(x => x.info?.Guid == id);
                 if (install == default((InstallationInfo, CancellationTokenSource)))
                 {
                     return false;

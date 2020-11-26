@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.Session
 
         private async void OnServerManagerWebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
         {
-            var session = GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint.ToString());
+            var session = GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint?.ToString());
             if (session != null)
             {
                 EnsureController(session, e.Argument);
