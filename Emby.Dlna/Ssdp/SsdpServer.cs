@@ -27,6 +27,7 @@ namespace Emby.Dlna.Ssdp
         private static int _networkChangeCount = 1;
         private static SsdpServer? _instance;
         private readonly object _synchroniser;
+        private readonly object _creationLock;
         private readonly ILogger _logger;
         private readonly Hashtable _listeners;
         private readonly Hashtable _senders;
@@ -48,6 +49,7 @@ namespace Emby.Dlna.Ssdp
             _logger = logger;
             _eventFireLock = new object();
             _synchroniser = new object();
+            _creationLock = new object();
             _listeners = new Hashtable();
             _senders = new Hashtable();
             _events = new Dictionary<string, List<EventHandler<SsdpEventArgs>>>();
@@ -89,9 +91,12 @@ namespace Emby.Dlna.Ssdp
             INetworkManager networkManager)
         {
             // As this class is used in multiple areas, we only want to create it once.
-            if (_instance == null)
+            lock (_creationLock) 
             {
-                _instance = new SsdpServer(logger, interfaces, networkManager);
+                if (_instance == null)
+                {
+                    _instance = new SsdpServer(logger, interfaces, networkManager);
+                }
             }
 
             return _instance;
