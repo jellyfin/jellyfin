@@ -2244,6 +2244,11 @@ namespace Emby.Server.Implementations.LiveTv
         {
             info = JsonSerializer.Deserialize<TunerHostInfo>(JsonSerializer.Serialize(info));
 
+            if (info == null)
+            {
+                throw new NullReferenceException(nameof(info));
+            }
+
             var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
             if (provider == null)
@@ -2287,6 +2292,11 @@ namespace Emby.Server.Implementations.LiveTv
             // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
             // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
             info = JsonSerializer.Deserialize<ListingsProviderInfo>(JsonSerializer.Serialize(info));
+
+            if (info == null)
+            {
+                throw new NullReferenceException(nameof(info));
+            }
 
             var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
@@ -2412,6 +2422,11 @@ namespace Emby.Server.Implementations.LiveTv
             else
             {
                 var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
+
+                if (info == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
 
                 var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
