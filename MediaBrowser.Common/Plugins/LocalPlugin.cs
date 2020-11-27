@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -106,7 +106,7 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public bool Equals(LocalPlugin other)
         {
-            if (System.Object.ReferenceEquals(other, null))
+            if (object.ReferenceEquals(other, null))
             {
                 return false;
             }
