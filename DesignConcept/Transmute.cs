@@ -1,5 +1,15 @@
 namespace TransmuteExtensions
 {
+    /// <summary>
+    /// Code by Theodoros Chatzigiannakis 
+    /// https://blog.tchatzigiannakis.com/changing-an-objects-type-at-runtime-in-c-sharp/
+    ///
+    /// Transmute one type to another.
+    /// eg.
+    ///     MyInterface is a copy of the code of Dynamic.Interface.
+    ///     MyInterface.TransmuteTo(Dynamic.Interface) should cause all my MyInterfaces to point to Dynamic.Interface, and return the correct DI value.
+    ///     (that's the theory, anyway!)
+    /// </summary>
     public unsafe static class Transmute
     {
         public static unsafe void* GetObjectAddress(this object obj) => *(void**)Unsafe.AsPointer(ref obj);
