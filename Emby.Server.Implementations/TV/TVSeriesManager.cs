@@ -149,12 +149,7 @@ namespace Emby.Server.Implementations.TV
             return allNextUp
                 .Where(i =>
                 {
-                    if (i.Item1 != DateTime.MinValue)
-                    {
-                        return true;
-                    }
-
-                    return false;
+                    return i.Item1 != DateTime.MinValue;
                 })
                 .Select(i => i.Item2())
                 .Where(i => i != null);
