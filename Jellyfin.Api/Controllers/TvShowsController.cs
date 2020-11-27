@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -57,7 +59,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id of the user to get the next up episodes for.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="seriesId">Optional. Filter by series id.</param>
         /// <param name="parentId">Optional. Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="enableImges">Optional. Include image information in output.</param>
@@ -72,17 +74,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? seriesId,
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var options = new DtoOptions()
-                .AddItemFields(fields!)
+            var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
 
@@ -117,7 +118,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id of the user to get the upcoming episodes for.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="parentId">Optional. Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="enableImges">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -130,11 +131,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? parentId,
             [FromQuery] bool? enableImges,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -145,8 +146,7 @@ namespace Jellyfin.Api.Controllers
 
             var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId);
 
-            var options = new DtoOptions()
-                .AddItemFields(fields!)
+            var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
 
@@ -176,7 +176,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="seriesId">The series id.</param>
         /// <param name="userId">The user id.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
         /// <param name="season">Optional filter by season number.</param>
         /// <param name="seasonId">Optional. Filter by season id.</param>
         /// <param name="isMissing">Optional. Filter by items that are missing episodes or not.</param>
@@ -188,7 +188,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageTypeLimit">Optional, the max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
-        /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
+        /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the episodes on success or a <see cref="NotFoundResult"/> if the series was not found.</returns>
         [HttpGet("{seriesId}/Episodes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
             [FromRoute, Required] string seriesId,
             [FromQuery] Guid? userId,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] int? season,
             [FromQuery] string? seasonId,
             [FromQuery] bool? isMissing,
@@ -206,7 +206,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy)
         {
@@ -216,8 +216,7 @@ namespace Jellyfin.Api.Controllers
 
             List<BaseItem> episodes;
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields!)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
 
@@ -304,7 +303,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="seriesId">The series id.</param>
         /// <param name="userId">The user id.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
         /// <param name="isSpecialSeason">Optional. Filter by special season.</param>
         /// <param name="isMissing">Optional. Filter by items that are missing episodes or not.</param>
         /// <param name="adjacentTo">Optional. Return items that are siblings of a supplied item.</param>
@@ -319,13 +318,13 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
             [FromRoute, Required] string seriesId,
             [FromQuery] Guid? userId,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
             [FromQuery] string? adjacentTo,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -344,8 +343,7 @@ namespace Jellyfin.Api.Controllers
                 AdjacentTo = adjacentTo
             });
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
 

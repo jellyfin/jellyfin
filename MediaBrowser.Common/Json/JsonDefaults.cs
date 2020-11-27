@@ -40,8 +40,10 @@ namespace MediaBrowser.Common.Json
             };
 
             options.Converters.Add(new JsonGuidConverter());
+            options.Converters.Add(new JsonVersionConverter());
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new JsonNullableStructConverterFactory());
+            options.Converters.Add(new JsonDateTimeIso8601Converter());
 
             return options;
         }

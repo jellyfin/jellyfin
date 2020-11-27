@@ -101,13 +101,13 @@ namespace MediaBrowser.Common.Cryptography
             // Check if the string also contains a salt
             if (splitted.Length - index == 2)
             {
-                salt = Hex.Decode(splitted[index++]);
-                hash = Hex.Decode(splitted[index++]);
+                salt = Convert.FromHexString(splitted[index++]);
+                hash = Convert.FromHexString(splitted[index++]);
             }
             else
             {
                 salt = Array.Empty<byte>();
-                hash = Hex.Decode(splitted[index++]);
+                hash = Convert.FromHexString(splitted[index++]);
             }
 
             return new PasswordHash(id, hash, salt, parameters);
@@ -144,11 +144,11 @@ namespace MediaBrowser.Common.Cryptography
             if (_salt.Length != 0)
             {
                 str.Append('$')
-                    .Append(Hex.Encode(_salt, false));
+                    .Append(Convert.ToHexString(_salt));
             }
 
             return str.Append('$')
-                .Append(Hex.Encode(_hash, false)).ToString();
+                .Append(Convert.ToHexString(_hash)).ToString();
         }
     }
 }

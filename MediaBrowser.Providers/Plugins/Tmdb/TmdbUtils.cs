@@ -98,7 +98,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
                 if (preferredLanguage.Length == 5) // like en-US
                 {
-                    // Currenty, TMDB supports 2-letter language codes only
+                    // Currently, TMDB supports 2-letter language codes only
                     // They are planning to change this in the future, thus we're
                     // supplying both codes if we're having a 5-letter code.
                     languages.Add(preferredLanguage.Substring(0, 2));

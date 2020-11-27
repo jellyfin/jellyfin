@@ -383,9 +383,9 @@ namespace Emby.Dlna
                     continue;
                 }
 
-                var filename = Path.GetFileName(name).Substring(namespaceName.Length);
-
-                var path = Path.Combine(systemProfilesPath, filename);
+                var path = Path.Join(
+                    systemProfilesPath,
+                    Path.GetFileName(name.AsSpan()).Slice(namespaceName.Length));
 
                 using (var stream = _assembly.GetManifestResourceStream(name))
                 {
@@ -484,10 +484,10 @@ namespace Emby.Dlna
 
         /// <summary>
         /// Recreates the object using serialization, to ensure it's not a subclass.
-        /// If it's a subclass it may not serlialize properly to xml (different root element tag name).
+        /// If it's a subclass it may not serialize properly to xml (different root element tag name).
         /// </summary>
         /// <param name="profile">The device profile.</param>
-        /// <returns>The reserialized device profile.</returns>
+        /// <returns>The re-serialized device profile.</returns>
         private DeviceProfile ReserializeProfile(DeviceProfile profile)
         {
             if (profile.GetType() == typeof(DeviceProfile))

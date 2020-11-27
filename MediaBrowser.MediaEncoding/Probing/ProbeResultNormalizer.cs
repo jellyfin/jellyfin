@@ -149,7 +149,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 var iTunEXTC = FFProbeHelpers.GetDictionaryValue(tags, "iTunEXTC");
                 if (!string.IsNullOrWhiteSpace(iTunEXTC))
                 {
-                    var parts = iTunEXTC.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = iTunEXTC.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     // Example
                     // mpaa|G|100|For crude humor
                     if (parts.Length > 1)
@@ -234,8 +234,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var channelsValue = channels.Value;
 
-            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
             {
                 if (channelsValue <= 2)
                 {
@@ -245,6 +245,34 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (channelsValue >= 5)
                 {
                     return 320000;
+                }
+            }
+
+            if (string.Equals(codec, "ac3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "eac3", StringComparison.OrdinalIgnoreCase))
+            {
+                if (channelsValue <= 2)
+                {
+                    return 192000;
+                }
+
+                if (channelsValue >= 5)
+                {
+                    return 640000;
+                }
+            }
+
+            if (string.Equals(codec, "flac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "alac", StringComparison.OrdinalIgnoreCase))
+            {
+                if (channelsValue <= 2)
+                {
+                    return 960000;
+                }
+
+                if (channelsValue >= 5)
+                {
+                    return 2880000;
                 }
             }
 
@@ -764,6 +792,35 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.BitRate = bitrate;
             }
 
+            // Extract bitrate info from tag "BPS" if possible.
+            if (!stream.BitRate.HasValue
+                && (string.Equals(streamInfo.CodecType, "audio", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(streamInfo.CodecType, "video", StringComparison.OrdinalIgnoreCase)))
+            {
+                var bps = GetBPSFromTags(streamInfo);
+                if (bps != null && bps > 0)
+                {
+                    stream.BitRate = bps;
+                }
+            }
+
+            // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
+            if (!stream.BitRate.HasValue
+                && (string.Equals(streamInfo.CodecType, "audio", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(streamInfo.CodecType, "video", StringComparison.OrdinalIgnoreCase)))
+            {
+                var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
+                var bytes = GetNumberOfBytesFromTags(streamInfo);
+                if (durationInSeconds != null && bytes != null)
+                {
+                    var bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
+                    if (bps > 0)
+                    {
+                        stream.BitRate = bps;
+                    }
+                }
+            }
+
             var disposition = streamInfo.Disposition;
             if (disposition != null)
             {
@@ -953,6 +1010,50 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
+        private int? GetBPSFromTags(MediaStreamInfo streamInfo)
+        {
+            if (streamInfo != null && streamInfo.Tags != null)
+            {
+                var bps = GetDictionaryValue(streamInfo.Tags, "BPS-eng") ?? GetDictionaryValue(streamInfo.Tags, "BPS");
+                if (!string.IsNullOrEmpty(bps)
+                    && int.TryParse(bps, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedBps))
+                {
+                    return parsedBps;
+                }
+            }
+
+            return null;
+        }
+
+        private double? GetRuntimeSecondsFromTags(MediaStreamInfo streamInfo)
+        {
+            if (streamInfo != null && streamInfo.Tags != null)
+            {
+                var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
+                if (!string.IsNullOrEmpty(duration) && TimeSpan.TryParse(duration, out var parsedDuration))
+                {
+                    return parsedDuration.TotalSeconds;
+                }
+            }
+
+            return null;
+        }
+
+        private long? GetNumberOfBytesFromTags(MediaStreamInfo streamInfo)
+        {
+            if (streamInfo != null && streamInfo.Tags != null)
+            {
+                var numberOfBytes = GetDictionaryValue(streamInfo.Tags, "NUMBER_OF_BYTES-eng") ?? GetDictionaryValue(streamInfo.Tags, "NUMBER_OF_BYTES");
+                if (!string.IsNullOrEmpty(numberOfBytes)
+                    && long.TryParse(numberOfBytes, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedBytes))
+                {
+                    return parsedBytes;
+                }
+            }
+
+            return null;
+        }
+
         private void SetSize(InternalMediaInfoResult data, MediaInfo info)
         {
             if (data.Format != null)
@@ -1129,7 +1230,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            return value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            return value.Split('/', StringSplitOptions.RemoveEmptyEntries)
                 .Select(i => i.Trim())
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }

@@ -9,6 +9,7 @@
 jobs:
 - job: GenerateApiClients
   displayName: 'Generate Api Clients'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
   dependsOn: Test
 
   pool:
@@ -28,18 +29,15 @@ jobs:
       inputs:
         script: "wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/${{ parameters.GeneratorVersion }}/openapi-generator-cli-${{ parameters.GeneratorVersion }}.jar -O openapi-generator-cli.jar"
 
-## Generate npm api client
-# Unstable
-    - task: CmdLine@2
-      displayName: 'Build unstable typescript axios client'
-      condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+## Authenticate with npm registry
+    - task: npmAuthenticate@0
       inputs:
-        script: "bash ./apiclient/templates/typescript/axios/generate.sh $(System.ArtifactsDirectory) $(Build.BuildNumber)"
+        workingFile: ./.npmrc
+        customEndpoint: 'jellyfin-bot for NPM'
 
-# Stable
+## Generate npm api client
     - task: CmdLine@2
       displayName: 'Build stable typescript axios client'
-      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
       inputs:
         script: "bash ./apiclient/templates/typescript/axios/generate.sh $(System.ArtifactsDirectory)"
 
@@ -51,20 +49,8 @@ jobs:
         workingDir: ./apiclient/generated/typescript/axios
 
 ## Publish npm packages
-# Unstable
-    - task: Npm@1
-      displayName: 'Publish unstable typescript axios client'
-      condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
-      inputs:
-        command: publish
-        publishRegistry: useFeed
-        publishFeed: 'jellyfin/unstable'
-        workingDir: ./apiclient/generated/typescript/axios
-
-# Stable
     - task: Npm@1
       displayName: 'Publish stable typescript axios client'
-      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
       inputs:
         command: publish
         publishRegistry: useExternalRegistry

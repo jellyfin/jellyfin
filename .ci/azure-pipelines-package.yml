@@ -63,6 +63,7 @@ jobs:
       sshEndpoint: repository
       sourceFolder: '$(Build.SourcesDirectory)/deployment/dist'
       contents: '**'
+      targetFolder: '/srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
 
 - job: OpenAPISpec
   dependsOn: Test
@@ -166,7 +167,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
+      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
 
   - task: SSH@0
     displayName: 'Update Stable Repository'
@@ -175,7 +176,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
+      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
@@ -187,6 +188,12 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET 5.0 sdk'
+    inputs:
+      packageType: 'sdk'
+      version: '5.0.x'
+
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')

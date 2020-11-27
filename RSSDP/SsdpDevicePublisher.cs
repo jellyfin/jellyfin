@@ -102,7 +102,7 @@ namespace Rssdp.Infrastructure
         /// <param name="device">The <see cref="SsdpDevice"/> instance to add.</param>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the <paramref name="device"/> contains property values that are not acceptable to the UPnP 1.0 specification.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capture task to local variable supresses compiler warning, but task is not really needed.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capture task to local variable suppresses compiler warning, but task is not really needed.")]
         public void AddDevice(SsdpRootDevice device)
         {
             if (device == null)
@@ -180,7 +180,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <remarks>
         /// <para>Enabling this option will cause devices to show up in Microsoft Windows Explorer's network screens (if discovery is enabled etc.). Windows Explorer appears to search only for pnp:rootdeivce and not upnp:rootdevice.</para>
-        /// <para>If false, the system will only use upnp:rootdevice for notifiation broadcasts and and search responses, which is correct according to the UPnP/SSDP spec.</para>
+        /// <para>If false, the system will only use upnp:rootdevice for notification broadcasts and and search responses, which is correct according to the UPnP/SSDP spec.</para>
         /// </remarks>
         public bool SupportPnpRootDevice
         {
@@ -300,16 +300,14 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        if (!_sendOnlyMatchedHost ||
-                            _networkManager.IsInSameSubnet(device.ToRootDevice().Address, remoteEndPoint.Address, device.ToRootDevice().SubnetMask))
+                        var root = device.ToRootDevice();
+                        var source = new IPNetAddress(root.Address, root.PrefixLength);
+                        var destination = new IPNetAddress(remoteEndPoint.Address, root.PrefixLength);
+                        if (!_sendOnlyMatchedHost || source.NetworkAddress.Equals(destination.NetworkAddress))
                         {
                             SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                         }
                     }
-                }
-                else
-                {
-                    // WriteTrace(String.Format("Sending 0 search responses."));
                 }
             });
         }

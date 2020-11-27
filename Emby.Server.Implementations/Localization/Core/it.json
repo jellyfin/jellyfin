@@ -113,5 +113,10 @@
     "TasksChannelsCategory": "Canali su Internet",
     "TasksApplicationCategory": "Applicazione",
     "TasksLibraryCategory": "Libreria",
-    "TasksMaintenanceCategory": "Manutenzione"
+    "TasksMaintenanceCategory": "Manutenzione",
+    "TaskCleanActivityLog": "Attività di Registro Completate",
+    "TaskCleanActivityLogDescription": "Elimina gli inserimenti nel registro delle attività più vecchie dell’età configurata.",
+    "Undefined": "Non Definito",
+    "Forced": "Forzato",
+    "Default": "Predefinito"
 }

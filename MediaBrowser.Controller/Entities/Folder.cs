@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Loads our children.  Validation will occur externally.
-        /// We want this sychronous.
+        /// We want this synchronous.
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {
@@ -352,11 +352,6 @@ namespace MediaBrowser.Controller.Entities
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
                             await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
-                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
                         }
 
                         continue;
@@ -723,7 +718,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
         {
-            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase))
             {
                 Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
@@ -813,7 +808,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
+                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(nameof(Series)))
                 {
                     Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;
@@ -1067,12 +1062,12 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.Genres.Length > 0)
+            if (request.Genres.Count > 0)
             {
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1177,7 +1172,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }

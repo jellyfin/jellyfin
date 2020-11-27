@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Branding;
 using Microsoft.AspNetCore.Http;

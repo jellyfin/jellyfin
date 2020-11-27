@@ -77,6 +77,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets Dlna media receiver registrar xml.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Dlna media receiver registrar xml returned.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/MediaReceiverRegistrar")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar", Name = "GetMediaReceiverRegistrar_2")]
@@ -94,6 +95,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets Dlna media receiver registrar xml.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Dlna media receiver registrar xml returned.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/ConnectionManager")]
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager", Name = "GetConnectionManager_2")]
@@ -111,8 +113,12 @@ namespace Jellyfin.Api.Controllers
         /// Process a content directory control request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ContentDirectory/Control")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute, Required] string serverId)
         {
             return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
@@ -122,8 +128,12 @@ namespace Jellyfin.Api.Controllers
         /// Process a connection manager control request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ConnectionManager/Control")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute, Required] string serverId)
         {
             return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
@@ -133,8 +143,12 @@ namespace Jellyfin.Api.Controllers
         /// Process a media receiver registrar control request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/MediaReceiverRegistrar/Control")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute, Required] string serverId)
         {
             return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
@@ -144,11 +158,15 @@ namespace Jellyfin.Api.Controllers
         /// Processes an event subscription request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [HttpUnsubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
             return ProcessEventRequest(_mediaReceiverRegistrar);
@@ -158,11 +176,15 @@ namespace Jellyfin.Api.Controllers
         /// Processes an event subscription request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ContentDirectory/Events")]
         [HttpUnsubscribe("{serverId}/ContentDirectory/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string serverId)
         {
             return ProcessEventRequest(_contentDirectory);
@@ -172,11 +194,15 @@ namespace Jellyfin.Api.Controllers
         /// Processes an event subscription request.
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Request processed.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ConnectionManager/Events")]
         [HttpUnsubscribe("{serverId}/ConnectionManager/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Text.Xml)]
+        [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string serverId)
         {
             return ProcessEventRequest(_connectionManager);
@@ -226,7 +252,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetAbsoluteUri()
         {
-            return $"{Request.Scheme}://{Request.Host}{Request.Path}";
+            return $"{Request.Scheme}://{Request.Host}{Request.PathBase}{Request.Path}";
         }
 
         private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)

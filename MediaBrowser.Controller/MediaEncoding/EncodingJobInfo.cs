@@ -287,6 +287,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return BaseRequest.AudioChannels;
             }
 
+            if (BaseRequest.TranscodingMaxAudioChannels.HasValue)
+            {
+                return BaseRequest.TranscodingMaxAudioChannels;
+            }
+
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "audiochannels");
@@ -404,7 +409,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // Don't exceed what the encoder supports
                     // Seeing issues of attempting to encode to 88200
-                    return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
+                    return BaseRequest.AudioSampleRate.Value;
                 }
 
                 return null;
@@ -588,6 +593,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
+                if (VideoStream == null)
+                {
+                    return null;
+                }
+
                 if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.Codec;
@@ -601,6 +611,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
+                if (AudioStream == null)
+                {
+                    return null;
+                }
+
                 if (EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
                     return AudioStream?.Codec;

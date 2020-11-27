@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -381,16 +381,12 @@ namespace Jellyfin.Api.Controllers
 
             var user = _userManager.GetUserById(userId);
 
-            if (string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
-            {
-                await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
-                _userManager.UpdateConfiguration(user.Id, updateUser.Configuration);
-            }
-            else
+            if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
             {
                 await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
-                _userManager.UpdateConfiguration(updateUser.Id, updateUser.Configuration);
             }
+
+            await _userManager.UpdateConfigurationAsync(user.Id, updateUser.Configuration).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -409,7 +405,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult UpdateUserPolicy(
+        public async Task<ActionResult> UpdateUserPolicy(
             [FromRoute, Required] Guid userId,
             [FromBody] UserPolicy newPolicy)
         {
@@ -447,7 +443,7 @@ namespace Jellyfin.Api.Controllers
                 _sessionManager.RevokeUserTokens(user.Id, currentToken);
             }
 
-            _userManager.UpdatePolicy(userId, newPolicy);
+            await _userManager.UpdatePolicyAsync(userId, newPolicy).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -464,7 +460,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult UpdateUserConfiguration(
+        public async Task<ActionResult> UpdateUserConfiguration(
             [FromRoute, Required] Guid userId,
             [FromBody] UserConfiguration userConfig)
         {
@@ -473,7 +469,7 @@ namespace Jellyfin.Api.Controllers
                 return Forbid("User configuration update not allowed");
             }
 
-            _userManager.UpdateConfiguration(userId, userConfig);
+            await _userManager.UpdateConfigurationAsync(userId, userConfig).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -532,6 +528,33 @@ namespace Jellyfin.Api.Controllers
         {
             var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
             return result;
+        }
+
+        /// <summary>
+        /// Gets the user based on auth token.
+        /// </summary>
+        /// <response code="200">User returned.</response>
+        /// <response code="400">Token is not owned by a user.</response>
+        /// <returns>A <see cref="UserDto"/> for the authenticated user.</returns>
+        [HttpGet("Me")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult<UserDto> GetCurrentUser()
+        {
+            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
+            if (userId == null)
+            {
+                return BadRequest();
+            }
+
+            var user = _userManager.GetUserById(userId.Value);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
+            return _userManager.GetUserDto(user);
         }
 
         private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)

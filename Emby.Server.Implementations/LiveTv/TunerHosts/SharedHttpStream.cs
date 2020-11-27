@@ -55,14 +55,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var typeName = GetType().Name;
             Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+            // Response stream is disposed manually.
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
                 .ConfigureAwait(false);
 
             var extension = "ts";
             var requiresRemux = false;
 
-            var contentType = response.Content.Headers.ContentType.ToString();
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
             if (contentType.IndexOf("matroska", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 requiresRemux = true;
@@ -121,6 +122,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
+        public string GetFilePath()
+        {
+            return TempFilePath;
+        }
+
         private Task StartStreaming(HttpResponseMessage response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
@@ -129,7 +135,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
                     using var message = response;
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
                     await StreamHelper.CopyToAsync(
                         stream,

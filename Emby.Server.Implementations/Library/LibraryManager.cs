@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Audio;
@@ -857,7 +858,21 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         public Person GetPerson(string name)
         {
-            return CreateItemByName<Person>(Person.GetPath, name, new DtoOptions(true));
+            var path = Person.GetPath(name);
+            var id = GetItemByNameId<Person>(path);
+            if (!(GetItemById(id) is Person item))
+            {
+                item = new Person
+                {
+                    Name = name,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    DateModified = DateTime.UtcNow,
+                    Path = path
+                };
+            }
+
+            return item;
         }
 
         /// <summary>
@@ -1502,7 +1517,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (query.AncestorIds.Length == 0 &&
                 query.ParentId.Equals(Guid.Empty) &&
-                query.ChannelIds.Length == 0 &&
+                query.ChannelIds.Count == 0 &&
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
                 string.IsNullOrEmpty(query.SeriesPresentationUniqueKey) &&
@@ -1940,19 +1955,9 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            foreach (var item in items)
-            {
-                if (item.IsFileProtocol)
-                {
-                    ProviderManager.SaveMetadata(item, updateReason);
-                }
-
-                item.DateLastSaved = DateTime.UtcNow;
-
-                await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
-            }
+            RunMetadataSavers(items, updateReason);
 
             _itemRepository.SaveItems(items, cancellationToken);
 
@@ -1983,11 +1988,26 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
+
+        public void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason)
+        {
+            foreach (var item in items)
+            {
+                if (item.IsFileProtocol)
+                {
+                    ProviderManager.SaveMetadata(item, updateReason);
+                }
+
+                item.DateLastSaved = DateTime.UtcNow;
+            }
+        }
 
         /// <summary>
         /// Reports the item removed.
@@ -2440,6 +2460,21 @@ namespace Emby.Server.Implementations.Library
             new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
+        public BaseItem GetParentItem(string parentId, Guid? userId)
+        {
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                return GetItemById(new Guid(parentId));
+            }
+
+            if (userId.HasValue && userId != Guid.Empty)
+            {
+                return GetUserRootFolder();
+            }
+
+            return RootFolder;
+        }
+
         /// <inheritdoc />
         public bool IsVideoFile(string path)
         {
@@ -2470,9 +2505,10 @@ namespace Emby.Server.Implementations.Library
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
+            // TODO nullable - what are we trying to do there with empty episodeInfo?
             var episodeInfo = episode.IsFileProtocol
-                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo()
-                : new Naming.TV.EpisodeInfo();
+                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo(episode.Path)
+                : new Naming.TV.EpisodeInfo(episode.Path);
 
             try
             {
@@ -2561,12 +2597,12 @@ namespace Emby.Server.Implementations.Library
 
                 if (!episode.IndexNumberEnd.HasValue || forceRefresh)
                 {
-                    if (episode.IndexNumberEnd != episodeInfo.EndingEpsiodeNumber)
+                    if (episode.IndexNumberEnd != episodeInfo.EndingEpisodeNumber)
                     {
                         changed = true;
                     }
 
-                    episode.IndexNumberEnd = episodeInfo.EndingEpsiodeNumber;
+                    episode.IndexNumberEnd = episodeInfo.EndingEpisodeNumber;
                 }
 
                 if (!episode.ParentIndexNumber.HasValue || forceRefresh)
@@ -2690,7 +2726,7 @@ namespace Emby.Server.Implementations.Library
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
             if (currentVideo != null)
             {
@@ -2892,7 +2928,7 @@ namespace Emby.Server.Implementations.Library
 
                     return item.GetImageInfo(image.Type, imageIndex);
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     if (ex.StatusCode.HasValue
                         && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))

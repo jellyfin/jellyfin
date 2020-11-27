@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
@@ -28,6 +29,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
@@ -168,7 +171,7 @@ namespace Jellyfin.Server.Extensions
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
 
-                    opts.ModelBinderProviders.Insert(0, new CommaDelimitedArrayModelBinderProvider());
+                    opts.ModelBinderProviders.Insert(0, new NullableEnumModelBinderProvider());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
@@ -212,7 +215,19 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                c.SwaggerDoc("api-docs", new OpenApiInfo
+                {
+                    Title = "Jellyfin API",
+                    Version = "v1",
+                    Extensions = new Dictionary<string, IOpenApiExtension>
+                    {
+                        {
+                            "x-jellyfin-version",
+                            new OpenApiString(typeof(ApplicationHost).Assembly.GetName().Version?.ToString())
+                        }
+                    }
+                });
+
                 c.AddSecurityDefinition(AuthenticationSchemes.CustomAuthentication, new OpenApiSecurityScheme
                 {
                     Type = SecuritySchemeType.ApiKey,

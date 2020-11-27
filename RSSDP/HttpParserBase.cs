@@ -105,7 +105,7 @@ namespace Rssdp.Infrastructure
             var headerName = line.Substring(0, headerKeySeparatorIndex).Trim();
             var headerValue = line.Substring(headerKeySeparatorIndex + 1).Trim();
 
-            // Not sure how to determine where request headers and and content headers begin,
+            // Not sure how to determine where request headers and content headers begin,
             // at least not without a known set of headers (general headers first the content headers)
             // which seems like a bad way of doing it. So we'll assume if it's a known content header put it there
             // else use request headers.
@@ -119,7 +119,7 @@ namespace Rssdp.Infrastructure
             }
             else
             {
-                headersToAddTo.TryAddWithoutValidation(headerName, values.First());
+                headersToAddTo.TryAddWithoutValidation(headerName, values[0]);
             }
         }
 
@@ -151,7 +151,7 @@ namespace Rssdp.Infrastructure
             return lineIndex;
         }
 
-        private IList<string> ParseValues(string headerValue)
+        private List<string> ParseValues(string headerValue)
         {
             // This really should be better and match the HTTP 1.1 spec,
             // but this should actually be good enough for SSDP implementations
@@ -160,7 +160,7 @@ namespace Rssdp.Infrastructure
 
             if (headerValue == "\"\"")
             {
-                values.Add(String.Empty);
+                values.Add(string.Empty);
                 return values;
             }
 
@@ -172,7 +172,7 @@ namespace Rssdp.Infrastructure
             else
             {
                 var segments = headerValue.Split(SeparatorCharacters);
-                if (headerValue.Contains("\""))
+                if (headerValue.Contains('"'))
                 {
                     for (int segmentIndex = 0; segmentIndex < segments.Length; segmentIndex++)
                     {

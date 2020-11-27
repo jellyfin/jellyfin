@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -107,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="sortOrder">Optional. Sort Order - Ascending,Descending.</param>
         /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <response code="200">Channel items returned.</response>
         /// <returns>
         /// A <see cref="Task"/> representing the request to get the channel items.
@@ -121,9 +122,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? sortOrder,
-            [FromQuery] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] string? sortBy,
-            [FromQuery] string? fields)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -136,8 +137,7 @@ namespace Jellyfin.Api.Controllers
                 ChannelIds = new[] { channelId },
                 ParentId = folderId ?? Guid.Empty,
                 OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
-                DtoOptions = new DtoOptions()
-                    .AddItemFields(fields)
+                DtoOptions = new DtoOptions { Fields = fields }
             };
 
             foreach (var filter in filters)
@@ -184,7 +184,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="filters">Optional. Specify additional filters to apply.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="channelIds">Optional. Specify one or more channel id's, comma delimited.</param>
         /// <response code="200">Latest channel items returned.</response>
         /// <returns>
@@ -196,9 +196,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] ItemFilter[] filters,
-            [FromQuery] string? fields,
-            [FromQuery] string? channelIds)
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] channelIds)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -208,13 +208,8 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                ChannelIds = (channelIds ?? string.Empty)
-                    .Split(',')
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new Guid(i))
-                    .ToArray(),
-                DtoOptions = new DtoOptions()
-                    .AddItemFields(fields)
+                ChannelIds = channelIds,
+                DtoOptions = new DtoOptions { Fields = fields }
             };
 
             foreach (var filter in filters)

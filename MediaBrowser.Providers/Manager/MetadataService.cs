@@ -229,16 +229,16 @@ namespace MediaBrowser.Providers.Manager
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
+        private Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
         {
+            var personsToSave = new List<BaseItem>();
+
             foreach (var person in people)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
                 {
-                    var updateType = ItemUpdateType.MetadataDownload;
-
                     var saveEntity = false;
                     var personEntity = LibraryManager.GetPerson(person.Name);
                     foreach (var id in person.ProviderIds)
@@ -252,42 +252,27 @@ namespace MediaBrowser.Providers.Manager
 
                     if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
                     {
-                        await AddPersonImageAsync(personEntity, libraryOptions, person.ImageUrl, cancellationToken).ConfigureAwait(false);
+                        personEntity.SetImage(
+                            new ItemImageInfo
+                            {
+                                Path = person.ImageUrl,
+                                Type = ImageType.Primary
+                            },
+                            0);
 
                         saveEntity = true;
-                        updateType |= ItemUpdateType.ImageUpdate;
                     }
 
                     if (saveEntity)
                     {
-                        await personEntity.UpdateToRepositoryAsync(updateType, cancellationToken).ConfigureAwait(false);
+                        personsToSave.Add(personEntity);
                     }
                 }
             }
-        }
 
-        private async Task AddPersonImageAsync(Person personEntity, LibraryOptions libraryOptions, string imageUrl, CancellationToken cancellationToken)
-        {
-            if (libraryOptions.DownloadImagesInAdvance)
-            {
-                try
-                {
-                    await ProviderManager.SaveImage(personEntity, imageUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error in AddPersonImage");
-                }
-            }
-
-            personEntity.SetImage(
-                new ItemImageInfo
-                {
-                    Path = imageUrl,
-                    Type = ImageType.Primary
-                },
-                0);
+            LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload);
+            LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
+            return Task.CompletedTask;
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)

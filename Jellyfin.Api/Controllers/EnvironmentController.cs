@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.EnvironmentDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Environment Controller.
     /// </summary>
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
     public class EnvironmentController : BaseJellyfinApiController
     {
         private const char UncSeparator = '\\';
@@ -103,6 +104,11 @@ namespace Jellyfin.Api.Controllers
 
                 if (validatePathDto.ValidateWritable)
                 {
+                    if (validatePathDto.Path == null)
+                    {
+                        throw new ResourceNotFoundException(nameof(validatePathDto.Path));
+                    }
+
                     var file = Path.Combine(validatePathDto.Path, Guid.NewGuid().ToString());
                     try
                     {

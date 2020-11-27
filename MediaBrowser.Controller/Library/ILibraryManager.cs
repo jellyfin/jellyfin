@@ -570,5 +570,9 @@ namespace MediaBrowser.Controller.Library
             List<MediaStream> streams,
             string videoPath,
             string[] files);
+
+        void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason);
+
+        BaseItem GetParentItem(string parentId, Guid? userId);
     }
 }
