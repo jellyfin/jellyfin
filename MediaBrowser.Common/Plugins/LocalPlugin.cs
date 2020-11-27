@@ -106,7 +106,7 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public bool Equals(LocalPlugin other)
         {
-            if (!(other is LocalPlugin))
+            if (System.Object.ReferenceEquals(other, null))
             {
                 return false;
             }
