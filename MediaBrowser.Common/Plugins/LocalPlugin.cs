@@ -106,6 +106,7 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public bool Equals(LocalPlugin other)
         {
+            // Do not use == or != for comparison as this class overrides the operators.
             if (object.ReferenceEquals(other, null))
             {
                 return false;
