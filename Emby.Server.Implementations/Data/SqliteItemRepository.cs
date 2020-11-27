@@ -4517,19 +4517,19 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.HasImdbId.HasValue && query.HasImdbId.Value)
+            if (query.HasImdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%imdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasImdbId.Value, "imdb"));
             }
 
-            if (query.HasTmdbId.HasValue && query.HasTmdbId.Value)
+            if (query.HasTmdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%tmdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasTmdbId.Value, "tmdb"));
             }
 
-            if (query.HasTvdbId.HasValue && query.HasTvdbId.Value)
+            if (query.HasTvdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%tvdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasTvdbId.Value, "tvdb"));
             }
 
             var includedItemByNameTypes = GetItemByNameTypesInQuery(query).SelectMany(MapIncludeItemTypes).ToList();
@@ -4767,6 +4767,21 @@ namespace Emby.Server.Implementations.Data
             }
 
             return whereClauses;
+        }
+
+        /// <summary>
+        /// Formats a where clause for the specified provider.
+        /// </summary>
+        /// <param name="includeResults">Whether or not to include items with this provider's ids.</param>
+        /// <param name="provider">Provider name.</param>
+        /// <returns>Formatted SQL clause.</returns>
+        private string GetProviderIdClause(bool includeResults, string provider)
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "ProviderIds {0} like '%{1}=%'",
+                includeResults ? string.Empty : "not",
+                provider);
         }
 
         private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)
