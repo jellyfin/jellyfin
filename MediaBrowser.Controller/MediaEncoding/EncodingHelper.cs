@@ -494,7 +494,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 .Append(encodingOptions.VaapiDevice)
                                 .Append(' ')
                                 .Append("-init_hw_device opencl=ocl@va ")
-                                .Append("-hwaccel vaapi ")
                                 .Append("-hwaccel_device va ")
                                 .Append("-hwaccel_output_format vaapi ")
                                 .Append("-filter_hw_device ocl ");
