@@ -92,6 +92,8 @@ namespace MediaBrowser.Controller.Net
             return Task.CompletedTask;
         }
 
+        public Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection) => Task.CompletedTask;
+
         /// <summary>
         /// Starts sending messages over a web socket.
         /// </summary>
