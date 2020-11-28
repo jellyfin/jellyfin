@@ -11,7 +11,7 @@ namespace Jellyfin.Api.WebSocketListeners
     /// <summary>
     /// Class SessionInfoWebSocketListener.
     /// </summary>
-    public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
+    public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>, ISessionInfoWebSocketListener
     {
         private readonly ISessionManager _sessionManager;
 

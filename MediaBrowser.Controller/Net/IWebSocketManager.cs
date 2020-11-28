@@ -12,11 +12,6 @@ namespace MediaBrowser.Controller.Net
     public interface IWebSocketManager
     {
         /// <summary>
-        /// Occurs when [web socket connected].
-        /// </summary>
-        event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
-
-        /// <summary>
         /// The HTTP request handler.
         /// </summary>
         /// <param name="context">The current HTTP context.</param>

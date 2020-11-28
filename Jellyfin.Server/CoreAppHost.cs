@@ -11,7 +11,6 @@ using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Users;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Drawing;
@@ -82,14 +81,10 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IUserManager, UserManager>();
             ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
-            ServiceCollection.AddScoped<IWebSocketListener, ActivityLogWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, ScheduledTasksWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, SessionInfoWebSocketListener>();
-            // This one has to be last as DI will select it for parameterization.
-            ServiceCollection.AddScoped<IWebSocketListener, SessionWebSocketListener>();
-
-            // TODO fix circular dependency on IWebSocketManager
-            ServiceCollection.AddScoped(serviceProvider => new Lazy<IEnumerable<IWebSocketListener>>(serviceProvider.GetRequiredService<IEnumerable<IWebSocketListener>>));
+            ServiceCollection.AddScoped<IActivityLogWebSocketListener, ActivityLogWebSocketListener>();
+            ServiceCollection.AddScoped<IScheduledTasksWebSocketListener, ScheduledTasksWebSocketListener>();
+            ServiceCollection.AddScoped<ISessionInfoWebSocketListener, SessionInfoWebSocketListener>();
+            ServiceCollection.AddScoped<ISessionWebSocketListener, SessionWebSocketListener>();
 
             base.RegisterServices();
         }

@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
+using Emby.Server.Implementations.Session;
+using Jellyfin.Api.WebSocketListeners;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -13,23 +15,20 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class WebSocketManager : IWebSocketManager
     {
-        private readonly Lazy<IEnumerable<IWebSocketListener>> _webSocketListeners;
+        private readonly IServerApplicationHost _appHost;
         private readonly ILogger<WebSocketManager> _logger;
         private readonly ILoggerFactory _loggerFactory;
-
         private bool _disposed = false;
 
         public WebSocketManager(
-            Lazy<IEnumerable<IWebSocketListener>> webSocketListeners,
+            IServerApplicationHost appHost,
             ILogger<WebSocketManager> logger,
             ILoggerFactory loggerFactory)
         {
-            _webSocketListeners = webSocketListeners;
+            _appHost = appHost;
             _logger = logger;
             _loggerFactory = loggerFactory;
         }
-
-        public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
@@ -38,6 +37,8 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 return;
             }
+
+            var listener = _appHost.Resolve<ISessionWebSocketListener>();
 
             try
             {
@@ -54,7 +55,7 @@ namespace Emby.Server.Implementations.HttpServer
                     OnReceive = ProcessWebSocketMessageReceived
                 };
 
-                WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
+                listener?.ProcessWebSocketConnected(connection);
 
                 await connection.ProcessAsync().ConfigureAwait(false);
                 _logger.LogInformation("WS {IP} closed", context.Connection.RemoteIpAddress);
@@ -80,16 +81,12 @@ namespace Emby.Server.Implementations.HttpServer
                 return Task.CompletedTask;
             }
 
-            IEnumerable<Task> GetTasks()
-            {
-                var listeners = _webSocketListeners.Value;
-                foreach (var x in listeners)
-                {
-                    yield return x.ProcessMessageAsync(result);
-                }
-            }
+            Parallel.Invoke(
+                () => _appHost.Resolve<IActivityLogWebSocketListener>(),
+                () => _appHost.Resolve<IScheduledTasksWebSocketListener>(),
+                () => _appHost.Resolve<ISessionInfoWebSocketListener>());
 
-            return Task.WhenAll(GetTasks());
+            return Task.CompletedTask;
         }
     }
 }
