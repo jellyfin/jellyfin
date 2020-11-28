@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer.Security
@@ -77,13 +78,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
             if (string.IsNullOrEmpty(token))
             {
                 headers.TryGetValue("X-Emby-Token", out StringValues header);
-                token = header[0];
+                token = header.Count > 0 ? header[0] : null;
             }
 
             if (string.IsNullOrEmpty(token))
             {
                 headers.TryGetValue("X-MediaBrowser-Token", out StringValues header);
-                token = header[0];
+                token = header.Count > 0 ? header[0] : null;
             }
 
             if (string.IsNullOrEmpty(token))
@@ -208,11 +209,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private Dictionary<string, string> GetAuthorizationDictionary(HttpContext httpReq)
         {
-            var auth = httpReq.Request.Headers["X-Emby-Authorization"];
+            httpReq.Request.Headers.TryGetValue("X-Emby-Authorization", out StringValues header);
+            var auth = header.Count > 0 ? header[0] : null;
 
             if (string.IsNullOrEmpty(auth))
             {
-                auth = httpReq.Request.Headers[HeaderNames.Authorization];
+                httpReq.Request.Headers.TryGetValue(HeaderNames.Authorization, out header);
+                auth = header.Count > 0 ? header[0] : null;
             }
 
             return GetAuthorization(auth);
@@ -225,11 +228,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private Dictionary<string, string> GetAuthorizationDictionary(HttpRequest httpReq)
         {
-            var auth = httpReq.Headers["X-Emby-Authorization"];
+            httpReq.Headers.TryGetValue("X-Emby-Authorization", out StringValues header);
+            var auth = header.Count > 0 ? header[0] : null;
 
             if (string.IsNullOrEmpty(auth))
             {
-                auth = httpReq.Headers[HeaderNames.Authorization];
+                httpReq.Headers.TryGetValue(HeaderNames.Authorization, out header);
+                auth = header.Count > 0 ? header[0] : null;
             }
 
             return GetAuthorization(auth);
