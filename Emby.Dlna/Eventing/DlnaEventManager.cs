@@ -73,7 +73,7 @@ namespace Emby.Dlna.Eventing
                 CallbackUrl = callbackUrl,
                 SubscriptionTime = DateTime.UtcNow,
                 TimeoutSeconds = timeout,
-                NoticationType = notificationType
+                NotificationType = notificationType
             });
 
             return GetEventSubscriptionResponse(id, requestedTimeoutString, timeout);
