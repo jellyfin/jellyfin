@@ -76,12 +76,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (string.IsNullOrEmpty(token))
             {
-                token = headers["X-Emby-Token"];
+                headers.TryGetValue("X-Emby-Token", out StringValues header);
+                token = header[0];
             }
 
             if (string.IsNullOrEmpty(token))
             {
-                token = headers["X-MediaBrowser-Token"];
+                headers.TryGetValue("X-MediaBrowser-Token", out StringValues header);
+                token = header[0];
             }
 
             if (string.IsNullOrEmpty(token))
