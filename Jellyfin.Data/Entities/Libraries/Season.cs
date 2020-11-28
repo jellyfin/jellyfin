@@ -27,6 +27,7 @@ namespace Jellyfin.Data.Entities.Libraries
             SeasonMetadata = new HashSet<SeasonMetadata>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Season"/> class.
         /// </summary>
@@ -36,6 +37,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Season()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the season number.

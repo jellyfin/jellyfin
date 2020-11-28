@@ -25,6 +25,7 @@ namespace Jellyfin.Data.Entities.Libraries
             movie.MovieMetadata.Add(this);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieMetadata"/> class.
         /// </summary>
@@ -34,6 +35,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected MovieMetadata()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the outline.
@@ -43,7 +45,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Outline { get; set; }
+        public string? Outline { get; set; }
 
         /// <summary>
         /// Gets or sets the tagline.
@@ -53,7 +55,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Tagline { get; set; }
+        public string? Tagline { get; set; }
 
         /// <summary>
         /// Gets or sets the plot.
@@ -63,7 +65,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Plot { get; set; }
+        public string? Plot { get; set; }
 
         /// <summary>
         /// Gets or sets the country code.
@@ -73,7 +75,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(2)]
         [StringLength(2)]
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets the studios that produced this movie.

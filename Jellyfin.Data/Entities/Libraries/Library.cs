@@ -24,6 +24,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Name = name;
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Library"/> class.
         /// </summary>
@@ -33,6 +34,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Library()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -61,7 +63,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Required.
         /// </remarks>
         [Required]
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]

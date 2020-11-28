@@ -31,6 +31,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Sources = new HashSet<MetadataProviderId>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Person"/> class.
         /// </summary>
@@ -40,6 +41,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Person()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -69,7 +71,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(256)]
         [StringLength(256)]
-        public string SourceId { get; set; }
+        public string? SourceId { get; set; }
 
         /// <summary>
         /// Gets or sets the date added.

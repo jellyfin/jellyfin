@@ -29,9 +29,10 @@ namespace Jellyfin.Data.Entities.Libraries
             Path = path;
             Kind = kind;
 
-            owner?.Artwork.Add(this);
+            owner?.Artwork?.Add(this);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Artwork"/> class.
         /// </summary>
@@ -41,6 +42,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Artwork()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.

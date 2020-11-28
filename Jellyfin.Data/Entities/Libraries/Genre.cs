@@ -32,6 +32,7 @@ namespace Jellyfin.Data.Entities.Libraries
             itemMetadata.Genres.Add(this);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Genre"/> class.
         /// </summary>
@@ -41,6 +42,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Genre()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.

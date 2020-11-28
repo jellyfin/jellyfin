@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,6 +19,7 @@ namespace Jellyfin.Data.Entities
             LastModified = DateTime.UtcNow;
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageInfo"/> class.
         /// </summary>
@@ -28,6 +29,7 @@ namespace Jellyfin.Data.Entities
         protected ImageInfo()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.

@@ -18,11 +18,12 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="owner">The owner of this company.</param>
         public Company(IHasCompanies owner)
         {
-            owner?.Companies.Add(this);
+            owner?.Companies?.Add(this);
 
             CompanyMetadata = new HashSet<CompanyMetadata>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Company"/> class.
         /// </summary>
@@ -32,6 +33,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Company()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -54,11 +56,11 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Gets or sets a collection containing this company's child companies.
         /// </summary>
-        public virtual ICollection<Company> ChildCompanies { get; protected set; }
+        public virtual ICollection<Company>? ChildCompanies { get; protected set; }
 
         /// <inheritdoc />
         [NotMapped]
-        public ICollection<Company> Companies => ChildCompanies;
+        public ICollection<Company>? Companies => ChildCompanies;
 
         /// <inheritdoc />
         public void OnSavingChanges()

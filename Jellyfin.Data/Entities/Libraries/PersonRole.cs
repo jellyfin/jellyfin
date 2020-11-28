@@ -33,6 +33,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Sources = new HashSet<MetadataProviderId>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonRole"/> class.
         /// </summary>
@@ -42,6 +43,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected PersonRole()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -60,7 +62,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Role { get; set; }
+        public string? Role { get; set; }
 
         /// <summary>
         /// Gets or sets the person's role type.
@@ -81,10 +83,10 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Required.
         /// </remarks>
         [Required]
-        public virtual Person Person { get; set; }
+        public virtual Person? Person { get; set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Artwork> Artwork { get; protected set; }
+        public virtual ICollection<Artwork>? Artwork { get; protected set; }
 
         /// <summary>
         /// Gets or sets a collection containing the metadata sources for this person role.

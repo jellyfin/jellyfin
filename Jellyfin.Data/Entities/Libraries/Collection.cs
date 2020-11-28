@@ -37,7 +37,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]

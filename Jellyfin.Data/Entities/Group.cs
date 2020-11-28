@@ -32,6 +32,7 @@ namespace Jellyfin.Data.Entities
             Preferences = new HashSet<Preference>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Group"/> class.
         /// </summary>
@@ -41,6 +42,7 @@ namespace Jellyfin.Data.Entities
         protected Group()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id of this group.

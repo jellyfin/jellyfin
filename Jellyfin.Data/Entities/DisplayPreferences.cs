@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA2227
+#pragma warning disable CA2227
 
 using System;
 using System.Collections.Generic;
@@ -34,12 +34,15 @@ namespace Jellyfin.Data.Entities
             HomeSections = new HashSet<HomeSection>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferences"/> class.
         /// </summary>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
         protected DisplayPreferences()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the Id.

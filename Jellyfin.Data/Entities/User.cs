@@ -29,7 +29,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="username">The username for the new user.</param>
         /// <param name="authenticationProviderId">The Id of the user's authentication provider.</param>
         /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
-        public User(string username, string authenticationProviderId, string passwordResetProviderId)
+        public User(string username, string? authenticationProviderId, string? passwordResetProviderId)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -77,6 +77,7 @@ namespace Jellyfin.Data.Entities
             AddDefaultPreferences();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="User"/> class.
         /// Default constructor. Protected due to required properties, but present because EF needs it.
@@ -84,6 +85,7 @@ namespace Jellyfin.Data.Entities
         protected User()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the Id of the user.
@@ -113,7 +115,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         /// <summary>
         /// Gets or sets the user's easy password, or <c>null</c> if none is set.
@@ -123,7 +125,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string EasyPassword { get; set; }
+        public string? EasyPassword { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.
@@ -141,7 +143,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string AudioLanguagePreference { get; set; }
+        public string? AudioLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets the authentication provider id.
@@ -217,7 +219,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string SubtitleLanguagePreference { get; set; }
+        public string? SubtitleLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether missing episodes should be displayed.
@@ -312,7 +314,7 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the user's profile image. Can be <c>null</c>.
         /// </summary>
         // [ForeignKey("UserId")]
-        public virtual ImageInfo ProfileImage { get; set; }
+        public virtual ImageInfo? ProfileImage { get; set; }
 
         /// <summary>
         /// Gets or sets the user's display preferences.
@@ -321,7 +323,7 @@ namespace Jellyfin.Data.Entities
         /// Required.
         /// </remarks>
         [Required]
-        public virtual DisplayPreferences DisplayPreferences { get; set; }
+        public virtual DisplayPreferences? DisplayPreferences { get; set; }
 
         /// <summary>
         /// Gets or sets the level of sync play permissions this user has.

@@ -40,6 +40,7 @@ namespace Jellyfin.Data.Entities.Libraries
             MediaFileStreams = new HashSet<MediaFileStream>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaFile"/> class.
         /// </summary>
@@ -49,6 +50,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected MediaFile()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.

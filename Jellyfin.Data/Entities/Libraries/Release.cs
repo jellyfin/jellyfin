@@ -33,6 +33,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Chapters = new HashSet<Chapter>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Release"/> class.
         /// </summary>
@@ -42,6 +43,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Release()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.

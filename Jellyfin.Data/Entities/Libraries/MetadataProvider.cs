@@ -24,6 +24,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Name = name;
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="MetadataProvider"/> class.
         /// </summary>
@@ -33,6 +34,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected MetadataProvider()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.

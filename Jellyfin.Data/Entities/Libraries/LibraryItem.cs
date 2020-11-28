@@ -20,12 +20,14 @@ namespace Jellyfin.Data.Entities.Libraries
             Library = library;
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryItem"/> class.
         /// </summary>
         protected LibraryItem()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.

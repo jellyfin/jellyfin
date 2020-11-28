@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
@@ -29,12 +29,15 @@ namespace Jellyfin.Data.Entities
             RememberIndexing = false;
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemDisplayPreferences"/> class.
         /// </summary>
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
         protected ItemDisplayPreferences()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the Id.

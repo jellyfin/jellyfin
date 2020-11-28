@@ -23,6 +23,7 @@ namespace Jellyfin.Data.Entities.Libraries
             album.MusicAlbumMetadata.Add(this);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="MusicAlbumMetadata"/> class.
         /// </summary>
@@ -32,6 +33,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected MusicAlbumMetadata()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the barcode.
@@ -41,7 +43,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string Barcode { get; set; }
+        public string? Barcode { get; set; }
 
         /// <summary>
         /// Gets or sets the label number.
@@ -51,7 +53,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string LabelNumber { get; set; }
+        public string? LabelNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the country code.
@@ -61,7 +63,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(2)]
         [StringLength(2)]
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the labels.

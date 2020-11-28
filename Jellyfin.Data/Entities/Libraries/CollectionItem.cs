@@ -38,6 +38,7 @@ namespace Jellyfin.Data.Entities.Libraries
             }
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionItem"/> class.
         /// </summary>
@@ -47,6 +48,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected CollectionItem()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -67,7 +69,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        public virtual LibraryItem LibraryItem { get; set; }
+        public virtual LibraryItem? LibraryItem { get; set; }
 
         /// <summary>
         /// Gets or sets the next item in the collection.
@@ -75,7 +77,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// TODO check if this properly updated Dependant and has the proper principal relationship.
         /// </remarks>
-        public virtual CollectionItem Next { get; set; }
+        public virtual CollectionItem? Next { get; set; }
 
         /// <summary>
         /// Gets or sets the previous item in the collection.
@@ -83,7 +85,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// TODO check if this properly updated Dependant and has the proper principal relationship.
         /// </remarks>
-        public virtual CollectionItem Previous { get; set; }
+        public virtual CollectionItem? Previous { get; set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

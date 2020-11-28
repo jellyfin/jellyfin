@@ -11,6 +11,6 @@ namespace Jellyfin.Data.Interfaces
         /// <summary>
         /// Gets a collection containing this entity's companies.
         /// </summary>
-        ICollection<Company> Companies { get; }
+        ICollection<Company>? Companies { get; }
     }
 }

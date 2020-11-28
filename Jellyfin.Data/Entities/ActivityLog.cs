@@ -18,7 +18,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="name">The name.</param>
         /// <param name="type">The type.</param>
         /// <param name="userId">The user id.</param>
-        public ActivityLog(string name, string type, Guid userId)
+        public ActivityLog(string name, string? type, Guid userId)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -37,6 +37,7 @@ namespace Jellyfin.Data.Entities
             LogSeverity = LogLevel.Trace;
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLog"/> class.
         /// Default constructor. Protected due to required properties, but present because EF needs it.
@@ -44,6 +45,7 @@ namespace Jellyfin.Data.Entities
         protected ActivityLog()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the identity of this instance.
@@ -71,7 +73,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(512)]
         [StringLength(512)]
-        public string Overview { get; set; }
+        public string? Overview { get; set; }
 
         /// <summary>
         /// Gets or sets the short overview.
@@ -81,7 +83,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(512)]
         [StringLength(512)]
-        public string ShortOverview { get; set; }
+        public string? ShortOverview { get; set; }
 
         /// <summary>
         /// Gets or sets the type.
@@ -110,7 +112,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(256)]
         [StringLength(256)]
-        public string ItemId { get; set; }
+        public string? ItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the date created. This should be in UTC.

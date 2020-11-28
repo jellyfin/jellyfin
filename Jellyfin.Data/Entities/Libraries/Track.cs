@@ -28,6 +28,7 @@ namespace Jellyfin.Data.Entities.Libraries
             TrackMetadata = new HashSet<TrackMetadata>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Track"/> class.
         /// </summary>
@@ -37,6 +38,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Track()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the track number.

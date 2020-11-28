@@ -28,6 +28,7 @@ namespace Jellyfin.Data.Entities.Libraries
             EpisodeMetadata = new HashSet<EpisodeMetadata>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Episode"/> class.
         /// </summary>
@@ -37,6 +38,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Episode()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the episode number.

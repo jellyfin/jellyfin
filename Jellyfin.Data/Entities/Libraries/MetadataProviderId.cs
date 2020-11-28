@@ -32,6 +32,7 @@ namespace Jellyfin.Data.Entities.Libraries
             itemMetadata.Sources.Add(this);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="MetadataProviderId"/> class.
         /// </summary>
@@ -41,6 +42,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected MetadataProviderId()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -72,7 +74,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        public virtual MetadataProvider MetadataProvider { get; set; }
+        public virtual MetadataProvider? MetadataProvider { get; set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

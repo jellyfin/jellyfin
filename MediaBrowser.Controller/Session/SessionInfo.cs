@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the username.
         /// </summary>
         /// <value>The username.</value>
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the client.
@@ -225,7 +225,7 @@ namespace MediaBrowser.Controller.Session
 
         public string ServerId { get; set; }
 
-        public string UserPrimaryImageTag { get; set; }
+        public string? UserPrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the supported commands.

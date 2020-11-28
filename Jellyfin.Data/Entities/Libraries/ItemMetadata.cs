@@ -42,6 +42,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Sources = new HashSet<MetadataProviderId>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemMetadata"/> class.
         /// </summary>
@@ -51,6 +52,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected ItemMetadata()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -80,7 +82,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string OriginalTitle { get; set; }
+        public string? OriginalTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the sort title.
@@ -90,7 +92,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string SortTitle { get; set; }
+        public string? SortTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the language.

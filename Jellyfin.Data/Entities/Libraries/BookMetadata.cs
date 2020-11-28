@@ -30,6 +30,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Publishers = new HashSet<Company>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="BookMetadata"/> class.
         /// </summary>
@@ -39,6 +40,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected BookMetadata()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the ISBN.

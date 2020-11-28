@@ -188,8 +188,8 @@ namespace Jellyfin.Server.Implementations.Users
 
             var user = new User(
                 name,
-                _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName)
+                _defaultAuthenticationProvider.GetType()?.FullName,
+                _defaultPasswordResetProvider.GetType()?.FullName)
             {
                 InternalId = max + 1
             };
@@ -324,7 +324,7 @@ namespace Jellyfin.Server.Implementations.Users
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
-                PrimaryImageTag = user.ProfileImage != null ? _imageProcessor.GetImageCacheTag(user) : null,
+                PrimaryImageTag = _imageProcessor.GetImageCacheTag(user),
                 Configuration = new UserConfiguration
                 {
                     SubtitleMode = user.SubtitleMode,
@@ -443,7 +443,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var providerId = authenticationProvider.GetType().FullName;
 
-                if (!string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (providerId != null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
                     await UpdateUserAsync(user).ConfigureAwait(false);
@@ -708,9 +708,9 @@ namespace Jellyfin.Server.Implementations.Users
                 PreferenceKind.BlockUnratedItems,
                 policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);

@@ -467,7 +467,7 @@ namespace Emby.Server.Implementations.Session
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = user?.Username;
-            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
+            sessionInfo.UserPrimaryImageTag = GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
             sessionInfo.Client = appName;
 
@@ -508,7 +508,7 @@ namespace Emby.Server.Implementations.Session
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = username;
-            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
+            sessionInfo.UserPrimaryImageTag = GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
 
             if (string.IsNullOrEmpty(deviceName))
@@ -1743,7 +1743,7 @@ namespace Emby.Server.Implementations.Session
             return info;
         }
 
-        private string GetImageCacheTag(User user)
+        private string? GetImageCacheTag(User user)
         {
             try
             {

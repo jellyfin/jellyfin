@@ -11,6 +11,6 @@ namespace Jellyfin.Data.Interfaces
         /// <summary>
         /// Gets a collection containing this entity's artwork.
         /// </summary>
-        ICollection<Artwork> Artwork { get; }
+        ICollection<Artwork>? Artwork { get; }
     }
 }

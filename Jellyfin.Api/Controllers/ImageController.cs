@@ -212,13 +212,16 @@ namespace Jellyfin.Api.Controllers
                 return BadRequest("Invalid userId.");
             }
 
-            try
+            if (user.ProfileImage?.Path != null)
             {
-                System.IO.File.Delete(user.ProfileImage.Path);
-            }
-            catch (IOException e)
-            {
-                _logger.LogError(e, "Error deleting user profile image:");
+                try
+                {
+                    System.IO.File.Delete(user.ProfileImage.Path);
+                }
+                catch (IOException e)
+                {
+                    _logger.LogError(e, "Error deleting user profile image:");
+                }
             }
 
             await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
@@ -259,7 +262,10 @@ namespace Jellyfin.Api.Controllers
 
             try
             {
-                System.IO.File.Delete(user.ProfileImage.Path);
+                if (user.ProfileImage?.Path != null)
+                {
+                    System.IO.File.Delete(user.ProfileImage.Path);
+                }
             }
             catch (IOException e)
             {
@@ -1490,21 +1496,25 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var info = new ItemImageInfo
+            ItemImageInfo? info = null;
+            if (user.ProfileImage != null)
             {
-                Path = user.ProfileImage.Path,
-                Type = ImageType.Profile,
-                DateModified = user.ProfileImage.LastModified
-            };
+                info = new ItemImageInfo
+                {
+                    Path = user.ProfileImage.Path,
+                    Type = ImageType.Profile,
+                    DateModified = user.ProfileImage.LastModified
+                };
 
-            if (width.HasValue)
-            {
-                info.Width = width.Value;
-            }
+                if (width.HasValue)
+                {
+                    info.Width = width.Value;
+                }
 
-            if (height.HasValue)
-            {
-                info.Height = height.Value;
+                if (height.HasValue)
+                {
+                    info.Height = height.Value;
+                }
             }
 
             return await GetImageInternal(

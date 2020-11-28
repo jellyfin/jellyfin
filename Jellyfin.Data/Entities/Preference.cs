@@ -23,6 +23,7 @@ namespace Jellyfin.Data.Entities
             Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Preference"/> class.
         /// Default constructor. Protected due to required properties, but present because EF needs it.
@@ -30,6 +31,7 @@ namespace Jellyfin.Data.Entities
         protected Preference()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id of this preference.

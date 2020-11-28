@@ -36,6 +36,7 @@ namespace Jellyfin.Data.Entities.Libraries
             release.Chapters.Add(this);
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="Chapter"/> class.
         /// </summary>
@@ -45,6 +46,7 @@ namespace Jellyfin.Data.Entities.Libraries
         protected Chapter()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Gets or sets the id.
@@ -63,7 +65,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the language.
