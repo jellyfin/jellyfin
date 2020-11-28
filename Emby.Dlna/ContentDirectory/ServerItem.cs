@@ -28,7 +28,7 @@ namespace Emby.Dlna.ContentDirectory
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
         /// <param name="stubType">The <see cref="StubType"/>.</param>
-        public ServerItem(BaseItem item, StubType stubType)
+        public ServerItem(BaseItem item, StubType? stubType)
         {
             Item = item;
             StubType = stubType;
