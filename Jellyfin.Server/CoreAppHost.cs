@@ -82,11 +82,10 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IUserManager, UserManager>();
             ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
+            ServiceCollection.AddScoped<IWebSocketListener, SessionWebSocketListener>();
             ServiceCollection.AddScoped<IWebSocketListener, ActivityLogWebSocketListener>();
             ServiceCollection.AddScoped<IWebSocketListener, ScheduledTasksWebSocketListener>();
             ServiceCollection.AddScoped<IWebSocketListener, SessionInfoWebSocketListener>();
-            // This one has to be last as DI will select it for parameterization.
-            ServiceCollection.AddScoped<IWebSocketListener, SessionWebSocketListener>();
 
             // TODO fix circular dependency on IWebSocketManager
             ServiceCollection.AddScoped(serviceProvider => new Lazy<IEnumerable<IWebSocketListener>>(serviceProvider.GetRequiredService<IEnumerable<IWebSocketListener>>));

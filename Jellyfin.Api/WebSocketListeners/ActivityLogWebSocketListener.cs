@@ -58,7 +58,7 @@ namespace Jellyfin.Api.WebSocketListeners
 
         private void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)
         {
-            SendData(true).GetAwaiter().GetResult();
+            SendData(true);
         }
     }
 }
