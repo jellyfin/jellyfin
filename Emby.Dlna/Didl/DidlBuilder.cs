@@ -1151,7 +1151,7 @@ namespace Emby.Dlna.Didl
             int? width = imageInfo.Width;
             int? height = imageInfo.Height;
 
-            if (width <= 1 || height <= 1)
+            if (width <= 0 || height <= 0)
             {
                 width = null;
                 height = null;
