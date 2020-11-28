@@ -442,7 +442,7 @@ namespace Emby.Dlna.Didl
         /// </summary>
         /// <remarks>
         /// If context is a season, this will return a string containing just episode number and name.
-        /// Otherwise the result will include series nams and season number.
+        /// Otherwise the result will include series names and season number.
         /// </remarks>
         /// <param name="episode">The episode.</param>
         /// <param name="context">Current context.</param>
@@ -1151,12 +1151,7 @@ namespace Emby.Dlna.Didl
             int? width = imageInfo.Width;
             int? height = imageInfo.Height;
 
-            if (width == 0 || height == 0)
-            {
-                width = null;
-                height = null;
-            }
-            else if (width == -1 || height == -1)
+            if (width <= 1 || height <= 1)
             {
                 width = null;
                 height = null;

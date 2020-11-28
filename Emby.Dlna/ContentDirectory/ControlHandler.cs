@@ -714,121 +714,64 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMusicFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
-            var query = new InternalItemsQuery(user)
+            if (stubType.HasValue)
             {
-                StartIndex = startIndex,
-                Limit = limit
-            };
-            SetSorting(query, sort, false);
-
-            if (stubType.HasValue && stubType.Value == StubType.Latest)
-            {
-                return GetMusicLatest(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Playlists)
-            {
-                return GetMusicPlaylists(user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Albums)
-            {
-                return GetMusicAlbums(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Artists)
-            {
-                return GetMusicArtists(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.AlbumArtists)
-            {
-                return GetMusicAlbumArtists(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteAlbums)
-            {
-                return GetFavoriteAlbums(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteArtists)
-            {
-                return GetFavoriteArtists(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteSongs)
-            {
-                return GetFavoriteSongs(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Songs)
-            {
-                return GetMusicSongs(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Genres)
-            {
-                return GetMusicGenres(item, user, query);
-            }
-
-            var list = new List<ServerItem>
-            {
-                new ServerItem(item)
+                var query = new InternalItemsQuery(user)
                 {
-                    StubType = StubType.Latest
-                },
+                    StartIndex = startIndex,
+                    Limit = limit
+                };
 
-                new ServerItem(item)
-                {
-                    StubType = StubType.Playlists
-                },
+                SetSorting(query, sort, false);
 
-                new ServerItem(item)
+                switch (stubType.Value)
                 {
-                    StubType = StubType.Albums
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.AlbumArtists
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Artists
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Songs
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Genres
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteArtists
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteAlbums
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteSongs
+                    case StubType.Latest:
+                        return GetMusicLatest(item, user, query);
+                    case StubType.Playlists:
+                        return GetMusicPlaylists(user, query);
+                    case StubType.Albums:
+                        return GetMusicAlbums(item, user, query);
+                    case StubType.Artists:
+                        return GetMusicArtists(item, user, query);
+                    case StubType.AlbumArtists:
+                        return GetMusicAlbumArtists(item, user, query);
+                    case StubType.FavoriteAlbums:
+                        return GetFavoriteAlbums(item, user, query);
+                    case StubType.FavoriteArtists:
+                        return GetFavoriteArtists(item, user, query);
+                    case StubType.FavoriteSongs:
+                        return GetFavoriteSongs(item, user, query);
+                    case StubType.Songs:
+                        return GetMusicSongs(item, user, query);
+                    case StubType.Genres:
+                        return GetMusicGenres(item, user, query);
+                    default:
+                        Logger.LogError("GetMusicFolder received request for content type {StubType}:", stubType.Value);
+                        break;
                 }
-            };
+            }
 
-            return new QueryResult<ServerItem>
+            var items = new[]
+                {
+                    new ServerItem(item, StubType.Latest),
+                    new ServerItem(item, StubType.Playlists),
+                    new ServerItem(item, StubType.Albums),
+                    new ServerItem(item, StubType.AlbumArtists),
+                    new ServerItem(item, StubType.Artists),
+                    new ServerItem(item, StubType.Songs),
+                    new ServerItem(item, StubType.Genres),
+                    new ServerItem(item, StubType.FavoriteArtists),
+                    new ServerItem(item, StubType.FavoriteAlbums),
+                    new ServerItem(item, StubType.FavoriteSongs)
+                };
+
+            if (limit.HasValue)
             {
-                Items = list,
-                TotalRecordCount = list.Count
-            };
+                return new QueryResult<ServerItem>(items.Take(limit.Value).ToArray());
+            }
+
+            return new QueryResult<ServerItem>(items);
         }
 
         /// <summary>
@@ -843,86 +786,52 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
-            var query = new InternalItemsQuery(user)
+            if (stubType.HasValue)
             {
-                StartIndex = startIndex,
-                Limit = limit
-            };
-            SetSorting(query, sort, false);
-
-            if (stubType.HasValue && stubType.Value == StubType.ContinueWatching)
-            {
-                return GetMovieContinueWatching(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Latest)
-            {
-                return GetMovieLatest(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Movies)
-            {
-                return GetMovieMovies(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Collections)
-            {
-                return GetMovieCollections(user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Favorites)
-            {
-                return GetMovieFavorites(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Genres)
-            {
-                return GetGenres(item, user, query);
-            }
-
-            var array = new[]
-            {
-                new ServerItem(item)
+                var query = new InternalItemsQuery(user)
                 {
-                    StubType = StubType.ContinueWatching
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Latest
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Movies
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Collections
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Favorites
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Genres
-                }
-            };
-
-            // At this point, array contains six items. If Limit is < 6 then we return too many items, so the extra must be removed.
-            if (limit < array.Length)
-            {
-                return new QueryResult<ServerItem>
-                {
-                    Items = array.Take(limit.Value).ToList(),
-                    TotalRecordCount = limit.Value
+                    StartIndex = startIndex,
+                    Limit = limit
                 };
+
+                SetSorting(query, sort, false);
+
+                switch (stubType.Value)
+                {
+                    case StubType.ContinueWatching:
+                        return GetMovieContinueWatching(item, user, query);
+                    case StubType.Latest:
+                        return GetMovieLatest(item, user, query);
+                    case StubType.Movies:
+                        return GetMovieMovies(item, user, query);
+                    case StubType.Collections:
+                        return GetMovieCollections(user, query);
+                    case StubType.Favorites:
+                        return GetMovieFavorites(item, user, query);
+                    case StubType.Genres:
+                        return GetGenres(item, user, query);
+                    default:
+                        Logger.LogError("GetMovieFolders received request for content type {StubType}:", stubType.Value);
+                        break;
+                }
             }
 
-            return new QueryResult<ServerItem>
+            var items = new[]
+                {
+                    new ServerItem(item, StubType.ContinueWatching),
+                    new ServerItem(item, StubType.Latest),
+                    new ServerItem(item, StubType.Movies),
+                    new ServerItem(item, StubType.Collections),
+                    new ServerItem(item, StubType.Favorites),
+                    new ServerItem(item, StubType.Genres)
+                };
+
+            if (limit.HasValue)
             {
-                Items = array,
-                TotalRecordCount = array.Length
-            };
+                return new QueryResult<ServerItem>(items.Take(limit.Value).ToArray());
+            }
+
+            return new QueryResult<ServerItem>(items);
         }
 
         /// <summary>
@@ -936,10 +845,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                 .OrderBy(i => i.SortName)
-                .Select(i => new ServerItem(i)
-                {
-                    StubType = StubType.Folder
-                })
+                .Select(i => new ServerItem(i, StubType.Folder))
                 .ToArray();
 
             return ApplyPaging(
@@ -964,91 +870,55 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetTvFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
-            var query = new InternalItemsQuery(user)
+            if (stubType.HasValue)
             {
-                StartIndex = startIndex,
-                Limit = limit
-            };
-            SetSorting(query, sort, false);
-
-            if (stubType.HasValue && stubType.Value == StubType.ContinueWatching)
-            {
-                return GetMovieContinueWatching(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.NextUp)
-            {
-                return GetNextUp(item, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Latest)
-            {
-                return GetTvLatest(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Series)
-            {
-                return GetSeries(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteSeries)
-            {
-                return GetFavoriteSeries(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteEpisodes)
-            {
-                return GetFavoriteEpisodes(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Genres)
-            {
-                return GetGenres(item, user, query);
-            }
-
-            var list = new List<ServerItem>
-            {
-                new ServerItem(item)
+                var query = new InternalItemsQuery(user)
                 {
-                    StubType = StubType.ContinueWatching
-                },
+                    StartIndex = startIndex,
+                    Limit = limit
+                };
 
-                new ServerItem(item)
-                {
-                    StubType = StubType.NextUp
-                },
+                SetSorting(query, sort, false);
 
-                new ServerItem(item)
+                switch (stubType.Value)
                 {
-                    StubType = StubType.Latest
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Series
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteSeries
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteEpisodes
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Genres
+                    case StubType.ContinueWatching:
+                        return GetMovieContinueWatching(item, user, query);
+                    case StubType.NextUp:
+                        return GetNextUp(item, query);
+                    case StubType.Latest:
+                        return GetTvLatest(item, user, query);
+                    case StubType.Series:
+                        return GetSeries(item, user, query);
+                    case StubType.FavoriteSeries:
+                        return GetFavoriteSeries(item, user, query);
+                    case StubType.FavoriteEpisodes:
+                        return GetFavoriteEpisodes(item, user, query);
+                    case StubType.Genres:
+                        return GetGenres(item, user, query);
+                    default:
+                        Logger.LogError("GetTvFolder received request for content type {StubType}:", stubType.Value);
+                        break;
                 }
-            };
+            }
 
-            return new QueryResult<ServerItem>
+            var items = new[]
+                {
+                    new ServerItem(item, StubType.ContinueWatching),
+                    new ServerItem(item, StubType.NextUp),
+                    new ServerItem(item, StubType.Latest),
+                    new ServerItem(item, StubType.Series),
+                    new ServerItem(item, StubType.FavoriteSeries),
+                    new ServerItem(item, StubType.FavoriteEpisodes),
+                    new ServerItem(item, StubType.Genres)
+                };
+
+            if (limit.HasValue)
             {
-                Items = list,
-                TotalRecordCount = list.Count
-            };
+                return new QueryResult<ServerItem>(items.Take(limit.Value).ToArray());
+            }
+
+            return new QueryResult<ServerItem>(items);
         }
 
         /// <summary>
@@ -1121,8 +991,8 @@ namespace Emby.Dlna.ContentDirectory
         /// <summary>
         /// Returns the Movie collections meeting the criteria.
         /// </summary>
-        /// <param name="user">The see cref="User"/>.</param>
-        /// <param name="query">The see cref="InternalItemsQuery"/>.</param>
+        /// <param name="user">The <see cref="User"/>.</param>
+        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetMovieCollections(User user, InternalItemsQuery query)
         {
@@ -1716,15 +1586,13 @@ namespace Emby.Dlna.ContentDirectory
                 id = parts[23];
             }
 
-            var enumNames = Enum.GetNames(typeof(StubType));
-            foreach (var name in enumNames)
+            var special = id.Split('_', 2);
+            if (special.Length == 2)
             {
-                if (id.StartsWith(name + "_", StringComparison.OrdinalIgnoreCase))
+                if (Enum.TryParse(typeof(StubType), special[0], true, out object result))
                 {
-                    stubType = Enum.Parse<StubType>(name, true);
-                    id = id.Split('_', 2)[1];
-
-                    break;
+                    id = special[1];
+                    stubType = (StubType)result;
                 }
             }
 
@@ -1732,10 +1600,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 var item = _libraryManager.GetItemById(itemId);
 
-                return new ServerItem(item)
-                {
-                    StubType = stubType
-                };
+                return new ServerItem(item, stubType);
             }
 
             Logger.LogError("Error parsing item Id: {Id}. Returning user root folder.", id);
