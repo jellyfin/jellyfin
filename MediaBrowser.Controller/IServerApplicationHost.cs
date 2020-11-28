@@ -59,9 +59,9 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(IPAddress source);
+        SystemInfo GetSystemInfo(IPAddress? source);
 
-        PublicSystemInfo GetPublicSystemInfo(IPAddress address);
+        PublicSystemInfo GetPublicSystemInfo(IPAddress? address);
 
         /// <summary>
         /// Gets a URL specific for the request.
@@ -108,7 +108,7 @@ namespace MediaBrowser.Controller
         /// preferring the HTTPS port, if available.
         /// </param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
+        string GetLocalApiUrl(string hostname, string? scheme = null, int? port = null);
 
         /// <summary>
         /// Open a URL in an external browser window.

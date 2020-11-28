@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -181,6 +181,16 @@ namespace Jellyfin.Api.Helpers
             bool allowAudioStreamCopy,
             string ipAddress)
         {
+            bool HasPermission(User? user, PermissionKind permission)
+            {
+                if (user == null)
+                {
+                    return false;
+                }
+
+                return user.HasPermission(permission);
+            }
+
             var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
 
             var options = new VideoOptions
@@ -221,23 +231,23 @@ namespace Jellyfin.Api.Helpers
             {
                 _logger.LogInformation(
                     "User policy for {0}. EnableAudioPlaybackTranscoding: {1}",
-                    user.Username,
-                    user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
+                    user?.Username ?? "UserId(" + userId + ")",
+                    user?.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
             else
             {
                 _logger.LogInformation(
                     "User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}",
-                    user.Username,
-                    user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
-                    user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding),
-                    user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
+                    user?.Username ?? "UserId(" + userId + ")",
+                    user?.HasPermission(PermissionKind.EnablePlaybackRemuxing),
+                    user?.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding),
+                    user?.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
 
             // Beginning of Playback Determination: Attempt DirectPlay first
             if (mediaSource.SupportsDirectPlay)
             {
-                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
+                if (mediaSource.IsRemote && HasPermission(user, PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectPlay = false;
                 }
@@ -251,16 +261,16 @@ namespace Jellyfin.Api.Helpers
 
                     if (item is Audio)
                     {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                        if (!HasPermission(user, PermissionKind.EnableAudioPlaybackTranscoding))
                         {
                             options.ForceDirectPlay = true;
                         }
                     }
                     else if (item is Video)
                     {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                        if (!HasPermission(user, PermissionKind.EnableAudioPlaybackTranscoding)
+                            && !HasPermission(user, PermissionKind.EnableVideoPlaybackTranscoding)
+                            && !HasPermission(user, PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectPlay = true;
                         }
@@ -288,7 +298,7 @@ namespace Jellyfin.Api.Helpers
 
             if (mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
+                if (mediaSource.IsRemote && HasPermission(user, PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectStream = false;
                 }
@@ -298,16 +308,16 @@ namespace Jellyfin.Api.Helpers
 
                     if (item is Audio)
                     {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                        if (!HasPermission(user, PermissionKind.EnableAudioPlaybackTranscoding))
                         {
                             options.ForceDirectStream = true;
                         }
                     }
                     else if (item is Video)
                     {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                        if (!HasPermission(user, PermissionKind.EnableAudioPlaybackTranscoding)
+                            && !HasPermission(user, PermissionKind.EnableVideoPlaybackTranscoding)
+                            && !HasPermission(user, PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectStream = true;
                         }
@@ -339,7 +349,7 @@ namespace Jellyfin.Api.Helpers
                     ? streamBuilder.BuildAudioItem(options)
                     : streamBuilder.BuildVideoItem(options);
 
-                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
+                if (mediaSource.IsRemote && HasPermission(user, PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     if (streamInfo != null)
                     {
@@ -480,26 +490,28 @@ namespace Jellyfin.Api.Helpers
             if (profile != null)
             {
                 var item = _libraryManager.GetItemById(request.ItemId);
-
-                SetDeviceSpecificData(
-                    item,
-                    result.MediaSource,
-                    profile,
-                    authInfo,
-                    request.MaxStreamingBitrate,
-                    request.StartTimeTicks ?? 0,
-                    result.MediaSource.Id,
-                    request.AudioStreamIndex,
-                    request.SubtitleStreamIndex,
-                    request.MaxAudioChannels,
-                    request.PlaySessionId,
-                    request.UserId,
-                    request.EnableDirectPlay,
-                    request.EnableDirectStream,
-                    true,
-                    true,
-                    true,
-                    httpRequest.HttpContext.GetNormalizedRemoteIp());
+                if (item != null)
+                {
+                    SetDeviceSpecificData(
+                        item,
+                        result.MediaSource,
+                        profile,
+                        authInfo,
+                        request.MaxStreamingBitrate,
+                        request.StartTimeTicks ?? 0,
+                        result.MediaSource.Id,
+                        request.AudioStreamIndex,
+                        request.SubtitleStreamIndex,
+                        request.MaxAudioChannels,
+                        request.PlaySessionId,
+                        request.UserId,
+                        request.EnableDirectPlay,
+                        request.EnableDirectStream,
+                        true,
+                        true,
+                        true,
+                        httpRequest.HttpContext.GetNormalizedRemoteIp());
+                }
             }
             else
             {
@@ -551,10 +563,10 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private int? GetMaxBitrate(int? clientMaxBitrate, User user, string ipAddress)
+        private int? GetMaxBitrate(int? clientMaxBitrate, User? user, string ipAddress)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user.RemoteClientBitrateLimit ?? 0;
+            var remoteClientMaxBitrate = user?.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {

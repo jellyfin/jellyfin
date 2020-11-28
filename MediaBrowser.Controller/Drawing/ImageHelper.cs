@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Drawing
             return new ImageDimensions(widthValue, height);
         }
 
-        private static double GetEstimatedAspectRatio(ImageType type, BaseItem item)
+        private static double GetEstimatedAspectRatio(ImageType type, BaseItem? item)
         {
             switch (type)
             {
@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Drawing
                 case ImageType.Logo:
                     return 2.58;
                 case ImageType.Primary:
-                    double defaultPrimaryImageAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
+                    double defaultPrimaryImageAspectRatio = item?.GetDefaultPrimaryImageAspectRatio() ?? 0;
                     return defaultPrimaryImageAspectRatio > 0 ? defaultPrimaryImageAspectRatio : 2.0 / 3;
                 default:
                     return 1;

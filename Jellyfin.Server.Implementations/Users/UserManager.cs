@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 #pragma warning disable CA1307
 
 using System;
@@ -277,7 +277,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public async Task ChangePassword(User user, string newPassword)
+        public async Task ChangePassword(User user, string? newPassword)
         {
             if (user == null)
             {
@@ -291,7 +291,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
+        public void ChangeEasyPassword(User user, string? newPassword, string? newPasswordSha1)
         {
             if (newPassword != null)
             {
@@ -391,8 +391,8 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task<User?> AuthenticateUser(
             string username,
-            string password,
-            string passwordSha1,
+            string? password,
+            string? passwordSha1,
             string remoteEndPoint,
             bool isUserSession)
         {
@@ -513,7 +513,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
+        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string? enteredUsername, bool isInNetwork)
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
 
@@ -798,7 +798,7 @@ namespace Jellyfin.Server.Implementations.Users
 
         private async Task<(IAuthenticationProvider? authenticationProvider, string username, bool success)> AuthenticateLocalUser(
                 string username,
-                string password,
+                string? password,
                 User? user,
                 string remoteEndPoint)
         {
@@ -829,7 +829,7 @@ namespace Jellyfin.Server.Implementations.Users
                 var passwordHash = PasswordHash.Parse(user.EasyPassword);
                 var hash = _cryptoProvider.ComputeHash(
                     passwordHash.Id,
-                    Encoding.UTF8.GetBytes(password),
+                    Encoding.UTF8.GetBytes(password ?? string.Empty),
                     passwordHash.Salt.ToArray());
                 success = passwordHash.Hash.SequenceEqual(hash);
             }
@@ -840,7 +840,7 @@ namespace Jellyfin.Server.Implementations.Users
         private async Task<(string username, bool success)> AuthenticateWithProvider(
             IAuthenticationProvider provider,
             string username,
-            string password,
+            string? password,
             User? resolvedUser)
         {
             try

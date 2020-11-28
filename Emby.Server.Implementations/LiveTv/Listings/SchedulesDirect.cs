@@ -491,7 +491,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
         }
 
-        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
+        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo? info, string? country, string? location, CancellationToken cancellationToken)
         {
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
@@ -502,7 +502,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return lineups;
             }
 
-            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/headends?country=" + country + "&postalcode=" + location);
+            using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/headends?country=" + (country ?? string.Empty) + "&postalcode=" + (location ?? string.Empty));
             options.Headers.TryAddWithoutValidation("token", token);
 
             try
@@ -542,7 +542,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
         private DateTime _lastErrorResponse;
 
-        private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
+        private async Task<string> GetToken(ListingsProviderInfo? info, CancellationToken cancellationToken)
         {
             var username = info.Username;
 
@@ -552,7 +552,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return null;
             }
 
-            var password = info.Password;
+            var password = info?.Password;
             if (string.IsNullOrEmpty(password))
             {
                 return null;
@@ -613,7 +613,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private async Task<HttpResponseMessage> Send(
             HttpRequestMessage options,
             bool enableRetry,
-            ListingsProviderInfo providerInfo,
+            ListingsProviderInfo? providerInfo,
             CancellationToken cancellationToken,
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
@@ -754,7 +754,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
         }
 
-        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
+        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo? info, string? country, string? location)
         {
             return GetHeadends(info, country, location, CancellationToken.None);
         }

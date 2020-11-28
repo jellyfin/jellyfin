@@ -102,6 +102,12 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
+
             await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
 
             // Handle image/png; charset=utf-8
@@ -148,6 +154,12 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
+
             await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
 
             // Handle image/png; charset=utf-8
@@ -194,6 +206,12 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -233,6 +251,12 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);

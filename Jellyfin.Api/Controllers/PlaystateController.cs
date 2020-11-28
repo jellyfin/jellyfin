@@ -78,12 +78,27 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
         {
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
             var dto = UpdatePlayedStatus(user, itemId, true, datePlayed);
+
+            if (dto == null)
+            {
+                return BadRequest();
+            }
+
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
                 var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-                UpdatePlayedStatus(additionalUser, itemId, true, datePlayed);
+                if (additionalUser != null)
+                {
+                    UpdatePlayedStatus(additionalUser, itemId, true, datePlayed);
+                }
             }
 
             return dto;
@@ -101,12 +116,25 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
             var dto = UpdatePlayedStatus(user, itemId, false, null);
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
                 var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-                UpdatePlayedStatus(additionalUser, itemId, false, null);
+                if (additionalUser != null)
+                {
+                    UpdatePlayedStatus(additionalUser, itemId, false, null);
+                }
             }
 
             return dto;
@@ -336,9 +364,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <param name="datePlayed">The date played.</param>
         /// <returns>Task.</returns>
-        private UserItemDataDto UpdatePlayedStatus(User user, Guid itemId, bool wasPlayed, DateTime? datePlayed)
+        private UserItemDataDto? UpdatePlayedStatus(User user, Guid itemId, bool wasPlayed, DateTime? datePlayed)
         {
             var item = _libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                return null;
+            }
 
             if (wasPlayed)
             {

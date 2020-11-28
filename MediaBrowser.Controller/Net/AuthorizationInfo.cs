@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the device identifier.
         /// </summary>
         /// <value>The device identifier.</value>
-        public string DeviceId { get; set; }
+        public string? DeviceId { get; set; }
 
         /// <summary>
         /// Gets or sets the device.

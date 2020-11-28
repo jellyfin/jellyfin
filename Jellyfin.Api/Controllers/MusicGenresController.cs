@@ -150,6 +150,11 @@ namespace Jellyfin.Api.Controllers
                 item = _libraryManager.GetMusicGenre(genreName);
             }
 
+            if (item == null)
+            {
+                return NotFound();
+            }
+
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 var user = _userManager.GetUserById(userId.Value);

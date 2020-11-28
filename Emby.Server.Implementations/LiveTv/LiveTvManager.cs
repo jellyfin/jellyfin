@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -222,7 +223,7 @@ namespace Emby.Server.Implementations.LiveTv
                 mediaSourceId = null;
             }
 
-            var channel = (LiveTvChannel)_libraryManager.GetItemById(id);
+            var channel = (LiveTvChannel?)_libraryManager.GetItemById(id);
 
             bool isVideo = channel.ChannelType == ChannelType.TV;
             var service = GetService(channel);
@@ -2007,7 +2008,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(string programId, CancellationToken cancellationToken)
         {
-            var program = (LiveTvProgram)_libraryManager.GetItemById(programId);
+            var program = (LiveTvProgram?)_libraryManager.GetItemById(programId);
             var programDto = await GetProgram(programId, cancellationToken).ConfigureAwait(false);
 
             var defaults = await GetNewTimerDefaultsInternal(cancellationToken, program).ConfigureAwait(false);
@@ -2321,7 +2322,7 @@ namespace Emby.Server.Implementations.LiveTv
             return info;
         }
 
-        public void DeleteListingsProvider(string id)
+        public void DeleteListingsProvider(string? id)
         {
             var config = GetConfiguration();
 
@@ -2391,7 +2392,7 @@ namespace Emby.Server.Implementations.LiveTv
             return result;
         }
 
-        public Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location)
+        public Task<List<NameIdPair>> GetLineups(string? providerType, string? providerId, string country, string location)
         {
             var config = GetConfiguration();
 
@@ -2421,13 +2422,13 @@ namespace Emby.Server.Implementations.LiveTv
             }
         }
 
-        public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken)
+        public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string? id, CancellationToken cancellationToken)
         {
             var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             return EmbyTV.EmbyTV.Current.GetChannelsForListingsProvider(info, cancellationToken);
         }
 
-        public Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken)
+        public Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string? id, CancellationToken cancellationToken)
         {
             var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
@@ -2444,12 +2445,12 @@ namespace Emby.Server.Implementations.LiveTv
             return _tvDtoService.GetInternalProgramId(externalId);
         }
 
-        public List<BaseItem> GetRecordingFolders(User user)
+        public List<BaseItem> GetRecordingFolders(User? user)
         {
             return GetRecordingFolders(user, false);
         }
 
-        private List<BaseItem> GetRecordingFolders(User user, bool refreshChannels)
+        private List<BaseItem> GetRecordingFolders(User? user, bool refreshChannels)
         {
             var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
                 .SelectMany(i => i.Locations)

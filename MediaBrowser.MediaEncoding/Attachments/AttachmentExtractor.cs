@@ -165,7 +165,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                     StartInfo = new ProcessStartInfo
                     {
                         Arguments = processArgs,
-                        FileName = _mediaEncoder.EncoderPath,
+                        FileName = _mediaEncoder.EncoderPath ?? string.Empty,
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden,

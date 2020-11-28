@@ -146,17 +146,17 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Gets the episodes.
         /// </summary>
-        public List<BaseItem> GetEpisodes(User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(User? user, DtoOptions options)
         {
             return GetEpisodes(Series, user, options);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User? user, DtoOptions options)
         {
             return GetEpisodes(series, user, null, options);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User? user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
         {
             return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options);
         }

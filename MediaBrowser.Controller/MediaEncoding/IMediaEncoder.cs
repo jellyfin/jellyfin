@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the encoder path.
         /// </summary>
         /// <value>The encoder path.</value>
-        string EncoderPath { get; }
+        string? EncoderPath { get; }
 
         /// <summary>
         /// Whether given encoder codec is supported.

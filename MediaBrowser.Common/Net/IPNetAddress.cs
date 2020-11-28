@@ -49,7 +49,7 @@ namespace MediaBrowser.Common.Net
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
         /// <param name="address">Address to assign.</param>
-        public IPNetAddress(IPAddress address)
+        public IPNetAddress(IPAddress? address)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
             PrefixLength = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);

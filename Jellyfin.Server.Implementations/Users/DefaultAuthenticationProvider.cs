@@ -37,14 +37,14 @@ namespace Jellyfin.Server.Implementations.Users
         // This is dumb and an artifact of the backwards way auth providers were designed.
         // This version of authenticate was never meant to be called, but needs to be here for interface compat
         // Only the providers that don't provide local user support use this
-        public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
+        public Task<ProviderAuthenticationResult> Authenticate(string username, string? password)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
         // This is the version that we need to use for local users. Because reasons.
-        public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
+        public Task<ProviderAuthenticationResult> Authenticate(string username, string? password, User? resolvedUser)
         {
             if (resolvedUser == null)
             {
@@ -65,7 +65,7 @@ namespace Jellyfin.Server.Implementations.Users
             // Handle the case when the stored password is null, but the user tried to login with a password
             if (resolvedUser.Password != null)
             {
-                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
 
                 PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
                 if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
@@ -103,7 +103,7 @@ namespace Jellyfin.Server.Implementations.Users
             => !string.IsNullOrEmpty(user?.Password);
 
         /// <inheritdoc />
-        public Task ChangePassword(User user, string newPassword)
+        public Task ChangePassword(User user, string? newPassword)
         {
             if (string.IsNullOrEmpty(newPassword))
             {

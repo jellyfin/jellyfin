@@ -36,9 +36,9 @@ namespace Jellyfin.Server.Migrations.Routines
             foreach (var virtualFolder in virtualFolders)
             {
                 var libraryOptions = virtualFolder.LibraryOptions;
-                var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(virtualFolder.ItemId);
+                var collectionFolder = (CollectionFolder?)_libraryManager.GetItemById(virtualFolder.ItemId);
                 // The property no longer exists in LibraryOptions, so we just re-save the options to get old data removed.
-                collectionFolder.UpdateLibraryOptions(libraryOptions);
+                collectionFolder?.UpdateLibraryOptions(libraryOptions);
                 _logger.LogInformation("Removed from '{VirtualFolder}'", virtualFolder.Name);
             }
         }

@@ -18,9 +18,9 @@ namespace MediaBrowser.Controller.Entities
 
         public int? Limit { get; set; }
 
-        public User User { get; set; }
+        public User? User { get; set; }
 
-        public BaseItem SimilarTo { get; set; }
+        public BaseItem? SimilarTo { get; set; }
 
         public bool? IsFolder { get; set; }
 
@@ -56,11 +56,11 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? CollapseBoxSetItems { get; set; }
 
-        public string NameStartsWithOrGreater { get; set; }
+        public string? NameStartsWithOrGreater { get; set; }
 
-        public string NameStartsWith { get; set; }
+        public string? NameStartsWith { get; set; }
 
-        public string NameLessThan { get; set; }
+        public string? NameLessThan { get; set; }
 
         public string NameContains { get; set; }
 
@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string Name { get; set; }
 
-        public string Person { get; set; }
+        public string? Person { get; set; }
 
         public Guid[] PersonIds { get; set; }
 
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] ExcludeItemIds { get; set; }
 
-        public string AdjacentTo { get; set; }
+        public string? AdjacentTo { get; set; }
 
         public string[] PersonTypes { get; set; }
 
@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] TopParentIds { get; set; }
 
-        public BaseItem Parent
+        public BaseItem? Parent
         {
             set
             {
@@ -307,13 +307,13 @@ namespace MediaBrowser.Controller.Entities
             Years = Array.Empty<int>();
         }
 
-        public InternalItemsQuery(User user)
+        public InternalItemsQuery(User? user)
             : this()
         {
             SetUser(user);
         }
 
-        public void SetUser(User user)
+        public void SetUser(User? user)
         {
             if (user != null)
             {
@@ -354,8 +354,8 @@ namespace MediaBrowser.Controller.Entities
 
         public int? MinWidth { get; set; }
 
-        public string SearchTerm { get; set; }
+        public string? SearchTerm { get; set; }
 
-        public string SeriesTimerId { get; set; }
+        public string? SeriesTimerId { get; set; }
     }
 }

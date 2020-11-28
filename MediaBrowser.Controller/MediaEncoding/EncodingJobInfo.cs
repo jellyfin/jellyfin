@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public MediaSourceInfo MediaSource { get; set; }
 
-        public User User { get; set; }
+        public User? User { get; set; }
 
         public long? RunTimeTicks { get; set; }
 

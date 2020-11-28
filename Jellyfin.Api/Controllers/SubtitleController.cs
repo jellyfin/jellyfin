@@ -125,7 +125,12 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string language,
             [FromQuery] bool? isPerfectMatch)
         {
-            var video = (Video)_libraryManager.GetItemById(itemId);
+            var video = (Video?)_libraryManager.GetItemById(itemId);
+
+            if (video == null)
+            {
+                return NotFound();
+            }
 
             return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, CancellationToken.None).ConfigureAwait(false);
         }
@@ -144,7 +149,12 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string subtitleId)
         {
-            var video = (Video)_libraryManager.GetItemById(itemId);
+            var video = (Video?)_libraryManager.GetItemById(itemId);
+
+            if (video == null)
+            {
+                return NotFound();
+            }
 
             try
             {
@@ -212,7 +222,11 @@ namespace Jellyfin.Api.Controllers
 
             if (string.IsNullOrEmpty(format))
             {
-                var item = (Video)_libraryManager.GetItemById(itemId);
+                var item = (Video?)_libraryManager.GetItemById(itemId);
+                if (item == null)
+                {
+                    return NotFound();
+                }
 
                 var idString = itemId.ToString("N", CultureInfo.InvariantCulture);
                 var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
@@ -305,7 +319,12 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string mediaSourceId,
             [FromQuery, Required] int segmentLength)
         {
-            var item = (Video)_libraryManager.GetItemById(itemId);
+            var item = (Video?)_libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
 
             var mediaSource = await _mediaSourceManager.GetMediaSource(item, mediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
 
@@ -376,7 +395,13 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromBody, Required] UploadSubtitleDto body)
         {
-            var video = (Video)_libraryManager.GetItemById(itemId);
+            var video = (Video?)_libraryManager.GetItemById(itemId);
+
+            if (video == null)
+            {
+                return BadRequest();
+            }
+
             var data = Convert.FromBase64String(body.Data);
             await using var memoryStream = new MemoryStream(data);
             await _subtitleManager.UploadSubtitle(

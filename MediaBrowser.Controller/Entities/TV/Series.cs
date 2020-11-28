@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetSeasons(user, new DtoOptions(true));
         }
 
-        public List<BaseItem> GetSeasons(User user, DtoOptions options)
+        public List<BaseItem> GetSeasons(User? user, DtoOptions options)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -201,7 +201,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return LibraryManager.GetItemList(query);
         }
 
-        private void SetSeasonQueryOptions(InternalItemsQuery query, User user)
+        private void SetSeasonQueryOptions(InternalItemsQuery query, User? user)
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
@@ -245,7 +245,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return LibraryManager.GetItemsResult(query);
         }
 
-        public IEnumerable<BaseItem> GetEpisodes(User user, DtoOptions options)
+        public IEnumerable<BaseItem> GetEpisodes(User? user, DtoOptions options)
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
@@ -258,7 +258,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 DtoOptions = options
             };
 
-            if (!user.DisplayMissingEpisodes)
+            if (user != null && !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -351,7 +351,7 @@ namespace MediaBrowser.Controller.Entities.TV
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options)
+        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User? user, DtoOptions options)
         {
             var queryFromSeries = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons;
 
@@ -381,7 +381,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetSeasonEpisodes(parentSeason, user, allItems, options);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
+        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User? user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
         {
             if (allSeriesEpisodes == null)
             {

@@ -145,6 +145,11 @@ namespace Jellyfin.Api.Controllers
         {
             var item = _libraryManager.GetItemById(itemId);
 
+            if (item == null)
+            {
+                return NotFound();
+            }
+
             var info = new MetadataEditorInfo
             {
                 ParentalRatingOptions = _localizationManager.GetParentalRatings().ToArray(),

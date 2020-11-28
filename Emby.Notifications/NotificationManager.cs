@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -68,6 +69,7 @@ namespace Emby.Notifications
 
             var users = GetUserIds(request, options)
                 .Select(i => _userManager.GetUserById(i))
+                .OfType<User>()
                 .Where(i => relatedItem == null || relatedItem.IsVisibleStandalone(i))
                 .ToArray();
 

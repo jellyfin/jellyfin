@@ -12,16 +12,16 @@ namespace MediaBrowser.Controller.Authentication
 
         bool IsEnabled { get; }
 
-        Task<ProviderAuthenticationResult> Authenticate(string username, string password);
+        Task<ProviderAuthenticationResult> Authenticate(string username, string? password);
 
         bool HasPassword(User user);
 
-        Task ChangePassword(User user, string newPassword);
+        Task ChangePassword(User user, string? newPassword);
     }
 
     public interface IRequiresResolvedUser
     {
-        Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser);
+        Task<ProviderAuthenticationResult> Authenticate(string username, string? password, User? resolvedUser);
     }
 
     public interface IHasNewUserPolicy

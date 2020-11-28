@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Devices
         /// </summary>
         /// <param name="reportedId">The reported identifier.</param>
         /// <returns>ClientCapabilities.</returns>
-        ClientCapabilities GetCapabilities(string reportedId);
+        ClientCapabilities GetCapabilities(string? reportedId);
 
         /// <summary>
         /// Gets the device information.

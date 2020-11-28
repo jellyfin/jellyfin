@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{ProgramInfoDto}.</returns>
-        Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null);
+        Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User? user = null);
 
         /// <summary>
         /// Gets the programs.
@@ -225,7 +225,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, IReadOnlyList<ItemFields> fields, User user = null);
+        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, IReadOnlyList<ItemFields> fields, User? user = null);
 
         /// <summary>
         /// Saves the tuner host.
@@ -241,7 +241,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task.</returns>
         Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings);
 
-        void DeleteListingsProvider(string id);
+        void DeleteListingsProvider(string? id);
 
         Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber);
 
@@ -255,7 +255,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="country">The country.</param>
         /// <param name="location">The location.</param>
         /// <returns>Task&lt;List&lt;NameIdPair&gt;&gt;.</returns>
-        Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location);
+        Task<List<NameIdPair>> GetLineups(string? providerType, string? providerId, string? country, string? location);
 
         /// <summary>
         /// Adds the channel information.
@@ -265,8 +265,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="user">The user.</param>
         void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> items, DtoOptions options, User user);
 
-        Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
-        Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
+        Task<List<ChannelInfo>> GetChannelsForListingsProvider(string? id, CancellationToken cancellationToken);
+        Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string? id, CancellationToken cancellationToken);
 
         IListingsProvider[] ListingProviders { get; }
 
@@ -282,9 +282,9 @@ namespace MediaBrowser.Controller.LiveTv
 
         ActiveRecordingInfo GetActiveRecordingInfo(string path);
 
-        void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null);
+        void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User? user = null);
 
-        List<BaseItem> GetRecordingFolders(User user);
+        List<BaseItem> GetRecordingFolders(User? user);
     }
 
     public class ActiveRecordingInfo

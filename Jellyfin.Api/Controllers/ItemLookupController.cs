@@ -301,6 +301,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool replaceAllImages = true)
         {
             var item = _libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                return BadRequest();
+            }
+
             _logger.LogInformation(
                 "Setting provider id's to item {0}-{1}: {2}",
                 item.Id,

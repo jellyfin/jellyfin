@@ -79,6 +79,12 @@ namespace Jellyfin.Api.Controllers
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
+
+            if (item == null || user == null)
+            {
+                return BadRequest();
+            }
+
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
@@ -112,6 +118,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var album = _libraryManager.GetItemById(id);
+
+            if (album == null)
+            {
+                return NotFound(id);
+            }
+
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
@@ -147,7 +159,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
-            var playlist = (Playlist)_libraryManager.GetItemById(id);
+            var playlist = (Playlist?)_libraryManager.GetItemById(id);
+            if (playlist == null)
+            {
+                return BadRequest();
+            }
+
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
@@ -219,6 +236,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
+            if (item == null)
+            {
+                return BadRequest();
+            }
+
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
@@ -255,6 +277,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
+            if (item == null)
+            {
+                return BadRequest();
+            }
+
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
@@ -291,6 +318,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
+            if (item == null)
+            {
+                return BadRequest();
+            }
+
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;

@@ -28,8 +28,13 @@ namespace MediaBrowser.Controller.Providers
             return _cache.GetOrAdd(path, p => _fileSystem.GetFileSystemEntries(p).ToArray());
         }
 
-        public List<FileSystemMetadata> GetFiles(string path)
+        public List<FileSystemMetadata> GetFiles(string? path)
         {
+            if (path == null)
+            {
+                return new List<FileSystemMetadata>();
+            }
+
             var list = new List<FileSystemMetadata>();
             var items = GetFileSystemEntries(path);
             foreach (var item in items)

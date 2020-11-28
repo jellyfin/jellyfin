@@ -524,7 +524,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            UserItemData userData = null;
+            UserItemData? userData = null;
 
             if (query.IsLiked.HasValue)
             {

@@ -252,8 +252,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return Task.CompletedTask;
         }
 
-        public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
+        public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo? info, string? country, string? location)
         {
+            if (info == null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
             // In theory this should never be called because there is always only one lineup
             string path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
             _logger.LogDebug("Opening XmlTvReader for {Path}", path);

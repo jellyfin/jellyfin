@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.Session
         public SessionInfo LogSessionActivity(
             string appName,
             string appVersion,
-            string deviceId,
+            string? deviceId,
             string deviceName,
             string remoteEndPoint,
             User user)
@@ -1622,7 +1622,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public void RevokeUserTokens(Guid userId, string currentAccessToken)
+        public void RevokeUserTokens(Guid userId, string? currentAccessToken)
         {
             CheckDisposed();
 
@@ -1757,7 +1757,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public void ReportNowViewingItem(string sessionId, string itemId)
+        public void ReportNowViewingItem(string sessionId, string? itemId)
         {
             if (string.IsNullOrEmpty(itemId))
             {

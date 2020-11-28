@@ -626,7 +626,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
+        public static string GetAudioBitStreamArguments(EncodingJobInfo state, string? segmentContainer, string mediaSourceContainer)
         {
             var bitStreamArgs = string.Empty;
             var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
@@ -643,7 +643,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return bitStreamArgs;
         }
 
-        public static string GetSegmentFileExtension(string segmentContainer)
+        public static string GetSegmentFileExtension(string? segmentContainer)
         {
             if (!string.IsNullOrWhiteSpace(segmentContainer))
             {
@@ -2216,7 +2216,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var widthParam = requestedWidth.ToString(CultureInfo.InvariantCulture);
             var heightParam = requestedHeight.ToString(CultureInfo.InvariantCulture);
 
-            string filter = null;
+            string? filter = null;
 
             if (threedFormat.HasValue)
             {

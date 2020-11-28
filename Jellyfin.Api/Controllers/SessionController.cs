@@ -79,6 +79,11 @@ namespace Jellyfin.Api.Controllers
 
                 var user = _userManager.GetUserById(controllableByUserId.Value);
 
+                if (user == null)
+                {
+                    return BadRequest();
+                }
+
                 if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
                     result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(controllableByUserId.Value));

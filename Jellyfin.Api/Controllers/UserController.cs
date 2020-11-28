@@ -136,6 +136,12 @@ namespace Jellyfin.Api.Controllers
         public ActionResult DeleteUser([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
+
             _sessionManager.RevokeUserTokens(user.Id, null);
             _userManager.DeleteUser(userId);
             return NoContent();
@@ -230,6 +236,12 @@ namespace Jellyfin.Api.Controllers
         {
             var auth = _authContext.GetAuthorizationInfo(Request);
 
+            var token = request.Token;
+            if (token == null)
+            {
+                return BadRequest();
+            }
+
             try
             {
                 var authRequest = new AuthenticationRequest
@@ -242,7 +254,7 @@ namespace Jellyfin.Api.Controllers
 
                 return await _sessionManager.AuthenticateQuickConnect(
                     authRequest,
-                    request.Token).ConfigureAwait(false);
+                    token).ConfigureAwait(false);
             }
             catch (SecurityException e)
             {
@@ -381,6 +393,11 @@ namespace Jellyfin.Api.Controllers
 
             var user = _userManager.GetUserById(userId);
 
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
+
             if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
             {
                 await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
@@ -415,6 +432,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
 
             // If removing admin access
             if (!newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))
@@ -485,6 +507,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<UserDto>> CreateUserByName([FromBody] CreateUserByName request)
         {
+            if (request.Name == null)
+            {
+                return BadRequest();
+            }
+
             var newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
 
             // no need to authenticate password for new user
@@ -526,6 +553,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string? pin)
         {
+            if (pin == null)
+            {
+                return BadRequest();
+            }
+
             var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
             return result;
         }

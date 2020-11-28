@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>BaseItem.</returns>
         BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
-            Folder parent = null);
+            Folder? parent = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Library
             IDirectoryService directoryService,
             Folder parent,
             LibraryOptions libraryOptions,
-            string collectionType = null);
+            string? collectionType = null);
 
         /// <summary>
         /// Gets the root folder.
@@ -144,7 +144,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem GetItemById(Guid id);
+        BaseItem? GetItemById(Guid id);
 
         /// <summary>
         /// Gets the intros.
@@ -183,9 +183,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortBy">The sort by.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<string> sortBy, SortOrder sortOrder);
 
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<ValueTuple<string, SortOrder>> orderBy);
 
         /// <summary>
         /// Gets the user root folder.
@@ -487,7 +487,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         QueryResult<BaseItem> QueryItems(InternalItemsQuery query);
 
-        string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem = null);
+        string GetPathAfterNetworkSubstitution(string path, BaseItem? ownerItem = null);
 
         /// <summary>
         /// Substitutes the path.
@@ -542,15 +542,15 @@ namespace MediaBrowser.Controller.Library
 
         Guid GetMusicGenreId(string name);
 
-        Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
+        Task AddVirtualFolder(string? name, string? collectionType, LibraryOptions options, bool refreshLibrary);
 
-        Task RemoveVirtualFolder(string name, bool refreshLibrary);
+        Task RemoveVirtualFolder(string? name, bool refreshLibrary);
 
         void AddMediaPath(string virtualFolderName, MediaPathInfo path);
 
-        void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
+        void UpdateMediaPath(string virtualFolderName, MediaPathInfo? path);
 
-        void RemoveMediaPath(string virtualFolderName, string path);
+        void RemoveMediaPath(string virtualFolderName, string? path);
 
         QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
 
@@ -573,6 +573,6 @@ namespace MediaBrowser.Controller.Library
 
         void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason);
 
-        BaseItem GetParentItem(string parentId, Guid? userId);
+        BaseItem GetParentItem(string? parentId, Guid? userId);
     }
 }

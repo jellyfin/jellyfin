@@ -15,8 +15,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <returns>Task{Stream}.</returns>
         Task<Stream> GetSubtitles(
-            BaseItem item,
-            string mediaSourceId,
+            BaseItem? item,
+            string? mediaSourceId,
             int subtitleStreamIndex,
             string outputFormat,
             long startTimeTicks,
@@ -32,6 +32,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="protocol">The protocol.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
-        Task<string> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken);
+        Task<string?> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken);
     }
 }

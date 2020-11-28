@@ -22,9 +22,9 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid AppearsInItemId { get; set; }
 
-        public string NameContains { get; set; }
+        public string? NameContains { get; set; }
 
-        public User User { get; set; }
+        public User? User { get; set; }
 
         public bool? IsFavorite { get; set; }
 

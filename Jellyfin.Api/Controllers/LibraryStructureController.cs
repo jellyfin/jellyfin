@@ -214,7 +214,7 @@ namespace Jellyfin.Api.Controllers
             {
                 var mediaPath = mediaPathDto.PathInfo ?? new MediaPathInfo { Path = mediaPathDto.Path };
 
-                _libraryManager.AddMediaPath(mediaPathDto.Name, mediaPath);
+                _libraryManager.AddMediaPath(mediaPathDto.Name ?? string.Empty, mediaPath);
             }
             finally
             {
@@ -321,9 +321,13 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UpdateLibraryOptions(
             [FromBody] UpdateLibraryOptionsDto request)
         {
-            var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(request.Id);
+            var collectionFolder = (CollectionFolder?)_libraryManager.GetItemById(request.Id);
 
-            collectionFolder.UpdateLibraryOptions(request.LibraryOptions);
+            if (collectionFolder != null && request.LibraryOptions != null)
+            {
+                collectionFolder.UpdateLibraryOptions(request.LibraryOptions);
+            }
+
             return NoContent();
         }
     }

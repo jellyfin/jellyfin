@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<CollectionCreationResult>> CreateCollection(
-            [FromQuery] string? name,
+            [FromQuery] string name,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids,
             [FromQuery] Guid? parentId,
             [FromQuery] bool isLocked = false)

@@ -134,7 +134,7 @@ namespace Jellyfin.Api.Helpers
 
             var item = libraryManager.GetItemById(streamingRequest.Id);
 
-            state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+            state.IsInputVideo = string.Equals(item?.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
             MediaSourceInfo? mediaSource = null;
             if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
@@ -156,7 +156,7 @@ namespace Jellyfin.Api.Helpers
                         ? mediaSources[0]
                         : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.InvariantCulture));
 
-                    if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
+                    if (mediaSource == null && streamingRequest.MediaSourceId != null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
                     {
                         mediaSource = mediaSources[0];
                     }
@@ -197,7 +197,7 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoRequest != null)
             {
-                state.OutputVideoCodec = state.Request.VideoCodec;
+                state.OutputVideoCodec = state.Request.VideoCodec ?? string.Empty;
                 state.OutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
                 encodingHelper.TryStreamCopy(state);

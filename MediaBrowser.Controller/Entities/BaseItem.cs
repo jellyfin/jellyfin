@@ -156,7 +156,7 @@ namespace MediaBrowser.Controller.Entities
         public string Container { get; set; }
 
         [JsonIgnore]
-        public string Tagline { get; set; }
+        public string? Tagline { get; set; }
 
         [JsonIgnore]
         public virtual ItemImageInfo[] ImageInfos { get; set; }
@@ -232,7 +232,7 @@ namespace MediaBrowser.Controller.Entities
         public bool IsThemeMedia => ExtraType.HasValue && (ExtraType.Value == Model.Entities.ExtraType.ThemeSong || ExtraType.Value == Model.Entities.ExtraType.ThemeVideo);
 
         [JsonIgnore]
-        public string OriginalTitle { get; set; }
+        public string? OriginalTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -787,7 +787,7 @@ namespace MediaBrowser.Controller.Entities
             ParentId = parent == null ? Guid.Empty : parent.Id;
         }
 
-        public BaseItem GetParent()
+        public BaseItem? GetParent()
         {
             var parentId = ParentId;
             if (!parentId.Equals(Guid.Empty))
@@ -874,7 +874,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The official rating.</value>
         [JsonIgnore]
-        public string OfficialRating { get; set; }
+        public string? OfficialRating { get; set; }
 
         [JsonIgnore]
         public int InheritedParentalRatingValue { get; set; }
@@ -1918,7 +1918,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if the specified user is visible; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException">user</exception>
-        public virtual bool IsVisible(User user)
+        public virtual bool IsVisible(User? user)
         {
             if (user == null)
             {
@@ -1928,7 +1928,7 @@ namespace MediaBrowser.Controller.Entities
             return IsParentalAllowed(user);
         }
 
-        public virtual bool IsVisibleStandalone(User user)
+        public virtual bool IsVisibleStandalone(User? user)
         {
             if (SourceType == SourceType.Channel)
             {
@@ -1941,7 +1941,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual bool SupportsInheritedParentImages => false;
 
-        protected bool IsVisibleStandaloneInternal(User user, bool checkFolders)
+        protected bool IsVisibleStandaloneInternal(User? user, bool checkFolders)
         {
             if (!IsVisible(user))
             {

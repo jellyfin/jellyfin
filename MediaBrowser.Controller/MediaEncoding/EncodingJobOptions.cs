@@ -64,17 +64,17 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <value>The id.</value>
         public Guid Id { get; set; }
 
-        public string MediaSourceId { get; set; }
+        public string? MediaSourceId { get; set; }
 
-        public string DeviceId { get; set; }
+        public string? DeviceId { get; set; }
 
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
         /// <summary>
         /// Gets or sets the audio codec.
         /// </summary>
         /// <value>The audio codec.</value>
-        public string AudioCodec { get; set; }
+        public string? AudioCodec { get; set; }
 
         public bool EnableAutoStreamCopy { get; set; }
 
@@ -112,13 +112,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets or sets the profile.
         /// </summary>
         /// <value>The profile.</value>
-        public string Profile { get; set; }
+        public string? Profile { get; set; }
 
         /// <summary>
         /// Gets or sets the level.
         /// </summary>
         /// <value>The level.</value>
-        public string Level { get; set; }
+        public string? Level { get; set; }
 
         /// <summary>
         /// Gets or sets the framerate.
@@ -188,7 +188,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? CpuCoreLimit { get; set; }
 
-        public string LiveStreamId { get; set; }
+        public string? LiveStreamId { get; set; }
 
         public bool EnableMpegtsM2TsMode { get; set; }
 
@@ -196,11 +196,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets or sets the video codec.
         /// </summary>
         /// <value>The video codec.</value>
-        public string VideoCodec { get; set; }
+        public string? VideoCodec { get; set; }
 
-        public string SubtitleCodec { get; set; }
+        public string? SubtitleCodec { get; set; }
 
-        public string TranscodeReasons { get; set; }
+        public string? TranscodeReasons { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the audio stream.
@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public EncodingContext Context { get; set; }
 
-        public Dictionary<string, string> StreamOptions { get; set; }
+        public Dictionary<string, string>? StreamOptions { get; set; }
 
         public string GetOption(string qualifier, string name)
         {

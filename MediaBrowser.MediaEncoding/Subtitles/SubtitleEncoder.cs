@@ -122,7 +122,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        async Task<Stream> ISubtitleEncoder.GetSubtitles(BaseItem item, string mediaSourceId, int subtitleStreamIndex, string outputFormat, long startTimeTicks, long endTimeTicks, bool preserveOriginalTimestamps, CancellationToken cancellationToken)
+        async Task<Stream> ISubtitleEncoder.GetSubtitles(BaseItem? item, string? mediaSourceId, int subtitleStreamIndex, string outputFormat, long startTimeTicks, long endTimeTicks, bool preserveOriginalTimestamps, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -177,8 +177,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (mediaSource.VideoType.HasValue
                 && (mediaSource.VideoType.Value == VideoType.BluRay || mediaSource.VideoType.Value == VideoType.Dvd))
             {
-                var mediaSourceItem = (Video)_libraryManager.GetItemById(new Guid(mediaSource.Id));
-                inputFiles = mediaSourceItem.GetPlayableStreamFileNames();
+                var mediaSourceItem = (Video?)_libraryManager.GetItemById(new Guid(mediaSource.Id));
+                inputFiles = mediaSourceItem?.GetPlayableStreamFileNames() ?? Array.Empty<string>();
             }
             else
             {
@@ -439,7 +439,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         CreateNoWindow = true,
                         UseShellExecute = false,
-                        FileName = _mediaEncoder.EncoderPath,
+                        FileName = _mediaEncoder.EncoderPath ?? string.Empty,
                         Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
                         WindowStyle = ProcessWindowStyle.Hidden,
                         ErrorDialog = false
@@ -592,7 +592,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         CreateNoWindow = true,
                         UseShellExecute = false,
-                        FileName = _mediaEncoder.EncoderPath,
+                        FileName = _mediaEncoder.EncoderPath ?? string.Empty,
                         Arguments = processArgs,
                         WindowStyle = ProcessWindowStyle.Hidden,
                         ErrorDialog = false

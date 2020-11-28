@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Entities
         IHasMediaSources
     {
         [JsonIgnore]
-        public string PrimaryVersionId { get; set; }
+        public string? PrimaryVersionId { get; set; }
 
         public string[] AdditionalParts { get; set; }
 
@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public void SetPrimaryVersionId(string id)
+        public void SetPrimaryVersionId(string? id)
         {
             if (string.IsNullOrEmpty(id))
             {

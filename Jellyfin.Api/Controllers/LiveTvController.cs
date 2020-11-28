@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -1131,6 +1132,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? tunerChannelId,
             [FromQuery] string? providerChannelId)
         {
+            if (providerId == null || tunerChannelId == null || providerChannelId == null)
+            {
+                return BadRequest();
+            }
+
             return await _liveTvManager.SetChannelMapping(providerId, tunerChannelId, providerChannelId).ConfigureAwait(false);
         }
 

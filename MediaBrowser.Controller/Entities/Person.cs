@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.Entities
                 FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
                 name;
 
-            string subFolderPrefix = null;
+            string? subFolderPrefix = null;
 
             foreach (char c in validFilename)
             {

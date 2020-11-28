@@ -141,28 +141,30 @@ namespace Jellyfin.Api.Controllers
             {
                 // set device specific data
                 var item = _libraryManager.GetItemById(itemId);
-
-                foreach (var sourceInfo in info.MediaSources)
+                if (item != null)
                 {
-                    _mediaInfoHelper.SetDeviceSpecificData(
-                        item,
-                        sourceInfo,
-                        deviceProfile,
-                        authInfo,
-                        maxStreamingBitrate ?? deviceProfile.MaxStreamingBitrate,
-                        startTimeTicks ?? 0,
-                        mediaSourceId ?? string.Empty,
-                        null,
-                        null,
-                        maxAudioChannels,
-                        info!.PlaySessionId!,
-                        userId ?? Guid.Empty,
-                        true,
-                        true,
-                        true,
-                        true,
-                        true,
-                        Request.HttpContext.GetNormalizedRemoteIp());
+                    foreach (var sourceInfo in info.MediaSources)
+                    {
+                        _mediaInfoHelper.SetDeviceSpecificData(
+                            item,
+                            sourceInfo,
+                            deviceProfile,
+                            authInfo,
+                            maxStreamingBitrate ?? deviceProfile.MaxStreamingBitrate,
+                            startTimeTicks ?? 0,
+                            mediaSourceId ?? string.Empty,
+                            null,
+                            null,
+                            maxAudioChannels,
+                            info!.PlaySessionId!,
+                            userId ?? Guid.Empty,
+                            true,
+                            true,
+                            true,
+                            true,
+                            true,
+                            Request.HttpContext.GetNormalizedRemoteIp());
+                    }
                 }
 
                 _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);

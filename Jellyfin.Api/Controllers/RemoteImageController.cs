@@ -215,6 +215,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] ImageType type,
             [FromQuery] string? imageUrl)
         {
+            if (imageUrl == null)
+            {
+                return BadRequest();
+            }
+
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
             {

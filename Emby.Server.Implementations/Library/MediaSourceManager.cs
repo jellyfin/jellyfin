@@ -153,8 +153,13 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        public async Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
+        public async Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem? item, User? user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
 
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio || i.Type == MediaStreamType.Video))
@@ -310,7 +315,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public async Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId, string liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId, string? liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(liveStreamId))
             {
@@ -322,7 +327,7 @@ namespace Emby.Server.Implementations.Library
             return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
+        public List<MediaSourceInfo> GetStaticMediaSources(BaseItem? item, bool enablePathSubstitution, User user = null)
         {
             if (item == null)
             {

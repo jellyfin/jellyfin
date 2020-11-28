@@ -1215,7 +1215,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public List<BaseItem> GetChildren(User? user, bool includeLinkedChildren)
         {
             if (user == null)
             {
@@ -1308,7 +1308,7 @@ namespace MediaBrowser.Controller.Entities
             return GetRecursiveChildren(user, null);
         }
 
-        public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public virtual IEnumerable<BaseItem> GetRecursiveChildren(User? user, InternalItemsQuery query)
         {
             if (user == null)
             {

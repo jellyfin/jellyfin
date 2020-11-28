@@ -357,7 +357,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        public void ReportFileSystemChanged(string path)
+        public void ReportFileSystemChanged(string? path)
         {
             if (string.IsNullOrEmpty(path))
             {

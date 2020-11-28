@@ -1254,7 +1254,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="ArgumentNullException">id</exception>
-        public BaseItem GetItemById(Guid id)
+        public BaseItem? GetItemById(Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -1723,7 +1723,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="sortBy">The sort by.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<string> sortBy, SortOrder sortOrder)
         {
             var isFirst = true;
 
@@ -1746,7 +1746,7 @@ namespace Emby.Server.Implementations.Library
             return orderedItems ?? items;
         }
 
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderByList)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<ValueTuple<string, SortOrder>> orderByList)
         {
             var isFirst = true;
 
@@ -1783,13 +1783,18 @@ namespace Emby.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="user">The user.</param>
         /// <returns>IBaseItemComparer.</returns>
-        private IBaseItemComparer GetComparer(string name, User user)
+        private IBaseItemComparer? GetComparer(string name, User? user)
         {
             var comparer = Comparers.FirstOrDefault(c => string.Equals(name, c.Name, StringComparison.OrdinalIgnoreCase));
 
             // If it requires a user, create a new one, and assign the user
             if (comparer is IUserBaseItemComparer)
             {
+                if (user == null)
+                {
+                    return null;
+                }
+
                 var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType());
 
                 userComparer.User = user;
@@ -2460,7 +2465,7 @@ namespace Emby.Server.Implementations.Library
             new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
-        public BaseItem GetParentItem(string parentId, Guid? userId)
+        public BaseItem GetParentItem(string? parentId, Guid? userId)
         {
             if (!string.IsNullOrEmpty(parentId))
             {
@@ -2947,7 +2952,7 @@ namespace Emby.Server.Implementations.Library
             throw new InvalidOperationException();
         }
 
-        public async Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary)
+        public async Task AddVirtualFolder(string? name, string? collectionType, LibraryOptions options, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -3079,7 +3084,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public void UpdateMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
+        public void UpdateMediaPath(string virtualFolderName, MediaPathInfo? pathInfo)
         {
             if (pathInfo == null)
             {
@@ -3132,7 +3137,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public async Task RemoveVirtualFolder(string name, bool refreshLibrary)
+        public async Task RemoveVirtualFolder(string? name, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -3205,7 +3210,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public void RemoveMediaPath(string virtualFolderName, string mediaPath)
+        public void RemoveMediaPath(string virtualFolderName, string? mediaPath)
         {
             if (string.IsNullOrEmpty(mediaPath))
             {

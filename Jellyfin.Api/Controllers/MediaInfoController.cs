@@ -163,28 +163,30 @@ namespace Jellyfin.Api.Controllers
             {
                 // set device specific data
                 var item = _libraryManager.GetItemById(itemId);
-
-                foreach (var mediaSource in info.MediaSources)
+                if (item != null)
                 {
-                    _mediaInfoHelper.SetDeviceSpecificData(
-                        item,
-                        mediaSource,
-                        profile,
-                        authInfo,
-                        maxStreamingBitrate ?? profile.MaxStreamingBitrate,
-                        startTimeTicks ?? 0,
-                        mediaSourceId ?? string.Empty,
-                        audioStreamIndex,
-                        subtitleStreamIndex,
-                        maxAudioChannels,
-                        info!.PlaySessionId!,
-                        userId ?? Guid.Empty,
-                        enableDirectPlay.Value,
-                        enableDirectStream.Value,
-                        enableTranscoding.Value,
-                        allowVideoStreamCopy.Value,
-                        allowAudioStreamCopy.Value,
-                        Request.HttpContext.GetNormalizedRemoteIp());
+                    foreach (var mediaSource in info.MediaSources)
+                    {
+                        _mediaInfoHelper.SetDeviceSpecificData(
+                            item,
+                            mediaSource,
+                            profile,
+                            authInfo,
+                            maxStreamingBitrate ?? profile.MaxStreamingBitrate,
+                            startTimeTicks ?? 0,
+                            mediaSourceId ?? string.Empty,
+                            audioStreamIndex,
+                            subtitleStreamIndex,
+                            maxAudioChannels,
+                            info!.PlaySessionId!,
+                            userId ?? Guid.Empty,
+                            enableDirectPlay.Value,
+                            enableDirectStream.Value,
+                            enableTranscoding.Value,
+                            allowVideoStreamCopy.Value,
+                            allowAudioStreamCopy.Value,
+                            Request.HttpContext.GetNormalizedRemoteIp());
+                    }
                 }
 
                 _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);

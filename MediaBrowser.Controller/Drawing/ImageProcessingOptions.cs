@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public Guid ItemId { get; set; }
 
-        public BaseItem Item { get; set; }
+        public BaseItem? Item { get; set; }
 
         public ItemImageInfo Image { get; set; }
 
@@ -46,9 +46,9 @@ namespace MediaBrowser.Controller.Drawing
 
         public double PercentPlayed { get; set; }
 
-        public string BackgroundColor { get; set; }
+        public string? BackgroundColor { get; set; }
 
-        public string ForegroundLayer { get; set; }
+        public string? ForegroundLayer { get; set; }
 
         public bool RequiresAutoOrientation { get; set; }
 

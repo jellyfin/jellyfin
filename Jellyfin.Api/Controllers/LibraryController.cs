@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -337,6 +338,11 @@ namespace Jellyfin.Api.Controllers
             var item = _libraryManager.GetItemById(itemId);
             var auth = _authContext.GetAuthorizationInfo(Request);
             var user = auth.User;
+
+            if (item == null)
+            {
+                return NotFound();
+            }
 
             if (!item.CanDelete(user))
             {
@@ -735,7 +741,10 @@ namespace Jellyfin.Api.Controllers
                 // For non series and movie types these columns are typically null
                 isSeries = null;
                 isMovie = null;
-                includeItemTypes.Add(item.GetType().Name);
+                if (item != null)
+                {
+                    includeItemTypes.Add(item.GetType().Name);
+                }
             }
 
             var query = new InternalItemsQuery(user)

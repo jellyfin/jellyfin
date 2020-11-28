@@ -94,7 +94,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="program">The program.</param>
         /// <returns>Task{SeriesTimerInfo}.</returns>
-        Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null);
+        Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo? program = null);
 
         /// <summary>
         /// Gets the series timers asynchronous.

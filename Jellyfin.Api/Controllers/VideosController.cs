@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -166,7 +167,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
         {
-            var video = (Video)_libraryManager.GetItemById(itemId);
+            var video = (Video?)_libraryManager.GetItemById(itemId);
 
             if (video == null)
             {
@@ -175,7 +176,12 @@ namespace Jellyfin.Api.Controllers
 
             if (video.LinkedAlternateVersions.Length == 0)
             {
-                video = (Video)_libraryManager.GetItemById(video.PrimaryVersionId);
+                video = (Video?)_libraryManager.GetItemById(video.PrimaryVersionId);
+            }
+
+            if (video == null)
+            {
+                return NotFound("The video either does not exist or the id does not belong to a video.");
             }
 
             foreach (var link in video.GetLinkedAlternateVersions())

@@ -785,6 +785,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true)
         {
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return BadRequest("Invalid userId.");
+            }
+
             var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)

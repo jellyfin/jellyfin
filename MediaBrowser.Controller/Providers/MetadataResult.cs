@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Providers
                 UserDataList = new List<UserItemData>();
             }
 
-            UserItemData userData = null;
+            UserItemData? userData = null;
 
             foreach (var i in UserDataList)
             {

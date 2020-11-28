@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Library
         /// Reports the file system changed.
         /// </summary>
         /// <param name="path">The path.</param>
-        void ReportFileSystemChanged(string path);
+        void ReportFileSystemChanged(string? path);
 
         /// <summary>
         /// Determines whether [is path locked] [the specified path].

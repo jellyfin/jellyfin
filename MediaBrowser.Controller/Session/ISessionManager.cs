@@ -76,7 +76,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
-        SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
+        SessionInfo LogSessionActivity(string appName, string appVersion, string? deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
 
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 
@@ -250,7 +250,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="itemId">The item identifier.</param>
-        void ReportNowViewingItem(string sessionId, string itemId);
+        void ReportNowViewingItem(string sessionId, string? itemId);
 
         /// <summary>
         /// Reports the now viewing item.
@@ -341,7 +341,7 @@ namespace MediaBrowser.Controller.Session
         /// Revokes the user tokens.
         /// </summary>
         /// <returns>Task.</returns>
-        void RevokeUserTokens(Guid userId, string currentAccessToken);
+        void RevokeUserTokens(Guid userId, string? currentAccessToken);
 
         /// <summary>
         /// Revokes the token.

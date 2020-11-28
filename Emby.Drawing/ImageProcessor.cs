@@ -119,7 +119,7 @@ namespace Emby.Drawing
         public async Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
             ItemImageInfo originalImage = options.Image;
-            BaseItem item = options.Item;
+            BaseItem? item = options.Item;
 
             string originalImagePath = originalImage.Path;
             DateTime dateModified = originalImage.DateModified;
@@ -246,7 +246,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters.
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageDimensions outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string backgroundColor, string foregroundLayer)
+        private string GetCacheFilePath(string originalPath, ImageDimensions outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string? backgroundColor, string? foregroundLayer)
         {
             var filename = originalPath
                 + "width=" + outputSize.Width

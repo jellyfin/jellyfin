@@ -18,7 +18,7 @@ namespace Jellyfin.Server.Implementations.Users
         public bool IsEnabled => false;
 
         /// <inheritdoc />
-        public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
+        public Task<ProviderAuthenticationResult> Authenticate(string username, string? password)
         {
             throw new AuthenticationException("User Account cannot login with this provider. The Normal provider for this user cannot be found");
         }
@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public Task ChangePassword(User user, string newPassword)
+        public Task ChangePassword(User user, string? newPassword)
         {
             return Task.CompletedTask;
         }

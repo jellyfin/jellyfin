@@ -1178,7 +1178,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(IPAddress source)
+        public SystemInfo GetSystemInfo(IPAddress? source)
         {
             return new SystemInfo
             {
@@ -1214,7 +1214,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
+        public PublicSystemInfo GetPublicSystemInfo(IPAddress? source)
         {
             return new PublicSystemInfo
             {
@@ -1232,7 +1232,7 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
+        public string GetSmartApiUrl(IPAddress? ipAddress, int? port = null)
         {
             // Published server ends with a /
             if (_startupOptions.PublishedServerUrl != null)

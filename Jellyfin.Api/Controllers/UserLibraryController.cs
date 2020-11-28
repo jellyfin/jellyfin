@@ -80,6 +80,11 @@ namespace Jellyfin.Api.Controllers
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
+            if (item == null)
+            {
+                return NotFound();
+            }
+
             await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
@@ -115,10 +120,19 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
+            if (user == null)
+            {
+                return BadRequest();
+            }
 
             var item = itemId.Equals(Guid.Empty)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
 
             var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
             var dtoOptions = new DtoOptions().AddClientFields(Request);
@@ -142,7 +156,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
-            return MarkFavorite(userId, itemId, true);
+            var res = MarkFavorite(userId, itemId, true);
+            if (res == null)
+            {
+                return BadRequest();
+            }
+
+            return res;
         }
 
         /// <summary>
@@ -156,7 +176,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
-            return MarkFavorite(userId, itemId, false);
+            var res = MarkFavorite(userId, itemId, false);
+            if (res == null)
+            {
+                return BadRequest();
+            }
+
+            return res;
         }
 
         /// <summary>
@@ -170,7 +196,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
-            return UpdateUserItemRatingInternal(userId, itemId, null);
+            var res = UpdateUserItemRatingInternal(userId, itemId, null);
+            if (res == null)
+            {
+                return BadRequest();
+            }
+
+            return res;
         }
 
         /// <summary>
@@ -185,7 +217,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery] bool? likes)
         {
-            return UpdateUserItemRatingInternal(userId, itemId, likes);
+            var res = UpdateUserItemRatingInternal(userId, itemId, likes);
+            if (res == null)
+            {
+                return BadRequest();
+            }
+
+            return res;
         }
 
         /// <summary>
@@ -204,6 +242,11 @@ namespace Jellyfin.Api.Controllers
             var item = itemId.Equals(Guid.Empty)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                return BadRequest(itemId);
+            }
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
             var dtosExtras = item.GetExtras(new[] { ExtraType.Trailer })
@@ -239,6 +282,11 @@ namespace Jellyfin.Api.Controllers
             var item = itemId.Equals(Guid.Empty)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                return BadRequest(itemId);
+            }
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 
@@ -279,6 +327,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool groupItems = true)
         {
             var user = _userManager.GetUserById(userId);
+            if (user == null)
+            {
+                return BadRequest(userId);
+            }
 
             if (!isPlayed.HasValue)
             {
@@ -351,11 +403,16 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
-        private UserItemDataDto MarkFavorite(Guid userId, Guid itemId, bool isFavorite)
+        private UserItemDataDto? MarkFavorite(Guid userId, Guid itemId, bool isFavorite)
         {
             var user = _userManager.GetUserById(userId);
 
             var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
+
+            if (item == null || user == null)
+            {
+                return null;
+            }
 
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user, item);
@@ -374,11 +431,16 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
-        private UserItemDataDto UpdateUserItemRatingInternal(Guid userId, Guid itemId, bool? likes)
+        private UserItemDataDto? UpdateUserItemRatingInternal(Guid userId, Guid itemId, bool? likes)
         {
             var user = _userManager.GetUserById(userId);
 
             var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
+
+            if (item == null || user == null)
+            {
+                return null;
+            }
 
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user, item);

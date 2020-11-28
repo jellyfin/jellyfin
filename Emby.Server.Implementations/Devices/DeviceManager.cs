@@ -47,8 +47,13 @@ namespace Emby.Server.Implementations.Devices
             return _authRepo.GetDeviceOptions(deviceId);
         }
 
-        public ClientCapabilities GetCapabilities(string id)
+        public ClientCapabilities GetCapabilities(string? id)
         {
+            if (id == null)
+            {
+                return new ClientCapabilities();
+            }
+
             return _capabilitiesMap.TryGetValue(id, out ClientCapabilities result)
                 ? result
                 : new ClientCapabilities();
