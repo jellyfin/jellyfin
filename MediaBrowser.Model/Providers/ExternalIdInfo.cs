@@ -6,6 +6,21 @@ namespace MediaBrowser.Model.Providers
     public class ExternalIdInfo
     {
         /// <summary>
+        /// Represents the external id information for serialization to the client.
+        /// </summary>
+        /// <param name="name">Name of the external id provider (IE: IMDB, MusicBrainz, etc).</param>
+        /// <param name="key">Key for this id. This key should be unique across all providers.</param>
+        /// <param name="type">Specific media type for this id</param>
+        /// <param name="urlFormatString">URL format string.</param>
+        public ExternalIdInfo(string name, string key, ExternalIdMediaType? type, string urlFormatString)
+        {
+            Name = name;
+            Key = key;
+            Type = type;
+            UrlFormatString = urlFormatString;
+        }
+
+        /// <summary>
         /// Gets or sets the display name of the external id provider (IE: IMDB, MusicBrainz, etc).
         /// </summary>
         // TODO: This should be renamed to ProviderName
