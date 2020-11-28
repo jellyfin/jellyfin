@@ -23,6 +23,7 @@ namespace Jellyfin.Server.Implementations
         /// </summary>
         public static string ConnectionString { get; set; } = @"Data Source=jellyfin.db";
 
+#nullable disable
         public virtual DbSet<AccessSchedule> AccessSchedules { get; set; }
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
@@ -122,6 +123,7 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<Track> Tracks { get; set; }
 
         public virtual DbSet<TrackMetadata> TrackMetadata { get; set; }*/
+#nullable restore
 
         /// <inheritdoc/>
         public override int SaveChanges()

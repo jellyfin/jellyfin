@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -94,7 +94,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             return name;
         }
 
-        private static string GetPlaybackStoppedNotificationType(string mediaType)
+        private static string? GetPlaybackStoppedNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
