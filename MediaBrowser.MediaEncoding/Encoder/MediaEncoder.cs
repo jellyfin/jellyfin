@@ -555,13 +555,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
-            if (string.IsNullOrEmpty(vf))
+            if (enableThumbnail)
             {
-                vf = enableThumbnail ? "-vf thumbnail=24" : string.Empty;
-            }
-            else
-            {
-                vf += enableThumbnail ? ",thumbnail=24" : string.Empty;
+                if (string.IsNullOrEmpty(vf))
+                {
+                    vf = "-vf thumbnail=24";
+                }
+                else
+                {
+                    vf += ",thumbnail=24";
+                }
             }
 
             var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
