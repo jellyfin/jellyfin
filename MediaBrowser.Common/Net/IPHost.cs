@@ -126,7 +126,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="host">Host name to parse.</param>
         /// <param name="hostObj">Object representing the string, if it has successfully been parsed.</param>
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
-        public static bool TryParse(string host, out IPHost hostObj)
+        public static bool TryParse(string? host, out IPHost hostObj)
         {
             if (!string.IsNullOrEmpty(host))
             {

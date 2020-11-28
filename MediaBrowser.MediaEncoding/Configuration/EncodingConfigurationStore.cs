@@ -11,9 +11,8 @@ namespace MediaBrowser.MediaEncoding.Configuration
     public class EncodingConfigurationStore : ConfigurationStore, IValidatingConfiguration
     {
         public EncodingConfigurationStore()
+        : base("encoding", typeof(EncodingOptions))
         {
-            ConfigurationType = typeof(EncodingOptions);
-            Key = "encoding";
         }
 
         public void Validate(object oldConfig, object newConfig)

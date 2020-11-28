@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -21,7 +22,14 @@ namespace MediaBrowser.Common.Json.Converters
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
             var structType = typeToConvert.GenericTypeArguments[0];
-            return (JsonConverter)Activator.CreateInstance(typeof(JsonNullableStructConverter<>).MakeGenericType(structType));
+            var converter = (JsonConverter?)Activator.CreateInstance(typeof(JsonNullableStructConverter<>).MakeGenericType(structType));
+            // Should not happen
+            if (converter == null)
+            {
+                throw new NoNullAllowedException("Activator.CreateInstance failed to create instance of JsonCommaDelimitedArrayConverter!");
+            }
+
+            return converter;
         }
     }
 }

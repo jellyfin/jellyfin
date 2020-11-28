@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,7 +12,7 @@ namespace MediaBrowser.Common.Json.Converters
     {
         /// <inheritdoc />
         public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => new Guid(reader.GetString());
+            => new Guid(reader.GetString() ?? string.Empty);
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)

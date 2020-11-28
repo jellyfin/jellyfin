@@ -12,11 +12,7 @@ namespace MediaBrowser.Controller.Library
         {
             return new ConfigurationStore[]
             {
-                new ConfigurationStore
-                {
-                     Key = "metadata",
-                     ConfigurationType = typeof(MetadataConfiguration)
-                }
+                new ConfigurationStore("metadata", typeof(MetadataConfiguration))
             };
         }
     }

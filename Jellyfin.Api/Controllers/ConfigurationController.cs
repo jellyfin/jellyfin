@@ -94,6 +94,12 @@ namespace Jellyfin.Api.Controllers
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType, _serializerOptions).ConfigureAwait(false);
+
+            if (configuration == null)
+            {
+                return BadRequest();
+            }
+
             _configurationManager.SaveConfiguration(key, configuration);
             return NoContent();
         }

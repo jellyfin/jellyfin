@@ -13,11 +13,7 @@ namespace MediaBrowser.XbmcMetadata.Configuration
         {
             return new[]
             {
-                new ConfigurationStore
-                {
-                     ConfigurationType = typeof(XbmcMetadataOptions),
-                     Key = "xbmcmetadata"
-                }
+                new ConfigurationStore("xbmcmetadata", typeof(XbmcMetadataOptions))
             };
         }
     }

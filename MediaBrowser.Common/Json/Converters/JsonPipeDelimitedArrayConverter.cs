@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -63,7 +63,7 @@ namespace MediaBrowser.Common.Json.Converters
                 return typedValues;
             }
 
-            return JsonSerializer.Deserialize<T[]>(ref reader, options);
+            return JsonSerializer.Deserialize<T[]>(ref reader, options) ?? Array.Empty<T>();
         }
 
         /// <inheritdoc />

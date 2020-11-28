@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -77,7 +77,7 @@ namespace Jellyfin.Api.Auth
                 return false;
             }
 
-            var ip = _httpContextAccessor.HttpContext.GetNormalizedRemoteIp();
+            var ip = _httpContextAccessor.HttpContext?.GetNormalizedRemoteIp();
             var isInLocalNetwork = _networkManager.IsInLocalNetwork(ip);
             // User cannot access remotely and user is remote
             if (!user.HasPermission(PermissionKind.EnableRemoteAccess) && !isInLocalNetwork)

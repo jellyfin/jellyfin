@@ -12,11 +12,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             return new ConfigurationStore[]
             {
-                new ConfigurationStore
-                {
-                     ConfigurationType = typeof(LiveTvOptions),
-                     Key = "livetv"
-                }
+                new ConfigurationStore("livetv", typeof(LiveTvOptions))
             };
         }
     }

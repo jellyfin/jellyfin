@@ -33,13 +33,13 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the plugin version.
         /// </summary>
         /// <value>The version.</value>
-        Version Version { get; }
+        Version? Version { get; }
 
         /// <summary>
         /// Gets the path to the assembly file.
         /// </summary>
         /// <value>The assembly file path.</value>
-        string AssemblyFilePath { get; }
+        string? AssemblyFilePath { get; }
 
         /// <summary>
         /// Gets a value indicating whether the plugin can be uninstalled.
@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
         /// </summary>
         /// <value>The data folder path.</value>
-        string DataFolderPath { get; }
+        string? DataFolderPath { get; }
 
         /// <summary>
         /// Gets the plugin info.

@@ -462,7 +462,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public bool IsInLocalNetwork(string address)
+        public bool IsInLocalNetwork(string? address)
         {
             if (IPHost.TryParse(address, out IPHost ep))
             {

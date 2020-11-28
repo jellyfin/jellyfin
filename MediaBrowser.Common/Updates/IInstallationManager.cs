@@ -60,7 +60,7 @@ namespace MediaBrowser.Common.Updates
             string name = null,
             Guid guid = default,
             Version minVersion = null,
-            Version specificVersion = null);
+            Version? specificVersion = null);
 
         /// <summary>
         /// Returns the available plugin updates.

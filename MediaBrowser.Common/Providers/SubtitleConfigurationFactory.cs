@@ -11,11 +11,7 @@ namespace MediaBrowser.Common.Providers
         /// <inheritdoc />
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
-            yield return new ConfigurationStore()
-            {
-                Key = "subtitles",
-                ConfigurationType = typeof(SubtitleOptions)
-            };
+            yield return new ConfigurationStore("subtitles", typeof(SubtitleOptions));
         }
     }
 }

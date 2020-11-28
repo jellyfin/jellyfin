@@ -14,11 +14,7 @@ namespace Emby.Server.Implementations.Branding
         {
             return new[]
             {
-                new ConfigurationStore
-                {
-                     ConfigurationType = typeof(BrandingOptions),
-                     Key = "branding"
-                }
+                new ConfigurationStore("branding", typeof(BrandingOptions))
             };
         }
     }

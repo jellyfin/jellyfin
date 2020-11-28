@@ -359,11 +359,7 @@ namespace Emby.Server.Implementations.AppBase
                 validatingStore.Validate(currentConfiguration, configuration);
             }
 
-            NamedConfigurationUpdating?.Invoke(this, new ConfigurationUpdateEventArgs
-            {
-                Key = key,
-                NewConfiguration = configuration
-            });
+            NamedConfigurationUpdating?.Invoke(this, new ConfigurationUpdateEventArgs(key, configuration));
 
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
@@ -385,11 +381,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="configuration">The old configuration.</param>
         protected virtual void OnNamedConfigurationUpdated(string key, object configuration)
         {
-            NamedConfigurationUpdated?.Invoke(this, new ConfigurationUpdateEventArgs
-            {
-                Key = key,
-                NewConfiguration = configuration
-            });
+            NamedConfigurationUpdated?.Invoke(this, new ConfigurationUpdateEventArgs(key, configuration));
         }
 
         /// <inheritdoc />

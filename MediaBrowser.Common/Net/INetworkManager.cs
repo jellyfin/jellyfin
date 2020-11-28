@@ -161,7 +161,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
-        bool IsInLocalNetwork(string address);
+        bool IsInLocalNetwork(string? address);
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.

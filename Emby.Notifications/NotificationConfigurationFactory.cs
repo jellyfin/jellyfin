@@ -12,11 +12,7 @@ namespace Emby.Notifications
         {
             return new ConfigurationStore[]
             {
-                new ConfigurationStore
-                {
-                    Key = "notifications",
-                    ConfigurationType = typeof(NotificationOptions)
-                }
+                new ConfigurationStore("notifications", typeof(NotificationOptions))
             };
         }
     }

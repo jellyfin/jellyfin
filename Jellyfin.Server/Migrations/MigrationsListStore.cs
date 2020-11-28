@@ -16,9 +16,8 @@ namespace Jellyfin.Server.Migrations
         /// Initializes a new instance of the <see cref="MigrationsListStore"/> class.
         /// </summary>
         public MigrationsListStore()
+            : base(StoreKey, typeof(MigrationOptions))
         {
-            ConfigurationType = typeof(MigrationOptions);
-            Key = StoreKey;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -92,9 +92,9 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            return obj is LocalPlugin other && this.Equals(other);
+            return obj != null && obj is LocalPlugin other && this.Equals(other);
         }
 
         /// <inheritdoc />
@@ -104,10 +104,10 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
-        public bool Equals(LocalPlugin other)
+        public bool Equals(LocalPlugin? other)
         {
-            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase)
-                   && Id.Equals(other.Id);
+            return string.Equals(Name, other?.Name, StringComparison.OrdinalIgnoreCase)
+                   && Equals(Id, other?.Id);
         }
     }
 }

@@ -16,11 +16,7 @@ namespace Jellyfin.Networking.Configuration
         {
             return new[]
             {
-                new ConfigurationStore
-                {
-                    Key = "network",
-                    ConfigurationType = typeof(NetworkConfiguration)
-                }
+                new ConfigurationStore("network", typeof(NetworkConfiguration))
             };
         }
     }

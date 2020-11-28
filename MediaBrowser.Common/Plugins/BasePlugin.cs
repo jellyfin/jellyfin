@@ -1,6 +1,7 @@
 #pragma warning disable SA1402
 
 using System;
+using System.Data;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -38,25 +39,24 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the plugin version.
         /// </summary>
         /// <value>The version.</value>
-        public Version Version { get; private set; }
+        public Version? Version { get; private set; }
 
         /// <summary>
         /// Gets the path to the assembly file.
         /// </summary>
         /// <value>The assembly file path.</value>
-        public string AssemblyFilePath { get; private set; }
+        public string? AssemblyFilePath { get; private set; }
 
         /// <summary>
         /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
         /// </summary>
         /// <value>The data folder path.</value>
-        public string DataFolderPath { get; private set; }
+        public string? DataFolderPath { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the plugin can be uninstalled.
         /// </summary>
-        public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
-            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
+        public bool CanUninstall => !string.Equals(Path.GetDirectoryName(AssemblyFilePath), Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
 
         /// <summary>
         /// Gets the plugin info.
@@ -67,7 +67,7 @@ namespace MediaBrowser.Common.Plugins
             var info = new PluginInfo
             {
                 Name = Name,
-                Version = Version.ToString(),
+                Version = Version?.ToString() ?? string.Empty,
                 Description = Description,
                 Id = Id.ToString(),
                 CanUninstall = CanUninstall
@@ -84,7 +84,7 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
-        public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
+        public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version? assemblyVersion)
         {
             AssemblyFilePath = assemblyFilePath;
             DataFolderPath = dataFolderPath;
@@ -115,12 +115,12 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         private readonly object _configurationSaveLock = new object();
 
-        private Action<string> _directoryCreateFn;
+        private Action<string>? _directoryCreateFn;
 
         /// <summary>
         /// The configuration.
         /// </summary>
-        private TConfigurationType _configuration;
+        private TConfigurationType? _configuration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BasePlugin{TConfigurationType}" /> class.
@@ -178,13 +178,13 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets or sets the event handler that is triggered when this configuration changes.
         /// </summary>
-        public EventHandler<BasePluginConfiguration> ConfigurationChanged { get; set; }
+        public EventHandler<BasePluginConfiguration>? ConfigurationChanged { get; set; }
 
         /// <summary>
         /// Gets the name the assembly file.
         /// </summary>
         /// <value>The name of the assembly file.</value>
-        protected string AssemblyFileName => Path.GetFileName(AssemblyFilePath);
+        protected string? AssemblyFileName => Path.GetFileName(AssemblyFilePath);
 
         /// <summary>
         /// Gets or sets the plugin configuration.
@@ -216,13 +216,13 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the name of the configuration file. Subclasses should override.
         /// </summary>
         /// <value>The name of the configuration file.</value>
-        public virtual string ConfigurationFileName => Path.ChangeExtension(AssemblyFileName, ".xml");
+        public virtual string? ConfigurationFileName => Path.ChangeExtension(AssemblyFileName, ".xml");
 
         /// <summary>
         /// Gets the full path to the configuration file.
         /// </summary>
         /// <value>The configuration file path.</value>
-        public string ConfigurationFilePath => Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
+        public string? ConfigurationFilePath => ConfigurationFileName != null ? Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName) : null;
 
         /// <summary>
         /// Gets the plugin configuration.
@@ -247,7 +247,14 @@ namespace MediaBrowser.Common.Plugins
             }
             catch
             {
-                var config = (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+                var config = (TConfigurationType?)Activator.CreateInstance(typeof(TConfigurationType));
+
+                // Should not happen
+                if (config == null)
+                {
+                    throw new NoNullAllowedException("Activator.CreateInstance failed to create instance of TConfigurationType!");
+                }
+
                 SaveConfiguration(config);
                 return config;
             }
@@ -261,9 +268,12 @@ namespace MediaBrowser.Common.Plugins
         {
             lock (_configurationSaveLock)
             {
-                _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
-
-                XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
+                var name = Path.GetDirectoryName(ConfigurationFilePath);
+                if (_directoryCreateFn != null && name != null)
+                {
+                    _directoryCreateFn(name);
+                    XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
+                }
             }
         }
 
@@ -278,11 +288,6 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public virtual void UpdateConfiguration(BasePluginConfiguration configuration)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
             Configuration = (TConfigurationType)configuration;
 
             SaveConfiguration(Configuration);

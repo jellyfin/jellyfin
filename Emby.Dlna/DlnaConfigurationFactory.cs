@@ -13,11 +13,7 @@ namespace Emby.Dlna
         {
             return new[]
             {
-                new ConfigurationStore
-                {
-                    Key = "dlna",
-                    ConfigurationType = typeof(DlnaOptions)
-                }
+                new ConfigurationStore("dlna", typeof(DlnaOptions))
             };
         }
     }

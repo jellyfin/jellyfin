@@ -6,6 +6,12 @@ namespace MediaBrowser.Common.Configuration
 {
     public class ConfigurationUpdateEventArgs : EventArgs
     {
+        public ConfigurationUpdateEventArgs(string key, object newConfiguration)
+        {
+            Key = key;
+            NewConfiguration = newConfiguration;
+        }
+
         /// <summary>
         /// Gets or sets the key.
         /// </summary>
