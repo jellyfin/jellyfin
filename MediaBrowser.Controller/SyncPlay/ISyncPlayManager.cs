@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
+using MediaBrowser.Model.SyncPlay.RequestBodies;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session that's creating the group.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken);
+        void NewGroup(SessionInfo session, NewGroupRequestBody request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to a group.
@@ -26,7 +27,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="groupId">The group identifier.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequest request, CancellationToken cancellationToken);
+        void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequestBody request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the session from a group.

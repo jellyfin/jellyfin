@@ -13,6 +13,7 @@ using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.GroupStates;
 using MediaBrowser.Controller.SyncPlay.Queue;
 using MediaBrowser.Model.SyncPlay;
+using MediaBrowser.Model.SyncPlay.RequestBodies;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.SyncPlay
@@ -256,7 +257,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public bool IsGroupEmpty() => _participants.Count == 0;
 
         /// <inheritdoc />
-        public void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
+        public void CreateGroup(SessionInfo session, NewGroupRequestBody request, CancellationToken cancellationToken)
         {
             GroupName = request.GroupName;
             AddSession(session);
@@ -291,7 +292,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
+        public void SessionJoin(SessionInfo session, JoinGroupRequestBody request, CancellationToken cancellationToken)
         {
             AddSession(session);
 
@@ -307,7 +308,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void SessionRestore(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
+        public void SessionRestore(SessionInfo session, JoinGroupRequestBody request, CancellationToken cancellationToken)
         {
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);

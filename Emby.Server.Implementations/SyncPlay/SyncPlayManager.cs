@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Model.SyncPlay;
+using MediaBrowser.Model.SyncPlay.RequestBodies;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.SyncPlay
@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
+        public void NewGroup(SessionInfo session, NewGroupRequestBody request, CancellationToken cancellationToken)
         {
             // TODO: create abstract class for GroupRequests to avoid explicit request type here.
             if (!IsRequestValid(session, GroupRequestType.NewGroup, request))
@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequest request, CancellationToken cancellationToken)
+        public void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequestBody request, CancellationToken cancellationToken)
         {
             // TODO: create abstract class for GroupRequests to avoid explicit request type here.
             if (!IsRequestValid(session, GroupRequestType.JoinGroup, request))
@@ -304,7 +304,10 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            var request = new JoinGroupRequest(groupId);
+            var request = new JoinGroupRequestBody()
+            {
+                GroupId = groupId
+            };
             JoinGroup(session, groupId, request, CancellationToken.None);
         }
 

@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// <param name="playingQueue">The playing queue.</param>
         /// <param name="playingItemPosition">The playing item position.</param>
         /// <param name="startPositionTicks">The start position ticks.</param>
-        public PlayGroupRequest(Guid[] playingQueue, int playingItemPosition, long startPositionTicks)
+        public PlayGroupRequest(IReadOnlyList<Guid> playingQueue, int playingItemPosition, long startPositionTicks)
         {
             PlayingQueue = playingQueue ?? Array.Empty<Guid>();
             PlayingItemPosition = playingItemPosition;

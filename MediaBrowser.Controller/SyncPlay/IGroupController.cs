@@ -4,6 +4,7 @@ using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay.Queue;
 using MediaBrowser.Model.SyncPlay;
+using MediaBrowser.Model.SyncPlay.RequestBodies;
 
 namespace MediaBrowser.Controller.SyncPlay
 {
@@ -36,7 +37,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken);
+        void CreateGroup(SessionInfo session, NewGroupRequestBody request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to the group.
@@ -44,7 +45,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken);
+        void SessionJoin(SessionInfo session, JoinGroupRequestBody request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Restores the state of a session that already joined the group.
@@ -52,7 +53,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void SessionRestore(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken);
+        void SessionRestore(SessionInfo session, JoinGroupRequestBody request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the session from the group.
