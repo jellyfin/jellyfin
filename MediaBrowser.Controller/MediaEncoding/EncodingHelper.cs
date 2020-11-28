@@ -2519,7 +2519,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the number of threads.
         /// </summary>
-#nullable enable
         public static int GetNumberOfThreads(EncodingJobInfo? state, EncodingOptions encodingOptions, string? outputVideoCodec)
         {
             if (string.Equals(outputVideoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
@@ -2544,7 +2543,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return threads;
         }
-#nullable disable
         public void TryStreamCopy(EncodingJobInfo state)
         {
             if (state.VideoStream != null && CanStreamCopyVideo(state, state.VideoStream))
@@ -2753,8 +2751,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         public void AttachMediaSourceInfo(
             EncodingJobInfo state,
             EncodingOptions encodingOptions,
-            MediaSourceInfo mediaSource,
-            string requestedUrl)
+            MediaSourceInfo? mediaSource,
+            string? requestedUrl)
         {
             if (state == null)
             {

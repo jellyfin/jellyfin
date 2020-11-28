@@ -1,4 +1,3 @@
-#nullable enable
 
 namespace MediaBrowser.Model.Configuration
 {

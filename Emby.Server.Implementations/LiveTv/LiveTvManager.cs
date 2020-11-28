@@ -1,6 +1,4 @@
 #pragma warning disable CS1591
-
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;
