@@ -92,6 +92,7 @@ namespace MediaBrowser.Controller.Net
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection) => Task.CompletedTask;
 
         /// <summary>
