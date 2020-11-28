@@ -554,7 +554,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var enableThumbnail = useIFrame && !new List<string> { "wtv" }.Contains(container ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparer.OrdinalIgnoreCase);
             if (string.IsNullOrEmpty(vf))
             {
                 vf = enableThumbnail ? "-vf thumbnail=24" : string.Empty;
