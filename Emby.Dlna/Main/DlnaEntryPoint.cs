@@ -53,9 +53,9 @@ namespace Emby.Dlna.Main
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
 
-        private PlayToManager _manager;
-        private SsdpDevicePublisher _publisher;
-        private ISsdpCommunicationsServer _communicationsServer;
+        private PlayToManager? _manager;
+        private SsdpDevicePublisher? _publisher;
+        private ISsdpCommunicationsServer? _communicationsServer;
 
         private bool _disposed;
 
@@ -124,13 +124,13 @@ namespace Emby.Dlna.Main
             Current = this;
         }
 
-        public static DlnaEntryPoint Current { get; private set; }
+        public static DlnaEntryPoint? Current { get; private set; }
 
-        public IContentDirectory ContentDirectory { get; private set; }
+        public IContentDirectory? ContentDirectory { get; private set; }
 
-        public IConnectionManager ConnectionManager { get; private set; }
+        public IConnectionManager? ConnectionManager { get; private set; }
 
-        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
+        public IMediaReceiverRegistrar? MediaReceiverRegistrar { get; private set; }
 
         public async Task RunAsync()
         {
@@ -141,7 +141,7 @@ namespace Emby.Dlna.Main
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
@@ -303,7 +303,7 @@ namespace Emby.Dlna.Main
                     prefixLength: address.PrefixLength);
 
                 SetProperies(device, fullService);
-                _publisher.AddDevice(device);
+                _publisher?.AddDevice(device);
 
                 var embeddedDevices = new[]
                 {

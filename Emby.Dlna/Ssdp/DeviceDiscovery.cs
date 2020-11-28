@@ -17,8 +17,8 @@ namespace Emby.Dlna.Ssdp
 
         private readonly IServerConfigurationManager _config;
 
-        private SsdpDeviceLocator _deviceLocator;
-        private ISsdpCommunicationsServer _commsServer;
+        private SsdpDeviceLocator? _deviceLocator;
+        private ISsdpCommunicationsServer? _commsServer;
 
         private int _listenerCount;
         private bool _disposed;
@@ -28,10 +28,10 @@ namespace Emby.Dlna.Ssdp
             _config = config;
         }
 
-        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
+        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscoveredInternal;
 
         /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscovered
         {
             add
             {
@@ -55,7 +55,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
 
         // Call this method from somewhere in your code to start the search.
         public void Start(ISsdpCommunicationsServer communicationsServer)
@@ -91,7 +91,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         // Process each found device in the event handler
-        private void OnDeviceLocatorDeviceAvailable(object sender, DeviceAvailableEventArgs e)
+        private void OnDeviceLocatorDeviceAvailable(object? sender, DeviceAvailableEventArgs e)
         {
             var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
 
@@ -110,7 +110,7 @@ namespace Emby.Dlna.Ssdp
             DeviceDiscoveredInternal?.Invoke(this, args);
         }
 
-        private void OnDeviceLocatorDeviceUnavailable(object sender, DeviceUnavailableEventArgs e)
+        private void OnDeviceLocatorDeviceUnavailable(object? sender, DeviceUnavailableEventArgs e)
         {
             var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
 

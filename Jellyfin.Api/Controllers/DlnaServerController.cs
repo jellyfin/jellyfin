@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Mime;
@@ -31,6 +32,22 @@ namespace Jellyfin.Api.Controllers
         public DlnaServerController(IDlnaManager dlnaManager)
         {
             _dlnaManager = dlnaManager;
+
+            if (DlnaEntryPoint.Current?.ContentDirectory == null)
+            {
+                throw new NoNullAllowedException(nameof(DlnaEntryPoint.Current.ContentDirectory));
+            }
+
+            if (DlnaEntryPoint.Current?.ConnectionManager == null)
+            {
+                throw new NoNullAllowedException(nameof(DlnaEntryPoint.Current.ConnectionManager));
+            }
+
+            if (DlnaEntryPoint.Current?.MediaReceiverRegistrar == null)
+            {
+                throw new NoNullAllowedException(nameof(DlnaEntryPoint.Current.MediaReceiverRegistrar));
+            }
+
             _contentDirectory = DlnaEntryPoint.Current.ContentDirectory;
             _connectionManager = DlnaEntryPoint.Current.ConnectionManager;
             _mediaReceiverRegistrar = DlnaEntryPoint.Current.MediaReceiverRegistrar;
@@ -257,12 +274,11 @@ namespace Jellyfin.Api.Controllers
 
         private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)
         {
-            return service.ProcessControlRequestAsync(new ControlRequest(Request.Headers)
-            {
-                InputXml = requestStream,
-                TargetServerUuId = id,
-                RequestedUrl = GetAbsoluteUri()
-            });
+            return service.ProcessControlRequestAsync(new ControlRequest(
+                headers: Request.Headers,
+                inputXml: requestStream,
+                targetServerUuId: id,
+                requestedUrl: GetAbsoluteUri()));
         }
 
         private EventSubscriptionResponse ProcessEventRequest(IDlnaEventManager dlnaEventManager)

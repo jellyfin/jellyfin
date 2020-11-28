@@ -25,7 +25,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
+        public SsdpDeviceLocator(ISsdpCommunicationsServer? communicationsServer)
         {
             if (communicationsServer == null)
             {

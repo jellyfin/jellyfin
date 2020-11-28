@@ -30,11 +30,11 @@ namespace Emby.Dlna.PlayTo
         }
 
         public async Task<XDocument> SendCommandAsync(
-            string baseUrl,
+            string? baseUrl,
             DeviceService service,
             string command,
             string postData,
-            string header = null,
+            string? header = null,
             CancellationToken cancellationToken = default)
         {
             var url = NormalizeServiceUrl(baseUrl, service.ControlUrl);
@@ -52,7 +52,7 @@ namespace Emby.Dlna.PlayTo
                 LoadOptions.PreserveWhitespace);
         }
 
-        private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
+        private static string NormalizeServiceUrl(string? baseUrl, string serviceUrl)
         {
             // If it's already a complete url, don't stick anything onto the front of it
             if (serviceUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -65,7 +65,7 @@ namespace Emby.Dlna.PlayTo
                 serviceUrl = "/" + serviceUrl;
             }
 
-            return baseUrl + serviceUrl;
+            return baseUrl != null ? baseUrl + serviceUrl : serviceUrl;
         }
 
         public async Task SubscribeAsync(
@@ -105,7 +105,7 @@ namespace Emby.Dlna.PlayTo
             string url,
             string soapAction,
             string postData,
-            string header,
+            string? header,
             CancellationToken cancellationToken)
         {
             if (soapAction[0] != '\"')

@@ -16,25 +16,25 @@ namespace Emby.Dlna.PlayTo
             Name = "Generic Device";
         }
 
-        public string UUID { get; set; }
+        public string? UUID { get; set; }
 
         public string Name { get; set; }
 
-        public string ModelName { get; set; }
+        public string? ModelName { get; set; }
 
-        public string ModelNumber { get; set; }
+        public string? ModelNumber { get; set; }
 
-        public string ModelDescription { get; set; }
+        public string? ModelDescription { get; set; }
 
-        public string ModelUrl { get; set; }
+        public string? ModelUrl { get; set; }
 
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
-        public string SerialNumber { get; set; }
+        public string? SerialNumber { get; set; }
 
-        public string ManufacturerUrl { get; set; }
+        public string? ManufacturerUrl { get; set; }
 
-        public string PresentationUrl { get; set; }
+        public string? PresentationUrl { get; set; }
 
         public string BaseUrl
         {
@@ -42,7 +42,7 @@ namespace Emby.Dlna.PlayTo
             set => _baseUrl = value;
         }
 
-        public DeviceIcon Icon { get; set; }
+        public DeviceIcon? Icon { get; set; }
 
         public List<DeviceService> Services => _services;
 

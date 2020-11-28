@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the static media source.
         /// </summary>
-        Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId, string? liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken);
+        Task<MediaSourceInfo> GetMediaSource(BaseItem? item, string? mediaSourceId, string? liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Opens the media source.

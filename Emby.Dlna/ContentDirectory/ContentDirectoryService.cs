@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Data;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -114,6 +115,11 @@ namespace Emby.Dlna.ContentDirectory
 
             var user = GetUser(profile);
 
+            if (user == null)
+            {
+                throw new NoNullAllowedException(nameof(user));
+            }
+
             return new ControlHandler(
                 Logger,
                 _libraryManager,
@@ -138,7 +144,7 @@ namespace Emby.Dlna.ContentDirectory
         /// </summary>
         /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
         /// <returns>The <see cref="User"/>.</returns>
-        private User GetUser(DeviceProfile profile)
+        private User? GetUser(DeviceProfile profile)
         {
             if (!string.IsNullOrEmpty(profile.UserId))
             {

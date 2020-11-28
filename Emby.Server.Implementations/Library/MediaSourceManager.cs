@@ -315,7 +315,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public async Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId, string? liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> GetMediaSource(BaseItem? item, string? mediaSourceId, string? liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(liveStreamId))
             {

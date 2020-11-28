@@ -99,7 +99,7 @@ namespace Emby.Dlna
             return new DefaultProfile();
         }
 
-        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
+        public DeviceProfile? GetProfile(DeviceIdentification? deviceInfo)
         {
             if (deviceInfo == null)
             {
@@ -220,7 +220,7 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile GetProfile(IHeaderDictionary headers)
+        public DeviceProfile? GetProfile(IHeaderDictionary headers)
         {
             if (headers == null)
             {
@@ -285,7 +285,7 @@ namespace Emby.Dlna
 
                 return xmlFies
                     .Select(i => ParseProfileFile(i, type))
-                    .Where(i => i != null)
+                    .OfType<DeviceProfile>()
                     .ToList();
             }
             catch (IOException)
@@ -294,11 +294,11 @@ namespace Emby.Dlna
             }
         }
 
-        private DeviceProfile ParseProfileFile(string path, DeviceProfileType type)
+        private DeviceProfile? ParseProfileFile(string path, DeviceProfileType type)
         {
             lock (_profiles)
             {
-                if (_profiles.TryGetValue(path, out Tuple<InternalProfileInfo, DeviceProfile> profileTuple))
+                if (_profiles.TryGetValue(path, out var profileTuple))
                 {
                     return profileTuple.Item2;
                 }
@@ -326,7 +326,7 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile GetProfile(string id)
+        public DeviceProfile? GetProfile(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -357,17 +357,14 @@ namespace Emby.Dlna
 
         private InternalProfileInfo GetInternalProfileInfo(FileSystemMetadata file, DeviceProfileType type)
         {
-            return new InternalProfileInfo
-            {
-                Path = file.FullName,
-
-                Info = new DeviceProfileInfo
+            return new InternalProfileInfo(
+                path: file.FullName,
+                info: new DeviceProfileInfo
                 {
                     Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture),
                     Name = _fileSystem.GetFileNameWithoutExtension(file),
                     Type = type
-                }
-            };
+                });
         }
 
         private async Task ExtractSystemProfilesAsync()
@@ -391,7 +388,7 @@ namespace Emby.Dlna
                 {
                     var fileInfo = _fileSystem.GetFileInfo(path);
 
-                    if (!fileInfo.Exists || fileInfo.Length != stream.Length)
+                    if (stream != null && (!fileInfo.Exists || fileInfo.Length != stream.Length))
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
@@ -526,6 +523,12 @@ namespace Emby.Dlna
 
         private class InternalProfileInfo
         {
+            public InternalProfileInfo(DeviceProfileInfo info, string path)
+            {
+                Info = info;
+                Path = path;
+            }
+
             internal DeviceProfileInfo Info { get; set; }
 
             internal string Path { get; set; }

@@ -37,7 +37,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, INetworkManager networkManager,
+        public SsdpDevicePublisher(ISsdpCommunicationsServer? communicationsServer, INetworkManager networkManager,
             string osName, string osVersion, bool sendOnlyMatchedHost)
         {
             if (communicationsServer == null)

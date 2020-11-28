@@ -6,9 +6,15 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlaylistItem
     {
-        public string StreamUrl { get; set; }
+        public PlaylistItem(StreamInfo streamInfo, DeviceProfile profile)
+        {
+            StreamInfo = streamInfo;
+            Profile = profile;
+        }
 
-        public string Didl { get; set; }
+        public string? StreamUrl { get; set; }
+
+        public string? Didl { get; set; }
 
         public StreamInfo StreamInfo { get; set; }
 

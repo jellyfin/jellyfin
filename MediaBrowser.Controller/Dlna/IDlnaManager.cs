@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="headers">The headers.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(IHeaderDictionary headers);
+        DeviceProfile? GetProfile(IHeaderDictionary headers);
 
         /// <summary>
         /// Gets the default profile.
@@ -51,14 +51,14 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(string id);
+        DeviceProfile? GetProfile(string id);
 
         /// <summary>
         /// Gets the profile.
         /// </summary>
         /// <param name="deviceInfo">The device information.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(DeviceIdentification deviceInfo);
+        DeviceProfile? GetProfile(DeviceIdentification? deviceInfo);
 
         /// <summary>
         /// Gets the server description XML.

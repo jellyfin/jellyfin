@@ -255,9 +255,9 @@ namespace Emby.Server.Implementations.Session
             string appName,
             string appVersion,
             string? deviceId,
-            string deviceName,
+            string? deviceName,
             string remoteEndPoint,
-            User user)
+            User? user)
         {
             CheckDisposed();
 
@@ -446,9 +446,9 @@ namespace Emby.Server.Implementations.Session
             string appName,
             string appVersion,
             string deviceId,
-            string deviceName,
+            string? deviceName,
             string remoteEndPoint,
-            User user)
+            User? user)
         {
             CheckDisposed();
 
@@ -473,7 +473,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!sessionInfo.HasCustomDeviceName || string.IsNullOrEmpty(sessionInfo.DeviceName))
             {
-                sessionInfo.DeviceName = deviceName;
+                sessionInfo.DeviceName = deviceName ?? "Network device";
             }
 
             sessionInfo.ApplicationVersion = appVersion;
@@ -491,9 +491,9 @@ namespace Emby.Server.Implementations.Session
             string appName,
             string appVersion,
             string deviceId,
-            string deviceName,
+            string? deviceName,
             string remoteEndPoint,
-            User user)
+            User? user)
         {
             var sessionInfo = new SessionInfo(this, _logger)
             {

@@ -250,7 +250,7 @@ namespace Emby.Dlna.Server
 
             url = _serverAddress.TrimEnd('/') + "/dlna/" + _serverUdn + "/" + url.TrimStart('/');
 
-            return SecurityElement.Escape(url);
+            return SecurityElement.Escape(url) ?? string.Empty;
         }
 
         private IEnumerable<DeviceIcon> GetIcons()

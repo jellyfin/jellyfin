@@ -84,7 +84,7 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             DeviceProfile profile,
             string serverAddress,
-            string accessToken,
+            string? accessToken,
             IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
             User user,
@@ -204,6 +204,11 @@ namespace Emby.Dlna.ContentDirectory
         /// <param name="sparams">The <see cref="IDictionary"/>.</param>
         private void HandleXSetBookmark(IDictionary<string, string> sparams)
         {
+            if (_user == null)
+            {
+                return;
+            }
+
             var id = sparams["ObjectID"];
 
             var serverItem = GetItemFromObjectId(id);
@@ -314,7 +319,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="string"/>.</returns>
         public static string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
         {
-            if (sparams != null && sparams.TryGetValue(key, out string val))
+            if (sparams != null && sparams.TryGetValue(key, out string? val))
             {
                 return val;
             }
@@ -1432,7 +1437,7 @@ namespace Emby.Dlna.ContentDirectory
                     ParentId = parent?.Id ?? Guid.Empty,
                     GroupItems = true
                 },
-                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).OfType<BaseItem>().ToArray();
 
             return ToResult(items);
         }
@@ -1452,7 +1457,7 @@ namespace Emby.Dlna.ContentDirectory
                 {
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
-                    UserId = query.User.Id
+                    UserId = query.User?.Id ?? Guid.Empty
                 },
                 new[] { parent },
                 query.DtoOptions);
@@ -1480,7 +1485,7 @@ namespace Emby.Dlna.ContentDirectory
                     ParentId = parent == null ? Guid.Empty : parent.Id,
                     GroupItems = false
                 },
-                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).OfType<BaseItem>().ToArray();
 
             return ToResult(items);
         }
@@ -1505,7 +1510,7 @@ namespace Emby.Dlna.ContentDirectory
                     ParentId = parent?.Id ?? Guid.Empty,
                     GroupItems = true
                 },
-                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).OfType<BaseItem>().ToArray();
 
             return ToResult(items);
         }
@@ -1722,10 +1727,13 @@ namespace Emby.Dlna.ContentDirectory
             {
                 var item = _libraryManager.GetItemById(itemId);
 
-                return new ServerItem(item)
+                if (item != null)
                 {
-                    StubType = stubType
-                };
+                    return new ServerItem(item)
+                    {
+                        StubType = stubType
+                    };
+                }
             }
 
             Logger.LogError("Error parsing item Id: {Id}. Returning user root folder.", id);

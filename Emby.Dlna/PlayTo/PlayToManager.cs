@@ -70,7 +70,7 @@ namespace Emby.Dlna.PlayTo
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
-        private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private async void OnDeviceDiscoveryDeviceDiscovered(object? sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             if (_disposed)
             {
@@ -79,12 +79,12 @@ namespace Emby.Dlna.PlayTo
 
             var info = e.Argument;
 
-            if (!info.Headers.TryGetValue("USN", out string usn))
+            if (!info.Headers.TryGetValue("USN", out string? usn))
             {
                 usn = string.Empty;
             }
 
-            if (!info.Headers.TryGetValue("NT", out string nt))
+            if (!info.Headers.TryGetValue("NT", out string? nt))
             {
                 nt = string.Empty;
             }
@@ -156,7 +156,7 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
 
             _logger.LogDebug("Logging session activity from location {0}", location);
-            if (info.Headers.TryGetValue("USN", out string uuid))
+            if (info.Headers.TryGetValue("USN", out string? uuid))
             {
                 uuid = GetUuid(uuid);
             }
@@ -173,9 +173,17 @@ namespace Emby.Dlna.PlayTo
             {
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClientFactory, _logger, cancellationToken).ConfigureAwait(false);
 
-                string deviceName = device.Properties.Name;
+                if (device == null)
+                {
+                    return;
+                }
 
-                _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
+                string? deviceName = device.Properties?.Name;
+
+                if (deviceName != null)
+                {
+                    _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
+                }
 
                 string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
 
@@ -200,7 +208,7 @@ namespace Emby.Dlna.PlayTo
 
                 controller.Init(device);
 
-                var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                var profile = _dlnaManager.GetProfile(device.Properties?.ToDeviceIdentification()) ??
                               _dlnaManager.GetDefaultProfile();
 
                 _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
@@ -223,7 +231,7 @@ namespace Emby.Dlna.PlayTo
                     SupportsMediaControl = true
                 });
 
-                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties?.Name, device.Properties?.ModelName);
             }
         }
 
