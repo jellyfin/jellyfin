@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class PlayGroupRequest.
     /// </summary>
-    public class PlayGroupRequest : IGroupPlaybackRequest
+    public class PlayGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayGroupRequest"/> class.
@@ -43,10 +43,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public long StartPositionTicks { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.Play;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.Play;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

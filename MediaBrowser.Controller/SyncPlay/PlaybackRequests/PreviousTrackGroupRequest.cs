@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class PreviousTrackGroupRequest.
     /// </summary>
-    public class PreviousTrackGroupRequest : IGroupPlaybackRequest
+    public class PreviousTrackGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PreviousTrackGroupRequest"/> class.
@@ -25,10 +25,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public string PlaylistItemId { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.PreviousTrack;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.PreviousTrack;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.SyncPlay.Requests;
 using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Model.SyncPlay.RequestBodies;
 
@@ -18,30 +19,31 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session that's creating the group.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void NewGroup(SessionInfo session, NewGroupRequestBody request, CancellationToken cancellationToken);
+        void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to a group.
         /// </summary>
         /// <param name="session">The session.</param>
-        /// <param name="groupId">The group identifier.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequestBody request, CancellationToken cancellationToken);
+        void JoinGroup(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the session from a group.
         /// </summary>
         /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void LeaveGroup(SessionInfo session, CancellationToken cancellationToken);
+        void LeaveGroup(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets list of available groups for a session.
         /// </summary>
         /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
         /// <returns>The list of available groups.</returns>
-        List<GroupInfoDto> ListGroups(SessionInfo session);
+        List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request);
 
         /// <summary>
         /// Handle a request by a session in a group.

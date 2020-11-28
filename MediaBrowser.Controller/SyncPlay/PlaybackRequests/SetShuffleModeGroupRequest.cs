@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class SetShuffleModeGroupRequest.
     /// </summary>
-    public class SetShuffleModeGroupRequest : IGroupPlaybackRequest
+    public class SetShuffleModeGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SetShuffleModeGroupRequest"/> class.
@@ -25,10 +25,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public GroupShuffleMode Mode { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.SetShuffleMode;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.SetShuffleMode;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

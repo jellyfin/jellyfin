@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class QueueGroupRequest.
     /// </summary>
-    public class QueueGroupRequest : IGroupPlaybackRequest
+    public class QueueGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="QueueGroupRequest"/> class.
@@ -35,10 +35,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public GroupQueueMode Mode { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.Queue;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.Queue;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

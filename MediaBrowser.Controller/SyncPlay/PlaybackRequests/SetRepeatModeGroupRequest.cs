@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class SetRepeatModeGroupRequest.
     /// </summary>
-    public class SetRepeatModeGroupRequest : IGroupPlaybackRequest
+    public class SetRepeatModeGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SetRepeatModeGroupRequest"/> class.
@@ -25,10 +25,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public GroupRepeatMode Mode { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.SetRepeatMode;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.SetRepeatMode;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class SetPlaylistItemGroupRequest.
     /// </summary>
-    public class SetPlaylistItemGroupRequest : IGroupPlaybackRequest
+    public class SetPlaylistItemGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SetPlaylistItemGroupRequest"/> class.
@@ -25,10 +25,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public string PlaylistItemId { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.SetPlaylistItem;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.SetPlaylistItem;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class PingGroupRequest.
     /// </summary>
-    public class PingGroupRequest : IGroupPlaybackRequest
+    public class PingGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PingGroupRequest"/> class.
@@ -25,10 +25,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public long Ping { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.Ping;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.Ping;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
+using MediaBrowser.Controller.SyncPlay.Requests;
 using MediaBrowser.Model.SyncPlay;
 using MediaBrowser.Model.SyncPlay.RequestBodies;
 using Microsoft.AspNetCore.Authorization;
@@ -54,7 +55,8 @@ namespace Jellyfin.Api.Controllers
             [FromBody, Required] NewGroupRequestBody requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            _syncPlayManager.NewGroup(currentSession, requestData, CancellationToken.None);
+            var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
+            _syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 
@@ -70,7 +72,8 @@ namespace Jellyfin.Api.Controllers
             [FromBody, Required] JoinGroupRequestBody requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            _syncPlayManager.JoinGroup(currentSession, requestData.GroupId, requestData, CancellationToken.None);
+            var syncPlayRequest = new JoinGroupRequest(requestData.GroupId);
+            _syncPlayManager.JoinGroup(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 
@@ -84,7 +87,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult SyncPlayLeaveGroup()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            _syncPlayManager.LeaveGroup(currentSession, CancellationToken.None);
+            var syncPlayRequest = new LeaveGroupRequest();
+            _syncPlayManager.LeaveGroup(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 
@@ -98,7 +102,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<GroupInfoDto>> SyncPlayGetGroups()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            return Ok(_syncPlayManager.ListGroups(currentSession));
+            var syncPlayRequest = new ListGroupsRequest();
+            return Ok(_syncPlayManager.ListGroups(currentSession, syncPlayRequest));
         }
 
         /// <summary>

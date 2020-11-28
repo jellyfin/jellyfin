@@ -7,13 +7,13 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class StopGroupRequest.
     /// </summary>
-    public class StopGroupRequest : IGroupPlaybackRequest
+    public class StopGroupRequest : AbstractPlaybackRequest
     {
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.Stop;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.Stop;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

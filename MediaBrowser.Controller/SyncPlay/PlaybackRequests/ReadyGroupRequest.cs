@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
     /// <summary>
     /// Class ReadyGroupRequest.
     /// </summary>
-    public class ReadyGroupRequest : IGroupPlaybackRequest
+    public class ReadyGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ReadyGroupRequest"/> class.
@@ -50,10 +50,10 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public string PlaylistItemId { get; }
 
         /// <inheritdoc />
-        public PlaybackRequestType Type { get; } = PlaybackRequestType.Ready;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.Ready;
 
         /// <inheritdoc />
-        public void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
             state.HandleRequest(context, state.Type, this, session, cancellationToken);
         }

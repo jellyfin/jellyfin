@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
-    /// Enum GroupRequestType.
+    /// Enum RequestType.
     /// </summary>
-    public enum GroupRequestType
+    public enum RequestType
     {
         /// <summary>
         /// A user is requesting to create a new group.

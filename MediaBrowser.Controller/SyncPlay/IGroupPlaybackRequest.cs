@@ -7,13 +7,13 @@ namespace MediaBrowser.Controller.SyncPlay
     /// <summary>
     /// Interface IGroupPlaybackRequest.
     /// </summary>
-    public interface IGroupPlaybackRequest
+    public interface IGroupPlaybackRequest : ISyncPlayRequest
     {
         /// <summary>
         /// Gets the playback request type.
         /// </summary>
         /// <returns>The playback request type.</returns>
-        PlaybackRequestType Type { get; }
+        PlaybackRequestType Action { get; }
 
         /// <summary>
         /// Applies the request to a group.

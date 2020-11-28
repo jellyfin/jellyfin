@@ -12,8 +12,8 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.GroupStates;
 using MediaBrowser.Controller.SyncPlay.Queue;
+using MediaBrowser.Controller.SyncPlay.Requests;
 using MediaBrowser.Model.SyncPlay;
-using MediaBrowser.Model.SyncPlay.RequestBodies;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.SyncPlay
@@ -257,7 +257,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public bool IsGroupEmpty() => _participants.Count == 0;
 
         /// <inheritdoc />
-        public void CreateGroup(SessionInfo session, NewGroupRequestBody request, CancellationToken cancellationToken)
+        public void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
             GroupName = request.GroupName;
             AddSession(session);
@@ -292,7 +292,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void SessionJoin(SessionInfo session, JoinGroupRequestBody request, CancellationToken cancellationToken)
+        public void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
             AddSession(session);
 
@@ -308,7 +308,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void SessionRestore(SessionInfo session, JoinGroupRequestBody request, CancellationToken cancellationToken)
+        public void SessionRestore(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
@@ -322,7 +322,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void SessionLeave(SessionInfo session, CancellationToken cancellationToken)
+        public void SessionLeave(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken)
         {
             _state.SessionLeaving(this, _state.Type, session, cancellationToken);
 
@@ -343,7 +343,7 @@ namespace Emby.Server.Implementations.SyncPlay
             // The server's job is to maintain a consistent state for clients to reference
             // and notify clients of state changes. The actual syncing of media playback
             // happens client side. Clients are aware of the server's time and use it to sync.
-            _logger.LogInformation("Session {SessionId} requested {RequestType} in group {GroupId} that is {StateType}.", session.Id, request.Type, GroupId.ToString(), _state.Type);
+            _logger.LogInformation("Session {SessionId} requested {RequestType} in group {GroupId} that is {StateType}.", session.Id, request.Action, GroupId.ToString(), _state.Type);
             request.Apply(this, _state, session, cancellationToken);
         }
 

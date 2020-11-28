@@ -5,8 +5,8 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
+using MediaBrowser.Controller.SyncPlay.Requests;
 using MediaBrowser.Model.SyncPlay;
-using MediaBrowser.Model.SyncPlay.RequestBodies;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.SyncPlay
@@ -94,10 +94,9 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void NewGroup(SessionInfo session, NewGroupRequestBody request, CancellationToken cancellationToken)
+        public void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
-            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
-            if (!IsRequestValid(session, GroupRequestType.NewGroup, request))
+            if (!IsRequestValid(session, request))
             {
                 return;
             }
@@ -111,7 +110,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 {
                     if (IsSessionInGroup(session))
                     {
-                        LeaveGroup(session, cancellationToken);
+                        var leaveGroupRequest = new LeaveGroupRequest();
+                        LeaveGroup(session, leaveGroupRequest, cancellationToken);
                     }
 
                     var group = new GroupController(_loggerFactory, _userManager, _sessionManager, _libraryManager);
@@ -124,10 +124,9 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequestBody request, CancellationToken cancellationToken)
+        public void JoinGroup(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
-            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
-            if (!IsRequestValid(session, GroupRequestType.JoinGroup, request))
+            if (!IsRequestValid(session, request))
             {
                 return;
             }
@@ -137,11 +136,11 @@ namespace Emby.Server.Implementations.SyncPlay
             // Locking required to access list of groups.
             lock (_groupsLock)
             {
-                _groups.TryGetValue(groupId, out IGroupController group);
+                _groups.TryGetValue(request.GroupId, out IGroupController group);
 
                 if (group == null)
                 {
-                    _logger.LogWarning("Session {SessionId} tried to join group {GroupId} that does not exist.", session.Id, groupId);
+                    _logger.LogWarning("Session {SessionId} tried to join group {GroupId} that does not exist.", session.Id, request.GroupId);
 
                     var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.GroupDoesNotExist, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
@@ -165,13 +164,14 @@ namespace Emby.Server.Implementations.SyncPlay
 
                         if (IsSessionInGroup(session))
                         {
-                            if (FindJoinedGroupId(session).Equals(groupId))
+                            if (FindJoinedGroupId(session).Equals(request.GroupId))
                             {
                                 group.SessionRestore(session, request, cancellationToken);
                                 return;
                             }
 
-                            LeaveGroup(session, cancellationToken);
+                            var leaveGroupRequest = new LeaveGroupRequest();
+                            LeaveGroup(session, leaveGroupRequest, cancellationToken);
                         }
 
                         AddSessionToGroup(session, group);
@@ -182,10 +182,9 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void LeaveGroup(SessionInfo session, CancellationToken cancellationToken)
+        public void LeaveGroup(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken)
         {
-            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
-            if (!IsRequestValid(session, GroupRequestType.LeaveGroup))
+            if (!IsRequestValid(session, request))
             {
                 return;
             }
@@ -210,7 +209,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     lock (group)
                     {
                         RemoveSessionFromGroup(session, group);
-                        group.SessionLeave(session, cancellationToken);
+                        group.SessionLeave(session, request, cancellationToken);
 
                         if (group.IsGroupEmpty())
                         {
@@ -223,10 +222,9 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public List<GroupInfoDto> ListGroups(SessionInfo session)
+        public List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request)
         {
-            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
-            if (!IsRequestValid(session, GroupRequestType.ListGroups))
+            if (!IsRequestValid(session, request))
             {
                 return new List<GroupInfoDto>();
             }
@@ -256,8 +254,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
-            // TODO: create abstract class for GroupRequests to avoid explicit request type here.
-            if (!IsRequestValid(session, GroupRequestType.Playback, request))
+            if (!IsRequestValid(session, request))
             {
                 return;
             }
@@ -304,11 +301,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            var request = new JoinGroupRequestBody()
-            {
-                GroupId = groupId
-            };
-            JoinGroup(session, groupId, request, CancellationToken.None);
+            var request = new JoinGroupRequest(groupId);
+            JoinGroup(session, request, CancellationToken.None);
         }
 
         /// <summary>
@@ -409,13 +403,11 @@ namespace Emby.Server.Implementations.SyncPlay
         /// Checks if a given session is allowed to make a given request.
         /// </summary>
         /// <param name="session">The session.</param>
-        /// <param name="requestType">The request type.</param>
         /// <param name="request">The request.</param>
-        /// <param name="checkRequest">Whether to check if request is null.</param>
-        /// <returns><c>true</c> if the request is valid, <c>false</c> otherwise. Will return <c>false</c> also when session is null.</returns>
-        private bool IsRequestValid<T>(SessionInfo session, GroupRequestType requestType, T request, bool checkRequest = true)
+        /// <returns><c>true</c> if the request is valid, <c>false</c> otherwise. Will return <c>false</c> also when session or request is null.</returns>
+        private bool IsRequestValid(SessionInfo session, ISyncPlayRequest request)
         {
-            if (session == null || (request == null && checkRequest))
+            if (session == null || (request == null))
             {
                 return false;
             }
@@ -424,7 +416,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             if (user.SyncPlayAccess == SyncPlayAccess.None)
             {
-                _logger.LogWarning("Session {SessionId} requested {RequestType} but does not have access to SyncPlay.", session.Id, requestType);
+                _logger.LogWarning("Session {SessionId} requested {RequestType} but does not have access to SyncPlay.", session.Id, request.Type);
 
                 // TODO: rename to a more generic error. Next PR will fix this.
                 var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.JoinGroupDenied, string.Empty);
@@ -432,7 +424,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return false;
             }
 
-            if (requestType.Equals(GroupRequestType.NewGroup) && user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
+            if (request.Type.Equals(RequestType.NewGroup) && user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
             {
                 _logger.LogWarning("Session {SessionId} does not have permission to create groups.", session.Id);
 
@@ -442,17 +434,6 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Checks if a given session is allowed to make a given type of request.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <param name="requestType">The request type.</param>
-        /// <returns><c>true</c> if the request is valid, <c>false</c> otherwise. Will return <c>false</c> also when session is null.</returns>
-        private bool IsRequestValid(SessionInfo session, GroupRequestType requestType)
-        {
-            return IsRequestValid(session, requestType, session, false);
         }
     }
 }

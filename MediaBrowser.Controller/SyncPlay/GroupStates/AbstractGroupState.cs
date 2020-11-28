@@ -209,14 +209,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         protected void SendGroupStateUpdate(IGroupStateContext context, IGroupPlaybackRequest reason, SessionInfo session, CancellationToken cancellationToken)
         {
             // Notify relevant state change event.
-            var stateUpdate = new GroupStateUpdate(Type, reason.Type);
+            var stateUpdate = new GroupStateUpdate(Type, reason.Action);
             var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.StateUpdate, stateUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
         }
 
         private void UnhandledRequest(IGroupPlaybackRequest request)
         {
-            _logger.LogWarning("Unhandled request of type {RequestType} in {StateType} state.", request.Type, Type);
+            _logger.LogWarning("Unhandled request of type {RequestType} in {StateType} state.", request.Action, Type);
         }
     }
 }
