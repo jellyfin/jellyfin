@@ -553,12 +553,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
-            var enableThumbnail = !new List<string> { "wtv" }.Contains(container ?? string.Empty, StringComparer.OrdinalIgnoreCase);
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var thumbnail = enableThumbnail ? ",thumbnail=24" : string.Empty;
+            var enableThumbnail = useIFrame && !new List<string> { "wtv" }.Contains(container ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(vf))
+            {
+                vf = enableThumbnail ? "-vf thumbnail=24" : string.Empty;
+            }
+            else
+            {
+                vf += enableThumbnail ? ",thumbnail=24" : string.Empty;
+            }
 
-            var args = useIFrame ? string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {5} -v quiet -vframes 1 {2}{4} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail, threads) :
-                string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
 
             var probeSizeArgument = EncodingHelper.GetProbeSizeArgument(1);
             var analyzeDurationArgument = EncodingHelper.GetAnalyzeDurationArgument(1);
