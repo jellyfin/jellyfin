@@ -24,6 +24,17 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ServerItem"/> class.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="stubType">The <see cref="StubType"/>.</param>
+        public ServerItem(BaseItem item, StubType stubType)
+        {
+            Item = item;
+            StubType = stubType;
+        }
+
+        /// <summary>
         /// Gets or sets the underlying base item.
         /// </summary>
         public BaseItem Item { get; set; }
