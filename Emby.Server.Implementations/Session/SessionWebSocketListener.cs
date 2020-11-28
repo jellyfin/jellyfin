@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Session
     /// <summary>
     /// Class SessionWebSocketListener.
     /// </summary>
-    public sealed class SessionWebSocketListener : ISessionWebSocketListener, IDisposable
+    public sealed class SessionWebSocketListener : IWebSocketListener, IDisposable
     {
         /// <summary>
         /// The timeout in seconds after which a WebSocket is considered to be lost.
@@ -45,13 +45,15 @@ namespace Emby.Server.Implementations.Session
         private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
+        private readonly IWebSocketManager _webSocketManager;
+
         /// <summary>
         /// The KeepAlive cancellation token.
         /// </summary>
         private CancellationTokenSource _keepAliveCancellationToken;
 
         /// <summary>
-        /// Lock used for accessing the KeepAlive cancellation token.
+        /// Lock used for accesing the KeepAlive cancellation token.
         /// </summary>
         private readonly object _keepAliveLock = new object();
 
@@ -61,7 +63,7 @@ namespace Emby.Server.Implementations.Session
         private readonly HashSet<IWebSocketConnection> _webSockets = new HashSet<IWebSocketConnection>();
 
         /// <summary>
-        /// Lock used for accessing the WebSockets watchlist.
+        /// Lock used for accesing the WebSockets watchlist.
         /// </summary>
         private readonly object _webSocketsLock = new object();
 
@@ -71,28 +73,32 @@ namespace Emby.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="webSocketManager">The HTTP server.</param>
         public SessionWebSocketListener(
             ILogger<SessionWebSocketListener> logger,
             ISessionManager sessionManager,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IWebSocketManager webSocketManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;
             _loggerFactory = loggerFactory;
+            _webSocketManager = webSocketManager;
+
+            webSocketManager.WebSocketConnected += OnServerManagerWebSocketConnected;
         }
 
-        /// <inheritdoc/>
-        public async void ProcessWebSocketConnected(IWebSocketConnection websocketConnection)
+        private async void OnServerManagerWebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
         {
-            var session = GetSession(websocketConnection.QueryString, websocketConnection.RemoteEndPoint.ToString());
+            var session = GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint.ToString());
             if (session != null)
             {
-                EnsureController(session, websocketConnection);
-                await KeepAliveWebSocket(websocketConnection).ConfigureAwait(false);
+                EnsureController(session, e.Argument);
+                await KeepAliveWebSocket(e.Argument).ConfigureAwait(false);
             }
             else
             {
-                _logger.LogWarning("Unable to determine session based on query string: {Querystring}", websocketConnection.QueryString);
+                _logger.LogWarning("Unable to determine session based on query string: {0}", e.Argument.QueryString);
             }
         }
 
@@ -116,6 +122,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public void Dispose()
         {
+            _webSocketManager.WebSocketConnected -= OnServerManagerWebSocketConnected;
             StopKeepAlive();
         }
 

@@ -11,7 +11,7 @@ namespace Jellyfin.Api.WebSocketListeners
     /// <summary>
     /// Class SessionInfoWebSocketListener.
     /// </summary>
-    public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>, IActivityLogWebSocketListener
+    public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>
     {
         /// <summary>
         /// The _kernel.

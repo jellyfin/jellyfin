@@ -12,7 +12,7 @@ namespace Jellyfin.Api.WebSocketListeners
     /// <summary>
     /// Class ScheduledTasksWebSocketListener.
     /// </summary>
-    public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<TaskInfo>, WebSocketListenerState>, IScheduledTasksWebSocketListener
+    public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<TaskInfo>, WebSocketListenerState>
     {
         /// <summary>
         /// Gets or sets the task manager.
@@ -66,19 +66,19 @@ namespace Jellyfin.Api.WebSocketListeners
 
         private void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
         {
-            SendData(true).GetAwaiter().GetResult();
+            SendData(true);
             e.Task.TaskProgress -= OnTaskProgress;
         }
 
         private void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)
         {
-            SendData(true).GetAwaiter().GetResult();
+            SendData(true);
             e.Argument.TaskProgress += OnTaskProgress;
         }
 
         private void OnTaskProgress(object? sender, GenericEventArgs<double> e)
         {
-            SendData(false).GetAwaiter().GetResult();
+            SendData(false);
         }
     }
 }
