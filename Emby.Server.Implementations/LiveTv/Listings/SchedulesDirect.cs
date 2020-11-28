@@ -647,7 +647,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/token");
             var hashedPasswordBytes = _cryptoProvider.ComputeHash("SHA1", Encoding.ASCII.GetBytes(password), Array.Empty<byte>());
-            string hashedPassword = Hex.Encode(hashedPasswordBytes);
+            // TODO: remove ToLower when Convert.ToHexString supports lowercase
+            // Schedules Direct requires the hex to be lowercase
+            string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             using var response = await Send(options, false, null, cancellationToken).ConfigureAwait(false);

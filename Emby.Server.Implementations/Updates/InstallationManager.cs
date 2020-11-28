@@ -410,7 +410,7 @@ namespace Emby.Server.Implementations.Updates
             using var md5 = MD5.Create();
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = Hex.Encode(md5.ComputeHash(stream));
+            var hash = Convert.ToHexString(md5.ComputeHash(stream));
             if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(
