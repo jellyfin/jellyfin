@@ -115,5 +115,7 @@
     "TaskRefreshChapterImages": "Bölüm Resimlerini Çıkar",
     "TaskCleanCacheDescription": "Sistem tarafından artık ihtiyaç duyulmayan önbellek dosyalarını siler.",
     "TaskCleanActivityLog": "İşlem Günlüğünü Temizle",
-    "TaskCleanActivityLogDescription": "Belirtilen sureden daha eski etkinlik log kayıtları silindi."
+    "TaskCleanActivityLogDescription": "Belirtilen sureden daha eski etkinlik log kayıtları silindi.",
+    "Undefined": "Bilinmeyen",
+    "Default": "Varsayılan"
 }
