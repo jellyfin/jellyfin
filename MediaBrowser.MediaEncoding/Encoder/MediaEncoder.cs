@@ -36,7 +36,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// The default image extraction timeout in milliseconds.
         /// </summary>
-        internal const int DefaultImageExtractionTimeout = 5000;
+        internal const int DefaultImageExtractionTimeout = 10000;
 
         /// <summary>
         /// The us culture.
