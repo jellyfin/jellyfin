@@ -34,13 +34,19 @@ else
     fi
 fi
 
+if type sudo >/dev/null 2>&1; then
+    sudo_command=sudo
+else
+    sudo_command=
+fi
+
 echo "Detected service control platform '$cmd'; using it to restart Jellyfin..."
 case $cmd in
     'systemctl')
-        echo "sleep 0.5; /usr/bin/sudo systemctl start jellyfin" | at now 
+        echo "sleep 0.5; $sudo_command systemctl start jellyfin" | at now
         ;;
     'service')
-        echo "sleep 0.5; /usr/bin/sudo service jellyfin start" | at now 
+        echo "sleep 0.5; $sudo_command service jellyfin start" | at now
         ;;
     'sysv')
         echo "sleep 0.5; /usr/bin/sudo /etc/init.d/jellyfin start" | at now 
