@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -19,7 +18,6 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -36,6 +34,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly IApplicationHost _appHost;
         private readonly ICryptoProvider _cryptoProvider;
 
+        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
+        private DateTime _lastErrorResponse;
+
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
             IJsonSerializer jsonSerializer,
@@ -49,8 +50,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             _appHost = appHost;
             _cryptoProvider = cryptoProvider;
         }
-
-        private string UserAgent => _appHost.ApplicationUserAgent;
 
         /// <inheritdoc />
         public string Name => "Schedules Direct";
@@ -307,7 +306,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (details.contentRating != null && details.contentRating.Count > 0)
             {
-                info.OfficialRating = details.contentRating[0].code.Replace("TV", "TV-").Replace("--", "-");
+                info.OfficialRating = details.contentRating[0].code.Replace("TV", "TV-", StringComparison.Ordinal)
+                    .Replace("--", "-", StringComparison.Ordinal);
 
                 var invalid = new[] { "N/A", "Approved", "Not Rated", "Passed" };
                 if (invalid.Contains(info.OfficialRating, StringComparer.OrdinalIgnoreCase))
@@ -450,7 +450,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private async Task<List<ScheduleDirect.ShowImages>> GetImageForPrograms(
             ListingsProviderInfo info,
-            List<string> programIds,
+            IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
             if (programIds.Count == 0)
@@ -458,23 +458,21 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return new List<ScheduleDirect.ShowImages>();
             }
 
-            var imageIdString = "[";
-
-            foreach (var i in programIds)
+            StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
+            foreach (ReadOnlySpan<char> i in programIds)
             {
-                var imageId = i.Substring(0, 10);
-
-                if (!imageIdString.Contains(imageId, StringComparison.Ordinal))
-                {
-                    imageIdString += "\"" + imageId + "\",";
-                }
+                str.Append('"')
+                    .Append(i.Slice(0, 10))
+                    .Append("\",");
             }
 
-            imageIdString = imageIdString.TrimEnd(',') + "]";
+            // Remove last ,
+            str.Length--;
+            str.Append(']');
 
             using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs")
             {
-                Content = new StringContent(imageIdString, Encoding.UTF8, MediaTypeNames.Application.Json)
+                Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json)
             };
 
             try
@@ -539,9 +537,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return lineups;
         }
 
-        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
-        private DateTime _lastErrorResponse;
-
         private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             var username = info.Username;
@@ -564,8 +559,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return null;
             }
 
-            NameValuePair savedToken;
-            if (!_tokens.TryGetValue(username, out savedToken))
+            if (!_tokens.TryGetValue(username, out NameValuePair savedToken))
             {
                 savedToken = new NameValuePair();
                 _tokens.TryAdd(username, savedToken);
@@ -655,7 +649,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var response = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Token>(stream).ConfigureAwait(false);
-            if (root.message == "OK")
+            if (string.Equals(root.message, "OK", StringComparison.Ordinal))
             {
                 _logger.LogInformation("Authenticated with Schedules Direct token: " + root.token);
                 return root.token;
@@ -779,24 +773,28 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
             options.Headers.TryAddWithoutValidation("token", token);
 
-            var list = new List<ChannelInfo>();
-
             using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Channel>(stream).ConfigureAwait(false);
             _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.map.Count);
             _logger.LogInformation("Mapping Stations to Channel");
 
-            var allStations = root.stations ?? Enumerable.Empty<ScheduleDirect.Station>();
+            var allStations = root.stations ?? new List<ScheduleDirect.Station>();
 
-            foreach (ScheduleDirect.Map map in root.map)
+            var map = root.map;
+            int len = map.Count;
+            var array = new List<ChannelInfo>(len);
+            for (int i = 0; i < len; i++)
             {
-                var channelNumber = GetChannelNumber(map);
+                var channelNumber = GetChannelNumber(map[i]);
 
-                var station = allStations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
+                var station = allStations.Find(item => string.Equals(item.stationID, map[i].stationID, StringComparison.OrdinalIgnoreCase));
                 if (station == null)
                 {
-                    station = new ScheduleDirect.Station { stationID = map.stationID };
+                    station = new ScheduleDirect.Station
+                    {
+                        stationID = map[i].stationID
+                    };
                 }
 
                 var channelInfo = new ChannelInfo
@@ -812,32 +810,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     channelInfo.ImageUrl = station.logo.URL;
                 }
 
-                list.Add(channelInfo);
+                array[i] = channelInfo;
             }
 
-            return list;
-        }
-
-        private ScheduleDirect.Station GetStation(List<ScheduleDirect.Station> allStations, string channelNumber, string channelName)
-        {
-            if (!string.IsNullOrWhiteSpace(channelName))
-            {
-                channelName = NormalizeName(channelName);
-
-                var result = allStations.FirstOrDefault(i => string.Equals(NormalizeName(i.callsign ?? string.Empty), channelName, StringComparison.OrdinalIgnoreCase));
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(channelNumber))
-            {
-                return allStations.FirstOrDefault(i => string.Equals(NormalizeName(i.stationID ?? string.Empty), channelNumber, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return null;
+            return array;
         }
 
         private static string NormalizeName(string value)
@@ -1046,7 +1022,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            //
             public class Title
             {
                 public string title120 { get; set; }
