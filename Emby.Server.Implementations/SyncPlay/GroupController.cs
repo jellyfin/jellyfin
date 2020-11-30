@@ -189,19 +189,6 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <summary>
-        /// Checks if a given user can access a given item, that is, the user has access to a folder where the item is stored.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if the user can access the item, <c>false</c> otherwise.</returns>
-        private bool HasAccessToItem(User user, BaseItem item)
-        {
-            var collections = _libraryManager.GetCollectionFolders(item)
-                .Select(folder => folder.Id.ToString("N", CultureInfo.InvariantCulture));
-            return collections.Intersect(user.GetPreference(PreferenceKind.EnabledFolders)).Any();
-        }
-
-        /// <summary>
         /// Checks if a given user can access all items of a given queue, that is,
         /// the user has the required minimum parental access and has access to all required folders.
         /// </summary>
@@ -219,12 +206,7 @@ namespace Emby.Server.Implementations.SyncPlay
             foreach (var itemId in queue)
             {
                 var item = _libraryManager.GetItemById(itemId);
-                if (user.MaxParentalAgeRating.HasValue && item.InheritedParentalRatingValue > user.MaxParentalAgeRating)
-                {
-                    return false;
-                }
-
-                if (!user.HasPermission(PermissionKind.EnableAllFolders) && !HasAccessToItem(user, item))
+                if (!item.IsVisibleStandalone(user))
                 {
                     return false;
                 }

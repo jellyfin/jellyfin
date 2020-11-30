@@ -56,11 +56,17 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// Lock used for accessing any group.
         /// </summary>
+        /// <remarks>
+        /// Always lock before <see cref="_mapsLock"/> and before locking on any <see cref="IGroupController"/>.
+        /// </remarks>
         private readonly object _groupsLock = new object();
 
         /// <summary>
         /// Lock used for accessing the session-to-group map.
         /// </summary>
+        /// <remarks>
+        /// Always lock after <see cref="_groupsLock"/> and before locking on any <see cref="IGroupController"/>.
+        /// </remarks>
         private readonly object _mapsLock = new object();
 
         private bool _disposed = false;
@@ -259,7 +265,12 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            var group = FindJoinedGroup(session);
+            IGroupController group;
+            lock (_mapsLock)
+            {
+                group = FindJoinedGroup(session);
+            }
+
             if (group == null)
             {
                 _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
@@ -295,7 +306,12 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             var session = e.SessionInfo;
 
-            Guid groupId = FindJoinedGroupId(session);
+            Guid groupId = Guid.Empty;
+            lock (_mapsLock)
+            {
+                groupId = FindJoinedGroupId(session);
+            }
+
             if (groupId.Equals(Guid.Empty))
             {
                 return;
@@ -308,33 +324,36 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// Checks if a given session has joined a group.
         /// </summary>
+        /// <remarks>
+        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
+        /// </remarks>
         /// <param name="session">The session.</param>
         /// <returns><c>true</c> if the session has joined a group, <c>false</c> otherwise.</returns>
         private bool IsSessionInGroup(SessionInfo session)
         {
-            lock (_mapsLock)
-            {
-                return _sessionToGroupMap.ContainsKey(session.Id);
-            }
+            return _sessionToGroupMap.ContainsKey(session.Id);
         }
 
         /// <summary>
         /// Gets the group joined by the given session, if any.
         /// </summary>
+        /// <remarks>
+        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
+        /// </remarks>
         /// <param name="session">The session.</param>
         /// <returns>The group.</returns>
         private IGroupController FindJoinedGroup(SessionInfo session)
         {
-            lock (_mapsLock)
-            {
-                _sessionToGroupMap.TryGetValue(session.Id, out var group);
-                return group;
-            }
+            _sessionToGroupMap.TryGetValue(session.Id, out var group);
+            return group;
         }
 
         /// <summary>
         /// Gets the group identifier joined by the given session, if any.
         /// </summary>
+        /// <remarks>
+        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
+        /// </remarks>
         /// <param name="session">The session.</param>
         /// <returns>The group identifier if the session has joined a group, an empty identifier otherwise.</returns>
         private Guid FindJoinedGroupId(SessionInfo session)
@@ -345,6 +364,9 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// Maps a session to a group.
         /// </summary>
+        /// <remarks>
+        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
+        /// </remarks>
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException">Thrown when the user is in another group already.</exception>
@@ -355,20 +377,20 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Session is null!");
             }
 
-            lock (_mapsLock)
+            if (IsSessionInGroup(session))
             {
-                if (IsSessionInGroup(session))
-                {
-                    throw new InvalidOperationException("Session in other group already!");
-                }
-
-                _sessionToGroupMap[session.Id] = group ?? throw new InvalidOperationException("Group is null!");
+                throw new InvalidOperationException("Session in other group already!");
             }
+
+            _sessionToGroupMap[session.Id] = group ?? throw new InvalidOperationException("Group is null!");
         }
 
         /// <summary>
         /// Unmaps a session from a group.
         /// </summary>
+        /// <remarks>
+        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
+        /// </remarks>
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException">Thrown when the user is not found in the specified group.</exception>
@@ -384,18 +406,15 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Group is null!");
             }
 
-            lock (_mapsLock)
+            if (!IsSessionInGroup(session))
             {
-                if (!IsSessionInGroup(session))
-                {
-                    throw new InvalidOperationException("Session not in any group!");
-                }
+                throw new InvalidOperationException("Session not in any group!");
+            }
 
-                _sessionToGroupMap.Remove(session.Id, out var tempGroup);
-                if (!tempGroup.GroupId.Equals(group.GroupId))
-                {
-                    throw new InvalidOperationException("Session was in wrong group!");
-                }
+            _sessionToGroupMap.Remove(session.Id, out var tempGroup);
+            if (!tempGroup.GroupId.Equals(group.GroupId))
+            {
+                throw new InvalidOperationException("Session was in wrong group!");
             }
         }
 
