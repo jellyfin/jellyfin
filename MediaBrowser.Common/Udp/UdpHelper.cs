@@ -509,6 +509,32 @@ namespace MediaBrowser.Common.Udp
         }
 
         /// <summary>
+        /// Disposes an udp client.
+        /// </summary>
+        /// <param name="client">A <see cref="List{UdpProcess}"/>.</param>
+        public static void DisposeClient(UdpProcess? client)
+        {
+            client?.Dispose();
+        }
+
+        /// <summary>
+        /// Disposes of multiple udp clients.
+        /// </summary>
+        /// <param name="clients">A <see cref="List{UdpProcess}"/>.</param>
+        public static void DisposeClients(List<UdpProcess>? clients)
+        {
+            if (clients == null)
+            {
+                return;
+            }
+
+            foreach (var client in clients)
+            {
+                DisposeClient(client);
+            }
+        }
+
+        /// <summary>
         /// Creates a socket for use.
         /// </summary>
         /// <param name="address">Address of socket.</param>
