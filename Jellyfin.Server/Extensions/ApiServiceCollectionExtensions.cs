@@ -285,20 +285,17 @@ namespace Jellyfin.Server.Extensions
         private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)
         {
             /*
-             * TODO remove when System.Text.Json supports non-string keys.
-             * Used in Jellyfin.Api.Controller.GetChannels.
+             * TODO remove when System.Text.Json properly supports non-string keys.
+             * Used in BaseItemDto.ImageBlurHashes
              */
             options.MapType<Dictionary<ImageType, string>>(() =>
                 new OpenApiSchema
                 {
                     Type = "object",
-                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
-                        name => name,
-                        name => new OpenApiSchema
-                        {
-                            Type = "string",
-                            Format = "string"
-                        })
+                    AdditionalProperties = new OpenApiSchema
+                    {
+                        Type = "string"
+                    }
                 });
 
             /*
@@ -312,16 +309,10 @@ namespace Jellyfin.Server.Extensions
                         name => name,
                         name => new OpenApiSchema
                         {
-                            Type = "object", Properties = new Dictionary<string, OpenApiSchema>
+                            Type = "object",
+                            AdditionalProperties = new OpenApiSchema
                             {
-                                {
-                                    "string",
-                                    new OpenApiSchema
-                                    {
-                                        Type = "string",
-                                        Format = "string"
-                                    }
-                                }
+                                Type = "string"
                             }
                         })
                 });
