@@ -116,5 +116,6 @@
     "TaskCleanActivityLog": "Limpar registo de atividade",
     "Undefined": "Indefinido",
     "Forced": "Forçado",
-    "Default": "Predefinição"
+    "Default": "Predefinição",
+    "TaskCleanActivityLogDescription": "Apaga itens no registro com idade acima do que é configurado."
 }
