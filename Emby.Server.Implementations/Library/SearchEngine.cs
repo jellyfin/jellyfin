@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
-                IncludeItemsByName = query.ParentId.HasValue,
+                IncludeItemsByName = !query.ParentId.HasValue,
                 ParentId = query.ParentId ?? Guid.Empty,
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 Recursive = true,
