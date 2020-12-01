@@ -81,7 +81,7 @@ namespace Jellyfin.Server
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
-                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
