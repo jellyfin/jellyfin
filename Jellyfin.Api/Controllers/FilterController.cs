@@ -71,11 +71,19 @@ namespace Jellyfin.Api.Controllers
                 parentItem = null;
             }
 
-            var item = parentId.HasValue
-                ? parentItem
-                : user == null
-                    ? _libraryManager.RootFolder
-                    : _libraryManager.GetUserRootFolder();
+            BaseItem? item;
+            if (parentId.HasValue)
+            {
+                item = parentItem;
+            }
+            else if (user == null)
+            {
+                item = _libraryManager.RootFolder;
+            }
+            else
+            {
+                item = _libraryManager.GetUserRootFolder();
+            }
 
             var query = new InternalItemsQuery
             {
