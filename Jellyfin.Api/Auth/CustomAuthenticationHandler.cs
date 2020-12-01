@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -79,8 +77,7 @@ namespace Jellyfin.Api.Auth
             }
             catch (SecurityException ex)
             {
-                _logger.LogDebug(ex, "Error authenticating with {Handler}", nameof(CustomAuthenticationHandler));
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return Task.FromResult(AuthenticateResult.Fail(ex));
             }
         }
     }
