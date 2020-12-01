@@ -206,11 +206,13 @@ namespace Emby.Server.Implementations.TV
                     DtoOptions = dtoOptions
                 }).Cast<Episode>().FirstOrDefault();
 
-                var userData = _userDataManager.GetUserData(user, nextEpisode);
+                if (!(nextEpisode is null)) {
+                    var userData = _userDataManager.GetUserData(user, nextEpisode);
 
-                if (userData.PlaybackPositionTicks > 0)
-                {
-                    return null;
+                    if (userData.PlaybackPositionTicks > 0)
+                    {
+                        return null;
+                    }
                 }
 
                 return nextEpisode;
