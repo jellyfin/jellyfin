@@ -206,7 +206,8 @@ namespace Emby.Server.Implementations.TV
                     DtoOptions = dtoOptions
                 }).Cast<Episode>().FirstOrDefault();
 
-                if (!(nextEpisode is null)) {
+                if (nextEpisode != null)
+                {
                     var userData = _userDataManager.GetUserData(user, nextEpisode);
 
                     if (userData.PlaybackPositionTicks > 0)
