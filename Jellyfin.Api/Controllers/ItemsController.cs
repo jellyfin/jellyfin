@@ -239,14 +239,8 @@ namespace Jellyfin.Api.Controllers
                 parentId = null;
             }
 
-            BaseItem? item = null;
+            var item = _libraryManager.GetParentItem(parentId, userId);
             QueryResult<BaseItem> result;
-            if (parentId.HasValue)
-            {
-                item = _libraryManager.GetItemById(parentId.Value);
-            }
-
-            item ??= _libraryManager.GetUserRootFolder();
 
             if (!(item is Folder folder))
             {

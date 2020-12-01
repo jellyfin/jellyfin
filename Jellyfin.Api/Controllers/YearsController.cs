@@ -89,16 +89,11 @@ namespace Jellyfin.Api.Controllers
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
-            BaseItem parentItem;
+            BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = parentId.HasValue ? _libraryManager.GetItemById(parentId.Value) : _libraryManager.GetUserRootFolder();
-            }
-            else
-            {
-                parentItem = parentId.HasValue ? _libraryManager.GetItemById(parentId.Value) : _libraryManager.RootFolder;
             }
 
             IList<BaseItem> items;
