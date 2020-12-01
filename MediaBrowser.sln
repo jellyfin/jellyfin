@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -69,6 +69,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "Jellyfin.Networking\Jellyfin.Networking.csproj", "{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\NetworkTesting\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Dlna.Tests", "tests\Jellyfin.Dlna.Tests\Jellyfin.Dlna.Tests.csproj", "{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -188,6 +190,10 @@ Global
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,6 +206,7 @@ Global
 		{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 		{462584F7-5023-4019-9EAC-B98CA458C0A0} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}

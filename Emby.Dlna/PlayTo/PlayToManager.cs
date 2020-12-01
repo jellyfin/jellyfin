@@ -3,13 +3,11 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -130,24 +128,36 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private static string GetUuid(string usn)
+        internal static string GetUuid(string usn)
         {
             const string UuidStr = "uuid:";
             const string UuidColonStr = "::";
 
             var index = usn.IndexOf(UuidStr, StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
+            if (index == -1)
             {
-                return usn.Substring(index + UuidStr.Length);
+                return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            index = usn.IndexOf(UuidColonStr, StringComparison.OrdinalIgnoreCase);
+            ReadOnlySpan<char> tmp = usn.AsSpan()[(index + UuidStr.Length)..];
+
+            index = tmp.IndexOf(UuidColonStr, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                usn = usn.Substring(0, index + UuidColonStr.Length);
+                tmp = tmp[..index];
             }
 
-            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            index = tmp.IndexOf('{');
+            if (index != -1)
+            {
+                int endIndex = tmp.IndexOf('}');
+                if (endIndex != -1)
+                {
+                    tmp = tmp[(index + 1)..endIndex];
+                }
+            }
+
+            return tmp.ToString();
         }
 
         private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
