@@ -782,7 +782,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (bitrate == 0
                 && formatInfo != null
                 && !string.IsNullOrEmpty(formatInfo.BitRate)
-                && (stream.Type == MediaStreamType.Video || stream.Type == MediaStreamType.Audio))
+                && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
                 if (int.TryParse(formatInfo.BitRate, NumberStyles.Any, _usCulture, out var value))
