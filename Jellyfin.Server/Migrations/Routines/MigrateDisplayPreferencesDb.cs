@@ -81,6 +81,7 @@ namespace Jellyfin.Server.Migrations.Routines
             };
 
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
+            var migratedPreferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
                 using var dbContext = _provider.CreateContext();
@@ -102,6 +103,14 @@ namespace Jellyfin.Server.Migrations.Routines
                         continue;
                     }
 
+                    var migrationKey = $"{dtoUserId:N}|{dto.Client}";
+                    if (migratedPreferences.Contains(migrationKey))
+                    {
+                        _logger.LogWarning("User with ID {UserId} already has display preferences for client {ClientName}, skipping migration.", dtoUserId, dto.Client);
+                        continue;
+                    }
+
+                    migratedPreferences.Add(migrationKey);
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
                         ? chromecastDict[version]
                         : ChromecastVersion.Stable;
