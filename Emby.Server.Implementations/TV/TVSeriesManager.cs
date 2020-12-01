@@ -192,7 +192,7 @@ namespace Emby.Server.Implementations.TV
 
             Func<Episode> getEpisode = () =>
             {
-                var nextEpsiode = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                var nextEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
@@ -206,14 +206,14 @@ namespace Emby.Server.Implementations.TV
                     DtoOptions = dtoOptions
                 }).Cast<Episode>().FirstOrDefault();
 
-                var userData = _userDataManager.GetUserData(user, nextEpsiode);
+                var userData = _userDataManager.GetUserData(user, nextEpisode);
 
                 if (userData.PlaybackPositionTicks > 0)
                 {
                     return null;
                 }
 
-                return nextEpsiode;
+                return nextEpisode;
             };
 
             if (lastWatchedEpisode != null)
