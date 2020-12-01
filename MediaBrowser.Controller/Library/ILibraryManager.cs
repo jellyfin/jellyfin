@@ -574,5 +574,7 @@ namespace MediaBrowser.Controller.Library
         void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason);
 
         BaseItem GetParentItem(string parentId, Guid? userId);
+
+        BaseItem GetParentItem(Guid? parentId, Guid? userId);
     }
 }

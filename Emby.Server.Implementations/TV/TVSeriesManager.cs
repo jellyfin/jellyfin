@@ -56,13 +56,11 @@ namespace Emby.Server.Implementations.TV
                 return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
             }
 
-            var parentIdGuid = string.IsNullOrEmpty(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
-
             BaseItem[] parents;
 
-            if (parentIdGuid.HasValue)
+            if (request.ParentId.HasValue)
             {
-                var parent = _libraryManager.GetItemById(parentIdGuid.Value);
+                var parent = _libraryManager.GetItemById(request.ParentId.Value);
 
                 if (parent != null)
                 {

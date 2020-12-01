@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
@@ -94,11 +94,11 @@ namespace Jellyfin.Api.Controllers
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
+                parentItem = parentId.HasValue ? _libraryManager.GetItemById(parentId.Value) : _libraryManager.GetUserRootFolder();
             }
             else
             {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
+                parentItem = parentId.HasValue ? _libraryManager.GetItemById(parentId.Value) : _libraryManager.RootFolder;
             }
 
             IList<BaseItem> items;

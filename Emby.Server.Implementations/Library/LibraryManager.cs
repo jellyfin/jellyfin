@@ -2474,6 +2474,21 @@ namespace Emby.Server.Implementations.Library
 
             return RootFolder;
         }
+        
+        public BaseItem GetParentItem(Guid? parentId, Guid? userId)
+        {
+            if (parentId.HasValue)
+            {
+                return GetItemById(parentId.Value);
+            }
+
+            if (userId.HasValue && userId != Guid.Empty)
+            {
+                return GetUserRootFolder();
+            }
+
+            return RootFolder;
+        }
 
         /// <inheritdoc />
         public bool IsVideoFile(string path)

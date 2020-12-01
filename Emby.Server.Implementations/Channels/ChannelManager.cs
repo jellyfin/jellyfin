@@ -538,20 +538,20 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(
                 new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(Channel) },
-                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
-                }).Select(i => GetChannelFeatures(i.ToString("N", CultureInfo.InvariantCulture))).ToArray();
+                    IncludeItemTypes = new[] {nameof(Channel)},
+                    OrderBy = new[] {(ItemSortBy.SortName, SortOrder.Ascending)}
+                }).Select(i => GetChannelFeatures(i)).ToArray();
         }
 
         /// <inheritdoc />
-        public ChannelFeatures GetChannelFeatures(string id)
+        public ChannelFeatures GetChannelFeatures(Guid? id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (!id.HasValue)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var channel = GetChannel(id);
+            var channel = GetChannel(id.Value);
             var channelProvider = GetChannelProvider(channel);
 
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());

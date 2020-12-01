@@ -50,13 +50,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFiltersLegacy> GetQueryFiltersLegacy(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
         {
-            var parentItem = string.IsNullOrEmpty(parentId)
-                ? null
-                : _libraryManager.GetItemById(parentId);
+            var parentItem = parentId.HasValue
+                ? _libraryManager.GetItemById(parentId.Value)
+                : null;
 
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -71,11 +71,11 @@ namespace Jellyfin.Api.Controllers
                 parentItem = null;
             }
 
-            var item = string.IsNullOrEmpty(parentId)
-                ? user == null
+            var item = parentId.HasValue
+                ? parentItem
+                : user == null
                     ? _libraryManager.RootFolder
-                    : _libraryManager.GetUserRootFolder()
-                : parentItem;
+                    : _libraryManager.GetUserRootFolder();
 
             var query = new InternalItemsQuery
             {
@@ -140,7 +140,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFilters> GetQueryFilters(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery] bool? isAiring,
             [FromQuery] bool? isMovie,
@@ -150,9 +150,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSeries,
             [FromQuery] bool? recursive)
         {
-            var parentItem = string.IsNullOrEmpty(parentId)
-                ? null
-                : _libraryManager.GetItemById(parentId);
+            var parentItem = parentId.HasValue
+                ? _libraryManager.GetItemById(parentId.Value)
+                : null;
 
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
