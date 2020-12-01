@@ -104,7 +104,8 @@ namespace Jellyfin.Server
             app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
-            app.Map(_serverConfigurationManager.GetNetworkConfiguration().BaseUrl, mainApp =>
+            var config = _serverConfigurationManager.GetNetworkConfiguration();
+            app.Map(config.BaseUrl, mainApp =>
             {
                 if (env.IsDevelopment())
                 {
@@ -122,8 +123,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
-                if (_serverConfigurationManager.GetNetworkConfiguration().RequireHttps
-                    && _serverApplicationHost.ListenWithHttps)
+                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
                 {
                     mainApp.UseHttpsRedirection();
                 }
