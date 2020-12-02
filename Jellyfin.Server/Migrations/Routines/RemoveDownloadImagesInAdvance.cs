@@ -35,8 +35,14 @@ namespace Jellyfin.Server.Migrations.Routines
             _logger.LogInformation("Removing 'RemoveDownloadImagesInAdvance' settings in all the libraries");
             foreach (var virtualFolder in virtualFolders)
             {
+                // Some virtual folders don't have a proper item id.
+                if (!Guid.TryParse(virtualFolder.ItemId, out var folderId))
+                {
+                    continue;
+                }
+
                 var libraryOptions = virtualFolder.LibraryOptions;
-                var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(virtualFolder.ItemId);
+                var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(folderId);
                 // The property no longer exists in LibraryOptions, so we just re-save the options to get old data removed.
                 collectionFolder.UpdateLibraryOptions(libraryOptions);
                 _logger.LogInformation("Removed from '{VirtualFolder}'", virtualFolder.Name);
