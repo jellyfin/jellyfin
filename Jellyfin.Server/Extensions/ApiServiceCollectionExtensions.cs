@@ -236,18 +236,6 @@ namespace Jellyfin.Server.Extensions
                     Description = "API key header parameter"
                 });
 
-                var securitySchemeRef = new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = AuthenticationSchemes.CustomAuthentication },
-                };
-
-                // TODO: Apply this with an operation filter instead of globally
-                // https://github.com/domaindrivendev/Swashbuckle.AspNetCore#add-security-definitions-and-requirements
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    { securitySchemeRef, Array.Empty<string>() }
-                });
-
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(
                     AppContext.BaseDirectory,
@@ -277,6 +265,7 @@ namespace Jellyfin.Server.Extensions
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
+                c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.DocumentFilter<WebsocketModelFilter>();
             });
