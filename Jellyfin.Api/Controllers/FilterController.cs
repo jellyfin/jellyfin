@@ -92,12 +92,12 @@ namespace Jellyfin.Api.Controllers
                 }
             };
 
-            var itemList = ((Folder?)item)?.GetItemList(query);
-            if (itemList == null)
+            if (!(item is Folder folder))
             {
                 return new QueryFiltersLegacy();
             }
 
+            var itemList = folder.GetItemList(query);
             return new QueryFiltersLegacy
             {
                 Years = itemList.Select(i => i.ProductionYear ?? -1)
