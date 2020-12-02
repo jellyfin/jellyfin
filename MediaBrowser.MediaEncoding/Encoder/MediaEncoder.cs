@@ -35,9 +35,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
     public class MediaEncoder : IMediaEncoder, IDisposable
     {
         /// <summary>
-        /// The default image extraction timeout in milliseconds.
+        /// The default SDR image extraction timeout in milliseconds.
         /// </summary>
-        internal const int DefaultImageExtractionTimeout = 10000;
+        internal const int DefaultSdrImageExtractionTimeout = 10000;
+
+        /// <summary>
+        /// The default HDR image extraction timeout in milliseconds.
+        /// </summary>
+        internal const int DefaultHdrImageExtractionTimeout = 20000;
 
         /// <summary>
         /// The us culture.
@@ -498,9 +503,36 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
+                // The failure of HDR extraction usually occurs when using custom ffmpeg that does not contain the zscale filter.
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, true, cancellationToken).ConfigureAwait(false);
+                }
+                catch (ArgumentException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "I-frame or HDR image extraction failed, will attempt with I-frame extraction disabled. Input: {Arguments}", inputArgument);
+                }
+
+                try
+                {
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, true, cancellationToken).ConfigureAwait(false);
+                }
+                catch (ArgumentException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "HDR image extraction failed, will fallback to SDR image extraction. Input: {Arguments}", inputArgument);
+                }
+
+                try
+                {
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, false, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -512,10 +544,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -555,6 +587,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
+
+            var enableHdrExtraction = allowTonemap && string.Equals(videoStream?.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase);
+            if (enableHdrExtraction)
+            {
+                string tonemapFilters = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p";
+                if (string.IsNullOrEmpty(vf))
+                {
+                    vf = "-vf " + tonemapFilters;
+                }
+                else
+                {
+                    vf += "," + tonemapFilters;
+                }
+            }
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
@@ -638,7 +684,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
                     if (timeoutMs <= 0)
                     {
-                        timeoutMs = DefaultImageExtractionTimeout;
+                        timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
                     }
 
                     ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
