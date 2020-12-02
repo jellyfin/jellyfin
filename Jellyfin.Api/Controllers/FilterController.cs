@@ -92,7 +92,7 @@ namespace Jellyfin.Api.Controllers
                 }
             };
 
-            if (!(item is Folder folder))
+            if (item is not Folder folder)
             {
                 return new QueryFiltersLegacy();
             }
