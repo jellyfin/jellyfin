@@ -585,7 +585,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
-            var enableHdrExtraction = allowTonemap && videoStream != null && !string.IsNullOrEmpty(videoStream.VideoRange) && string.Equals(videoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase);
+            var enableHdrExtraction = allowTonemap && string.Equals(videoStream?.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase);
             if (enableHdrExtraction)
             {
                 string tonemapFilters = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p";
