@@ -390,25 +390,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetInputPathArgument(EncodingJobInfo state)
         {
-            var protocol = state.InputProtocol;
             var mediaPath = state.MediaPath ?? string.Empty;
 
-            string[] inputPath;
-            if (state.IsInputVideo
-                && !(state.VideoType == VideoType.Iso && state.IsoMount == null))
-            {
-                inputPath = MediaEncoderHelpers.GetInputArgument(
-                    _fileSystem,
-                    mediaPath,
-                    state.IsoMount,
-                    state.PlayableStreamFileNames);
-            }
-            else
-            {
-                inputPath = new[] { mediaPath };
-            }
-
-            return _mediaEncoder.GetInputArgument(inputPath, protocol);
+            return _mediaEncoder.GetInputArgument(mediaPath, state.MediaSource);
         }
 
         /// <summary>
@@ -2673,18 +2657,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public string GetProbeSizeArgument(int numInputFiles)
-            => numInputFiles > 1 ? "-probesize " + _configuration.GetFFmpegProbeSize() : string.Empty;
-
-        public string GetAnalyzeDurationArgument(int numInputFiles)
-            => numInputFiles > 1 ? "-analyzeduration " + _configuration.GetFFmpegAnalyzeDuration() : string.Empty;
-
         public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var inputModifier = string.Empty;
-
-            var numInputFiles = state.PlayableStreamFileNames.Length > 0 ? state.PlayableStreamFileNames.Length : 1;
-            var probeSizeArgument = GetProbeSizeArgument(numInputFiles);
+            var probeSizeArgument = string.Empty;
 
             string analyzeDurationArgument;
             if (state.MediaSource.AnalyzeDurationMs.HasValue)
@@ -2693,7 +2669,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else
             {
-                analyzeDurationArgument = GetAnalyzeDurationArgument(numInputFiles);
+                analyzeDurationArgument = string.Empty;
             }
 
             if (!string.IsNullOrEmpty(probeSizeArgument))
@@ -2876,32 +2852,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
 
             state.IsoType = mediaSource.IsoType;
-
-            if (mediaSource.VideoType.HasValue)
-            {
-                state.VideoType = mediaSource.VideoType.Value;
-
-                if (mediaSource.VideoType.Value == VideoType.BluRay || mediaSource.VideoType.Value == VideoType.Dvd)
-                {
-                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, mediaSource.VideoType.Value).Select(Path.GetFileName).ToArray();
-                }
-                else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.BluRay)
-                {
-                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.BluRay).Select(Path.GetFileName).ToArray();
-                }
-                else if (mediaSource.VideoType.Value == VideoType.Iso && state.IsoType == IsoType.Dvd)
-                {
-                    state.PlayableStreamFileNames = Video.QueryPlayableStreamFiles(state.MediaPath, VideoType.Dvd).Select(Path.GetFileName).ToArray();
-                }
-                else
-                {
-                    state.PlayableStreamFileNames = Array.Empty<string>();
-                }
-            }
-            else
-            {
-                state.PlayableStreamFileNames = Array.Empty<string>();
-            }
 
             if (mediaSource.Timestamp.HasValue)
             {

@@ -762,11 +762,6 @@ namespace Jellyfin.Api.Helpers
 
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
         {
-            if (state.VideoType == VideoType.Iso && state.IsoType.HasValue && _isoManager.CanMount(state.MediaPath))
-            {
-                state.IsoMount = await _isoManager.Mount(state.MediaPath, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
-
             if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.Request.LiveStreamId))
             {
                 var liveStreamResponse = await _mediaSourceManager.OpenLiveStream(
