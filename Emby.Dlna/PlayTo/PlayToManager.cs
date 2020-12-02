@@ -90,10 +90,10 @@ namespace Emby.Dlna.PlayTo
             string location = info.Location.ToString();
 
             // It has to report that it's a media renderer
-            if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
-                nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!usn.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase)
+                && !nt.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase))
             {
-                // _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
+                _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
             }
 
@@ -203,7 +203,6 @@ namespace Emby.Dlna.PlayTo
                     _userDataManager,
                     _localization,
                     _mediaSourceManager,
-                    _config,
                     _mediaEncoder);
 
                 sessionInfo.AddController(controller);

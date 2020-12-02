@@ -237,8 +237,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 if (!inside)
                 {
-                    buffer[bufferIndex] = let;
-                    bufferIndex++;
+                    buffer[bufferIndex++] = let;
                 }
             }
 

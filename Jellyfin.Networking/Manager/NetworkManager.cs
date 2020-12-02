@@ -256,7 +256,7 @@ namespace Jellyfin.Networking.Manager
                 }
                 catch (ArgumentException e)
                 {
-                    _logger.LogWarning(e, "Ignoring LAN value {value}.", v);
+                    _logger.LogWarning(e, "Ignoring LAN value {Value}.", v);
                 }
             }
 
@@ -668,7 +668,6 @@ namespace Jellyfin.Networking.Manager
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 int i = str.IndexOf("%", StringComparison.OrdinalIgnoreCase);
-
                 if (i != -1)
                 {
                     str = str.Substring(0, i);
