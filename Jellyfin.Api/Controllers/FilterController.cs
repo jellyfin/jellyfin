@@ -54,35 +54,18 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
         {
-            var parentItem = parentId.HasValue
-                ? _libraryManager.GetItemById(parentId.Value)
-                : null;
-
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            if (includeItemTypes.Length == 1
-                && (string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(Trailer), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
+            BaseItem? item = null;
+            if (includeItemTypes.Length != 1
+                || !(string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(includeItemTypes[0], nameof(Trailer), StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
             {
-                parentItem = null;
-            }
-
-            BaseItem? item;
-            if (parentId.HasValue)
-            {
-                item = parentItem;
-            }
-            else if (user == null)
-            {
-                item = _libraryManager.RootFolder;
-            }
-            else
-            {
-                item = _libraryManager.GetUserRootFolder();
+                item = _libraryManager.GetParentItem(parentId, user?.Id);
             }
 
             var query = new InternalItemsQuery
@@ -158,14 +141,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSeries,
             [FromQuery] bool? recursive)
         {
-            var parentItem = parentId.HasValue
-                ? _libraryManager.GetItemById(parentId.Value)
-                : null;
-
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
+            BaseItem? parentItem = null;
             if (includeItemTypes.Length == 1
                 && (string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
                     || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
@@ -173,6 +153,10 @@ namespace Jellyfin.Api.Controllers
                     || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
             {
                 parentItem = null;
+            }
+            else if (parentId.HasValue)
+            {
+                parentItem = _libraryManager.GetItemById(parentId.Value);
             }
 
             var filters = new QueryFilters();
