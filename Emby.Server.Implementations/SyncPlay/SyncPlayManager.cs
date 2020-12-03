@@ -102,11 +102,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
-            if (!IsRequestValid(session, request))
-            {
-                return;
-            }
-
             // Locking required to access list of groups.
             lock (_groupsLock)
             {
@@ -132,11 +127,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void JoinGroup(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
-            if (!IsRequestValid(session, request))
-            {
-                return;
-            }
-
             var user = _userManager.GetUserById(session.UserId);
 
             // Locking required to access list of groups.
@@ -190,11 +180,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken)
         {
-            if (!IsRequestValid(session, request))
-            {
-                return;
-            }
-
             // Locking required to access list of groups.
             lock (_groupsLock)
             {
@@ -230,11 +215,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request)
         {
-            if (!IsRequestValid(session, request))
-            {
-                return new List<GroupInfoDto>();
-            }
-
             var user = _userManager.GetUserById(session.UserId);
             List<GroupInfoDto> list = new List<GroupInfoDto>();
 
@@ -260,11 +240,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
-            if (!IsRequestValid(session, request))
-            {
-                return;
-            }
-
             IGroupController group;
             lock (_mapsLock)
             {
@@ -416,43 +391,6 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 throw new InvalidOperationException("Session was in wrong group!");
             }
-        }
-
-        /// <summary>
-        /// Checks if a given session is allowed to make a given request.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <param name="request">The request.</param>
-        /// <returns><c>true</c> if the request is valid, <c>false</c> otherwise. Will return <c>false</c> also when session or request is null.</returns>
-        private bool IsRequestValid(SessionInfo session, ISyncPlayRequest request)
-        {
-            if (session == null || (request == null))
-            {
-                return false;
-            }
-
-            var user = _userManager.GetUserById(session.UserId);
-
-            if (user.SyncPlayAccess == SyncPlayAccess.None)
-            {
-                _logger.LogWarning("Session {SessionId} requested {RequestType} but does not have access to SyncPlay.", session.Id, request.Type);
-
-                // TODO: rename to a more generic error. Next PR will fix this.
-                var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.JoinGroupDenied, string.Empty);
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                return false;
-            }
-
-            if (request.Type.Equals(RequestType.NewGroup) && user.SyncPlayAccess != SyncPlayAccess.CreateAndJoinGroups)
-            {
-                _logger.LogWarning("Session {SessionId} does not have permission to create groups.", session.Id);
-
-                var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.CreateGroupDenied, string.Empty);
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                return false;
-            }
-
-            return true;
         }
     }
 }

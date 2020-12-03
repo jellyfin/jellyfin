@@ -20,7 +20,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The sync play controller.
     /// </summary>
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize(Policy = Policies.SyncPlayAccess)]
     public class SyncPlayController : BaseJellyfinApiController
     {
         private readonly ISessionManager _sessionManager;
@@ -51,6 +51,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("New")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayCreateGroupAccess)]
         public ActionResult SyncPlayCreateGroup(
             [FromBody, Required] NewGroupRequestBody requestData)
         {
