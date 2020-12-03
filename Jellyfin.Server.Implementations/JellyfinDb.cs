@@ -34,6 +34,8 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<ItemDisplayPreferences> ItemDisplayPreferences { get; set; }
 
+        public virtual DbSet<CustomItemDisplayPreferences> CustomItemDisplayPreferences { get; set; }
+
         public virtual DbSet<Permission> Permissions { get; set; }
 
         public virtual DbSet<Preference> Preferences { get; set; }
@@ -152,6 +154,14 @@ namespace Jellyfin.Server.Implementations
 
             modelBuilder.Entity<DisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.Client })
+                .IsUnique();
+
+            modelBuilder.Entity<CustomItemDisplayPreferences>()
+                .HasIndex(entity => entity.UserId)
+                .IsUnique(false);
+
+            modelBuilder.Entity<CustomItemDisplayPreferences>()
+                .HasIndex(entity => new { entity.UserId, entity.Client, entity.Key })
                 .IsUnique();
         }
     }

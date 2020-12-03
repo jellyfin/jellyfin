@@ -41,6 +41,22 @@ namespace MediaBrowser.Controller
         IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client);
 
         /// <summary>
+        /// Gets all of the custom item display preferences for the user and client.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client string.</param>
+        /// <returns>The dictionary of custom item display preferences.</returns>
+        IDictionary<string, string> ListCustomItemDisplayPreferences(Guid userId, string client);
+
+        /// <summary>
+        /// Sets the custom item display preference for the user and client.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client id.</param>
+        /// <param name="customPreferences">A dictionary of custom item display preferences.</param>
+        void SetCustomItemDisplayPreferences(Guid userId, string client, Dictionary<string, string> customPreferences);
+
+        /// <summary>
         /// Saves changes made to the database.
         /// </summary>
         void SaveChanges();

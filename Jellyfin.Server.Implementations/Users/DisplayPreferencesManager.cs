@@ -67,6 +67,30 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
+        public IDictionary<string, string> ListCustomItemDisplayPreferences(Guid userId, string client)
+        {
+            return _dbContext.CustomItemDisplayPreferences
+                .AsQueryable()
+                .Where(prefs => prefs.UserId == userId && string.Equals(prefs.Client, client))
+                .ToDictionary(prefs => prefs.Key, prefs => prefs.Value);
+        }
+
+        /// <inheritdoc />
+        public void SetCustomItemDisplayPreferences(Guid userId, string client, Dictionary<string, string> customPreferences)
+        {
+            var existingPrefs = _dbContext.CustomItemDisplayPreferences
+                .AsQueryable()
+                .Where(prefs => prefs.UserId == userId && string.Equals(prefs.Client, client));
+            _dbContext.CustomItemDisplayPreferences.RemoveRange(existingPrefs);
+
+            foreach (var (key, value) in customPreferences)
+            {
+                _dbContext.CustomItemDisplayPreferences
+                    .Add(new CustomItemDisplayPreferences(userId, client, key, value));
+            }
+        }
+
+        /// <inheritdoc />
         public void SaveChanges()
         {
             _dbContext.SaveChanges();

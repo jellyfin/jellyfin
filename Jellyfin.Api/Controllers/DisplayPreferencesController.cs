@@ -81,6 +81,19 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
 
+            // Load all custom display preferences
+            var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client);
+            if (customDisplayPreferences != null)
+            {
+                foreach (var (key, value) in customDisplayPreferences)
+                {
+                    if (!dto.CustomPrefs.ContainsKey(key))
+                    {
+                        dto.CustomPrefs[key] = value;
+                    }
+                }
+            }
+
             // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
             _displayPreferencesManager.SaveChanges();
 
@@ -124,21 +137,33 @@ namespace Jellyfin.Api.Controllers
             existingDisplayPreferences.ChromecastVersion = displayPreferences.CustomPrefs.TryGetValue("chromecastVersion", out var chromecastVersion)
                 ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
                 : ChromecastVersion.Stable;
+            displayPreferences.CustomPrefs.Remove("chromecastVersion");
+
             existingDisplayPreferences.EnableNextVideoInfoOverlay = displayPreferences.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
                 ? bool.Parse(enableNextVideoInfoOverlay)
                 : true;
+            displayPreferences.CustomPrefs.Remove("enableNextVideoInfoOverlay");
+
             existingDisplayPreferences.SkipBackwardLength = displayPreferences.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength)
                 ? int.Parse(skipBackLength, CultureInfo.InvariantCulture)
                 : 10000;
+            displayPreferences.CustomPrefs.Remove("skipBackLength");
+
             existingDisplayPreferences.SkipForwardLength = displayPreferences.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength)
                 ? int.Parse(skipForwardLength, CultureInfo.InvariantCulture)
                 : 30000;
+            displayPreferences.CustomPrefs.Remove("skipForwardLength");
+
             existingDisplayPreferences.DashboardTheme = displayPreferences.CustomPrefs.TryGetValue("dashboardTheme", out var theme)
                 ? theme
                 : string.Empty;
+            displayPreferences.CustomPrefs.Remove("dashboardTheme");
+
             existingDisplayPreferences.TvHome = displayPreferences.CustomPrefs.TryGetValue("tvhome", out var home)
                 ? home
                 : string.Empty;
+            displayPreferences.CustomPrefs.Remove("tvhome");
+
             existingDisplayPreferences.HomeSections.Clear();
 
             foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("homesection", StringComparison.OrdinalIgnoreCase)))
@@ -149,13 +174,18 @@ namespace Jellyfin.Api.Controllers
                     type = order < 7 ? defaults[order] : HomeSectionType.None;
                 }
 
+                displayPreferences.CustomPrefs.Remove(key);
                 existingDisplayPreferences.HomeSections.Add(new HomeSection { Order = order, Type = type });
             }
 
             foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
             {
-                var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Parse(key.Substring("landing-".Length)), existingDisplayPreferences.Client);
-                itemPreferences.ViewType = Enum.Parse<ViewType>(displayPreferences.ViewType);
+                if (Guid.TryParse(key.Substring("landing-".Length), out var preferenceId))
+                {
+                    var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, preferenceId, existingDisplayPreferences.Client);
+                    itemPreferences.ViewType = Enum.Parse<ViewType>(displayPreferences.ViewType);
+                    displayPreferences.CustomPrefs.Remove(key);
+                }
             }
 
             var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Empty, existingDisplayPreferences.Client);
@@ -169,6 +199,8 @@ namespace Jellyfin.Api.Controllers
                 itemPrefs.ViewType = viewType;
             }
 
+            // Set all remaining custom preferences.
+            _displayPreferencesManager.SetCustomItemDisplayPreferences(userId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
             _displayPreferencesManager.SaveChanges();
 
             return NoContent();
