@@ -1,14 +1,14 @@
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class SetPlaylistItemRequestBody.
+    /// Class SetPlaylistItemRequestDto.
     /// </summary>
-    public class SetPlaylistItemRequestBody
+    public class SetPlaylistItemRequestDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SetPlaylistItemRequestBody"/> class.
+        /// Initializes a new instance of the <see cref="SetPlaylistItemRequestDto"/> class.
         /// </summary>
-        public SetPlaylistItemRequestBody()
+        public SetPlaylistItemRequestDto()
         {
             PlaylistItemId = string.Empty;
         }

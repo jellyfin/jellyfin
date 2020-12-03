@@ -1,9 +1,11 @@
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+using MediaBrowser.Model.SyncPlay;
+
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class SetRepeatModeRequestBody.
+    /// Class SetRepeatModeRequestDto.
     /// </summary>
-    public class SetRepeatModeRequestBody
+    public class SetRepeatModeRequestDto
     {
         /// <summary>
         /// Gets or sets the repeat mode.

@@ -1,16 +1,16 @@
 using System;
 
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class ReadyRequest.
+    /// Class BufferRequestDto.
     /// </summary>
-    public class ReadyRequestBody
+    public class BufferRequestDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ReadyRequestBody"/> class.
+        /// Initializes a new instance of the <see cref="BufferRequestDto"/> class.
         /// </summary>
-        public ReadyRequestBody()
+        public BufferRequestDto()
         {
             PlaylistItemId = string.Empty;
         }

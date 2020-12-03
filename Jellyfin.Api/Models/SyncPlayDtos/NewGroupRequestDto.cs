@@ -1,14 +1,14 @@
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class NewGroupRequestBody.
+    /// Class NewGroupRequestDto.
     /// </summary>
-    public class NewGroupRequestBody
+    public class NewGroupRequestDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NewGroupRequestBody"/> class.
+        /// Initializes a new instance of the <see cref="NewGroupRequestDto"/> class.
         /// </summary>
-        public NewGroupRequestBody()
+        public NewGroupRequestDto()
         {
             GroupName = string.Empty;
         }

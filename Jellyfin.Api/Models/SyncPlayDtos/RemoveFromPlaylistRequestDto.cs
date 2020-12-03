@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class RemoveFromPlaylistRequestBody.
+    /// Class RemoveFromPlaylistRequestDto.
     /// </summary>
-    public class RemoveFromPlaylistRequestBody
+    public class RemoveFromPlaylistRequestDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RemoveFromPlaylistRequestBody"/> class.
+        /// Initializes a new instance of the <see cref="RemoveFromPlaylistRequestDto"/> class.
         /// </summary>
-        public RemoveFromPlaylistRequestBody()
+        public RemoveFromPlaylistRequestDto()
         {
             PlaylistItemIds = Array.Empty<string>();
         }

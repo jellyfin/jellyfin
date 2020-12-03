@@ -4,7 +4,6 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay.Requests;
 using MediaBrowser.Model.SyncPlay;
-using MediaBrowser.Model.SyncPlay.RequestBodies;
 
 namespace MediaBrowser.Controller.SyncPlay
 {

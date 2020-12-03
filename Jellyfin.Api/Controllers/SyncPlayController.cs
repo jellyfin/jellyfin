@@ -4,13 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.SyncPlayDtos;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Controller.SyncPlay.Requests;
 using MediaBrowser.Model.SyncPlay;
-using MediaBrowser.Model.SyncPlay.RequestBodies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +53,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [Authorize(Policy = Policies.SyncPlayCreateGroupAccess)]
         public ActionResult SyncPlayCreateGroup(
-            [FromBody, Required] NewGroupRequestBody requestData)
+            [FromBody, Required] NewGroupRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
@@ -70,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayJoinGroup(
-            [FromBody, Required] JoinGroupRequestBody requestData)
+            [FromBody, Required] JoinGroupRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new JoinGroupRequest(requestData.GroupId);
@@ -116,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SetNewQueue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySetNewQueue(
-            [FromBody, Required] PlayRequestBody requestData)
+            [FromBody, Required] PlayRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlayGroupRequest(
@@ -136,7 +136,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SetPlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySetPlaylistItem(
-            [FromBody, Required] SetPlaylistItemRequestBody requestData)
+            [FromBody, Required] SetPlaylistItemRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new SetPlaylistItemGroupRequest(requestData.PlaylistItemId);
@@ -153,7 +153,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("RemoveFromPlaylist")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayRemoveFromPlaylist(
-            [FromBody, Required] RemoveFromPlaylistRequestBody requestData)
+            [FromBody, Required] RemoveFromPlaylistRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new RemoveFromPlaylistGroupRequest(requestData.PlaylistItemIds);
@@ -170,7 +170,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("MovePlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayMovePlaylistItem(
-            [FromBody, Required] MovePlaylistItemRequestBody requestData)
+            [FromBody, Required] MovePlaylistItemRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new MovePlaylistItemGroupRequest(requestData.PlaylistItemId, requestData.NewIndex);
@@ -187,7 +187,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Queue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayQueue(
-            [FromBody, Required] QueueRequestBody requestData)
+            [FromBody, Required] QueueRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new QueueGroupRequest(requestData.ItemIds, requestData.Mode);
@@ -249,7 +249,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Seek")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySeek(
-            [FromBody, Required] SeekRequestBody requestData)
+            [FromBody, Required] SeekRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new SeekGroupRequest(requestData.PositionTicks);
@@ -266,7 +266,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Buffering")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayBuffering(
-            [FromBody, Required] BufferRequestBody requestData)
+            [FromBody, Required] BufferRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new BufferGroupRequest(
@@ -287,7 +287,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Ready")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayReady(
-            [FromBody, Required] ReadyRequestBody requestData)
+            [FromBody, Required] ReadyRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new ReadyGroupRequest(
@@ -308,7 +308,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SetIgnoreWait")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySetIgnoreWait(
-            [FromBody, Required] IgnoreWaitRequestBody requestData)
+            [FromBody, Required] IgnoreWaitRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new IgnoreWaitGroupRequest(requestData.IgnoreWait);
@@ -325,7 +325,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("NextItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayNextItem(
-            [FromBody, Required] NextItemRequestBody requestData)
+            [FromBody, Required] NextItemRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new NextItemGroupRequest(requestData.PlaylistItemId);
@@ -342,7 +342,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("PreviousItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayPreviousItem(
-            [FromBody, Required] PreviousItemRequestBody requestData)
+            [FromBody, Required] PreviousItemRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PreviousItemGroupRequest(requestData.PlaylistItemId);
@@ -359,7 +359,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SetRepeatMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySetRepeatMode(
-            [FromBody, Required] SetRepeatModeRequestBody requestData)
+            [FromBody, Required] SetRepeatModeRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new SetRepeatModeGroupRequest(requestData.Mode);
@@ -376,7 +376,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SetShuffleMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlaySetShuffleMode(
-            [FromBody, Required] SetShuffleModeRequestBody requestData)
+            [FromBody, Required] SetShuffleModeRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new SetShuffleModeGroupRequest(requestData.Mode);
@@ -393,7 +393,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SyncPlayPing(
-            [FromBody, Required] PingRequestBody requestData)
+            [FromBody, Required] PingRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PingGroupRequest(requestData.Ping);

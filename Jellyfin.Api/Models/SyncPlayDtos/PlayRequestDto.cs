@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class PlayRequestBody.
+    /// Class PlayRequestDto.
     /// </summary>
-    public class PlayRequestBody
+    public class PlayRequestDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PlayRequestBody"/> class.
+        /// Initializes a new instance of the <see cref="PlayRequestDto"/> class.
         /// </summary>
-        public PlayRequestBody()
+        public PlayRequestDto()
         {
             PlayingQueue = Array.Empty<Guid>();
         }

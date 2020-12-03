@@ -1,9 +1,9 @@
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class IgnoreWaitRequestBody.
+    /// Class IgnoreWaitRequestDto.
     /// </summary>
-    public class IgnoreWaitRequestBody
+    public class IgnoreWaitRequestDto
     {
         /// <summary>
         /// Gets or sets a value indicating whether the client should be ignored.

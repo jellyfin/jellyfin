@@ -1,11 +1,11 @@
 using System;
 
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class JoinGroupRequestBody.
+    /// Class JoinGroupRequestDto.
     /// </summary>
-    public class JoinGroupRequestBody
+    public class JoinGroupRequestDto
     {
         /// <summary>
         /// Gets or sets the group identifier.

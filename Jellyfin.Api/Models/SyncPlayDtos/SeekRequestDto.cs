@@ -1,9 +1,9 @@
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class SeekRequestBody.
+    /// Class SeekRequestDto.
     /// </summary>
-    public class SeekRequestBody
+    public class SeekRequestDto
     {
         /// <summary>
         /// Gets or sets the position ticks.

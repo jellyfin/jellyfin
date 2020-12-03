@@ -1,9 +1,11 @@
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+using MediaBrowser.Model.SyncPlay;
+
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class SetShuffleModeRequestBody.
+    /// Class SetShuffleModeRequestDto.
     /// </summary>
-    public class SetShuffleModeRequestBody
+    public class SetShuffleModeRequestDto
     {
         /// <summary>
         /// Gets or sets the shuffle mode.

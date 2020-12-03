@@ -1,9 +1,9 @@
-namespace MediaBrowser.Model.SyncPlay.RequestBodies
+namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
-    /// Class PingRequestBody.
+    /// Class PingRequestDto.
     /// </summary>
-    public class PingRequestBody
+    public class PingRequestDto
     {
         /// <summary>
         /// Gets or sets the ping time.
