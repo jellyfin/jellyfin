@@ -36,17 +36,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        private static Lazy<SemaphoreSlim> _metadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => {
-            var concurrency = ConfigurationManager.Configuration.LibraryMetadataRefreshConcurrency;
-
-            if (concurrency <= 0)
-            {
-                concurrency = Environment.ProcessorCount;
-            }
-
-            return new SemaphoreSlim(concurrency);
-        });
-
         public static IUserViewManager UserViewManager { get; set; }
 
         /// <summary>
@@ -491,7 +480,7 @@ namespace MediaBrowser.Controller.Entities
         private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // limit the amount of concurrent metadata refreshes
-            await RunMetadataRefresh(
+            await ProviderManager.RunMetadataRefresh(
                 async () =>
                 {
                     var series = container as Series;
@@ -518,7 +507,7 @@ namespace MediaBrowser.Controller.Entities
                 if (refreshOptions.RefreshItem(child))
                 {
                     // limit the amount of concurrent metadata refreshes
-                    await RunMetadataRefresh(
+                    await ProviderManager.RunMetadataRefresh(
                         async () => await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false),
                         cancellationToken).ConfigureAwait(false);
                 }
@@ -1250,26 +1239,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Runs multiple metadata refreshes concurrently.
-        /// </summary>
-        /// <param name="action">The action to run.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        private static async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
-        {
-            await _metadataRefreshThrottler.Value.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await action().ConfigureAwait(false);
-            }
-            finally
-            {
-                _metadataRefreshThrottler.Value.Release();
-            }
         }
 
         public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)

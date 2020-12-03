@@ -1167,6 +1167,26 @@ namespace MediaBrowser.Providers.Manager
             return RefreshItem(item, options, cancellationToken);
         }
 
+        /// <summary>
+        /// Runs multiple metadata refreshes concurrently.
+        /// </summary>
+        /// <param name="action">The action to run.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
+        {
+            await _baseItemManager.MetadataRefreshThrottler.Value.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                _baseItemManager.MetadataRefreshThrottler.Value.Release();
+            }
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {

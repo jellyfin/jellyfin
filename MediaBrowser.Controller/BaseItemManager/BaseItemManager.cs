@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Linq;
+using System.Threading;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -19,7 +20,21 @@ namespace MediaBrowser.Controller.BaseItemManager
         public BaseItemManager(IServerConfigurationManager serverConfigurationManager)
         {
             _serverConfigurationManager = serverConfigurationManager;
+
+            MetadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => {
+                var concurrency = _serverConfigurationManager.Configuration.LibraryMetadataRefreshConcurrency;
+
+                if (concurrency <= 0)
+                {
+                    concurrency = Environment.ProcessorCount;
+                }
+
+                return new SemaphoreSlim(concurrency);
+            });
         }
+
+        /// <inheritdoc />
+        public Lazy<SemaphoreSlim> MetadataRefreshThrottler { get; private set; }
 
         /// <inheritdoc />
         public bool IsMetadataFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name)
