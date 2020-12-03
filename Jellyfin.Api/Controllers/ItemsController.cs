@@ -176,7 +176,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? recursive,
             [FromQuery] string? searchTerm,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
@@ -239,14 +239,8 @@ namespace Jellyfin.Api.Controllers
                 parentId = null;
             }
 
-            BaseItem? item = null;
+            var item = _libraryManager.GetParentItem(parentId, userId);
             QueryResult<BaseItem> result;
-            if (!string.IsNullOrEmpty(parentId))
-            {
-                item = _libraryManager.GetItemById(parentId);
-            }
-
-            item ??= _libraryManager.GetUserRootFolder();
 
             if (!(item is Folder folder))
             {
@@ -343,7 +337,7 @@ namespace Jellyfin.Api.Controllers
                     ItemIds = ids,
                     MinCommunityRating = minCommunityRating,
                     MinCriticRating = minCriticRating,
-                    ParentId = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId),
+                    ParentId = parentId ?? Guid.Empty,
                     ParentIndexNumber = parentIndexNumber,
                     EnableTotalRecordCount = enableTotalRecordCount,
                     ExcludeItemIds = excludeItemIds,
@@ -615,7 +609,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? recursive,
             [FromQuery] string? searchTerm,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
@@ -773,7 +767,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery] bool? enableUserData,
@@ -785,7 +779,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true)
         {
             var user = _userManager.GetUserById(userId);
-            var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId);
+            var parentIdGuid = parentId ?? Guid.Empty;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);

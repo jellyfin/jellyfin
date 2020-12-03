@@ -2462,9 +2462,19 @@ namespace Emby.Server.Implementations.Library
 
         public BaseItem GetParentItem(string parentId, Guid? userId)
         {
-            if (!string.IsNullOrEmpty(parentId))
+            if (string.IsNullOrEmpty(parentId))
             {
-                return GetItemById(new Guid(parentId));
+                return GetParentItem((Guid?)null, userId);
+            }
+
+            return GetParentItem(new Guid(parentId), userId);
+        }
+
+        public BaseItem GetParentItem(Guid? parentId, Guid? userId)
+        {
+            if (parentId.HasValue)
+            {
+                return GetItemById(parentId.Value);
             }
 
             if (userId.HasValue && userId != Guid.Empty)
