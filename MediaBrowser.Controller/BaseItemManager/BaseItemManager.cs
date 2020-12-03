@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -13,6 +14,8 @@ namespace MediaBrowser.Controller.BaseItemManager
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
+        private int _metadataRefreshConcurrency = 0;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
         /// </summary>
@@ -21,16 +24,18 @@ namespace MediaBrowser.Controller.BaseItemManager
         {
             _serverConfigurationManager = serverConfigurationManager;
 
-            MetadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => {
-                var concurrency = _serverConfigurationManager.Configuration.LibraryMetadataRefreshConcurrency;
+            _metadataRefreshConcurrency = GetMetadataRefreshConcurrency();
+            SetupMetadataThrottler();
 
-                if (concurrency <= 0)
+            _serverConfigurationManager.ConfigurationUpdated += (object sender, EventArgs e) =>
+            {
+                int newMetadataRefreshConcurrency = GetMetadataRefreshConcurrency();
+                if (_metadataRefreshConcurrency != newMetadataRefreshConcurrency)
                 {
-                    concurrency = Environment.ProcessorCount;
+                    _metadataRefreshConcurrency = newMetadataRefreshConcurrency;
+                    SetupMetadataThrottler();
                 }
-
-                return new SemaphoreSlim(concurrency);
-            });
+            };
         }
 
         /// <inheritdoc />
@@ -96,6 +101,29 @@ namespace MediaBrowser.Controller.BaseItemManager
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
 
             return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Creates the metadata refresh throttler.
+        /// </summary>
+        private void SetupMetadataThrottler()
+        {
+            MetadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => new SemaphoreSlim(_metadataRefreshConcurrency));
+        }
+
+        /// <summary>
+        /// Returns the metadata refresh concurrency.
+        /// </summary>
+        private int GetMetadataRefreshConcurrency()
+        {
+            var concurrency = _serverConfigurationManager.Configuration.LibraryMetadataRefreshConcurrency;
+
+            if (concurrency <= 0)
+            {
+                concurrency = Environment.ProcessorCount;
+            }
+
+            return concurrency;
         }
     }
 }
