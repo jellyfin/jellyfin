@@ -44,20 +44,20 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The map between sessions and groups.
         /// </summary>
-        private readonly Dictionary<string, IGroupController> _sessionToGroupMap =
-            new Dictionary<string, IGroupController>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Group> _sessionToGroupMap =
+            new Dictionary<string, Group>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The groups.
         /// </summary>
-        private readonly Dictionary<Guid, IGroupController> _groups =
-            new Dictionary<Guid, IGroupController>();
+        private readonly Dictionary<Guid, Group> _groups =
+            new Dictionary<Guid, Group>();
 
         /// <summary>
         /// Lock used for accessing any group.
         /// </summary>
         /// <remarks>
-        /// Always lock before <see cref="_mapsLock"/> and before locking on any <see cref="IGroupController"/>.
+        /// Always lock before <see cref="_mapsLock"/> and before locking on any <see cref="Group"/>.
         /// </remarks>
         private readonly object _groupsLock = new object();
 
@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// Lock used for accessing the session-to-group map.
         /// </summary>
         /// <remarks>
-        /// Always lock after <see cref="_groupsLock"/> and before locking on any <see cref="IGroupController"/>.
+        /// Always lock after <see cref="_groupsLock"/> and before locking on any <see cref="Group"/>.
         /// </remarks>
         private readonly object _mapsLock = new object();
 
@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.SyncPlay
                         LeaveGroup(session, leaveGroupRequest, cancellationToken);
                     }
 
-                    var group = new GroupController(_loggerFactory, _userManager, _sessionManager, _libraryManager);
+                    var group = new Group(_loggerFactory, _userManager, _sessionManager, _libraryManager);
                     _groups[group.GroupId] = group;
 
                     AddSessionToGroup(session, group);
@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.SyncPlay
             // Locking required to access list of groups.
             lock (_groupsLock)
             {
-                _groups.TryGetValue(request.GroupId, out IGroupController group);
+                _groups.TryGetValue(request.GroupId, out Group group);
 
                 if (group == null)
                 {
@@ -162,7 +162,8 @@ namespace Emby.Server.Implementations.SyncPlay
                         {
                             if (FindJoinedGroupId(session).Equals(request.GroupId))
                             {
-                                group.SessionRestore(session, request, cancellationToken);
+                                // Restore session.
+                                group.SessionJoin(session, request, cancellationToken);
                                 return;
                             }
 
@@ -240,7 +241,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
-            IGroupController group;
+            Group group;
             lock (_mapsLock)
             {
                 group = FindJoinedGroup(session);
@@ -255,7 +256,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            // Group lock required as GroupController is not thread-safe.
+            // Group lock required as Group is not thread-safe.
             lock (group)
             {
                 group.HandleRequest(session, request, cancellationToken);
@@ -317,7 +318,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// </remarks>
         /// <param name="session">The session.</param>
         /// <returns>The group.</returns>
-        private IGroupController FindJoinedGroup(SessionInfo session)
+        private Group FindJoinedGroup(SessionInfo session)
         {
             _sessionToGroupMap.TryGetValue(session.Id, out var group);
             return group;
@@ -345,7 +346,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException">Thrown when the user is in another group already.</exception>
-        private void AddSessionToGroup(SessionInfo session, IGroupController group)
+        private void AddSessionToGroup(SessionInfo session, Group group)
         {
             if (session == null)
             {
@@ -369,7 +370,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException">Thrown when the user is not found in the specified group.</exception>
-        private void RemoveSessionFromGroup(SessionInfo session, IGroupController group)
+        private void RemoveSessionFromGroup(SessionInfo session, Group group)
         {
             if (session == null)
             {

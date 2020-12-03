@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
@@ -19,17 +16,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.SyncPlay
 {
     /// <summary>
-    /// Class GroupController.
+    /// Class Group.
     /// </summary>
     /// <remarks>
     /// Class is not thread-safe, external locking is required when accessing methods.
     /// </remarks>
-    public class GroupController : IGroupController, IGroupStateContext
+    public class Group : IGroupStateContext
     {
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger<GroupController> _logger;
+        private readonly ILogger<Group> _logger;
 
         /// <summary>
         /// The logger factory.
@@ -63,13 +60,13 @@ namespace Emby.Server.Implementations.SyncPlay
         private IGroupState _state;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupController" /> class.
+        /// Initializes a new instance of the <see cref="Group" /> class.
         /// </summary>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public GroupController(
+        public Group(
             ILoggerFactory loggerFactory,
             IUserManager userManager,
             ISessionManager sessionManager,
@@ -79,7 +76,7 @@ namespace Emby.Server.Implementations.SyncPlay
             _userManager = userManager;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
-            _logger = loggerFactory.CreateLogger<GroupController>();
+            _logger = loggerFactory.CreateLogger<Group>();
 
             _state = new IdleGroupState(loggerFactory);
         }
@@ -235,10 +232,18 @@ namespace Emby.Server.Implementations.SyncPlay
             return !usersWithNoAccess.Any();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Checks if the group is empty.
+        /// </summary>
+        /// <returns><c>true</c> if the group is empty, <c>false</c> otherwise.</returns>
         public bool IsGroupEmpty() => _participants.Count == 0;
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Initializes the group with the session's info.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         public void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
             GroupName = request.GroupName;
@@ -273,7 +278,12 @@ namespace Emby.Server.Implementations.SyncPlay
             _logger.LogInformation("Session {SessionId} created group {GroupId}.", session.Id, GroupId.ToString());
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Adds the session to the group.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         public void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
             AddSession(session);
@@ -289,21 +299,12 @@ namespace Emby.Server.Implementations.SyncPlay
             _logger.LogInformation("Session {SessionId} joined group {GroupId}.", session.Id, GroupId.ToString());
         }
 
-        /// <inheritdoc />
-        public void SessionRestore(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
-        {
-            var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
-            SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
-
-            var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
-            SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
-
-            _state.SessionJoined(this, _state.Type, session, cancellationToken);
-
-            _logger.LogInformation("Session {SessionId} re-joined group {GroupId}.", session.Id, GroupId.ToString());
-        }
-
-        /// <inheritdoc />
+        /// <summary>
+        /// Removes the session from the group.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         public void SessionLeave(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken)
         {
             _state.SessionLeaving(this, _state.Type, session, cancellationToken);
@@ -319,7 +320,12 @@ namespace Emby.Server.Implementations.SyncPlay
             _logger.LogInformation("Session {SessionId} left group {GroupId}.", session.Id, GroupId.ToString());
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Handles the requested action by the session.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="request">The requested action.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
             // The server's job is to maintain a consistent state for clients to reference
@@ -329,14 +335,21 @@ namespace Emby.Server.Implementations.SyncPlay
             request.Apply(this, _state, session, cancellationToken);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets the info about the group for the clients.
+        /// </summary>
+        /// <returns>The group info for the clients.</returns>
         public GroupInfoDto GetInfo()
         {
             var participants = _participants.Values.Select(session => session.Session.UserName).Distinct().ToList();
             return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Checks if a user has access to all content in the play queue.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns><c>true</c> if the user can access the play queue; <c>false</c> otherwise.</returns>
         public bool HasAccessToPlayQueue(User user)
         {
             var items = PlayQueue.GetPlaylist().Select(item => item.ItemId).ToList();
