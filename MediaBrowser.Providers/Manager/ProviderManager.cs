@@ -1175,7 +1175,10 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
         {
-            await _baseItemManager.MetadataRefreshThrottler.Value.WaitAsync(cancellationToken).ConfigureAwait(false);
+            // create a variable for this since it is possible MetadataRefreshThrottler could change due to a config update during a scan
+            var metadataRefreshThrottler = _baseItemManager.MetadataRefreshThrottler;
+
+            await metadataRefreshThrottler.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -1183,7 +1186,7 @@ namespace MediaBrowser.Providers.Manager
             }
             finally
             {
-                _baseItemManager.MetadataRefreshThrottler.Value.Release();
+                metadataRefreshThrottler.Release();
             }
         }
 

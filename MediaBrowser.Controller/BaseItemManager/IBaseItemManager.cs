@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// <summary>
         /// Gets the semaphore used to limit the amount of concurrent metadata refreshes.
         /// </summary>
-        Lazy<SemaphoreSlim> MetadataRefreshThrottler { get; }
+        SemaphoreSlim MetadataRefreshThrottler { get; }
 
         /// <summary>
         /// Is metadata fetcher enabled.

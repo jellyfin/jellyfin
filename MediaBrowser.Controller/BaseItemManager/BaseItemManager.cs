@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         }
 
         /// <inheritdoc />
-        public Lazy<SemaphoreSlim> MetadataRefreshThrottler { get; private set; }
+        public SemaphoreSlim MetadataRefreshThrottler { get; private set; }
 
         /// <inheritdoc />
         public bool IsMetadataFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name)
@@ -108,10 +108,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// </summary>
         private void SetupMetadataThrottler()
         {
-            if (MetadataRefreshThrottler == null || MetadataRefreshThrottler.IsValueCreated)
-            {
-                MetadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => new SemaphoreSlim(_metadataRefreshConcurrency));
-            }
+            MetadataRefreshThrottler = new SemaphoreSlim(_metadataRefreshConcurrency);
         }
 
         /// <summary>
