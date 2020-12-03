@@ -177,7 +177,7 @@ namespace Jellyfin.Api.Controllers
 
             foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
             {
-                if (Guid.TryParse(key.Substring("landing-".Length), out var preferenceId))
+                if (Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var preferenceId))
                 {
                     var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, preferenceId, existingDisplayPreferences.Client);
                     itemPreferences.ViewType = Enum.Parse<ViewType>(displayPreferences.ViewType);

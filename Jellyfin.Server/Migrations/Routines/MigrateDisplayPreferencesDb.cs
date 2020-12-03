@@ -105,6 +105,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
                         ? chromecastDict[version]
                         : ChromecastVersion.Stable;
+                    dto.CustomPrefs.Remove("chromecastVersion");
 
                     var displayPreferences = new DisplayPreferences(dtoUserId, result[2].ToString())
                     {
@@ -126,15 +127,24 @@ namespace Jellyfin.Server.Migrations.Routines
                         TvHome = dto.CustomPrefs.TryGetValue("tvhome", out var home) ? home : string.Empty
                     };
 
+                    dto.CustomPrefs.Remove("skipForwardLength");
+                    dto.CustomPrefs.Remove("skipBackLength");
+                    dto.CustomPrefs.Remove("enableNextVideoInfoOverlay");
+                    dto.CustomPrefs.Remove("dashboardtheme");
+                    dto.CustomPrefs.Remove("tvhome");
+
                     for (int i = 0; i < 7; i++)
                     {
-                        dto.CustomPrefs.TryGetValue("homesection" + i, out var homeSection);
+                        var key = "homesection" + i;
+                        dto.CustomPrefs.TryGetValue(key, out var homeSection);
 
                         displayPreferences.HomeSections.Add(new HomeSection
                         {
                             Order = i,
                             Type = Enum.TryParse<HomeSectionType>(homeSection, true, out var type) ? type : defaults[i]
                         });
+
+                        dto.CustomPrefs.Remove(key);
                     }
 
                     var defaultLibraryPrefs = new ItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client)
@@ -167,7 +177,13 @@ namespace Jellyfin.Server.Migrations.Routines
                             libraryDisplayPreferences.ViewType = viewType;
                         }
 
+                        dto.CustomPrefs.Remove(key);
                         dbContext.ItemDisplayPreferences.Add(libraryDisplayPreferences);
+                    }
+
+                    foreach (var (key, value) in dto.CustomPrefs)
+                    {
+                        dbContext.Add(new CustomItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client, key, value));
                     }
 
                     dbContext.Add(displayPreferences);
