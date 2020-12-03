@@ -117,6 +117,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         void UpdateEncoderPath(string path, string pathType);
 
-        IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, IIsoMount isoMount, uint? titleNumber);
+        IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
     }
 }

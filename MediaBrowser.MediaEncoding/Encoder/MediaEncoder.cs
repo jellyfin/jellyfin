@@ -949,16 +949,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
-        public IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, IIsoMount isoMount, uint? titleNumber)
+        public IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber)
         {
             // min size 300 mb
             const long MinPlayableSize = 314572800;
 
-            var root = isoMount != null ? isoMount.MountedPath : path;
-
             // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
             // Once we reach a file that is at least the minimum, return all subsequent ones
-            var allVobs = _fileSystem.GetFiles(root, true)
+            var allVobs = _fileSystem.GetFiles(path, true)
                 .Where(file => string.Equals(file.Extension, ".vob", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => i.FullName)
                 .ToList();
