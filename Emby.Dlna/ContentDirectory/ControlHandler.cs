@@ -1681,7 +1681,6 @@ namespace Emby.Dlna.ContentDirectory
         private ServerItem GetItemFromObjectId(string id)
         {
             return DidlBuilder.IsIdRoot(id)
-
                  ? new ServerItem(_libraryManager.GetUserRootFolder())
                  : ParseItemId(id);
         }

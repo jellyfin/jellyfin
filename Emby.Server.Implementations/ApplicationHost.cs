@@ -1,21 +1,18 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
@@ -52,7 +49,6 @@ using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -85,7 +81,6 @@ using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
@@ -100,7 +95,6 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -128,7 +122,6 @@ namespace Emby.Server.Implementations
 
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
-        private IHttpClientFactory _httpClientFactory;
         private string[] _urlPrefixes;
 
         /// <summary>
@@ -661,7 +654,6 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
-            _httpClientFactory = Resolve<IHttpClientFactory>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -1049,7 +1041,7 @@ namespace Emby.Server.Implementations
                         metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
 
                         int versionIndex = dir.LastIndexOf('_');
-                        if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version parsedVersion))
+                        if (versionIndex != -1 && Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version parsedVersion))
                         {
                             // Versioned folder.
                             versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir));
