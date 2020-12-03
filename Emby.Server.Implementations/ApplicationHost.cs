@@ -776,7 +776,7 @@ namespace Emby.Server.Implementations
             {
                 foreach (var plugin in Plugins)
                 {
-                    Logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name.ToString(), plugin.Version.ToString());
+                    Logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name, plugin.Version);
                 }
             }
 
