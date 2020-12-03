@@ -108,7 +108,10 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// </summary>
         private void SetupMetadataThrottler()
         {
-            MetadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => new SemaphoreSlim(_metadataRefreshConcurrency));
+            if (MetadataRefreshThrottler == null || MetadataRefreshThrottler.IsValueCreated)
+            {
+                MetadataRefreshThrottler = new Lazy<SemaphoreSlim>(() => new SemaphoreSlim(_metadataRefreshConcurrency));
+            }
         }
 
         /// <summary>
