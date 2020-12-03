@@ -87,10 +87,7 @@ namespace Jellyfin.Api.Controllers
             {
                 foreach (var (key, value) in customDisplayPreferences)
                 {
-                    if (!dto.CustomPrefs.ContainsKey(key))
-                    {
-                        dto.CustomPrefs[key] = value;
-                    }
+                    dto.CustomPrefs.TryAdd(key, value);
                 }
             }
 
