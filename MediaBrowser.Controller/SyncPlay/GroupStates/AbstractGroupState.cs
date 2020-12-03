@@ -157,13 +157,13 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }

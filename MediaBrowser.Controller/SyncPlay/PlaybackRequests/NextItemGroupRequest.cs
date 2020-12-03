@@ -5,15 +5,15 @@ using MediaBrowser.Model.SyncPlay;
 namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
 {
     /// <summary>
-    /// Class NextTrackGroupRequest.
+    /// Class NextItemGroupRequest.
     /// </summary>
-    public class NextTrackGroupRequest : AbstractPlaybackRequest
+    public class NextItemGroupRequest : AbstractPlaybackRequest
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NextTrackGroupRequest"/> class.
+        /// Initializes a new instance of the <see cref="NextItemGroupRequest"/> class.
         /// </summary>
         /// <param name="playlistItemId">The playing item identifier.</param>
-        public NextTrackGroupRequest(string playlistItemId)
+        public NextItemGroupRequest(string playlistItemId)
         {
             PlaylistItemId = playlistItemId;
         }
@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         public string PlaylistItemId { get; }
 
         /// <inheritdoc />
-        public override PlaybackRequestType Action { get; } = PlaybackRequestType.NextTrack;
+        public override PlaybackRequestType Action { get; } = PlaybackRequestType.NextItem;
 
         /// <inheritdoc />
         public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)

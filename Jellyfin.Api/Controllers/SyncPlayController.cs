@@ -108,14 +108,14 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Request play in SyncPlay group.
+        /// Request to set new playlist in SyncPlay group.
         /// </summary>
         /// <param name="requestData">The new playlist to play in the group.</param>
-        /// <response code="204">Play request sent to all group members.</response>
+        /// <response code="204">Queue update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost("Play")]
+        [HttpPost("SetNewQueue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayPlay(
+        public ActionResult SyncPlaySetNewQueue(
             [FromBody, Required] PlayRequestBody requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -131,7 +131,7 @@ namespace Jellyfin.Api.Controllers
         /// Request to change playlist item in SyncPlay group.
         /// </summary>
         /// <param name="requestData">The new item to play.</param>
-        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <response code="204">Queue update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetPlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -148,7 +148,7 @@ namespace Jellyfin.Api.Controllers
         /// Request to remove items from the playlist in SyncPlay group.
         /// </summary>
         /// <param name="requestData">The items to remove.</param>
-        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <response code="204">Queue update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("RemoveFromPlaylist")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -165,7 +165,7 @@ namespace Jellyfin.Api.Controllers
         /// Request to move an item in the playlist in SyncPlay group.
         /// </summary>
         /// <param name="requestData">The new position for the item.</param>
-        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <response code="204">Queue update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("MovePlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -182,7 +182,7 @@ namespace Jellyfin.Api.Controllers
         /// Request to queue items to the playlist of a SyncPlay group.
         /// </summary>
         /// <param name="requestData">The items to add.</param>
-        /// <response code="204">Queue update request sent to all group members.</response>
+        /// <response code="204">Queue update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Queue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -198,7 +198,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Request unpause in SyncPlay group.
         /// </summary>
-        /// <response code="204">Unpause request sent to all group members.</response>
+        /// <response code="204">Unpause update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Unpause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -213,7 +213,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Request pause in SyncPlay group.
         /// </summary>
-        /// <response code="204">Pause request sent to all group members.</response>
+        /// <response code="204">Pause update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Pause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -228,7 +228,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Request stop in SyncPlay group.
         /// </summary>
-        /// <response code="204">Stop request sent to all group members.</response>
+        /// <response code="204">Stop update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Stop")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -244,7 +244,7 @@ namespace Jellyfin.Api.Controllers
         /// Request seek in SyncPlay group.
         /// </summary>
         /// <param name="requestData">The new playback position.</param>
-        /// <response code="204">Seek request sent to all group members.</response>
+        /// <response code="204">Seek update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Seek")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -317,35 +317,35 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Request next track in SyncPlay group.
+        /// Request next item in SyncPlay group.
         /// </summary>
-        /// <param name="requestData">The current track information.</param>
-        /// <response code="204">Next track request sent to all group members.</response>
+        /// <param name="requestData">The current item information.</param>
+        /// <response code="204">Next item update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost("NextTrack")]
+        [HttpPost("NextItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayNextTrack(
-            [FromBody, Required] NextTrackRequestBody requestData)
+        public ActionResult SyncPlayNextItem(
+            [FromBody, Required] NextItemRequestBody requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new NextTrackGroupRequest(requestData.PlaylistItemId);
+            var syncPlayRequest = new NextItemGroupRequest(requestData.PlaylistItemId);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 
         /// <summary>
-        /// Request previous track in SyncPlay group.
+        /// Request previous item in SyncPlay group.
         /// </summary>
-        /// <param name="requestData">The current track information.</param>
-        /// <response code="204">Previous track request sent to all group members.</response>
+        /// <param name="requestData">The current item information.</param>
+        /// <response code="204">Previous item update sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost("PreviousTrack")]
+        [HttpPost("PreviousItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayPreviousTrack(
-            [FromBody, Required] PreviousTrackRequestBody requestData)
+        public ActionResult SyncPlayPreviousItem(
+            [FromBody, Required] PreviousItemRequestBody requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new PreviousTrackGroupRequest(requestData.PlaylistItemId);
+            var syncPlayRequest = new PreviousItemGroupRequest(requestData.PlaylistItemId);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }

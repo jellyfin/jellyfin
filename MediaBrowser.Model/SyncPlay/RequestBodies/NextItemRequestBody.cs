@@ -1,14 +1,14 @@
 namespace MediaBrowser.Model.SyncPlay.RequestBodies
 {
     /// <summary>
-    /// Class NextTrackRequestBody.
+    /// Class NextItemRequestBody.
     /// </summary>
-    public class NextTrackRequestBody
+    public class NextItemRequestBody
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NextTrackRequestBody"/> class.
+        /// Initializes a new instance of the <see cref="NextItemRequestBody"/> class.
         /// </summary>
-        public NextTrackRequestBody()
+        public NextItemRequestBody()
         {
             PlaylistItemId = string.Empty;
         }

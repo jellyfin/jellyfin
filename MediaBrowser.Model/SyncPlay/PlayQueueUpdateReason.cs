@@ -38,12 +38,12 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// A user is requesting the next item in queue.
         /// </summary>
-        NextTrack = 6,
+        NextItem = 6,
 
         /// <summary>
         /// A user is requesting the previous item in queue.
         /// </summary>
-        PreviousTrack = 7,
+        PreviousItem = 7,
 
         /// <summary>
         /// A user is changing repeat mode.

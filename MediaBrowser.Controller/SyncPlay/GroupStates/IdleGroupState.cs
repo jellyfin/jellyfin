@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
             var waitingState = new WaitingGroupState(LoggerFactory);
@@ -102,7 +102,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Change state.
             var waitingState = new WaitingGroupState(LoggerFactory);

@@ -155,24 +155,24 @@ namespace MediaBrowser.Controller.SyncPlay
         void HandleRequest(IGroupStateContext context, GroupStateType prevState, ReadyGroupRequest request, SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Handles a next-track request from a session. Context's state can change.
+        /// Handles a next-item request from a session. Context's state can change.
         /// </summary>
         /// <param name="context">The context of the state.</param>
         /// <param name="prevState">The previous state.</param>
-        /// <param name="request">The next-track request.</param>
+        /// <param name="request">The next-item request.</param>
         /// <param name="session">The session.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken);
+        void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Handles a previous-track request from a session. Context's state can change.
+        /// Handles a previous-item request from a session. Context's state can change.
         /// </summary>
         /// <param name="context">The context of the state.</param>
         /// <param name="prevState">The previous state.</param>
-        /// <param name="request">The previous-track request.</param>
+        /// <param name="request">The previous-item request.</param>
         /// <param name="session">The session.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken);
+        void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
         /// Handles a set-repeat-mode request from a session. Context's state should not change.

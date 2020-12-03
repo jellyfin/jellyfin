@@ -560,7 +560,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -582,7 +582,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             if (newItem)
             {
                 // Send playing-queue update.
-                var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NextTrack);
+                var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NextItem);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
@@ -601,12 +601,12 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                 context.SetState(newState);
 
-                _logger.LogDebug("No next track available in group {GroupId}.", context.GroupId.ToString());
+                _logger.LogDebug("No next item available in group {GroupId}.", context.GroupId.ToString());
             }
         }
 
         /// <inheritdoc />
-        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousTrackGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public override void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
             if (!InitialStateSet)
@@ -628,7 +628,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             if (newItem)
             {
                 // Send playing-queue update.
-                var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.PreviousTrack);
+                var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.PreviousItem);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
@@ -647,7 +647,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                 context.SetState(newState);
 
-                _logger.LogDebug("No previous track available in group {GroupId}.", context.GroupId.ToString());
+                _logger.LogDebug("No previous item available in group {GroupId}.", context.GroupId.ToString());
             }
         }
 
