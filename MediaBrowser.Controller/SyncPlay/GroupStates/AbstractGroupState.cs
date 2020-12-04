@@ -44,27 +44,27 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         public abstract void SessionLeaving(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken);
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, IGroupPlaybackRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(IGroupPlaybackRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, PlayGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(PlayGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, SetPlaylistItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(SetPlaylistItemGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             var waitingState = new WaitingGroupState(LoggerFactory);
             context.SetState(waitingState);
-            waitingState.HandleRequest(context, Type, request, session, cancellationToken);
+            waitingState.HandleRequest(request, context, Type, session, cancellationToken);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, RemoveFromPlaylistGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(RemoveFromPlaylistGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             var playingItemRemoved = context.RemoveFromPlayQueue(request.PlaylistItemIds);
 
@@ -79,12 +79,12 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 IGroupState idleState = new IdleGroupState(LoggerFactory);
                 context.SetState(idleState);
                 var stopRequest = new StopGroupRequest();
-                idleState.HandleRequest(context, Type, stopRequest, session, cancellationToken);
+                idleState.HandleRequest(stopRequest, context, Type, session, cancellationToken);
             }
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, MovePlaylistItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(MovePlaylistItemGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             var result = context.MoveItemInPlayQueue(request.PlaylistItemId, request.NewIndex);
 
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, QueueGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(QueueGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             var result = context.AddToPlayQueue(request.ItemIds, request.Mode);
 
@@ -121,55 +121,55 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, UnpauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(UnpauseGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, PauseGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(PauseGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, StopGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(StopGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, SeekGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(SeekGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, BufferGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(BufferGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, ReadyGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(ReadyGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, NextItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(NextItemGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, PreviousItemGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(PreviousItemGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, SetRepeatModeGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(SetRepeatModeGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             context.SetRepeatMode(request.Mode);
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.RepeatMode);
@@ -178,7 +178,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, SetShuffleModeGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(SetShuffleModeGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             context.SetShuffleMode(request.Mode);
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.ShuffleMode);
@@ -187,14 +187,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, PingGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(PingGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             // Collected pings are used to account for network latency when unpausing playback.
             context.UpdatePing(session, request.Ping);
         }
 
         /// <inheritdoc />
-        public virtual void HandleRequest(IGroupStateContext context, GroupStateType prevState, IgnoreWaitGroupRequest request, SessionInfo session, CancellationToken cancellationToken)
+        public virtual void HandleRequest(IgnoreWaitGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             context.SetIgnoreGroupWait(session, request.IgnoreWait);
         }

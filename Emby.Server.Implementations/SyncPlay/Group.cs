@@ -332,6 +332,16 @@ namespace Emby.Server.Implementations.SyncPlay
             // and notify clients of state changes. The actual syncing of media playback
             // happens client side. Clients are aware of the server's time and use it to sync.
             _logger.LogInformation("Session {SessionId} requested {RequestType} in group {GroupId} that is {StateType}.", session.Id, request.Action, GroupId.ToString(), _state.Type);
+
+            // Apply requested changes to this group given its current state.
+            // Every request has a slightly different outcome depending on the group's state.
+            // There are currently four different group states that accomplish different goals:
+            // - Idle: in this state no media is playing and clients should be idle (playback is stopped).
+            // - Waiting: in this state the group is waiting for all the clients to be ready to start the playback,
+            //      that is, they've either finished loading the media for the first time or they've finished buffering.
+            //      Once all clients report to be ready the group's state can change to Playing or Paused.
+            // - Playing: clients have some media loaded and playback is unpaused.
+            // - Paused: clients have some media loaded but playback is currently paused.
             request.Apply(this, _state, session, cancellationToken);
         }
 

@@ -305,6 +305,7 @@ namespace Emby.Server.Implementations.SyncPlay
                         return;
                     }
 
+                    // Apply requested changes to group.
                     group.HandleRequest(session, request, cancellationToken);
                 }
             }

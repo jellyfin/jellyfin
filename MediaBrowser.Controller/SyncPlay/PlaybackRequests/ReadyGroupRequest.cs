@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// <inheritdoc />
         public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
         {
-            state.HandleRequest(context, state.Type, this, session, cancellationToken);
+            state.HandleRequest(this, context, state.Type, session, cancellationToken);
         }
     }
 }
