@@ -3,13 +3,11 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -92,10 +90,10 @@ namespace Emby.Dlna.PlayTo
             string location = info.Location.ToString();
 
             // It has to report that it's a media renderer
-            if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
-                nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!usn.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase)
+                && !nt.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase))
             {
-                // _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
+                _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
             }
 
@@ -130,24 +128,36 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private static string GetUuid(string usn)
+        internal static string GetUuid(string usn)
         {
             const string UuidStr = "uuid:";
             const string UuidColonStr = "::";
 
             var index = usn.IndexOf(UuidStr, StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
+            if (index == -1)
             {
-                return usn.Substring(index + UuidStr.Length);
+                return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            index = usn.IndexOf(UuidColonStr, StringComparison.OrdinalIgnoreCase);
+            ReadOnlySpan<char> tmp = usn.AsSpan()[(index + UuidStr.Length)..];
+
+            index = tmp.IndexOf(UuidColonStr, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                usn = usn.Substring(0, index + UuidColonStr.Length);
+                tmp = tmp[..index];
             }
 
-            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            index = tmp.IndexOf('{');
+            if (index != -1)
+            {
+                int endIndex = tmp.IndexOf('}');
+                if (endIndex != -1)
+                {
+                    tmp = tmp[(index + 1)..endIndex];
+                }
+            }
+
+            return tmp.ToString();
         }
 
         private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
@@ -177,15 +187,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress;
-                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IPAddress.Any) || info.LocalIpAddress.Equals(IPAddress.IPv6Any))
-                {
-                    serverAddress = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
-                }
+                string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
 
                 controller = new PlayToController(
                     sessionInfo,
@@ -201,7 +203,6 @@ namespace Emby.Dlna.PlayTo
                     _userDataManager,
                     _localization,
                     _mediaSourceManager,
-                    _config,
                     _mediaEncoder);
 
                 sessionInfo.AddController(controller);

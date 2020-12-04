@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -72,10 +72,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery] bool? isFavorite,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
@@ -96,8 +96,8 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
-                IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
@@ -109,15 +109,15 @@ namespace Jellyfin.Api.Controllers
                 EnableTotalRecordCount = enableTotalRecordCount
             };
 
-            if (!string.IsNullOrWhiteSpace(parentId))
+            if (parentId.HasValue)
             {
                 if (parentItem is Folder)
                 {
-                    query.AncestorIds = new[] { new Guid(parentId) };
+                    query.AncestorIds = new[] { parentId.Value };
                 }
                 else
                 {
-                    query.ItemIds = new[] { new Guid(parentId) };
+                    query.ItemIds = new[] { parentId.Value };
                 }
             }
 
@@ -133,7 +133,7 @@ namespace Jellyfin.Api.Controllers
                 result = _libraryManager.GetGenres(query);
             }
 
-            var shouldIncludeItemTypes = !string.IsNullOrEmpty(includeItemTypes);
+            var shouldIncludeItemTypes = includeItemTypes.Length != 0;
             return RequestHelpers.CreateQueryResult(result, dtoOptions, _dtoService, shouldIncludeItemTypes, user);
         }
 

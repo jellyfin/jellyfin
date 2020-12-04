@@ -193,7 +193,6 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
         [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
-        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks?}/Stream.{format}", Name = "GetSubtitle_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesFile("text/*")]
         public async Task<ActionResult> GetSubtitle(
@@ -204,7 +203,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false,
-            [FromRoute] long startPositionTicks = 0)
+            [FromQuery] long startPositionTicks = 0)
         {
             if (string.Equals(format, "js", StringComparison.OrdinalIgnoreCase))
             {
@@ -247,6 +246,43 @@ namespace Jellyfin.Api.Controllers
                     endPositionTicks,
                     copyTimestamps).ConfigureAwait(false),
                 MimeTypes.GetMimeType("file." + format));
+        }
+
+        /// <summary>
+        /// Gets subtitles in a specified format.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="mediaSourceId">The media source id.</param>
+        /// <param name="index">The subtitle stream index.</param>
+        /// <param name="startPositionTicks">Optional. The start position of the subtitle in ticks.</param>
+        /// <param name="format">The format of the returned subtitle.</param>
+        /// <param name="endPositionTicks">Optional. The end position of the subtitle in ticks.</param>
+        /// <param name="copyTimestamps">Optional. Whether to copy the timestamps.</param>
+        /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
+        /// <response code="200">File returned.</response>
+        /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
+        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks}/Stream.{format}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile("text/*")]
+        public Task<ActionResult> GetSubtitleWithTicks(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string mediaSourceId,
+            [FromRoute, Required] int index,
+            [FromRoute, Required] long startPositionTicks,
+            [FromRoute, Required] string format,
+            [FromQuery] long? endPositionTicks,
+            [FromQuery] bool copyTimestamps = false,
+            [FromQuery] bool addVttTimeMap = false)
+        {
+            return GetSubtitle(
+                itemId,
+                mediaSourceId,
+                index,
+                format,
+                endPositionTicks,
+                copyTimestamps,
+                addVttTimeMap,
+                startPositionTicks);
         }
 
         /// <summary>
@@ -335,6 +371,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Subtitle uploaded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Videos/{itemId}/Subtitles")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> UploadSubtitle(
             [FromRoute, Required] Guid itemId,
             [FromBody, Required] UploadSubtitleDto body)
@@ -446,6 +483,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("FallbackFont/Fonts/{name}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile("font/*")]
         public ActionResult GetFallbackFont([FromRoute, Required] string name)
         {
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();

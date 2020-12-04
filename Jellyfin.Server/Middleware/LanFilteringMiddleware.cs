@@ -1,6 +1,9 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -32,45 +35,14 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
-            var currentHost = httpContext.Request.Host.ToString();
-            var hosts = serverConfigurationManager
-                .Configuration
-                .LocalNetworkAddresses
-                .Select(NormalizeConfiguredLocalAddress)
-                .ToList();
+            var host = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
-            if (hosts.Count == 0)
+            if (!networkManager.IsInLocalNetwork(host) && !serverConfigurationManager.GetNetworkConfiguration().EnableRemoteAccess)
             {
-                await _next(httpContext).ConfigureAwait(false);
                 return;
             }
 
-            currentHost ??= string.Empty;
-
-            if (networkManager.IsInPrivateAddressSpace(currentHost))
-            {
-                hosts.Add("localhost");
-                hosts.Add("127.0.0.1");
-
-                if (hosts.All(i => currentHost.IndexOf(i, StringComparison.OrdinalIgnoreCase) == -1))
-                {
-                    return;
-                }
-            }
-
             await _next(httpContext).ConfigureAwait(false);
-        }
-
-        private static string NormalizeConfiguredLocalAddress(string address)
-        {
-            var add = address.AsSpan().Trim('/');
-            int index = add.IndexOf('/');
-            if (index != -1)
-            {
-                add = add.Slice(index + 1);
-            }
-
-            return add.TrimStart('/').ToString();
         }
     }
 }

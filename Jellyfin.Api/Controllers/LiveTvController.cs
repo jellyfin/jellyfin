@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +17,6 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
@@ -150,7 +149,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] SortOrder? sortOrder,
             [FromQuery] bool enableFavoriteSorting = false,
             [FromQuery] bool addCurrentProgram = true)
@@ -175,7 +174,7 @@ namespace Jellyfin.Api.Controllers
                     IsNews = isNews,
                     IsKids = isKids,
                     IsSports = isSports,
-                    SortBy = RequestHelpers.Split(sortBy, ',', true),
+                    SortBy = sortBy,
                     SortOrder = sortOrder ?? SortOrder.Ascending,
                     AddCurrentProgram = addCurrentProgram
                 },
@@ -539,7 +538,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLiveTvPrograms(
-            [FromQuery] string? channelIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] channelIds,
             [FromQuery] Guid? userId,
             [FromQuery] DateTime? minStartDate,
             [FromQuery] bool? hasAired,
@@ -556,8 +555,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] string? sortBy,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? genres,
-            [FromQuery] string? genreIds,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
@@ -573,8 +572,7 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ChannelIds = RequestHelpers.Split(channelIds, ',', true)
-                    .Select(i => new Guid(i)).ToArray(),
+                ChannelIds = channelIds,
                 HasAired = hasAired,
                 IsAiring = isAiring,
                 EnableTotalRecordCount = enableTotalRecordCount,
@@ -591,8 +589,8 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 SeriesTimerId = seriesTimerId,
-                Genres = RequestHelpers.Split(genres, '|', true),
-                GenreIds = RequestHelpers.GetGuids(genreIds)
+                Genres = genres,
+                GenreIds = genreIds
             };
 
             if (librarySeriesId != null && !librarySeriesId.Equals(Guid.Empty))
@@ -628,8 +626,7 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ChannelIds = RequestHelpers.Split(body.ChannelIds, ',', true)
-                    .Select(i => new Guid(i)).ToArray(),
+                ChannelIds = body.ChannelIds,
                 HasAired = body.HasAired,
                 IsAiring = body.IsAiring,
                 EnableTotalRecordCount = body.EnableTotalRecordCount,
@@ -646,8 +643,8 @@ namespace Jellyfin.Api.Controllers
                 IsKids = body.IsKids,
                 IsSports = body.IsSports,
                 SeriesTimerId = body.SeriesTimerId,
-                Genres = RequestHelpers.Split(body.Genres, '|', true),
-                GenreIds = RequestHelpers.GetGuids(body.GenreIds)
+                Genres = body.Genres,
+                GenreIds = body.GenreIds
             };
 
             if (!body.LibrarySeriesId.Equals(Guid.Empty))
@@ -703,7 +700,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery] string? genreIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
@@ -723,7 +720,7 @@ namespace Jellyfin.Api.Controllers
                 IsNews = isNews,
                 IsSports = isSports,
                 EnableTotalRecordCount = enableTotalRecordCount,
-                GenreIds = RequestHelpers.GetGuids(genreIds)
+                GenreIds = genreIds
             };
 
             var dtoOptions = new DtoOptions { Fields = fields }
@@ -1017,7 +1014,9 @@ namespace Jellyfin.Api.Controllers
             if (!string.IsNullOrEmpty(pw))
             {
                 using var sha = SHA1.Create();
-                listingsProviderInfo.Password = Hex.Encode(sha.ComputeHash(Encoding.UTF8.GetBytes(pw)));
+                // TODO: remove ToLower when Convert.ToHexString supports lowercase
+                // Schedules Direct requires the hex to be lowercase
+                listingsProviderInfo.Password = Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(pw))).ToLowerInvariant();
             }
 
             return await _liveTvManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);

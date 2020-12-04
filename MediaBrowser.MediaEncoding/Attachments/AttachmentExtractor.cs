@@ -87,19 +87,19 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
-            var attachmentPath = await GetReadableFile(mediaSource.Path, mediaSource.Path, mediaSource.Protocol, mediaAttachment, cancellationToken).ConfigureAwait(false);
+            var attachmentPath = await GetReadableFile(mediaSource.Path, mediaSource.Path, mediaSource, mediaAttachment, cancellationToken).ConfigureAwait(false);
             return File.OpenRead(attachmentPath);
         }
 
         private async Task<string> GetReadableFile(
             string mediaPath,
             string inputFile,
-            MediaProtocol protocol,
+            MediaSourceInfo mediaSource,
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
-            var outputPath = GetAttachmentCachePath(mediaPath, protocol, mediaAttachment.Index);
-            await ExtractAttachment(inputFile, protocol, mediaAttachment.Index, outputPath, cancellationToken)
+            var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, mediaAttachment.Index);
+            await ExtractAttachment(inputFile, mediaSource, mediaAttachment.Index, outputPath, cancellationToken)
                 .ConfigureAwait(false);
 
             return outputPath;
@@ -107,7 +107,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         private async Task ExtractAttachment(
             string inputFile,
-            MediaProtocol protocol,
+            MediaSourceInfo mediaSource,
             int attachmentStreamIndex,
             string outputPath,
             CancellationToken cancellationToken)
@@ -121,7 +121,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 if (!File.Exists(outputPath))
                 {
                     await ExtractAttachmentInternal(
-                        _mediaEncoder.GetInputArgument(new[] { inputFile }, protocol),
+                        _mediaEncoder.GetInputArgument(inputFile, mediaSource),
                         attachmentStreamIndex,
                         outputPath,
                         cancellationToken).ConfigureAwait(false);
@@ -234,10 +234,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
             }
         }
 
-        private string GetAttachmentCachePath(string mediaPath, MediaProtocol protocol, int attachmentStreamIndex)
+        private string GetAttachmentCachePath(string mediaPath, MediaSourceInfo mediaSource, int attachmentStreamIndex)
         {
             string filename;
-            if (protocol == MediaProtocol.File)
+            if (mediaSource.Protocol == MediaProtocol.File)
             {
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
                 filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);

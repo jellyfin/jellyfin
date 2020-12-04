@@ -56,13 +56,11 @@ namespace Emby.Server.Implementations.TV
                 return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
             }
 
-            var parentIdGuid = string.IsNullOrEmpty(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
-
             BaseItem[] parents;
 
-            if (parentIdGuid.HasValue)
+            if (request.ParentId.HasValue)
             {
-                var parent = _libraryManager.GetItemById(parentIdGuid.Value);
+                var parent = _libraryManager.GetItemById(request.ParentId.Value);
 
                 if (parent != null)
                 {
@@ -146,28 +144,10 @@ namespace Emby.Server.Implementations.TV
             var allNextUp = seriesKeys
                 .Select(i => GetNextUp(i, currentUser, dtoOptions));
 
-            // allNextUp = allNextUp.OrderByDescending(i => i.Item1);
-
-            // If viewing all next up for all series, remove first episodes
-            // But if that returns empty, keep those first episodes (avoid completely empty view)
-            var alwaysEnableFirstEpisode = !string.IsNullOrEmpty(request.SeriesId);
-            var anyFound = false;
-
             return allNextUp
                 .Where(i =>
                 {
-                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
-                    {
-                        anyFound = true;
-                        return true;
-                    }
-
-                    if (!anyFound && i.Item1 == DateTime.MinValue)
-                    {
-                        return true;
-                    }
-
-                    return false;
+                    return i.Item1 != DateTime.MinValue;
                 })
                 .Select(i => i.Item2())
                 .Where(i => i != null);
@@ -210,7 +190,7 @@ namespace Emby.Server.Implementations.TV
 
             Func<Episode> getEpisode = () =>
             {
-                return _libraryManager.GetItemList(new InternalItemsQuery(user)
+                var nextEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
@@ -223,6 +203,18 @@ namespace Emby.Server.Implementations.TV
                     MinSortName = lastWatchedEpisode?.SortName,
                     DtoOptions = dtoOptions
                 }).Cast<Episode>().FirstOrDefault();
+
+                if (nextEpisode != null)
+                {
+                    var userData = _userDataManager.GetUserData(user, nextEpisode);
+
+                    if (userData.PlaybackPositionTicks > 0)
+                    {
+                        return null;
+                    }
+                }
+
+                return nextEpisode;
             };
 
             if (lastWatchedEpisode != null)

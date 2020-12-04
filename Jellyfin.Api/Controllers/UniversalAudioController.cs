@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
@@ -96,7 +97,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesAudioFile]
         public async Task<ActionResult> GetUniversalAudioStream(
             [FromRoute, Required] Guid itemId,
-            [FromQuery] string? container,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] container,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? deviceId,
             [FromQuery] Guid? userId,
@@ -261,7 +262,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         private DeviceProfile GetDeviceProfile(
-            string? container,
+            string[] containers,
             string? transcodingContainer,
             string? audioCodec,
             string? transcodingProtocol,
@@ -273,7 +274,6 @@ namespace Jellyfin.Api.Controllers
         {
             var deviceProfile = new DeviceProfile();
 
-            var containers = RequestHelpers.Split(container, ',', true);
             int len = containers.Length;
             var directPlayProfiles = new DirectPlayProfile[len];
             for (int i = 0; i < len; i++)
@@ -330,7 +330,7 @@ namespace Jellyfin.Api.Controllers
             if (conditions.Count > 0)
             {
                 // codec profile
-                codecProfiles.Add(new CodecProfile { Type = CodecType.Audio, Container = container, Conditions = conditions.ToArray() });
+                codecProfiles.Add(new CodecProfile { Type = CodecType.Audio, Container = string.Join(',', containers), Conditions = conditions.ToArray() });
             }
 
             deviceProfile.CodecProfiles = codecProfiles.ToArray();

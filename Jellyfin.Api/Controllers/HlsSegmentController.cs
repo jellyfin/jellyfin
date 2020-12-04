@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -112,11 +112,13 @@ namespace Jellyfin.Api.Controllers
         /// <param name="segmentId">The segment id.</param>
         /// <param name="segmentContainer">The segment container.</param>
         /// <response code="200">Hls video segment returned.</response>
+        /// <response code="404">Hls segment not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the video segment.</returns>
         // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
         // [Authenticated]
         [HttpGet("Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesVideoFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsVideoSegmentLegacy(
@@ -132,13 +134,25 @@ namespace Jellyfin.Api.Controllers
 
             var normalizedPlaylistId = playlistId;
 
-            var playlistPath = _fileSystem.GetFilePaths(transcodeFolderPath)
-                .FirstOrDefault(i =>
-                    string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase)
-                    && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
-                ?? throw new ResourceNotFoundException($"Provided path ({transcodeFolderPath}) is not valid.");
+            var filePaths = _fileSystem.GetFilePaths(transcodeFolderPath);
+            // Add . to start of segment container for future use.
+            segmentContainer = segmentContainer.Insert(0, ".");
+            string? playlistPath = null;
+            foreach (var path in filePaths)
+            {
+                var pathExtension = Path.GetExtension(path);
+                if ((string.Equals(pathExtension, segmentContainer, StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(pathExtension, ".m3u8", StringComparison.OrdinalIgnoreCase))
+                    && path.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    playlistPath = path;
+                    break;
+                }
+            }
 
-            return GetFileResult(file, playlistPath);
+            return playlistPath == null
+                ? NotFound("Hls segment not found.")
+                : GetFileResult(file, playlistPath);
         }
 
         private ActionResult GetFileResult(string path, string playlistPath)

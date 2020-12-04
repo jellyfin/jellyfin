@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -42,7 +43,7 @@ namespace Jellyfin.Server.Middleware
         public async Task Invoke(HttpContext httpContext, IServerConfigurationManager serverConfigurationManager)
         {
             var localPath = httpContext.Request.Path.ToString();
-            var baseUrlPrefix = serverConfigurationManager.Configuration.BaseUrl;
+            var baseUrlPrefix = serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
 
             if (string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)

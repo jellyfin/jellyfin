@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Interfaces;
@@ -140,6 +141,7 @@ namespace Jellyfin.Server.Implementations
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.HasDefaultSchema("jellyfin");

@@ -150,7 +150,7 @@ namespace Emby.Server.Implementations.Playlists
                 await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                if (options.ItemIdList.Length > 0)
+                if (options.ItemIdList.Count > 0)
                 {
                     await AddToPlaylistInternal(playlist.Id, options.ItemIdList, user, new DtoOptions(false)
                     {
@@ -184,7 +184,7 @@ namespace Emby.Server.Implementations.Playlists
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
 
-        public Task AddToPlaylistAsync(Guid playlistId, ICollection<Guid> itemIds, Guid userId)
+        public Task AddToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId)
         {
             var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
 
@@ -194,7 +194,7 @@ namespace Emby.Server.Implementations.Playlists
             });
         }
 
-        private async Task AddToPlaylistInternal(Guid playlistId, ICollection<Guid> newItemIds, User user, DtoOptions options)
+        private async Task AddToPlaylistInternal(Guid playlistId, IReadOnlyCollection<Guid> newItemIds, User user, DtoOptions options)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist

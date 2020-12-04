@@ -17,6 +17,7 @@ using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -169,6 +170,8 @@ namespace Jellyfin.Server.Extensions
 
                     opts.OutputFormatters.Add(new CssOutputFormatter());
                     opts.OutputFormatters.Add(new XmlOutputFormatter());
+
+                    opts.ModelBinderProviders.Insert(0, new NullableEnumModelBinderProvider());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
@@ -233,18 +236,6 @@ namespace Jellyfin.Server.Extensions
                     Description = "API key header parameter"
                 });
 
-                var securitySchemeRef = new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = AuthenticationSchemes.CustomAuthentication },
-                };
-
-                // TODO: Apply this with an operation filter instead of globally
-                // https://github.com/domaindrivendev/Swashbuckle.AspNetCore#add-security-definitions-and-requirements
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    { securitySchemeRef, Array.Empty<string>() }
-                });
-
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(
                     AppContext.BaseDirectory,
@@ -274,6 +265,7 @@ namespace Jellyfin.Server.Extensions
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
+                c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.DocumentFilter<WebsocketModelFilter>();
             });
@@ -282,20 +274,17 @@ namespace Jellyfin.Server.Extensions
         private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)
         {
             /*
-             * TODO remove when System.Text.Json supports non-string keys.
-             * Used in Jellyfin.Api.Controller.GetChannels.
+             * TODO remove when System.Text.Json properly supports non-string keys.
+             * Used in BaseItemDto.ImageBlurHashes
              */
             options.MapType<Dictionary<ImageType, string>>(() =>
                 new OpenApiSchema
                 {
                     Type = "object",
-                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
-                        name => name,
-                        name => new OpenApiSchema
-                        {
-                            Type = "string",
-                            Format = "string"
-                        })
+                    AdditionalProperties = new OpenApiSchema
+                    {
+                        Type = "string"
+                    }
                 });
 
             /*
@@ -309,16 +298,10 @@ namespace Jellyfin.Server.Extensions
                         name => name,
                         name => new OpenApiSchema
                         {
-                            Type = "object", Properties = new Dictionary<string, OpenApiSchema>
+                            Type = "object",
+                            AdditionalProperties = new OpenApiSchema
                             {
-                                {
-                                    "string",
-                                    new OpenApiSchema
-                                    {
-                                        Type = "string",
-                                        Format = "string"
-                                    }
-                                }
+                                Type = "string"
                             }
                         })
                 });

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -24,8 +25,8 @@ namespace Jellyfin.Server.Extensions
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
 
-            var baseUrl = serverConfigurationManager.Configuration.BaseUrl.Trim('/');
-            var apiDocBaseUrl = serverConfigurationManager.Configuration.BaseUrl;
+            var baseUrl = serverConfigurationManager.GetNetworkConfiguration().BaseUrl.Trim('/');
+            var apiDocBaseUrl = serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
             if (!string.IsNullOrEmpty(baseUrl))
             {
                 baseUrl += '/';

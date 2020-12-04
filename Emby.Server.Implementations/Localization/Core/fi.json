@@ -112,5 +112,7 @@
     "TaskCleanCache": "Tyhjennä välimuisti-hakemisto",
     "TasksChannelsCategory": "Internet kanavat",
     "TasksApplicationCategory": "Sovellus",
-    "TasksLibraryCategory": "Kirjasto"
+    "TasksLibraryCategory": "Kirjasto",
+    "Forced": "Pakotettu",
+    "Default": "Oletus"
 }

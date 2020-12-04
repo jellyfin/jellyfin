@@ -160,7 +160,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -216,7 +216,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext context,
@@ -268,7 +268,7 @@ namespace Jellyfin.Api.Controllers
                 EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context,
@@ -326,7 +326,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -383,7 +383,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext context,
@@ -435,7 +435,7 @@ namespace Jellyfin.Api.Controllers
                 EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context,
@@ -492,7 +492,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -546,7 +546,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext context,
@@ -598,7 +598,7 @@ namespace Jellyfin.Api.Controllers
                 EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context,
@@ -656,7 +656,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -711,7 +711,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext context,
@@ -763,7 +763,7 @@ namespace Jellyfin.Api.Controllers
                 EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context,
@@ -823,7 +823,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -838,7 +838,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
-            [FromRoute] string container,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -881,7 +881,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext context,
@@ -933,7 +933,7 @@ namespace Jellyfin.Api.Controllers
                 EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context,
@@ -994,7 +994,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -1009,7 +1009,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
-            [FromRoute] string container,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -1053,7 +1053,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext context,
@@ -1105,7 +1105,7 @@ namespace Jellyfin.Api.Controllers
                 EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context,

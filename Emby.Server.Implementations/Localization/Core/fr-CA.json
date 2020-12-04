@@ -113,5 +113,6 @@
     "TaskCleanCache": "Nettoyer le répertoire des fichiers temporaires",
     "TasksApplicationCategory": "Application",
     "TaskCleanCacheDescription": "Supprime les fichiers temporaires qui ne sont plus nécessaire pour le système.",
-    "TasksChannelsCategory": "Canaux Internet"
+    "TasksChannelsCategory": "Canaux Internet",
+    "Default": "Par défaut"
 }

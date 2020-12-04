@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -82,10 +83,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] Guid? userId,
             [FromQuery, Required] string searchTerm,
-            [FromQuery] string? includeItemTypes,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? mediaTypes,
-            [FromQuery] string? parentId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+            [FromQuery] Guid? parentId,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSeries,
             [FromQuery] bool? isNews,
@@ -108,9 +109,9 @@ namespace Jellyfin.Api.Controllers
                 IncludeStudios = includeStudios,
                 StartIndex = startIndex,
                 UserId = userId ?? Guid.Empty,
-                IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
-                ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
-                MediaTypes = RequestHelpers.Split(mediaTypes, ',', true),
+                IncludeItemTypes = includeItemTypes,
+                ExcludeItemTypes = excludeItemTypes,
+                MediaTypes = mediaTypes,
                 ParentId = parentId,
 
                 IsKids = isKids,

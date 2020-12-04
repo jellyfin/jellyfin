@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Networking;
 using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -106,6 +106,10 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
+            // Enable cl-va P010 interop for tonemapping on Intel VAAPI
+            Environment.SetEnvironmentVariable("NEOReadDebugKeys", "1");
+            Environment.SetEnvironmentVariable("EnableExtendedVaFormats", "1");
+
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
 
             // Create an instance of the application configuration to use for application startup
@@ -161,7 +165,6 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
                 serviceCollection);
 
             try
@@ -272,53 +275,17 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    var addresses = appHost.ServerConfigurationManager
-                        .Configuration
-                        .LocalNetworkAddresses
-                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
-                        .Where(i => i != null)
-                        .ToHashSet();
-                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
+                    var addresses = appHost.NetManager.GetAllBindInterfaces();
+
+                    bool flagged = false;
+                    foreach (IPObject netAdd in addresses)
                     {
-                        if (!addresses.Contains(IPAddress.Loopback))
-                        {
-                            // we must listen on loopback for LiveTV to function regardless of the settings
-                            addresses.Add(IPAddress.Loopback);
-                        }
-
-                        foreach (var address in addresses)
-                        {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", address);
-                            options.Listen(address, appHost.HttpPort);
-
-                            if (appHost.ListenWithHttps)
-                            {
-                                options.Listen(
-                                    address,
-                                    appHost.HttpsPort,
-                                    listenOptions => listenOptions.UseHttps(appHost.Certificate));
-                            }
-                            else if (builderContext.HostingEnvironment.IsDevelopment())
-                            {
-                                try
-                                {
-                                    options.Listen(address, appHost.HttpsPort, listenOptions => listenOptions.UseHttps());
-                                }
-                                catch (InvalidOperationException ex)
-                                {
-                                    _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Kestrel listening on all interfaces");
-                        options.ListenAnyIP(appHost.HttpPort);
-
+                        _logger.LogInformation("Kestrel listening on {0}", netAdd);
+                        options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
-                            options.ListenAnyIP(
+                            options.Listen(
+                                netAdd.Address,
                                 appHost.HttpsPort,
                                 listenOptions => listenOptions.UseHttps(appHost.Certificate));
                         }
@@ -326,11 +293,18 @@ namespace Jellyfin.Server
                         {
                             try
                             {
-                                options.ListenAnyIP(appHost.HttpsPort, listenOptions => listenOptions.UseHttps());
+                                options.Listen(
+                                    netAdd.Address,
+                                    appHost.HttpsPort,
+                                    listenOptions => listenOptions.UseHttps());
                             }
-                            catch (InvalidOperationException ex)
+                            catch (InvalidOperationException)
                             {
-                                _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                if (!flagged)
+                                {
+                                    _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                    flagged = true;
+                                }
                             }
                         }
                     }

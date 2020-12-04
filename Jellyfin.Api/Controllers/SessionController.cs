@@ -6,6 +6,7 @@ using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Api.Models.SessionDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -160,12 +161,12 @@ namespace Jellyfin.Api.Controllers
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
             [FromQuery, Required] PlayCommand playCommand,
-            [FromQuery, Required] string itemIds,
+            [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] itemIds,
             [FromQuery] long? startPositionTicks)
         {
             var playRequest = new PlayRequest
             {
-                ItemIds = RequestHelpers.GetGuids(itemIds),
+                ItemIds = itemIds,
                 StartPositionTicks = startPositionTicks,
                 PlayCommand = playCommand
             };
@@ -378,7 +379,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostCapabilities(
             [FromQuery] string? id,
-            [FromQuery] string? playableMediaTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] playableMediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
             [FromQuery] bool supportsSync = false,
@@ -391,7 +392,7 @@ namespace Jellyfin.Api.Controllers
 
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
             {
-                PlayableMediaTypes = RequestHelpers.Split(playableMediaTypes, ',', true),
+                PlayableMediaTypes = playableMediaTypes,
                 SupportedCommands = supportedCommands,
                 SupportsMediaControl = supportsMediaControl,
                 SupportsSync = supportsSync,
@@ -412,14 +413,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostFullCapabilities(
             [FromQuery] string? id,
-            [FromBody, Required] ClientCapabilities capabilities)
+            [FromBody, Required] ClientCapabilitiesDto capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 id = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
             }
 
-            _sessionManager.ReportCapabilities(id, capabilities);
+            _sessionManager.ReportCapabilities(id, capabilities.ToClientCapabilities());
 
             return NoContent();
         }
