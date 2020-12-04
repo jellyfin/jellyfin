@@ -133,8 +133,9 @@ namespace Jellyfin.Server
                 {
                     var extensionProvider = new FileExtensionContentTypeProvider();
 
-                    // subtitles octopus requires .data files.
+                    // subtitles octopus requires .data, .mem files.
                     extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
+                    extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
