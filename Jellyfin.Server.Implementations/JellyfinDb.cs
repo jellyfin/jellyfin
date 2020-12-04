@@ -153,7 +153,7 @@ namespace Jellyfin.Server.Implementations
                 .IsUnique(false);
 
             modelBuilder.Entity<DisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.Client })
+                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
                 .IsUnique();
 
             modelBuilder.Entity<CustomItemDisplayPreferences>()
@@ -161,7 +161,7 @@ namespace Jellyfin.Server.Implementations
                 .IsUnique(false);
 
             modelBuilder.Entity<CustomItemDisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.Client, entity.Key })
+                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
                 .IsUnique();
         }
     }

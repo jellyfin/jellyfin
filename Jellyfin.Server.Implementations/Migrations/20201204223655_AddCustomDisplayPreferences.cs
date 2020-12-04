@@ -9,6 +9,11 @@ namespace Jellyfin.Server.Implementations.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_DisplayPreferences_UserId_Client",
+                schema: "jellyfin",
+                table: "DisplayPreferences");
+
             migrationBuilder.AlterColumn<int>(
                 name: "MaxActiveSessions",
                 schema: "jellyfin",
@@ -20,6 +25,14 @@ namespace Jellyfin.Server.Implementations.Migrations
                 oldType: "INTEGER",
                 oldNullable: true);
 
+            migrationBuilder.AddColumn<Guid>(
+                name: "ItemId",
+                schema: "jellyfin",
+                table: "DisplayPreferences",
+                type: "TEXT",
+                nullable: false,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+
             migrationBuilder.CreateTable(
                 name: "CustomItemDisplayPreferences",
                 schema: "jellyfin",
@@ -28,6 +41,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Client = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     Key = table.Column<string>(type: "TEXT", nullable: false),
                     Value = table.Column<string>(type: "TEXT", nullable: false)
@@ -38,16 +52,23 @@ namespace Jellyfin.Server.Implementations.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_DisplayPreferences_UserId_ItemId_Client",
+                schema: "jellyfin",
+                table: "DisplayPreferences",
+                columns: new[] { "UserId", "ItemId", "Client" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CustomItemDisplayPreferences_UserId",
                 schema: "jellyfin",
                 table: "CustomItemDisplayPreferences",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomItemDisplayPreferences_UserId_Client_Key",
+                name: "IX_CustomItemDisplayPreferences_UserId_ItemId_Client_Key",
                 schema: "jellyfin",
                 table: "CustomItemDisplayPreferences",
-                columns: new[] { "UserId", "Client", "Key" },
+                columns: new[] { "UserId", "ItemId", "Client", "Key" },
                 unique: true);
         }
 
@@ -57,6 +78,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                 name: "CustomItemDisplayPreferences",
                 schema: "jellyfin");
 
+            migrationBuilder.DropIndex(
+                name: "IX_DisplayPreferences_UserId_ItemId_Client",
+                schema: "jellyfin",
+                table: "DisplayPreferences");
+
+            migrationBuilder.DropColumn(
+                name: "ItemId",
+                schema: "jellyfin",
+                table: "DisplayPreferences");
+
             migrationBuilder.AlterColumn<int>(
                 name: "MaxActiveSessions",
                 schema: "jellyfin",
@@ -65,6 +96,13 @@ namespace Jellyfin.Server.Implementations.Migrations
                 nullable: true,
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DisplayPreferences_UserId_Client",
+                schema: "jellyfin",
+                table: "DisplayPreferences",
+                columns: new[] { "UserId", "Client" },
+                unique: true);
         }
     }
 }

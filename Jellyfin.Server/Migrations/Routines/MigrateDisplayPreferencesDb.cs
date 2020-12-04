@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -80,6 +81,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 { "unstable", ChromecastVersion.Unstable }
             };
 
+            var defaultDisplayPrefsId = "usersettings".GetMD5();
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
@@ -92,6 +94,12 @@ namespace Jellyfin.Server.Migrations.Routines
                     if (dto == null)
                     {
                         continue;
+                    }
+
+                    var itemId = new Guid(result[1].ToBlob());
+                    if (itemId == defaultDisplayPrefsId)
+                    {
+                        itemId = Guid.Empty;
                     }
 
                     var dtoUserId = new Guid(result[1].ToBlob());
@@ -107,7 +115,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         : ChromecastVersion.Stable;
                     dto.CustomPrefs.Remove("chromecastVersion");
 
-                    var displayPreferences = new DisplayPreferences(dtoUserId, result[2].ToString())
+                    var displayPreferences = new DisplayPreferences(dtoUserId, itemId, result[2].ToString())
                     {
                         IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null,
                         ShowBackdrop = dto.ShowBackdrop,
@@ -159,12 +167,12 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     foreach (var key in dto.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.Ordinal)))
                     {
-                        if (!Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var itemId))
+                        if (!Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var landingItemId))
                         {
                             continue;
                         }
 
-                        var libraryDisplayPreferences = new ItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client)
+                        var libraryDisplayPreferences = new ItemDisplayPreferences(displayPreferences.UserId, landingItemId, displayPreferences.Client)
                         {
                             SortBy = dto.SortBy ?? "SortName",
                             SortOrder = dto.SortOrder,
@@ -183,7 +191,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     foreach (var (key, value) in dto.CustomPrefs)
                     {
-                        dbContext.Add(new CustomItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client, key, value));
+                        dbContext.Add(new CustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client, key, value));
                     }
 
                     dbContext.Add(displayPreferences);

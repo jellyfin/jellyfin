@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDb))]
-    [Migration("20201203203707_AddCustomDisplayPreferences")]
+    [Migration("20201204223655_AddCustomDisplayPreferences")]
     partial class AddCustomDisplayPreferences
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,6 +102,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -117,7 +120,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "Client", "Key")
+                    b.HasIndex("UserId", "ItemId", "Client", "Key")
                         .IsUnique();
 
                     b.ToTable("CustomItemDisplayPreferences");
@@ -147,6 +150,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("IndexBy")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ScrollDirection")
                         .HasColumnType("INTEGER");
 
@@ -173,7 +179,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "Client")
+                    b.HasIndex("UserId", "ItemId", "Client")
                         .IsUnique();
 
                     b.ToTable("DisplayPreferences");

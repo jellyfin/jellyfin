@@ -48,14 +48,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string client)
         {
             _ = Guid.TryParse(displayPreferencesId, out var itemId);
-            var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, client);
+            var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
             var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
             itemPreferences.ItemId = itemId;
 
             var dto = new DisplayPreferencesDto
             {
                 Client = displayPreferences.Client,
-                Id = displayPreferences.UserId.ToString(),
+                Id = displayPreferences.ItemId.ToString(),
                 ViewType = itemPreferences.ViewType.ToString(),
                 SortBy = itemPreferences.SortBy,
                 SortOrder = itemPreferences.SortOrder,
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
 
             // Load all custom display preferences
-            var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client);
+            var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
             if (customDisplayPreferences != null)
             {
                 foreach (var (key, value) in customDisplayPreferences)
@@ -128,7 +128,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             _ = Guid.TryParse(displayPreferencesId, out var itemId);
-            var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, client);
+            var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
             existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
             existingDisplayPreferences.ShowBackdrop = displayPreferences.ShowBackdrop;
             existingDisplayPreferences.ShowSidebar = displayPreferences.ShowSidebar;
@@ -201,7 +201,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // Set all remaining custom preferences.
-            _displayPreferencesManager.SetCustomItemDisplayPreferences(userId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
+            _displayPreferencesManager.SetCustomItemDisplayPreferences(userId, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
             _displayPreferencesManager.SaveChanges();
 
             return NoContent();

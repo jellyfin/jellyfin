@@ -13,12 +13,14 @@ namespace Jellyfin.Data.Entities
         /// Initializes a new instance of the <see cref="CustomItemDisplayPreferences"/> class.
         /// </summary>
         /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id.</param>
         /// <param name="client">The client.</param>
         /// <param name="preferenceKey">The preference key.</param>
         /// <param name="preferenceValue">The preference value.</param>
-        public CustomItemDisplayPreferences(Guid userId, string client, string preferenceKey, string preferenceValue)
+        public CustomItemDisplayPreferences(Guid userId, Guid itemId, string client, string preferenceKey, string preferenceValue)
         {
             UserId = userId;
+            ItemId = itemId;
             Client = client;
             Key = preferenceKey;
             Value = preferenceValue;
@@ -47,6 +49,14 @@ namespace Jellyfin.Data.Entities
         /// Required.
         /// </remarks>
         public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id of the associated item.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public Guid ItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the client string.
