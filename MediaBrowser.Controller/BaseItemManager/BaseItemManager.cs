@@ -27,15 +27,7 @@ namespace MediaBrowser.Controller.BaseItemManager
             _metadataRefreshConcurrency = GetMetadataRefreshConcurrency();
             SetupMetadataThrottler();
 
-            _serverConfigurationManager.ConfigurationUpdated += (object sender, EventArgs e) =>
-            {
-                int newMetadataRefreshConcurrency = GetMetadataRefreshConcurrency();
-                if (_metadataRefreshConcurrency != newMetadataRefreshConcurrency)
-                {
-                    _metadataRefreshConcurrency = newMetadataRefreshConcurrency;
-                    SetupMetadataThrottler();
-                }
-            };
+            _serverConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
         }
 
         /// <inheritdoc />
@@ -101,6 +93,20 @@ namespace MediaBrowser.Controller.BaseItemManager
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
 
             return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Called when the configuration is updated.
+        /// It will refresh the metadata throttler if the relevant config changed.
+        /// </summary>
+        private void OnConfigurationUpdated(object sender, EventArgs e)
+        {
+            int newMetadataRefreshConcurrency = GetMetadataRefreshConcurrency();
+            if (_metadataRefreshConcurrency != newMetadataRefreshConcurrency)
+            {
+                _metadataRefreshConcurrency = newMetadataRefreshConcurrency;
+                SetupMetadataThrottler();
+            }
         }
 
         /// <summary>
