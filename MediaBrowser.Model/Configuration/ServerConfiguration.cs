@@ -439,5 +439,15 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the number of days we should retain activity logs.
         /// </summary>
         public int? ActivityLogRetentionDays { get; set; } = 30;
+
+        /// <summary>
+        /// Gets or sets the how the library scan fans out.
+        /// </summary>
+        public int LibraryScanFanoutConcurrency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the how many metadata refreshes can run concurrently.
+        /// </summary>
+        public int LibraryMetadataRefreshConcurrency { get; set; }
     }
 }
