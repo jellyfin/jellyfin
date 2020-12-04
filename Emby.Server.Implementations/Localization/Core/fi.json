@@ -114,5 +114,8 @@
     "TasksApplicationCategory": "Sovellus",
     "TasksLibraryCategory": "Kirjasto",
     "Forced": "Pakotettu",
-    "Default": "Oletus"
+    "Default": "Oletus",
+    "TaskCleanActivityLogDescription": "Poistaa määritettyä vanhemmat tapahtumat aktiviteettilokista.",
+    "TaskCleanActivityLog": "Tyhjennä aktiviteettiloki",
+    "Undefined": "Määrittelemätön"
 }
