@@ -1,3 +1,5 @@
+using System;
+
 namespace Jellyfin.Api.Models.SyncPlayDtos
 {
     /// <summary>
@@ -10,13 +12,13 @@ namespace Jellyfin.Api.Models.SyncPlayDtos
         /// </summary>
         public SetPlaylistItemRequestDto()
         {
-            PlaylistItemId = string.Empty;
+            PlaylistItemId = Guid.Empty;
         }
 
         /// <summary>
         /// Gets or sets the playlist identifier of the playing item.
         /// </summary>
         /// <value>The playlist identifier of the playing item.</value>
-        public string PlaylistItemId { get; set; }
+        public Guid PlaylistItemId { get; set; }
     }
 }

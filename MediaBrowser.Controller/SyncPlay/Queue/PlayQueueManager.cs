@@ -67,12 +67,6 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         private List<QueueItem> ShuffledPlaylist { get; set; } = new List<QueueItem>();
 
         /// <summary>
-        /// Gets or sets the progressive identifier counter.
-        /// </summary>
-        /// <value>The progressive identifier.</value>
-        private int ProgressiveId { get; set; }
-
-        /// <summary>
         /// Checks if an item is playing.
         /// </summary>
         /// <returns><c>true</c> if an item is playing; <c>false</c> otherwise.</returns>
@@ -233,10 +227,10 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Gets playlist identifier of the playing item, if any.
         /// </summary>
         /// <returns>The playlist identifier of the playing item.</returns>
-        public string GetPlayingItemPlaylistId()
+        public Guid GetPlayingItemPlaylistId()
         {
             var playingItem = GetPlayingItem();
-            return playingItem?.PlaylistItemId;
+            return playingItem?.PlaylistItemId ?? Guid.Empty;
         }
 
         /// <summary>
@@ -265,10 +259,10 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// </summary>
         /// <param name="playlistItemId">The new playing item identifier.</param>
         /// <returns><c>true</c> if playing item has been set; <c>false</c> if item is not in the playlist.</returns>
-        public bool SetPlayingItemByPlaylistId(string playlistItemId)
+        public bool SetPlayingItemByPlaylistId(Guid playlistItemId)
         {
             var playlist = GetPlaylistInternal();
-            PlayingItemIndex = playlist.FindIndex(item => item.PlaylistItemId.Equals(playlistItemId, StringComparison.OrdinalIgnoreCase));
+            PlayingItemIndex = playlist.FindIndex(item => item.PlaylistItemId.Equals(playlistItemId));
             LastChange = DateTime.UtcNow;
 
             return PlayingItemIndex != NoPlayingItemIndex;
@@ -298,7 +292,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// </summary>
         /// <param name="playlistItemIds">The items to remove.</param>
         /// <returns><c>true</c> if playing item got removed; <c>false</c> otherwise.</returns>
-        public bool RemoveFromPlaylist(IReadOnlyList<string> playlistItemIds)
+        public bool RemoveFromPlaylist(IReadOnlyList<Guid> playlistItemIds)
         {
             var playingItem = GetPlayingItem();
 
@@ -341,12 +335,12 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// <param name="playlistItemId">The item to move.</param>
         /// <param name="newIndex">The new position.</param>
         /// <returns><c>true</c> if the item has been moved; <c>false</c> otherwise.</returns>
-        public bool MovePlaylistItem(string playlistItemId, int newIndex)
+        public bool MovePlaylistItem(Guid playlistItemId, int newIndex)
         {
             var playlist = GetPlaylistInternal();
             var playingItem = GetPlayingItem();
 
-            var oldIndex = playlist.FindIndex(item => item.PlaylistItemId.Equals(playlistItemId, StringComparison.OrdinalIgnoreCase));
+            var oldIndex = playlist.FindIndex(item => item.PlaylistItemId.Equals(playlistItemId));
             if (oldIndex < 0)
             {
                 return false;
@@ -367,7 +361,6 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// </summary>
         public void Reset()
         {
-            ProgressiveId = 0;
             SortedPlaylist.Clear();
             ShuffledPlaylist.Clear();
             PlayingItemIndex = NoPlayingItemIndex;
@@ -530,15 +523,6 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         }
 
         /// <summary>
-        /// Gets the next available identifier.
-        /// </summary>
-        /// <returns>The next available identifier.</returns>
-        private int GetNextProgressiveId()
-        {
-            return ProgressiveId++;
-        }
-
-        /// <summary>
         /// Creates a list from the array of items. Each item is given an unique playlist identifier.
         /// </summary>
         /// <returns>The list of queue items.</returns>
@@ -547,7 +531,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             var list = new List<QueueItem>();
             foreach (var item in items)
             {
-                var queueItem = new QueueItem(item, "syncPlayItem" + GetNextProgressiveId());
+                var queueItem = new QueueItem(item);
                 list.Add(queueItem);
             }
 

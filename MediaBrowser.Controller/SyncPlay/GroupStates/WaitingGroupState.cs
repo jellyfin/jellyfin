@@ -329,7 +329,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             }
 
             // Make sure the client is playing the correct item.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
             {
                 _logger.LogDebug("Session {SessionId} reported wrong playlist item in group {GroupId}.", session.Id, context.GroupId.ToString());
 
@@ -403,7 +403,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             }
 
             // Make sure the client is playing the correct item.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
             {
                 _logger.LogDebug("Session {SessionId} reported wrong playlist item in group {GroupId}.", session.Id, context.GroupId.ToString());
 
@@ -572,7 +572,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             ResumePlaying = true;
 
             // Make sure the client knows the playing item, to avoid duplicate requests.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
             {
                 _logger.LogDebug("Session {SessionId} provided the wrong playlist item for group {GroupId}.", session.Id, context.GroupId.ToString());
                 return;
@@ -618,7 +618,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             ResumePlaying = true;
 
             // Make sure the client knows the playing item, to avoid duplicate requests.
-            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId(), StringComparison.OrdinalIgnoreCase))
+            if (!request.PlaylistItemId.Equals(context.PlayQueue.GetPlayingItemPlaylistId()))
             {
                 _logger.LogDebug("Session {SessionId} provided the wrong playlist item for group {GroupId}.", session.Id, context.GroupId.ToString());
                 return;

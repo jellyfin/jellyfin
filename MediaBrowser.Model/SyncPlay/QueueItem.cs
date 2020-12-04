@@ -11,11 +11,9 @@ namespace MediaBrowser.Model.SyncPlay
         /// Initializes a new instance of the <see cref="QueueItem"/> class.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
-        /// <param name="playlistItemId">The playlist identifier of the item.</param>
-        public QueueItem(Guid itemId, string playlistItemId)
+        public QueueItem(Guid itemId)
         {
             ItemId = itemId;
-            PlaylistItemId = playlistItemId;
         }
 
         /// <summary>
@@ -28,6 +26,6 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets the playlist identifier of the item.
         /// </summary>
         /// <value>The playlist identifier of the item.</value>
-        public string PlaylistItemId { get; }
+        public Guid PlaylistItemId { get; } = Guid.NewGuid();
     }
 }

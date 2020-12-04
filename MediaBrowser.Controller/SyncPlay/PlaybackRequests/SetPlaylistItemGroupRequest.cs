@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// Initializes a new instance of the <see cref="SetPlaylistItemGroupRequest"/> class.
         /// </summary>
         /// <param name="playlistItemId">The playlist identifier of the item.</param>
-        public SetPlaylistItemGroupRequest(string playlistItemId)
+        public SetPlaylistItemGroupRequest(Guid playlistItemId)
         {
             PlaylistItemId = playlistItemId;
         }
@@ -22,7 +23,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// Gets the playlist identifier of the playing item.
         /// </summary>
         /// <value>The playlist identifier of the playing item.</value>
-        public string PlaylistItemId { get; }
+        public Guid PlaylistItemId { get; }
 
         /// <inheritdoc />
         public override PlaybackRequestType Action { get; } = PlaybackRequestType.SetPlaylistItem;

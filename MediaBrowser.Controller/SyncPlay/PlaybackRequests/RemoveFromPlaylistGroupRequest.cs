@@ -15,16 +15,16 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// Initializes a new instance of the <see cref="RemoveFromPlaylistGroupRequest"/> class.
         /// </summary>
         /// <param name="items">The playlist ids of the items to remove.</param>
-        public RemoveFromPlaylistGroupRequest(IReadOnlyList<string> items)
+        public RemoveFromPlaylistGroupRequest(IReadOnlyList<Guid> items)
         {
-            PlaylistItemIds = items ?? Array.Empty<string>();
+            PlaylistItemIds = items ?? Array.Empty<Guid>();
         }
 
         /// <summary>
         /// Gets the playlist identifiers ot the items.
         /// </summary>
         /// <value>The playlist identifiers ot the items.</value>
-        public IReadOnlyList<string> PlaylistItemIds { get; }
+        public IReadOnlyList<Guid> PlaylistItemIds { get; }
 
         /// <inheritdoc />
         public override PlaybackRequestType Action { get; } = PlaybackRequestType.RemoveFromPlaylist;

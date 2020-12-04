@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="isPlaying">Whether the client playback is unpaused.</param>
         /// <param name="playlistItemId">The playlist item identifier of the playing item.</param>
-        public BufferGroupRequest(DateTime when, long positionTicks, bool isPlaying, string playlistItemId)
+        public BufferGroupRequest(DateTime when, long positionTicks, bool isPlaying, Guid playlistItemId)
         {
             When = when;
             PositionTicks = positionTicks;
@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// Gets the playlist item identifier of the playing item.
         /// </summary>
         /// <value>The playlist item identifier.</value>
-        public string PlaylistItemId { get; }
+        public Guid PlaylistItemId { get; }
 
         /// <inheritdoc />
         public override PlaybackRequestType Action { get; } = PlaybackRequestType.Buffer;

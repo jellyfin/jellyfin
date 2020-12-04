@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// </summary>
         /// <param name="playlistItemId">The playlist identifier of the item.</param>
         /// <param name="newIndex">The new position.</param>
-        public MovePlaylistItemGroupRequest(string playlistItemId, int newIndex)
+        public MovePlaylistItemGroupRequest(Guid playlistItemId, int newIndex)
         {
             PlaylistItemId = playlistItemId;
             NewIndex = newIndex;
@@ -24,7 +25,7 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// Gets the playlist identifier of the item.
         /// </summary>
         /// <value>The playlist identifier of the item.</value>
-        public string PlaylistItemId { get; }
+        public Guid PlaylistItemId { get; }
 
         /// <summary>
         /// Gets the new position.

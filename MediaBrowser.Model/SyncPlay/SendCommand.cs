@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="command">The command.</param>
         /// <param name="positionTicks">The position ticks, for commands that require it.</param>
         /// <param name="emittedAt">The UTC time when this command has been emitted.</param>
-        public SendCommand(Guid groupId, string playlistItemId, DateTime when, SendCommandType command, long? positionTicks, DateTime emittedAt)
+        public SendCommand(Guid groupId, Guid playlistItemId, DateTime when, SendCommandType command, long? positionTicks, DateTime emittedAt)
         {
             GroupId = groupId;
             PlaylistItemId = playlistItemId;
@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets the playlist identifier of the playing item.
         /// </summary>
         /// <value>The playlist identifier of the playing item.</value>
-        public string PlaylistItemId { get; }
+        public Guid PlaylistItemId { get; }
 
         /// <summary>
         /// Gets or sets the UTC time when to execute the command.

@@ -158,14 +158,14 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="playlistItemId">The new playing item identifier.</param>
         /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
-        bool SetPlayingItem(string playlistItemId);
+        bool SetPlayingItem(Guid playlistItemId);
 
         /// <summary>
         /// Removes items from the play queue.
         /// </summary>
         /// <param name="playlistItemIds">The items to remove.</param>
         /// <returns><c>true</c> if playing item got removed; <c>false</c> otherwise.</returns>
-        bool RemoveFromPlayQueue(IReadOnlyList<string> playlistItemIds);
+        bool RemoveFromPlayQueue(IReadOnlyList<Guid> playlistItemIds);
 
         /// <summary>
         /// Moves an item in the play queue.
@@ -173,7 +173,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="playlistItemId">The playlist identifier of the item to move.</param>
         /// <param name="newIndex">The new position.</param>
         /// <returns><c>true</c> if item has been moved; <c>false</c> if something went wrong.</returns>
-        bool MoveItemInPlayQueue(string playlistItemId, int newIndex);
+        bool MoveItemInPlayQueue(Guid playlistItemId, int newIndex);
 
         /// <summary>
         /// Updates the play queue.

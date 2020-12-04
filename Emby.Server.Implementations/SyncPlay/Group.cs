@@ -505,7 +505,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool SetPlayingItem(string playlistItemId)
+        public bool SetPlayingItem(Guid playlistItemId)
         {
             var itemFound = PlayQueue.SetPlayingItemByPlaylistId(playlistItemId);
 
@@ -525,7 +525,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool RemoveFromPlayQueue(IReadOnlyList<string> playlistItemIds)
+        public bool RemoveFromPlayQueue(IReadOnlyList<Guid> playlistItemIds)
         {
             var playingItemRemoved = PlayQueue.RemoveFromPlaylist(playlistItemIds);
             if (playingItemRemoved)
@@ -548,7 +548,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public bool MoveItemInPlayQueue(string playlistItemId, int newIndex)
+        public bool MoveItemInPlayQueue(Guid playlistItemId, int newIndex)
         {
             return PlayQueue.MovePlaylistItem(playlistItemId, newIndex);
         }

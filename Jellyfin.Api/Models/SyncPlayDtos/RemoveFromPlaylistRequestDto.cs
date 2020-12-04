@@ -13,13 +13,13 @@ namespace Jellyfin.Api.Models.SyncPlayDtos
         /// </summary>
         public RemoveFromPlaylistRequestDto()
         {
-            PlaylistItemIds = Array.Empty<string>();
+            PlaylistItemIds = Array.Empty<Guid>();
         }
 
         /// <summary>
         /// Gets or sets the playlist identifiers ot the items.
         /// </summary>
         /// <value>The playlist identifiers ot the items.</value>
-        public IReadOnlyList<string> PlaylistItemIds { get; set; }
+        public IReadOnlyList<Guid> PlaylistItemIds { get; set; }
     }
 }
