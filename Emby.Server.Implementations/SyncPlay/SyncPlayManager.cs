@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
@@ -44,30 +44,22 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The map between sessions and groups.
         /// </summary>
-        private readonly Dictionary<string, Group> _sessionToGroupMap =
-            new Dictionary<string, Group>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Group> _sessionToGroupMap =
+            new ConcurrentDictionary<string, Group>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The groups.
         /// </summary>
-        private readonly Dictionary<Guid, Group> _groups =
-            new Dictionary<Guid, Group>();
+        private readonly ConcurrentDictionary<Guid, Group> _groups =
+            new ConcurrentDictionary<Guid, Group>();
 
         /// <summary>
-        /// Lock used for accessing any group.
+        /// Lock used for accessing multiple groups at once.
         /// </summary>
         /// <remarks>
-        /// Always lock before <see cref="_mapsLock"/> and before locking on any <see cref="Group"/>.
+        /// This lock has priority on locks made on <see cref="Group"/>.
         /// </remarks>
         private readonly object _groupsLock = new object();
-
-        /// <summary>
-        /// Lock used for accessing the session-to-group map.
-        /// </summary>
-        /// <remarks>
-        /// Always lock after <see cref="_groupsLock"/> and before locking on any <see cref="Group"/>.
-        /// </remarks>
-        private readonly object _mapsLock = new object();
 
         private bool _disposed = false;
 
@@ -102,31 +94,51 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request is null!");
+            }
+
             // Locking required to access list of groups.
             lock (_groupsLock)
             {
-                // Locking required as session-to-group map will be edited.
-                // Locking the group is not required as it is not visible yet.
-                lock (_mapsLock)
+                // Make sure that session has not joined another group.
+                if (_sessionToGroupMap.ContainsKey(session.Id))
                 {
-                    if (IsSessionInGroup(session))
-                    {
-                        var leaveGroupRequest = new LeaveGroupRequest();
-                        LeaveGroup(session, leaveGroupRequest, cancellationToken);
-                    }
-
-                    var group = new Group(_loggerFactory, _userManager, _sessionManager, _libraryManager);
-                    _groups[group.GroupId] = group;
-
-                    AddSessionToGroup(session, group);
-                    group.CreateGroup(session, request, cancellationToken);
+                    var leaveGroupRequest = new LeaveGroupRequest();
+                    LeaveGroup(session, leaveGroupRequest, cancellationToken);
                 }
+
+                var group = new Group(_loggerFactory, _userManager, _sessionManager, _libraryManager);
+                _groups[group.GroupId] = group;
+
+                if (!_sessionToGroupMap.TryAdd(session.Id, group))
+                {
+                    throw new InvalidOperationException("Could not add session to group!");
+                }
+
+                group.CreateGroup(session, request, cancellationToken);
             }
         }
 
         /// <inheritdoc />
         public void JoinGroup(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request is null!");
+            }
+
             var user = _userManager.GetUserById(session.UserId);
 
             // Locking required to access list of groups.
@@ -143,37 +155,37 @@ namespace Emby.Server.Implementations.SyncPlay
                     return;
                 }
 
-                // Locking required as session-to-group map will be edited.
-                lock (_mapsLock)
+                // Group lock required to let other requests end first.
+                lock (group)
                 {
-                    // Group lock required to let other requests end first.
-                    lock (group)
+                    if (!group.HasAccessToPlayQueue(user))
                     {
-                        if (!group.HasAccessToPlayQueue(user))
-                        {
-                            _logger.LogWarning("Session {SessionId} tried to join group {GroupId} but does not have access to some content of the playing queue.", session.Id, group.GroupId.ToString());
+                        _logger.LogWarning("Session {SessionId} tried to join group {GroupId} but does not have access to some content of the playing queue.", session.Id, group.GroupId.ToString());
 
-                            var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.LibraryAccessDenied, string.Empty);
-                            _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                        var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.LibraryAccessDenied, string.Empty);
+                        _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                        return;
+                    }
+
+                    if (_sessionToGroupMap.TryGetValue(session.Id, out var existingGroup))
+                    {
+                        if (existingGroup.GroupId.Equals(request.GroupId))
+                        {
+                            // Restore session.
+                            group.SessionJoin(session, request, cancellationToken);
                             return;
                         }
 
-                        if (IsSessionInGroup(session))
-                        {
-                            if (FindJoinedGroupId(session).Equals(request.GroupId))
-                            {
-                                // Restore session.
-                                group.SessionJoin(session, request, cancellationToken);
-                                return;
-                            }
-
-                            var leaveGroupRequest = new LeaveGroupRequest();
-                            LeaveGroup(session, leaveGroupRequest, cancellationToken);
-                        }
-
-                        AddSessionToGroup(session, group);
-                        group.SessionJoin(session, request, cancellationToken);
+                        var leaveGroupRequest = new LeaveGroupRequest();
+                        LeaveGroup(session, leaveGroupRequest, cancellationToken);
                     }
+
+                    if (!_sessionToGroupMap.TryAdd(session.Id, group))
+                    {
+                        throw new InvalidOperationException("Could not add session to group!");
+                    }
+
+                    group.SessionJoin(session, request, cancellationToken);
                 }
             }
         }
@@ -181,26 +193,36 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken)
         {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request is null!");
+            }
+
             // Locking required to access list of groups.
             lock (_groupsLock)
             {
-                // Locking required as session-to-group map will be edited.
-                lock (_mapsLock)
+                if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
                 {
-                    var group = FindJoinedGroup(session);
-                    if (group == null)
-                    {
-                        _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
-
-                        var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
-                        _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                        return;
-                    }
-
                     // Group lock required to let other requests end first.
                     lock (group)
                     {
-                        RemoveSessionFromGroup(session, group);
+                        if (_sessionToGroupMap.TryRemove(session.Id, out var tempGroup))
+                        {
+                            if (!tempGroup.GroupId.Equals(group.GroupId))
+                            {
+                                throw new InvalidOperationException("Session was in wrong group!");
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Could not remove session from group!");
+                        }
+
                         group.SessionLeave(session, request, cancellationToken);
 
                         if (group.IsGroupEmpty())
@@ -210,27 +232,41 @@ namespace Emby.Server.Implementations.SyncPlay
                         }
                     }
                 }
+                else
+                {
+                    _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
+
+                    var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
+                    _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                    return;
+                }
             }
         }
 
         /// <inheritdoc />
         public List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request)
         {
+            if (session == null)
+            {
+                throw new InvalidOperationException("Session is null!");
+            }
+
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request is null!");
+            }
+
             var user = _userManager.GetUserById(session.UserId);
             List<GroupInfoDto> list = new List<GroupInfoDto>();
 
-            // Locking required to access list of groups.
-            lock (_groupsLock)
+            foreach (var group in _groups.Values)
             {
-                foreach (var group in _groups.Values)
+                // Locking required as group is not thread-safe.
+                lock (group)
                 {
-                    // Locking required as group is not thread-safe.
-                    lock (group)
+                    if (group.HasAccessToPlayQueue(user))
                     {
-                        if (group.HasAccessToPlayQueue(user))
-                        {
-                            list.Add(group.GetInfo());
-                        }
+                        list.Add(group.GetInfo());
                     }
                 }
             }
@@ -241,25 +277,43 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
-            Group group;
-            lock (_mapsLock)
+            if (session == null)
             {
-                group = FindJoinedGroup(session);
+                throw new InvalidOperationException("Session is null!");
             }
 
-            if (group == null)
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request is null!");
+            }
+
+            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
+            {
+                // Group lock required as Group is not thread-safe.
+                lock (group)
+                {
+                    // Make sure that session still belongs to this group.
+                    if (_sessionToGroupMap.TryGetValue(session.Id, out var checkGroup) && !checkGroup.GroupId.Equals(group.GroupId))
+                    {
+                        // Drop request.
+                        return;
+                    }
+
+                    // Drop request if group is empty.
+                    if (group.IsGroupEmpty())
+                    {
+                        return;
+                    }
+
+                    group.HandleRequest(session, request, cancellationToken);
+                }
+            }
+            else
             {
                 _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
 
                 var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
                 _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
-                return;
-            }
-
-            // Group lock required as Group is not thread-safe.
-            lock (group)
-            {
-                group.HandleRequest(session, request, cancellationToken);
             }
         }
 
@@ -282,115 +336,10 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             var session = e.SessionInfo;
 
-            Guid groupId = Guid.Empty;
-            lock (_mapsLock)
+            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
             {
-                groupId = FindJoinedGroupId(session);
-            }
-
-            if (groupId.Equals(Guid.Empty))
-            {
-                return;
-            }
-
-            var request = new JoinGroupRequest(groupId);
-            JoinGroup(session, request, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Checks if a given session has joined a group.
-        /// </summary>
-        /// <remarks>
-        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
-        /// </remarks>
-        /// <param name="session">The session.</param>
-        /// <returns><c>true</c> if the session has joined a group, <c>false</c> otherwise.</returns>
-        private bool IsSessionInGroup(SessionInfo session)
-        {
-            return _sessionToGroupMap.ContainsKey(session.Id);
-        }
-
-        /// <summary>
-        /// Gets the group joined by the given session, if any.
-        /// </summary>
-        /// <remarks>
-        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
-        /// </remarks>
-        /// <param name="session">The session.</param>
-        /// <returns>The group.</returns>
-        private Group FindJoinedGroup(SessionInfo session)
-        {
-            _sessionToGroupMap.TryGetValue(session.Id, out var group);
-            return group;
-        }
-
-        /// <summary>
-        /// Gets the group identifier joined by the given session, if any.
-        /// </summary>
-        /// <remarks>
-        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
-        /// </remarks>
-        /// <param name="session">The session.</param>
-        /// <returns>The group identifier if the session has joined a group, an empty identifier otherwise.</returns>
-        private Guid FindJoinedGroupId(SessionInfo session)
-        {
-            return FindJoinedGroup(session)?.GroupId ?? Guid.Empty;
-        }
-
-        /// <summary>
-        /// Maps a session to a group.
-        /// </summary>
-        /// <remarks>
-        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
-        /// </remarks>
-        /// <param name="session">The session.</param>
-        /// <param name="group">The group.</param>
-        /// <exception cref="InvalidOperationException">Thrown when the user is in another group already.</exception>
-        private void AddSessionToGroup(SessionInfo session, Group group)
-        {
-            if (session == null)
-            {
-                throw new InvalidOperationException("Session is null!");
-            }
-
-            if (IsSessionInGroup(session))
-            {
-                throw new InvalidOperationException("Session in other group already!");
-            }
-
-            _sessionToGroupMap[session.Id] = group ?? throw new InvalidOperationException("Group is null!");
-        }
-
-        /// <summary>
-        /// Unmaps a session from a group.
-        /// </summary>
-        /// <remarks>
-        /// Method is not thread-safe, external locking on <see cref="_mapsLock"/> is required.
-        /// </remarks>
-        /// <param name="session">The session.</param>
-        /// <param name="group">The group.</param>
-        /// <exception cref="InvalidOperationException">Thrown when the user is not found in the specified group.</exception>
-        private void RemoveSessionFromGroup(SessionInfo session, Group group)
-        {
-            if (session == null)
-            {
-                throw new InvalidOperationException("Session is null!");
-            }
-
-            if (group == null)
-            {
-                throw new InvalidOperationException("Group is null!");
-            }
-
-            if (!IsSessionInGroup(session))
-            {
-                throw new InvalidOperationException("Session not in any group!");
-            }
-
-            _sessionToGroupMap.Remove(session.Id, out var tempGroup);
-            if (!tempGroup.GroupId.Equals(group.GroupId))
-            {
-                throw new InvalidOperationException("Session was in wrong group!");
+                var request = new JoinGroupRequest(group.GroupId);
+                JoinGroup(session, request, CancellationToken.None);
             }
         }
     }
