@@ -47,8 +47,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] Guid userId,
             [FromQuery, Required] string client)
         {
+            _ = Guid.TryParse(displayPreferencesId, out var itemId);
             var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, client);
-            var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client);
+            var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
+            itemPreferences.ItemId = itemId;
 
             var dto = new DisplayPreferencesDto
             {
@@ -125,6 +127,7 @@ namespace Jellyfin.Api.Controllers
                 HomeSectionType.LatestMedia, HomeSectionType.None,
             };
 
+            _ = Guid.TryParse(displayPreferencesId, out var itemId);
             var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, client);
             existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
             existingDisplayPreferences.ShowBackdrop = displayPreferences.ShowBackdrop;
@@ -185,11 +188,12 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Empty, existingDisplayPreferences.Client);
+            var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, itemId, existingDisplayPreferences.Client);
             itemPrefs.SortBy = displayPreferences.SortBy;
             itemPrefs.SortOrder = displayPreferences.SortOrder;
             itemPrefs.RememberIndexing = displayPreferences.RememberIndexing;
             itemPrefs.RememberSorting = displayPreferences.RememberSorting;
+            itemPrefs.ItemId = itemId;
 
             if (Enum.TryParse<ViewType>(displayPreferences.ViewType, true, out var viewType))
             {
