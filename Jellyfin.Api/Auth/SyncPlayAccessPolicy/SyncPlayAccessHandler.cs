@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
             var user = _userManager.GetUserById(userId!.Value);
 
             if ((requirement.RequiredAccess.HasValue && user.SyncPlayAccess == requirement.RequiredAccess)
-                || (user.SyncPlayAccess == SyncPlayAccess.JoinGroups || user.SyncPlayAccess == SyncPlayAccess.CreateAndJoinGroups))
+                || user.SyncPlayAccess == SyncPlayAccess.CreateAndJoinGroups)
             {
                 context.Succeed(requirement);
             }

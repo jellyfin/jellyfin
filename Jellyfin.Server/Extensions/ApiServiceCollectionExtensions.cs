@@ -131,7 +131,7 @@ namespace Jellyfin.Server.Extensions
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement());
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccess.JoinGroups));
                     });
                 options.AddPolicy(
                     Policies.SyncPlayCreateGroupAccess,
