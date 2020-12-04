@@ -81,7 +81,6 @@ namespace Jellyfin.Server.Migrations.Routines
                 { "unstable", ChromecastVersion.Unstable }
             };
 
-            var defaultDisplayPrefsId = "usersettings".GetMD5();
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
@@ -97,11 +96,6 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
 
                     var itemId = new Guid(result[1].ToBlob());
-                    if (itemId == defaultDisplayPrefsId)
-                    {
-                        itemId = Guid.Empty;
-                    }
-
                     var dtoUserId = new Guid(result[1].ToBlob());
                     var existingUser = _userManager.GetUserById(dtoUserId);
                     if (existingUser == null)

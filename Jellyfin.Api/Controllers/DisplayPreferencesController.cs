@@ -6,6 +6,7 @@ using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -47,7 +48,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] Guid userId,
             [FromQuery, Required] string client)
         {
-            _ = Guid.TryParse(displayPreferencesId, out var itemId);
+            if (!Guid.TryParse(displayPreferencesId, out var itemId))
+            {
+                itemId = displayPreferencesId.GetMD5();
+            }
+
             var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
             var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
             itemPreferences.ItemId = itemId;
@@ -127,7 +132,11 @@ namespace Jellyfin.Api.Controllers
                 HomeSectionType.LatestMedia, HomeSectionType.None,
             };
 
-            _ = Guid.TryParse(displayPreferencesId, out var itemId);
+            if (!Guid.TryParse(displayPreferencesId, out var itemId))
+            {
+                itemId = displayPreferencesId.GetMD5();
+            }
+
             var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
             existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
             existingDisplayPreferences.ShowBackdrop = displayPreferences.ShowBackdrop;
