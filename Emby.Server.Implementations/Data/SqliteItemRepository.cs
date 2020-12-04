@@ -5039,9 +5039,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (query.User != null && query.IsFavorite.HasValue)
             {
-                commandText.Append(" LEFT JOIN TypedBaseItems tbi ON tbi.Name=p.Name AND tbi.Type='");
+                commandText.Append(" INNER JOIN TypedBaseItems tbi ON tbi.Name=p.Name AND tbi.Type='");
                 commandText.Append(typeof(Person).FullName);
-                commandText.Append("' LEFT JOIN UserDatas ON tbi.UserDataKey=key AND userId=@UserId");
+                commandText.Append("' INNER JOIN UserDatas ON tbi.UserDataKey=key AND userId=@UserId");
             }
 
             var whereClauses = GetPeopleWhereClauses(query, null);
