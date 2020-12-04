@@ -12,7 +12,6 @@ using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -46,7 +45,6 @@ namespace Jellyfin.Api.Helpers
         private readonly IAuthorizationContext _authorizationContext;
         private readonly EncodingHelper _encodingHelper;
         private readonly IFileSystem _fileSystem;
-        private readonly IIsoManager _isoManager;
         private readonly ILogger<TranscodingJobHelper> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -64,7 +62,6 @@ namespace Jellyfin.Api.Helpers
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        /// <param name="isoManager">Instance of the <see cref="IIsoManager"/> interface.</param>
         /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
@@ -76,7 +73,6 @@ namespace Jellyfin.Api.Helpers
             IServerConfigurationManager serverConfigurationManager,
             ISessionManager sessionManager,
             IAuthorizationContext authorizationContext,
-            IIsoManager isoManager,
             ISubtitleEncoder subtitleEncoder,
             IConfiguration configuration,
             ILoggerFactory loggerFactory)
@@ -88,7 +84,6 @@ namespace Jellyfin.Api.Helpers
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
             _authorizationContext = authorizationContext;
-            _isoManager = isoManager;
             _loggerFactory = loggerFactory;
             _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
 

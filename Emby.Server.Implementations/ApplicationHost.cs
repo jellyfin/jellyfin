@@ -533,8 +533,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton(NetManager);
 
-            ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
-
             ServiceCollection.AddSingleton<ITaskManager, TaskManager>();
 
             ServiceCollection.AddSingleton(_xmlSerializer);
@@ -824,8 +822,6 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-
-            Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
 
         /// <summary>

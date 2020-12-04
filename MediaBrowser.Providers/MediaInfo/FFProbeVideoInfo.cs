@@ -619,7 +619,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 item.RunTimeTicks = GetRuntime(primaryTitle);
             }
 
-            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null, titleNumber)
+            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, titleNumber)
                 .Select(Path.GetFileName)
                 .ToArray();
         }
