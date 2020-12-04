@@ -183,6 +183,8 @@ namespace Emby.Server.Implementations
 
         private IPlugin[] _plugins;
 
+        private IReadOnlyList<LocalPlugin> _pluginsManifests;
+
         /// <summary>
         /// Gets the plugins.
         /// </summary>
@@ -776,6 +778,23 @@ namespace Emby.Server.Implementations
             {
                 foreach (var plugin in Plugins)
                 {
+                    if (_pluginsManifests != null && plugin is IPluginAssembly assemblyPlugin)
+                    {
+                        // Ensure the version number matches the Plugin Manifest information.
+                        foreach (var item in _pluginsManifests)
+                        {
+                            if (Path.GetDirectoryName(plugin.AssemblyFilePath).Equals(item.Path, StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Update version number to that of the manifest.
+                                assemblyPlugin.SetAttributes(
+                                    plugin.AssemblyFilePath,
+                                    Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(plugin.AssemblyFilePath)),
+                                    item.Version);
+                                break;
+                            }
+                        }
+                    }
+
                     Logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name, plugin.Version);
                 }
             }
@@ -1093,7 +1112,8 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var plugin in GetLocalPlugins(ApplicationPaths.PluginsPath))
+                _pluginsManifests = GetLocalPlugins(ApplicationPaths.PluginsPath).ToList();
+                foreach (var plugin in _pluginsManifests)
                 {
                     foreach (var file in plugin.DllFiles)
                     {
