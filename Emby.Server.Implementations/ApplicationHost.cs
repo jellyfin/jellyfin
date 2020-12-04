@@ -774,17 +774,10 @@ namespace Emby.Server.Implementations
 
             if (Plugins != null)
             {
-                var pluginBuilder = new StringBuilder();
-
                 foreach (var plugin in Plugins)
                 {
-                    pluginBuilder.Append(plugin.Name)
-                        .Append(' ')
-                        .Append(plugin.Version)
-                        .AppendLine();
+                    Logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name, plugin.Version);
                 }
-
-                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
             }
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
