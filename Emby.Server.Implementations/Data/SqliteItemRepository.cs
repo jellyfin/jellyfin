@@ -5037,13 +5037,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var commandText = new StringBuilder("select Distinct p.Name from People p");
 
-            if (query.User != null && query.IsFavorite.HasValue)
-            {
-                commandText.Append(" LEFT JOIN TypedBaseItems tbi ON tbi.Name=p.Name AND tbi.Type='");
-                commandText.Append(typeof(Person).FullName);
-                commandText.Append("' LEFT JOIN UserDatas ON tbi.UserDataKey=key AND userId=@UserId");
-            }
-
             var whereClauses = GetPeopleWhereClauses(query, null);
 
             if (whereClauses.Count != 0)
@@ -5124,6 +5117,16 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             var whereClauses = new List<string>();
 
+            if (query.User != null && query.IsFavorite.HasValue)
+            {
+                whereClauses.Add(@"p.Name IN (
+SELECT Name FROM TypedBaseItems WHERE UserDataKey IN (
+SELECT key FROM UserDatas WHERE isFavorite=@IsFavorite AND userId=@UserId)
+AND Type = @InternalPersonType)");
+                statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
+                statement?.TryBind("@InternalPersonType", typeof(Person).FullName);
+            }
+
             if (!query.ItemId.Equals(Guid.Empty))
             {
                 whereClauses.Add("ItemId=@ItemId");
@@ -5174,12 +5177,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 whereClauses.Add("p.Name like @NameContains");
                 statement?.TryBind("@NameContains", "%" + query.NameContains + "%");
-            }
-
-            if (query.IsFavorite.HasValue)
-            {
-                whereClauses.Add("isFavorite=@IsFavorite");
-                statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
             }
 
             if (query.User != null)
