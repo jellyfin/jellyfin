@@ -27,6 +27,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
@@ -6067,6 +6068,13 @@ AND Type = @InternalPersonType)");
             if (reader[4].SQLiteType != SQLiteType.Null)
             {
                 item.Language = reader[4].ToString();
+
+                string i18nKey = "Language" + StringHelper.FirstToUpper(item.Language);
+                item.localizedLanguage = _localization.GetLocalizedString(i18nKey);
+                if (item.localizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
+                {
+                    item.localizedLanguage = null;
+                }
             }
 
             if (reader[5].SQLiteType != SQLiteType.Null)

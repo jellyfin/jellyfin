@@ -114,6 +114,8 @@ namespace MediaBrowser.Model.Entities
 
         public string localizedForced { get; set; }
 
+        public string localizedLanguage { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -131,7 +133,8 @@ namespace MediaBrowser.Model.Entities
                                 .GetCultures(CultureTypes.NeutralCultures)
                                 .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                            // Use the CultureInfo locale name as a fallback, as these only appear to be available in English.
+                            attributes.Add(string.IsNullOrEmpty(localizedLanguage) ? StringHelper.FirstToUpper(fullLanguage ?? Language) : localizedLanguage);
                         }
 
                         if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
@@ -225,7 +228,8 @@ namespace MediaBrowser.Model.Entities
                                 .GetCultures(CultureTypes.NeutralCultures)
                                 .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                            // Use the CultureInfo locale name as a fallback, as these only appear to be available in English.
+                            attributes.Add(string.IsNullOrEmpty(localizedLanguage) ? StringHelper.FirstToUpper(fullLanguage ?? Language) : localizedLanguage);
                         }
                         else
                         {
