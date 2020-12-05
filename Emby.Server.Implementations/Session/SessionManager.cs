@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Models.SyncPlay.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
@@ -30,7 +31,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -1181,17 +1181,10 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task SendSyncPlayCommand(SessionInfo session, PlaybackCommandDto command, CancellationToken cancellationToken)
+        public async Task SendSyncPlayMessage<T>(SessionInfo session, T message, CancellationToken cancellationToken)
         {
             CheckDisposed();
-            await SendMessageToSession(session, SessionMessageType.SyncPlayCommand, command, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc />
-        public async Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdateDto<T> command, CancellationToken cancellationToken)
-        {
-            CheckDisposed();
-            await SendMessageToSession(session, SessionMessageType.SyncPlayGroupUpdate, command, cancellationToken).ConfigureAwait(false);
+            await SendMessageToSession(session, SessionMessageType.SyncPlay, message, cancellationToken).ConfigureAwait(false);
         }
 
         private IEnumerable<BaseItem> TranslateItemForPlayback(Guid id, User user)

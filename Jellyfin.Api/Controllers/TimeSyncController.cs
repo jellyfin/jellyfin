@@ -1,6 +1,5 @@
 using System;
-using System.Globalization;
-using MediaBrowser.Model.SyncPlay;
+using Jellyfin.Api.Models.SyncPlay.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

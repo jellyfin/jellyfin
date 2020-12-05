@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.SyncPlay;
 using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities

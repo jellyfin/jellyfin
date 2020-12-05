@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Common.Plugins;
+﻿using Jellyfin.Api.Models.SyncPlay.Dtos;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.SyncPlay;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 

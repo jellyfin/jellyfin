@@ -1,16 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Models.SyncPlayDtos;
+using Jellyfin.Api.Models.SyncPlay;
+using Jellyfin.Api.Models.SyncPlay.Dtos;
+using Jellyfin.Api.Models.SyncPlay.PlaybackRequests;
+using Jellyfin.Api.Models.SyncPlay.Requests;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.SyncPlay;
-using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
-using MediaBrowser.Controller.SyncPlay.Requests;
-using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -480,12 +478,12 @@ namespace Jellyfin.Api.Controllers
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new WebRTCGroupRequest(
-                requestData.To,
+                requestData.To ?? string.Empty,
                 requestData.NewSession ?? false,
                 requestData.SessionLeaving ?? false,
-                requestData.ICECandidate,
-                requestData.Offer,
-                requestData.Answer);
+                requestData.ICECandidate ?? string.Empty,
+                requestData.Offer ?? string.Empty,
+                requestData.Answer ?? string.Empty);
             _syncPlayManager.HandleWebRTC(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }

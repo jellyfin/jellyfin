@@ -1,4 +1,4 @@
-﻿using Jellyfin.Data.Enums;
+﻿using Jellyfin.Data.Enums.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy

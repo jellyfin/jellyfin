@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -143,22 +142,14 @@ namespace MediaBrowser.Controller.Session
         Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends a SyncPlayCommand to a session.
+        /// Sends a SyncPlay message to a session.
         /// </summary>
+        /// <typeparam name="T">The message type.</typeparam>
         /// <param name="session">The session.</param>
-        /// <param name="command">The command.</param>
+        /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncPlayCommand(SessionInfo session, PlaybackCommandDto command, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Sends a SyncPlayGroupUpdate to a session.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <param name="command">The group update.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdateDto<T> command, CancellationToken cancellationToken);
+        Task SendSyncPlayMessage<T>(SessionInfo session, T message, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.

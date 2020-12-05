@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Data.Enums;
+using Jellyfin.Api.Models.SyncPlay;
+using Jellyfin.Data.Enums.SyncPlay;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 

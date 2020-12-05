@@ -19,7 +19,7 @@ using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.SyncPlay;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;

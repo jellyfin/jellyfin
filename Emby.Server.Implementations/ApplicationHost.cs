@@ -40,7 +40,6 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
@@ -77,7 +76,6 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
@@ -609,8 +607,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
             ServiceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
-
-            ServiceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
 
             ServiceCollection.AddSingleton<LiveTvDtoService>();
             ServiceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();

@@ -4,6 +4,7 @@
 using System;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.SyncPlay;
 using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
 
 namespace MediaBrowser.Model.Users
