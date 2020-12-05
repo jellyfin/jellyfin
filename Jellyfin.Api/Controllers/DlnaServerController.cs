@@ -252,7 +252,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetAbsoluteUri()
         {
-            return $"{Request.Scheme}://{Request.Host}{Request.Path}";
+            return $"{Request.Scheme}://{Request.Host}{Request.PathBase}{Request.Path}";
         }
 
         private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)

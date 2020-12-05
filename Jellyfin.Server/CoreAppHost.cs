@@ -38,21 +38,18 @@ namespace Jellyfin.Server
         /// <param name="loggerFactory">The <see cref="ILoggerFactory" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="collection">The <see cref="IServiceCollection"/> to be used by the <see cref="CoreAppHost"/>.</param>
         public CoreAppHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            INetworkManager networkManager,
             IServiceCollection collection)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
                 fileSystem,
-                networkManager,
                 collection)
         {
         }
@@ -85,13 +82,11 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IUserManager, UserManager>();
             ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
-            ServiceCollection.AddScoped<IWebSocketListener, SessionWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, ActivityLogWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, ScheduledTasksWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, SessionInfoWebSocketListener>();
-
-            // TODO fix circular dependency on IWebSocketManager
-            ServiceCollection.AddScoped(serviceProvider => new Lazy<IEnumerable<IWebSocketListener>>(serviceProvider.GetRequiredService<IEnumerable<IWebSocketListener>>));
+            // TODO search the assemblies instead of adding them manually?
+            ServiceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
+            ServiceCollection.AddSingleton<IWebSocketListener, ActivityLogWebSocketListener>();
+            ServiceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
+            ServiceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
 
             base.RegisterServices();
         }

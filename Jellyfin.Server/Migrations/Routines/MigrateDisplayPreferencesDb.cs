@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -94,6 +95,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         continue;
                     }
 
+                    var itemId = new Guid(result[1].ToBlob());
                     var dtoUserId = new Guid(result[1].ToBlob());
                     var existingUser = _userManager.GetUserById(dtoUserId);
                     if (existingUser == null)
@@ -105,8 +107,9 @@ namespace Jellyfin.Server.Migrations.Routines
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
                         ? chromecastDict[version]
                         : ChromecastVersion.Stable;
+                    dto.CustomPrefs.Remove("chromecastVersion");
 
-                    var displayPreferences = new DisplayPreferences(dtoUserId, result[2].ToString())
+                    var displayPreferences = new DisplayPreferences(dtoUserId, itemId, result[2].ToString())
                     {
                         IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null,
                         ShowBackdrop = dto.ShowBackdrop,
@@ -126,15 +129,24 @@ namespace Jellyfin.Server.Migrations.Routines
                         TvHome = dto.CustomPrefs.TryGetValue("tvhome", out var home) ? home : string.Empty
                     };
 
+                    dto.CustomPrefs.Remove("skipForwardLength");
+                    dto.CustomPrefs.Remove("skipBackLength");
+                    dto.CustomPrefs.Remove("enableNextVideoInfoOverlay");
+                    dto.CustomPrefs.Remove("dashboardtheme");
+                    dto.CustomPrefs.Remove("tvhome");
+
                     for (int i = 0; i < 7; i++)
                     {
-                        dto.CustomPrefs.TryGetValue("homesection" + i, out var homeSection);
+                        var key = "homesection" + i;
+                        dto.CustomPrefs.TryGetValue(key, out var homeSection);
 
                         displayPreferences.HomeSections.Add(new HomeSection
                         {
                             Order = i,
                             Type = Enum.TryParse<HomeSectionType>(homeSection, true, out var type) ? type : defaults[i]
                         });
+
+                        dto.CustomPrefs.Remove(key);
                     }
 
                     var defaultLibraryPrefs = new ItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client)
@@ -149,12 +161,12 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     foreach (var key in dto.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.Ordinal)))
                     {
-                        if (!Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var itemId))
+                        if (!Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var landingItemId))
                         {
                             continue;
                         }
 
-                        var libraryDisplayPreferences = new ItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client)
+                        var libraryDisplayPreferences = new ItemDisplayPreferences(displayPreferences.UserId, landingItemId, displayPreferences.Client)
                         {
                             SortBy = dto.SortBy ?? "SortName",
                             SortOrder = dto.SortOrder,
@@ -167,7 +179,13 @@ namespace Jellyfin.Server.Migrations.Routines
                             libraryDisplayPreferences.ViewType = viewType;
                         }
 
+                        dto.CustomPrefs.Remove(key);
                         dbContext.ItemDisplayPreferences.Add(libraryDisplayPreferences);
+                    }
+
+                    foreach (var (key, value) in dto.CustomPrefs)
+                    {
+                        dbContext.Add(new CustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client, key, value));
                     }
 
                     dbContext.Add(displayPreferences);

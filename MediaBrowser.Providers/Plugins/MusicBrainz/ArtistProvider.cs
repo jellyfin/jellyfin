@@ -25,12 +25,6 @@ namespace MediaBrowser.Providers.Music
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
-            // TODO maybe remove when artist metadata can be disabled
-            if (!Plugin.Instance.Configuration.Enable)
-            {
-                return Enumerable.Empty<RemoteSearchResult>();
-            }
-
             var musicBrainzId = searchInfo.GetMusicBrainzArtistId();
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
@@ -235,12 +229,6 @@ namespace MediaBrowser.Providers.Music
             {
                 Item = new MusicArtist()
             };
-
-            // TODO maybe remove when artist metadata can be disabled
-            if (!Plugin.Instance.Configuration.Enable)
-            {
-                return result;
-            }
 
             var musicBrainzId = id.GetMusicBrainzArtistId();
 

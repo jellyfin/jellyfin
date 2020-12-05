@@ -51,7 +51,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         eventsStarted = true;
                     }
-                    else if (!string.IsNullOrEmpty(line) && line.Trim().StartsWith(";", StringComparison.Ordinal))
+                    else if (!string.IsNullOrEmpty(line) && line.Trim().StartsWith(';'))
                     {
                         // skip comment lines
                     }
@@ -151,13 +151,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                             try
                             {
-                                var p = new SubtitleTrackEvent();
-
-                                p.StartPositionTicks = GetTimeCodeFromString(start);
-                                p.EndPositionTicks = GetTimeCodeFromString(end);
-                                p.Text = GetFormattedText(text);
-
-                                trackEvents.Add(p);
+                                trackEvents.Add(
+                                    new SubtitleTrackEvent
+                                    {
+                                        StartPositionTicks = GetTimeCodeFromString(start),
+                                        EndPositionTicks = GetTimeCodeFromString(end),
+                                        Text = GetFormattedText(text)
+                                    });
                             }
                             catch
                             {

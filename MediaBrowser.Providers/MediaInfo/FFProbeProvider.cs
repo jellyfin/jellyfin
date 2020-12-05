@@ -150,11 +150,6 @@ namespace MediaBrowser.Providers.MediaInfo
         public Task<ItemUpdateType> FetchVideoInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Video
         {
-            if (item.VideoType == VideoType.Iso)
-            {
-                return _cachedTask;
-            }
-
             if (item.IsPlaceHolder)
             {
                 return _cachedTask;
@@ -208,7 +203,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             item.ShortcutPath = File.ReadAllLines(item.Path)
                 .Select(NormalizeStrmLine)
-                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith("#", StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#'));
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)

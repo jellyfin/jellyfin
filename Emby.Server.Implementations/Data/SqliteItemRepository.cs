@@ -4519,17 +4519,17 @@ namespace Emby.Server.Implementations.Data
 
             if (query.HasImdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%imdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasImdbId.Value, "imdb"));
             }
 
             if (query.HasTmdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%tmdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasTmdbId.Value, "tmdb"));
             }
 
             if (query.HasTvdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%tvdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasTvdbId.Value, "tvdb"));
             }
 
             var includedItemByNameTypes = GetItemByNameTypesInQuery(query).SelectMany(MapIncludeItemTypes).ToList();
@@ -4767,6 +4767,21 @@ namespace Emby.Server.Implementations.Data
             }
 
             return whereClauses;
+        }
+
+        /// <summary>
+        /// Formats a where clause for the specified provider.
+        /// </summary>
+        /// <param name="includeResults">Whether or not to include items with this provider's ids.</param>
+        /// <param name="provider">Provider name.</param>
+        /// <returns>Formatted SQL clause.</returns>
+        private string GetProviderIdClause(bool includeResults, string provider)
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "ProviderIds {0} like '%{1}=%'",
+                includeResults ? string.Empty : "not",
+                provider);
         }
 
         private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)
@@ -5022,13 +5037,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var commandText = new StringBuilder("select Distinct p.Name from People p");
 
-            if (query.User != null && query.IsFavorite.HasValue)
-            {
-                commandText.Append(" LEFT JOIN TypedBaseItems tbi ON tbi.Name=p.Name AND tbi.Type='");
-                commandText.Append(typeof(Person).FullName);
-                commandText.Append("' LEFT JOIN UserDatas ON tbi.UserDataKey=key AND userId=@UserId");
-            }
-
             var whereClauses = GetPeopleWhereClauses(query, null);
 
             if (whereClauses.Count != 0)
@@ -5109,6 +5117,16 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             var whereClauses = new List<string>();
 
+            if (query.User != null && query.IsFavorite.HasValue)
+            {
+                whereClauses.Add(@"p.Name IN (
+SELECT Name FROM TypedBaseItems WHERE UserDataKey IN (
+SELECT key FROM UserDatas WHERE isFavorite=@IsFavorite AND userId=@UserId)
+AND Type = @InternalPersonType)");
+                statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
+                statement?.TryBind("@InternalPersonType", typeof(Person).FullName);
+            }
+
             if (!query.ItemId.Equals(Guid.Empty))
             {
                 whereClauses.Add("ItemId=@ItemId");
@@ -5159,12 +5177,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 whereClauses.Add("p.Name like @NameContains");
                 statement?.TryBind("@NameContains", "%" + query.NameContains + "%");
-            }
-
-            if (query.IsFavorite.HasValue)
-            {
-                whereClauses.Add("isFavorite=@IsFavorite");
-                statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
             }
 
             if (query.User != null)

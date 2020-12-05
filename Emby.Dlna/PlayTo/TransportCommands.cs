@@ -78,7 +78,7 @@ namespace Emby.Dlna.PlayTo
 
         private static StateVariable FromXml(XElement container)
         {
-            var allowedValues = new List<string>();
+            var allowedValues = Array.Empty<string>();
             var element = container.Descendants(UPnpNamespaces.Svc + "allowedValueList")
                 .FirstOrDefault();
 
@@ -86,14 +86,14 @@ namespace Emby.Dlna.PlayTo
             {
                 var values = element.Descendants(UPnpNamespaces.Svc + "allowedValue");
 
-                allowedValues.AddRange(values.Select(child => child.Value));
+                allowedValues = values.Select(child => child.Value).ToArray();
             }
 
             return new StateVariable
             {
                 Name = container.GetValue(UPnpNamespaces.Svc + "name"),
                 DataType = container.GetValue(UPnpNamespaces.Svc + "dataType"),
-                AllowedValues = allowedValues.ToArray()
+                AllowedValues = allowedValues
             };
         }
 
@@ -103,12 +103,12 @@ namespace Emby.Dlna.PlayTo
 
             foreach (var arg in action.ArgumentList)
             {
-                if (arg.Direction == "out")
+                if (string.Equals(arg.Direction, "out", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                if (arg.Name == "InstanceID")
+                if (string.Equals(arg.Name, "InstanceID", StringComparison.Ordinal))
                 {
                     stateString += BuildArgumentXml(arg, "0");
                 }
@@ -127,12 +127,12 @@ namespace Emby.Dlna.PlayTo
 
             foreach (var arg in action.ArgumentList)
             {
-                if (arg.Direction == "out")
+                if (string.Equals(arg.Direction, "out", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                if (arg.Name == "InstanceID")
+                if (string.Equals(arg.Name, "InstanceID", StringComparison.Ordinal))
                 {
                     stateString += BuildArgumentXml(arg, "0");
                 }
@@ -151,7 +151,7 @@ namespace Emby.Dlna.PlayTo
 
             foreach (var arg in action.ArgumentList)
             {
-                if (arg.Name == "InstanceID")
+                if (string.Equals(arg.Name, "InstanceID", StringComparison.Ordinal))
                 {
                     stateString += BuildArgumentXml(arg, "0");
                 }

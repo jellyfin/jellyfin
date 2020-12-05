@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
@@ -89,16 +89,11 @@ namespace Jellyfin.Api.Controllers
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
-            BaseItem parentItem;
+            BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
-            }
-            else
-            {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
             }
 
             IList<BaseItem> items;

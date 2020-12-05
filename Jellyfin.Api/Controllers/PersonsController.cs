@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -79,7 +79,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludePersonTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
-            [FromQuery] string? appearsInItemId,
+            [FromQuery] Guid? appearsInItemId,
             [FromQuery] Guid? userId,
             [FromQuery] bool? enableImages = true)
         {
@@ -102,7 +102,7 @@ namespace Jellyfin.Api.Controllers
                 NameContains = searchTerm,
                 User = user,
                 IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,
-                AppearsInItemId = string.IsNullOrEmpty(appearsInItemId) ? Guid.Empty : Guid.Parse(appearsInItemId),
+                AppearsInItemId = appearsInItemId ?? Guid.Empty,
                 Limit = limit ?? 0
             });
 

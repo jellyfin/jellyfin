@@ -362,7 +362,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids)
+        public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
             if (ids.Length == 0)
             {

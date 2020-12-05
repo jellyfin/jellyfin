@@ -92,7 +92,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Channel features returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the channel features.</returns>
         [HttpGet("{channelId}/Features")]
-        public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute, Required] string channelId)
+        public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute, Required] Guid channelId)
         {
             return _channelManager.GetChannelFeatures(channelId);
         }
