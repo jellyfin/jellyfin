@@ -15,7 +15,7 @@
     "NotificationOptionUserLockedOut": "Lietotājs bloķēts",
     "LabelRunningTimeValue": "Garums: {0}",
     "Inherit": "Mantot",
-    "AppDeviceValues": "Lietotne:{0}, Ierīce:{1}",
+    "AppDeviceValues": "Lietotne: {0}, Ierīce: {1}",
     "VersionNumber": "Versija {0}",
     "ValueHasBeenAddedToLibrary": "{0} ir ticis pievienots tavai multvides bibliotēkai",
     "UserStoppedPlayingItemWithValues": "{0} ir beidzis atskaņot {1} uz {2}",
@@ -112,5 +112,10 @@
     "TaskRefreshChapterImagesDescription": "Izveido sīktēlus priekš video ar sadaļām.",
     "TaskCleanCache": "Iztīrīt Kešošanas Mapi",
     "TasksChannelsCategory": "Interneta Kanāli",
-    "TasksMaintenanceCategory": "Apkope"
+    "TasksMaintenanceCategory": "Apkope",
+    "Forced": "Piespiests",
+    "TaskCleanActivityLogDescription": "Nodzēš darbību žurnāla ierakstus, kuri ir vecāki par doto vecumu.",
+    "TaskCleanActivityLog": "Notīrīt Darbību Žurnālu",
+    "Undefined": "Nenoteikts",
+    "Default": "Noklusējums"
 }
