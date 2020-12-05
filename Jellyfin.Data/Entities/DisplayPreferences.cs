@@ -17,10 +17,12 @@ namespace Jellyfin.Data.Entities
         /// Initializes a new instance of the <see cref="DisplayPreferences"/> class.
         /// </summary>
         /// <param name="userId">The user's id.</param>
+        /// <param name="itemId">The item id.</param>
         /// <param name="client">The client string.</param>
-        public DisplayPreferences(Guid userId, string client)
+        public DisplayPreferences(Guid userId, Guid itemId, string client)
         {
             UserId = userId;
+            ItemId = itemId;
             Client = client;
             ShowSidebar = false;
             ShowBackdrop = true;
@@ -57,6 +59,14 @@ namespace Jellyfin.Data.Entities
         /// Required.
         /// </remarks>
         public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id of the associated item.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public Guid ItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the client string.

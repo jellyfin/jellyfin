@@ -113,5 +113,10 @@
     "TasksChannelsCategory": "Canais da Internet",
     "TasksApplicationCategory": "Aplicação",
     "TasksLibraryCategory": "Biblioteca",
-    "TasksMaintenanceCategory": "Manutenção"
+    "TasksMaintenanceCategory": "Manutenção",
+    "TaskCleanActivityLogDescription": "Apaga as entradas do registo de atividade anteriores à data configurada.",
+    "TaskCleanActivityLog": "Limpar registo de atividade",
+    "Undefined": "Indefinido",
+    "Forced": "Forçado",
+    "Default": "Padrão"
 }

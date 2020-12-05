@@ -300,16 +300,14 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        if (!_sendOnlyMatchedHost ||
-                            _networkManager.IsInSameSubnet(device.ToRootDevice().Address, remoteEndPoint.Address, device.ToRootDevice().SubnetMask))
+                        var root = device.ToRootDevice();
+                        var source = new IPNetAddress(root.Address, root.PrefixLength);
+                        var destination = new IPNetAddress(remoteEndPoint.Address, root.PrefixLength);
+                        if (!_sendOnlyMatchedHost || source.NetworkAddress.Equals(destination.NetworkAddress))
                         {
                             SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                         }
                     }
-                }
-                else
-                {
-                    // WriteTrace(String.Format("Sending 0 search responses."));
                 }
             });
         }

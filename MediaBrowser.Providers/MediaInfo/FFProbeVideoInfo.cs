@@ -116,7 +116,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     streamFileNames = Array.Empty<string>();
                 }
 
-                mediaInfoResult = await GetMediaInfo(item, streamFileNames, cancellationToken).ConfigureAwait(false);
+                mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
@@ -128,7 +128,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
             Video item,
-            string[] streamFileNames,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -145,7 +144,6 @@ namespace MediaBrowser.Providers.MediaInfo
             return _mediaEncoder.GetMediaInfo(
                 new MediaInfoRequest
                 {
-                    PlayableStreamFileNames = streamFileNames,
                     ExtractChapters = true,
                     MediaType = DlnaProfileType.Video,
                     MediaSource = new MediaSourceInfo
@@ -621,7 +619,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 item.RunTimeTicks = GetRuntime(primaryTitle);
             }
 
-            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null, titleNumber)
+            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, titleNumber)
                 .Select(Path.GetFileName)
                 .ToArray();
         }

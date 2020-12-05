@@ -86,7 +86,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSeries,
             [FromQuery] bool? isNews,

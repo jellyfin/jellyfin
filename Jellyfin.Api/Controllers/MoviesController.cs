@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Recommendations")]
         public ActionResult<IEnumerable<RecommendationDto>> GetMovieRecommendations(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] int categoryLimit = 5,
             [FromQuery] int itemLimit = 8)
@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Controllers
 
             var categories = new List<RecommendationDto>();
 
-            var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId);
+            var parentIdGuid = parentId ?? Guid.Empty;
 
             var query = new InternalItemsQuery(user)
             {

@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "Libreria",
     "TasksMaintenanceCategory": "Manutenzione",
     "TaskCleanActivityLog": "Attività di Registro Completate",
-    "TaskCleanActivityLogDescription": "Elimina gli inserimenti nel registro delle attività più vecchie dell’età configurata."
+    "TaskCleanActivityLogDescription": "Elimina gli inserimenti nel registro delle attività più vecchie dell’età configurata.",
+    "Undefined": "Non Definito",
+    "Forced": "Forzato",
+    "Default": "Predefinito"
 }

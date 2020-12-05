@@ -145,7 +145,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? recursive,
             [FromQuery] string? searchTerm,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
@@ -197,7 +197,6 @@ namespace Jellyfin.Api.Controllers
 
             return _itemsController
                 .GetItems(
-                    userId,
                     userId,
                     maxOfficialRating,
                     hasThemeSong,

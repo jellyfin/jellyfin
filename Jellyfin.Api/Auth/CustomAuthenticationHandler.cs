@@ -18,6 +18,7 @@ namespace Jellyfin.Api.Auth
     public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IAuthService _authService;
+        private readonly ILogger<CustomAuthenticationHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomAuthenticationHandler" /> class.
@@ -35,6 +36,7 @@ namespace Jellyfin.Api.Auth
             ISystemClock clock) : base(options, logger, encoder, clock)
         {
             _authService = authService;
+            _logger = logger.CreateLogger<CustomAuthenticationHandler>();
         }
 
         /// <inheritdoc />
@@ -70,7 +72,8 @@ namespace Jellyfin.Api.Auth
             }
             catch (AuthenticationException ex)
             {
-                return Task.FromResult(AuthenticateResult.Fail(ex));
+                _logger.LogDebug(ex, "Error authenticating with {Handler}", nameof(CustomAuthenticationHandler));
+                return Task.FromResult(AuthenticateResult.NoResult());
             }
             catch (SecurityException ex)
             {

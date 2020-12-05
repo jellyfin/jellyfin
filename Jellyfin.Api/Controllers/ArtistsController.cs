@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
@@ -87,7 +86,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
@@ -119,16 +118,11 @@ namespace Jellyfin.Api.Controllers
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
-            BaseItem parentItem;
+            BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
-            }
-            else
-            {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
             }
 
             var query = new InternalItemsQuery(user)
@@ -157,15 +151,15 @@ namespace Jellyfin.Api.Controllers
                 EnableTotalRecordCount = enableTotalRecordCount
             };
 
-            if (!string.IsNullOrWhiteSpace(parentId))
+            if (parentId.HasValue)
             {
                 if (parentItem is Folder)
                 {
-                    query.AncestorIds = new[] { new Guid(parentId) };
+                    query.AncestorIds = new[] { parentId.Value };
                 }
                 else
                 {
-                    query.ItemIds = new[] { new Guid(parentId) };
+                    query.ItemIds = new[] { parentId.Value };
                 }
             }
 
@@ -291,7 +285,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
@@ -323,16 +317,11 @@ namespace Jellyfin.Api.Controllers
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
-            BaseItem parentItem;
+            BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
-            }
-            else
-            {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
             }
 
             var query = new InternalItemsQuery(user)
@@ -361,15 +350,15 @@ namespace Jellyfin.Api.Controllers
                 EnableTotalRecordCount = enableTotalRecordCount
             };
 
-            if (!string.IsNullOrWhiteSpace(parentId))
+            if (parentId.HasValue)
             {
                 if (parentItem is Folder)
                 {
-                    query.AncestorIds = new[] { new Guid(parentId) };
+                    query.AncestorIds = new[] { parentId.Value };
                 }
                 else
                 {
-                    query.ItemIds = new[] { new Guid(parentId) };
+                    query.ItemIds = new[] { parentId.Value };
                 }
             }
 
