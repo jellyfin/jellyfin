@@ -49,5 +49,15 @@ namespace Jellyfin.Api.Constants
         /// Policy name for escaping schedule controls or requiring first time setup.
         /// </summary>
         public const string FirstTimeSetupOrIgnoreParentalControl = "FirstTimeSetupOrIgnoreParentalControl";
+
+        /// <summary>
+        /// Policy name for requiring access to SyncPlay.
+        /// </summary>
+        public const string SyncPlayAccess = "SyncPlayAccess";
+
+        /// <summary>
+        /// Policy name for requiring group creation access to SyncPlay.
+        /// </summary>
+        public const string SyncPlayCreateGroupAccess = "SyncPlayCreateGroupAccess";
     }
 }

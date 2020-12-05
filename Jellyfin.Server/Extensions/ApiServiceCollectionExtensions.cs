@@ -15,9 +15,11 @@ using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
+using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Enums;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -58,6 +60,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
             {
                 options.AddPolicy(
@@ -122,6 +125,20 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new RequiresElevationRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayAccess,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccess.JoinGroups));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayCreateGroupAccess,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccess.CreateAndJoinGroups));
                     });
             });
         }

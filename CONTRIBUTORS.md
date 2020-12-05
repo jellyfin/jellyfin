@@ -79,6 +79,7 @@
  - [Nickbert7](https://github.com/Nickbert7)
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
+ - [OancaAndrei](https://github.com/OancaAndrei)
  - [oddstr13](https://github.com/oddstr13)
  - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
