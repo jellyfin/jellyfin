@@ -52,7 +52,7 @@ jobs:
     - task: Npm@1
       displayName: 'Publish stable typescript axios client'
       inputs:
-        command: publish
+        command: publish --access public
         publishRegistry: useExternalRegistry
         publishEndpoint: 'jellyfin-bot for NPM'
         workingDir: ./apiclient/generated/typescript/axios
