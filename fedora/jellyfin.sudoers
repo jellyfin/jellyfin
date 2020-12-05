@@ -1,7 +1,7 @@
 # Allow jellyfin group to start, stop and restart itself
-Cmnd_Alias RESTARTSERVER_SYSTEMD = /usr/bin/systemd-run --scope systemctl restart jellyfin
-Cmnd_Alias STARTSERVER_SYSTEMD = /usr/bin/systemd-run --scope systemctl start jellyfin
-Cmnd_Alias STOPSERVER_SYSTEMD = /usr/bin/systemd-run --scope systemctl stop jellyfin
+Cmnd_Alias RESTARTSERVER_SYSTEMD = /usr/bin/systemd-run systemctl restart jellyfin
+Cmnd_Alias STARTSERVER_SYSTEMD = /usr/bin/systemd-run systemctl start jellyfin
+Cmnd_Alias STOPSERVER_SYSTEMD = /usr/bin/systemd-run systemctl stop jellyfin
 
 jellyfin ALL=(ALL) NOPASSWD: RESTARTSERVER_SYSTEMD
 jellyfin ALL=(ALL) NOPASSWD: STARTSERVER_SYSTEMD

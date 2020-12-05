@@ -44,7 +44,7 @@ echo "Detected service control platform '$cmd'; using it to restart Jellyfin..."
 case $cmd in
     'systemctl')
         # Without systemd-run here, `jellyfin.service`'s shutdown terminates this process too
-        $sudo_command systemd-run --scope systemctl restart jellyfin
+        $sudo_command systemd-run systemctl restart jellyfin
         ;;
     'service')
         echo "sleep 0.5; $sudo_command service jellyfin start" | at now
