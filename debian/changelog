@@ -1,8 +1,8 @@
-jellyfin-server (10.7.0-1) unstable; urgency=medium
+jellyfin-server (10.7.0~rc1) unstable; urgency=medium
 
-  * Forthcoming stable release
+  * New upstream version 10.7.0-rc1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.0-rc1
 
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  Mon, 27 Jul 2020 19:09:45 -0400
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Fri, 04 Dec 2020 21:01:58 -0500
 
 jellyfin-server (10.6.0-2) unstable; urgency=medium
 
