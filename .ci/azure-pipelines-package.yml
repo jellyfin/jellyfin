@@ -221,12 +221,6 @@ jobs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
       artifactName: Jellyfin Nuget Packages
 
-  - task: NuGetAuthenticate@0
-    displayName: 'Authenticate to stable Nuget feed'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-    inputs:
-      nuGetServiceConnections: 'NugetOrg'
-
   - task: NuGetCommand@2
     displayName: 'Push Nuget packages to stable feed'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
