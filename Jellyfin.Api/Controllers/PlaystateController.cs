@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -74,7 +75,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<UserItemDataDto> MarkPlayedItem(
             [FromRoute, Required] Guid userId,
             [FromRoute, Required] Guid itemId,
-            [FromQuery] DateTime? datePlayed)
+            [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
         {
             var user = _userManager.GetUserById(userId);
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);

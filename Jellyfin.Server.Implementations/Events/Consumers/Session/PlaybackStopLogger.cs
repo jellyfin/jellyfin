@@ -59,6 +59,12 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
 
             var user = eventArgs.Users[0];
 
+            var notificationType = GetPlaybackStoppedNotificationType(item.MediaType);
+            if (notificationType == null)
+            {
+                return;
+            }
+
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -66,7 +72,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                         user.Username,
                         GetItemName(item),
                         eventArgs.DeviceName),
-                    GetPlaybackStoppedNotificationType(item.MediaType),
+                    notificationType,
                     user.Id))
                 .ConfigureAwait(false);
         }

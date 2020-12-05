@@ -143,22 +143,22 @@ namespace MediaBrowser.Controller.Session
         Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the SyncPlayCommand.
+        /// Sends a SyncPlayCommand to a session.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncPlayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken);
+        Task SendSyncPlayCommand(SessionInfo session, SendCommand command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the SyncPlayGroupUpdate.
+        /// Sends a SyncPlayGroupUpdate to a session.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="session">The session.</param>
         /// <param name="command">The group update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken);
+        Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdate<T> command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.

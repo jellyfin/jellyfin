@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using Xunit;
@@ -16,8 +17,8 @@ namespace Jellyfin.Common.Tests
         {
             var pass = PasswordHash.Parse(passwordHash);
             Assert.Equal(id, pass.Id);
-            Assert.Equal(salt, Hex.Encode(pass.Salt, false));
-            Assert.Equal(hash, Hex.Encode(pass.Hash, false));
+            Assert.Equal(salt, Convert.ToHexString(pass.Salt));
+            Assert.Equal(hash, Convert.ToHexString(pass.Hash));
         }
 
         [Theory]

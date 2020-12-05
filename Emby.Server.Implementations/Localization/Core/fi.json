@@ -112,5 +112,10 @@
     "TaskCleanCache": "Tyhjennä välimuisti-hakemisto",
     "TasksChannelsCategory": "Internet kanavat",
     "TasksApplicationCategory": "Sovellus",
-    "TasksLibraryCategory": "Kirjasto"
+    "TasksLibraryCategory": "Kirjasto",
+    "Forced": "Pakotettu",
+    "Default": "Oletus",
+    "TaskCleanActivityLogDescription": "Poistaa määritettyä vanhemmat tapahtumat aktiviteettilokista.",
+    "TaskCleanActivityLog": "Tyhjennä aktiviteettiloki",
+    "Undefined": "Määrittelemätön"
 }

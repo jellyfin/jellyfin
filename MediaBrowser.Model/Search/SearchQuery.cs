@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Search
 
         public string[] ExcludeItemTypes { get; set; }
 
-        public string ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         public bool? IsMovie { get; set; }
 

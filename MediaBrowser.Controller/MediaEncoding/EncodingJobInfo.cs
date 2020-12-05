@@ -33,10 +33,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool IsInputVideo { get; set; }
 
-        public IIsoMount IsoMount { get; set; }
-
-        public string[] PlayableStreamFileNames { get; set; }
-
         public string OutputAudioCodec { get; set; }
 
         public int? OutputVideoBitrate { get; set; }
@@ -313,7 +309,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             TranscodingType = jobType;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            PlayableStreamFileNames = Array.Empty<string>();
             SupportedAudioCodecs = Array.Empty<string>();
             SupportedVideoCodecs = Array.Empty<string>();
             SupportedSubtitleCodecs = Array.Empty<string>();
