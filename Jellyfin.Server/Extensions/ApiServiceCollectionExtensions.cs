@@ -169,11 +169,19 @@ namespace Jellyfin.Server.Extensions
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                    for (var i = 0; i < knownProxies.Count; i++)
+                    if (knownProxies.Count == 0)
                     {
-                        if (IPAddress.TryParse(knownProxies[i], out var address))
+                        options.KnownNetworks.Clear();
+                        options.KnownProxies.Clear();
+                    }
+                    else
+                    {
+                        for (var i = 0; i < knownProxies.Count; i++)
                         {
-                            options.KnownProxies.Add(address);
+                            if (IPAddress.TryParse(knownProxies[i], out var address))
+                            {
+                                options.KnownProxies.Add(address);
+                            }
                         }
                     }
                 })
