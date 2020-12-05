@@ -76,8 +76,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 // Playback synchronization will mainly happen client side.
                 context.LastActivity = DateTime.UtcNow.AddMilliseconds(delayMillis);
 
-                var command = context.NewSyncPlayCommand(SendCommandType.Unpause);
-                context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Unpause);
+                context.PlaybackCommandDto(session, SessionsFilterType.AllGroup, command, cancellationToken);
 
                 // Notify relevant state change event.
                 SendGroupStateUpdate(context, request, session, cancellationToken);
@@ -85,8 +85,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             else
             {
                 // Client got lost, sending current state.
-                var command = context.NewSyncPlayCommand(SendCommandType.Unpause);
-                context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Unpause);
+                context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
             }
         }
 
@@ -137,8 +137,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             if (prevState.Equals(Type))
             {
                 // Group was not waiting, make sure client has latest state.
-                var command = context.NewSyncPlayCommand(SendCommandType.Unpause);
-                context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Unpause);
+                context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
             }
             else if (prevState.Equals(GroupStateType.Waiting))
             {

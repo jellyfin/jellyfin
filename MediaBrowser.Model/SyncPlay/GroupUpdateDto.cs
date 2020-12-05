@@ -3,18 +3,18 @@ using System;
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
-    /// Class GroupUpdate.
+    /// Class GroupUpdateDto.
     /// </summary>
     /// <typeparam name="T">The type of the data of the message.</typeparam>
-    public class GroupUpdate<T>
+    public class GroupUpdateDto<T>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupUpdate{T}"/> class.
+        /// Initializes a new instance of the <see cref="GroupUpdateDto{T}"/> class.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="type">The update type.</param>
         /// <param name="data">The update data.</param>
-        public GroupUpdate(Guid groupId, GroupUpdateType type, T data)
+        public GroupUpdateDto(Guid groupId, GroupUpdateType type, T data)
         {
             GroupId = groupId;
             Type = type;

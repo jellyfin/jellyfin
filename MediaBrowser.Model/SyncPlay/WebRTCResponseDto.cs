@@ -1,12 +1,12 @@
 namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Class WebRTCUpdate.
+    /// Class WebRTCResponseDto.
     /// </summary>
-    public class WebRTCUpdate
+    public class WebRTCResponseDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WebRTCUpdate"/> class.
+        /// Initializes a new instance of the <see cref="WebRTCResponseDto"/> class.
         /// </summary>
         /// <param name="from">The identifier of the session that sent the message.</param>
         /// <param name="newSession">Whether this is a new-session message.</param>
@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="iceCandidate">The ICE candidate.</param>
         /// <param name="offer">The WebRTC offer.</param>
         /// <param name="answer">The WebRTC answer.</param>
-        public WebRTCUpdate(string from, bool newSession, bool sessionLeaving, string iceCandidate, string offer, string answer)
+        public WebRTCResponseDto(string from, bool newSession, bool sessionLeaving, string iceCandidate, string offer, string answer)
         {
             From = from;
             NewSession = newSession;

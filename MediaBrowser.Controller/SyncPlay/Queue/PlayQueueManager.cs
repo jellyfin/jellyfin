@@ -58,13 +58,13 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Gets or sets the sorted playlist.
         /// </summary>
         /// <value>The sorted playlist, or play queue of the group.</value>
-        private List<QueueItem> SortedPlaylist { get; set; } = new List<QueueItem>();
+        private List<QueueItemDto> SortedPlaylist { get; set; } = new List<QueueItemDto>();
 
         /// <summary>
         /// Gets or sets the shuffled playlist.
         /// </summary>
         /// <value>The shuffled playlist, or play queue of the group.</value>
-        private List<QueueItem> ShuffledPlaylist { get; set; } = new List<QueueItem>();
+        private List<QueueItemDto> ShuffledPlaylist { get; set; } = new List<QueueItemDto>();
 
         /// <summary>
         /// Checks if an item is playing.
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Gets the current playlist considering the shuffle mode.
         /// </summary>
         /// <returns>The playlist.</returns>
-        public IReadOnlyList<QueueItem> GetPlaylist()
+        public IReadOnlyList<QueueItemDto> GetPlaylist()
         {
             return GetPlaylistInternal();
         }
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             SortedPlaylist = CreateQueueItemsFromArray(items);
             if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
-                ShuffledPlaylist = new List<QueueItem>(SortedPlaylist);
+                ShuffledPlaylist = new List<QueueItemDto>(SortedPlaylist);
                 Shuffle(ShuffledPlaylist);
             }
 
@@ -128,14 +128,14 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         {
             if (PlayingItemIndex == NoPlayingItemIndex)
             {
-                ShuffledPlaylist = new List<QueueItem>(SortedPlaylist);
+                ShuffledPlaylist = new List<QueueItemDto>(SortedPlaylist);
                 Shuffle(ShuffledPlaylist);
             }
             else if (ShuffleMode.Equals(GroupShuffleMode.Sorted))
             {
                 // First time shuffle.
                 var playingItem = SortedPlaylist[PlayingItemIndex];
-                ShuffledPlaylist = new List<QueueItem>(SortedPlaylist);
+                ShuffledPlaylist = new List<QueueItemDto>(SortedPlaylist);
                 ShuffledPlaylist.RemoveAt(PlayingItemIndex);
                 Shuffle(ShuffledPlaylist);
                 ShuffledPlaylist.Insert(0, playingItem);
@@ -414,7 +414,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Gets the next item in the playlist considering repeat mode and shuffle mode.
         /// </summary>
         /// <returns>The next item in the playlist.</returns>
-        public QueueItem GetNextItemPlaylistId()
+        public QueueItemDto GetNextItemPlaylistId()
         {
             int newIndex;
             var playlist = GetPlaylistInternal();
@@ -526,12 +526,12 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Creates a list from the array of items. Each item is given an unique playlist identifier.
         /// </summary>
         /// <returns>The list of queue items.</returns>
-        private List<QueueItem> CreateQueueItemsFromArray(IReadOnlyList<Guid> items)
+        private List<QueueItemDto> CreateQueueItemsFromArray(IReadOnlyList<Guid> items)
         {
-            var list = new List<QueueItem>();
+            var list = new List<QueueItemDto>();
             foreach (var item in items)
             {
-                var queueItem = new QueueItem(item);
+                var queueItem = new QueueItemDto(item);
                 list.Add(queueItem);
             }
 
@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Gets the current playlist considering the shuffle mode.
         /// </summary>
         /// <returns>The playlist.</returns>
-        private List<QueueItem> GetPlaylistInternal()
+        private List<QueueItemDto> GetPlaylistInternal()
         {
             if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
@@ -558,7 +558,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// Gets the current playing item, depending on the shuffle mode.
         /// </summary>
         /// <returns>The playing item.</returns>
-        private QueueItem GetPlayingItem()
+        private QueueItemDto GetPlayingItem()
         {
             if (PlayingItemIndex == NoPlayingItemIndex)
             {

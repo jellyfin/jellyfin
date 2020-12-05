@@ -77,13 +77,13 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             // Prepare new session.
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist);
             var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-            context.SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, update, cancellationToken);
+            context.SendGroupUpdate(session, SessionsFilterType.CurrentSession, update, cancellationToken);
 
             context.SetBuffering(session, true);
 
             // Send pause command to all non-buffering sessions.
-            var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-            context.SendCommand(session, SyncPlayBroadcastType.AllReady, command, cancellationToken);
+            var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+            context.PlaybackCommandDto(session, SessionsFilterType.AllReady, command, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -151,7 +151,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist);
             var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-            context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
+            context.SendGroupUpdate(session, SessionsFilterType.AllGroup, update, cancellationToken);
 
             // Reset status of sessions and await for all Ready events.
             context.SetAllBuffering(true);
@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             {
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-                context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
+                context.SendGroupUpdate(session, SessionsFilterType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
@@ -214,7 +214,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-                context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
+                context.SendGroupUpdate(session, SessionsFilterType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
@@ -308,8 +308,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             context.PositionTicks = ticks;
             context.LastActivity = DateTime.UtcNow;
 
-            var command = context.NewSyncPlayCommand(SendCommandType.Seek);
-            context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+            var command = context.NewSyncPlayCommand(PlaybackCommandType.Seek);
+            context.PlaybackCommandDto(session, SessionsFilterType.AllGroup, command, cancellationToken);
 
             // Reset status of sessions and await for all Ready events.
             context.SetAllBuffering(true);
@@ -335,7 +335,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
                 var updateSession = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-                context.SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
+                context.SendGroupUpdate(session, SessionsFilterType.CurrentSession, updateSession, cancellationToken);
                 context.SetBuffering(session, true);
 
                 return;
@@ -361,8 +361,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
 
                 // Send pause command to all non-buffering sessions.
-                var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                context.SendCommand(session, SyncPlayBroadcastType.AllReady, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+                context.PlaybackCommandDto(session, SessionsFilterType.AllReady, command, cancellationToken);
             }
             else if (prevState.Equals(GroupStateType.Paused))
             {
@@ -372,8 +372,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 context.SetBuffering(session, true);
 
                 // Send pause command to buffering session.
-                var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+                context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
             }
             else if (prevState.Equals(GroupStateType.Waiting))
             {
@@ -383,8 +383,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 if (!ResumePlaying)
                 {
                     // Force update for this session that should be paused.
-                    var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                    context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                    var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+                    context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
                 }
             }
 
@@ -409,7 +409,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-                context.SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, update, cancellationToken);
+                context.SendGroupUpdate(session, SessionsFilterType.CurrentSession, update, cancellationToken);
                 context.SetBuffering(session, true);
 
                 return;
@@ -453,8 +453,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                     context.SetBuffering(session, true);
 
                     // Correcting session's position.
-                    var command = context.NewSyncPlayCommand(SendCommandType.Seek);
-                    context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                    var command = context.NewSyncPlayCommand(PlaybackCommandType.Seek);
+                    context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
 
                     // Notify relevant state change event.
                     SendGroupStateUpdate(context, request, session, cancellationToken);
@@ -469,9 +469,9 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 if (context.IsBuffering())
                 {
                     // Others are still buffering, tell this client to pause when ready.
-                    var command = context.NewSyncPlayCommand(SendCommandType.Pause);
+                    var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
                     command.When = currentTime.AddTicks(delayTicks);
-                    context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                    context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
 
                     _logger.LogInformation("Session {SessionId} will pause when ready in {Delay} seconds. Group {GroupId} is waiting for all ready events.", session.Id, TimeSpan.FromTicks(delayTicks).TotalSeconds, context.GroupId.ToString());
                 }
@@ -483,14 +483,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                     {
                         // Client that was buffering is recovering, notifying others to resume.
                         context.LastActivity = currentTime.AddTicks(delayTicks);
-                        var command = context.NewSyncPlayCommand(SendCommandType.Unpause);
-                        var filter = SyncPlayBroadcastType.AllExceptCurrentSession;
+                        var command = context.NewSyncPlayCommand(PlaybackCommandType.Unpause);
+                        var filter = SessionsFilterType.AllExceptCurrentSession;
                         if (!request.IsPlaying)
                         {
-                            filter = SyncPlayBroadcastType.AllGroup;
+                            filter = SessionsFilterType.AllGroup;
                         }
 
-                        context.SendCommand(session, filter, command, cancellationToken);
+                        context.PlaybackCommandDto(session, filter, command, cancellationToken);
 
                         _logger.LogInformation("Session {SessionId} is recovering, group {GroupId} will resume in {Delay} seconds.", session.Id, context.GroupId.ToString(), TimeSpan.FromTicks(delayTicks).TotalSeconds);
                     }
@@ -502,8 +502,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                         context.LastActivity = currentTime.AddTicks(delayTicks);
 
-                        var command = context.NewSyncPlayCommand(SendCommandType.Unpause);
-                        context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+                        var command = context.NewSyncPlayCommand(PlaybackCommandType.Unpause);
+                        context.PlaybackCommandDto(session, SessionsFilterType.AllGroup, command, cancellationToken);
 
                         _logger.LogWarning("Session {SessionId} resumed playback, group {GroupId} has {Delay} seconds to recover.", session.Id, context.GroupId.ToString(), TimeSpan.FromTicks(delayTicks).TotalSeconds);
                     }
@@ -522,8 +522,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                     // Session still not ready.
                     context.SetBuffering(session, true);
                     // Session is seeking to wrong position, correcting.
-                    var command = context.NewSyncPlayCommand(SendCommandType.Seek);
-                    context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                    var command = context.NewSyncPlayCommand(PlaybackCommandType.Seek);
+                    context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
 
                     // Notify relevant state change event.
                     SendGroupStateUpdate(context, request, session, cancellationToken);
@@ -584,7 +584,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 // Send playing-queue update.
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NextItem);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-                context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
+                context.SendGroupUpdate(session, SessionsFilterType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);
@@ -630,7 +630,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 // Send playing-queue update.
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.PreviousItem);
                 var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
-                context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
+                context.SendGroupUpdate(session, SessionsFilterType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.
                 context.SetAllBuffering(true);

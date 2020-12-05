@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
-    /// Enum SendCommandType.
+    /// Enum PlaybackCommandType.
     /// </summary>
-    public enum SendCommandType
+    public enum PlaybackCommandType
     {
         /// <summary>
         /// The unpause command. Instructs users to unpause playback.

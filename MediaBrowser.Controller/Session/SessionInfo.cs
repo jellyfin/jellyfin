@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        public QueueItem[] NowPlayingQueue { get; set; }
+        public QueueItemDto[] NowPlayingQueue { get; set; }
 
         public bool HasCustomDeviceName { get; set; }
 

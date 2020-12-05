@@ -206,19 +206,19 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="from">The current session.</param>
         /// <param name="type">The filtering type.</param>
         /// <returns>The list of sessions matching the filter.</returns>
-        private IEnumerable<SessionInfo> FilterSessions(SessionInfo from, SyncPlayBroadcastType type)
+        private IEnumerable<SessionInfo> FilterSessions(SessionInfo from, SessionsFilterType filter)
         {
-            return type switch
+            return filter switch
             {
-                SyncPlayBroadcastType.CurrentSession => new SessionInfo[] { from },
-                SyncPlayBroadcastType.AllGroup => _participants
+                SessionsFilterType.CurrentSession => new SessionInfo[] { from },
+                SessionsFilterType.AllGroup => _participants
                     .Values
                     .Select(session => session.Session),
-                SyncPlayBroadcastType.AllExceptCurrentSession => _participants
+                SessionsFilterType.AllExceptCurrentSession => _participants
                     .Values
                     .Select(session => session.Session)
                     .Where(session => !session.Id.Equals(from.Id, StringComparison.OrdinalIgnoreCase)),
-                SyncPlayBroadcastType.AllReady => _participants
+                SessionsFilterType.AllReady => _participants
                     .Values
                     .Where(session => !session.IsBuffering)
                     .Select(session => session.Session),
@@ -347,7 +347,7 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
-            SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.CurrentSession, updateSession, cancellationToken);
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
@@ -391,7 +391,7 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             var groupUpdate = NewSyncPlayGroupUpdate(GroupUpdateType.GroupUpdate, GetInfo());
-            SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, groupUpdate, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.AllGroup, groupUpdate, cancellationToken);
 
             _logger.LogInformation("Session {SessionId} updated the settings of group {GroupId}.", session.Id, GroupId.ToString());
         }
@@ -407,13 +407,13 @@ namespace Emby.Server.Implementations.SyncPlay
             AddSession(session);
 
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
-            SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.CurrentSession, updateSession, cancellationToken);
 
             var groupUpdate = NewSyncPlayGroupUpdate(GroupUpdateType.GroupUpdate, GetInfo());
-            SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, groupUpdate, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.AllExceptCurrentSession, groupUpdate, cancellationToken);
 
             var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
-            SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
@@ -431,20 +431,20 @@ namespace Emby.Server.Implementations.SyncPlay
             _state.SessionLeaving(this, _state.Type, session, cancellationToken);
 
             // Notify WebRTC peers
-            var webRTCUpdate = new WebRTCUpdate(session.Id, false, true, string.Empty, string.Empty, string.Empty);
+            var webRTCUpdate = new WebRTCResponseDto(session.Id, false, true, string.Empty, string.Empty, string.Empty);
             var webRTCGroupUpdate = NewSyncPlayGroupUpdate(GroupUpdateType.WebRTC, webRTCUpdate);
-            SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, webRTCGroupUpdate, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.AllExceptCurrentSession, webRTCGroupUpdate, cancellationToken);
 
             RemoveSession(session);
 
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupLeft, GroupId.ToString());
-            SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.CurrentSession, updateSession, cancellationToken);
 
             var groupUpdate = NewSyncPlayGroupUpdate(GroupUpdateType.GroupUpdate, GetInfo());
-            SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, groupUpdate, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.AllExceptCurrentSession, groupUpdate, cancellationToken);
 
             var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserLeft, session.UserName);
-            SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
+            SendGroupUpdate(session, SessionsFilterType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
             _logger.LogInformation("Session {SessionId} left group {GroupId}.", session.Id, GroupId.ToString());
         }
@@ -525,7 +525,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="cancellationToken">The cancellation token.</param>
         public void HandleWebRTC(SessionInfo session, WebRTCGroupRequest request, CancellationToken cancellationToken)
         {
-            var webRTCUpdate = new WebRTCUpdate(
+            var webRTCUpdate = new WebRTCResponseDto(
                 session.Id,
                 request.NewSession,
                 request.SessionLeaving,
@@ -536,12 +536,12 @@ namespace Emby.Server.Implementations.SyncPlay
             var groupUpdate = NewSyncPlayGroupUpdate(GroupUpdateType.WebRTC, webRTCUpdate);
             if (string.IsNullOrEmpty(request.To))
             {
-                SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, groupUpdate, cancellationToken);
+                SendGroupUpdate(session, SessionsFilterType.AllExceptCurrentSession, groupUpdate, cancellationToken);
             }
             else if (_participants.ContainsKey(request.To))
             {
                 var toSession = _participants[request.To].Session;
-                SendGroupUpdate(toSession, SyncPlayBroadcastType.CurrentSession, groupUpdate, cancellationToken);
+                SendGroupUpdate(toSession, SessionsFilterType.CurrentSession, groupUpdate, cancellationToken);
             }
             else
             {
@@ -566,11 +566,11 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public Task SendGroupUpdate<T>(SessionInfo from, SyncPlayBroadcastType type, GroupUpdate<T> message, CancellationToken cancellationToken)
+        public Task SendGroupUpdate<T>(SessionInfo from, SessionsFilterType filter, GroupUpdateDto<T> message, CancellationToken cancellationToken)
         {
             IEnumerable<Task> GetTasks()
             {
-                foreach (var session in FilterSessions(from, type))
+                foreach (var session in FilterSessions(from, filter))
                 {
                     yield return _sessionManager.SendSyncPlayGroupUpdate(session, message, cancellationToken);
                 }
@@ -580,11 +580,11 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public Task SendCommand(SessionInfo from, SyncPlayBroadcastType type, SendCommand message, CancellationToken cancellationToken)
+        public Task PlaybackCommandDto(SessionInfo from, SessionsFilterType filter, PlaybackCommandDto message, CancellationToken cancellationToken)
         {
             IEnumerable<Task> GetTasks()
             {
-                foreach (var session in FilterSessions(from, type))
+                foreach (var session in FilterSessions(from, filter))
                 {
                     yield return _sessionManager.SendSyncPlayCommand(session, message, cancellationToken);
                 }
@@ -594,9 +594,9 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public SendCommand NewSyncPlayCommand(SendCommandType type)
+        public PlaybackCommandDto NewSyncPlayCommand(PlaybackCommandType type)
         {
-            return new SendCommand(
+            return new PlaybackCommandDto(
                 GroupId,
                 PlayQueue.GetPlayingItemPlaylistId(),
                 LastActivity,
@@ -606,9 +606,9 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public GroupUpdate<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data)
+        public GroupUpdateDto<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data)
         {
-            return new GroupUpdate<T>(GroupId, type, data);
+            return new GroupUpdateDto<T>(GroupId, type, data);
         }
 
         /// <inheritdoc />
@@ -827,7 +827,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public PlayQueueUpdate GetPlayQueueUpdate(PlayQueueUpdateReason reason)
+        public PlayQueueUpdateDto GetPlayQueueUpdate(PlayQueueUpdateReason reason)
         {
             var startPositionTicks = PositionTicks;
 
@@ -844,7 +844,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 startPositionTicks += Math.Max(elapsedTime.Ticks, 0);
             }
 
-            return new PlayQueueUpdate(
+            return new PlayQueueUpdateDto(
                 reason,
                 PlayQueue.LastChange,
                 PlayQueue.GetPlaylist(),

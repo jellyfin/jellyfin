@@ -16,10 +16,10 @@ namespace Jellyfin.Api.Controllers
         /// Gets the current UTC time.
         /// </summary>
         /// <response code="200">Time returned.</response>
-        /// <returns>An <see cref="UtcTimeResponse"/> to sync the client and server time.</returns>
+        /// <returns>An <see cref="TimeSyncDto"/> to sync the client and server time.</returns>
         [HttpGet("GetUtcTime")]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK)]
-        public ActionResult<UtcTimeResponse> GetUtcTime()
+        public ActionResult<TimeSyncDto> GetUtcTime()
         {
             // Important to keep the following line at the beginning
             var requestReceptionTime = DateTime.UtcNow.ToUniversalTime();
@@ -29,7 +29,7 @@ namespace Jellyfin.Api.Controllers
 
             // Implementing NTP on such a high level results in this useless
             // information being sent. On the other hand it enables future additions.
-            return new UtcTimeResponse(requestReceptionTime, responseTransmissionTime);
+            return new TimeSyncDto(requestReceptionTime, responseTransmissionTime);
         }
     }
 }

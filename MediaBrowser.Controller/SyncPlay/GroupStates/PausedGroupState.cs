@@ -83,8 +83,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 // Seek only if playback actually started.
                 context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
 
-                var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+                context.PlaybackCommandDto(session, SessionsFilterType.AllGroup, command, cancellationToken);
 
                 // Notify relevant state change event.
                 SendGroupStateUpdate(context, request, session, cancellationToken);
@@ -92,8 +92,8 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             else
             {
                 // Client got lost, sending current state.
-                var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+                context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
             }
         }
 
@@ -130,14 +130,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             if (prevState.Equals(Type))
             {
                 // Client got lost, sending current state.
-                var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+                context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
             }
             else if (prevState.Equals(GroupStateType.Waiting))
             {
                 // Sending current state to all clients.
-                var command = context.NewSyncPlayCommand(SendCommandType.Pause);
-                context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+                var command = context.NewSyncPlayCommand(PlaybackCommandType.Pause);
+                context.PlaybackCommandDto(session, SessionsFilterType.AllGroup, command, cancellationToken);
 
                 // Notify relevant state change event.
                 SendGroupStateUpdate(context, request, session, cancellationToken);

@@ -21,10 +21,10 @@ namespace Jellyfin.Server.Filters
             context.SchemaGenerator.GenerateSchema(typeof(PlayRequest), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(PlaystateRequest), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(TimerEventInfo), context.SchemaRepository);
-            context.SchemaGenerator.GenerateSchema(typeof(SendCommand), context.SchemaRepository);
+            context.SchemaGenerator.GenerateSchema(typeof(PlaybackCommandDto), context.SchemaRepository);
             context.SchemaGenerator.GenerateSchema(typeof(GeneralCommandType), context.SchemaRepository);
 
-            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<object>), context.SchemaRepository);
+            context.SchemaGenerator.GenerateSchema(typeof(GroupUpdateDto<object>), context.SchemaRepository);
         }
     }
 }

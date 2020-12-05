@@ -3,15 +3,15 @@ using System;
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
-    /// Class QueueItem.
+    /// Class QueueItemDto.
     /// </summary>
-    public class QueueItem
+    public class QueueItemDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueueItem"/> class.
+        /// Initializes a new instance of the <see cref="QueueItemDto"/> class.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
-        public QueueItem(Guid itemId)
+        public QueueItemDto(Guid itemId)
         {
             ItemId = itemId;
         }

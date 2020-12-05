@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
-    /// Class PlayQueueUpdate.
+    /// Class PlayQueueUpdateDto.
     /// </summary>
-    public class PlayQueueUpdate
+    public class PlayQueueUpdateDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PlayQueueUpdate"/> class.
+        /// Initializes a new instance of the <see cref="PlayQueueUpdateDto"/> class.
         /// </summary>
         /// <param name="reason">The reason for the update.</param>
         /// <param name="lastUpdate">The UTC time of the last change to the playing queue.</param>
@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="startPositionTicks">The start position ticks.</param>
         /// <param name="shuffleMode">The shuffle mode.</param>
         /// <param name="repeatMode">The repeat mode.</param>
-        public PlayQueueUpdate(PlayQueueUpdateReason reason, DateTime lastUpdate, IReadOnlyList<QueueItem> playlist, int playingItemIndex, long startPositionTicks, GroupShuffleMode shuffleMode, GroupRepeatMode repeatMode)
+        public PlayQueueUpdateDto(PlayQueueUpdateReason reason, DateTime lastUpdate, IReadOnlyList<QueueItemDto> playlist, int playingItemIndex, long startPositionTicks, GroupShuffleMode shuffleMode, GroupRepeatMode repeatMode)
         {
             Reason = reason;
             LastUpdate = lastUpdate;
@@ -45,7 +45,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets the playlist.
         /// </summary>
         /// <value>The playlist.</value>
-        public IReadOnlyList<QueueItem> Playlist { get; }
+        public IReadOnlyList<QueueItemDto> Playlist { get; }
 
         /// <summary>
         /// Gets the playing item index in the playlist.

@@ -3,16 +3,16 @@ using System;
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
-    /// Class UtcTimeResponse.
+    /// Class TimeSyncDto.
     /// </summary>
-    public class UtcTimeResponse
+    public class TimeSyncDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UtcTimeResponse"/> class.
+        /// Initializes a new instance of the <see cref="TimeSyncDto"/> class.
         /// </summary>
         /// <param name="requestReceptionTime">The UTC time when request has been received.</param>
         /// <param name="responseTransmissionTime">The UTC time when response has been sent.</param>
-        public UtcTimeResponse(DateTime requestReceptionTime, DateTime responseTransmissionTime)
+        public TimeSyncDto(DateTime requestReceptionTime, DateTime responseTransmissionTime)
         {
             RequestReceptionTime = requestReceptionTime;
             ResponseTransmissionTime = responseTransmissionTime;

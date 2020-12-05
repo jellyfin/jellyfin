@@ -3,7 +3,7 @@ namespace MediaBrowser.Model.SyncPlay
     /// <summary>
     /// Used to filter the sessions of a group.
     /// </summary>
-    public enum SyncPlayBroadcastType
+    public enum SessionsFilterType
     {
         /// <summary>
         /// All sessions will receive the message.

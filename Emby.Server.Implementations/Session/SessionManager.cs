@@ -1181,14 +1181,14 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task SendSyncPlayCommand(SessionInfo session, SendCommand command, CancellationToken cancellationToken)
+        public async Task SendSyncPlayCommand(SessionInfo session, PlaybackCommandDto command, CancellationToken cancellationToken)
         {
             CheckDisposed();
             await SendMessageToSession(session, SessionMessageType.SyncPlayCommand, command, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public async Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdate<T> command, CancellationToken cancellationToken)
+        public async Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdateDto<T> command, CancellationToken cancellationToken)
         {
             CheckDisposed();
             await SendMessageToSession(session, SessionMessageType.SyncPlayGroupUpdate, command, cancellationToken).ConfigureAwait(false);

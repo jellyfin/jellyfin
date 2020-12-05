@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.SyncPlay
         void SetState(IGroupState state);
 
         /// <summary>
-        /// Sends a GroupUpdate message to the interested sessions.
+        /// Sends a GroupUpdateDto message to the interested sessions.
         /// </summary>
         /// <typeparam name="T">The type of the data of the message.</typeparam>
         /// <param name="from">The current session.</param>
@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The task.</returns>
-        Task SendGroupUpdate<T>(SessionInfo from, SyncPlayBroadcastType type, GroupUpdate<T> message, CancellationToken cancellationToken);
+        Task SendGroupUpdate<T>(SessionInfo from, SessionsFilterType filter, GroupUpdateDto<T> message, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends a playback command to the interested sessions.
@@ -80,14 +80,14 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The task.</returns>
-        Task SendCommand(SessionInfo from, SyncPlayBroadcastType type, SendCommand message, CancellationToken cancellationToken);
+        Task PlaybackCommandDto(SessionInfo from, SessionsFilterType filter, PlaybackCommandDto message, CancellationToken cancellationToken);
 
         /// <summary>
         /// Builds a new playback command with some default values.
         /// </summary>
         /// <param name="type">The command type.</param>
         /// <returns>The command.</returns>
-        SendCommand NewSyncPlayCommand(SendCommandType type);
+        PlaybackCommandDto NewSyncPlayCommand(PlaybackCommandType type);
 
         /// <summary>
         /// Builds a new group update message.
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="type">The update type.</param>
         /// <param name="data">The data to send.</param>
         /// <returns>The group update.</returns>
-        GroupUpdate<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data);
+        GroupUpdateDto<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data);
 
         /// <summary>
         /// Sanitizes the PositionTicks, considers the current playing item when available.
@@ -217,6 +217,6 @@ namespace MediaBrowser.Controller.SyncPlay
         /// </summary>
         /// <param name="reason">The reason for the update.</param>
         /// <returns>The play queue update.</returns>
-        PlayQueueUpdate GetPlayQueueUpdate(PlayQueueUpdateReason reason);
+        PlayQueueUpdateDto GetPlayQueueUpdate(PlayQueueUpdateReason reason);
     }
 }

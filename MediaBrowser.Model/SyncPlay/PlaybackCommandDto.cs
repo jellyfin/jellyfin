@@ -3,12 +3,12 @@ using System;
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
-    /// Class SendCommand.
+    /// Class PlaybackCommandDto.
     /// </summary>
-    public class SendCommand
+    public class PlaybackCommandDto
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SendCommand"/> class.
+        /// Initializes a new instance of the <see cref="PlaybackCommandDto"/> class.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="playlistItemId">The playlist identifier of the playing item.</param>
@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="command">The command.</param>
         /// <param name="positionTicks">The position ticks, for commands that require it.</param>
         /// <param name="emittedAt">The UTC time when this command has been emitted.</param>
-        public SendCommand(Guid groupId, Guid playlistItemId, DateTime when, SendCommandType command, long? positionTicks, DateTime emittedAt)
+        public PlaybackCommandDto(Guid groupId, Guid playlistItemId, DateTime when, PlaybackCommandType command, long? positionTicks, DateTime emittedAt)
         {
             GroupId = groupId;
             PlaylistItemId = playlistItemId;
@@ -54,7 +54,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets the command.
         /// </summary>
         /// <value>The command.</value>
-        public SendCommandType Command { get; }
+        public PlaybackCommandType Command { get; }
 
         /// <summary>
         /// Gets the UTC time when this command has been emitted.

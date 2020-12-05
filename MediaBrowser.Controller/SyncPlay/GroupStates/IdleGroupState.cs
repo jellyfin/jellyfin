@@ -112,14 +112,14 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
         private void SendStopCommand(IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
-            var command = context.NewSyncPlayCommand(SendCommandType.Stop);
+            var command = context.NewSyncPlayCommand(PlaybackCommandType.Stop);
             if (!prevState.Equals(Type))
             {
-                context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+                context.PlaybackCommandDto(session, SessionsFilterType.AllGroup, command, cancellationToken);
             }
             else
             {
-                context.SendCommand(session, SyncPlayBroadcastType.CurrentSession, command, cancellationToken);
+                context.PlaybackCommandDto(session, SessionsFilterType.CurrentSession, command, cancellationToken);
             }
         }
     }
