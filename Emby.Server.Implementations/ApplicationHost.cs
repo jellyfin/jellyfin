@@ -478,17 +478,23 @@ namespace Emby.Server.Implementations
 
         private IEnumerable<Task> StartEntryPointsSafe(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
         {
+            IEnumerable<Task> value;
             try
             {
-                yeild StartEntryPoints(entryPoints, isBeforeStartup);
+                value = StartEntryPoints(entryPoints, isBeforeStartup);
             }
             catch (Exception ex)
-            {            
-                Logger.LogError(ex, "Exception in calling SafeEntyPoint.");
-                yeild Task.CompletedTask;
+            {
+                Logger.LogError(ex, "Exception in implementing SafeEntyPoint interface.");
+                value = new List<Task>
+                {
+                    Task.CompletedTask
+                };
             }
+
+            return value;
         }
-        
+
         private IEnumerable<Task> StartEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
         {
             foreach (var entryPoint in entryPoints)
