@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private string[] _urlPrefixes;
-
+        private List<Type> _creatingInstances;
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
@@ -393,8 +393,20 @@ namespace Emby.Server.Implementations
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Type type)
         {
+            if (_creatingInstances == null)
+            {
+                _creatingInstances = new List<Type>();
+            }
+
+            if (_creatingInstances.IndexOf(type) != -1)
+            {
+                Logger.LogError("Incompatible plugin detected. Attempting to bypass.");
+                throw new ExternalException("Incompatible plugin.");
+            }
+
             try
             {
+                _creatingInstances.Add(type);
                 Logger.LogDebug("Creating instance of {Type}", type);
                 return ActivatorUtilities.CreateInstance(ServiceProvider, type);
             }
@@ -402,6 +414,10 @@ namespace Emby.Server.Implementations
             {
                 Logger.LogError(ex, "Error creating {Type}", type);
                 return null;
+            }
+            finally
+            {
+                _creatingInstances.Remove(type);
             }
         }
 
