@@ -465,17 +465,30 @@ namespace Emby.Server.Implementations
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            await Task.WhenAll(StartEntryPoints(entryPoints, true)).ConfigureAwait(false);
+            await Task.WhenAll(StartEntryPointsSafe(entryPoints, true)).ConfigureAwait(false);
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
             CoreStartupHasCompleted = true;
             stopWatch.Restart();
-            await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
+            await Task.WhenAll(StartEntryPointsSafe(entryPoints, false)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
             stopWatch.Stop();
         }
 
+        private IEnumerable<Task> StartEntryPointsSafe(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
+        {
+            try
+            {
+                yeild StartEntryPoints(entryPoints, isBeforeStartup);
+            }
+            catch (Exception ex)
+            {            
+                Logger.LogError(ex, "Exception in calling SafeEntyPoint.");
+                yeild Task.CompletedTask;
+            }
+        }
+        
         private IEnumerable<Task> StartEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
         {
             foreach (var entryPoint in entryPoints)
