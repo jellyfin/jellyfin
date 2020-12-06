@@ -486,7 +486,7 @@ namespace Emby.Server.Implementations
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Exception in implementing SafeEntyPoint interface.");
-                value = new List<Task>
+                value = new[]
                 {
                     Task.CompletedTask
                 };
