@@ -1,6 +1,6 @@
-#nullable disable
+#nullable enable
 
-using System;
+using SysVersion = System.Version;
 
 namespace MediaBrowser.Model.Updates
 {
@@ -9,68 +9,68 @@ namespace MediaBrowser.Model.Updates
     /// </summary>
     public class VersionInfo
     {
-        private Version _version;
+        private SysVersion? _version;
 
         /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
-        public string version
+        public string Version
         {
-            get
-            {
-                return _version == null ? string.Empty : _version.ToString();
-            }
+            get => _version == null ? string.Empty : _version.ToString();
 
-            set
-            {
-                _version = Version.Parse(value);
-            }
+            set => _version = SysVersion.Parse(value);
         }
 
         /// <summary>
-        /// Gets the version as a <see cref="Version"/>.
+        /// Gets the version as a <see cref="SysVersion"/>.
         /// </summary>
-        public Version VersionNumber => _version;
+        public SysVersion VersionNumber => _version ?? new SysVersion(0, 0, 0);
 
         /// <summary>
         /// Gets or sets the changelog for this version.
         /// </summary>
         /// <value>The changelog.</value>
-        public string changelog { get; set; }
+        public string? Changelog { get; set; }
 
         /// <summary>
         /// Gets or sets the ABI that this version was built against.
         /// </summary>
         /// <value>The target ABI version.</value>
-        public string targetAbi { get; set; }
+        public string? TargetAbi { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum ABI that this version will work with.
+        /// </summary>
+        /// <value>The target ABI version.</value>
+        public string? MaxAbi { get; set; }
 
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
         /// <value>The source URL.</value>
-        public string sourceUrl { get; set; }
+        public string? SourceUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a checksum for the binary.
         /// </summary>
         /// <value>The checksum.</value>
-        public string checksum { get; set; }
+        public string? Checksum { get; set; }
 
         /// <summary>
         /// Gets or sets a timestamp of when the binary was built.
         /// </summary>
         /// <value>The timestamp.</value>
-        public string timestamp { get; set; }
+        public string? Timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the repository name.
         /// </summary>
-        public string repositoryName { get; set; }
+        public string RepositoryName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the repository url.
         /// </summary>
-        public string repositoryUrl { get; set; }
+        public string RepositoryUrl { get; set; } = string.Empty;
     }
 }

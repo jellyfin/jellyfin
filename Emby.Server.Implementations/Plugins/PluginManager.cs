@@ -1,0 +1,674 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Plugins;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace Emby.Server.Implementations
+{
+    /// <summary>
+    /// Defines the <see cref="PluginManager" />.
+    /// </summary>
+    public class PluginManager : IPluginManager
+    {
+        private const int OffsetFromTopRightCorner = 38;
+
+        private readonly string _pluginsPath;
+        private readonly Version _appVersion;
+        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly ILogger<PluginManager> _logger;
+        private readonly IApplicationHost _appHost;
+        private readonly string _imagesPath;
+        private readonly ServerConfiguration _config;
+        private readonly IList<LocalPlugin> _plugins;
+        private readonly Version _nextVersion;
+        private readonly Version _minimumVersion;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PluginManager"/> class.
+        /// </summary>
+        /// <param name="loggerfactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="appHost">The <see cref="IApplicationHost"/>.</param>
+        /// <param name="config">The <see cref="ServerConfiguration"/>.</param>
+        /// <param name="pluginsPath">The plugin path.</param>
+        /// <param name="imagesPath">The image cache path.</param>
+        /// <param name="appVersion">The application version.</param>
+        public PluginManager(
+            ILoggerFactory loggerfactory,
+            IApplicationHost appHost,
+            ServerConfiguration config,
+            string pluginsPath,
+            string imagesPath,
+            Version appVersion)
+        {
+            _logger = loggerfactory.CreateLogger<PluginManager>();
+            _pluginsPath = pluginsPath;
+            _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
+            _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions.PropertyNameCaseInsensitive = true;
+            _jsonOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            _config = config;
+            _appHost = appHost;
+            _imagesPath = imagesPath;
+            _nextVersion = new Version(_appVersion.Major, _appVersion.Minor + 2, _appVersion.Build, _appVersion.Revision);
+            _minimumVersion = new Version(0, 0, 0, 1);
+            _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
+        }
+
+        /// <summary>
+        /// Gets the Plugins.
+        /// </summary>
+        public IList<LocalPlugin> Plugins => _plugins;
+
+        /// <summary>
+        /// Returns all the assemblies.
+        /// </summary>
+        /// <returns>An IEnumerable{Assembly}.</returns>
+        public IEnumerable<Assembly> LoadAssemblies()
+        {
+            foreach (var plugin in _plugins)
+            {
+                foreach (var file in plugin.DllFiles)
+                {
+                    try
+                    {
+                        plugin.Assembly = Assembly.LoadFrom(file);
+                    }
+                    catch (FileLoadException ex)
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.Malfunction);
+                        continue;
+                    }
+
+                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugin.Assembly.FullName, file);
+                    yield return plugin.Assembly;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates all the plugin instances.
+        /// </summary>
+        public void CreatePlugins()
+        {
+            var createdPlugins = _appHost.GetExports<IPlugin>(CreatePluginInstance)
+                .Where(i => i != null)
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Registers the plugin's services with the DI.
+        /// Note: DI is not yet instantiated yet.
+        /// </summary>
+        /// <param name="serviceCollection">A <see cref="ServiceCollection"/> instance.</param>
+        public void RegisterServices(IServiceCollection serviceCollection)
+        {
+            foreach (var pluginServiceRegistrator in _appHost.GetExportTypes<IPluginServiceRegistrator>())
+            {
+                var plugin = GetPluginByType(pluginServiceRegistrator.Assembly.GetType());
+                if (plugin == null)
+                {
+                    throw new NullReferenceException();
+                }
+
+                CheckIfStillSuperceded(plugin);
+                if (!plugin.IsEnabledAndSupported)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var instance = (IPluginServiceRegistrator?)Activator.CreateInstance(pluginServiceRegistrator);
+                    instance?.RegisterServices(serviceCollection);
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    _logger.LogError(ex, "Error registering plugin services from {Assembly}.", pluginServiceRegistrator.Assembly.FullName);
+                    if (ChangePluginState(plugin, PluginStatus.Malfunction))
+                    {
+                        _logger.LogInformation("Disabling plugin {Path}", plugin.Path);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Imports a plugin manifest from <paramref name="folder"/>.
+        /// </summary>
+        /// <param name="folder">Folder of the plugin.</param>
+        public void ImportPluginFrom(string folder)
+        {
+            if (string.IsNullOrEmpty(folder))
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            // Load the plugin.
+            var plugin = LoadManifest(folder);
+            // Make sure we haven't already loaded this.
+            if (plugin == null || _plugins.Any(p => p.Manifest.Equals(plugin.Manifest)))
+            {
+                return;
+            }
+
+            _plugins.Add(plugin);
+            EnablePlugin(plugin);
+        }
+
+        /// <summary>
+        /// Removes the plugin reference '<paramref name="plugin"/>.
+        /// </summary>
+        /// <param name="plugin">The plugin.</param>
+        /// <returns>Outcome of the operation.</returns>
+        public bool RemovePlugin(LocalPlugin plugin)
+        {
+            if (plugin == null)
+            {
+                throw new ArgumentNullException(nameof(plugin));
+            }
+
+            plugin.Instance?.OnUninstalling();
+
+            if (DeletePlugin(plugin))
+            {
+                return true;
+            }
+
+            // Unable to delete, so disable.
+            return ChangePluginState(plugin, PluginStatus.Disabled);
+        }
+
+        /// <summary>
+        /// Attempts to find the plugin with and id of <paramref name="id"/>.
+        /// </summary>
+        /// <param name="id">Id of plugin.</param>
+        /// <param name="version">The version of the plugin to locate.</param>
+        /// <param name="plugin">A <see cref="LocalPlugin"/> if found, otherwise null.</param>
+        /// <returns>Boolean value signifying the success of the search.</returns>
+        public bool TryGetPlugin(Guid id, Version? version, out LocalPlugin? plugin)
+        {
+            if (version == null)
+            {
+                // If no version is given, return the largest version number. (This is for backwards compatibility).
+                plugin = _plugins.Where(p => p.Id.Equals(id)).OrderByDescending(p => p.Version).FirstOrDefault();
+            }
+            else
+            {
+                plugin = _plugins.FirstOrDefault(p => p.Id.Equals(id) && p.Version.Equals(version));
+            }
+
+            return plugin != null;
+        }
+
+        /// <summary>
+        /// Enables the plugin, disabling all other versions.
+        /// </summary>
+        /// <param name="plugin">The <see cref="LocalPlugin"/> of the plug to disable.</param>
+        public void EnablePlugin(LocalPlugin plugin)
+        {
+            if (plugin == null)
+            {
+                throw new ArgumentNullException(nameof(plugin));
+            }
+
+            if (ChangePluginState(plugin, PluginStatus.Active))
+            {
+                UpdateSuccessors(plugin);
+            }
+        }
+
+        /// <summary>
+        /// Disable the plugin.
+        /// </summary>
+        /// <param name="plugin">The <see cref="LocalPlugin"/> of the plug to disable.</param>
+        public void DisablePlugin(LocalPlugin plugin)
+        {
+            if (plugin == null)
+            {
+                throw new ArgumentNullException(nameof(plugin));
+            }
+
+            // Update the manifest on disk
+            if (ChangePluginState(plugin, PluginStatus.Disabled))
+            {
+                UpdateSuccessors(plugin);
+            }
+        }
+
+        /// <summary>
+        /// Changes the status of the other versions of the plugin to "Superceded".
+        /// </summary>
+        /// <param name="plugin">The <see cref="LocalPlugin"/> that's master.</param>
+        private void UpdateSuccessors(LocalPlugin plugin)
+        {
+            // This value is memory only - so that the web will show restart required.
+            plugin.Manifest.Status = PluginStatus.RestartRequired;
+
+            // Detect whether there is another version of this plugin that needs disabling.
+            var predecessor = _plugins.OrderByDescending(p => p.Version)
+                .FirstOrDefault(
+                    p => p.Id.Equals(plugin.Id)
+                    && p.Name.Equals(plugin.Name, StringComparison.OrdinalIgnoreCase)
+                    && p.IsEnabledAndSupported
+                    && p.Version != plugin.Version);
+
+            if (predecessor == null)
+            {
+                return;
+            }
+
+            if (!ChangePluginState(predecessor, PluginStatus.Superceded))
+            {
+                _logger.LogError("Unable to disable version {Version} of {Name}", predecessor.Version, predecessor.Name);
+            }
+        }
+
+        /// <summary>
+        /// Disable the plugin.
+        /// </summary>
+        /// <param name="assembly">The <see cref="Assembly"/> of the plug to disable.</param>
+        public void FailPlugin(Assembly assembly)
+        {
+            // Only save if disabled.
+            if (assembly == null)
+            {
+                throw new ArgumentNullException(nameof(assembly));
+            }
+
+            var plugin = _plugins.Where(p => assembly.Equals(p.Assembly)).FirstOrDefault();
+            if (plugin == null)
+            {
+                // A plugin's assembly didn't cause this issue, so ignore it.
+                return;
+            }
+
+            ChangePluginState(plugin, PluginStatus.Malfunction);
+        }
+
+        /// <summary>
+        /// Saves the manifest back to disk.
+        /// </summary>
+        /// <param name="manifest">The <see cref="PluginManifest"/> to save.</param>
+        /// <param name="path">The path where to save the manifest.</param>
+        /// <returns>True if successful.</returns>
+        public bool SaveManifest(PluginManifest manifest, string path)
+        {
+            if (manifest == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var data = JsonSerializer.Serialize(manifest, _jsonOptions);
+                File.WriteAllText(Path.Combine(path, "meta.json"), data, Encoding.UTF8);
+                return true;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogWarning(e, "Unable to save plugin manifest. {Path}", path);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Changes a plugin's load status.
+        /// </summary>
+        /// <param name="plugin">The <see cref="LocalPlugin"/> instance.</param>
+        /// <param name="state">The <see cref="PluginStatus"/> of the plugin.</param>
+        /// <returns>Success of the task.</returns>
+        private bool ChangePluginState(LocalPlugin plugin, PluginStatus state)
+        {
+            if (plugin.Manifest.Status == state || string.IsNullOrEmpty(plugin.Path))
+            {
+                // No need to save as the state hasn't changed.
+                return true;
+            }
+
+            plugin.Manifest.Status = state;
+            SaveManifest(plugin.Manifest, plugin.Path);
+            try
+            {
+                var data = JsonSerializer.Serialize(plugin.Manifest, _jsonOptions);
+                File.WriteAllText(Path.Combine(plugin.Path, "meta.json"), data, Encoding.UTF8);
+                return true;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogWarning(e, "Unable to disable plugin {Path}", plugin.Path);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finds the plugin record using the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> being sought.</param>
+        /// <returns>The matching record, or null if not found.</returns>
+        private LocalPlugin? GetPluginByType(Type type)
+        {
+            // Find which plugin it is by the path.
+            return _plugins.FirstOrDefault(p => string.Equals(p.Path, Path.GetDirectoryName(type.Assembly.Location), StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Creates the instance safe.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        private object? CreatePluginInstance(Type type)
+        {
+            // Find the record for this plugin.
+            var plugin = GetPluginByType(type);
+
+            if (plugin != null)
+            {
+                CheckIfStillSuperceded(plugin);
+
+                if (plugin.IsEnabledAndSupported == true)
+                {
+                    _logger.LogInformation("Skipping disabled plugin {Version} of {Name} ", plugin.Version, plugin.Name);
+                    return null;
+                }
+            }
+
+            try
+            {
+                _logger.LogDebug("Creating instance of {Type}", type);
+                var instance = ActivatorUtilities.CreateInstance(_appHost.ServiceProvider, type);
+                if (plugin == null)
+                {
+                    // Create a dummy record for the providers.
+                    var pInstance = (IPlugin)instance;
+                    plugin = new LocalPlugin(
+                        pInstance.AssemblyFilePath,
+                        true,
+                        new PluginManifest
+                        {
+                            Guid = pInstance.Id,
+                            Status = PluginStatus.Active,
+                            Name = pInstance.Name,
+                            Version = pInstance.Version.ToString(),
+                            MaxAbi = _nextVersion.ToString()
+                        })
+                    {
+                        Instance = pInstance
+                    };
+
+                    _plugins.Add(plugin);
+
+                    plugin.Manifest.Status = PluginStatus.Active;
+                }
+                else
+                {
+                    plugin.Instance = (IPlugin)instance;
+                    var manifest = plugin.Manifest;
+                    var pluginStr = plugin.Instance.Version.ToString();
+                    if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal))
+                    {
+                        // If a plugin without a manifest failed to load due to an external issue (eg config),
+                        // this updates the manifest to the actual plugin values.
+                        manifest.Version = pluginStr;
+                        manifest.Name = plugin.Instance.Name;
+                        manifest.Description = plugin.Instance.Description;
+                    }
+
+                    manifest.Status = PluginStatus.Active;
+                    SaveManifest(manifest, plugin.Path);
+                }
+
+                _logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name, plugin.Version);
+
+                return instance;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogError(ex, "Error creating {Type}", type.FullName);
+                if (plugin != null)
+                {
+                    if (ChangePluginState(plugin, PluginStatus.Malfunction))
+                    {
+                        _logger.LogInformation("Plugin {Path} has been disabled.", plugin.Path);
+                        return null;
+                    }
+                }
+
+                _logger.LogDebug("Unable to auto-disable.");
+                return null;
+            }
+        }
+
+        private void CheckIfStillSuperceded(LocalPlugin plugin)
+        {
+            if (plugin.Manifest.Status != PluginStatus.Superceded)
+            {
+                return;
+            }
+
+            var predecessor = _plugins.OrderByDescending(p => p.Version)
+                .FirstOrDefault(p => p.Id.Equals(plugin.Id) && p.IsEnabledAndSupported && p.Version != plugin.Version);
+            if (predecessor != null)
+            {
+                return;
+            }
+
+            plugin.Manifest.Status = PluginStatus.Active;
+        }
+
+        /// <summary>
+        /// Attempts to delete a plugin.
+        /// </summary>
+        /// <param name="plugin">A <see cref="LocalPlugin"/> instance to delete.</param>
+        /// <returns>True if successful.</returns>
+        private bool DeletePlugin(LocalPlugin plugin)
+        {
+            // Attempt a cleanup of old folders.
+            try
+            {
+                _logger.LogDebug("Deleting {Path}", plugin.Path);
+                Directory.Delete(plugin.Path, true);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogWarning(e, "Unable to delete {Path}", plugin.Path);
+                return false;
+            }
+
+            return _plugins.Remove(plugin);
+        }
+
+        private LocalPlugin? LoadManifest(string dir)
+        {
+            try
+            {
+                Version? version;
+                PluginManifest? manifest = null;
+                var metafile = Path.Combine(dir, "meta.json");
+                if (File.Exists(metafile))
+                {
+                    try
+                    {
+                        var data = File.ReadAllText(metafile, Encoding.UTF8);
+                        manifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Error deserializing {Path}.", dir);
+                    }
+                }
+
+                if (manifest != null)
+                {
+                    if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                    {
+                        targetAbi = _minimumVersion;
+                    }
+
+                    if (!Version.TryParse(manifest.MaxAbi, out var maxAbi))
+                    {
+                        maxAbi = _appVersion;
+                    }
+
+                    if (!Version.TryParse(manifest.Version, out version))
+                    {
+                        manifest.Version = _minimumVersion.ToString();
+                    }
+
+                    return new LocalPlugin(dir, _appVersion >= targetAbi && _appVersion <= maxAbi, manifest);
+                }
+
+                // No metafile, so lets see if the folder is versioned.
+                // TODO: Phase this support out in future versions.
+                metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
+                int versionIndex = dir.LastIndexOf('_');
+                if (versionIndex != -1)
+                {
+                    // Get the version number from the filename if possible.
+                    metafile = Path.GetFileName(dir[..versionIndex]) ?? dir[..versionIndex];
+                    version = Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version? parsedVersion) ? parsedVersion : _appVersion;
+                }
+                else
+                {
+                    // Un-versioned folder - Add it under the path name and version it suitable for this instance.
+                    version = _appVersion;
+                }
+
+                // Auto-create a plugin manifest, so we can disable it, if it fails to load.
+                // NOTE: This Plugin is marked as valid for two upgrades, at which point, it can be assumed the
+                // code base will have changed sufficiently to make it invalid.
+                manifest = new PluginManifest
+                {
+                    Status = PluginStatus.RestartRequired,
+                    Name = metafile,
+                    AutoUpdate = false,
+                    Guid = metafile.GetMD5(),
+                    TargetAbi = _appVersion.ToString(),
+                    MaxAbi = _nextVersion.ToString(),
+                    Version = version.ToString()
+                };
+
+                return new LocalPlugin(dir, true, manifest);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogError(ex, "Something went wrong!");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the list of local plugins.
+        /// </summary>
+        /// <returns>Enumerable of local plugins.</returns>
+        private IEnumerable<LocalPlugin> DiscoverPlugins()
+        {
+            var versions = new List<LocalPlugin>();
+
+            if (!Directory.Exists(_pluginsPath))
+            {
+                // Plugin path doesn't exist, don't try to enumerate sub-folders.
+                return Enumerable.Empty<LocalPlugin>();
+            }
+
+            var directories = Directory.EnumerateDirectories(_pluginsPath, "*.*", SearchOption.TopDirectoryOnly);
+            LocalPlugin? entry;
+            foreach (var dir in directories)
+            {
+                entry = LoadManifest(dir);
+                if (entry != null)
+                {
+                    versions.Add(entry);
+                }
+            }
+
+            string lastName = string.Empty;
+            versions.Sort(LocalPlugin.Compare);
+            // Traverse backwards through the list.
+            // The first item will be the latest version.
+            for (int x = versions.Count - 1; x >= 0; x--)
+            {
+                entry = versions[x];
+                if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    entry.DllFiles.AddRange(Directory.EnumerateFiles(entry.Path, "*.dll", SearchOption.AllDirectories));
+                    if (entry.IsEnabledAndSupported)
+                    {
+                        lastName = entry.Name;
+                        continue;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(lastName))
+                {
+                    continue;
+                }
+
+                var manifest = entry.Manifest;
+                var cleaned = false;
+                var path = entry.Path;
+                if (_config.RemoveOldPlugins)
+                {
+                    // Attempt a cleanup of old folders.
+                    try
+                    {
+                        _logger.LogDebug("Deleting {Path}", path);
+                        Directory.Delete(path, true);
+                        cleaned = true;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogWarning(e, "Unable to delete {Path}", path);
+                    }
+
+                    versions.RemoveAt(x);
+                }
+
+                if (!cleaned)
+                {
+                    if (manifest == null)
+                    {
+                        _logger.LogWarning("Unable to disable plugin {Path}", entry.Path);
+                        continue;
+                    }
+
+                    // Update the manifest so its not loaded next time.
+                    manifest.Status = PluginStatus.Disabled;
+                    SaveManifest(manifest, entry.Path);
+                }
+            }
+
+            // Only want plugin folders which have files.
+            return versions.Where(p => p.DllFiles.Count != 0);
+        }
+    }
+}

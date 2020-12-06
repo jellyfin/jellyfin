@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 
@@ -32,16 +32,16 @@ namespace Jellyfin.Api.Models
         /// </summary>
         /// <param name="plugin">Instance of <see cref="IPlugin"/> interface.</param>
         /// <param name="page">Instance of <see cref="PluginPageInfo"/> interface.</param>
-        public ConfigurationPageInfo(IPlugin plugin, PluginPageInfo page)
+        public ConfigurationPageInfo(IPlugin? plugin, PluginPageInfo page)
         {
             Name = page.Name;
             EnableInMainMenu = page.EnableInMainMenu;
             MenuSection = page.MenuSection;
             MenuIcon = page.MenuIcon;
-            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin.Name : page.DisplayName;
+            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin?.Name ?? page.DisplayName : page.DisplayName;
 
             // Don't use "N" because it needs to match Plugin.Id
-            PluginId = plugin.Id.ToString();
+            PluginId = plugin?.Id.ToString();
         }
 
         /// <summary>

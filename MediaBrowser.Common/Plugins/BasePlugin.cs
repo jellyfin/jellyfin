@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -64,14 +63,12 @@ namespace MediaBrowser.Common.Plugins
         /// <returns>PluginInfo.</returns>
         public virtual PluginInfo GetPluginInfo()
         {
-            var info = new PluginInfo
-            {
-                Name = Name,
-                Version = Version.ToString(),
-                Description = Description,
-                Id = Id.ToString(),
-                CanUninstall = CanUninstall
-            };
+            var info = new PluginInfo(
+                Name,
+                Version,
+                Description,
+                Id,
+                CanUninstall);
 
             return info;
         }

@@ -73,6 +73,12 @@
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\*.json" />
     <EmbeddedResource Include="Localization\Ratings\*.csv" />
+    <EmbeddedResource Include="Plugins\blank.png" />
+    <EmbeddedResource Include="Plugins\Superceded.png" />
+    <EmbeddedResource Include="Plugins\Disabled.png" />
+    <EmbeddedResource Include="Plugins\NotSupported.png" />
+    <EmbeddedResource Include="Plugins\Malfunction.png" />
+    <EmbeddedResource Include="Plugins\RestartRequired.png" />
+    <EmbeddedResource Include="Plugins\Active.png" />
   </ItemGroup>
-
 </Project>
