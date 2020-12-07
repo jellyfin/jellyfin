@@ -267,7 +267,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateUserPassword(
             [FromRoute, Required] Guid userId,
-            [FromBody] UpdateUserPassword request)
+            [FromBody, Required] UpdateUserPassword request)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
@@ -325,7 +325,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateUserEasyPassword(
             [FromRoute, Required] Guid userId,
-            [FromBody] UpdateUserEasyPassword request)
+            [FromBody, Required] UpdateUserEasyPassword request)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
@@ -367,13 +367,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> UpdateUser(
             [FromRoute, Required] Guid userId,
-            [FromBody] UserDto updateUser)
+            [FromBody, Required] UserDto updateUser)
         {
-            if (updateUser == null)
-            {
-                return BadRequest();
-            }
-
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
             {
                 return Forbid("User update not allowed.");
@@ -407,13 +402,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> UpdateUserPolicy(
             [FromRoute, Required] Guid userId,
-            [FromBody] UserPolicy newPolicy)
+            [FromBody, Required] UserPolicy newPolicy)
         {
-            if (newPolicy == null)
-            {
-                return BadRequest();
-            }
-
             var user = _userManager.GetUserById(userId);
 
             // If removing admin access
@@ -462,7 +452,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> UpdateUserConfiguration(
             [FromRoute, Required] Guid userId,
-            [FromBody] UserConfiguration userConfig)
+            [FromBody, Required] UserConfiguration userConfig)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
             {
@@ -483,7 +473,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("New")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<UserDto>> CreateUserByName([FromBody] CreateUserByName request)
+        public async Task<ActionResult<UserDto>> CreateUserByName([FromBody, Required] CreateUserByName request)
         {
             var newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
 
