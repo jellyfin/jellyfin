@@ -49,9 +49,9 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
 
             if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
             {
-                if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups ||
-                    user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups ||
-                    _syncPlayManager.IsUserActive(userId!.Value))
+                if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups
+                    || user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups
+                    || _syncPlayManager.IsUserActive(userId!.Value))
                 {
                     context.Succeed(requirement);
                 }
@@ -73,8 +73,8 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
             }
             else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.JoinGroup)
             {
-                if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups ||
-                    user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups)
+                if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups
+                    || user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups)
                 {
                     context.Succeed(requirement);
                 }
