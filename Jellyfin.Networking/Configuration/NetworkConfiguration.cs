@@ -16,7 +16,7 @@ namespace Jellyfin.Networking.Configuration
         public const int DefaultHttpPort = 8096;
 
         /// <summary>
-        /// The default value for <see cref="PublicHttpsPort"/> and <see cref="HttpsPortNumber"/>.
+        /// The default value for <see cref="PublicHttpsPort"/> and <see cref="HttpsServerPortNumber"/>.
         /// </summary>
         public const int DefaultHttpsPort = 8920;
 
@@ -76,7 +76,7 @@ namespace Jellyfin.Networking.Configuration
         /// Gets or sets the HTTPS server port number.
         /// </summary>
         /// <value>The HTTPS server port number.</value>
-        public int HttpsPortNumber { get; set; } = DefaultHttpsPort;
+        public int HttpsServerPortNumber { get; set; } = DefaultHttpsPort;
 
         /// <summary>
         /// Gets or sets a value indicating whether to use HTTPS.
@@ -88,7 +88,7 @@ namespace Jellyfin.Networking.Configuration
         public bool EnableHttps { get; set; }
 
         /// <summary>
-        /// Gets or sets the public mapped port.
+        /// Gets or sets the Upublic mapped port.
         /// </summary>
         /// <value>The public mapped port.</value>
         public int PublicPort { get; set; } = DefaultHttpPort;

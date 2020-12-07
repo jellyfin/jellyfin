@@ -496,7 +496,7 @@ namespace Emby.Server.Implementations
         {
             var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
             HttpPort = networkConfiguration.HttpServerPortNumber;
-            HttpsPort = networkConfiguration.HttpsPortNumber;
+            HttpsPort = networkConfiguration.HttpsServerPortNumber;
 
             // Safeguard against invalid configuration
             if (HttpPort == HttpsPort)
@@ -714,7 +714,7 @@ namespace Emby.Server.Implementations
                 // Don't use an empty string password
                 var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
 
-                var localCert = new X509Certificate2(certificateLocation, password);
+                var localCert = new X509Certificate2(certificateLocation, password, X509KeyStorageFlags.UserKeySet);
                 // localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
@@ -919,7 +919,7 @@ namespace Emby.Server.Implementations
                 var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
                 // Need to restart if ports have changed
                 if (networkConfiguration.HttpServerPortNumber != HttpPort ||
-                    networkConfiguration.HttpsPortNumber != HttpsPort)
+                    networkConfiguration.HttpsServerPortNumber != HttpsPort)
                 {
                     if (ServerConfigurationManager.Configuration.IsPortAuthorized)
                     {
