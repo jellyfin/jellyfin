@@ -66,6 +66,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="requestData">The group to join.</param>
         /// <response code="204">Group join successful.</response>
+        /// <response code="400">Session does not support SyncPlay.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -76,18 +77,16 @@ namespace Jellyfin.Api.Controllers
             var joiningSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
 
             // TODO: check if session can control remote session.
+            // TODO: reject or allow remote sessions that don't have SyncPlay access?
             if (requestData.RemoteSessionId != null)
             {
-                var remoteSession = _sessionManager.GetSession(requestData.RemoteSessionId);
-                if (!remoteSession.Capabilities.SupportsSyncPlay)
-                {
-                    // Remote session does not support SyncPlay.
-                    return NoContent();
-                }
-                else
-                {
-                    joiningSession = remoteSession;
-                }
+                joiningSession = _sessionManager.GetSession(requestData.RemoteSessionId);
+            }
+
+            if (!joiningSession.Capabilities.SupportsSyncPlay)
+            {
+                // Session does not support SyncPlay.
+                return BadRequest();
             }
 
             var syncPlayRequest = new JoinGroupRequest(requestData.GroupId);
@@ -100,6 +99,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="requestData">The group to leave.</param>
         /// <response code="204">Group leave successful.</response>
+        /// <response code="400">Session does not support SyncPlay.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -111,16 +111,14 @@ namespace Jellyfin.Api.Controllers
             // TODO: check if session can control remote session.
             if (requestData.RemoteSessionId != null)
             {
-                var remoteSession = _sessionManager.GetSession(requestData.RemoteSessionId);
-                if (!remoteSession.Capabilities.SupportsSyncPlay)
-                {
-                    // Remote session does not support SyncPlay.
-                    return NoContent();
-                }
-                else
-                {
-                    leavingSession = remoteSession;
-                }
+                leavingSession = _sessionManager.GetSession(requestData.RemoteSessionId);
+            }
+
+            // TODO: is this really needed? These sessions shouldn't join in the first place.
+            if (!leavingSession.Capabilities.SupportsSyncPlay)
+            {
+                // Session does not support SyncPlay.
+                return BadRequest();
             }
 
             var syncPlayRequest = new LeaveGroupRequest();
