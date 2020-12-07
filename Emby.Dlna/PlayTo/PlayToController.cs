@@ -345,7 +345,7 @@ namespace Emby.Dlna.PlayTo
             playlist[0] = CreatePlaylistItem(
                 items[0],
                 user,
-                (command.StartPositionTicks == null) ? 0 : command.StartPositionTicks.Value,
+                command.StartPositionTicks ?? 0,
                 command.MediaSourceId ?? string.Empty,
                 command.AudioStreamIndex,
                 command.SubtitleStreamIndex);
