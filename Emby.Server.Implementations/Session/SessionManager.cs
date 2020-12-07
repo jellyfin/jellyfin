@@ -128,6 +128,9 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public event EventHandler<SessionEventArgs> SessionActivity;
 
+        /// <inheritdoc />
+        public event EventHandler<SessionEventArgs> SessionControllerConnected;
+
         /// <summary>
         /// Gets all connections.
         /// </summary>
@@ -310,6 +313,19 @@ namespace Emby.Server.Implementations.Session
             }
 
             return session;
+        }
+
+        /// <inheritdoc />
+        public void OnSessionControllerConnected(SessionInfo info)
+        {
+            EventHelper.QueueEventIfNotNull(
+                SessionControllerConnected,
+                this,
+                new SessionEventArgs
+                {
+                    SessionInfo = info
+                },
+                _logger);
         }
 
         /// <inheritdoc />
