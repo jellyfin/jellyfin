@@ -169,7 +169,7 @@ namespace Jellyfin.Api.Controllers
 
             if (!string.IsNullOrEmpty(password) && string.IsNullOrEmpty(pw))
             {
-                return Forbid("Only sha1 password is not allowed.");
+                return StatusCode(StatusCodes.Status403Forbidden, "Only sha1 password is not allowed.");
             }
 
             // Password should always be null
@@ -271,7 +271,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to update the password.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -296,7 +296,7 @@ namespace Jellyfin.Api.Controllers
 
                 if (success == null)
                 {
-                    return Forbid("Invalid user or password entered.");
+                    return StatusCode(StatusCodes.Status403Forbidden, "Invalid user or password entered.");
                 }
 
                 await _userManager.ChangePassword(user, request.NewPw).ConfigureAwait(false);
@@ -329,7 +329,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to update the easy password.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the easy password.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -376,7 +376,7 @@ namespace Jellyfin.Api.Controllers
 
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
             {
-                return Forbid("User update not allowed.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -421,14 +421,14 @@ namespace Jellyfin.Api.Controllers
             {
                 if (_userManager.Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
                 {
-                    return Forbid("There must be at least one user in the system with administrative access.");
+                    return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one user in the system with administrative access.");
                 }
             }
 
             // If disabling
             if (newPolicy.IsDisabled && user.HasPermission(PermissionKind.IsAdministrator))
             {
-                return Forbid("Administrators cannot be disabled.");
+                return StatusCode(StatusCodes.Status403Forbidden, "Administrators cannot be disabled.");
             }
 
             // If disabling
@@ -436,7 +436,7 @@ namespace Jellyfin.Api.Controllers
             {
                 if (_userManager.Users.Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
                 {
-                    return Forbid("There must be at least one enabled user in the system.");
+                    return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one enabled user in the system.");
                 }
 
                 var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
@@ -466,7 +466,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
             {
-                return Forbid("User configuration update not allowed");
+                return StatusCode(StatusCodes.Status403Forbidden, "User configuration update not allowed");
             }
 
             await _userManager.UpdateConfigurationAsync(userId, userConfig).ConfigureAwait(false);
