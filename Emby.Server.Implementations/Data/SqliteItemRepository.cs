@@ -6069,7 +6069,7 @@ AND Type = @InternalPersonType)");
             {
                 item.Language = reader[4].ToString();
 
-                string i18nKey = "Language" + StringHelper.FirstToUpper(item.Language);
+                string i18nKey = "Language" + item.Language;
                 item.localizedLanguage = _localization.GetLocalizedString(i18nKey);
                 if (item.localizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
                 {

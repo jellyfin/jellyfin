@@ -652,7 +652,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.Comment = GetDictionaryValue(streamInfo.Tags, "comment");
                 stream.Title = GetDictionaryValue(streamInfo.Tags, "title");
 
-                string i18nKey = "Language" + StringHelper.FirstToUpper(stream.Language);
+                string i18nKey = "Language" + stream.Language;
                 stream.localizedLanguage = _localization.GetLocalizedString(i18nKey);
                 if (stream.localizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
                 {
