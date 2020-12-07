@@ -10,7 +10,6 @@ using System.Xml;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
