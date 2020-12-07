@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Jellyfin.Common.Tests.Models;
+using MediaBrowser.Common.Json.Converters;
 using Xunit;
 
 namespace Jellyfin.Common.Tests.Json
@@ -14,10 +14,10 @@ namespace Jellyfin.Common.Tests.Json
         [InlineData("false", false)]
         public static void Deserialize_Number_Valid_Success(string input, bool? output)
         {
-            var inputJson = $"{{ \"Value\": {input} }}";
             var options = new JsonSerializerOptions();
-            var value = JsonSerializer.Deserialize<BoolTypeModel>(inputJson, options);
-            Assert.Equal(value?.Value, output);
+            options.Converters.Add(new JsonBoolNumberConverter());
+            var value = JsonSerializer.Deserialize<bool>(input, options);
+            Assert.Equal(value, output);
         }
     }
 }

@@ -8,9 +8,6 @@ namespace MediaBrowser.Common.Json.Converters
     /// Converts a number to a boolean.
     /// This is needed for HDHomerun.
     /// </summary>
-    /// <remarks>
-    /// Adding this to the JsonConverter list causes recursion.
-    /// </remarks>
     public class JsonBoolNumberConverter : JsonConverter<bool>
     {
         /// <inheritdoc />
@@ -21,7 +18,7 @@ namespace MediaBrowser.Common.Json.Converters
                 return Convert.ToBoolean(reader.GetInt32());
             }
 
-            return JsonSerializer.Deserialize<bool>(ref reader, options);
+            return reader.GetBoolean();
         }
 
         /// <inheritdoc />
