@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Models.SessionDtos
         /// <summary>
         /// Gets or sets a value indicating whether session supports SyncPlay.
         /// </summary>
-        public bool SupportsSyncPlay { get; set; }
+        public bool? SupportsSyncPlay { get; set; }
 
         /// <summary>
         /// Convert the dto to the full <see cref="ClientCapabilities"/> model.
@@ -87,7 +87,7 @@ namespace Jellyfin.Api.Models.SessionDtos
                 DeviceProfile = DeviceProfile,
                 AppStoreUrl = AppStoreUrl,
                 IconUrl = IconUrl,
-                SupportsSyncPlay = SupportsSyncPlay
+                SupportsSyncPlay = SupportsSyncPlay ?? false
             };
         }
     }
