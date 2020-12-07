@@ -142,6 +142,8 @@ namespace Jellyfin.Server
                         RequestPath = "/web",
                         ContentTypeProvider = extensionProvider
                     });
+
+                    mainApp.UseRobotsRedirection();
                 }
 
                 mainApp.UseAuthentication();

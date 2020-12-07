@@ -107,5 +107,15 @@ namespace Jellyfin.Server.Extensions
         {
             return appBuilder.UseMiddleware<WebSocketHandlerMiddleware>();
         }
+
+        /// <summary>
+        /// Adds robots.txt redirection to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseRobotsRedirection(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<RobotsRedirectionMiddleware>();
+        }
     }
 }
