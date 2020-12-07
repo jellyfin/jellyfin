@@ -88,7 +88,7 @@ namespace Jellyfin.Networking.Configuration
         public bool EnableHttps { get; set; }
 
         /// <summary>
-        /// Gets or sets the Upublic mapped port.
+        /// Gets or sets the public mapped port.
         /// </summary>
         /// <value>The public mapped port.</value>
         public int PublicPort { get; set; } = DefaultHttpPort;
