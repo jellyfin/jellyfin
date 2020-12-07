@@ -391,7 +391,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        protected object CreateInstanceSafe(Type type)
+        protected object CreateInstanceWithSafeguards(Type type)
         {
             if (_creatingInstances == null)
             {
@@ -445,7 +445,7 @@ namespace Emby.Server.Implementations
         {
             // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()
-                .Select(CreateInstanceSafe)
+                .Select(CreateInstanceWithSafeguards)
                 .Where(i => i != null)
                 .Cast<T>()
                 .ToList();
