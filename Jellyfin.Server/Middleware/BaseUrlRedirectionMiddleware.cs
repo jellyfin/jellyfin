@@ -45,21 +45,30 @@ namespace Jellyfin.Server.Middleware
             var localPath = httpContext.Request.Path.ToString();
             var baseUrlPrefix = serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
 
-            if (string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
+
+            if (string.IsNullOrEmpty(localPath)
                 || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrEmpty(localPath)
-                || !localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase))
+                || string.Equals(localPath, "/web", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(localPath, baseUrlPrefix + "/web", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(localPath, baseUrlPrefix + "/web/", StringComparison.OrdinalIgnoreCase) // Need to resolve the correct relative path.
+                || !localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
+               )
             {
                 // Always redirect back to the default path if the base prefix is invalid or missing
                 _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
 
-                if (string.IsNullOrWhiteSpace(baseUrlPrefix))
+                if ((!string.IsNullOrWhiteSpace(baseUrlPrefix)) && baseUrlPrefix[^1] != '/')
                 {
-                    baseUrlPrefix = ".";
+                    baseUrlPrefix += "/";
                 }
 
-                httpContext.Response.Redirect(baseUrlPrefix + "/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
+                var target = baseUrlPrefix + _configuration[ConfigurationExtensions.DefaultRedirectKey];
+                _logger.LogDebug("Redirecting to {target}", target);
+
+                httpContext.Response.Redirect(target);
                 return;
             }
 
