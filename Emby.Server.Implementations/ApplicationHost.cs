@@ -496,7 +496,7 @@ namespace Emby.Server.Implementations
         {
             var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
             HttpPort = networkConfiguration.HttpServerPortNumber;
-            HttpsPort = networkConfiguration.HttpsServerPortNumber;
+            HttpsPort = networkConfiguration.HttpsPortNumber;
 
             // Safeguard against invalid configuration
             if (HttpPort == HttpsPort)
@@ -919,7 +919,7 @@ namespace Emby.Server.Implementations
                 var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
                 // Need to restart if ports have changed
                 if (networkConfiguration.HttpServerPortNumber != HttpPort ||
-                    networkConfiguration.HttpsServerPortNumber != HttpsPort)
+                    networkConfiguration.HttpsPortNumber != HttpsPort)
                 {
                     if (ServerConfigurationManager.Configuration.IsPortAuthorized)
                     {
