@@ -342,10 +342,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             public string URL { get; set; }
 
-            [JsonConverter(typeof(JsonBoolNumberConverter))]
             public bool Favorite { get; set; }
 
-            [JsonConverter(typeof(JsonBoolNumberConverter))]
             public bool DRM { get; set; }
 
             public int HD { get; set; }
