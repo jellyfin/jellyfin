@@ -111,7 +111,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }).Cast<ChannelInfo>().ToList();
         }
 
-        private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
+        internal async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
 
@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             try
             {
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .GetAsync(GetApiUrl(info) + "/discover.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
                 await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
@@ -673,42 +673,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
 
                 throw;
-            }
-        }
-
-        public class DiscoverResponse
-        {
-            public string FriendlyName { get; set; }
-
-            public string ModelNumber { get; set; }
-
-            public string FirmwareName { get; set; }
-
-            public string FirmwareVersion { get; set; }
-
-            public string DeviceID { get; set; }
-
-            public string DeviceAuth { get; set; }
-
-            public string BaseURL { get; set; }
-
-            public string LineupURL { get; set; }
-
-            public int TunerCount { get; set; }
-
-            public bool SupportsTranscoding
-            {
-                get
-                {
-                    var model = ModelNumber ?? string.Empty;
-
-                    if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        return true;
-                    }
-
-                    return false;
-                }
             }
         }
 
