@@ -35,6 +35,10 @@
     <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="LiveTv\discover.json" />
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
