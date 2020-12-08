@@ -19,5 +19,16 @@ namespace Jellyfin.Common.Tests.Json
             var value = JsonSerializer.Deserialize<bool>(input, options);
             Assert.Equal(value, output);
         }
+
+        [Theory]
+        [InlineData(true, "true")]
+        [InlineData(false, "false")]
+        public static void Serialize_Bool_Success(bool input, string output)
+        {
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new JsonBoolNumberConverter());
+            var value = JsonSerializer.Serialize(input, options);
+            Assert.Equal(value, output);
+        }
     }
 }

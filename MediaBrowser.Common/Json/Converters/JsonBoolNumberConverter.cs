@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize(writer, value, options);
+            writer.WriteBooleanValue(value);
         }
     }
 }
