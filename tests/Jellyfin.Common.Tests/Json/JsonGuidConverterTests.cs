@@ -3,7 +3,7 @@ using System.Text.Json;
 using MediaBrowser.Common.Json.Converters;
 using Xunit;
 
-namespace Jellyfin.Common.Tests.Extensions
+namespace Jellyfin.Common.Tests.Json
 {
     public class JsonGuidConverterTests
     {
@@ -44,9 +44,9 @@ namespace Jellyfin.Common.Tests.Extensions
         }
 
         [Fact]
-        public void Serialize_EmptyGuid_Null()
+        public void Serialize_EmptyGuid_EmptyGuid()
         {
-            Assert.Equal("null", JsonSerializer.Serialize(Guid.Empty, _options));
+            Assert.Equal($"\"{Guid.Empty}\"", JsonSerializer.Serialize(Guid.Empty, _options));
         }
     }
 }
