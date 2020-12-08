@@ -139,13 +139,13 @@ namespace Emby.Server.Implementations.Library
             return list
                 .OrderBy(i =>
                 {
-                    var index = orders.IndexOf(i.Id.ToString("N", CultureInfo.InvariantCulture));
+                    var index = orders.IndexOf(i.Id.ToString("D", CultureInfo.InvariantCulture));
 
                     if (index == -1
                         && i is UserView view
                         && view.DisplayParentId != Guid.Empty)
                     {
-                        index = orders.IndexOf(view.DisplayParentId.ToString("N", CultureInfo.InvariantCulture));
+                        index = orders.IndexOf(view.DisplayParentId.ToString("D", CultureInfo.InvariantCulture));
                     }
 
                     return index == -1 ? int.MaxValue : index;
