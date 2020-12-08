@@ -70,6 +70,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize(Policy = Policies.SyncPlayAccess)]
         public ActionResult SyncPlayJoinGroup(
             [FromBody, Required] JoinGroupRequestDto requestData)
@@ -103,6 +104,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult SyncPlayLeaveGroup(
             [FromBody, Required] LeaveGroupRequestDto requestData)
         {
