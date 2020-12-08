@@ -407,6 +407,7 @@ namespace Emby.Server.Implementations.Updates
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms

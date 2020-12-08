@@ -611,12 +611,17 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             CancellationToken cancellationToken,
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
+            HttpResponseMessage response = null;
             try
             {
-                return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
+                response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return response;
             }
             catch (HttpRequestException ex)
             {
+                response?.Dispose();
                 _tokens.Clear();
 
                 if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500)
@@ -647,6 +652,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             using var response = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Token>(stream).ConfigureAwait(false);
             if (string.Equals(root.message, "OK", StringComparison.Ordinal))
@@ -701,6 +707,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             try
             {
                 using var httpResponse = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
+                httpResponse.EnsureSuccessStatusCode();
                 await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 using var response = httpResponse.Content;
                 var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Lineups>(stream).ConfigureAwait(false);
@@ -709,7 +716,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             catch (HttpRequestException ex)
             {
-                // Apparently we're supposed to swallow this
+                // SchedulesDirect returns 400 if no lineups are configured.
                 if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
                 {
                     return false;
