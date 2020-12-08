@@ -8,10 +8,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -340,8 +342,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             public string URL { get; set; }
 
+            [JsonConverter(typeof(JsonBoolNumberConverter))]
             public bool Favorite { get; set; }
 
+            [JsonConverter(typeof(JsonBoolNumberConverter))]
             public bool DRM { get; set; }
 
             public int HD { get; set; }
