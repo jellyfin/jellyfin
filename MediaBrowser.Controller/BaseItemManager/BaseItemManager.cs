@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            var typeOptions = libraryOptions.GetTypeOptions(GetType().Name);
+            var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
             if (typeOptions != null)
             {
                 return typeOptions.ImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            var typeOptions = libraryOptions.GetTypeOptions(GetType().Name);
+            var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
             if (typeOptions != null)
             {
                 return typeOptions.ImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
