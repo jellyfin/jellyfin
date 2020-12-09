@@ -603,16 +603,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
+            // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
             var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
+            var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
+                var batchSize = useLargerBatchSize ? "50" : "24";
                 if (string.IsNullOrEmpty(vf))
                 {
-                    vf = "-vf thumbnail=24";
+                    vf = "-vf thumbnail=" + batchSize;
                 }
                 else
                 {
-                    vf += ",thumbnail=24";
+                    vf += ",thumbnail=" + batchSize;
                 }
             }
 
