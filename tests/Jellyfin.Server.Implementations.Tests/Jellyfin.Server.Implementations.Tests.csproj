@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="LiveTv\discover.json" />
+    <EmbeddedResource Include="LiveTv\lineup.json" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

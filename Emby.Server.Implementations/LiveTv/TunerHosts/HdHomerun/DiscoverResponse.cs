@@ -1,10 +1,8 @@
-#pragma warning disable CS1591
-
 using System;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public class DiscoverResponse
+    internal class DiscoverResponse
     {
         public string FriendlyName { get; set; }
 
