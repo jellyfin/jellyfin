@@ -22,15 +22,26 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
 
         public HdHomerunHostTests()
         {
-            const string ResourceName = "Jellyfin.Server.Implementations.Tests.LiveTv.discover.json";
+            const string BaseResourcePath = "Jellyfin.Server.Implementations.Tests.LiveTv.";
 
             var messageHandler = new Mock<HttpMessageHandler>();
-            messageHandler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns(
-                    () => Task.FromResult(new HttpResponseMessage()
+            messageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(
+                    (m, _) =>
                     {
-                        Content = new StreamContent(typeof(HdHomerunHostTests).Assembly.GetManifestResourceStream(ResourceName)!)
-                    }));
+                        var resource = BaseResourcePath + m.RequestUri?.Segments[^1];
+                        var stream = typeof(HdHomerunHostTests).Assembly.GetManifestResourceStream(resource);
+                        if (stream == null)
+                        {
+                            throw new NullReferenceException("Resource doesn't exist: " + resource);
+                        }
+
+                        return Task.FromResult(new HttpResponseMessage()
+                        {
+                            Content = new StreamContent(stream)
+                        });
+                    });
 
             var http = new Mock<IHttpClientFactory>();
             http.Setup(x => x.CreateClient(It.IsAny<string>()))
@@ -72,6 +83,41 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
             };
 
             await Assert.ThrowsAsync<ArgumentException>(() => _hdHomerunHost.GetModelInfo(host, true, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task GetLineup_Valid_Success()
+        {
+            var host = new TunerHostInfo()
+            {
+                Url = TestIp
+            };
+
+            var channels = await _hdHomerunHost.GetLineup(host, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(6, channels.Count);
+            Assert.Equal("4.1", channels[0].GuideNumber);
+            Assert.Equal("WCMH-DT", channels[0].GuideName);
+            Assert.True(channels[0].HD);
+            Assert.True(channels[0].Favorite);
+            Assert.Equal("http://192.168.1.111:5004/auto/v4.1", channels[0].URL);
+        }
+
+        [Fact]
+        public async Task GetLineup_ImportFavoritesOnly_Success()
+        {
+            var host = new TunerHostInfo()
+            {
+                Url = TestIp,
+                ImportFavoritesOnly = true
+            };
+
+            var channels = await _hdHomerunHost.GetLineup(host, CancellationToken.None).ConfigureAwait(false);
+            Assert.Single(channels);
+            Assert.Equal("4.1", channels[0].GuideNumber);
+            Assert.Equal("WCMH-DT", channels[0].GuideName);
+            Assert.True(channels[0].HD);
+            Assert.True(channels[0].Favorite);
+            Assert.Equal("http://192.168.1.111:5004/auto/v4.1", channels[0].URL);
         }
     }
 }
