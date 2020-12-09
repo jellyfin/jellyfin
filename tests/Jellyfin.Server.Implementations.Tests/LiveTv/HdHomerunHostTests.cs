@@ -119,5 +119,16 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
             Assert.True(channels[0].Favorite);
             Assert.Equal("http://192.168.1.111:5004/auto/v4.1", channels[0].URL);
         }
+
+        [Fact]
+        public async Task TryGetTunerHostInfo_Valid_Success()
+        {
+            var host = await _hdHomerunHost.TryGetTunerHostInfo(TestIp, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(_hdHomerunHost.Type, host.Type);
+            Assert.Equal(TestIp, host.Url);
+            Assert.Equal("HDHomeRun PRIME", host.FriendlyName);
+            Assert.Equal("FFFFFFFF", host.DeviceId);
+            Assert.Equal(3, host.TunerCount);
+        }
     }
 }

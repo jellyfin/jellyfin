@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return list;
         }
 
-        private async Task<TunerHostInfo> TryGetTunerHostInfo(string url, CancellationToken cancellationToken)
+        internal async Task<TunerHostInfo> TryGetTunerHostInfo(string url, CancellationToken cancellationToken)
         {
             var hostInfo = new TunerHostInfo
             {
@@ -725,6 +725,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             hostInfo.DeviceId = modelInfo.DeviceID;
             hostInfo.FriendlyName = modelInfo.FriendlyName;
+            hostInfo.TunerCount = modelInfo.TunerCount;
 
             return hostInfo;
         }
