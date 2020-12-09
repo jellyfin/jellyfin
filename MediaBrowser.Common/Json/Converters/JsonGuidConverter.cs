@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -19,7 +20,7 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value);
+            writer.WriteStringValue(value.ToString("N", CultureInfo.InvariantCulture));
         }
     }
 }
