@@ -1,10 +1,13 @@
 #pragma warning disable CS1591
 
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
@@ -13,14 +16,27 @@ namespace MediaBrowser.Providers.TV
 {
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
+        private readonly ILocalizationManager _localization;
+
         public SeriesMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<SeriesMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            ILocalizationManager localization)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
+            _localization = localization;
+        }
+
+        /// <inheritdoc />
+        protected override async Task AfterMetadataRefresh(Series item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            var seasonProvider = new DummySeasonProvider(Logger, _localization, LibraryManager, FileSystem);
+            await seasonProvider.Run(item, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
