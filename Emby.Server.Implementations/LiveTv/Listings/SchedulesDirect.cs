@@ -611,30 +611,25 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             CancellationToken cancellationToken,
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
-            HttpResponseMessage response = null;
-            try
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
             {
-                response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
                 return response;
             }
-            catch (HttpRequestException ex)
+
+            // Response is automatically disposed in the calling function,
+            // so dispose manually if not returning.
+            response.Dispose();
+            if (!enableRetry || (int)response.StatusCode >= 500)
             {
-                response?.Dispose();
-                _tokens.Clear();
-
-                if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500)
-                {
-                    enableRetry = false;
-                }
-
-                if (!enableRetry)
-                {
-                    throw;
-                }
+                throw new HttpRequestException(
+                    string.Format(CultureInfo.InvariantCulture, "Request failed: {0}", response.ReasonPhrase),
+                    null,
+                    response.StatusCode);
             }
 
+            _tokens.Clear();
             options.Headers.TryAddWithoutValidation("token", await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
             return await Send(options, false, providerInfo, cancellationToken).ConfigureAwait(false);
         }
