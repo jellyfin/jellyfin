@@ -57,5 +57,13 @@ namespace Jellyfin.Common.Tests.Json
             var str = JsonSerializer.Serialize(guid, _options);
             Assert.Equal($"\"{guid:N}\"", str);
         }
+
+        [Fact]
+        public void Serialize_Nullable_Success()
+        {
+            Guid? guid = new Guid("531797E9-9457-40E0-88BC-B1D6D38752FA");
+            var str = JsonSerializer.Serialize(guid, _options);
+            Assert.Equal($"\"{guid:N}\"", str);
+        }
     }
 }
