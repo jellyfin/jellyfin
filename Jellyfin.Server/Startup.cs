@@ -128,6 +128,8 @@ namespace Jellyfin.Server
                     mainApp.UseHttpsRedirection();
                 }
 
+                // This must be injected before any path related middleware.
+                mainApp.UsePathTrim();
                 mainApp.UseStaticFiles();
                 if (appConfig.HostWebClient())
                 {
