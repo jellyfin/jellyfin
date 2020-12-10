@@ -42,7 +42,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
@@ -1957,7 +1956,10 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            await RunMetadataSavers(items, updateReason).ConfigureAwait(false);
+            foreach (var item in items)
+            {
+                await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+            }
 
             _itemRepository.SaveItems(items, cancellationToken);
 
@@ -1994,19 +1996,16 @@ namespace Emby.Server.Implementations.Library
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
 
-        public async Task RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason)
+        public Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
-            foreach (var item in items)
+            if (item.IsFileProtocol)
             {
-                if (item.IsFileProtocol)
-                {
-                    ProviderManager.SaveMetadata(item, updateReason);
-                }
-
-                item.DateLastSaved = DateTime.UtcNow;
-
-                await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+                ProviderManager.SaveMetadata(item, updateReason);
             }
+
+            item.DateLastSaved = DateTime.UtcNow;
+
+            return UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate);
         }
 
         /// <summary>

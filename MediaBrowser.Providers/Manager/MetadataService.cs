@@ -232,7 +232,6 @@ namespace MediaBrowser.Providers.Manager
         private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
         {
             var personsToSave = new List<BaseItem>();
-            var personsToSaveWithImages = new List<BaseItem>();
 
             foreach (var person in people)
             {
@@ -240,13 +239,15 @@ namespace MediaBrowser.Providers.Manager
 
                 if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
                 {
+                    var itemUpdateType = ItemUpdateType.MetadataDownload;
+                    var saveEntity = false;
                     var personEntity = LibraryManager.GetPerson(person.Name);
                     foreach (var id in person.ProviderIds)
                     {
                         if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             personEntity.SetProviderId(id.Key, id.Value);
-                            personsToSave.Add(personEntity);
+                            saveEntity = true;
                         }
                     }
 
@@ -260,17 +261,19 @@ namespace MediaBrowser.Providers.Manager
                             },
                             0);
 
-                        personsToSaveWithImages.Add(personEntity);
+                        saveEntity = true;
+                        itemUpdateType = ItemUpdateType.ImageUpdate;
+                    }
+
+                    if (saveEntity)
+                    {
+                        personsToSave.Add(personEntity);
+                        await LibraryManager.RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                     }
                 }
             }
 
-            // This is a little ugly, but it saves a lot of I/O with the db by doing this in bulk.
-            // To avoid updating images for no reason, we differentiate between the two item update types.
-            await LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload).ConfigureAwait(false);
-            await LibraryManager.RunMetadataSavers(personsToSaveWithImages, ItemUpdateType.ImageUpdate).ConfigureAwait(false);
-
-            LibraryManager.CreateItems(personsToSave.Concat(personsToSaveWithImages).ToList(), null, CancellationToken.None);
+            LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
