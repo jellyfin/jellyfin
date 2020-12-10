@@ -1,16 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Models.SyncPlayDtos;
+using Jellyfin.Api.Models.SyncPlay;
+using Jellyfin.Api.Models.SyncPlay.Dtos;
+using Jellyfin.Api.Models.SyncPlay.PlaybackRequests;
+using Jellyfin.Api.Models.SyncPlay.Requests;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.SyncPlay;
-using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
-using MediaBrowser.Controller.SyncPlay.Requests;
-using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +18,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The sync play controller.
     /// </summary>
-    [Authorize(Policy = Policies.SyncPlayAccess)]
+    [Authorize(Policy = Policies.SyncPlayHasAccess)]
     public class SyncPlayController : BaseJellyfinApiController
     {
         private readonly ISessionManager _sessionManager;
@@ -51,12 +49,17 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("New")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [Authorize(Policy = Policies.SyncPlayCreateGroupAccess)]
+        [Authorize(Policy = Policies.SyncPlayCreateGroup)]
         public ActionResult SyncPlayCreateGroup(
             [FromBody, Required] NewGroupRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
+            var syncPlayRequest = new NewGroupRequest(
+                requestData.GroupName,
+                requestData.Visibility,
+                requestData.InvitedUsers,
+                requestData.OpenPlaybackAccess,
+                requestData.OpenPlaylistAccess);
             _syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
@@ -69,7 +72,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [Authorize(Policy = Policies.SyncPlayAccess)]
+        [Authorize(Policy = Policies.SyncPlayJoinGroup)]
         public ActionResult SyncPlayJoinGroup(
             [FromBody, Required] JoinGroupRequestDto requestData)
         {
@@ -86,6 +89,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayLeaveGroup()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -95,18 +99,59 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
+        /// Updates the settings of a SyncPlay group.
+        /// </summary>
+        /// <param name="requestData">The settings of the new group.</param>
+        /// <response code="204">Group settings updated.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("Settings")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+        public ActionResult SyncPlaySettingsGroup(
+            [FromBody, Required] UpdateGroupSettingsRequestDto requestData)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new UpdateGroupSettingsRequest(
+                requestData.GroupName,
+                requestData.Visibility,
+                requestData.InvitedUsers,
+                requestData.OpenPlaybackAccess,
+                requestData.OpenPlaylistAccess,
+                requestData.AccessListUserIds,
+                requestData.AccessListPlayback,
+                requestData.AccessListPlaylist);
+            _syncPlayManager.UpdateGroupSettings(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
         /// Gets all SyncPlay groups.
         /// </summary>
         /// <response code="200">Groups returned.</response>
-        /// <returns>An <see cref="IEnumerable{GroupInfoView}"/> containing the available SyncPlay groups.</returns>
+        /// <returns>An <see cref="IEnumerable{GroupInfoDto}"/> containing the available SyncPlay groups.</returns>
         [HttpGet("List")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Authorize(Policy = Policies.SyncPlayAccess)]
+        [Authorize(Policy = Policies.SyncPlayJoinGroup)]
         public ActionResult<IEnumerable<GroupInfoDto>> SyncPlayGetGroups()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new ListGroupsRequest();
             return Ok(_syncPlayManager.ListGroups(currentSession, syncPlayRequest));
+        }
+
+        /// <summary>
+        /// Gets all users that have access to SyncPlay.
+        /// </summary>
+        /// <response code="200">Users returned.</response>
+        /// <returns>An <see cref="IEnumerable{UserInfoDto}"/> containing the available users.</returns>
+        [HttpGet("ListAvailableUsers")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Policy = Policies.SyncPlayJoinGroup)]
+        public ActionResult<IEnumerable<UserInfoDto>> SyncPlayGetAvailableUsers()
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new ListUsersRequest();
+            return Ok(_syncPlayManager.ListAvailableUsers(currentSession, syncPlayRequest));
         }
 
         /// <summary>
@@ -117,6 +162,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetNewQueue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetNewQueue(
             [FromBody, Required] PlayRequestDto requestData)
         {
@@ -137,6 +183,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetPlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetPlaylistItem(
             [FromBody, Required] SetPlaylistItemRequestDto requestData)
         {
@@ -154,6 +201,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("RemoveFromPlaylist")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayRemoveFromPlaylist(
             [FromBody, Required] RemoveFromPlaylistRequestDto requestData)
         {
@@ -171,6 +219,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("MovePlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayMovePlaylistItem(
             [FromBody, Required] MovePlaylistItemRequestDto requestData)
         {
@@ -188,6 +237,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Queue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayQueue(
             [FromBody, Required] QueueRequestDto requestData)
         {
@@ -204,6 +254,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Unpause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayUnpause()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -219,6 +270,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Pause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayPause()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -234,6 +286,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Stop")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayStop()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -250,6 +303,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Seek")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySeek(
             [FromBody, Required] SeekRequestDto requestData)
         {
@@ -267,6 +321,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Buffering")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayBuffering(
             [FromBody, Required] BufferRequestDto requestData)
         {
@@ -288,6 +343,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Ready")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayReady(
             [FromBody, Required] ReadyRequestDto requestData)
         {
@@ -309,6 +365,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetIgnoreWait")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetIgnoreWait(
             [FromBody, Required] IgnoreWaitRequestDto requestData)
         {
@@ -326,6 +383,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("NextItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayNextItem(
             [FromBody, Required] NextItemRequestDto requestData)
         {
@@ -343,6 +401,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("PreviousItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayPreviousItem(
             [FromBody, Required] PreviousItemRequestDto requestData)
         {
@@ -360,6 +419,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetRepeatMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetRepeatMode(
             [FromBody, Required] SetRepeatModeRequestDto requestData)
         {
@@ -377,6 +437,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetShuffleMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetShuffleMode(
             [FromBody, Required] SetShuffleModeRequestDto requestData)
         {
@@ -400,6 +461,30 @@ namespace Jellyfin.Api.Controllers
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PingGroupRequest(requestData.Ping);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Request related to WebRTC signaling in SyncPlay group.
+        /// </summary>
+        /// <param name="requestData">The WebRTC message.</param>
+        /// <response code="204">Message has been forwarded.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        [HttpPost("WebRTC")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+        public ActionResult SyncPlayWebRTC(
+            [FromBody, Required] WebRTCRequestDto requestData)
+        {
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var syncPlayRequest = new WebRTCGroupRequest(
+                requestData.To ?? string.Empty,
+                requestData.NewSession ?? false,
+                requestData.SessionLeaving ?? false,
+                requestData.ICECandidate ?? string.Empty,
+                requestData.Offer ?? string.Empty,
+                requestData.Answer ?? string.Empty);
+            _syncPlayManager.HandleWebRTC(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
     }

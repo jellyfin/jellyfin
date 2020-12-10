@@ -5,11 +5,13 @@ using System.Reflection;
 using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Session;
+using Jellyfin.Api.Models.SyncPlay;
 using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Events;
+using Jellyfin.Server.Implementations.SyncPlay;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -87,6 +89,8 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IWebSocketListener, ActivityLogWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
+
+            ServiceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
 
             base.RegisterServices();
         }

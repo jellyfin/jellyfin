@@ -19,7 +19,7 @@ using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.SyncPlay;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -127,18 +127,32 @@ namespace Jellyfin.Server.Extensions
                         policy.AddRequirements(new RequiresElevationRequirement());
                     });
                 options.AddPolicy(
-                    Policies.SyncPlayAccess,
+                    Policies.SyncPlayHasAccess,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccess.JoinGroups));
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
                     });
                 options.AddPolicy(
-                    Policies.SyncPlayCreateGroupAccess,
+                    Policies.SyncPlayCreateGroup,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccess.CreateAndJoinGroups));
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayJoinGroup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayIsInGroup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                     });
             });
         }

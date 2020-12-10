@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.SyncPlay;
 using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
@@ -71,7 +72,7 @@ namespace Jellyfin.Data.Entities
             EnableAutoLogin = false;
             PlayDefaultAudioTrack = true;
             SubtitleMode = SubtitlePlaybackMode.Default;
-            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
+            SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
 
             AddDefaultPermissions();
             AddDefaultPreferences();
@@ -326,7 +327,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the level of sync play permissions this user has.
         /// </summary>
-        public SyncPlayAccess SyncPlayAccess { get; set; }
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
 
         /// <summary>
         /// Gets or sets the row version.

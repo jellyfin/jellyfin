@@ -63,6 +63,6 @@ namespace MediaBrowser.Model.Session
 
         public string PlaylistItemId { get; set; }
 
-        public QueueItem[] NowPlayingQueue { get; set; }
+        public QueueItemDto[] NowPlayingQueue { get; set; }
     }
 }

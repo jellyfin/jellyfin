@@ -4,6 +4,7 @@
 using System;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.SyncPlay;
 using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
 
 namespace MediaBrowser.Model.Users
@@ -111,7 +112,7 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets a value indicating what SyncPlay features the user can access.
         /// </summary>
         /// <value>Access level to SyncPlay features.</value>
-        public SyncPlayAccess SyncPlayAccess { get; set; }
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
 
         public UserPolicy()
         {
@@ -160,7 +161,7 @@ namespace MediaBrowser.Model.Users
             EnableContentDownloading = true;
             EnablePublicSharing = true;
             EnableRemoteAccess = true;
-            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
+            SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
         }
     }
 }
