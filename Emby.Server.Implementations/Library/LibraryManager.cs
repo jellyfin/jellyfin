@@ -1955,9 +1955,9 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            RunMetadataSavers(items, updateReason);
+            await RunMetadataSavers(items, updateReason).ConfigureAwait(false);
 
             _itemRepository.SaveItems(items, cancellationToken);
 
@@ -1988,15 +1988,13 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
 
-        public void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason)
+        public async Task RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason)
         {
             foreach (var item in items)
             {
@@ -2006,6 +2004,8 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 item.DateLastSaved = DateTime.UtcNow;
+
+                await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
             }
         }
 

@@ -232,6 +232,7 @@ namespace MediaBrowser.Providers.Manager
         private Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
         {
             var personsToSave = new List<BaseItem>();
+            var personsToSaveWithImages = new List<BaseItem>();
 
             foreach (var person in people)
             {
@@ -239,14 +240,13 @@ namespace MediaBrowser.Providers.Manager
 
                 if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
                 {
-                    var saveEntity = false;
                     var personEntity = LibraryManager.GetPerson(person.Name);
                     foreach (var id in person.ProviderIds)
                     {
                         if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             personEntity.SetProviderId(id.Key, id.Value);
-                            saveEntity = true;
+                            personsToSave.Add(personEntity);
                         }
                     }
 
@@ -260,18 +260,17 @@ namespace MediaBrowser.Providers.Manager
                             },
                             0);
 
-                        saveEntity = true;
-                    }
-
-                    if (saveEntity)
-                    {
-                        personsToSave.Add(personEntity);
+                        personsToSaveWithImages.Add(personEntity);
                     }
                 }
             }
 
+            // This is a little ugly, but it saves a lot of I/O with the db by doing this in bulk.
+            // To avoid updating images for no reason, we differentiate between the two item update types.
             LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload);
-            LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
+            LibraryManager.RunMetadataSavers(personsToSaveWithImages, ItemUpdateType.ImageUpdate);
+
+            LibraryManager.CreateItems(personsToSave.Concat(personsToSaveWithImages).ToList(), null, CancellationToken.None);
             return Task.CompletedTask;
         }
 
