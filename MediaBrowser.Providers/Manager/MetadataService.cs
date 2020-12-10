@@ -229,7 +229,7 @@ namespace MediaBrowser.Providers.Manager
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
         }
 
-        private Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
+        private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
         {
             var personsToSave = new List<BaseItem>();
             var personsToSaveWithImages = new List<BaseItem>();
@@ -267,11 +267,10 @@ namespace MediaBrowser.Providers.Manager
 
             // This is a little ugly, but it saves a lot of I/O with the db by doing this in bulk.
             // To avoid updating images for no reason, we differentiate between the two item update types.
-            LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload);
-            LibraryManager.RunMetadataSavers(personsToSaveWithImages, ItemUpdateType.ImageUpdate);
+            await LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload).ConfigureAwait(false);
+            await LibraryManager.RunMetadataSavers(personsToSaveWithImages, ItemUpdateType.ImageUpdate).ConfigureAwait(false);
 
             LibraryManager.CreateItems(personsToSave.Concat(personsToSaveWithImages).ToList(), null, CancellationToken.None);
-            return Task.CompletedTask;
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
