@@ -189,7 +189,7 @@ namespace Jellyfin.Api.Controllers
             {
                 if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out var type))
                 {
-                    _logger.LogError("Invaild ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
+                    _logger.LogError("Invalid ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
                     displayPreferences.CustomPrefs.Remove(key);
                 }
             }
