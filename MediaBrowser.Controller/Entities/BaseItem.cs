@@ -1385,6 +1385,7 @@ namespace MediaBrowser.Controller.Entities
                         new List<FileSystemMetadata>();
 
                     var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
+                    await LibraryManager.UpdateImagesAsync(this).ConfigureAwait(false); // ensure all image properties in DB are fresh
 
                     if (ownedItemsChanged)
                     {
