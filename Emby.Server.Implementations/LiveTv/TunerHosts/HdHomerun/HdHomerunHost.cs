@@ -131,6 +131,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
                 await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
