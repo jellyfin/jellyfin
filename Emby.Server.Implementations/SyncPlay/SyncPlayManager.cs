@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.SyncPlay
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _logger = loggerFactory.CreateLogger<SyncPlayManager>();
-            _sessionManager.SessionStarted += OnSessionManagerSessionStarted;
+            _sessionManager.SessionControllerConnected += OnSessionControllerConnected;
         }
 
         /// <inheritdoc />
@@ -329,11 +329,11 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
+            _sessionManager.SessionControllerConnected -= OnSessionControllerConnected;
             _disposed = true;
         }
 
-        private void OnSessionManagerSessionStarted(object sender, SessionEventArgs e)
+        private void OnSessionControllerConnected(object sender, SessionEventArgs e)
         {
             var session = e.SessionInfo;
 
