@@ -967,14 +967,12 @@ namespace Emby.Server.Implementations
                 {
                     return true;
                 }
-                else
-                {
-                    throw new FileNotFoundException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Certificate file '{0}' does not exist.",
-                            newPath));
-                }
+                
+                throw new FileNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Certificate file '{0}' does not exist.",
+                        newPath));
             }
 
             return false;
