@@ -340,10 +340,19 @@ namespace Emby.Dlna.PlayTo
             }
 
             var playlist = new PlaylistItem[len];
-            playlist[0] = CreatePlaylistItem(items[0], user, command.StartPositionTicks.Value, command.MediaSourceId, command.AudioStreamIndex, command.SubtitleStreamIndex);
+
+            // Not nullable enabled - so this is required.
+            playlist[0] = CreatePlaylistItem(
+                items[0],
+                user,
+                command.StartPositionTicks ?? 0,
+                command.MediaSourceId ?? string.Empty,
+                command.AudioStreamIndex,
+                command.SubtitleStreamIndex);
+
             for (int i = 1; i < len; i++)
             {
-                playlist[i] = CreatePlaylistItem(items[i], user, 0, null, null, null);
+                playlist[i] = CreatePlaylistItem(items[i], user, 0, string.Empty, null, null);
             }
 
             _logger.LogDebug("{0} - Playlist created", _session.DeviceName);
