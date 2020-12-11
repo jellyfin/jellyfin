@@ -354,6 +354,11 @@ namespace MediaBrowser.Controller.Entities
                         {
                             await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                         }
+                        else
+                        {
+                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
+                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
+                        }
 
                         continue;
                     }

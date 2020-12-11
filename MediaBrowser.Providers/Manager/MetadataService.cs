@@ -229,7 +229,7 @@ namespace MediaBrowser.Providers.Manager
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
         }
 
-        private Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
+        private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
         {
             var personsToSave = new List<BaseItem>();
 
@@ -239,6 +239,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
                 {
+                    var itemUpdateType = ItemUpdateType.MetadataDownload;
                     var saveEntity = false;
                     var personEntity = LibraryManager.GetPerson(person.Name);
                     foreach (var id in person.ProviderIds)
@@ -261,18 +262,18 @@ namespace MediaBrowser.Providers.Manager
                             0);
 
                         saveEntity = true;
+                        itemUpdateType = ItemUpdateType.ImageUpdate;
                     }
 
                     if (saveEntity)
                     {
                         personsToSave.Add(personEntity);
+                        await LibraryManager.RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                     }
                 }
             }
 
-            LibraryManager.RunMetadataSavers(personsToSave, ItemUpdateType.MetadataDownload);
             LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
-            return Task.CompletedTask;
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
