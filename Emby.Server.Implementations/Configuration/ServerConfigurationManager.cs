@@ -88,36 +88,10 @@ namespace Emby.Server.Implementations.Configuration
             var newConfig = (ServerConfiguration)newConfiguration;
 
             ValidateMetadataPath(newConfig);
-            ValidateSslCertificate(newConfig);
 
             ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration>(newConfig));
 
             base.ReplaceConfiguration(newConfiguration);
-        }
-
-        /// <summary>
-        /// Validates the SSL certificate.
-        /// </summary>
-        /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
-        private void ValidateSslCertificate(BaseApplicationConfiguration newConfig)
-        {
-            var serverConfig = (ServerConfiguration)newConfig;
-
-            var newPath = serverConfig.CertificatePath;
-
-            if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.CertificatePath, newPath, StringComparison.Ordinal))
-            {
-                if (!File.Exists(newPath))
-                {
-                    throw new FileNotFoundException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Certificate file '{0}' does not exist.",
-                            newPath));
-                }
-            }
         }
 
         /// <summary>
