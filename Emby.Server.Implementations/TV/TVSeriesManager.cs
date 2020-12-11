@@ -75,8 +75,7 @@ namespace Emby.Server.Implementations.TV
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                    .Where(i => i is Folder)
-                   .Where(i => !user.GetPreference(PreferenceKind.LatestItemExcludes)
-                       .Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
+                   .Where(i => !user.GetPreference<Guid>(PreferenceKind.LatestItemExcludes).Contains(i.Id))
                    .ToArray();
             }
 

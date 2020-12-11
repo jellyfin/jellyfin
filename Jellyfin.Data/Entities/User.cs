@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
@@ -414,6 +415,25 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
+        /// Gets the user's preferences for the given preference kind.
+        /// </summary>
+        /// <param name="preference">The preference kind.</param>
+        /// <typeparam name="T">Type of preference.</typeparam>
+        /// <returns>A {T} array containing the user's preference.</returns>
+        public T[] GetPreference<T>(PreferenceKind preference)
+        {
+            var val = Preferences.First(p => p.Kind == preference).Value;
+            if (string.IsNullOrEmpty(val))
+            {
+                return Array.Empty<T>();
+            }
+
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            var stringValues = val.Split(Delimiter);
+            return Array.ConvertAll(stringValues, value => (T)converter.ConvertFromString(value));
+        }
+
+        /// <summary>
         /// Sets the specified preference to the given value.
         /// </summary>
         /// <param name="preference">The preference kind.</param>
@@ -421,7 +441,19 @@ namespace Jellyfin.Data.Entities
         public void SetPreference(PreferenceKind preference, string[] values)
         {
             Preferences.First(p => p.Kind == preference).Value
-                = string.Join(Delimiter.ToString(CultureInfo.InvariantCulture), values);
+                = string.Join(Delimiter, values);
+        }
+
+        /// <summary>
+        /// Sets the specified preference to the given value.
+        /// </summary>
+        /// <param name="preference">The preference kind.</param>
+        /// <param name="values">The values.</param>
+        /// <typeparam name="T">The type of value.</typeparam>
+        public void SetPreference<T>(PreferenceKind preference, T[] values)
+        {
+            Preferences.First(p => p.Kind == preference).Value
+                = string.Join(Delimiter, values);
         }
 
         /// <summary>
@@ -441,7 +473,7 @@ namespace Jellyfin.Data.Entities
         /// <returns><c>True</c> if the folder is in the user's grouped folders.</returns>
         public bool IsFolderGrouped(Guid id)
         {
-            return GetPreference(PreferenceKind.GroupedFolders).Any(i => new Guid(i) == id);
+            return Array.IndexOf(GetPreference<Guid>(PreferenceKind.GroupedFolders), id) != -1;
         }
 
         private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
