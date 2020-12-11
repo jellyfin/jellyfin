@@ -8,22 +8,22 @@ namespace Jellyfin.Server.Middleware
     /// <summary>
     /// Removes /emby and /mediabrowser from requested route.
     /// </summary>
-    public class PathTrimMiddleware
+    public class LegacyEmbyRouteRewriteMiddleware
     {
         private const string EmbyPath = "/emby";
         private const string MediabrowserPath = "/mediabrowser";
 
         private readonly RequestDelegate _next;
-        private readonly ILogger<PathTrimMiddleware> _logger;
+        private readonly ILogger<LegacyEmbyRouteRewriteMiddleware> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PathTrimMiddleware"/> class.
+        /// Initializes a new instance of the <see cref="LegacyEmbyRouteRewriteMiddleware"/> class.
         /// </summary>
         /// <param name="next">The next delegate in the pipeline.</param>
         /// <param name="logger">The logger.</param>
-        public PathTrimMiddleware(
+        public LegacyEmbyRouteRewriteMiddleware(
             RequestDelegate next,
-            ILogger<PathTrimMiddleware> logger)
+            ILogger<LegacyEmbyRouteRewriteMiddleware> logger)
         {
             _next = next;
             _logger = logger;

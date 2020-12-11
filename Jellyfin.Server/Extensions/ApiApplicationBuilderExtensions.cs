@@ -128,7 +128,7 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated application builder.</returns>
         public static IApplicationBuilder UsePathTrim(this IApplicationBuilder appBuilder)
         {
-            return appBuilder.UseMiddleware<PathTrimMiddleware>();
+            return appBuilder.UseMiddleware<LegacyEmbyRouteRewriteMiddleware>();
         }
     }
 }
