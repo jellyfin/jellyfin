@@ -14,7 +14,8 @@ namespace Jellyfin.Server.Filters
         {
             Schema = new OpenApiSchema
             {
-                Type = "file"
+                Type = "string",
+                Format = "binary"
             }
         };
 
