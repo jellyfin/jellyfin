@@ -133,11 +133,11 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteUser([FromRoute, Required] Guid userId)
+        public async Task<ActionResult> DeleteUser([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
             _sessionManager.RevokeUserTokens(user.Id, null);
-            _userManager.DeleteUser(userId);
+            await _userManager.DeleteUserAsync(userId).ConfigureAwait(false);
             return NoContent();
         }
 
