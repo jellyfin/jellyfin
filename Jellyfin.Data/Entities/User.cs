@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
@@ -428,9 +427,36 @@ namespace Jellyfin.Data.Entities
                 return Array.Empty<T>();
             }
 
+            // Convert array of {string} to array of {T}
             var converter = TypeDescriptor.GetConverter(typeof(T));
             var stringValues = val.Split(Delimiter);
-            return Array.ConvertAll(stringValues, value => (T)converter.ConvertFromString(value));
+            var parsedValues = new object[stringValues.Length];
+            var convertedCount = 0;
+            for (var i = 0; i < stringValues.Length; i++)
+            {
+                try
+                {
+                    parsedValues[i] = converter.ConvertFromString(stringValues[i].Trim());
+                    convertedCount++;
+                }
+                catch (FormatException)
+                {
+                    // Unable to convert value
+                }
+            }
+
+            var typedValues = new T[convertedCount];
+            var typedValueIndex = 0;
+            for (var i = 0; i < parsedValues.Length; i++)
+            {
+                if (parsedValues[i] != null)
+                {
+                    typedValues.SetValue(parsedValues[i], typedValueIndex);
+                    typedValueIndex++;
+                }
+            }
+
+            return typedValues;
         }
 
         /// <summary>
