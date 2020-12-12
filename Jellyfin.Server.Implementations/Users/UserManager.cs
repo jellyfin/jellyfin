@@ -1,5 +1,4 @@
-﻿#nullable enable
-#pragma warning disable CA1307
+﻿#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
