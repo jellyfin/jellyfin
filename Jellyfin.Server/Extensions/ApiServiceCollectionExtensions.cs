@@ -24,6 +24,7 @@ using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -178,9 +179,9 @@ namespace Jellyfin.Server.Extensions
                     {
                         for (var i = 0; i < knownProxies.Count; i++)
                         {
-                            if (IPAddress.TryParse(knownProxies[i], out var address))
+                            if (IPHost.TryParse(knownProxies[i], out var host))
                             {
-                                options.KnownProxies.Add(address);
+                                options.KnownProxies.Add(host.Address);
                             }
                         }
                     }
