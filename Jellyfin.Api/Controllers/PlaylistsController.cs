@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -53,6 +55,13 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Creates a new playlist.
         /// </summary>
+        /// <remarks>
+        /// For backwards compatibility parameters can be sent via Query or Body, with Query having higher precedence.
+        /// </remarks>
+        /// <param name="name">The playlist name.</param>
+        /// <param name="ids">The item ids.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="mediaType">The media type.</param>
         /// <param name="createPlaylistRequest">The create playlist payload.</param>
         /// <returns>
         /// A <see cref="Task" /> that represents the asynchronous operation to create a playlist.
@@ -61,14 +70,23 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
-            [FromBody, Required] CreatePlaylistDto createPlaylistRequest)
+            [FromQuery] string? name,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] IReadOnlyList<Guid> ids,
+            [FromQuery] Guid? userId,
+            [FromQuery] string? mediaType,
+            [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
         {
+            if (ids.Count == 0)
+            {
+                ids = createPlaylistRequest?.Ids ?? Array.Empty<Guid>();
+            }
+
             var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
             {
-                Name = createPlaylistRequest.Name,
-                ItemIdList = createPlaylistRequest.Ids,
-                UserId = createPlaylistRequest.UserId,
-                MediaType = createPlaylistRequest.MediaType
+                Name = name ?? createPlaylistRequest?.Name,
+                ItemIdList = ids,
+                UserId = userId ?? createPlaylistRequest?.UserId ?? default,
+                MediaType = mediaType ?? createPlaylistRequest?.MediaType
             }).ConfigureAwait(false);
 
             return result;
