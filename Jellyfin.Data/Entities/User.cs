@@ -419,7 +419,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="preference">The preference kind.</param>
         /// <typeparam name="T">Type of preference.</typeparam>
         /// <returns>A {T} array containing the user's preference.</returns>
-        public T[] GetPreference<T>(PreferenceKind preference)
+        public T[] GetPreferenceValues<T>(PreferenceKind preference)
         {
             var val = Preferences.First(p => p.Kind == preference).Value;
             if (string.IsNullOrEmpty(val))
@@ -499,7 +499,7 @@ namespace Jellyfin.Data.Entities
         /// <returns><c>True</c> if the folder is in the user's grouped folders.</returns>
         public bool IsFolderGrouped(Guid id)
         {
-            return Array.IndexOf(GetPreference<Guid>(PreferenceKind.GroupedFolders), id) != -1;
+            return Array.IndexOf(GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders), id) != -1;
         }
 
         private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)

@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         protected override bool GetBlockUnratedValue(User user)
         {
-            return user.GetPreference<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Movie);
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Movie);
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()

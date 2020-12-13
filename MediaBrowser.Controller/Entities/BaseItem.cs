@@ -480,7 +480,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            var allowed = user.GetPreference<Guid>(PreferenceKind.EnableContentDeletionFromFolders);
+            var allowed = user.GetPreferenceValues<Guid>(PreferenceKind.EnableContentDeletionFromFolders);
 
             if (SourceType == SourceType.Channel)
             {
@@ -1909,7 +1909,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return user.GetPreference<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(GetBlockUnratedType());
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(GetBlockUnratedType());
         }
 
         /// <summary>

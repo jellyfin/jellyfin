@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
-                var blockedMediaFolders = user.GetPreference<Guid>(PreferenceKind.BlockedMediaFolders);
+                var blockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders);
                 if (blockedMediaFolders.Length > 0)
                 {
                     if (blockedMediaFolders.Contains(Id))
@@ -197,7 +197,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     if (!user.HasPermission(PermissionKind.EnableAllFolders)
-                        && !user.GetPreference<Guid>(PreferenceKind.EnabledFolders).Contains(Id))
+                        && !user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(Id))
                     {
                         return false;
                     }

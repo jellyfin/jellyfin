@@ -254,9 +254,9 @@ namespace Jellyfin.Api.Controllers
                 includeItemTypes = new[] { "Playlist" };
             }
 
-            var enabledChannels = user!.GetPreference<Guid>(PreferenceKind.EnabledChannels);
+            var enabledChannels = user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
 
-            bool isInEnabledFolder = Array.IndexOf(user.GetPreference<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
+            bool isInEnabledFolder = Array.IndexOf(user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
                                      // Assume all folders inside an EnabledChannel are enabled
                                      || Array.IndexOf(enabledChannels, item.Id) != -1
                                      // Assume all items inside an EnabledChannel are enabled
@@ -265,7 +265,7 @@ namespace Jellyfin.Api.Controllers
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
-                if (user.GetPreference<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
+                if (user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
                 {
                     isInEnabledFolder = true;
                 }
@@ -786,7 +786,7 @@ namespace Jellyfin.Api.Controllers
 
             var ancestorIds = Array.Empty<Guid>();
 
-            var excludeFolderIds = user.GetPreference<Guid>(PreferenceKind.LatestItemExcludes);
+            var excludeFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
             if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)

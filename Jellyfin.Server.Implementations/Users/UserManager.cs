@@ -376,14 +376,14 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
-                    EnabledChannels = user.GetPreference<Guid>(PreferenceKind.EnabledChannels),
+                    EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
-                    EnabledFolders = user.GetPreference<Guid>(PreferenceKind.EnabledFolders),
+                    EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
                     SyncPlayAccess = user.SyncPlayAccess,
-                    BlockedChannels = user.GetPreference<Guid>(PreferenceKind.BlockedChannels),
-                    BlockedMediaFolders = user.GetPreference<Guid>(PreferenceKind.BlockedMediaFolders),
-                    BlockUnratedItems = user.GetPreference<UnratedItem>(PreferenceKind.BlockUnratedItems)
+                    BlockedChannels = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels),
+                    BlockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders),
+                    BlockUnratedItems = user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems)
                 }
             };
         }

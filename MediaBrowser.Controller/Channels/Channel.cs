@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Channels
     {
         public override bool IsVisible(User user)
         {
-            var blockedChannelsPreference = user.GetPreference<Guid>(PreferenceKind.BlockedChannels);
+            var blockedChannelsPreference = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels);
             if (blockedChannelsPreference.Length != 0)
             {
                 if (blockedChannelsPreference.Contains(Id))
@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Channels
             else
             {
                 if (!user.HasPermission(PermissionKind.EnableAllChannels)
-                    && !user.GetPreference<Guid>(PreferenceKind.EnabledChannels).Contains(Id))
+                    && !user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels).Contains(Id))
                 {
                     return false;
                 }

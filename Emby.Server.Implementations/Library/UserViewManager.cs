@@ -129,12 +129,12 @@ namespace Emby.Server.Implementations.Library
 
             if (!query.IncludeHidden)
             {
-                list = list.Where(i => !user.GetPreference<Guid>(PreferenceKind.MyMediaExcludes).Contains(i.Id)).ToList();
+                list = list.Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes).Contains(i.Id)).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
 
-            var orders = user.GetPreference<Guid>(PreferenceKind.OrderedViews);
+            var orders = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews);
 
             return list
                 .OrderBy(i =>
@@ -280,7 +280,7 @@ namespace Emby.Server.Implementations.Library
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !user.GetPreference<Guid>(PreferenceKind.LatestItemExcludes)
+                    .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
                         .Contains(i.Id))
                     .ToList();
             }
