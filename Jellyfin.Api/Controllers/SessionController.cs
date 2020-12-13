@@ -372,6 +372,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="supportsMediaControl">Determines whether media can be played remotely..</param>
         /// <param name="supportsSync">Determines whether sync is supported.</param>
         /// <param name="supportsPersistentIdentifier">Determines whether the device supports a unique identifier.</param>
+        /// <param name="supportsSyncPlay">Determines whether SyncPlay is supported.</param>
         /// <response code="204">Capabilities posted.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Capabilities")]
@@ -383,7 +384,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
             [FromQuery] bool supportsSync = false,
-            [FromQuery] bool supportsPersistentIdentifier = true)
+            [FromQuery] bool supportsPersistentIdentifier = true,
+            [FromQuery] bool supportsSyncPlay = false)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -396,7 +398,8 @@ namespace Jellyfin.Api.Controllers
                 SupportedCommands = supportedCommands,
                 SupportsMediaControl = supportsMediaControl,
                 SupportsSync = supportsSync,
-                SupportsPersistentIdentifier = supportsPersistentIdentifier
+                SupportsPersistentIdentifier = supportsPersistentIdentifier,
+                SupportsSyncPlay = supportsSyncPlay
             });
             return NoContent();
         }

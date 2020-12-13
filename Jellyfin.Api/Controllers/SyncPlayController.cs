@@ -66,31 +66,65 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="requestData">The group to join.</param>
         /// <response code="204">Group join successful.</response>
+        /// <response code="400">Session does not support SyncPlay.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize(Policy = Policies.SyncPlayAccess)]
         public ActionResult SyncPlayJoinGroup(
             [FromBody, Required] JoinGroupRequestDto requestData)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var joiningSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+
+            // TODO: check if session can control remote session.
+            // TODO: reject or allow remote sessions that don't have SyncPlay access?
+            if (requestData.RemoteSessionId != null)
+            {
+                joiningSession = _sessionManager.GetSession(requestData.RemoteSessionId);
+            }
+
+            if (!joiningSession.Capabilities.SupportsSyncPlay)
+            {
+                // Session does not support SyncPlay.
+                return BadRequest();
+            }
+
             var syncPlayRequest = new JoinGroupRequest(requestData.GroupId);
-            _syncPlayManager.JoinGroup(currentSession, syncPlayRequest, CancellationToken.None);
+            _syncPlayManager.JoinGroup(joiningSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 
         /// <summary>
         /// Leave the joined SyncPlay group.
         /// </summary>
+        /// <param name="requestData">The group to leave.</param>
         /// <response code="204">Group leave successful.</response>
+        /// <response code="400">Session does not support SyncPlay.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SyncPlayLeaveGroup()
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult SyncPlayLeaveGroup(
+            [FromBody, Required] LeaveGroupRequestDto requestData)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+            var leavingSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
+
+            // TODO: check if session can control remote session.
+            if (requestData.RemoteSessionId != null)
+            {
+                leavingSession = _sessionManager.GetSession(requestData.RemoteSessionId);
+            }
+
+            // TODO: is this really needed? These sessions shouldn't join in the first place.
+            if (!leavingSession.Capabilities.SupportsSyncPlay)
+            {
+                // Session does not support SyncPlay.
+                return BadRequest();
+            }
+
             var syncPlayRequest = new LeaveGroupRequest();
-            _syncPlayManager.LeaveGroup(currentSession, syncPlayRequest, CancellationToken.None);
+            _syncPlayManager.LeaveGroup(leavingSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }
 

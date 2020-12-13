@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
@@ -320,6 +321,18 @@ namespace MediaBrowser.Controller.Session
         /// <param name="version">The version.</param>
         /// <returns>SessionInfo.</returns>
         SessionInfo GetSession(string deviceId, string client, string version);
+
+        /// <summary>
+        /// Gets the session.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="throwOnMissing">if set to <c>true</c> [throw on missing].</param>
+        /// <returns>SessionInfo.</returns>
+        /// <exception cref="ResourceNotFoundException">
+        /// No session with an Id equal to <c>sessionId</c> was found
+        /// and <c>throwOnMissing</c> is <c>true</c>.
+        /// </exception>
+        SessionInfo GetSession(string sessionId, bool throwOnMissing = true);
 
         /// <summary>
         /// Gets the session by authentication token.

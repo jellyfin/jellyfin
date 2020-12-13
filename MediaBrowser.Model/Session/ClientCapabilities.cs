@@ -29,6 +29,8 @@ namespace MediaBrowser.Model.Session
 
         public string IconUrl { get; set; }
 
+        public bool SupportsSyncPlay { get; set; }
+
         public ClientCapabilities()
         {
             PlayableMediaTypes = Array.Empty<string>();
