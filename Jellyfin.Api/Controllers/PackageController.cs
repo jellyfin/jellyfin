@@ -46,7 +46,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="PackageInfo"/> containing package information.</returns>
         [HttpGet("Packages/{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces(JsonDefaults.CamelCaseMediaType)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
             [FromRoute, Required] string name,
             [FromQuery] Guid? assemblyGuid)
@@ -73,7 +72,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="PackageInfo"/> containing available packages information.</returns>
         [HttpGet("Packages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces(JsonDefaults.CamelCaseMediaType)]
         public async Task<IEnumerable<PackageInfo>> GetPackages()
         {
             IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
@@ -148,7 +146,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the list of package repositories.</returns>
         [HttpGet("Repositories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces(JsonDefaults.CamelCaseMediaType)]
         public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
         {
             return _serverConfigurationManager.Configuration.PluginRepositories;

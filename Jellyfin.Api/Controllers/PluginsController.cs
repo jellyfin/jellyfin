@@ -14,7 +14,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
@@ -130,7 +129,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Plugin enabled.</response>
         /// <response code="404">Plugin not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
-        [HttpPost("{pluginId}/Enable")]
+        [HttpPost("{pluginId}/{version}/Enable")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -153,7 +152,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Plugin disabled.</response>
         /// <response code="404">Plugin not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
-        [HttpPost("{pluginId}/Disable")]
+        [HttpPost("{pluginId}/{version}/Disable")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -176,11 +175,11 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Plugin uninstalled.</response>
         /// <response code="404">Plugin not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
-        [HttpDelete("{pluginId}")]
+        [HttpDelete("{pluginId}/{version}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId, Version version)
+        public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
             {
@@ -195,7 +194,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets plugin configuration.
         /// </summary>
         /// <param name="pluginId">Plugin id.</param>
-        /// <param name="version">Plugin version.</param>
         /// <response code="200">Plugin configuration returned.</response>
         /// <response code="404">Plugin not found or plugin configuration not found.</response>
         /// <returns>Plugin configuration.</returns>
@@ -203,9 +201,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesFile(MediaTypeNames.Application.Json)]
-        public ActionResult<BasePluginConfiguration> GetPluginConfiguration([FromRoute, Required] Guid pluginId, [FromRoute] Version? version)
+        public ActionResult<BasePluginConfiguration> GetPluginConfiguration([FromRoute, Required] Guid pluginId)
         {
-            if (_pluginManager.TryGetPlugin(pluginId, version, out var plugin)
+            if (_pluginManager.TryGetPlugin(pluginId, null, out var plugin)
                 && plugin!.Instance is IHasPluginConfiguration configPlugin)
             {
                 return configPlugin.Configuration;
@@ -221,7 +219,6 @@ namespace Jellyfin.Api.Controllers
         /// Accepts plugin configuration as JSON body.
         /// </remarks>
         /// <param name="pluginId">Plugin id.</param>
-        /// <param name="version">Plugin version.</param>
         /// <response code="204">Plugin configuration updated.</response>
         /// <response code="404">Plugin not found or plugin does not have configuration.</response>
         /// <returns>
@@ -232,9 +229,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{pluginId}/Configuration")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> UpdatePluginConfiguration([FromRoute, Required] Guid pluginId, [FromRoute] Version? version)
+        public async Task<ActionResult> UpdatePluginConfiguration([FromRoute, Required] Guid pluginId)
         {
-            if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin)
+            if (!_pluginManager.TryGetPlugin(pluginId, null, out var plugin)
                          || plugin?.Instance is not IHasPluginConfiguration configPlugin)
             {
                 return NotFound();
@@ -258,12 +255,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="version">Plugin version.</param>
         /// <response code="200">Plugin image returned.</response>
         /// <returns>Plugin's image.</returns>
-        [HttpGet("{pluginId}/Image")]
+        [HttpGet("{pluginId}/{version}/Image")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
         [AllowAnonymous]
-        public ActionResult GetPluginImage([FromRoute, Required] Guid pluginId, [FromRoute] Version? version)
+        public ActionResult GetPluginImage([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
             {
@@ -292,12 +289,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="version">Plugin version.</param>
         /// <response code="200">Plugin image returned.</response>
         /// <returns>Plugin's image.</returns>
-        [HttpGet("{pluginId}/StatusImage")]
+        [HttpGet("{pluginId}/{version}/StatusImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
         [AllowAnonymous]
-        public ActionResult GetPluginStatusImage([FromRoute, Required] Guid pluginId, [FromRoute] Version? version)
+        public ActionResult GetPluginStatusImage([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
             {
@@ -316,7 +313,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets a plugin's manifest.
         /// </summary>
         /// <param name="pluginId">Plugin id.</param>
-        /// <param name="version">Plugin version.</param>
         /// <response code="204">Plugin manifest returned.</response>
         /// <response code="404">Plugin not found.</response>
         /// <returns>
@@ -328,9 +324,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesFile(MediaTypeNames.Application.Json)]
-        public ActionResult<PluginManifest> GetPluginManifest([FromRoute, Required] Guid pluginId, [FromRoute] Version? version)
+        public ActionResult<PluginManifest> GetPluginManifest([FromRoute, Required] Guid pluginId)
         {
-            if (_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
+            if (_pluginManager.TryGetPlugin(pluginId, null, out var plugin))
             {
                 return Ok(plugin!.Manifest);
             }

@@ -78,8 +78,27 @@ namespace Emby.Server.Implementations
         /// <returns>An IEnumerable{Assembly}.</returns>
         public IEnumerable<Assembly> LoadAssemblies()
         {
+            // Attempt to remove any deleted plugins and change any successors to be active.
+            for (int a = _plugins.Count - 1; a >= 0; a--)
+            {
+                var plugin = _plugins[a];
+                if (plugin.Manifest.Status == PluginStatus.DeleteOnStartup && DeletePlugin(plugin))
+                {
+                    UpdateSuccessors(plugin);
+                }
+            }
+
+            // Now load the assemblies..
             foreach (var plugin in _plugins)
             {
+                CheckIfStillSuperceded(plugin);
+
+                if (plugin.IsEnabledAndSupported == false)
+                {
+                    _logger.LogInformation("Skipping disabled plugin {Version} of {Name} ", plugin.Version, plugin.Name);
+                    continue;
+                }
+
                 foreach (var file in plugin.DllFiles)
                 {
                     try
@@ -183,15 +202,13 @@ namespace Emby.Server.Implementations
                 throw new ArgumentNullException(nameof(plugin));
             }
 
-            plugin.Instance?.OnUninstalling();
-
             if (DeletePlugin(plugin))
             {
                 return true;
             }
 
             // Unable to delete, so disable.
-            return ChangePluginState(plugin, PluginStatus.Disabled);
+            return ChangePluginState(plugin, PluginStatus.DeleteOnStartup);
         }
 
         /// <summary>
@@ -205,11 +222,18 @@ namespace Emby.Server.Implementations
         {
             if (version == null)
             {
-                // If no version is given, return the largest version number. (This is for backwards compatibility).
-                plugin = _plugins.Where(p => p.Id.Equals(id)).OrderByDescending(p => p.Version).FirstOrDefault();
+                // If no version is given, return the current instance.
+                var plugins = _plugins.Where(p => p.Id.Equals(id));
+
+                plugin = plugins.FirstOrDefault(p => p.Instance != null);
+                if (plugin == null)
+                {
+                    plugin = plugins.OrderByDescending(p => p.Version).FirstOrDefault();
+                }
             }
             else
             {
+                // Match id and version number.
                 plugin = _plugins.FirstOrDefault(p => p.Id.Equals(id) && p.Version.Equals(version));
             }
 
@@ -264,7 +288,6 @@ namespace Emby.Server.Implementations
             var predecessor = _plugins.OrderByDescending(p => p.Version)
                 .FirstOrDefault(
                     p => p.Id.Equals(plugin.Id)
-                    && p.Name.Equals(plugin.Name, StringComparison.OrdinalIgnoreCase)
                     && p.IsEnabledAndSupported
                     && p.Version != plugin.Version);
 
@@ -381,17 +404,6 @@ namespace Emby.Server.Implementations
             // Find the record for this plugin.
             var plugin = GetPluginByType(type);
 
-            if (plugin != null)
-            {
-                CheckIfStillSuperceded(plugin);
-
-                if (plugin.IsEnabledAndSupported == true)
-                {
-                    _logger.LogInformation("Skipping disabled plugin {Version} of {Name} ", plugin.Version, plugin.Name);
-                    return null;
-                }
-            }
-
             try
             {
                 _logger.LogDebug("Creating instance of {Type}", type);
@@ -489,6 +501,7 @@ namespace Emby.Server.Implementations
             {
                 _logger.LogDebug("Deleting {Path}", plugin.Path);
                 Directory.Delete(plugin.Path, true);
+                _plugins.Remove(plugin);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
@@ -661,8 +674,8 @@ namespace Emby.Server.Implementations
                         continue;
                     }
 
-                    // Update the manifest so its not loaded next time.
-                    manifest.Status = PluginStatus.Disabled;
+                    manifest.Status = PluginStatus.DeleteOnStartup;
+
                     SaveManifest(manifest, entry.Path);
                 }
             }

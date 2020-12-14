@@ -12,6 +12,7 @@ namespace MediaBrowser.Model.Plugins
         Disabled = -1,
         NotSupported = -2,
         Malfunction = -3,
-        Superceded = -4
+        Superceded = -4,
+        DeleteOnStartup = -5
     }
 }
