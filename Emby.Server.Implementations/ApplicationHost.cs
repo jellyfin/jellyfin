@@ -406,6 +406,11 @@ namespace Emby.Server.Implementations
                     Logger.LogError("Called from: {stack}", entry.FullName);
                 }
 
+                if (type is IPlugin)
+                {
+                    _pluginManager.FailPlugin(type.Assembly);
+                }
+
                 throw new ExternalException("DI Loop detected.");
             }
 
