@@ -430,14 +430,17 @@ namespace Jellyfin.Data.Entities
             // Convert array of {string} to array of {T}
             var converter = TypeDescriptor.GetConverter(typeof(T));
             var stringValues = val.Split(Delimiter);
-            var parsedValues = new object[stringValues.Length];
             var convertedCount = 0;
+            var parsedValues = new T[stringValues.Length];
             for (var i = 0; i < stringValues.Length; i++)
             {
                 try
                 {
-                    parsedValues[i] = converter.ConvertFromString(stringValues[i].Trim());
-                    convertedCount++;
+                    var parsedValue = converter.ConvertFromString(stringValues[i].Trim());
+                    if (parsedValue != null)
+                    {
+                        parsedValues.SetValue(parsedValue, convertedCount++);
+                    }
                 }
                 catch (FormatException)
                 {
@@ -445,18 +448,7 @@ namespace Jellyfin.Data.Entities
                 }
             }
 
-            var typedValues = new T[convertedCount];
-            var typedValueIndex = 0;
-            for (var i = 0; i < parsedValues.Length; i++)
-            {
-                if (parsedValues[i] != null)
-                {
-                    typedValues.SetValue(parsedValues[i], typedValueIndex);
-                    typedValueIndex++;
-                }
-            }
-
-            return typedValues;
+            return parsedValues[..convertedCount];
         }
 
         /// <summary>
