@@ -273,10 +273,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 var param = item.Trim().Split('=', 2);
 
-                if (param.Length == 2)
-                {
-                    result[param[0]] = param[1].Trim('"');
-                }
+                result[param[0]] = param[1].Trim('"');
             }
 
             return result;
