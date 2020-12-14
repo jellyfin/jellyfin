@@ -273,10 +273,16 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 var param = item.Trim().Split('=', 2);
 
-                result[param[0]] = param[1].Trim('"');
+                var value =param[1].Trim('"');
+                result[param[0]] = value;
             }
 
             return result;
+        }
+
+        private static string NormalizeValue(string value)
+        {
+            return string.IsNullOrEmpty(value) ? value : WebUtility.UrlDecode(value);
         }
     }
 }
