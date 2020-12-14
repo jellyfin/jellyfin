@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             // Remove uptil the first space
             authorizationHeader = parts[1];
-            parts = authorizationHeader.Split(',');
+            parts = authorizationHeader.Split("\",\"");
 
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
