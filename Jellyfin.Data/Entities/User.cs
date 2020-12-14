@@ -439,7 +439,7 @@ namespace Jellyfin.Data.Entities
                     var parsedValue = converter.ConvertFromString(stringValues[i].Trim());
                     if (parsedValue != null)
                     {
-                        parsedValues.SetValue(parsedValue, convertedCount++);
+                        parsedValues[convertedCount++] = (T)parsedValue;
                     }
                 }
                 catch (FormatException)
