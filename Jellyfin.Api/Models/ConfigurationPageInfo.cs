@@ -38,7 +38,7 @@ namespace Jellyfin.Api.Models
             EnableInMainMenu = page.EnableInMainMenu;
             MenuSection = page.MenuSection;
             MenuIcon = page.MenuIcon;
-            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin?.Name ?? page.DisplayName : page.DisplayName;
+            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin?.Name : page.DisplayName;
 
             // Don't use "N" because it needs to match Plugin.Id
             PluginId = plugin?.Id.ToString();
