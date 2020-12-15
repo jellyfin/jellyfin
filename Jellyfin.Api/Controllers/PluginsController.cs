@@ -156,7 +156,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DisablePlugin([FromRoute, Required] Guid pluginId, [FromRoute] Version? version)
+        public ActionResult DisablePlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
             {
