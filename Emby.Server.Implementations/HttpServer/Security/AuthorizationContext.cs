@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             // Remove uptil the first space
             authorizationHeader = parts[1];
-            parts = authorizationHeader.Split("\",");
+            parts = GetParts(authorizationHeader);
 
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -274,7 +274,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 var param = item.Trim().Split('=', 2);
 
                 var value =param[1].Trim('"');
-                result[param[0]] = value;
+                result[param[0]] = NormalizeValue(value);
             }
 
             return result;
@@ -283,6 +283,47 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private static string NormalizeValue(string value)
         {
             return string.IsNullOrEmpty(value) ? value : WebUtility.UrlDecode(value);
+        }
+
+        public static string[] GetParts(string authtorizationHeader)
+        {
+            var result = new List<string>();
+            var escapeChars = new[] {'"', ','};
+            var escaped = false;
+            var authtorizationHeaderChars = authtorizationHeader.ToCharArray();
+            var value = new List<char>();
+
+            for(var i = 0; i < authtorizationHeaderChars.Length; i++)
+            {
+                if(!escapeChars.Contains(authtorizationHeaderChars[i]))
+                {
+                    value = value.Append(authtorizationHeaderChars[i]).ToList();
+                }
+                else
+                {
+                    escaped = (!escaped) == (authtorizationHeaderChars[i] == '"');
+                    if(authtorizationHeaderChars[i] == ',')
+                    {
+                        if(escaped)
+                        {
+                            value = value.Append(authtorizationHeaderChars[i]).ToList();
+                        }
+                        else
+                        {
+                            result.Add(new string(value.ToArray()));
+                            value = new List<char>();
+                        }
+                    }
+                    else
+                    {
+                        value = value.Append(authtorizationHeaderChars[i]).ToList();
+                    }
+                }
+            }
+            // Add last value
+            result.Add(new string(value.ToArray()));
+
+            return result.ToArray();
         }
     }
 }
