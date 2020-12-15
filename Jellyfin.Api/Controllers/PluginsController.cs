@@ -167,7 +167,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Uninstalls a plugin.
+        /// Uninstalls a plugin by version.
         /// </summary>
         /// <param name="pluginId">Plugin id.</param>
         /// <param name="version">Plugin version.</param>
@@ -178,11 +178,40 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
+        public ActionResult UninstallPluginByVersion([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
             {
                 return NotFound();
+            }
+
+            _installationManager.UninstallPlugin(plugin!);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Uninstalls a plugin.
+        /// </summary>
+        /// <param name="pluginId">Plugin id.</param>
+        /// <response code="204">Plugin uninstalled.</response>
+        /// <response code="404">Plugin not found.</response>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
+        [HttpDelete("{pluginId}")]
+        [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Obsolete("Please use the UninstallByVersion API.")]
+        public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId)
+        {
+            // If no version is given, return the current instance.
+            var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId));
+
+            // Select the un-instanced one first.
+            var plugin = plugins.FirstOrDefault(p => p.Instance != null);
+            if (plugin == null)
+            {
+                // Then by the status.
+                plugin = plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
             }
 
             _installationManager.UninstallPlugin(plugin!);
@@ -279,33 +308,6 @@ namespace Jellyfin.Api.Controllers
 
             imgPath = Path.Combine(plugin.Path, plugin.Manifest.ImageUrl);
             return PhysicalFile(imgPath, MimeTypes.GetMimeType(imgPath));
-        }
-
-        /// <summary>
-        /// Gets a plugin's status image.
-        /// </summary>
-        /// <param name="pluginId">Plugin id.</param>
-        /// <param name="version">Plugin version.</param>
-        /// <response code="200">Plugin image returned.</response>
-        /// <returns>Plugin's image.</returns>
-        [HttpGet("{pluginId}/{version}/StatusImage")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesImageFile]
-        [AllowAnonymous]
-        public ActionResult GetPluginStatusImage([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
-        {
-            if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
-            {
-                return NotFound();
-            }
-
-            // Icons from  http://www.fatcow.com/free-icons
-            var status = plugin!.Manifest.Status;
-
-            var type = _pluginManager.GetType();
-            var stream = type.Assembly.GetManifestResourceStream($"{type.Namespace}.Plugins.{status}.png");
-            return File(stream, "image/png");
         }
 
         /// <summary>

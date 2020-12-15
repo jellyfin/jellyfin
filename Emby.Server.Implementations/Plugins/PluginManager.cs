@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,8 +22,6 @@ namespace Emby.Server.Implementations
     /// </summary>
     public class PluginManager : IPluginManager
     {
-        private const int OffsetFromTopRightCorner = 38;
-
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
         private readonly JsonSerializerOptions _jsonOptions;

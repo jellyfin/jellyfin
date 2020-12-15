@@ -393,8 +393,7 @@ namespace Emby.Server.Implementations
 
             if (_creatingInstances.IndexOf(type) != -1)
             {
-                Logger.LogError("DI Loop detected.");
-                Logger.LogError("Attempted creation of {Type}", type.FullName);
+                Logger.LogError("DI Loop detected in the attempted creation of {Type}", type.FullName);
                 foreach (var entry in _creatingInstances)
                 {
                     Logger.LogError("Called from: {stack}", entry.FullName);
