@@ -36,7 +36,8 @@ namespace MediaBrowser.Common.Json
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 WriteIndented = false,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                NumberHandling = JsonNumberHandling.AllowReadingFromString
+                NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                PropertyNameCaseInsensitive = true
             };
 
             options.Converters.Add(new JsonGuidConverter());
@@ -56,7 +57,6 @@ namespace MediaBrowser.Common.Json
         {
             var options = GetOptions();
             options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            options.PropertyNameCaseInsensitive = true;
             return options;
         }
 
