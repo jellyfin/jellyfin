@@ -212,12 +212,13 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Attempts to find the plugin with and id of <paramref name="id"/>.
         /// </summary>
-        /// <param name="id">Id of plugin.</param>
-        /// <param name="version">The version of the plugin to locate.</param>
-        /// <param name="plugin">A <see cref="LocalPlugin"/> if found, otherwise null.</param>
-        /// <returns>Boolean value signifying the success of the search.</returns>
-        public bool TryGetPlugin(Guid id, Version? version, out LocalPlugin? plugin)
+        /// <param name="id">The <see cref="Guid"/> of plugin.</param>
+        /// <param name="version">Optional <see cref="Version"/> of the plugin to locate.</param>
+        /// <returns>A <see cref="LocalPlugin"/> if located, or null if not.</returns>
+        public LocalPlugin? GetPlugin(Guid id, Version? version = null)
         {
+            LocalPlugin? plugin;
+
             if (version == null)
             {
                 // If no version is given, return the current instance.
@@ -235,7 +236,7 @@ namespace Emby.Server.Implementations
                 plugin = _plugins.FirstOrDefault(p => p.Id.Equals(id) && p.Version.Equals(version));
             }
 
-            return plugin != null;
+            return plugin;
         }
 
         /// <summary>

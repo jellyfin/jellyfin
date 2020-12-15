@@ -197,10 +197,11 @@ namespace Emby.Server.Implementations.Updates
                         {
                             var version = package.Versions[i];
 
+                            var plugin = _pluginManager.GetPlugin(packageGuid, version.VersionNumber);
                             // Update the manifests, if anything changes.
-                            if (_pluginManager.TryGetPlugin(packageGuid, version.VersionNumber, out LocalPlugin? plugin))
+                            if (plugin != null)
                             {
-                                bool noChange = string.Equals(plugin!.Manifest.MaxAbi, version.MaxAbi, StringComparison.Ordinal)
+                                bool noChange = string.Equals(plugin.Manifest.MaxAbi, version.MaxAbi, StringComparison.Ordinal)
                                     || string.Equals(plugin.Manifest.TargetAbi, version.TargetAbi, StringComparison.Ordinal);
                                 if (!noChange)
                                 {

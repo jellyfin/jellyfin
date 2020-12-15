@@ -72,9 +72,8 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         /// <param name="id">Id of plugin.</param>
         /// <param name="version">The version of the plugin to locate.</param>
-        /// <param name="plugin">A <see cref="LocalPlugin"/> if found, otherwise null.</param>
-        /// <returns>Boolean value signifying the success of the search.</returns>
-        bool TryGetPlugin(Guid id, Version? version, out LocalPlugin? plugin);
+        /// <returns>A <see cref="LocalPlugin"/> if located, or null if not.</returns>
+        LocalPlugin? GetPlugin(Guid id, Version? version = null);
 
         /// <summary>
         /// Removes the plugin.

@@ -134,12 +134,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult EnablePlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
-            if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
+            var plugin = _pluginManager.GetPlugin(pluginId, version);
+            if (plugin == null)
             {
                 return NotFound();
             }
 
-            _pluginManager.EnablePlugin(plugin!);
+            _pluginManager.EnablePlugin(plugin);
             return NoContent();
         }
 
@@ -157,12 +158,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult DisablePlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
-            if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
+            var plugin = _pluginManager.GetPlugin(pluginId, version);
+            if (plugin == null)
             {
                 return NotFound();
             }
 
-            _pluginManager.DisablePlugin(plugin!);
+            _pluginManager.DisablePlugin(plugin);
             return NoContent();
         }
 
@@ -180,7 +182,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UninstallPluginByVersion([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
-            if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
+            var plugin = _pluginManager.GetPlugin(pluginId, version);
+            if (plugin == null)
             {
                 return NotFound();
             }
@@ -230,8 +233,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<BasePluginConfiguration> GetPluginConfiguration([FromRoute, Required] Guid pluginId)
         {
-            if (_pluginManager.TryGetPlugin(pluginId, null, out var plugin)
-                && plugin!.Instance is IHasPluginConfiguration configPlugin)
+            var plugin = _pluginManager.GetPlugin(pluginId);
+            if (plugin?.Instance is IHasPluginConfiguration configPlugin)
             {
                 return configPlugin.Configuration;
             }
@@ -258,8 +261,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdatePluginConfiguration([FromRoute, Required] Guid pluginId)
         {
-            if (!_pluginManager.TryGetPlugin(pluginId, null, out var plugin)
-                         || plugin?.Instance is not IHasPluginConfiguration configPlugin)
+            var plugin = _pluginManager.GetPlugin(pluginId);
+            if (plugin?.Instance is not IHasPluginConfiguration configPlugin)
             {
                 return NotFound();
             }
@@ -289,14 +292,15 @@ namespace Jellyfin.Api.Controllers
         [AllowAnonymous]
         public ActionResult GetPluginImage([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
-            if (!_pluginManager.TryGetPlugin(pluginId, version, out var plugin))
+            var plugin = _pluginManager.GetPlugin(pluginId, version);
+            if (plugin == null)
             {
                 return NotFound();
             }
 
-            var imgPath = Path.Combine(plugin!.Path, plugin!.Manifest.ImageUrl ?? string.Empty);
+            var imgPath = Path.Combine(plugin.Path, plugin.Manifest.ImageUrl ?? string.Empty);
             if (((ServerConfiguration)_config.CommonConfiguration).DisablePluginImages
-                || plugin!.Manifest.ImageUrl == null
+                || plugin.Manifest.ImageUrl == null
                 || !System.IO.File.Exists(imgPath))
             {
                 // Use a blank image.
@@ -325,9 +329,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<PluginManifest> GetPluginManifest([FromRoute, Required] Guid pluginId)
         {
-            if (_pluginManager.TryGetPlugin(pluginId, null, out var plugin))
+            var plugin = _pluginManager.GetPlugin(pluginId);
+
+            if (plugin != null)
             {
-                return Ok(plugin!.Manifest);
+                return Ok(plugin.Manifest);
             }
 
             return NotFound();
