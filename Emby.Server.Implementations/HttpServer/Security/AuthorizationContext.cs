@@ -285,6 +285,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return string.IsNullOrEmpty(value) ? value : WebUtility.UrlDecode(value);
         }
 
+        /// <summary>
+        /// Get the authorization header components.
+        /// </summary>
+        /// <param name="authtorizationHeader">The authorization header.</param>
+        /// <returns>string</returns>
         public static string[] GetParts(string authtorizationHeader)
         {
             var result = new List<string>();
@@ -301,6 +306,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 }
                 else
                 {
+                    // Applying a XOR logic to evaluate wether it is opening or closing a value
                     escaped = (!escaped) == (authtorizationHeaderChars[i] == '"');
                     if(authtorizationHeaderChars[i] == ',')
                     {
@@ -310,6 +316,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         }
                         else
                         {
+                            // Meeting a comma after a closing escape char means the value is complete
                             result.Add(new string(value.ToArray()));
                             value = new List<char>();
                         }
