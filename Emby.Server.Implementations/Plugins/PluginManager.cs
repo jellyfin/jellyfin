@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations
                 return;
             }
 
-            if (!ChangePluginState(predecessor, PluginStatus.Superceded))
+            if (predecessor.Manifest.Status == PluginStatus.Active && !ChangePluginState(predecessor, PluginStatus.Superceded))
             {
                 _logger.LogError("Unable to disable version {Version} of {Name}", predecessor.Version, predecessor.Name);
             }
@@ -314,7 +314,10 @@ namespace Emby.Server.Implementations
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            var plugin = _plugins.Where(p => assembly.Equals(p.Assembly)).FirstOrDefault();
+            var plugin = _plugins.Where(
+                    p => assembly.Equals(p.Assembly)
+                    || string.Equals(assembly.Location, assembly.Location, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
             if (plugin == null)
             {
                 // A plugin's assembly didn't cause this issue, so ignore it.
@@ -403,6 +406,10 @@ namespace Emby.Server.Implementations
         {
             // Find the record for this plugin.
             var plugin = GetPluginByType(type);
+            if (plugin?.Manifest.Status < PluginStatus.Active)
+            {
+                return null;
+            }
 
             try
             {
