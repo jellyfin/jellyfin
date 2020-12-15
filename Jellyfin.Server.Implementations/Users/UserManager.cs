@@ -1,5 +1,4 @@
-﻿#nullable enable
-#pragma warning disable CA1307
+﻿#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -220,7 +219,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void DeleteUser(Guid userId)
+        public async Task DeleteUserAsync(Guid userId)
         {
             if (!_users.TryGetValue(userId, out var user))
             {
@@ -246,7 +245,7 @@ namespace Jellyfin.Server.Implementations.Users
                     nameof(userId));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
 
             // Clear all entities related to the user from the database.
             if (user.ProfileImage != null)
@@ -258,10 +257,10 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.RemoveRange(user.Preferences);
             dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);
 
-            _eventManager.Publish(new UserDeletedEventArgs(user));
+            await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

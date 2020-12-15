@@ -98,7 +98,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to update the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to update the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -190,7 +190,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to delete the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -229,7 +229,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to delete the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }
 
             var user = _userManager.GetUserById(userId);

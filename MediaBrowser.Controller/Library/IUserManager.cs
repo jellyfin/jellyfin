@@ -93,7 +93,8 @@ namespace MediaBrowser.Controller.Library
         /// Deletes the specified user.
         /// </summary>
         /// <param name="userId">The id of the user to be deleted.</param>
-        void DeleteUser(Guid userId);
+        /// <returns>A task representing the deletion of the user.</returns>
+        Task DeleteUserAsync(Guid userId);
 
         /// <summary>
         /// Resets the password.

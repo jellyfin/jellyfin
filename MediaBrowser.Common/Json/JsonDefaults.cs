@@ -43,6 +43,7 @@ namespace MediaBrowser.Common.Json
             options.Converters.Add(new JsonVersionConverter());
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new JsonNullableStructConverterFactory());
+            options.Converters.Add(new JsonBoolNumberConverter());
 
             return options;
         }

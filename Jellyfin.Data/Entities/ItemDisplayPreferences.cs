@@ -23,7 +23,6 @@ namespace Jellyfin.Data.Entities
             Client = client;
 
             SortBy = "SortName";
-            ViewType = ViewType.Poster;
             SortOrder = SortOrder.Ascending;
             RememberSorting = false;
             RememberIndexing = false;

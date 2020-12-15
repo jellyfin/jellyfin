@@ -105,12 +105,6 @@ There are three options to get the files for the web client.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
 
-Once you have a copy of the built web client files, you need to copy them into a specific directory.
-
-> `<repository root>/Mediabrowser.WebDashboard/jellyfin-web`
-
-As part of the build process, this folder will be copied to the build output directory, where it can be accessed by the server.
-
 ### Running The Server
 
 The following instructions will help you get the project up and running via the command line, or your preferred IDE.
@@ -133,7 +127,7 @@ To run the server from the command line you can use the `dotnet run` command. Th
 
 ```bash
 cd jellyfin                          # Move into the repository directory
-dotnet run --project Jellyfin.Server # Run the server startup project
+dotnet run --project Jellyfin.Server --webdir /absolute/path/to/jellyfin-web/dist # Run the server startup project
 ```
 
 A second option is to build the project and then run the resulting executable file directly. When running the executable directly you can easily add command line options. Add the `--help` flag to list details on all the supported command line options.

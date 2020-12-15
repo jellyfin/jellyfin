@@ -231,7 +231,7 @@ namespace Emby.Server.Implementations.Updates
                         }
 
                         // Don't add a package that doesn't have any compatible versions.
-                        if (package.Versions.Count == 0)
+                        if (package.versions.Count == 0)
                         {
                             continue;
                         }
@@ -555,6 +555,7 @@ namespace Emby.Server.Implementations.Updates
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms

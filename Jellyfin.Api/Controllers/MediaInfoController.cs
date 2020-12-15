@@ -17,6 +17,7 @@ using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
@@ -119,7 +120,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableTranscoding,
             [FromQuery] bool? allowVideoStreamCopy,
             [FromQuery] bool? allowAudioStreamCopy,
-            [FromBody] PlaybackInfoDto? playbackInfoDto)
+            [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 

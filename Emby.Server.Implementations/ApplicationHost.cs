@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -275,13 +276,6 @@ namespace Emby.Server.Implementations
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            CertificateInfo = new CertificateInfo
-            {
-                Path = ServerConfigurationManager.Configuration.CertificatePath,
-                Password = ServerConfigurationManager.Configuration.CertificatePassword
-            };
-            Certificate = GetCertificate(CertificateInfo);
-
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
@@ -496,6 +490,7 @@ namespace Emby.Server.Implementations
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+            ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
             _mediaEncoder.SetFFmpegPath();
 
@@ -544,6 +539,13 @@ namespace Emby.Server.Implementations
                 HttpPort = NetworkConfiguration.DefaultHttpPort;
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
             }
+
+            CertificateInfo = new CertificateInfo
+            {
+                Path = networkConfiguration.CertificatePath,
+                Password = networkConfiguration.CertificatePassword
+            };
+            Certificate = GetCertificate(CertificateInfo);
 
             DiscoverTypes();
 
@@ -754,7 +756,7 @@ namespace Emby.Server.Implementations
                 // Don't use an empty string password
                 var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
 
-                var localCert = new X509Certificate2(certificateLocation, password);
+                var localCert = new X509Certificate2(certificateLocation, password, X509KeyStorageFlags.UserKeySet);
                 // localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
@@ -911,11 +913,11 @@ namespace Emby.Server.Implementations
         protected void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
+            var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
 
             // Don't do anything if these haven't been set yet
             if (HttpPort != 0 && HttpsPort != 0)
             {
-                var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
                 // Need to restart if ports have changed
                 if (networkConfiguration.HttpServerPortNumber != HttpPort ||
                     networkConfiguration.HttpsPortNumber != HttpsPort)
@@ -935,10 +937,7 @@ namespace Emby.Server.Implementations
                 requiresRestart = true;
             }
 
-            var currentCertPath = CertificateInfo?.Path;
-            var newCertPath = ServerConfigurationManager.Configuration.CertificatePath;
-
-            if (!string.Equals(currentCertPath, newCertPath, StringComparison.OrdinalIgnoreCase))
+            if (ValidateSslCertificate(networkConfiguration))
             {
                 requiresRestart = true;
             }
@@ -949,6 +948,33 @@ namespace Emby.Server.Implementations
 
                 NotifyPendingRestart();
             }
+        }
+
+        /// <summary>
+        /// Validates the SSL certificate.
+        /// </summary>
+        /// <param name="networkConfig">The new configuration.</param>
+        /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
+        private bool ValidateSslCertificate(NetworkConfiguration networkConfig)
+        {
+            var newPath = networkConfig.CertificatePath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(CertificateInfo?.Path, newPath, StringComparison.Ordinal))
+            {
+                if (File.Exists(newPath))
+                {
+                    return true;
+                }
+                
+                throw new FileNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Certificate file '{0}' does not exist.",
+                        newPath));
+            }
+
+            return false;
         }
 
         /// <summary>

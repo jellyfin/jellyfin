@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (_quickConnect.State == QuickConnectState.Unavailable)
             {
-                return Forbid("Quick connect is unavailable");
+                return StatusCode(StatusCodes.Status403Forbidden, "Quick connect is unavailable");
             }
 
             _quickConnect.Activate();
@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
             var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
             if (!userId.HasValue)
             {
-                return Forbid("Unknown user id");
+                return StatusCode(StatusCodes.Status403Forbidden, "Unknown user id");
             }
 
             return _quickConnect.AuthorizeRequest(userId.Value, code);
