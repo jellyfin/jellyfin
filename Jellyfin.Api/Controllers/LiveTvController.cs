@@ -1119,20 +1119,15 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Set channel mappings.
         /// </summary>
-        /// <param name="providerId">Provider id.</param>
-        /// <param name="tunerChannelId">Tuner channel id.</param>
-        /// <param name="providerChannelId">Provider channel id.</param>
+        /// <param name="setChannelMappingDto">The set channel mapping dto.</param>
         /// <response code="200">Created channel mapping returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the created channel mapping.</returns>
         [HttpPost("ChannelMappings")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping(
-            [FromQuery] string? providerId,
-            [FromQuery] string? tunerChannelId,
-            [FromQuery] string? providerChannelId)
+        public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping([FromBody, Required] SetChannelMappingDto setChannelMappingDto)
         {
-            return await _liveTvManager.SetChannelMapping(providerId, tunerChannelId, providerChannelId).ConfigureAwait(false);
+            return await _liveTvManager.SetChannelMapping(setChannelMappingDto.ProviderId, setChannelMappingDto.TunerChannelId, setChannelMappingDto.ProviderChannelId).ConfigureAwait(false);
         }
 
         /// <summary>
