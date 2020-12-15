@@ -93,8 +93,7 @@ namespace Emby.Server.Implementations.Updates
             _httpClientFactory = httpClientFactory;
             _config = config;
             _zipClient = zipClient;
-            _jsonSerializerOptions = JsonDefaults.GetOptions();
-            _jsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            _jsonSerializerOptions = JsonDefaults.GetCamelCaseOptions();
             _pluginManager = pluginManager;
         }
 

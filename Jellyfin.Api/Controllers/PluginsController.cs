@@ -47,7 +47,7 @@ namespace Jellyfin.Api.Controllers
         {
             _installationManager = installationManager;
             _pluginManager = pluginManager;
-            _serializerOptions = JsonDefaults.GetOptions();
+            _serializerOptions = JsonDefaults.GetCamelCaseOptions();
             _config = config;
         }
 

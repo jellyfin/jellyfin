@@ -56,6 +56,7 @@ namespace MediaBrowser.Common.Json
         {
             var options = GetOptions();
             options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.PropertyNameCaseInsensitive = true;
             return options;
         }
 

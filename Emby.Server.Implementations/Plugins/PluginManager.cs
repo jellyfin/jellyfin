@@ -53,9 +53,7 @@ namespace Emby.Server.Implementations
             _logger = loggerfactory.CreateLogger<PluginManager>();
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _jsonOptions = JsonDefaults.GetOptions();
-            _jsonOptions.PropertyNameCaseInsensitive = true;
-            _jsonOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            _jsonOptions = JsonDefaults.GetCamelCaseOptions();
             _config = config;
             _appHost = appHost;
             _imagesPath = imagesPath;
@@ -137,7 +135,8 @@ namespace Emby.Server.Implementations
                 var plugin = GetPluginByType(pluginServiceRegistrator.Assembly.GetType());
                 if (plugin == null)
                 {
-                    throw new NullReferenceException();
+                    _logger.LogError("Unable to find plugin in assembly {Assembly}", pluginServiceRegistrator.Assembly.FullName);
+                    continue;
                 }
 
                 CheckIfStillSuperceded(plugin);
@@ -440,6 +439,7 @@ namespace Emby.Server.Implementations
                     plugin.Instance = (IPlugin)instance;
                     var manifest = plugin.Manifest;
                     var pluginStr = plugin.Instance.Version.ToString();
+                    bool changed = false;
                     if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal))
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
@@ -447,10 +447,16 @@ namespace Emby.Server.Implementations
                         manifest.Version = pluginStr;
                         manifest.Name = plugin.Instance.Name;
                         manifest.Description = plugin.Instance.Description;
+                        changed = true;
                     }
 
+                    changed = changed || manifest.Status != PluginStatus.Active;
                     manifest.Status = PluginStatus.Active;
-                    SaveManifest(manifest, plugin.Path);
+
+                    if (changed)
+                    {
+                        SaveManifest(manifest, plugin.Path);
+                    }
                 }
 
                 _logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name, plugin.Version);
@@ -577,8 +583,6 @@ namespace Emby.Server.Implementations
                 }
 
                 // Auto-create a plugin manifest, so we can disable it, if it fails to load.
-                // NOTE: This Plugin is marked as valid for two upgrades, at which point, it can be assumed the
-                // code base will have changed sufficiently to make it invalid.
                 manifest = new PluginManifest
                 {
                     Status = PluginStatus.RestartRequired,
@@ -586,7 +590,6 @@ namespace Emby.Server.Implementations
                     AutoUpdate = false,
                     Guid = metafile.GetMD5(),
                     TargetAbi = _appVersion.ToString(),
-                    MaxAbi = _nextVersion.ToString(),
                     Version = version.ToString()
                 };
 
@@ -678,9 +681,11 @@ namespace Emby.Server.Implementations
                         continue;
                     }
 
-                    manifest.Status = PluginStatus.DeleteOnStartup;
-
-                    SaveManifest(manifest, entry.Path);
+                    if (manifest.Status != PluginStatus.DeleteOnStartup)
+                    {
+                        manifest.Status = PluginStatus.DeleteOnStartup;
+                        SaveManifest(manifest, entry.Path);
+                    }
                 }
             }
 
