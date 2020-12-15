@@ -231,7 +231,7 @@ namespace Emby.Server.Implementations.Updates
                         }
 
                         // Don't add a package that doesn't have any compatible versions.
-                        if (package.versions.Count == 0)
+                        if (package.Versions.Count == 0)
                         {
                             continue;
                         }
