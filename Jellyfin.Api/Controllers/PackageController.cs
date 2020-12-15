@@ -146,7 +146,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the list of package repositories.</returns>
         [HttpGet("Repositories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces(JsonDefaults.CamelCaseMediaType)]
         public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
         {
             return _serverConfigurationManager.Configuration.PluginRepositories;
