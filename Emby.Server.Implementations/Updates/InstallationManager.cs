@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,8 +106,20 @@ namespace Emby.Server.Implementations.Updates
         {
             try
             {
-                var packages = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .GetFromJsonAsync<List<PackageInfo>>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+                List<PackageInfo>? packages;
+                var uri = new Uri(manifest);
+                if (uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    packages = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetFromJsonAsync<List<PackageInfo>>(uri, _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Local Packages
+                    var data = File.ReadAllText(manifest, Encoding.UTF8);
+                    packages = JsonSerializer.Deserialize<List<PackageInfo>>(data, _jsonSerializerOptions);
+                }
+
                 if (packages == null)
                 {
                     return Array.Empty<PackageInfo>();
@@ -149,6 +162,11 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 return packages;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Cannot locate the plugin manifest {Manifest}", manifest);
+                return Array.Empty<PackageInfo>();
             }
             catch (JsonException ex)
             {
