@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
@@ -23,7 +24,7 @@ namespace Jellyfin.Api.Models
             {
                 DisplayName = page.Plugin.Name;
                 // Don't use "N" because it needs to match Plugin.Id
-                PluginId = page.Plugin.Id.ToString();
+                PluginId = page.Plugin.Id;
             }
         }
 
@@ -39,9 +40,7 @@ namespace Jellyfin.Api.Models
             MenuSection = page.MenuSection;
             MenuIcon = page.MenuIcon;
             DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin?.Name : page.DisplayName;
-
-            // Don't use "N" because it needs to match Plugin.Id
-            PluginId = plugin?.Id.ToString();
+            PluginId = plugin?.Id;
         }
 
         /// <summary>
@@ -80,6 +79,6 @@ namespace Jellyfin.Api.Models
         /// Gets or sets the plugin id.
         /// </summary>
         /// <value>The plugin id.</value>
-        public string? PluginId { get; set; }
+        public Guid? PluginId { get; set; }
     }
 }
