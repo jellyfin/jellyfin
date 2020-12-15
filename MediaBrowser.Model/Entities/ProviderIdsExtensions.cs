@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Entities
             }
 
             instance.ProviderIds.TryGetValue(name, out string? id);
-            return id;
+            return string.IsNullOrEmpty(id) ? null : id;
         }
 
         /// <summary>
