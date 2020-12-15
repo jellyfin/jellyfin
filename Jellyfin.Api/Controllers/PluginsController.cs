@@ -200,7 +200,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Obsolete("Please use the UninstallByVersion API.")]
+        [Obsolete("Please use the UninstallPluginByVersion API.")]
         public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId)
         {
             // If no version is given, return the current instance.
