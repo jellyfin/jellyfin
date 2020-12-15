@@ -173,7 +173,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="version">Plugin version.</param>
         /// <response code="204">Plugin uninstalled.</response>
         /// <response code="404">Plugin not found.</response>
-        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the plugin could not be found.</returns>
         [HttpDelete("{pluginId}/{version}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
