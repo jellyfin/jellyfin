@@ -324,7 +324,6 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{pluginId}/Manifest")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesFile(MediaTypeNames.Application.Json)]
         public ActionResult<PluginManifest> GetPluginManifest([FromRoute, Required] Guid pluginId)
         {
             if (_pluginManager.TryGetPlugin(pluginId, null, out var plugin))
