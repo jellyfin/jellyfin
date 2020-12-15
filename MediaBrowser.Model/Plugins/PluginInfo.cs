@@ -20,9 +20,9 @@ namespace MediaBrowser.Model.Plugins
         public PluginInfo(string name, Version version, string description, Guid id, bool canUninstall)
         {
             Name = name;
-            Version = version?.ToString() ?? throw new ArgumentNullException(nameof(version));
+            Version = version;
             Description = description;
-            Id = id.ToString();
+            Id = id;
             CanUninstall = canUninstall;
         }
 
@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.Plugins
         /// <summary>
         /// Gets or sets the version.
         /// </summary>
-        public string Version { get; set; }
+        public Version Version { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the configuration file.
@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Plugins
         /// <summary>
         /// Gets or sets the unique id.
         /// </summary>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the plugin can be uninstalled.
