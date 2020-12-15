@@ -228,7 +228,6 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{pluginId}/Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesFile(MediaTypeNames.Application.Json)]
         public ActionResult<BasePluginConfiguration> GetPluginConfiguration([FromRoute, Required] Guid pluginId)
         {
             if (_pluginManager.TryGetPlugin(pluginId, null, out var plugin)
