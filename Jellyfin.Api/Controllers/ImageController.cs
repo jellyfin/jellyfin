@@ -325,9 +325,11 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -358,9 +360,11 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
