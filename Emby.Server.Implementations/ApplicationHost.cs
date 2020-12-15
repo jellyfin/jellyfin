@@ -396,7 +396,7 @@ namespace Emby.Server.Implementations
                 Logger.LogError("DI Loop detected in the attempted creation of {Type}", type.FullName);
                 foreach (var entry in _creatingInstances)
                 {
-                    Logger.LogError("Called from: {stack}", entry.FullName);
+                    Logger.LogError("Called from: {TypeName}", entry.FullName);
                 }
 
                 _pluginManager.FailPlugin(type.Assembly);

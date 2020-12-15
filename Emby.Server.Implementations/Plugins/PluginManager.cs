@@ -96,9 +96,10 @@ namespace Emby.Server.Implementations
 
                 foreach (var file in plugin.DllFiles)
                 {
+                    Assembly assembly;
                     try
                     {
-                        plugin.Assembly = Assembly.LoadFrom(file);
+                        assembly = Assembly.LoadFrom(file);
                     }
                     catch (FileLoadException ex)
                     {
@@ -107,8 +108,8 @@ namespace Emby.Server.Implementations
                         continue;
                     }
 
-                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugin.Assembly.FullName, file);
-                    yield return plugin.Assembly;
+                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
+                    yield return assembly;
                 }
             }
         }
@@ -203,6 +204,7 @@ namespace Emby.Server.Implementations
                 return true;
             }
 
+            _logger.LogWarning("Unable to delete {Path}, so marking as deleteOnStartup.", plugin.Path);
             // Unable to delete, so disable.
             return ChangePluginState(plugin, PluginStatus.DeleteOnStartup);
         }
@@ -310,10 +312,7 @@ namespace Emby.Server.Implementations
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            var plugin = _plugins.Where(
-                    p => assembly.Equals(p.Assembly)
-                    || string.Equals(assembly.Location, assembly.Location, StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefault();
+            var plugin = _plugins.Where(p => p.DllFiles.Contains(assembly.Location)).FirstOrDefault();
             if (plugin == null)
             {
                 // A plugin's assembly didn't cause this issue, so ignore it.
@@ -366,20 +365,7 @@ namespace Emby.Server.Implementations
             }
 
             plugin.Manifest.Status = state;
-            SaveManifest(plugin.Manifest, plugin.Path);
-            try
-            {
-                var data = JsonSerializer.Serialize(plugin.Manifest, _jsonOptions);
-                File.WriteAllText(Path.Combine(plugin.Path, "meta.json"), data, Encoding.UTF8);
-                return true;
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                _logger.LogWarning(e, "Unable to disable plugin {Path}", plugin.Path);
-                return false;
-            }
+            return SaveManifest(plugin.Manifest, plugin.Path);
         }
 
         /// <summary>
@@ -509,15 +495,14 @@ namespace Emby.Server.Implementations
             // Attempt a cleanup of old folders.
             try
             {
-                _logger.LogDebug("Deleting {Path}", plugin.Path);
                 Directory.Delete(plugin.Path, true);
+                _logger.LogDebug("Deleted {Path}", plugin.Path);
                 _plugins.Remove(plugin);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception e)
+            catch
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                _logger.LogWarning(e, "Unable to delete {Path}", plugin.Path);
                 return false;
             }
 
@@ -670,21 +655,23 @@ namespace Emby.Server.Implementations
                         _logger.LogWarning(e, "Unable to delete {Path}", path);
                     }
 
-                    versions.RemoveAt(x);
-                }
-
-                if (!cleaned)
-                {
-                    if (manifest == null)
+                    if (cleaned)
                     {
-                        _logger.LogWarning("Unable to disable plugin {Path}", entry.Path);
-                        continue;
+                        versions.RemoveAt(x);
                     }
-
-                    if (manifest.Status != PluginStatus.DeleteOnStartup)
+                    else
                     {
-                        manifest.Status = PluginStatus.DeleteOnStartup;
-                        SaveManifest(manifest, entry.Path);
+                        if (manifest == null)
+                        {
+                            _logger.LogWarning("Unable to disable plugin {Path}", entry.Path);
+                            continue;
+                        }
+
+                        if (manifest.Status != PluginStatus.DeleteOnStartup)
+                        {
+                            manifest.Status = PluginStatus.DeleteOnStartup;
+                            SaveManifest(manifest, entry.Path);
+                        }
                     }
                 }
             }

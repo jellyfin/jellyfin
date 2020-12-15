@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,18 +105,8 @@ namespace Emby.Server.Implementations.Updates
             try
             {
                 List<PackageInfo>? packages;
-                var uri = new Uri(manifest);
-                if (uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                {
-                    packages = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .GetFromJsonAsync<List<PackageInfo>>(uri, _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    // Local Packages
-                    var data = File.ReadAllText(manifest, Encoding.UTF8);
-                    packages = JsonSerializer.Deserialize<List<PackageInfo>>(data, _jsonSerializerOptions);
-                }
+                packages = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetFromJsonAsync<List<PackageInfo>>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
 
                 if (packages == null)
                 {

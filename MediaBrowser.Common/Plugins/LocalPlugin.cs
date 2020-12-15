@@ -81,11 +81,6 @@ namespace MediaBrowser.Common.Plugins
         public PluginManifest Manifest { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating the assembly of the plugin.
-        /// </summary>
-        public Assembly? Assembly { get; set; }
-
-        /// <summary>
         /// Compare two <see cref="LocalPlugin"/>.
         /// </summary>
         /// <param name="a">The first item.</param>
