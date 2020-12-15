@@ -113,7 +113,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>List of currently installed plugins.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesFile(MediaTypeNames.Application.Json)]
         public ActionResult<IEnumerable<PluginInfo>> GetPlugins()
         {
             return Ok(_pluginManager.Plugins
