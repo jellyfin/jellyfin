@@ -93,7 +93,7 @@ namespace MediaBrowser.Common.Plugins
                 throw new ArgumentNullException(a == null ? nameof(a) : nameof(b));
             }
 
-            var compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
+            var compare = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
 
             // Id is not equal but name is.
             if (!a.Id.Equals(b.Id) && compare == 0)
