@@ -166,14 +166,14 @@ namespace MediaBrowser.Common.Plugins
                     assemblyPlugin.SetId(assemblyId);
                 }
 
-                // TODO : Simplify this, once migration support is ceased.
+                // TODO : Remove this, once migration support is ceased.
                 if (inPluginFolder)
                 {
                     var oldConfigFilePath = Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
 
                     if (!File.Exists(ConfigurationFilePath) && File.Exists(oldConfigFilePath))
                     {
-                        // Migrate settings, as different plugin versions may have different settings.
+                        // Migrate pre 10.7 settings, as different plugin versions may have different settings.
                         try
                         {
                             File.Copy(oldConfigFilePath, ConfigurationFilePath);

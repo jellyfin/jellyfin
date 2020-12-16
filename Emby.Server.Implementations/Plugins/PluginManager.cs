@@ -274,6 +274,32 @@ namespace Emby.Server.Implementations
             }
         }
 
+        private void CopyFiles(string source, string destination, bool overwrite, string searchPattern)
+        {
+            FileInfo[] files;
+            try
+            {
+                files = new DirectoryInfo(source).GetFiles(searchPattern);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Error retrieving file list.");
+                return;
+            }
+
+            foreach (FileInfo file in files)
+            {
+                try
+                {
+                    file.CopyTo(Path.Combine(destination, file.Name), overwrite);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Error copying file {Name}", file.Name);
+                }
+            }
+        }
+
         /// <summary>
         /// Changes the status of the other versions of the plugin to "Superceded".
         /// </summary>
@@ -294,6 +320,9 @@ namespace Emby.Server.Implementations
             {
                 return;
             }
+
+            // migrate settings across from the last active version if they don't exist.
+            CopyFiles(predecessor.Path, plugin.Path, false, "*.xml");
 
             if (predecessor.Manifest.Status == PluginStatus.Active && !ChangePluginState(predecessor, PluginStatus.Superceded))
             {
