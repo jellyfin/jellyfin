@@ -480,11 +480,11 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            var allowed = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders);
+            var allowed = user.GetPreferenceValues<Guid>(PreferenceKind.EnableContentDeletionFromFolders);
 
             if (SourceType == SourceType.Channel)
             {
-                return allowed.Contains(ChannelId.ToString(""), StringComparer.OrdinalIgnoreCase);
+                return allowed.Contains(ChannelId);
             }
             else
             {
@@ -492,7 +492,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var folder in collectionFolders)
                 {
-                    if (allowed.Contains(folder.Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                    if (allowed.Contains(folder.Id))
                     {
                         return true;
                     }
@@ -1909,7 +1909,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(GetBlockUnratedType().ToString());
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(GetBlockUnratedType());
         }
 
         /// <summary>

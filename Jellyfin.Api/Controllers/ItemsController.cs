@@ -254,18 +254,18 @@ namespace Jellyfin.Api.Controllers
                 includeItemTypes = new[] { "Playlist" };
             }
 
-            bool isInEnabledFolder = user!.GetPreference(PreferenceKind.EnabledFolders).Any(i => new Guid(i) == item.Id)
+            var enabledChannels = user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
+
+            bool isInEnabledFolder = Array.IndexOf(user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
                                      // Assume all folders inside an EnabledChannel are enabled
-                                     || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.Id)
+                                     || Array.IndexOf(enabledChannels, item.Id) != -1
                                      // Assume all items inside an EnabledChannel are enabled
-                                     || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.ChannelId);
+                                     || Array.IndexOf(enabledChannels, item.ChannelId) != -1;
 
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
-                if (user.GetPreference(PreferenceKind.EnabledFolders).Contains(
-                    collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
-                    StringComparer.OrdinalIgnoreCase))
+                if (user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
                 {
                     isInEnabledFolder = true;
                 }
@@ -786,12 +786,12 @@ namespace Jellyfin.Api.Controllers
 
             var ancestorIds = Array.Empty<Guid>();
 
-            var excludeFolderIds = user.GetPreference(PreferenceKind.LatestItemExcludes);
+            var excludeFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
             if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
+                    .Where(i => !excludeFolderIds.Contains(i.Id))
                     .Select(i => i.Id)
                     .ToArray();
             }
