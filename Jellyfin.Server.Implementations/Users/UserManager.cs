@@ -376,14 +376,14 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
-                    EnabledChannels = user.GetPreference(PreferenceKind.EnabledChannels)?.Select(Guid.Parse).ToArray(),
+                    EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
-                    EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders)?.Select(Guid.Parse).ToArray(),
+                    EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
                     SyncPlayAccess = user.SyncPlayAccess,
-                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels)?.Select(Guid.Parse).ToArray(),
-                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders)?.Select(Guid.Parse).ToArray(),
-                    BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems).Select(Enum.Parse<UnratedItem>).ToArray()
+                    BlockedChannels = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels),
+                    BlockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders),
+                    BlockUnratedItems = user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems)
                 }
             };
         }
@@ -704,13 +704,11 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             // TODO: fix this at some point
-            user.SetPreference(
-                PreferenceKind.BlockUnratedItems,
-                policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());
+            user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
