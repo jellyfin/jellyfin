@@ -102,7 +102,8 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 DeviceId = deviceId,
                 Version = version,
                 Token = token,
-                IsAuthenticated = false
+                IsAuthenticated = false,
+                HasToken = false
             };
 
             if (string.IsNullOrWhiteSpace(token))
@@ -111,6 +112,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return authInfo;
             }
 
+            authInfo.HasToken = true;
             var result = _authRepo.Get(new AuthenticationInfoQuery
             {
                 AccessToken = token
@@ -183,11 +185,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         updateToken = true;
                     }
 
-                    authInfo.IsApiKey = true;
+                    authInfo.IsApiKey = false;
                 }
                 else
                 {
-                    authInfo.IsApiKey = false;
+                    authInfo.IsApiKey = true;
                 }
 
                 if (updateToken)

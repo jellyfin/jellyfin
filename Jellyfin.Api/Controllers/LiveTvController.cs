@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +17,6 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
@@ -1015,7 +1014,9 @@ namespace Jellyfin.Api.Controllers
             if (!string.IsNullOrEmpty(pw))
             {
                 using var sha = SHA1.Create();
-                listingsProviderInfo.Password = Hex.Encode(sha.ComputeHash(Encoding.UTF8.GetBytes(pw)));
+                // TODO: remove ToLower when Convert.ToHexString supports lowercase
+                // Schedules Direct requires the hex to be lowercase
+                listingsProviderInfo.Password = Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(pw))).ToLowerInvariant();
             }
 
             return await _liveTvManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);
@@ -1118,20 +1119,15 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Set channel mappings.
         /// </summary>
-        /// <param name="providerId">Provider id.</param>
-        /// <param name="tunerChannelId">Tuner channel id.</param>
-        /// <param name="providerChannelId">Provider channel id.</param>
+        /// <param name="setChannelMappingDto">The set channel mapping dto.</param>
         /// <response code="200">Created channel mapping returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the created channel mapping.</returns>
         [HttpPost("ChannelMappings")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping(
-            [FromQuery] string? providerId,
-            [FromQuery] string? tunerChannelId,
-            [FromQuery] string? providerChannelId)
+        public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping([FromBody, Required] SetChannelMappingDto setChannelMappingDto)
         {
-            return await _liveTvManager.SetChannelMapping(providerId, tunerChannelId, providerChannelId).ConfigureAwait(false);
+            return await _liveTvManager.SetChannelMapping(setChannelMappingDto.ProviderId, setChannelMappingDto.TunerChannelId, setChannelMappingDto.ProviderChannelId).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -70,7 +70,7 @@
     "ScheduledTaskFailedWithName": "{0} falló",
     "ScheduledTaskStartedWithName": "{0} iniciada",
     "ServerNameNeedsToBeRestarted": "{0} necesita ser reiniciado",
-    "Shows": "Mostrar",
+    "Shows": "Series de Televisión",
     "Songs": "Canciones",
     "StartupEmbyServerIsLoading": "Jellyfin Server se está cargando. Vuelve a intentarlo en breve.",
     "SubtitleDownloadFailureForItem": "Error al descargar subtítulos para {0}",

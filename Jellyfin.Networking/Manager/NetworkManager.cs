@@ -258,7 +258,7 @@ namespace Jellyfin.Networking.Manager
                 }
                 catch (ArgumentException e)
                 {
-                    _logger.LogWarning(e, "Ignoring LAN value {value}.", v);
+                    _logger.LogWarning(e, "Ignoring LAN value {Value}.", v);
                 }
             }
 
@@ -668,7 +668,6 @@ namespace Jellyfin.Networking.Manager
             }
 
             int i = str.IndexOf("%", StringComparison.OrdinalIgnoreCase);
-
             if (i != -1)
             {
                 str = str.Substring(0, i);
@@ -1333,9 +1332,7 @@ namespace Jellyfin.Networking.Manager
                 return true;
             }
 
-            // Have to return something, so return an internal address
-
-            _logger.LogWarning("{Source}: External request received, however, no WAN interface found.", source);
+            _logger.LogDebug("{Source}: External request received, but no WAN interface found. Need to route through internal network.", source);
             return false;
         }
     }

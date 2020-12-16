@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>>? EntryCreated;
 
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)

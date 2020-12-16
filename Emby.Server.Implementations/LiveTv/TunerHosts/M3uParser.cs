@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     extInf = line.Substring(ExtInfPrefix.Length).Trim();
                     _logger.LogInformation("Found m3u channel: {0}", extInf);
                 }
-                else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
+                else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith('#'))
                 {
                     var channel = GetChannelnfo(extInf, tunerHostId, line);
                     if (string.IsNullOrWhiteSpace(channel.Id))

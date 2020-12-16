@@ -12,7 +12,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
@@ -187,6 +186,22 @@ namespace Emby.Server.Implementations.Updates
                         if (!Guid.TryParse(package.guid, out var packageGuid))
                         {
                             // Package doesn't have a valid GUID, skip.
+                            continue;
+                        }
+
+                        for (var i = package.versions.Count - 1; i >= 0; i--)
+                        {
+                            // Remove versions with a target abi that is greater then the current application version.
+                            if (Version.TryParse(package.versions[i].targetAbi, out var targetAbi)
+                                && _applicationHost.ApplicationVersion < targetAbi)
+                            {
+                                package.versions.RemoveAt(i);
+                            }
+                        }
+
+                        // Don't add a package that doesn't have any compatible versions.
+                        if (package.versions.Count == 0)
+                        {
                             continue;
                         }
 
@@ -407,6 +422,7 @@ namespace Emby.Server.Implementations.Updates
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
@@ -414,7 +430,7 @@ namespace Emby.Server.Implementations.Updates
             using var md5 = MD5.Create();
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = Hex.Encode(md5.ComputeHash(stream));
+            var hash = Convert.ToHexString(md5.ComputeHash(stream));
             if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(

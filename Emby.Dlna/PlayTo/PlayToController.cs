@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -41,7 +40,6 @@ namespace Emby.Dlna.PlayTo
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IConfigurationManager _config;
         private readonly IMediaEncoder _mediaEncoder;
 
         private readonly IDeviceDiscovery _deviceDiscovery;
@@ -68,7 +66,6 @@ namespace Emby.Dlna.PlayTo
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
-            IConfigurationManager config,
             IMediaEncoder mediaEncoder)
         {
             _session = session;
@@ -84,7 +81,6 @@ namespace Emby.Dlna.PlayTo
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
-            _config = config;
             _mediaEncoder = mediaEncoder;
         }
 
@@ -337,25 +333,26 @@ namespace Emby.Dlna.PlayTo
             }
 
             var startIndex = command.StartIndex ?? 0;
+            int len = items.Count - startIndex;
             if (startIndex > 0)
             {
-                items = items.GetRange(startIndex, items.Count - startIndex);
+                items = items.GetRange(startIndex, len);
             }
 
-            var playlist = new List<PlaylistItem>();
-            var isFirst = true;
+            var playlist = new PlaylistItem[len];
 
-            foreach (var item in items)
+            // Not nullable enabled - so this is required.
+            playlist[0] = CreatePlaylistItem(
+                items[0],
+                user,
+                command.StartPositionTicks ?? 0,
+                command.MediaSourceId ?? string.Empty,
+                command.AudioStreamIndex,
+                command.SubtitleStreamIndex);
+
+            for (int i = 1; i < len; i++)
             {
-                if (isFirst && command.StartPositionTicks.HasValue)
-                {
-                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value, command.MediaSourceId, command.AudioStreamIndex, command.SubtitleStreamIndex));
-                    isFirst = false;
-                }
-                else
-                {
-                    playlist.Add(CreatePlaylistItem(item, user, 0, null, null, null));
-                }
+                playlist[i] = CreatePlaylistItem(items[i], user, 0, string.Empty, null, null);
             }
 
             _logger.LogDebug("{0} - Playlist created", _session.DeviceName);
@@ -468,8 +465,8 @@ namespace Emby.Dlna.PlayTo
                 _dlnaManager.GetDefaultProfile();
 
             var mediaSources = item is IHasMediaSources
-                ? _mediaSourceManager.GetStaticMediaSources(item, true, user)
-                : new List<MediaSourceInfo>();
+                ? _mediaSourceManager.GetStaticMediaSources(item, true, user).ToArray()
+                : Array.Empty<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             playlistItem.StreamInfo.StartPositionTicks = startPostionTicks;
@@ -548,7 +545,7 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        private PlaylistItem GetPlaylistItem(BaseItem item, MediaSourceInfo[] mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
@@ -557,7 +554,7 @@ namespace Emby.Dlna.PlayTo
                     StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id,
-                        MediaSources = mediaSources.ToArray(),
+                        MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
                         MaxBitrate = profile.MaxStreamingBitrate,
@@ -577,7 +574,7 @@ namespace Emby.Dlna.PlayTo
                     StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id,
-                        MediaSources = mediaSources.ToArray(),
+                        MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
                         MaxBitrate = profile.MaxStreamingBitrate,
@@ -590,7 +587,7 @@ namespace Emby.Dlna.PlayTo
 
             if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
             {
-                return new PlaylistItemFactory().Create((Photo)item, profile);
+                return PlaylistItemFactory.Create((Photo)item, profile);
             }
 
             throw new ArgumentException("Unrecognized item type.");
@@ -774,13 +771,14 @@ namespace Emby.Dlna.PlayTo
 
         private async Task SeekAfterTransportChange(long positionTicks, CancellationToken cancellationToken)
         {
-            const int maxWait = 15000000;
-            const int interval = 500;
+            const int MaxWait = 15000000;
+            const int Interval = 500;
+
             var currentWait = 0;
-            while (_device.TransportState != TransportState.Playing && currentWait < maxWait)
+            while (_device.TransportState != TransportState.Playing && currentWait < MaxWait)
             {
-                await Task.Delay(interval).ConfigureAwait(false);
-                currentWait += interval;
+                await Task.Delay(Interval).ConfigureAwait(false);
+                currentWait += Interval;
             }
 
             await _device.Seek(TimeSpan.FromTicks(positionTicks), cancellationToken).ConfigureAwait(false);

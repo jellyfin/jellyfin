@@ -78,12 +78,6 @@ namespace MediaBrowser.Providers.Music
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
-            // TODO maybe remove when artist metadata can be disabled
-            if (!Plugin.Instance.Configuration.Enable)
-            {
-                return Enumerable.Empty<RemoteSearchResult>();
-            }
-
             var releaseId = searchInfo.GetReleaseId();
             var releaseGroupId = searchInfo.GetReleaseGroupId();
 
@@ -193,12 +187,6 @@ namespace MediaBrowser.Providers.Music
             {
                 Item = new MusicAlbum()
             };
-
-            // TODO maybe remove when artist metadata can be disabled
-            if (!Plugin.Instance.Configuration.Enable)
-            {
-                return result;
-            }
 
             // If we have a release group Id but not a release Id...
             if (string.IsNullOrWhiteSpace(releaseId) && !string.IsNullOrWhiteSpace(releaseGroupId))
@@ -768,16 +756,7 @@ namespace MediaBrowser.Providers.Music
                     _stopWatchMusicBrainz.Restart();
 
                     using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-
-                    // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
-                    // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent .
-                    request.Headers.UserAgent.ParseAdd(string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0} ( {1} )",
-                        _appHost.ApplicationUserAgent,
-                        _appHost.ApplicationUserAgentAddress));
-
-                    response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(request).ConfigureAwait(false);
+                    response = await _httpClientFactory.CreateClient(NamedClient.MusicBrainz).SendAsync(request).ConfigureAwait(false);
 
                     // We retry a finite number of times, and only whilst MB is indicating 503 (throttling).
                 }

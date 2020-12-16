@@ -1,5 +1,7 @@
+#nullable disable
 #pragma warning disable CS1591
 
+using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Interfaces;
@@ -32,6 +34,8 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<ImageInfo> ImageInfos { get; set; }
 
         public virtual DbSet<ItemDisplayPreferences> ItemDisplayPreferences { get; set; }
+
+        public virtual DbSet<CustomItemDisplayPreferences> CustomItemDisplayPreferences { get; set; }
 
         public virtual DbSet<Permission> Permissions { get; set; }
 
@@ -140,6 +144,7 @@ namespace Jellyfin.Server.Implementations
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.HasDefaultSchema("jellyfin");
@@ -149,7 +154,15 @@ namespace Jellyfin.Server.Implementations
                 .IsUnique(false);
 
             modelBuilder.Entity<DisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.Client })
+                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
+                .IsUnique();
+
+            modelBuilder.Entity<CustomItemDisplayPreferences>()
+                .HasIndex(entity => entity.UserId)
+                .IsUnique(false);
+
+            modelBuilder.Entity<CustomItemDisplayPreferences>()
+                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
                 .IsUnique();
         }
     }

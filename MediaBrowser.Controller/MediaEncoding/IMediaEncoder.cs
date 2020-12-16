@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -61,18 +62,18 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Extracts the video image.
         /// </summary>
-        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
 
-        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
         Task ExtractVideoImagesOnInterval(
-            string[] inputFiles,
+            string inputFile,
             string container,
             MediaStream videoStream,
-            MediaProtocol protocol,
+            MediaSourceInfo mediaSource,
             Video3DFormat? threedFormat,
             TimeSpan interval,
             string targetDirectory,
@@ -91,10 +92,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the input argument.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <param name="protocol">The protocol.</param>
+        /// <param name="inputFile">The input file.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
         /// <returns>System.String.</returns>
-        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol);
+        string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
 
         /// <summary>
         /// Gets the time parameter.
@@ -116,6 +117,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         void UpdateEncoderPath(string path, string pathType);
 
-        IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, IIsoMount isoMount, uint? titleNumber);
+        IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
     }
 }

@@ -8,9 +8,9 @@ using MediaBrowser.Model.Session;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class PlaylistItemFactory
+    public static class PlaylistItemFactory
     {
-        public PlaylistItem Create(Photo item, DeviceProfile profile)
+        public static PlaylistItem Create(Photo item, DeviceProfile profile)
         {
             var playlistItem = new PlaylistItem
             {

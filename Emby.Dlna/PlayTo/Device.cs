@@ -12,8 +12,6 @@ using System.Xml;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
 using Emby.Dlna.Ssdp;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
@@ -345,7 +343,7 @@ namespace Emby.Dlna.PlayTo
             RestartTimer(true);
         }
 
-        private string CreateDidlMeta(string value)
+        private static string CreateDidlMeta(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -962,7 +960,7 @@ namespace Emby.Dlna.PlayTo
                 url = "/dmr/" + url;
             }
 
-            if (!url.StartsWith("/", StringComparison.Ordinal))
+            if (!url.StartsWith('/'))
             {
                 url = "/" + url;
             }

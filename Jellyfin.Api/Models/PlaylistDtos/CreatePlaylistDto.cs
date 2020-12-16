@@ -24,7 +24,7 @@ namespace Jellyfin.Api.Models.PlaylistDtos
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the media type.

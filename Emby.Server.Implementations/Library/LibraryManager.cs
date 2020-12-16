@@ -42,7 +42,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
@@ -1955,9 +1954,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            RunMetadataSavers(items, updateReason);
+            foreach (var item in items)
+            {
+                await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+            }
 
             _itemRepository.SaveItems(items, cancellationToken);
 
@@ -1988,25 +1990,22 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
 
-        public void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason)
+        public Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
-            foreach (var item in items)
+            if (item.IsFileProtocol)
             {
-                if (item.IsFileProtocol)
-                {
-                    ProviderManager.SaveMetadata(item, updateReason);
-                }
-
-                item.DateLastSaved = DateTime.UtcNow;
+                ProviderManager.SaveMetadata(item, updateReason);
             }
+
+            item.DateLastSaved = DateTime.UtcNow;
+
+            return UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate);
         }
 
         /// <summary>
@@ -2462,9 +2461,19 @@ namespace Emby.Server.Implementations.Library
 
         public BaseItem GetParentItem(string parentId, Guid? userId)
         {
-            if (!string.IsNullOrEmpty(parentId))
+            if (string.IsNullOrEmpty(parentId))
             {
-                return GetItemById(new Guid(parentId));
+                return GetParentItem((Guid?)null, userId);
+            }
+
+            return GetParentItem(new Guid(parentId), userId);
+        }
+
+        public BaseItem GetParentItem(Guid? parentId, Guid? userId)
+        {
+            if (parentId.HasValue)
+            {
+                return GetItemById(parentId.Value);
             }
 
             if (userId.HasValue && userId != Guid.Empty)

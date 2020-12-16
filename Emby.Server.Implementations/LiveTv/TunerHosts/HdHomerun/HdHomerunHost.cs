@@ -8,10 +8,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -37,6 +39,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
+        private readonly JsonSerializerOptions _jsonOptions;
+
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
 
         public HdHomerunHost(
@@ -56,6 +60,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _socketFactory = socketFactory;
             _networkManager = networkManager;
             _streamHelper = streamHelper;
+
+            _jsonOptions = JsonDefaults.GetOptions();
         }
 
         public string Name => "HD Homerun";
@@ -67,13 +73,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private string GetChannelId(TunerHostInfo info, Channels i)
             => ChannelIdPrefix + i.GuideNumber;
 
-        private async Task<List<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
+        internal async Task<List<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(model.LineupURL, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var lineup = await JsonSerializer.DeserializeAsync<List<Channels>>(stream, cancellationToken: cancellationToken)
+            var lineup = await JsonSerializer.DeserializeAsync<List<Channels>>(stream, _jsonOptions, cancellationToken)
                 .ConfigureAwait(false) ?? new List<Channels>();
 
             if (info.ImportFavoritesOnly)
@@ -100,7 +106,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Id = GetChannelId(info, i),
                 IsFavorite = i.Favorite,
                 TunerHostId = info.Id,
-                IsHD = i.HD == 1,
+                IsHD = i.HD,
                 AudioCodec = i.AudioCodec,
                 VideoCodec = i.VideoCodec,
                 ChannelType = ChannelType.TV,
@@ -109,7 +115,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }).Cast<ChannelInfo>().ToList();
         }
 
-        private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
+        internal async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
 
@@ -127,10 +133,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             try
             {
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .GetAsync(GetApiUrl(info) + "/discover.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
                 await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, cancellationToken: cancellationToken)
+                var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, _jsonOptions, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(cacheKey))
@@ -237,8 +244,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 if (!inside)
                 {
-                    buffer[bufferIndex] = let;
-                    bufferIndex++;
+                    buffer[bufferIndex++] = let;
                 }
             }
 
@@ -327,25 +333,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
 
             return new Uri(url).AbsoluteUri.TrimEnd('/');
-        }
-
-        private class Channels
-        {
-            public string GuideNumber { get; set; }
-
-            public string GuideName { get; set; }
-
-            public string VideoCodec { get; set; }
-
-            public string AudioCodec { get; set; }
-
-            public string URL { get; set; }
-
-            public bool Favorite { get; set; }
-
-            public bool DRM { get; set; }
-
-            public int HD { get; set; }
         }
 
         protected EncodingOptions GetEncodingOptions()
@@ -675,42 +662,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        public class DiscoverResponse
-        {
-            public string FriendlyName { get; set; }
-
-            public string ModelNumber { get; set; }
-
-            public string FirmwareName { get; set; }
-
-            public string FirmwareVersion { get; set; }
-
-            public string DeviceID { get; set; }
-
-            public string DeviceAuth { get; set; }
-
-            public string BaseURL { get; set; }
-
-            public string LineupURL { get; set; }
-
-            public int TunerCount { get; set; }
-
-            public bool SupportsTranscoding
-            {
-                get
-                {
-                    var model = ModelNumber ?? string.Empty;
-
-                    if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        return true;
-                    }
-
-                    return false;
-                }
-            }
-        }
-
         public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
         {
             lock (_modelCache)
@@ -763,7 +714,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return list;
         }
 
-        private async Task<TunerHostInfo> TryGetTunerHostInfo(string url, CancellationToken cancellationToken)
+        internal async Task<TunerHostInfo> TryGetTunerHostInfo(string url, CancellationToken cancellationToken)
         {
             var hostInfo = new TunerHostInfo
             {
@@ -775,6 +726,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             hostInfo.DeviceId = modelInfo.DeviceID;
             hostInfo.FriendlyName = modelInfo.FriendlyName;
+            hostInfo.TunerCount = modelInfo.TunerCount;
 
             return hostInfo;
         }

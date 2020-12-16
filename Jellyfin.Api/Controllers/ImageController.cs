@@ -98,7 +98,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to update the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to update the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -190,7 +190,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to delete the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -229,7 +229,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to delete the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -325,9 +325,11 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -358,9 +360,11 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();

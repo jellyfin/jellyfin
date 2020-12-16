@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
@@ -109,15 +109,15 @@ namespace Jellyfin.Api.Controllers
                 EnableTotalRecordCount = enableTotalRecordCount
             };
 
-            if (!string.IsNullOrWhiteSpace(parentId))
+            if (parentId.HasValue)
             {
                 if (parentItem is Folder)
                 {
-                    query.AncestorIds = new[] { new Guid(parentId) };
+                    query.AncestorIds = new[] { parentId.Value };
                 }
                 else
                 {
-                    query.ItemIds = new[] { new Guid(parentId) };
+                    query.ItemIds = new[] { parentId.Value };
                 }
             }
 
