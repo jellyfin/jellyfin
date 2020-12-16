@@ -217,8 +217,13 @@ namespace Jellyfin.Api.Controllers
                 plugin = plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
             }
 
-            _installationManager.UninstallPlugin(plugin!);
-            return NoContent();
+            if (plugin != null)
+            {
+                _installationManager.UninstallPlugin(plugin!);
+                return NoContent();
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -303,10 +308,7 @@ namespace Jellyfin.Api.Controllers
                 || plugin.Manifest.ImageUrl == null
                 || !System.IO.File.Exists(imgPath))
             {
-                // Use a blank image.
-                var type = GetType();
-                var stream = type.Assembly.GetManifestResourceStream(type.Namespace + ".Plugins.blank.png");
-                return File(stream, "image/png");
+                return NotFound();
             }
 
             imgPath = Path.Combine(plugin.Path, plugin.Manifest.ImageUrl);
@@ -333,7 +335,7 @@ namespace Jellyfin.Api.Controllers
 
             if (plugin != null)
             {
-                return Ok(plugin.Manifest);
+                return plugin.Manifest;
             }
 
             return NotFound();

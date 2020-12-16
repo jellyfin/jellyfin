@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.Updates
             _httpClientFactory = httpClientFactory;
             _config = config;
             _zipClient = zipClient;
-            _jsonSerializerOptions = JsonDefaults.GetCamelCaseOptions();
+            _jsonSerializerOptions = JsonDefaults.GetOptions();
             _pluginManager = pluginManager;
         }
 
@@ -104,8 +104,7 @@ namespace Emby.Server.Implementations.Updates
         {
             try
             {
-                List<PackageInfo>? packages;
-                packages = await _httpClientFactory.CreateClient(NamedClient.Default)
+                List<PackageInfo>? packages = await _httpClientFactory.CreateClient(NamedClient.Default)
                         .GetFromJsonAsync<List<PackageInfo>>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
 
                 if (packages == null)
