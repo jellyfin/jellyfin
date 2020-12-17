@@ -667,7 +667,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path));
+            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename);
         }
 
         /// <summary>
