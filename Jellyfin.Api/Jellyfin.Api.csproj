@@ -15,6 +15,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageVersion>10.8.0.0</PackageVersion>
     <Version>10.8.0.0</Version>
+    <AssemblyVersion>10.8.1.1</AssemblyVersion>
+    <FileVersion>10.8.1.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -24,7 +24,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
-    <PackageId>Jellyfin.Photos</PackageId>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

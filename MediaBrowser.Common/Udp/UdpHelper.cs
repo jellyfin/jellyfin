@@ -6,9 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
@@ -405,7 +403,7 @@ namespace MediaBrowser.Common.Udp
 
             if (client.Tracing)
             {
-                client.Track("->{0} : {1} count:{3} \r\n{4}", client.LocalEndPoint, remote, sendCount, packet);
+                client.Track("->{0} : {1} count:{3}\r\n{4}", client.LocalEndPoint, remote, sendCount, packet);
             }
 
             for (int a = 0; a <= sendCount - 1; a++)
@@ -497,7 +495,7 @@ namespace MediaBrowser.Common.Udp
 
             if (client.Tracing)
             {
-                client.Track("->{0} : {1} count:{3} \r\n{4}", client.LocalEndPoint, mcast!, sendCount, packet);
+                client.Track("->{0} : {1} count:{3}\r\n{4}", client.LocalEndPoint, mcast!, sendCount, packet);
             }
 
             try
@@ -620,7 +618,7 @@ namespace MediaBrowser.Common.Udp
                 {
                     if (client.Tracing)
                     {
-                        client.Track("<- {0} : {1} : {2}", client.LocalEndPoint, remote!, data);
+                        client.Track("<- {0} : {1}\r\n{2}", client.LocalEndPoint, remote!, data);
                     }
 
                     _ = client.Processor(client, data, remote!);

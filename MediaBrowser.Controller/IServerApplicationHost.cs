@@ -74,7 +74,6 @@ namespace MediaBrowser.Controller
         /// Gets a URL specific for the request.
         /// </summary>
         /// <param name="remoteAddr">The remote <see cref="IPAddress"/> of the connection.</param>
-        /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
         string GetSmartApiUrl(IPAddress remoteAddr);
 

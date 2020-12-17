@@ -98,7 +98,6 @@ build/
 *.sdf
 *.opensdf
 *.ipch
-*.csproj
 
 # Visual C++ cache files
 ipch/
