@@ -67,7 +67,7 @@ namespace MediaBrowser.Common.Plugins
         public string Version { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether this plugin should be ignored.
+        /// Gets or sets a value indicating the operational status of this plugin.
         /// </summary>
         public PluginStatus Status { get; set; }
 
