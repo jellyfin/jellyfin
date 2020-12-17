@@ -425,7 +425,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 var person = new PersonInfo
                 {
-                    Name = result.Director.Trim(),
+                    Name = result.Writer.Trim(),
                     Type = PersonType.Writer
                 };
 

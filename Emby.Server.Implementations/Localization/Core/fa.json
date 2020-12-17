@@ -113,5 +113,7 @@
     "TasksChannelsCategory": "کانال‌های داخلی",
     "TasksApplicationCategory": "برنامه",
     "TasksLibraryCategory": "کتابخانه",
-    "TasksMaintenanceCategory": "تعمیر"
+    "TasksMaintenanceCategory": "تعمیر",
+    "Forced": "اجباری",
+    "Default": "پیشفرض"
 }

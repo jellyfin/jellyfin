@@ -128,7 +128,7 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Returns true if the address is a private address.
-        /// The config option TrustIP6Interfaces overrides this functions behaviour.
+        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
         /// <param name="address">Address to check.</param>
         /// <returns>True or False.</returns>
@@ -136,7 +136,7 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
-        /// The config option TrustIP6Interfaces overrides this functions behaviour.
+        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
         /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
@@ -144,7 +144,7 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
-        /// The config option TrustIP6Interfaces overrides this functions behaviour.
+        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
         /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
@@ -152,7 +152,7 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
-        /// The config option TrustIP6Interfaces overrides this functions behaviour.
+        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
         /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
@@ -171,9 +171,9 @@ namespace MediaBrowser.Common.Net
         /// Parses an array of strings into a Collection{IPObject}.
         /// </summary>
         /// <param name="values">Values to parse.</param>
-        /// <param name="bracketed">When true, only include values in []. When false, ignore bracketed values.</param>
+        /// <param name="negated">When true, only include values beginning with !. When false, ignore ! values.</param>
         /// <returns>IPCollection object containing the value strings.</returns>
-        Collection<IPObject> CreateIPCollection(string[] values, bool bracketed = false);
+        Collection<IPObject> CreateIPCollection(string[] values, bool negated = false);
 
         /// <summary>
         /// Returns all the internal Bind interface addresses.

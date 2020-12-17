@@ -15,13 +15,16 @@ using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
+using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Enums;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -58,6 +61,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
             {
                 options.AddPolicy(
@@ -123,6 +127,34 @@ namespace Jellyfin.Server.Extensions
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new RequiresElevationRequirement());
                     });
+                options.AddPolicy(
+                    Policies.SyncPlayHasAccess,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayCreateGroup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayJoinGroup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayIsInGroup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
+                    });
             });
         }
 
@@ -152,11 +184,19 @@ namespace Jellyfin.Server.Extensions
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                    for (var i = 0; i < knownProxies.Count; i++)
+                    if (knownProxies.Count == 0)
                     {
-                        if (IPAddress.TryParse(knownProxies[i], out var address))
+                        options.KnownNetworks.Clear();
+                        options.KnownProxies.Clear();
+                    }
+                    else
+                    {
+                        for (var i = 0; i < knownProxies.Count; i++)
                         {
-                            options.KnownProxies.Add(address);
+                            if (IPHost.TryParse(knownProxies[i], out var host))
+                            {
+                                options.KnownProxies.Add(host.Address);
+                            }
                         }
                     }
                 })
@@ -236,18 +276,6 @@ namespace Jellyfin.Server.Extensions
                     Description = "API key header parameter"
                 });
 
-                var securitySchemeRef = new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = AuthenticationSchemes.CustomAuthentication },
-                };
-
-                // TODO: Apply this with an operation filter instead of globally
-                // https://github.com/domaindrivendev/Swashbuckle.AspNetCore#add-security-definitions-and-requirements
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    { securitySchemeRef, Array.Empty<string>() }
-                });
-
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(
                     AppContext.BaseDirectory,
@@ -277,6 +305,7 @@ namespace Jellyfin.Server.Extensions
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
+                c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.DocumentFilter<WebsocketModelFilter>();
             });
@@ -285,20 +314,17 @@ namespace Jellyfin.Server.Extensions
         private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)
         {
             /*
-             * TODO remove when System.Text.Json supports non-string keys.
-             * Used in Jellyfin.Api.Controller.GetChannels.
+             * TODO remove when System.Text.Json properly supports non-string keys.
+             * Used in BaseItemDto.ImageBlurHashes
              */
             options.MapType<Dictionary<ImageType, string>>(() =>
                 new OpenApiSchema
                 {
                     Type = "object",
-                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
-                        name => name,
-                        name => new OpenApiSchema
-                        {
-                            Type = "string",
-                            Format = "string"
-                        })
+                    AdditionalProperties = new OpenApiSchema
+                    {
+                        Type = "string"
+                    }
                 });
 
             /*
@@ -312,16 +338,10 @@ namespace Jellyfin.Server.Extensions
                         name => name,
                         name => new OpenApiSchema
                         {
-                            Type = "object", Properties = new Dictionary<string, OpenApiSchema>
+                            Type = "object",
+                            AdditionalProperties = new OpenApiSchema
                             {
-                                {
-                                    "string",
-                                    new OpenApiSchema
-                                    {
-                                        Type = "string",
-                                        Format = "string"
-                                    }
-                                }
+                                Type = "string"
                             }
                         })
                 });

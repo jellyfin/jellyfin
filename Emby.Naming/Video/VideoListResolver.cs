@@ -227,7 +227,11 @@ namespace Emby.Naming.Video
                     testFilename = cleanName.ToString();
                 }
 
-                testFilename = testFilename.Substring(folderName.Length).Trim();
+                if (folderName.Length <= testFilename.Length)
+                {
+                    testFilename = testFilename.Substring(folderName.Length).Trim();
+                }
+
                 return string.IsNullOrEmpty(testFilename)
                    || testFilename[0].Equals('-')
                    || testFilename[0].Equals('_')

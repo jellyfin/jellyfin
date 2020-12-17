@@ -50,32 +50,23 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFiltersLegacy> GetQueryFiltersLegacy(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
         {
-            var parentItem = string.IsNullOrEmpty(parentId)
-                ? null
-                : _libraryManager.GetItemById(parentId);
-
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            if (includeItemTypes.Length == 1
-                && (string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(Trailer), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
+            BaseItem? item = null;
+            if (includeItemTypes.Length != 1
+                || !(string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(includeItemTypes[0], nameof(Trailer), StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
             {
-                parentItem = null;
+                item = _libraryManager.GetParentItem(parentId, user?.Id);
             }
-
-            var item = string.IsNullOrEmpty(parentId)
-                ? user == null
-                    ? _libraryManager.RootFolder
-                    : _libraryManager.GetUserRootFolder()
-                : parentItem;
 
             var query = new InternalItemsQuery
             {
@@ -92,7 +83,12 @@ namespace Jellyfin.Api.Controllers
                 }
             };
 
-            var itemList = ((Folder)item!).GetItemList(query);
+            if (item is not Folder folder)
+            {
+                return new QueryFiltersLegacy();
+            }
+
+            var itemList = folder.GetItemList(query);
             return new QueryFiltersLegacy
             {
                 Years = itemList.Select(i => i.ProductionYear ?? -1)
@@ -140,7 +136,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFilters> GetQueryFilters(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery] bool? isAiring,
             [FromQuery] bool? isMovie,
@@ -150,14 +146,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSeries,
             [FromQuery] bool? recursive)
         {
-            var parentItem = string.IsNullOrEmpty(parentId)
-                ? null
-                : _libraryManager.GetItemById(parentId);
-
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
+            BaseItem? parentItem = null;
             if (includeItemTypes.Length == 1
                 && (string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
                     || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
@@ -165,6 +158,10 @@ namespace Jellyfin.Api.Controllers
                     || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
             {
                 parentItem = null;
+            }
+            else if (parentId.HasValue)
+            {
+                parentItem = _libraryManager.GetItemById(parentId.Value);
             }
 
             var filters = new QueryFilters();

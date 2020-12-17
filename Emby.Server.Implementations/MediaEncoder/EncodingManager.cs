@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -81,12 +82,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                 return false;
             }
 
-            if (video.VideoType == VideoType.Iso)
-            {
-                return false;
-            }
-
-            if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
+            if (video.VideoType == VideoType.Dvd)
             {
                 return false;
             }
@@ -140,15 +136,19 @@ namespace Emby.Server.Implementations.MediaEncoder
                             // Add some time for the first chapter to make sure we don't end up with a black image
                             var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(_firstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
 
-                            var protocol = MediaProtocol.File;
-
-                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, null, Array.Empty<string>());
+                            var inputPath = video.Path;
 
                             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                             var container = video.Container;
+                            var mediaSource = new MediaSourceInfo
+                            {
+                                VideoType = video.VideoType,
+                                IsoType = video.IsoType,
+                                Protocol = video.PathProtocol.Value,
+                            };
 
-                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, mediaSource, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                             File.Copy(tempFile, path, true);
 
                             try

@@ -115,5 +115,8 @@
     "TaskRefreshChapterImagesDescription": "Создаются эскизы для видео, которые содержат сцены.",
     "TaskCleanCacheDescription": "Удаляются файлы кэша, которые больше не нужны системе.",
     "TaskCleanActivityLogDescription": "Удаляет записи журнала активности старше установленного возраста.",
-    "TaskCleanActivityLog": "Очистить журнал активности"
+    "TaskCleanActivityLog": "Очистить журнал активности",
+    "Undefined": "Не определено",
+    "Forced": "Форсир-ые",
+    "Default": "По умолчанию"
 }

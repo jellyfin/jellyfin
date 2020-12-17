@@ -243,7 +243,7 @@ namespace Emby.Server.Implementations.QuickConnect
             Span<byte> bytes = stackalloc byte[length];
             _rng.GetBytes(bytes);
 
-            return Hex.Encode(bytes);
+            return Convert.ToHexString(bytes);
         }
 
         /// <inheritdoc/>

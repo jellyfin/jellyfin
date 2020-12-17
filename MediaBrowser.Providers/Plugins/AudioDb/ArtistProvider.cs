@@ -57,13 +57,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
-
-            // TODO maybe remove when artist metadata can be disabled
-            if (!Plugin.Instance.Configuration.Enable)
-            {
-                return result;
-            }
-
             var id = info.GetMusicBrainzArtistId();
 
             if (!string.IsNullOrWhiteSpace(id))

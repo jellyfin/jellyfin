@@ -129,23 +129,23 @@ namespace Emby.Server.Implementations.Library
 
             if (!query.IncludeHidden)
             {
-                list = list.Where(i => !user.GetPreference(PreferenceKind.MyMediaExcludes).Contains(i.Id.ToString("N", CultureInfo.InvariantCulture))).ToList();
+                list = list.Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes).Contains(i.Id)).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
 
-            var orders = user.GetPreference(PreferenceKind.OrderedViews).ToList();
+            var orders = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews);
 
             return list
                 .OrderBy(i =>
                 {
-                    var index = orders.IndexOf(i.Id.ToString("N", CultureInfo.InvariantCulture));
+                    var index = Array.IndexOf(orders, i.Id);
 
                     if (index == -1
                         && i is UserView view
                         && view.DisplayParentId != Guid.Empty)
                     {
-                        index = orders.IndexOf(view.DisplayParentId.ToString("N", CultureInfo.InvariantCulture));
+                        index = Array.IndexOf(orders, view.DisplayParentId);
                     }
 
                     return index == -1 ? int.MaxValue : index;
@@ -280,8 +280,8 @@ namespace Emby.Server.Implementations.Library
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !user.GetPreference(PreferenceKind.LatestItemExcludes)
-                        .Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
+                    .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
+                        .Contains(i.Id))
                     .ToList();
             }
 

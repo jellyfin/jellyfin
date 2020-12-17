@@ -28,6 +28,16 @@ namespace Jellyfin.Networking.Configuration
         public bool RequireHttps { get; set; }
 
         /// <summary>
+        /// Gets or sets the filesystem path of an X.509 certificate to use for SSL.
+        /// </summary>
+        public string CertificatePath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="CertificatePath"/>.
+        /// </summary>
+        public string CertificatePassword { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets a value used to specify the URL prefix that your Jellyfin instance can be accessed at.
         /// </summary>
         public string BaseUrl
@@ -83,7 +93,7 @@ namespace Jellyfin.Networking.Configuration
         /// </summary>
         /// <remarks>
         /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
-        /// provided for <see cref="ServerConfiguration.CertificatePath"/> and <see cref="ServerConfiguration.CertificatePassword"/>.
+        /// provided for <see cref="CertificatePath"/> and <see cref="CertificatePassword"/>.
         /// </remarks>
         public bool EnableHttps { get; set; }
 

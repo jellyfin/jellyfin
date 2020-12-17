@@ -82,13 +82,11 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IUserManager, UserManager>();
             ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
-            ServiceCollection.AddScoped<IWebSocketListener, SessionWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, ActivityLogWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, ScheduledTasksWebSocketListener>();
-            ServiceCollection.AddScoped<IWebSocketListener, SessionInfoWebSocketListener>();
-
-            // TODO fix circular dependency on IWebSocketManager
-            ServiceCollection.AddScoped(serviceProvider => new Lazy<IEnumerable<IWebSocketListener>>(serviceProvider.GetRequiredService<IEnumerable<IWebSocketListener>>));
+            // TODO search the assemblies instead of adding them manually?
+            ServiceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
+            ServiceCollection.AddSingleton<IWebSocketListener, ActivityLogWebSocketListener>();
+            ServiceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
+            ServiceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
 
             base.RegisterServices();
         }

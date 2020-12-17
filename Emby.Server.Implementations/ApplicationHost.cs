@@ -1,9 +1,9 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +14,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Emby.Dlna;
 using Emby.Drawing;
 using Emby.Notifications;
@@ -120,7 +119,6 @@ namespace Emby.Server.Implementations
 
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
-        private IHttpClientFactory _httpClientFactory;
         private string[] _urlPrefixes;
 
         /// <summary>
@@ -181,6 +179,8 @@ namespace Emby.Server.Implementations
         protected IServiceCollection ServiceCollection { get; }
 
         private IPlugin[] _plugins;
+
+        private IReadOnlyList<LocalPlugin> _pluginsManifests;
 
         /// <summary>
         /// Gets the plugins.
@@ -280,13 +280,6 @@ namespace Emby.Server.Implementations
             }
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
-
-            CertificateInfo = new CertificateInfo
-            {
-                Path = ServerConfigurationManager.Configuration.CertificatePath,
-                Password = ServerConfigurationManager.Configuration.CertificatePassword
-            };
-            Certificate = GetCertificate(CertificateInfo);
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);
@@ -453,6 +446,7 @@ namespace Emby.Server.Implementations
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+            ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
             _mediaEncoder.SetFFmpegPath();
 
@@ -502,6 +496,13 @@ namespace Emby.Server.Implementations
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
             }
 
+            CertificateInfo = new CertificateInfo
+            {
+                Path = networkConfiguration.CertificatePath,
+                Password = networkConfiguration.CertificatePassword
+            };
+            Certificate = GetCertificate(CertificateInfo);
+
             DiscoverTypes();
 
             RegisterServices();
@@ -530,8 +531,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton(NetManager);
             ServiceCollection.AddSingleton<ZeroConf>();
-
-            ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
 
             ServiceCollection.AddSingleton<ITaskManager, TaskManager>();
 
@@ -629,7 +628,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
 
-            ServiceCollection.AddSingleton<IResourceFileManager, ResourceFileManager>();
             ServiceCollection.AddSingleton<EncodingHelper>();
 
             ServiceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
@@ -651,7 +649,6 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
-            _httpClientFactory = Resolve<IHttpClientFactory>();
 
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
@@ -712,7 +709,7 @@ namespace Emby.Server.Implementations
                 // Don't use an empty string password
                 var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
 
-                var localCert = new X509Certificate2(certificateLocation, password);
+                var localCert = new X509Certificate2(certificateLocation, password, X509KeyStorageFlags.UserKeySet);
                 // localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
@@ -772,17 +769,27 @@ namespace Emby.Server.Implementations
 
             if (Plugins != null)
             {
-                var pluginBuilder = new StringBuilder();
-
                 foreach (var plugin in Plugins)
                 {
-                    pluginBuilder.Append(plugin.Name)
-                        .Append(' ')
-                        .Append(plugin.Version)
-                        .AppendLine();
-                }
+                    if (_pluginsManifests != null && plugin is IPluginAssembly assemblyPlugin)
+                    {
+                        // Ensure the version number matches the Plugin Manifest information.
+                        foreach (var item in _pluginsManifests)
+                        {
+                            if (Path.GetDirectoryName(plugin.AssemblyFilePath).Equals(item.Path, StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Update version number to that of the manifest.
+                                assemblyPlugin.SetAttributes(
+                                    plugin.AssemblyFilePath,
+                                    Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(plugin.AssemblyFilePath)),
+                                    item.Version);
+                                break;
+                            }
+                        }
+                    }
 
-                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
+                    Logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name, plugin.Version);
+                }
             }
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
@@ -810,8 +817,6 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-
-            Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
 
         /// <summary>
@@ -902,11 +907,11 @@ namespace Emby.Server.Implementations
         protected void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
+            var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
 
             // Don't do anything if these haven't been set yet
             if (HttpPort != 0 && HttpsPort != 0)
             {
-                var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
                 // Need to restart if ports have changed
                 if (networkConfiguration.HttpServerPortNumber != HttpPort ||
                     networkConfiguration.HttpsPortNumber != HttpsPort)
@@ -926,10 +931,7 @@ namespace Emby.Server.Implementations
                 requiresRestart = true;
             }
 
-            var currentCertPath = CertificateInfo?.Path;
-            var newCertPath = ServerConfigurationManager.Configuration.CertificatePath;
-
-            if (!string.Equals(currentCertPath, newCertPath, StringComparison.OrdinalIgnoreCase))
+            if (ValidateSslCertificate(networkConfiguration))
             {
                 requiresRestart = true;
             }
@@ -940,6 +942,33 @@ namespace Emby.Server.Implementations
 
                 NotifyPendingRestart();
             }
+        }
+
+        /// <summary>
+        /// Validates the SSL certificate.
+        /// </summary>
+        /// <param name="networkConfig">The new configuration.</param>
+        /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
+        private bool ValidateSslCertificate(NetworkConfiguration networkConfig)
+        {
+            var newPath = networkConfig.CertificatePath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(CertificateInfo?.Path, newPath, StringComparison.Ordinal))
+            {
+                if (File.Exists(newPath))
+                {
+                    return true;
+                }
+                
+                throw new FileNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Certificate file '{0}' does not exist.",
+                        newPath));
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -1039,7 +1068,7 @@ namespace Emby.Server.Implementations
                         metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
 
                         int versionIndex = dir.LastIndexOf('_');
-                        if (versionIndex != -1 && Version.TryParse(dir.Substring(versionIndex + 1), out Version parsedVersion))
+                        if (versionIndex != -1 && Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version parsedVersion))
                         {
                             // Versioned folder.
                             versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir));
@@ -1098,7 +1127,8 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var plugin in GetLocalPlugins(ApplicationPaths.PluginsPath))
+                _pluginsManifests = GetLocalPlugins(ApplicationPaths.PluginsPath).ToList();
+                foreach (var plugin in _pluginsManifests)
                 {
                     foreach (var file in plugin.DllFiles)
                     {
