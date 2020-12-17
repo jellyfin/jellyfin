@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations
             for (int a = _plugins.Count - 1; a >= 0; a--)
             {
                 var plugin = _plugins[a];
-                if (plugin.Manifest.Status == PluginStatus.DeleteOnStartup && DeletePlugin(plugin))
+                if (plugin.Manifest.Status == PluginStatus.Deleted && DeletePlugin(plugin))
                 {
                     UpdateSuccessors(plugin);
                 }
@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations
                     catch (FileLoadException ex)
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
-                        ChangePluginState(plugin, PluginStatus.Malfunction);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
 
@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
                     _logger.LogError(ex, "Error registering plugin services from {Assembly}.", pluginServiceRegistrator.Assembly.FullName);
-                    if (ChangePluginState(plugin, PluginStatus.Malfunction))
+                    if (ChangePluginState(plugin, PluginStatus.Malfunctioned))
                     {
                         _logger.LogInformation("Disabling plugin {Path}", plugin.Path);
                     }
@@ -206,7 +206,7 @@ namespace Emby.Server.Implementations
 
             _logger.LogWarning("Unable to delete {Path}, so marking as deleteOnStartup.", plugin.Path);
             // Unable to delete, so disable.
-            return ChangePluginState(plugin, PluginStatus.DeleteOnStartup);
+            return ChangePluginState(plugin, PluginStatus.Deleted);
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace Emby.Server.Implementations
         private void UpdateSuccessors(LocalPlugin plugin)
         {
             // This value is memory only - so that the web will show restart required.
-            plugin.Manifest.Status = PluginStatus.RestartRequired;
+            plugin.Manifest.Status = PluginStatus.Restart;
 
             // Detect whether there is another version of this plugin that needs disabling.
             var predecessor = _plugins.OrderByDescending(p => p.Version)
@@ -349,7 +349,7 @@ namespace Emby.Server.Implementations
                 return;
             }
 
-            ChangePluginState(plugin, PluginStatus.Malfunction);
+            ChangePluginState(plugin, PluginStatus.Malfunctioned);
         }
 
         /// <summary>
@@ -486,7 +486,7 @@ namespace Emby.Server.Implementations
                 _logger.LogError(ex, "Error creating {Type}", type.FullName);
                 if (plugin != null)
                 {
-                    if (ChangePluginState(plugin, PluginStatus.Malfunction))
+                    if (ChangePluginState(plugin, PluginStatus.Malfunctioned))
                     {
                         _logger.LogInformation("Plugin {Path} has been disabled.", plugin.Path);
                         return null;
@@ -600,7 +600,7 @@ namespace Emby.Server.Implementations
                 // Auto-create a plugin manifest, so we can disable it, if it fails to load.
                 manifest = new PluginManifest
                 {
-                    Status = PluginStatus.RestartRequired,
+                    Status = PluginStatus.Restart,
                     Name = metafile,
                     AutoUpdate = false,
                     Guid = metafile.GetMD5(),
@@ -697,9 +697,9 @@ namespace Emby.Server.Implementations
                             continue;
                         }
 
-                        if (manifest.Status != PluginStatus.DeleteOnStartup)
+                        if (manifest.Status != PluginStatus.Deleted)
                         {
-                            manifest.Status = PluginStatus.DeleteOnStartup;
+                            manifest.Status = PluginStatus.Deleted;
                             SaveManifest(manifest, entry.Path);
                         }
                     }

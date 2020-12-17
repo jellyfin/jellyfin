@@ -8,10 +8,10 @@ namespace MediaBrowser.Model.Plugins
         /// <summary>
         /// This plugin requires a restart in order for it to load. This is a memory only status.
         /// The actual status of the plugin after reload is present in the manifest.
-        /// eg. A disabled plugin will still be active until the next restart, and so will have a memory status of RestartRequired,
+        /// eg. A disabled plugin will still be active until the next restart, and so will have a memory status of Restart,
         /// but a disk manifest status of Disabled.
         /// </summary>
-        RestartRequired = 1,
+        Restart = 1,
 
         /// <summary>
         /// This plugin is currently running.
@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Plugins
         /// <summary>
         /// This plugin caused an error when instantiated. (Either DI loop, or exception)
         /// </summary>
-        Malfunction = -3,
+        Malfunctioned = -3,
 
         /// <summary>
         /// This plugin has been superceded by another version.
@@ -42,6 +42,6 @@ namespace MediaBrowser.Model.Plugins
         /// An attempt to remove this plugin from disk will happen at every restart.
         /// It will not be loaded, if unable to do so.
         /// </summary>
-        DeleteOnStartup = -5
+        Deleted = -5
     }
 }
