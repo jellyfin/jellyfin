@@ -15,7 +15,7 @@ using MediaBrowser.Model.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations
+namespace Emby.Server.Implementations.Plugins
 {
     /// <summary>
     /// Defines the <see cref="PluginManager" />.
