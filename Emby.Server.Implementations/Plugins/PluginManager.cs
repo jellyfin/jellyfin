@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
         /// </summary>
-        /// <param name="loggerfactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="appHost">The <see cref="IApplicationHost"/>.</param>
         /// <param name="config">The <see cref="ServerConfiguration"/>.</param>
         /// <param name="pluginsPath">The plugin path.</param>
@@ -49,13 +49,12 @@ namespace Emby.Server.Implementations.Plugins
             string imagesPath,
             Version appVersion)
         {
-            _logger = loggerfactory.CreateLogger<PluginManager>();
+            _logger = _logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _jsonOptions = JsonDefaults.GetCamelCaseOptions();
+            _jsonOptions = JsonDefaults.GetOptions();
             _config = config;
             _appHost = appHost;
-            _imagesPath = imagesPath;
             _nextVersion = new Version(_appVersion.Major, _appVersion.Minor + 2, _appVersion.Build, _appVersion.Revision);
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
@@ -273,62 +272,6 @@ namespace Emby.Server.Implementations.Plugins
             }
         }
 
-        private void CopyFiles(string source, string destination, bool overwrite, string searchPattern)
-        {
-            FileInfo[] files;
-            try
-            {
-                files = new DirectoryInfo(source).GetFiles(searchPattern);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "Error retrieving file list.");
-                return;
-            }
-
-            foreach (FileInfo file in files)
-            {
-                try
-                {
-                    file.CopyTo(Path.Combine(destination, file.Name), overwrite);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "Error copying file {Name}", file.Name);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Changes the status of the other versions of the plugin to "Superceded".
-        /// </summary>
-        /// <param name="plugin">The <see cref="LocalPlugin"/> that's master.</param>
-        private void UpdateSuccessors(LocalPlugin plugin)
-        {
-            // This value is memory only - so that the web will show restart required.
-            plugin.Manifest.Status = PluginStatus.Restart;
-
-            // Detect whether there is another version of this plugin that needs disabling.
-            var predecessor = _plugins.OrderByDescending(p => p.Version)
-                .FirstOrDefault(
-                    p => p.Id.Equals(plugin.Id)
-                    && p.IsEnabledAndSupported
-                    && p.Version != plugin.Version);
-
-            if (predecessor == null)
-            {
-                return;
-            }
-
-            // migrate settings across from the last active version if they don't exist.
-            CopyFiles(predecessor.Path, plugin.Path, false, "*.xml");
-
-            if (predecessor.Manifest.Status == PluginStatus.Active && !ChangePluginState(predecessor, PluginStatus.Superceded))
-            {
-                _logger.LogError("Unable to disable version {Version} of {Name}", predecessor.Version, predecessor.Name);
-            }
-        }
-
         /// <summary>
         /// Disable the plugin.
         /// </summary>
@@ -429,19 +372,19 @@ namespace Emby.Server.Implementations.Plugins
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.
+                    // TODO: remove this code, if all provided have been released as separate plugins.
                     plugin = new LocalPlugin(
-                        pInstance.AssemblyFilePath,
+                        instance.AssemblyFilePath,
                         true,
                         new PluginManifest
                         {
-                            Guid = pInstance.Id,
+                            Guid = instance.Id,
                             Status = PluginStatus.Active,
-                            Name = pInstance.Name,
-                            Version = pInstance.Version.ToString(),
-                            MaxAbi = _nextVersion.ToString()
+                            Name = instance.Name,
+                            Version = instance.Version.ToString()
                         })
                     {
-                        Instance = pInstance
+                        Instance = instance
                     };
 
                     _plugins.Add(plugin);
@@ -706,6 +649,33 @@ namespace Emby.Server.Implementations.Plugins
 
             // Only want plugin folders which have files.
             return versions.Where(p => p.DllFiles.Count != 0);
+        }
+
+        /// <summary>
+        /// Changes the status of the other versions of the plugin to "Superceded".
+        /// </summary>
+        /// <param name="plugin">The <see cref="LocalPlugin"/> that's master.</param>
+        private void UpdateSuccessors(LocalPlugin plugin)
+        {
+            // This value is memory only - so that the web will show restart required.
+            plugin.Manifest.Status = PluginStatus.Restart;
+
+            // Detect whether there is another version of this plugin that needs disabling.
+            var predecessor = _plugins.OrderByDescending(p => p.Version)
+                .FirstOrDefault(
+                    p => p.Id.Equals(plugin.Id)
+                    && p.IsEnabledAndSupported
+                    && p.Version != plugin.Version);
+
+            if (predecessor == null)
+            {
+                return;
+            }
+
+            if (predecessor.Manifest.Status == PluginStatus.Active && !ChangePluginState(predecessor, PluginStatus.Superceded))
+            {
+                _logger.LogError("Unable to disable version {Version} of {Name}", predecessor.Version, predecessor.Name);
+            }
         }
     }
 }

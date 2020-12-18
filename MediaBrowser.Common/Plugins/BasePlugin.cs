@@ -134,25 +134,11 @@ namespace MediaBrowser.Common.Plugins
                 var assemblyName = assembly.GetName();
                 var assemblyFilePath = assembly.Location;
 
-                // Find out the plugin folder.
-                bool inPluginFolder = assemblyFilePath.StartsWith(ApplicationPaths.PluginsPath, StringComparison.OrdinalIgnoreCase);
-                string path, dataFolderPath;
-
-                var configurationFileName = Path.ChangeExtension(Path.GetFileName(assemblyFilePath), ".xml");
-                if (inPluginFolder)
+                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
+                if (!Directory.Exists(dataFolderPath))
                 {
-                    // Normal plugin.
-                    path = assemblyFilePath.Substring(ApplicationPaths.PluginsPath.Length).Split('\\', StringSplitOptions.RemoveEmptyEntries)[0];
-                    dataFolderPath = Path.Combine(
-                        Path.Combine(ApplicationPaths.PluginsPath, path),
-                        configurationFileName);
-                    ConfigurationFilePath = dataFolderPath;
-                }
-                else
-                {
-                    // Provider
-                    dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-                    ConfigurationFilePath = Path.Combine(ApplicationPaths.PluginConfigurationsPath, configurationFileName);
+                    // Try again with the version number appended to the folder name.
+                    dataFolderPath = dataFolderPath + "_" + Version.ToString();
                 }
 
                 assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
@@ -164,25 +150,6 @@ namespace MediaBrowser.Common.Plugins
                     var assemblyId = new Guid(attribute.Value);
 
                     assemblyPlugin.SetId(assemblyId);
-                }
-
-                // TODO : Remove this, once migration support is ceased.
-                if (inPluginFolder)
-                {
-                    var oldConfigFilePath = Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
-
-                    if (!File.Exists(ConfigurationFilePath) && File.Exists(oldConfigFilePath))
-                    {
-                        // Migrate pre 10.7 settings, as different plugin versions may have different settings.
-                        try
-                        {
-                            File.Copy(oldConfigFilePath, ConfigurationFilePath);
-                        }
-                        catch
-                        {
-                            // Unable to migrate settings.
-                        }
-                    }
                 }
             }
 

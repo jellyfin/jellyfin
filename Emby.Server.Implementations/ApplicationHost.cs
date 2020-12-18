@@ -35,6 +35,7 @@ using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
@@ -281,7 +282,7 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
             _pluginManager = new PluginManager(
-                LoggerFactory,
+                LoggerFactory.CreateLogger<PluginManager>(),
                 this,
                 ServerConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
