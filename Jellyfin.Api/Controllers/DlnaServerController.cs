@@ -41,6 +41,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Description xml returned.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the description xml.</returns>
         [HttpGet("{serverId}/description")]
         [HttpGet("{serverId}/description.xml", Name = "GetDescriptionXml_2")]
@@ -66,6 +67,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Dlna content directory returned.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the dlna content directory xml.</returns>
         [HttpGet("{serverId}/ContentDirectory")]
         [HttpGet("{serverId}/ContentDirectory/ContentDirectory", Name = "GetContentDirectory_2")]
@@ -90,6 +92,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Dlna media receiver registrar xml returned.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/MediaReceiverRegistrar")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar", Name = "GetMediaReceiverRegistrar_2")]
@@ -114,6 +117,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Dlna media receiver registrar xml returned.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/ConnectionManager")]
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager", Name = "GetConnectionManager_2")]
@@ -168,6 +172,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/MediaReceiverRegistrar/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
