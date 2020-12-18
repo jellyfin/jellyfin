@@ -413,7 +413,7 @@ namespace Emby.Server.Implementations.Plugins
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        private object? CreatePluginInstance(Type type)
+        private IPlugin? CreatePluginInstance(Type type)
         {
             // Find the record for this plugin.
             var plugin = GetPluginByType(type);
