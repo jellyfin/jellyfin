@@ -52,7 +52,6 @@ namespace Emby.Server.Implementations.Plugins
             _jsonOptions = JsonDefaults.GetOptions();
             _config = config;
             _appHost = appHost;
-            _nextVersion = new Version(_appVersion.Major, _appVersion.Minor + 2, _appVersion.Build, _appVersion.Revision);
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
         }
