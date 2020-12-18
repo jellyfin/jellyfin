@@ -1,8 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
 using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Common.Plugins
@@ -32,7 +30,7 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets the plugin id.
         /// </summary>
-        public Guid Id => Manifest.Guid;
+        public Guid Id => Manifest.Id;
 
         /// <summary>
         /// Gets the plugin name.
@@ -110,7 +108,7 @@ namespace MediaBrowser.Common.Plugins
         /// <returns>A <see cref="PluginInfo"/> instance containing the information.</returns>
         public PluginInfo GetPluginInfo()
         {
-            var inst = Instance?.GetPluginInfo() ?? new PluginInfo(Manifest.Name, Version, Manifest.Description, Manifest.Guid, true);
+            var inst = Instance?.GetPluginInfo() ?? new PluginInfo(Manifest.Name, Version, Manifest.Description, Manifest.Id, true);
             inst.Status = Manifest.Status;
             inst.HasImage = !string.IsNullOrEmpty(Manifest.ImageUrl);
             return inst;

@@ -48,7 +48,7 @@ namespace MediaBrowser.Common.Plugins
                 var assemblyFilePath = assembly.Location;
 
                 var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-                if (!Directory.Exists(dataFolderPath))
+                if (!Directory.Exists(dataFolderPath) && Version != null)
                 {
                     // Try again with the version number appended to the folder name.
                     dataFolderPath = dataFolderPath + "_" + Version.ToString();
@@ -137,7 +137,20 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the full path to the configuration file.
         /// </summary>
         /// <value>The configuration file path.</value>
-        public string ConfigurationFilePath { get; }
+        public string ConfigurationFilePath
+        {
+            get
+            {
+                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(AssemblyFilePath));
+                if (!Directory.Exists(dataFolderPath) && Version != null)
+                {
+                    // Try again with the version number appended to the folder name.
+                    return dataFolderPath + "_" + Version.ToString();
+                }
+
+                return dataFolderPath;
+            }
+        }
 
         /// <summary>
         /// Gets the plugin configuration.

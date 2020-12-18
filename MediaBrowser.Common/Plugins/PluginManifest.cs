@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Common.Plugins
@@ -27,9 +28,8 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets or sets the Global Unique Identifier for the plugin.
         /// </summary>
-#pragma warning disable CA1720 // Identifier contains type name
-        public Guid Guid { get; set; }
-#pragma warning restore CA1720 // Identifier contains type name
+        [JsonPropertyName("Guid")]
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the Name of the plugin.

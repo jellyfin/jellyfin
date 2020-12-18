@@ -376,7 +376,7 @@ namespace Emby.Server.Implementations.Plugins
                         true,
                         new PluginManifest
                         {
-                            Guid = instance.Id,
+                            Id = instance.Id,
                             Status = PluginStatus.Active,
                             Name = instance.Name,
                             Version = instance.Version.ToString()
@@ -537,7 +537,7 @@ namespace Emby.Server.Implementations.Plugins
                     Status = PluginStatus.Restart,
                     Name = metafile,
                     AutoUpdate = false,
-                    Guid = metafile.GetMD5(),
+                    Id = metafile.GetMD5(),
                     TargetAbi = _appVersion.ToString(),
                     Version = version.ToString()
                 };

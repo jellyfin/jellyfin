@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.Updates
                     // Where repositories have the same content, the details from the first is taken.
                     foreach (var package in await GetPackages(repository.Name ?? "Unnamed Repo", repository.Url, true, cancellationToken).ConfigureAwait(true))
                     {
-                        if (!Guid.TryParse(package.Guid, out var packageGuid))
+                        if (!Guid.TryParse(package.Id, out var packageGuid))
                         {
                             // Package doesn't have a valid GUID, skip.
                             continue;
@@ -245,7 +245,7 @@ namespace Emby.Server.Implementations.Updates
 
             if (guid != Guid.Empty)
             {
-                availablePackages = availablePackages.Where(x => Guid.Parse(x.Guid) == guid);
+                availablePackages = availablePackages.Where(x => Guid.Parse(x.Id) == guid);
             }
 
             if (specificVersion != null)
@@ -290,7 +290,7 @@ namespace Emby.Server.Implementations.Updates
                 yield return new InstallationInfo
                 {
                     Changelog = v.Changelog,
-                    Guid = new Guid(package.Guid),
+                    Id = new Guid(package.Id),
                     Name = package.Name,
                     Version = v.VersionNumber,
                     SourceUrl = v.SourceUrl,
@@ -414,7 +414,7 @@ namespace Emby.Server.Implementations.Updates
         {
             lock (_currentInstallationsLock)
             {
-                var install = _currentInstallations.Find(x => x.info.Guid == id);
+                var install = _currentInstallations.Find(x => x.info.Id == id);
                 if (install == default((InstallationInfo, CancellationTokenSource)))
                 {
                     return false;
@@ -512,7 +512,7 @@ namespace Emby.Server.Implementations.Updates
                 var compatibleVersions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, minVersion: plugin.Version);
                 var version = compatibleVersions.FirstOrDefault(y => y.Version > plugin.Version);
 
-                if (version != null && CompletedInstallations.All(x => x.Guid != version.Guid))
+                if (version != null && CompletedInstallations.All(x => x.Id != version.Id))
                 {
                     yield return version;
                 }
@@ -577,7 +577,7 @@ namespace Emby.Server.Implementations.Updates
         private async Task<bool> InstallPackageInternal(InstallationInfo package, CancellationToken cancellationToken)
         {
             // Set last update time if we were installed before
-            LocalPlugin? plugin = _pluginManager.Plugins.FirstOrDefault(p => p.Id.Equals(package.Guid) && p.Version.Equals(package.Version))
+            LocalPlugin? plugin = _pluginManager.Plugins.FirstOrDefault(p => p.Id.Equals(package.Id) && p.Version.Equals(package.Version))
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
             if (plugin != null)
             {

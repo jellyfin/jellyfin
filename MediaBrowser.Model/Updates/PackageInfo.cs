@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.Updates
         public PackageInfo()
         {
             Versions = Array.Empty<VersionInfo>();
-            Guid = string.Empty;
+            Id = string.Empty;
             Category = string.Empty;
             Name = string.Empty;
             Overview = string.Empty;
@@ -65,9 +65,7 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The name.</value>
         [JsonPropertyName("guid")]
-#pragma warning disable CA1720 // Identifier contains type name
-        public string Guid { get; set; }
-#pragma warning restore CA1720 // Identifier contains type name
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the versions.
