@@ -450,7 +450,7 @@ namespace Emby.Server.Implementations
                 }
                 else
                 {
-                    plugin.Instance = (IPlugin)instance;
+                    plugin.Instance = instance;
                     var manifest = plugin.Manifest;
                     var pluginStr = plugin.Instance.Version.ToString();
                     bool changed = false;
