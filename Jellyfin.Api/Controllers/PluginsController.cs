@@ -188,7 +188,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            _installationManager.UninstallPlugin(plugin!);
+            _installationManager.UninstallPlugin(plugin);
             return NoContent();
         }
 
