@@ -280,7 +280,7 @@ namespace Emby.Server.Implementations.Plugins
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            var plugin = _plugins.Where(p => p.DllFiles.Contains(assembly.Location)).FirstOrDefault();
+            var plugin = _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location));
             if (plugin == null)
             {
                 // A plugin's assembly didn't cause this issue, so ignore it.
