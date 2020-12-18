@@ -429,7 +429,6 @@ namespace Emby.Server.Implementations
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.
-                    var pInstance = (IPlugin)instance;
                     plugin = new LocalPlugin(
                         pInstance.AssemblyFilePath,
                         true,
