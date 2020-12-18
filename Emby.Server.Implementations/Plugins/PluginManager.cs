@@ -629,11 +629,7 @@ namespace Emby.Server.Implementations.Plugins
                             continue;
                         }
 
-                        if (manifest.Status != PluginStatus.Deleted)
-                        {
-                            manifest.Status = PluginStatus.Deleted;
-                            SaveManifest(manifest, entry.Path);
-                        }
+                        ChangePluginState(entry, PluginStatus.Deleted);
                     }
                 }
             }
