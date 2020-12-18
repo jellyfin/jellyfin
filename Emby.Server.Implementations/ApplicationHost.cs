@@ -286,7 +286,6 @@ namespace Emby.Server.Implementations
                 this,
                 ServerConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
-                ApplicationPaths.CachePath,
                 ApplicationVersion);
         }
 

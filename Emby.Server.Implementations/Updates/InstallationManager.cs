@@ -132,13 +132,8 @@ namespace Emby.Server.Implementations.Updates
                             targetAbi = minimumVersion;
                         }
 
-                        if (!Version.TryParse(ver.MaxAbi, out var maxAbi))
-                        {
-                            maxAbi = _applicationHost.ApplicationVersion;
-                        }
-
                         // Only show plugins that fall between targetAbi and maxAbi
-                        if (_applicationHost.ApplicationVersion >= targetAbi && _applicationHost.ApplicationVersion <= maxAbi)
+                        if (_applicationHost.ApplicationVersion >= targetAbi)
                         {
                             continue;
                         }
@@ -200,19 +195,15 @@ namespace Emby.Server.Implementations.Updates
                             // Update the manifests, if anything changes.
                             if (plugin != null)
                             {
-                                bool noChange = string.Equals(plugin.Manifest.MaxAbi, version.MaxAbi, StringComparison.Ordinal)
-                                    || string.Equals(plugin.Manifest.TargetAbi, version.TargetAbi, StringComparison.Ordinal);
-                                if (!noChange)
+                                if (!string.Equals(plugin.Manifest.TargetAbi, version.TargetAbi, StringComparison.Ordinal))
                                 {
-                                    plugin.Manifest.MaxAbi = version.MaxAbi ?? string.Empty;
                                     plugin.Manifest.TargetAbi = version.TargetAbi ?? string.Empty;
                                     _pluginManager.SaveManifest(plugin.Manifest, plugin.Path);
                                 }
                             }
 
                             // Remove versions with a target abi that is greater then the current application version.
-                            if ((Version.TryParse(version.TargetAbi, out var targetAbi) && _applicationHost.ApplicationVersion < targetAbi)
-                                || (Version.TryParse(version.MaxAbi, out var maxAbi) && _applicationHost.ApplicationVersion > maxAbi))
+                            if (Version.TryParse(version.TargetAbi, out var targetAbi) && _applicationHost.ApplicationVersion < targetAbi)
                             {
                                 package.Versions.RemoveAt(i);
                             }
@@ -283,8 +274,7 @@ namespace Emby.Server.Implementations.Updates
 
             var appVer = _applicationHost.ApplicationVersion;
             var availableVersions = package.Versions
-                .Where(x => (string.IsNullOrEmpty(x.TargetAbi) || Version.Parse(x.TargetAbi) <= appVer)
-                    && (string.IsNullOrEmpty(x.MaxAbi) || Version.Parse(x.MaxAbi) >= appVer));
+                .Where(x => string.IsNullOrEmpty(x.TargetAbi) || Version.Parse(x.TargetAbi) <= appVer);
 
             if (specificVersion != null)
             {

@@ -39,17 +39,15 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="appHost">The <see cref="IApplicationHost"/>.</param>
         /// <param name="config">The <see cref="ServerConfiguration"/>.</param>
         /// <param name="pluginsPath">The plugin path.</param>
-        /// <param name="imagesPath">The image cache path.</param>
         /// <param name="appVersion">The application version.</param>
         public PluginManager(
             ILogger<PluginManager> logger,
             IApplicationHost appHost,
             ServerConfiguration config,
             string pluginsPath,
-            string imagesPath,
             Version appVersion)
         {
-            _logger = _logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
             _jsonOptions = JsonDefaults.GetOptions();
@@ -509,17 +507,12 @@ namespace Emby.Server.Implementations.Plugins
                         targetAbi = _minimumVersion;
                     }
 
-                    if (!Version.TryParse(manifest.MaxAbi, out var maxAbi))
-                    {
-                        maxAbi = _appVersion;
-                    }
-
                     if (!Version.TryParse(manifest.Version, out version))
                     {
                         manifest.Version = _minimumVersion.ToString();
                     }
 
-                    return new LocalPlugin(dir, _appVersion >= targetAbi && _appVersion <= maxAbi, manifest);
+                    return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
                 }
 
                 // No metafile, so lets see if the folder is versioned.

@@ -44,13 +44,6 @@ namespace MediaBrowser.Model.Updates
         public string? TargetAbi { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum ABI that this version will work with.
-        /// </summary>
-        /// <value>The target ABI version.</value>
-        [JsonPropertyName("maxAbi")]
-        public string? MaxAbi { get; set; }
-
-        /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
         /// <value>The source URL.</value>
