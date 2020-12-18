@@ -15,6 +15,8 @@ namespace MediaBrowser.Common.Plugins
     public abstract class BasePlugin<TConfigurationType> : BasePlugin, IHasPluginConfiguration
         where TConfigurationType : BasePluginConfiguration
     {
+        private readonly string _dataFolderPath;
+
         /// <summary>
         /// The configuration sync lock.
         /// </summary>
@@ -47,14 +49,14 @@ namespace MediaBrowser.Common.Plugins
                 var assemblyName = assembly.GetName();
                 var assemblyFilePath = assembly.Location;
 
-                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-                if (!Directory.Exists(dataFolderPath) && Version != null)
+                _dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
+                if (!Directory.Exists(_dataFolderPath) && Version != null)
                 {
                     // Try again with the version number appended to the folder name.
-                    dataFolderPath = dataFolderPath + "_" + Version.ToString();
+                    _dataFolderPath = _dataFolderPath + "_" + Version.ToString();
                 }
 
-                assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
+                assemblyPlugin.SetAttributes(assemblyFilePath, _dataFolderPath, assemblyName.Version);
 
                 var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
                 if (idAttributes.Length > 0)
@@ -137,20 +139,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the full path to the configuration file.
         /// </summary>
         /// <value>The configuration file path.</value>
-        public string ConfigurationFilePath
-        {
-            get
-            {
-                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(AssemblyFilePath));
-                if (!Directory.Exists(dataFolderPath) && Version != null)
-                {
-                    // Try again with the version number appended to the folder name.
-                    return dataFolderPath + "_" + Version.ToString();
-                }
-
-                return dataFolderPath;
-            }
-        }
+        public string ConfigurationFilePath => Path.Combine(_dataFolderPath, ConfigurationFileName);
 
         /// <summary>
         /// Gets the plugin configuration.
