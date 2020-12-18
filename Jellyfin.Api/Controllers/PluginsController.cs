@@ -219,7 +219,7 @@ namespace Jellyfin.Api.Controllers
 
             if (plugin != null)
             {
-                _installationManager.UninstallPlugin(plugin!);
+                _installationManager.UninstallPlugin(plugin);
                 return NoContent();
             }
 
