@@ -27,7 +27,6 @@ namespace Emby.Server.Implementations
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
-        private readonly string _imagesPath;
         private readonly ServerConfiguration _config;
         private readonly IList<LocalPlugin> _plugins;
         private readonly Version _nextVersion;
