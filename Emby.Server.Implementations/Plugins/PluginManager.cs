@@ -425,7 +425,7 @@ namespace Emby.Server.Implementations
             try
             {
                 _logger.LogDebug("Creating instance of {Type}", type);
-                var instance = ActivatorUtilities.CreateInstance(_appHost.ServiceProvider, type);
+                var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider, type);
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.
