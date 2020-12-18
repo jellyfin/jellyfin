@@ -29,7 +29,6 @@ namespace Emby.Server.Implementations.Plugins
         private readonly IApplicationHost _appHost;
         private readonly ServerConfiguration _config;
         private readonly IList<LocalPlugin> _plugins;
-        private readonly Version _nextVersion;
         private readonly Version _minimumVersion;
 
         /// <summary>
