@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.Updates
                             targetAbi = minimumVersion;
                         }
 
-                        // Only show plugins that fall between targetAbi.
+                        // Only show plugins that are greater than or equal to targetAbi.
                         if (_applicationHost.ApplicationVersion >= targetAbi)
                         {
                             continue;
