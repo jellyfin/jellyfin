@@ -126,6 +126,11 @@ namespace Emby.Dlna.Main
 
         public static DlnaEntryPoint Current { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the dlna server is enabled.
+        /// </summary>
+        public static bool Enabled { get; private set; }
+
         public IContentDirectory ContentDirectory { get; private set; }
 
         public IConnectionManager ConnectionManager { get; private set; }
@@ -152,6 +157,7 @@ namespace Emby.Dlna.Main
         private void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
+            Enabled = options.EnableServer;
 
             StartSsdpHandler();
 

@@ -45,14 +45,20 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{serverId}/description")]
         [HttpGet("{serverId}/description.xml", Name = "GetDescriptionXml_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult GetDescriptionXml([FromRoute, Required] string serverId)
         {
-            var url = GetAbsoluteUri();
-            var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
-            return Ok(xml);
+            if (DlnaEntryPoint.Enabled)
+            {
+                var url = GetAbsoluteUri();
+                var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
+                var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
+                return Ok(xml);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -65,12 +71,18 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{serverId}/ContentDirectory/ContentDirectory", Name = "GetContentDirectory_2")]
         [HttpGet("{serverId}/ContentDirectory/ContentDirectory.xml", Name = "GetContentDirectory_3")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetContentDirectory([FromRoute, Required] string serverId)
         {
-            return Ok(_contentDirectory.GetServiceXml());
+            if (DlnaEntryPoint.Enabled)
+            {
+                return Ok(_contentDirectory.GetServiceXml());
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -83,12 +95,18 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar", Name = "GetMediaReceiverRegistrar_2")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml", Name = "GetMediaReceiverRegistrar_3")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetMediaReceiverRegistrar([FromRoute, Required] string serverId)
         {
-            return Ok(_mediaReceiverRegistrar.GetServiceXml());
+            if (DlnaEntryPoint.Enabled)
+            {
+                return Ok(_mediaReceiverRegistrar.GetServiceXml());
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -101,12 +119,18 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager", Name = "GetConnectionManager_2")]
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager.xml", Name = "GetConnectionManager_3")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         public ActionResult GetConnectionManager([FromRoute, Required] string serverId)
         {
-            return Ok(_connectionManager.GetServiceXml());
+            if (DlnaEntryPoint.Enabled)
+            {
+                return Ok(_connectionManager.GetServiceXml());
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -147,6 +171,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/MediaReceiverRegistrar/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute, Required] string serverId)
