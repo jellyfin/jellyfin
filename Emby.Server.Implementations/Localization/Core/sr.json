@@ -114,5 +114,8 @@
     "TasksLibraryCategory": "Библиотека",
     "TasksMaintenanceCategory": "Одржавање",
     "TaskCleanActivityLogDescription": "Брише историју активности старију од конфигурисаног броја година.",
-    "TaskCleanActivityLog": "Очисти историју активности"
+    "TaskCleanActivityLog": "Очисти историју активности",
+    "Undefined": "Недефинисано",
+    "Forced": "Форсирано",
+    "Default": "Подразумевано"
 }
