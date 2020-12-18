@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Plugins
             // Now load the assemblies..
             foreach (var plugin in _plugins)
             {
-                CheckIfStillSuperceded(plugin);
+                UpdatePluginSuperceedStatus(plugin);
 
                 if (plugin.IsEnabledAndSupported == false)
                 {
@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
-                CheckIfStillSuperceded(plugin);
+                UpdatePluginSuperceedStatus(plugin);
                 if (!plugin.IsEnabledAndSupported)
                 {
                     continue;
@@ -172,7 +172,7 @@ namespace Emby.Server.Implementations.Plugins
             // Load the plugin.
             var plugin = LoadManifest(folder);
             // Make sure we haven't already loaded this.
-            if (plugin == null || _plugins.Any(p => p.Manifest.Equals(plugin.Manifest)))
+            if (_plugins.Any(p => p.Manifest.Equals(plugin.Manifest)))
             {
                 return;
             }
@@ -435,7 +435,7 @@ namespace Emby.Server.Implementations.Plugins
             }
         }
 
-        private void CheckIfStillSuperceded(LocalPlugin plugin)
+        private void UpdatePluginSuperceedStatus(LocalPlugin plugin)
         {
             if (plugin.Manifest.Status != PluginStatus.Superceded)
             {
@@ -464,7 +464,6 @@ namespace Emby.Server.Implementations.Plugins
             {
                 Directory.Delete(plugin.Path, true);
                 _logger.LogDebug("Deleted {Path}", plugin.Path);
-                _plugins.Remove(plugin);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch
@@ -476,79 +475,69 @@ namespace Emby.Server.Implementations.Plugins
             return _plugins.Remove(plugin);
         }
 
-        private LocalPlugin? LoadManifest(string dir)
+        private LocalPlugin LoadManifest(string dir)
         {
-            try
+            Version? version;
+            PluginManifest? manifest = null;
+            var metafile = Path.Combine(dir, "meta.json");
+            if (File.Exists(metafile))
             {
-                Version? version;
-                PluginManifest? manifest = null;
-                var metafile = Path.Combine(dir, "meta.json");
-                if (File.Exists(metafile))
+                try
                 {
-                    try
-                    {
-                        var data = File.ReadAllText(metafile, Encoding.UTF8);
-                        manifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions);
-                    }
+                    var data = File.ReadAllText(metafile, Encoding.UTF8);
+                    manifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions);
+                }
 #pragma warning disable CA1031 // Do not catch general exception types
-                    catch (Exception ex)
+                catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
-                    {
-                        _logger.LogError(ex, "Error deserializing {Path}.", dir);
-                    }
-                }
-
-                if (manifest != null)
                 {
-                    if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
-                    {
-                        targetAbi = _minimumVersion;
-                    }
-
-                    if (!Version.TryParse(manifest.Version, out version))
-                    {
-                        manifest.Version = _minimumVersion.ToString();
-                    }
-
-                    return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
+                    _logger.LogError(ex, "Error deserializing {Path}.", dir);
                 }
-
-                // No metafile, so lets see if the folder is versioned.
-                // TODO: Phase this support out in future versions.
-                metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
-                int versionIndex = dir.LastIndexOf('_');
-                if (versionIndex != -1)
-                {
-                    // Get the version number from the filename if possible.
-                    metafile = Path.GetFileName(dir[..versionIndex]) ?? dir[..versionIndex];
-                    version = Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version? parsedVersion) ? parsedVersion : _appVersion;
-                }
-                else
-                {
-                    // Un-versioned folder - Add it under the path name and version it suitable for this instance.
-                    version = _appVersion;
-                }
-
-                // Auto-create a plugin manifest, so we can disable it, if it fails to load.
-                manifest = new PluginManifest
-                {
-                    Status = PluginStatus.Restart,
-                    Name = metafile,
-                    AutoUpdate = false,
-                    Id = metafile.GetMD5(),
-                    TargetAbi = _appVersion.ToString(),
-                    Version = version.ToString()
-                };
-
-                return new LocalPlugin(dir, true, manifest);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+
+            if (manifest != null)
             {
-                _logger.LogError(ex, "Something went wrong!");
-                return null;
+                if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                {
+                    targetAbi = _minimumVersion;
+                }
+
+                if (!Version.TryParse(manifest.Version, out version))
+                {
+                    manifest.Version = _minimumVersion.ToString();
+                }
+
+                return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
             }
+
+            // No metafile, so lets see if the folder is versioned.
+            // TODO: Phase this support out in future versions.
+            metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
+            int versionIndex = dir.LastIndexOf('_');
+            if (versionIndex != -1)
+            {
+                // Get the version number from the filename if possible.
+                metafile = Path.GetFileName(dir[..versionIndex]) ?? dir[..versionIndex];
+                version = Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version? parsedVersion) ? parsedVersion : _appVersion;
+            }
+            else
+            {
+                // Un-versioned folder - Add it under the path name and version it suitable for this instance.
+                version = _appVersion;
+            }
+
+            // Auto-create a plugin manifest, so we can disable it, if it fails to load.
+            manifest = new PluginManifest
+            {
+                Status = PluginStatus.Restart,
+                Name = metafile,
+                AutoUpdate = false,
+                Id = metafile.GetMD5(),
+                TargetAbi = _appVersion.ToString(),
+                Version = version.ToString()
+            };
+
+            return new LocalPlugin(dir, true, manifest);
         }
 
         /// <summary>
@@ -566,14 +555,9 @@ namespace Emby.Server.Implementations.Plugins
             }
 
             var directories = Directory.EnumerateDirectories(_pluginsPath, "*.*", SearchOption.TopDirectoryOnly);
-            LocalPlugin? entry;
             foreach (var dir in directories)
             {
-                entry = LoadManifest(dir);
-                if (entry != null)
-                {
-                    versions.Add(entry);
-                }
+                versions.Add(LoadManifest(dir));
             }
 
             string lastName = string.Empty;
@@ -582,7 +566,7 @@ namespace Emby.Server.Implementations.Plugins
             // The first item will be the latest version.
             for (int x = versions.Count - 1; x >= 0; x--)
             {
-                entry = versions[x];
+                var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     entry.DllFiles.AddRange(Directory.EnumerateFiles(entry.Path, "*.dll", SearchOption.AllDirectories));
