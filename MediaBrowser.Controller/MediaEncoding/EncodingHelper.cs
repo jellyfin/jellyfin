@@ -1127,8 +1127,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 targetVideoCodec = "hevc";
             }
 
-            var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault();
-            profile =  Regex.Replace(profile, @"\s+", String.Empty);
+            var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault() ?? string.Empty;
+            profile = Regex.Replace(profile, @"\s+", string.Empty);
 
             // We only transcode to HEVC 8-bit for now, force Main Profile.
             if (profile.Contains("main 10", StringComparison.OrdinalIgnoreCase)
