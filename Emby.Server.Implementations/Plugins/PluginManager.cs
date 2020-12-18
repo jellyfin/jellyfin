@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="imagesPath">The image cache path.</param>
         /// <param name="appVersion">The application version.</param>
         public PluginManager(
-            ILoggerFactory loggerfactory,
+            ILogger<PluginManager> logger,
             IApplicationHost appHost,
             ServerConfiguration config,
             string pluginsPath,
