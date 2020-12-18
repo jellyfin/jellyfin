@@ -80,6 +80,6 @@ namespace MediaBrowser.Common.Plugins
         /// Gets or sets a value indicating whether this plugin has an image.
         /// Image must be located in the local plugin folder.
         /// </summary>
-        public string? ImageUrl { get; set; }
+        public string? ImagePath { get; set; }
     }
 }
