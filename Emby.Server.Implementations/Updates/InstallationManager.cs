@@ -235,7 +235,7 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? guid = default,
+            Guid? id = default,
             Version? specificVersion = null)
         {
             if (name != null)
@@ -243,9 +243,9 @@ namespace Emby.Server.Implementations.Updates
                 availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (guid != Guid.Empty)
+            if (id != Guid.Empty)
             {
-                availablePackages = availablePackages.Where(x => Guid.Parse(x.Id) == guid);
+                availablePackages = availablePackages.Where(x => Guid.Parse(x.Id) == id);
             }
 
             if (specificVersion != null)
@@ -260,11 +260,11 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? guid = default,
+            Guid? id = default,
             Version? minVersion = null,
             Version? specificVersion = null)
         {
-            var package = FilterPackages(availablePackages, name, guid, specificVersion).FirstOrDefault();
+            var package = FilterPackages(availablePackages, name, id, specificVersion).FirstOrDefault();
 
             // Package not found in repository
             if (package == null)

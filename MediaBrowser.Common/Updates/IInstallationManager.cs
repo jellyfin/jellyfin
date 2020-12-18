@@ -41,14 +41,14 @@ namespace MediaBrowser.Common.Updates
         /// </summary>
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name of the plugin.</param>
-        /// <param name="guid">The id of the plugin.</param>
+        /// <param name="id">The id of the plugin.</param>
         /// <param name="specificVersion">The version of the plugin.</param>
         /// <returns>All plugins matching the requirements.</returns>
         IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
 #pragma warning disable CA1720 // Identifier contains type name
-            Guid? guid = default,
+            Guid? id = default,
 #pragma warning restore CA1720 // Identifier contains type name
             Version? specificVersion = null);
 
@@ -57,7 +57,7 @@ namespace MediaBrowser.Common.Updates
         /// </summary>
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name.</param>
-        /// <param name="guid">The guid of the plugin.</param>
+        /// <param name="id">The id of the plugin.</param>
         /// <param name="minVersion">The minimum required version of the plugin.</param>
         /// <param name="specificVersion">The specific version of the plugin to install.</param>
         /// <returns>All compatible versions ordered from newest to oldest.</returns>
@@ -65,7 +65,7 @@ namespace MediaBrowser.Common.Updates
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
 #pragma warning disable CA1720 // Identifier contains type name
-            Guid? guid = default,
+            Guid? id = default,
 #pragma warning restore CA1720 // Identifier contains type name
             Version? minVersion = null,
             Version? specificVersion = null);
