@@ -47,9 +47,7 @@ namespace MediaBrowser.Common.Updates
         IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-#pragma warning disable CA1720 // Identifier contains type name
             Guid? id = default,
-#pragma warning restore CA1720 // Identifier contains type name
             Version? specificVersion = null);
 
         /// <summary>
@@ -64,9 +62,7 @@ namespace MediaBrowser.Common.Updates
         IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-#pragma warning disable CA1720 // Identifier contains type name
             Guid? id = default,
-#pragma warning restore CA1720 // Identifier contains type name
             Version? minVersion = null,
             Version? specificVersion = null);
 

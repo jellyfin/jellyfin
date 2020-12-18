@@ -77,7 +77,7 @@ namespace MediaBrowser.Model.Updates
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
-        /// Gets or sets the image url for the package.
+        /// Gets or sets the image path for the package.
         /// </summary>
         [JsonPropertyName("imagePath")]
         public string? ImagePath { get; set; }
