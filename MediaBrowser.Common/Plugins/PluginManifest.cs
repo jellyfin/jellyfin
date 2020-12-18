@@ -52,11 +52,6 @@ namespace MediaBrowser.Common.Plugins
         public string TargetAbi { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the upper compatibility version for the plugin.
-        /// </summary>
-        public string MaxAbi { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the timestamp of the plugin.
         /// </summary>
         public DateTime Timestamp { get; set; }

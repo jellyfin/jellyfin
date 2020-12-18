@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Plugins
         Disabled = -1,
 
         /// <summary>
-        /// This plugin does not meet the TargetAbi / MaxAbi requirements.
+        /// This plugin does not meet the TargetAbi requirements.
         /// </summary>
         NotSupported = -2,
 
