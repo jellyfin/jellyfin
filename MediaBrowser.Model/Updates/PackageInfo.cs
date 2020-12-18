@@ -79,7 +79,7 @@ namespace MediaBrowser.Model.Updates
         /// <summary>
         /// Gets or sets the image url for the package.
         /// </summary>
-        [JsonPropertyName("imageUrl")]
-        public string? ImageUrl { get; set; }
+        [JsonPropertyName("imagePath")]
+        public string? ImagePath { get; set; }
     }
 }
