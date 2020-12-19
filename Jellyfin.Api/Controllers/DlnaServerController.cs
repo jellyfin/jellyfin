@@ -145,11 +145,17 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ContentDirectory/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute, Required] string serverId)
         {
-            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -160,11 +166,17 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ConnectionManager/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute, Required] string serverId)
         {
-            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -181,7 +193,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute, Required] string serverId)
         {
-            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -195,11 +212,17 @@ namespace Jellyfin.Api.Controllers
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
-            return ProcessEventRequest(_mediaReceiverRegistrar);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return ProcessEventRequest(_mediaReceiverRegistrar);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -207,17 +230,24 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ContentDirectory/Events")]
         [HttpUnsubscribe("{serverId}/ContentDirectory/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string serverId)
         {
-            return ProcessEventRequest(_contentDirectory);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return ProcessEventRequest(_contentDirectory);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -225,17 +255,24 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ConnectionManager/Events")]
         [HttpUnsubscribe("{serverId}/ConnectionManager/Events")]
         [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string serverId)
         {
-            return ProcessEventRequest(_connectionManager);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return ProcessEventRequest(_connectionManager);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -243,14 +280,21 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <param name="fileName">The icon filename.</param>
+        /// <response code="404">Not found.</response>
         /// <returns>Icon stream.</returns>
         [HttpGet("{serverId}/icons/{fileName}")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
         public ActionResult GetIconId([FromRoute, Required] string serverId, [FromRoute, Required] string fileName)
         {
-            return GetIconInternal(fileName);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return GetIconInternal(fileName);
+            }
+
+            return NotFound();
         }
 
         /// <summary>
@@ -258,11 +302,18 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="fileName">The icon filename.</param>
         /// <returns>Icon stream.</returns>
+        /// <response code="404">Not found.</response>
         [HttpGet("icons/{fileName}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesImageFile]
         public ActionResult GetIcon([FromRoute, Required] string fileName)
         {
-            return GetIconInternal(fileName);
+            if (DlnaEntryPoint.Enabled)
+            {
+                return GetIconInternal(fileName);
+            }
+
+            return NotFound();
         }
 
         private ActionResult GetIconInternal(string fileName)
