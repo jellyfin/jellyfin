@@ -142,6 +142,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ContentDirectory/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -163,6 +164,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ConnectionManager/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -206,6 +208,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
+        /// <response code="404">Not found.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [HttpUnsubscribe("{serverId}/MediaReceiverRegistrar/Events")]
