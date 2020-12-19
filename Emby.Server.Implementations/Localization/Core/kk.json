@@ -91,5 +91,6 @@
     "UserStoppedPlayingItemWithValues": "{0} - {1} oınatýyn {2} toqtatty",
     "ValueHasBeenAddedToLibrary": "{0} (tasyǵyshhanaǵa ústelindi)",
     "ValueSpecialEpisodeName": "Arnaıy - {0}",
-    "VersionNumber": "Nusqasy {0}"
+    "VersionNumber": "Nusqasy {0}",
+    "Default": "Ádepki"
 }
