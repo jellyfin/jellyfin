@@ -85,6 +85,7 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["skipBackLength"] = displayPreferences.SkipBackwardLength.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
+            dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme;
 
             // Load all custom display preferences
             var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
