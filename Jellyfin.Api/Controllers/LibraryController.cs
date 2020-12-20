@@ -732,9 +732,6 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                // For non series and movie types these columns are typically null
-                isSeries = null;
-                isMovie = null;
                 includeItemTypes.Add(item.GetType().Name);
             }
 
@@ -742,8 +739,6 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 IncludeItemTypes = includeItemTypes.ToArray(),
-                IsMovie = isMovie,
-                IsSeries = isSeries,
                 SimilarTo = item,
                 DtoOptions = dtoOptions,
                 EnableTotalRecordCount = !isMovie ?? true,
