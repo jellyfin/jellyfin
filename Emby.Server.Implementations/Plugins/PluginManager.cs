@@ -50,6 +50,7 @@ namespace Emby.Server.Implementations.Plugins
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
             _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions.WriteIndented = true;
             _config = config;
             _appHost = appHost;
             _minimumVersion = new Version(0, 0, 0, 1);
