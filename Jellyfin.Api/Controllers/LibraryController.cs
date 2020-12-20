@@ -742,7 +742,6 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 IncludeItemTypes = includeItemTypes.ToArray(),
-                IsMovie = isMovie,
                 SimilarTo = item,
                 DtoOptions = dtoOptions,
                 EnableTotalRecordCount = !isMovie ?? true,
