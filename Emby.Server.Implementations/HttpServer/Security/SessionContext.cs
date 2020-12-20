@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public User GetUser(object requestContext)
         {
-            return GetUser((HttpContext)requestContext);
+            return GetUser(((HttpRequest)requestContext).HttpContext);
         }
     }
 }
