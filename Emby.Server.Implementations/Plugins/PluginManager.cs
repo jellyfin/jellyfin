@@ -9,6 +9,7 @@ using System.Text.Json;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Plugins;
@@ -50,6 +51,7 @@ namespace Emby.Server.Implementations.Plugins
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
             _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions.Converters.Add(new JsonGuidDashConverter());
             _jsonOptions.WriteIndented = true;
             _config = config;
             _appHost = appHost;

@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Text.Json.Serialization;
+using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Common.Plugins
@@ -32,6 +33,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets or sets the Global Unique Identifier for the plugin.
         /// </summary>
         [JsonPropertyName("guid")]
+        [JsonConverter(typeof(JsonGuidDashConverter))]
         public Guid Id { get; set; }
 
         /// <summary>
