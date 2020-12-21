@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
-            if (value.Ticks % 10_000_000 == 0)
+            if (value.Millisecond == 0)
             {
                 // Remaining ticks value will be 0, manually format.
                 writer.WriteStringValue(value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fffffffZ", CultureInfo.InvariantCulture));
