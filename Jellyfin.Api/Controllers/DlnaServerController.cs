@@ -41,7 +41,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Description xml returned.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>An <see cref="OkResult"/> containing the description xml.</returns>
         [HttpGet("{serverId}/description")]
         [HttpGet("{serverId}/description.xml", Name = "GetDescriptionXml_2")]
@@ -59,7 +59,7 @@ namespace Jellyfin.Api.Controllers
                 return Ok(xml);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Dlna content directory returned.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>An <see cref="OkResult"/> containing the dlna content directory xml.</returns>
         [HttpGet("{serverId}/ContentDirectory")]
         [HttpGet("{serverId}/ContentDirectory/ContentDirectory", Name = "GetContentDirectory_2")]
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
                 return Ok(_contentDirectory.GetServiceXml());
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Dlna media receiver registrar xml returned.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/MediaReceiverRegistrar")]
         [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar", Name = "GetMediaReceiverRegistrar_2")]
@@ -109,7 +109,7 @@ namespace Jellyfin.Api.Controllers
                 return Ok(_mediaReceiverRegistrar.GetServiceXml());
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Dlna media receiver registrar xml returned.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Dlna media receiver registrar xml.</returns>
         [HttpGet("{serverId}/ConnectionManager")]
         [HttpGet("{serverId}/ConnectionManager/ConnectionManager", Name = "GetConnectionManager_2")]
@@ -134,7 +134,7 @@ namespace Jellyfin.Api.Controllers
                 return Ok(_connectionManager.GetServiceXml());
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ContentDirectory/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -156,7 +156,7 @@ namespace Jellyfin.Api.Controllers
                 return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/ConnectionManager/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -178,7 +178,7 @@ namespace Jellyfin.Api.Controllers
                 return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Control response.</returns>
         [HttpPost("{serverId}/MediaReceiverRegistrar/Control")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -200,7 +200,7 @@ namespace Jellyfin.Api.Controllers
                 return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/MediaReceiverRegistrar/Events")]
         [HttpUnsubscribe("{serverId}/MediaReceiverRegistrar/Events")]
@@ -225,7 +225,7 @@ namespace Jellyfin.Api.Controllers
                 return ProcessEventRequest(_mediaReceiverRegistrar);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ContentDirectory/Events")]
         [HttpUnsubscribe("{serverId}/ContentDirectory/Events")]
@@ -250,7 +250,7 @@ namespace Jellyfin.Api.Controllers
                 return ProcessEventRequest(_contentDirectory);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="serverId">Server UUID.</param>
         /// <response code="200">Request processed.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Event subscription response.</returns>
         [HttpSubscribe("{serverId}/ConnectionManager/Events")]
         [HttpUnsubscribe("{serverId}/ConnectionManager/Events")]
@@ -275,7 +275,7 @@ namespace Jellyfin.Api.Controllers
                 return ProcessEventRequest(_connectionManager);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fileName">The icon filename.</param>
         /// <response code="200">Request processed.</response>
         /// <response code="404">Not Found.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         /// <returns>Icon stream.</returns>
         [HttpGet("{serverId}/icons/{fileName}")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
@@ -300,7 +300,7 @@ namespace Jellyfin.Api.Controllers
                 return GetIconInternal(fileName);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Icon stream.</returns>
         /// <response code="200">Request processed.</response>
         /// <response code="404">Not Found.</response>
-        /// <response code="503">Service Unavailable.</response>
+        /// <response code="503">DLNA is disabled.</response>
         [HttpGet("icons/{fileName}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -323,7 +323,7 @@ namespace Jellyfin.Api.Controllers
                 return GetIconInternal(fileName);
             }
 
-            return StatusCode(503);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         private ActionResult GetIconInternal(string fileName)
