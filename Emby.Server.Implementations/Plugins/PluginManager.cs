@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.Plugins
         {
             foreach (var pluginServiceRegistrator in _appHost.GetExportTypes<IPluginServiceRegistrator>())
             {
-                var plugin = GetPluginByType(pluginServiceRegistrator.Assembly.GetType());
+                var plugin = GetPluginByAssembly(pluginServiceRegistrator.Assembly);
                 if (plugin == null)
                 {
                     _logger.LogError("Unable to find plugin in assembly {Assembly}", pluginServiceRegistrator.Assembly.FullName);
@@ -350,14 +350,14 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <summary>
-        /// Finds the plugin record using the type.
+        /// Finds the plugin record using the assembly.
         /// </summary>
-        /// <param name="type">The <see cref="Type"/> being sought.</param>
+        /// <param name="assembly">The <see cref="Assembly"/> being sought.</param>
         /// <returns>The matching record, or null if not found.</returns>
-        private LocalPlugin? GetPluginByType(Type type)
+        private LocalPlugin? GetPluginByAssembly(Assembly assembly)
         {
             // Find which plugin it is by the path.
-            return _plugins.FirstOrDefault(p => string.Equals(p.Path, Path.GetDirectoryName(type.Assembly.Location), StringComparison.Ordinal));
+            return _plugins.FirstOrDefault(p => string.Equals(p.Path, Path.GetDirectoryName(assembly.Location), StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -368,7 +368,7 @@ namespace Emby.Server.Implementations.Plugins
         private IPlugin? CreatePluginInstance(Type type)
         {
             // Find the record for this plugin.
-            var plugin = GetPluginByType(type);
+            var plugin = GetPluginByAssembly(type.Assembly);
             if (plugin?.Manifest.Status < PluginStatus.Active)
             {
                 return null;
