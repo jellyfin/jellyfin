@@ -51,8 +51,18 @@ namespace Emby.Server.Implementations.Plugins
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
             _jsonOptions = JsonDefaults.GetOptions();
-            _jsonOptions.Converters.Add(new JsonGuidDashConverter());
             _jsonOptions.WriteIndented = true;
+
+            // We need to use the default GUID converter, so we need to remove any custom ones.
+            for (int a = _jsonOptions.Converters.Count - 1; a >= 0; a--)
+            {
+                if (_jsonOptions.Converters[a] is JsonGuidConverter convertor)
+                {
+                    _jsonOptions.Converters.Remove(convertor);
+                    break;
+                }
+            }
+
             _config = config;
             _appHost = appHost;
             _minimumVersion = new Version(0, 0, 0, 1);
