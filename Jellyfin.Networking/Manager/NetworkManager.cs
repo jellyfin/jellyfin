@@ -1314,9 +1314,7 @@ namespace Jellyfin.Networking.Manager
                 return true;
             }
 
-            // Have to return something, so return an internal address
-
-            _logger.LogWarning("{Source}: External request received, however, no WAN interface found.", source);
+            _logger.LogDebug("{Source}: External request received, but no WAN interface found. Need to route through internal network.", source);
             return false;
         }
     }

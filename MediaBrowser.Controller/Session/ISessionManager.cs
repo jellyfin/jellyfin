@@ -47,6 +47,11 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<SessionEventArgs> SessionActivity;
 
         /// <summary>
+        /// Occurs when [session controller connected].
+        /// </summary>
+        event EventHandler<SessionEventArgs> SessionControllerConnected;
+
+        /// <summary>
         /// Occurs when [capabilities changed].
         /// </summary>
         event EventHandler<SessionEventArgs> CapabilitiesChanged;
@@ -77,6 +82,12 @@ namespace MediaBrowser.Controller.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
+
+        /// <summary>
+        /// Used to report that a session controller has connected.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        void OnSessionControllerConnected(SessionInfo session);
 
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 

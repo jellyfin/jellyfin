@@ -81,6 +81,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 { "unstable", ChromecastVersion.Unstable }
             };
 
+            var customDisplayPrefs = new HashSet<string>();
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
@@ -185,7 +186,13 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     foreach (var (key, value) in dto.CustomPrefs)
                     {
-                        dbContext.Add(new CustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client, key, value));
+                        // Custom display preferences can have a key collision.
+                        var indexKey = $"{displayPreferences.UserId}|{itemId}|{displayPreferences.Client}|{key}";
+                        if (!customDisplayPrefs.Contains(indexKey))
+                        {
+                            dbContext.Add(new CustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client, key, value));
+                            customDisplayPrefs.Add(indexKey);
+                        }
                     }
 
                     dbContext.Add(displayPreferences);

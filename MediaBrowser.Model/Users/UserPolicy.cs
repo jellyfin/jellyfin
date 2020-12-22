@@ -111,7 +111,7 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets a value indicating what SyncPlay features the user can access.
         /// </summary>
         /// <value>Access level to SyncPlay features.</value>
-        public SyncPlayAccess SyncPlayAccess { get; set; }
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
 
         public UserPolicy()
         {
@@ -160,7 +160,7 @@ namespace MediaBrowser.Model.Users
             EnableContentDownloading = true;
             EnablePublicSharing = true;
             EnableRemoteAccess = true;
-            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
+            SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
         }
     }
 }

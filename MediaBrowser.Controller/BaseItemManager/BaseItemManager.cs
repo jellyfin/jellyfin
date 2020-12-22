@@ -48,10 +48,10 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            var typeOptions = libraryOptions.GetTypeOptions(GetType().Name);
+            var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
             if (typeOptions != null)
             {
-                return typeOptions.ImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+                return typeOptions.MetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
             }
 
             if (!libraryOptions.EnableInternetProviders)
@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.BaseItemManager
 
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
 
-            return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+            return itemConfig == null || !itemConfig.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            var typeOptions = libraryOptions.GetTypeOptions(GetType().Name);
+            var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
             if (typeOptions != null)
             {
                 return typeOptions.ImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);

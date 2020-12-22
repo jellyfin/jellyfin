@@ -186,13 +186,10 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
-                var blockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders);
+                var blockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders);
                 if (blockedMediaFolders.Length > 0)
                 {
-                    if (blockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
-
-                        // Backwards compatibility
-                        blockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                    if (blockedMediaFolders.Contains(Id))
                     {
                         return false;
                     }
@@ -200,8 +197,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     if (!user.HasPermission(PermissionKind.EnableAllFolders)
-                        && !user.GetPreference(PreferenceKind.EnabledFolders)
-                            .Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                        && !user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(Id))
                     {
                         return false;
                     }
@@ -353,6 +349,11 @@ namespace MediaBrowser.Controller.Entities
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
                             await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
+                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
                         }
 
                         continue;

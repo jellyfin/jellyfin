@@ -51,13 +51,23 @@ namespace Jellyfin.Api.Constants
         public const string FirstTimeSetupOrIgnoreParentalControl = "FirstTimeSetupOrIgnoreParentalControl";
 
         /// <summary>
-        /// Policy name for requiring access to SyncPlay.
+        /// Policy name for accessing SyncPlay.
         /// </summary>
-        public const string SyncPlayAccess = "SyncPlayAccess";
+        public const string SyncPlayHasAccess = "SyncPlayHasAccess";
 
         /// <summary>
-        /// Policy name for requiring group creation access to SyncPlay.
+        /// Policy name for creating a SyncPlay group.
         /// </summary>
-        public const string SyncPlayCreateGroupAccess = "SyncPlayCreateGroupAccess";
+        public const string SyncPlayCreateGroup = "SyncPlayCreateGroup";
+
+        /// <summary>
+        /// Policy name for joining a SyncPlay group.
+        /// </summary>
+        public const string SyncPlayJoinGroup = "SyncPlayJoinGroup";
+
+        /// <summary>
+        /// Policy name for accessing a SyncPlay group.
+        /// </summary>
+        public const string SyncPlayIsInGroup = "SyncPlayIsInGroup";
     }
 }

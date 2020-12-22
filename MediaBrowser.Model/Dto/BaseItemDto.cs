@@ -152,7 +152,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
-        public Guid ChannelId { get; set; }
+        public Guid? ChannelId { get; set; }
 
         public string ChannelName { get; set; }
 
@@ -270,7 +270,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent id.
         /// </summary>
         /// <value>The parent id.</value>
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         /// <summary>
         /// Gets or sets the type.
@@ -344,13 +344,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the series id.
         /// </summary>
         /// <value>The series id.</value>
-        public Guid SeriesId { get; set; }
+        public Guid? SeriesId { get; set; }
 
         /// <summary>
         /// Gets or sets the season identifier.
         /// </summary>
         /// <value>The season identifier.</value>
-        public Guid SeasonId { get; set; }
+        public Guid? SeasonId { get; set; }
 
         /// <summary>
         /// Gets or sets the special feature count.
@@ -428,7 +428,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album id.
         /// </summary>
         /// <value>The album id.</value>
-        public Guid AlbumId { get; set; }
+        public Guid? AlbumId { get; set; }
 
         /// <summary>
         /// Gets or sets the album image tag.

@@ -1127,13 +1127,25 @@ namespace MediaBrowser.Controller.MediaEncoding
                 targetVideoCodec = "hevc";
             }
 
-            var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault();
-            profile =  Regex.Replace(profile, @"\s+", String.Empty);
+            var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault() ?? string.Empty;
+            profile = Regex.Replace(profile, @"\s+", string.Empty);
+
+            // We only transcode to HEVC 8-bit for now, force Main Profile.
+            if (profile.Contains("main 10", StringComparison.OrdinalIgnoreCase)
+                || profile.Contains("main still", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "main";
+            }
+
+            // Extended Profile is not supported by any known h264 encoders, force Main Profile.
+            if (profile.Contains("extended", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "main";
+            }
 
             // Only libx264 support encoding H264 High 10 Profile, otherwise force High Profile.
             if (!string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
-                && profile != null
-                && profile.IndexOf("high 10", StringComparison.OrdinalIgnoreCase) != -1)
+                && profile.Contains("high 10", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "high";
             }
@@ -1141,8 +1153,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // h264_vaapi does not support Baseline profile, force Constrained Baseline in this case,
             // which is compatible (and ugly).
             if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
-                && profile != null
-                && profile.IndexOf("baseline", StringComparison.OrdinalIgnoreCase) != -1)
+                && profile.Contains("baseline", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "constrained_baseline";
             }
@@ -1151,16 +1162,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             if ((string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
-                && profile != null
-                && profile.IndexOf("baseline", StringComparison.OrdinalIgnoreCase) != -1)
+                && profile.Contains("baseline", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "baseline";
             }
 
+            // libx264, h264_qsv, h264_nvenc and h264_vaapi does not support Constrained High profile, force High in this case.
+            if ((string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+                && profile.Contains("high", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "high";
+            }
+
             // Currently hevc_amf only support encoding HEVC Main Profile, otherwise force Main Profile.
-            if (!string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
-                && profile != null
-                && profile.IndexOf("main 10", StringComparison.OrdinalIgnoreCase) != -1)
+            if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
+                && profile.Contains("main 10", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "main";
             }

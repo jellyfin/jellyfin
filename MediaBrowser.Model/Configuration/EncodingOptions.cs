@@ -88,11 +88,11 @@ namespace MediaBrowser.Model.Configuration
             // The left side of the dot is the platform number, and the right side is the device number on the platform.
             OpenclDevice = "0.0";
             EnableTonemapping = false;
-            TonemappingAlgorithm = "reinhard";
+            TonemappingAlgorithm = "hable";
             TonemappingRange = "auto";
             TonemappingDesat = 0;
             TonemappingThreshold = 0.8;
-            TonemappingPeak = 0;
+            TonemappingPeak = 100;
             TonemappingParam = 0;
             H264Crf = 23;
             H265Crf = 28;

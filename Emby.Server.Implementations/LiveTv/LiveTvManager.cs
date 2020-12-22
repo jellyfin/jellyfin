@@ -1928,7 +1928,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 foreach (var programDto in currentProgramDtos)
                 {
-                    if (currentChannelsDict.TryGetValue(programDto.ChannelId, out BaseItemDto channelDto))
+                    if (programDto.ChannelId.HasValue && currentChannelsDict.TryGetValue(programDto.ChannelId.Value, out BaseItemDto channelDto))
                     {
                         channelDto.CurrentProgram = programDto;
                     }
@@ -2018,7 +2018,7 @@ namespace Emby.Server.Implementations.LiveTv
             info.DayPattern = _tvDtoService.GetDayPattern(info.Days);
 
             info.Name = program.Name;
-            info.ChannelId = programDto.ChannelId;
+            info.ChannelId = programDto.ChannelId ?? Guid.Empty;
             info.ChannelName = programDto.ChannelName;
             info.StartDate = program.StartDate;
             info.Name = program.Name;
