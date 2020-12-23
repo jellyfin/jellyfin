@@ -51,8 +51,10 @@ namespace Emby.Server.Implementations.Plugins
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _jsonOptions = JsonDefaults.GetOptions();
-            _jsonOptions.WriteIndented = true;
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions())
+            {
+                WriteIndented = true
+            };
 
             // We need to use the default GUID converter, so we need to remove any custom ones.
             for (int a = _jsonOptions.Converters.Count - 1; a >= 0; a--)
