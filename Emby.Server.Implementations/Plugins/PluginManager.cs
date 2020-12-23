@@ -81,9 +81,9 @@ namespace Emby.Server.Implementations.Plugins
         public IEnumerable<Assembly> LoadAssemblies()
         {
             // Attempt to remove any deleted plugins and change any successors to be active.
-            for (int a = _plugins.Count - 1; a >= 0; a--)
+            for (int i = _plugins.Count - 1; i >= 0; i--)
             {
-                var plugin = _plugins[a];
+                var plugin = _plugins[i];
                 if (plugin.Manifest.Status == PluginStatus.Deleted && DeletePlugin(plugin))
                 {
                     UpdateSuccessors(plugin);
