@@ -1038,6 +1038,7 @@ namespace Emby.Server.Implementations
             }
 
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
+            var jsonOptions = JsonDefaults.GetOptions();
 
             foreach (var dir in directories)
             {
@@ -1046,8 +1047,8 @@ namespace Emby.Server.Implementations
                     var metafile = Path.Combine(dir, "meta.json");
                     if (File.Exists(metafile))
                     {
-                        var jsonString = File.ReadAllText(metafile);
-                        var manifest = JsonSerializer.Deserialize<PluginManifest>(jsonString, JsonDefaults.GetOptions());
+                        using FileStream jsonStream = File.OpenRead(metafile);
+                        var manifest = JsonSerializer.DeserializeAsync<PluginManifest>(jsonStream, jsonOptions).GetAwaiter().GetResult();
 
                         if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                         {

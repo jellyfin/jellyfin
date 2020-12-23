@@ -44,8 +44,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    var json = File.ReadAllText(_dataPath);
-                    _items = JsonSerializer.Deserialize<T[]>(json, JsonDefaults.GetOptions());
+                    using FileStream jsonStream = File.OpenRead(_dataPath);
+                    _items = JsonSerializer.DeserializeAsync<T[]>(jsonStream, JsonDefaults.GetOptions()).GetAwaiter().GetResult();
                     return;
                 }
                 catch (Exception ex)

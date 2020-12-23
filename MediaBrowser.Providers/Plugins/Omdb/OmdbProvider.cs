@@ -299,7 +299,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var jsonOptions = JsonDefaults.GetOptions();
             var rootObject = await GetDeserializedOmdbResponse<RootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, jsonOptions, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            await using FileStream jsonFileStream = File.Create(path);
+            await using FileStream jsonFileStream = File.OpenWrite(path);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
@@ -337,7 +337,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var jsonOptions = JsonDefaults.GetOptions();
             var rootObject = await GetDeserializedOmdbResponse<SeasonRootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, jsonOptions, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            await using FileStream jsonFileStream = File.Create(path);
+            await using FileStream jsonFileStream = File.OpenWrite(path);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
@@ -349,7 +349,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             // OMDb is sending "N/A" for no empty number fields
-            content = content.Replace("\"N/A\"", "\"0\"", StringComparison.InvariantCulture);
+            content = content.Replace("\"N/A\"", "\"\"", StringComparison.InvariantCulture);
             return JsonSerializer.Deserialize<T>(content, jsonOptions);
         }
 

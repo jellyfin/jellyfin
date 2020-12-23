@@ -340,8 +340,8 @@ namespace Emby.Server.Implementations.Channels
 
             try
             {
-                var jsonString = File.ReadAllText(path);
-                return JsonSerializer.Deserialize<List<MediaSourceInfo>>(jsonString, JsonDefaults.GetOptions()) ?? new List<MediaSourceInfo>();
+                using FileStream jsonStream = File.OpenRead(path);
+                return JsonSerializer.DeserializeAsync<List<MediaSourceInfo>>(jsonStream, JsonDefaults.GetOptions()).GetAwaiter().GetResult();
             }
             catch
             {
