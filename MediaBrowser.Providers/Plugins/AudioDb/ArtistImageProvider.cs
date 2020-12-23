@@ -1,9 +1,12 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -19,12 +22,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _json;
 
-        public AudioDbArtistImageProvider(IServerConfigurationManager config, IJsonSerializer json, IHttpClientFactory httpClientFactory)
+        public AudioDbArtistImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
         {
             _config = config;
-            _json = json;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -58,7 +59,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = AudioDbArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
 
-                var obj = _json.DeserializeFromFile<AudioDbArtistProvider.RootObject>(path);
+                var jsonString = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+                var obj = JsonSerializer.Deserialize<AudioDbArtistProvider.RootObject>(jsonString, JsonDefaults.GetOptions());
 
                 if (obj != null && obj.artists != null && obj.artists.Count > 0)
                 {

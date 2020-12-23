@@ -6,10 +6,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
@@ -27,16 +29,14 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _json;
 
         public static AudioDbAlbumProvider Current;
 
-        public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json)
+        public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
             _config = config;
             _fileSystem = fileSystem;
             _httpClientFactory = httpClientFactory;
-            _json = json;
 
             Current = this;
         }
@@ -64,7 +64,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = GetAlbumInfoPath(_config.ApplicationPaths, id);
 
-                var obj = _json.DeserializeFromFile<RootObject>(path);
+                var jsonString = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+                var obj = JsonSerializer.Deserialize<RootObject>(jsonString, JsonDefaults.GetOptions());
 
                 if (obj != null && obj.album != null && obj.album.Count > 0)
                 {
