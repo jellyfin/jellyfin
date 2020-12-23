@@ -395,7 +395,7 @@ namespace Emby.Server.Implementations.Updates
 
             if (plugin.Instance?.CanUninstall == false)
             {
-                _logger.LogWarning("Attempt to delete non removable plugin {0}, ignoring request", plugin.Name);
+                _logger.LogWarning("Attempt to delete non removable plugin {PluginName}, ignoring request", plugin.Name);
                 return;
             }
 
