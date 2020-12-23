@@ -118,7 +118,6 @@ namespace Emby.Server.Implementations
 
         private readonly IFileSystem _fileSystemManager;
         private readonly IXmlSerializer _xmlSerializer;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IStartupOptions _startupOptions;
         private readonly IPluginManager _pluginManager;
 
@@ -249,7 +248,6 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();
 
             ServiceCollection = serviceCollection;
 
