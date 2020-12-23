@@ -229,7 +229,7 @@ namespace Emby.Server.Implementations.Plugins
             if (version == null)
             {
                 // If no version is given, return the current instance.
-                var plugins = _plugins.Where(p => p.Id.Equals(id));
+                var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
                 plugin = plugins.FirstOrDefault(p => p.Instance != null);
                 if (plugin == null && plugins.Length > 0)
