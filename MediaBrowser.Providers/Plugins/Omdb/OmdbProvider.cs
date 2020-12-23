@@ -296,10 +296,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     "i={0}&plot=short&tomatoes=true&r=json",
                     imdbParam));
 
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var jsonOptions = JsonDefaults.GetOptions();
-            var rootObject = await JsonSerializer.DeserializeAsync<RootObject>(stream, jsonOptions, cancellationToken).ConfigureAwait(false);
+            var rootObject = await GetDeserializedOmdbResponse<RootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, jsonOptions, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             await using FileStream jsonFileStream = File.Create(path);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, jsonOptions, cancellationToken).ConfigureAwait(false);
@@ -336,15 +334,23 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam,
                     seasonId));
 
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var jsonOptions = JsonDefaults.GetOptions();
-            var rootObject = await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, jsonOptions, cancellationToken).ConfigureAwait(false);
+            var rootObject = await GetDeserializedOmdbResponse<SeasonRootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, jsonOptions, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             await using FileStream jsonFileStream = File.Create(path);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
+        }
+
+        public static async Task<T> GetDeserializedOmdbResponse<T>(HttpClient httpClient, string url, JsonSerializerOptions jsonOptions, CancellationToken cancellationToken)
+        {
+            using var response = await GetOmdbResponse(httpClient, url, cancellationToken).ConfigureAwait(false);
+            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            // OMDb is sending "N/A" for no empty number fields
+            content = content.Replace("\"N/A\"", "\"0\"", StringComparison.InvariantCulture);
+            return JsonSerializer.Deserialize<T>(content, jsonOptions);
         }
 
         public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
