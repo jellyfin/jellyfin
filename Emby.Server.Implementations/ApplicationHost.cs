@@ -7,11 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
@@ -50,6 +48,7 @@ using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -101,6 +100,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
@@ -118,7 +118,6 @@ namespace Emby.Server.Implementations
 
         private readonly IFileSystem _fileSystemManager;
         private readonly IXmlSerializer _xmlSerializer;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IStartupOptions _startupOptions;
 
         private IMediaEncoder _mediaEncoder;
@@ -257,7 +256,6 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();
 
             ServiceCollection = serviceCollection;
 
@@ -528,8 +526,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            ServiceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
-
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TmdbClientManager>();
 
@@ -754,7 +750,6 @@ namespace Emby.Server.Implementations
             UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
             CollectionFolder.XmlSerializer = _xmlSerializer;
-            CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
         }
 
@@ -967,7 +962,7 @@ namespace Emby.Server.Implementations
                 {
                     return true;
                 }
-                
+
                 throw new FileNotFoundException(
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -1051,7 +1046,8 @@ namespace Emby.Server.Implementations
                     var metafile = Path.Combine(dir, "meta.json");
                     if (File.Exists(metafile))
                     {
-                        var manifest = _jsonSerializer.DeserializeFromFile<PluginManifest>(metafile);
+                        var jsonString = File.ReadAllText(metafile);
+                        var manifest = JsonSerializer.Deserialize<PluginManifest>(jsonString, JsonDefaults.GetOptions());
 
                         if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                         {

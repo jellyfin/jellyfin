@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Serialization;
+using System.Text.Json;
+using MediaBrowser.Common.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -12,18 +13,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     public class ItemDataProvider<T>
         where T : class
     {
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly string _dataPath;
         private readonly object _fileDataLock = new object();
         private T[] _items;
 
         public ItemDataProvider(
-            IJsonSerializer jsonSerializer,
             ILogger logger,
             string dataPath,
             Func<T, T, bool> equalityComparer)
         {
-            _jsonSerializer = jsonSerializer;
             Logger = logger;
             _dataPath = dataPath;
             EqualityComparer = equalityComparer;
@@ -46,7 +44,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _items = _jsonSerializer.DeserializeFromFile<T[]>(_dataPath);
+                    var json = File.ReadAllText(_dataPath);
+                    _items = JsonSerializer.Deserialize<T[]>(json, JsonDefaults.GetOptions());
                     return;
                 }
                 catch (Exception ex)
@@ -61,7 +60,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private void SaveList()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_dataPath));
-            _jsonSerializer.SerializeToFile(_items, _dataPath);
+            using FileStream stream = File.OpenWrite(_dataPath);
+            JsonSerializer.SerializeAsync(stream, _items, JsonDefaults.GetOptions());
         }
 
         public IReadOnlyList<T> GetAll()
