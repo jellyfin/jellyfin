@@ -298,10 +298,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var rootObject = await JsonSerializer.DeserializeAsync<RootObject>(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var jsonOptions = JsonDefaults.GetOptions();
+            var rootObject = await JsonSerializer.DeserializeAsync<RootObject>(stream, jsonOptions, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             await using FileStream jsonFileStream = File.Create(path);
-            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
         }
@@ -337,10 +338,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var rootObject = await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var jsonOptions = JsonDefaults.GetOptions();
+            var rootObject = await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, jsonOptions, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             await using FileStream jsonFileStream = File.Create(path);
-            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
         }
