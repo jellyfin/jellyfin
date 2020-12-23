@@ -22,6 +22,12 @@ jobs:
         BuildConfiguration: ubuntu.armhf
       Linux.amd64:
         BuildConfiguration: linux.amd64
+      Linux.amd64-musl:
+        BuildConfiguration: linux.amd64-musl
+      Linux.arm64:
+        BuildConfiguration: linux.arm64
+      Linux.armhf:
+        BuildConfiguration: linux.armhf
       Windows.amd64:
         BuildConfiguration: windows.amd64
       MacOS:

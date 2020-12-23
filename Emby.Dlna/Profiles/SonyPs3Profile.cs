@@ -52,7 +52,7 @@ namespace Emby.Dlna.Profiles
                     Container = "ts,mpegts",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "mpeg1video,mpeg2video,h264",
-                    AudioCodec = "ac3,mp2,mp3,aac"
+                    AudioCodec = "aac,ac3,mp2"
                 },
                 new DirectPlayProfile
                 {
@@ -92,7 +92,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Container = "ts",
                     VideoCodec = "h264",
-                    AudioCodec = "ac3,aac,mp3",
+                    AudioCodec = "aac,ac3,mp2",
                     Type = DlnaProfileType.Video
                 },
                 new TranscodingProfile

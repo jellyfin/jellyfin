@@ -4,7 +4,7 @@
     "Application": "アプリケーション",
     "Artists": "アーティスト",
     "AuthenticationSucceededWithUserName": "{0} 認証に成功しました",
-    "Books": "ブック",
+    "Books": "ブックス",
     "CameraImageUploadedFrom": "新しいカメライメージが {0}からアップロードされました",
     "Channels": "チャンネル",
     "ChapterNameValue": "チャプター {0}",
@@ -114,5 +114,8 @@
     "TaskRefreshChapterImages": "チャプター画像を抽出する",
     "TaskDownloadMissingSubtitles": "不足している字幕をダウンロードする",
     "TaskCleanActivityLogDescription": "設定された期間よりも古いアクティビティの履歴を削除します。",
-    "TaskCleanActivityLog": "アクティビティの履歴を消去"
+    "TaskCleanActivityLog": "アクティビティの履歴を消去",
+    "Undefined": "未定義",
+    "Forced": "強制",
+    "Default": "デフォルト"
 }

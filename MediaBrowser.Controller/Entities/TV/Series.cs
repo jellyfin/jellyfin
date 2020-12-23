@@ -452,7 +452,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         protected override bool GetBlockUnratedValue(User user)
         {
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Series.ToString());
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Series);
         }
 
         public override UnratedItem GetBlockUnratedType()

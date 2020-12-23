@@ -22,7 +22,6 @@
     <PackageReference Include="OptimizedPriorityQueue" Version="5.0.0" />
     <PackageReference Include="PlaylistsNET" Version="1.1.3" />
     <PackageReference Include="TMDbLib" Version="1.7.3-alpha" />
-    <PackageReference Include="TvDbSharper" Version="3.2.2" />
   </ItemGroup>
 
   <PropertyGroup>

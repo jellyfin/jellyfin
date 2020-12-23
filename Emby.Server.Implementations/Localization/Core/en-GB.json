@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "Library",
     "TasksMaintenanceCategory": "Maintenance",
     "TaskCleanActivityLogDescription": "Deletes activity log entries older than the configured age.",
-    "TaskCleanActivityLog": "Clean Activity Log"
+    "TaskCleanActivityLog": "Clean Activity Log",
+    "Undefined": "Undefined",
+    "Forced": "Forced",
+    "Default": "Default"
 }

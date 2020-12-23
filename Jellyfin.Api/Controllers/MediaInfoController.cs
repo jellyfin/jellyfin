@@ -259,24 +259,24 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? maxAudioChannels,
             [FromQuery] Guid? itemId,
-            [FromBody] OpenLiveStreamDto openLiveStreamDto,
-            [FromQuery] bool enableDirectPlay = true,
-            [FromQuery] bool enableDirectStream = true)
+            [FromBody] OpenLiveStreamDto? openLiveStreamDto,
+            [FromQuery] bool? enableDirectPlay,
+            [FromQuery] bool? enableDirectStream)
         {
             var request = new LiveStreamRequest
             {
-                OpenToken = openToken,
-                UserId = userId ?? Guid.Empty,
-                PlaySessionId = playSessionId,
-                MaxStreamingBitrate = maxStreamingBitrate,
-                StartTimeTicks = startTimeTicks,
-                AudioStreamIndex = audioStreamIndex,
-                SubtitleStreamIndex = subtitleStreamIndex,
-                MaxAudioChannels = maxAudioChannels,
-                ItemId = itemId ?? Guid.Empty,
+                OpenToken = openToken ?? openLiveStreamDto?.OpenToken,
+                UserId = userId ?? openLiveStreamDto?.UserId ?? Guid.Empty,
+                PlaySessionId = playSessionId ?? openLiveStreamDto?.PlaySessionId,
+                MaxStreamingBitrate = maxStreamingBitrate ?? openLiveStreamDto?.MaxStreamingBitrate,
+                StartTimeTicks = startTimeTicks ?? openLiveStreamDto?.StartTimeTicks,
+                AudioStreamIndex = audioStreamIndex ?? openLiveStreamDto?.AudioStreamIndex,
+                SubtitleStreamIndex = subtitleStreamIndex ?? openLiveStreamDto?.SubtitleStreamIndex,
+                MaxAudioChannels = maxAudioChannels ?? openLiveStreamDto?.MaxAudioChannels,
+                ItemId = itemId ?? openLiveStreamDto?.ItemId ?? Guid.Empty,
                 DeviceProfile = openLiveStreamDto?.DeviceProfile,
-                EnableDirectPlay = enableDirectPlay,
-                EnableDirectStream = enableDirectStream,
+                EnableDirectPlay = enableDirectPlay ?? openLiveStreamDto?.EnableDirectPlay ?? true,
+                EnableDirectStream = enableDirectStream ?? openLiveStreamDto?.EnableDirectStream ?? true,
                 DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http }
             };
             return await _mediaInfoHelper.OpenMediaSource(Request, request).ConfigureAwait(false);
