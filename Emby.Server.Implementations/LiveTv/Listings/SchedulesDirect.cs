@@ -784,18 +784,17 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var allStations = root.stations ?? new List<ScheduleDirect.Station>();
 
             var map = root.map;
-            int len = map.Count;
-            var array = new List<ChannelInfo>(len);
-            for (int i = 0; i < len; i++)
+            var list = new List<ChannelInfo>(map.Count);
+            foreach (var channel in map)
             {
-                var channelNumber = GetChannelNumber(map[i]);
+                var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.Find(item => string.Equals(item.stationID, map[i].stationID, StringComparison.OrdinalIgnoreCase));
+                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase));
                 if (station == null)
                 {
                     station = new ScheduleDirect.Station
                     {
-                        stationID = map[i].stationID
+                        stationID = channel.stationID
                     };
                 }
 
@@ -812,10 +811,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     channelInfo.ImageUrl = station.logo.URL;
                 }
 
-                array[i] = channelInfo;
+                list.Add(channelInfo);
             }
 
-            return array;
+            return list;
         }
 
         private static string NormalizeName(string value)
