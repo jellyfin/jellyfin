@@ -232,9 +232,9 @@ namespace Emby.Server.Implementations.Plugins
                 var plugins = _plugins.Where(p => p.Id.Equals(id));
 
                 plugin = plugins.FirstOrDefault(p => p.Instance != null);
-                if (plugin == null)
+                if (plugin == null && plugins.Length > 0)
                 {
-                    plugin = plugins.OrderByDescending(p => p.Version).FirstOrDefault();
+                    plugin = plugins.OrderByDescending(p => p.Version)[0];
                 }
             }
             else
