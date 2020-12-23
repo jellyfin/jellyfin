@@ -1131,8 +1131,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             profile = Regex.Replace(profile, @"\s+", string.Empty);
 
             // We only transcode to HEVC 8-bit for now, force Main Profile.
-            if (profile.Contains("main 10", StringComparison.OrdinalIgnoreCase)
-                || profile.Contains("main still", StringComparison.OrdinalIgnoreCase))
+            if (profile.Contains("main10", StringComparison.OrdinalIgnoreCase)
+                || profile.Contains("mainstill", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "main";
             }
@@ -1145,7 +1145,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Only libx264 support encoding H264 High 10 Profile, otherwise force High Profile.
             if (!string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
-                && profile.Contains("high 10", StringComparison.OrdinalIgnoreCase))
+                && profile.Contains("high10", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "high";
             }
@@ -1177,9 +1177,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = "high";
             }
 
+            if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
+                && profile.Contains("constrainedbaseline", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "constrained_baseline";
+            }
+
+            if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
+                && profile.Contains("constrainedhigh", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "constrained_high";
+            }
+
             // Currently hevc_amf only support encoding HEVC Main Profile, otherwise force Main Profile.
             if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
-                && profile.Contains("main 10", StringComparison.OrdinalIgnoreCase))
+                && profile.Contains("main10", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "main";
             }
