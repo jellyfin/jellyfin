@@ -35,7 +35,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets a long description of the plugin containing features or helpful explanations.
         /// </summary>
         /// <value>The description.</value>
-        /// [JsonPropertyName("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
         /// <summary>
