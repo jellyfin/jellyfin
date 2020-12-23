@@ -462,7 +462,7 @@ namespace Emby.Server.Implementations
         {
             // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()
-                .Select(i => defaultFunc(i))
+                .Select(defaultFunc)
                 .Where(i => i != null)
                 .Cast<T>()
                 .ToList();
