@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +67,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<SystemInfo> GetSystemInfo()
         {
-            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
+            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
         {
-            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress);
+            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <summary>
