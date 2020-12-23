@@ -341,7 +341,8 @@ namespace Emby.Server.Implementations.Channels
             try
             {
                 using FileStream jsonStream = File.OpenRead(path);
-                return JsonSerializer.DeserializeAsync<List<MediaSourceInfo>>(jsonStream, JsonDefaults.GetOptions()).GetAwaiter().GetResult();
+                return JsonSerializer.DeserializeAsync<List<MediaSourceInfo>>(jsonStream, JsonDefaults.GetOptions()).GetAwaiter().GetResult()
+                    ?? new List<MediaSourceInfo>();
             }
             catch
             {
@@ -810,8 +811,8 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    var jsonString = await File.ReadAllTextAsync(cachePath, cancellationToken);
-                    var cachedResult = JsonSerializer.Deserialize<ChannelItemResult>(jsonString);
+                    await using FileStream jsonStream = File.OpenRead(cachePath);
+                    var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
                     if (cachedResult != null)
                     {
                         return null;
@@ -833,8 +834,8 @@ namespace Emby.Server.Implementations.Channels
                 {
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
-                        var jsonString = await File.ReadAllTextAsync(cachePath, cancellationToken);
-                        var cachedResult = JsonSerializer.Deserialize<ChannelItemResult>(jsonString);
+                        await using FileStream jsonStream = File.OpenRead(cachePath);
+                        var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
                         if (cachedResult != null)
                         {
                             return null;

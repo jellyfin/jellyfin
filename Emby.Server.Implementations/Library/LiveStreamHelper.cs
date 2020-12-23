@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library
                 try
                 {
                     await using FileStream jsonStream = File.OpenRead(cacheFilePath);
-                    await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
                 }
@@ -83,8 +83,8 @@ namespace Emby.Server.Implementations.Library
                 if (cacheFilePath != null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    await using FileStream createStream = File.Create(cacheFilePath);
-                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await using FileStream createStream = File.OpenWrite(cacheFilePath);
+                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
