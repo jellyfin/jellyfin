@@ -23,11 +23,5 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         /// <param name="configuration">The configuration.</param>
         void UpdateConfiguration(BasePluginConfiguration configuration);
-
-        /// <summary>
-        /// Sets the startup directory creation function.
-        /// </summary>
-        /// <param name="directoryCreateFn">The directory function used to create the configuration folder.</param>
-        void SetStartupInfo(Action<string> directoryCreateFn);
     }
 }

@@ -25,8 +25,6 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         private readonly object _configurationSaveLock = new object();
 
-        private Action<string> _directoryCreateFn;
-
         /// <summary>
         /// The configuration.
         /// </summary>
@@ -64,11 +62,6 @@ namespace MediaBrowser.Common.Plugins
 
                     assemblyPlugin.SetId(assemblyId);
                 }
-            }
-
-            if (this is IHasPluginConfiguration hasPluginConfiguration)
-            {
-                hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
             }
         }
 
@@ -145,13 +138,6 @@ namespace MediaBrowser.Common.Plugins
         /// <value>The configuration.</value>
         BasePluginConfiguration IHasPluginConfiguration.Configuration => Configuration;
 
-        /// <inheritdoc />
-        public void SetStartupInfo(Action<string> directoryCreateFn)
-        {
-            // hack alert, until the .net core transition is complete
-            _directoryCreateFn = directoryCreateFn;
-        }
-
         /// <summary>
         /// Saves the current configuration to the file system.
         /// </summary>
@@ -160,7 +146,11 @@ namespace MediaBrowser.Common.Plugins
         {
             lock (_configurationSaveLock)
             {
-                _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
+                var folder = Path.GetDirectoryName(ConfigurationFilePath);
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
 
                 XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
             }

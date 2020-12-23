@@ -23,7 +23,6 @@ namespace Jellyfin.Api.Models
             if (page.Plugin != null)
             {
                 DisplayName = page.Plugin.Name;
-                // Don't use "N" because it needs to match Plugin.Id
                 PluginId = page.Plugin.Id;
             }
         }

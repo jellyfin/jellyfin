@@ -198,7 +198,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="pluginId">Plugin id.</param>
         /// <response code="204">Plugin uninstalled.</response>
         /// <response code="404">Plugin not found.</response>
-        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the plugin could not be found.</returns>
         [HttpDelete("{pluginId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -210,7 +210,7 @@ namespace Jellyfin.Api.Controllers
             var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId));
 
             // Select the un-instanced one first.
-            var plugin = plugins.FirstOrDefault(p => p.Instance != null);
+            var plugin = plugins.FirstOrDefault(p => p.Instance == null);
             if (plugin == null)
             {
                 // Then by the status.
@@ -256,11 +256,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="pluginId">Plugin id.</param>
         /// <response code="204">Plugin configuration updated.</response>
         /// <response code="404">Plugin not found or plugin does not have configuration.</response>
-        /// <returns>
-        /// A <see cref="Task" /> that represents the asynchronous operation to update plugin configuration.
-        ///    The task result contains an <see cref="NoContentResult"/> indicating success, or <see cref="NotFoundResult"/>
-        ///    when plugin not found or plugin doesn't have configuration.
-        /// </returns>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the plugin could not be found.</returns>
         [HttpPost("{pluginId}/Configuration")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -321,11 +317,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="pluginId">Plugin id.</param>
         /// <response code="204">Plugin manifest returned.</response>
         /// <response code="404">Plugin not found.</response>
-        /// <returns>
-        /// A <see cref="Task" /> that represents the asynchronous operation to get the plugin's manifest.
-        ///    The task result contains an <see cref="NoContentResult"/> indicating success, or <see cref="NotFoundResult"/>
-        ///    when plugin not found.
-        /// </returns>
+        /// <returns>A <see cref="PluginManifest"/> on success, or a <see cref="NotFoundResult"/> if the plugin could not be found.</returns>
         [HttpPost("{pluginId}/Manifest")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

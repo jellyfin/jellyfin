@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
@@ -86,7 +87,8 @@ namespace Emby.Server.Implementations.Plugins
                 var plugin = _plugins[i];
                 if (plugin.Manifest.Status == PluginStatus.Deleted && DeletePlugin(plugin))
                 {
-                    UpdateSuccessors(plugin);
+                    // See if there is another version, and if so make that active.
+                    ProcessAlternative(plugin);
                 }
             }
 
@@ -208,12 +210,19 @@ namespace Emby.Server.Implementations.Plugins
 
             if (DeletePlugin(plugin))
             {
+                ProcessAlternative(plugin);
                 return true;
             }
 
             _logger.LogWarning("Unable to delete {Path}, so marking as deleteOnStartup.", plugin.Path);
             // Unable to delete, so disable.
-            return ChangePluginState(plugin, PluginStatus.Deleted);
+            if (ChangePluginState(plugin, PluginStatus.Deleted))
+            {
+                ProcessAlternative(plugin);
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -232,9 +241,9 @@ namespace Emby.Server.Implementations.Plugins
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
                 plugin = plugins.FirstOrDefault(p => p.Instance != null);
-                if (plugin == null && plugins.Length > 0)
+                if (plugin == null)
                 {
-                    plugin = plugins.OrderByDescending(p => p.Version)[0];
+                    plugin = plugins.OrderByDescending(p => p.Version).FirstOrDefault();
                 }
             }
             else
@@ -259,7 +268,8 @@ namespace Emby.Server.Implementations.Plugins
 
             if (ChangePluginState(plugin, PluginStatus.Active))
             {
-                UpdateSuccessors(plugin);
+                // See if there is another version, and if so, supercede it.
+                ProcessAlternative(plugin);
             }
         }
 
@@ -277,7 +287,8 @@ namespace Emby.Server.Implementations.Plugins
             // Update the manifest on disk
             if (ChangePluginState(plugin, PluginStatus.Disabled))
             {
-                UpdateSuccessors(plugin);
+                // If there is another version, activate it.
+                ProcessAlternative(plugin);
             }
         }
 
@@ -639,27 +650,33 @@ namespace Emby.Server.Implementations.Plugins
         /// Changes the status of the other versions of the plugin to "Superceded".
         /// </summary>
         /// <param name="plugin">The <see cref="LocalPlugin"/> that's master.</param>
-        private void UpdateSuccessors(LocalPlugin plugin)
+        private void ProcessAlternative(LocalPlugin plugin)
         {
-            // This value is memory only - so that the web will show restart required.
-            plugin.Manifest.Status = PluginStatus.Restart;
-
             // Detect whether there is another version of this plugin that needs disabling.
-            var predecessor = _plugins.OrderByDescending(p => p.Version)
+            var previousVersion = _plugins.OrderByDescending(p => p.Version)
                 .FirstOrDefault(
                     p => p.Id.Equals(plugin.Id)
                     && p.IsEnabledAndSupported
                     && p.Version != plugin.Version);
 
-            if (predecessor == null)
+            if (previousVersion == null)
             {
+                // This value is memory only - so that the web will show restart required.
+                plugin.Manifest.Status = PluginStatus.Restart;
                 return;
             }
 
-            if (predecessor.Manifest.Status == PluginStatus.Active && !ChangePluginState(predecessor, PluginStatus.Superceded))
+            if (plugin.Manifest.Status == PluginStatus.Active && !ChangePluginState(previousVersion, PluginStatus.Superceded))
             {
-                _logger.LogError("Unable to disable version {Version} of {Name}", predecessor.Version, predecessor.Name);
+                _logger.LogError("Unable to enable version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
             }
+            else if (plugin.Manifest.Status == PluginStatus.Superceded && !ChangePluginState(previousVersion, PluginStatus.Active))
+            {
+                _logger.LogError("Unable to supercede version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
+            }
+
+            // This value is memory only - so that the web will show restart required.
+            plugin.Manifest.Status = PluginStatus.Restart;
         }
     }
 }

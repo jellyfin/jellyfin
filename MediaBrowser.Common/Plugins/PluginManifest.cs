@@ -19,14 +19,12 @@ namespace MediaBrowser.Common.Plugins
             Category = string.Empty;
             Changelog = string.Empty;
             Description = string.Empty;
-            Status = PluginStatus.Active;
             Id = Guid.Empty;
             Name = string.Empty;
             Owner = string.Empty;
             Overview = string.Empty;
             TargetAbi = string.Empty;
             Version = string.Empty;
-            AutoUpdate = true;
         }
 
         /// <summary>
@@ -99,7 +97,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets or sets a value indicating whether this plugin should automatically update.
         /// </summary>
         [JsonPropertyName("autoUpdate")]
-        public bool AutoUpdate { get; set; }
+        public bool AutoUpdate { get; set; } = true; // DO NOT MOVE THIS INTO THE CONSTRUCTOR.
 
         /// <summary>
         /// Gets or sets the ImagePath
