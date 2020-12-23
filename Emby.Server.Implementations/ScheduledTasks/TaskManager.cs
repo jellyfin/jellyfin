@@ -40,7 +40,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,

@@ -59,7 +59,6 @@ namespace Emby.Server.Implementations.Channels
         /// <param name="config">The server configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="userDataManager">The user data manager.</param>
-        /// <param name="jsonSerializer">The JSON serializer.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
         public ChannelManager(

@@ -71,7 +71,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="scheduledTask">The scheduled task.</param>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">
         /// scheduledTask

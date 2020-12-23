@@ -40,7 +40,6 @@ namespace Emby.Server.Implementations.Localization
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         public LocalizationManager(
             IServerConfigurationManager configurationManager,
