@@ -589,7 +589,7 @@ namespace Emby.Server.Implementations.Updates
             await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
 
             // Do plugin-specific processing
-            _logger.LogInformation(plugin == null ? "New plugin installed: {0} {1}" : "Plugin updated: {0} {1}", package.Name, package.Version);
+            _logger.LogInformation(plugin == null ? "New plugin installed: {PluginName} {PluginVersion}" : "Plugin updated: {PluginName} {PluginVersion}", package.Name, package.Version);
 
             return plugin != null;
         }
