@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Providers.Plugins.Omdb;
 using Xunit;
 
@@ -16,6 +18,40 @@ namespace Jellyfin.Common.Tests.Json
             Assert.Null(seasonRootObject?.Awards);
             Assert.Null(seasonRootObject?.Episode);
             Assert.Null(seasonRootObject?.Metascore);
+        }
+
+        [Fact]
+        public static void Deserialize_Not_Available_Int_Success()
+        {
+            const string Input = "\"N/A\"";
+            var options = new JsonSerializerOptions
+            {
+                NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                Converters =
+                {
+                    new JsonOmdbNotAvailableStructConverter<int>()
+                }
+            };
+
+            var result = JsonSerializer.Deserialize<int?>(Input, options);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public static void Deserialize_Not_Available_String_Success()
+        {
+            const string Input = "\"N/A\"";
+            var options = new JsonSerializerOptions
+            {
+                Converters =
+                {
+                    new JsonOmdbNotAvailableStringConverter()
+                }
+            };
+
+            options.Converters.Add(new JsonOmdbNotAvailableStringConverter());
+            var result = JsonSerializer.Deserialize<string>(Input, options);
+            Assert.Null(result);
         }
     }
 }
