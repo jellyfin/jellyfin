@@ -471,101 +471,101 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public class SeasonRootObject
         {
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Title { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string seriesID { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStructConverter<int>))]
             public int? Season { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStructConverter<int>))]
             public int? totalSeasons { get; set; }
 
             public RootObject[] Episodes { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Response { get; set; }
         }
 
         public class RootObject
         {
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Title { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Year { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Rated { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Released { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Runtime { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Genre { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Director { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Writer { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Actors { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Plot { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Language { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Country { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Awards { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Poster { get; set; }
 
             public List<OmdbRating> Ratings { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Metascore { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string imdbRating { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string imdbVotes { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string imdbID { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Type { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string DVD { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string BoxOffice { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Production { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Website { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStringConverter))]
             public string Response { get; set; }
 
-            [JsonConverter(typeof(JsonOmdbNotAvailableConverterFactory))]
+            [JsonConverter(typeof(JsonOmdbNotAvailableStructConverter<int>))]
             public int? Episode { get; set; }
 
             public float? GetRottenTomatoScore()
