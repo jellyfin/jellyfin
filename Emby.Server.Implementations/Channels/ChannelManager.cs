@@ -340,8 +340,8 @@ namespace Emby.Server.Implementations.Channels
 
             try
             {
-                using FileStream jsonStream = File.OpenRead(path);
-                return JsonSerializer.DeserializeAsync<List<MediaSourceInfo>>(jsonStream, JsonDefaults.GetOptions()).GetAwaiter().GetResult()
+                var jsonString = File.ReadAllText(path);
+                return JsonSerializer.Deserialize<List<MediaSourceInfo>>(jsonString, JsonDefaults.GetOptions())
                     ?? new List<MediaSourceInfo>();
             }
             catch
@@ -368,6 +368,7 @@ namespace Emby.Server.Implementations.Channels
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
+
             await using FileStream createStream = File.Create(path);
             await JsonSerializer.SerializeAsync(createStream, mediaSources, JsonDefaults.GetOptions()).ConfigureAwait(false);
         }

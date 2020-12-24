@@ -139,8 +139,15 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         {
                             try
                             {
-                                using FileStream jsonStream = File.OpenRead(path);
-                                _lastExecutionResult = JsonSerializer.DeserializeAsync<TaskResult>(jsonStream, JsonDefaults.GetOptions()).GetAwaiter().GetResult();
+                                var jsonString = File.ReadAllText(path);
+                                if (!string.IsNullOrWhiteSpace(jsonString))
+                                {
+                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(jsonString, JsonDefaults.GetOptions());
+                                }
+                                else
+                                {
+                                    _logger.LogDebug("Scheduled Task history file {path} is empty. Skipping deserialization.", path);
+                                }
                             }
                             catch (Exception ex)
                             {

@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
@@ -100,7 +101,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
@@ -1047,8 +1047,8 @@ namespace Emby.Server.Implementations
                     var metafile = Path.Combine(dir, "meta.json");
                     if (File.Exists(metafile))
                     {
-                        using FileStream jsonStream = File.OpenRead(metafile);
-                        var manifest = JsonSerializer.DeserializeAsync<PluginManifest>(jsonStream, jsonOptions).GetAwaiter().GetResult();
+                        var jsonString = File.ReadAllText(metafile);
+                        var manifest = JsonSerializer.Deserialize<PluginManifest>(jsonString, jsonOptions);
 
                         if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                         {
