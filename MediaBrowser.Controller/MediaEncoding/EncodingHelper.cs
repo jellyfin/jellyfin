@@ -1726,8 +1726,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // https://developer.apple.com/documentation/http_live_streaming/hls_authoring_specification_for_apple_devices
             if (isTranscodingAudio
                 && resultChannels.HasValue
-                && resultChannels.Value > 2
-                && resultChannels.Value < 6)
+                && (resultChannels.Value > 2 && resultChannels.Value < 6 || resultChannels.Value == 7))
             {
                 resultChannels = 2;
             }
