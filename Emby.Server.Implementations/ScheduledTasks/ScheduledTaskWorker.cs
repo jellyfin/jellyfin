@@ -66,6 +66,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private string _id;
 
         /// <summary>
+        /// The options for the json Serializer.
+        /// </summary>
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
         /// </summary>
         /// <param name="scheduledTask">The scheduled task.</param>
@@ -142,7 +147,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                                 var jsonString = File.ReadAllText(path);
                                 if (!string.IsNullOrWhiteSpace(jsonString))
                                 {
-                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(jsonString, JsonDefaults.GetOptions());
+                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(jsonString, _jsonOptions);
                                 }
                                 else
                                 {
@@ -172,7 +177,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 lock (_lastExecutionResultSyncLock)
                 {
                     using FileStream createStream = File.OpenWrite(path);
-                    JsonSerializer.SerializeAsync(createStream, value, JsonDefaults.GetOptions());
+                    JsonSerializer.SerializeAsync(createStream, value, _jsonOptions);
                 }
             }
         }
@@ -536,7 +541,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             if (File.Exists(path))
             {
                 var jsonString = File.ReadAllText(path);
-                list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(jsonString, JsonDefaults.GetOptions());
+                list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(jsonString, _jsonOptions);
             }
 
             // Return defaults if file doesn't exist.
@@ -573,7 +578,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using FileStream stream = File.OpenWrite(path);
-            JsonSerializer.SerializeAsync(stream, triggers, JsonDefaults.GetOptions());
+            JsonSerializer.SerializeAsync(stream, triggers, _jsonOptions);
         }
 
         /// <summary>

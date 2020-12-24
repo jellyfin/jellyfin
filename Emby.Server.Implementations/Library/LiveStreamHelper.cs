@@ -25,6 +25,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public LiveStreamHelper(IMediaEncoder mediaEncoder, ILogger logger, IApplicationPaths appPaths)
         {
@@ -47,7 +48,7 @@ namespace Emby.Server.Implementations.Library
                 try
                 {
                     await using FileStream jsonStream = File.OpenRead(cacheFilePath);
-                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
                 }
@@ -84,7 +85,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     await using FileStream createStream = File.OpenWrite(cacheFilePath);
-                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }

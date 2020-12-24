@@ -36,6 +36,7 @@ namespace Emby.Dlna
         private readonly ILogger<DlnaManager> _logger;
         private readonly IServerApplicationHost _appHost;
         private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
 
@@ -494,9 +495,9 @@ namespace Emby.Dlna
                 return profile;
             }
 
-            var json = JsonSerializer.Serialize(profile, JsonDefaults.GetOptions());
+            var json = JsonSerializer.Serialize(profile, _jsonOptions);
 
-            return JsonSerializer.Deserialize<DeviceProfile>(json, options: JsonDefaults.GetOptions());
+            return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions);
         }
 
         public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -25,7 +26,6 @@ using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 using Season = MediaBrowser.Controller.Entities.TV.Season;
@@ -48,6 +48,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
@@ -341,7 +342,7 @@ namespace Emby.Server.Implementations.Channels
             try
             {
                 var jsonString = File.ReadAllText(path);
-                return JsonSerializer.Deserialize<List<MediaSourceInfo>>(jsonString, JsonDefaults.GetOptions())
+                return JsonSerializer.Deserialize<List<MediaSourceInfo>>(jsonString, _jsonOptions)
                     ?? new List<MediaSourceInfo>();
             }
             catch
@@ -370,7 +371,7 @@ namespace Emby.Server.Implementations.Channels
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             await using FileStream createStream = File.Create(path);
-            await JsonSerializer.SerializeAsync(createStream, mediaSources, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -813,7 +814,7 @@ namespace Emby.Server.Implementations.Channels
                 if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
                     await using FileStream jsonStream = File.OpenRead(cachePath);
-                    var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                    var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                     if (cachedResult != null)
                     {
                         return null;
@@ -836,7 +837,7 @@ namespace Emby.Server.Implementations.Channels
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
                         await using FileStream jsonStream = File.OpenRead(cachePath);
-                        var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                        var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                         if (cachedResult != null)
                         {
                             return null;
@@ -884,7 +885,7 @@ namespace Emby.Server.Implementations.Channels
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 await using FileStream createStream = File.Create(path);
-                await JsonSerializer.SerializeAsync(createStream, result, JsonDefaults.GetOptions()).ConfigureAwait(false);
+                await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

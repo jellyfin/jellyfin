@@ -32,6 +32,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public OmdbItemProvider(
             IApplicationHost appHost,
@@ -136,7 +137,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             if (isSearch)
             {
-                var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                 if (searchResultList != null && searchResultList.Search != null)
                 {
                     resultList.AddRange(searchResultList.Search);
@@ -144,7 +145,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
             else
             {
-                var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                 if (string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     resultList.Add(result);

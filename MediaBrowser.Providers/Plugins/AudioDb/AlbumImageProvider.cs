@@ -22,6 +22,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public AudioDbAlbumImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
         {
@@ -58,7 +59,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 var path = AudioDbAlbumProvider.GetAlbumInfoPath(_config.ApplicationPaths, id);
 
                 await using FileStream jsonStream = File.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, JsonDefaults.GetOptions(), cancellationToken).ConfigureAwait(false);
+                var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                 if (obj != null && obj.album != null && obj.album.Count > 0)
                 {

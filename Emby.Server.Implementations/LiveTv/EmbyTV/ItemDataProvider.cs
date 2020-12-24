@@ -15,6 +15,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly string _dataPath;
         private readonly object _fileDataLock = new object();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
         private T[] _items;
 
         public ItemDataProvider(
@@ -45,7 +46,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 try
                 {
                     var jsonString = File.ReadAllText(_dataPath);
-                    _items = JsonSerializer.Deserialize<T[]>(jsonString, JsonDefaults.GetOptions());
+                    _items = JsonSerializer.Deserialize<T[]>(jsonString, _jsonOptions);
                     return;
                 }
                 catch (Exception ex)
@@ -61,7 +62,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_dataPath));
             using FileStream stream = File.OpenWrite(_dataPath);
-            JsonSerializer.SerializeAsync(stream, _items, JsonDefaults.GetOptions());
+            JsonSerializer.SerializeAsync(stream, _items, _jsonOptions);
         }
 
         public IReadOnlyList<T> GetAll()

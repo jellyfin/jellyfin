@@ -36,6 +36,8 @@ namespace Emby.Server.Implementations.Localization
 
         private List<CultureDto> _cultures;
 
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
@@ -180,7 +182,7 @@ namespace Emby.Server.Implementations.Localization
         {
             StreamReader reader = new StreamReader(_assembly.GetManifestResourceStream("Emby.Server.Implementations.Localization.countries.json"));
 
-            return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), JsonDefaults.GetOptions());
+            return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), _jsonOptions);
         }
 
         /// <inheritdoc />
@@ -345,7 +347,7 @@ namespace Emby.Server.Implementations.Localization
                 // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
                 if (stream != null)
                 {
-                    var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+                    var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
 
                     foreach (var key in dict.Keys)
                     {

@@ -123,6 +123,7 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private string[] _urlPrefixes;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -1038,7 +1039,6 @@ namespace Emby.Server.Implementations
             }
 
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
-            var jsonOptions = JsonDefaults.GetOptions();
 
             foreach (var dir in directories)
             {
@@ -1048,7 +1048,7 @@ namespace Emby.Server.Implementations
                     if (File.Exists(metafile))
                     {
                         var jsonString = File.ReadAllText(metafile);
-                        var manifest = JsonSerializer.Deserialize<PluginManifest>(jsonString, jsonOptions);
+                        var manifest = JsonSerializer.Deserialize<PluginManifest>(jsonString, _jsonOptions);
 
                         if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                         {

@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IServerApplicationPaths _appPaths;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly IServerConfigurationManager _serverConfigurationManager;
-
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             _logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
-            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(mediaSource, JsonDefaults.GetOptions()) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
+            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(mediaSource, _jsonOptions) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
             _process = new Process
