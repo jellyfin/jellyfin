@@ -19,6 +19,8 @@ namespace MediaBrowser.Common.Json.Converters
                 {
                     return null;
                 }
+
+                return str;
             }
 
             return JsonSerializer.Deserialize<string>(ref reader, options);
