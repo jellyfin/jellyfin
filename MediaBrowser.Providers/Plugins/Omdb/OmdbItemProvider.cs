@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -32,7 +33,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public OmdbItemProvider(
             IApplicationHost appHost,
@@ -46,6 +47,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
+
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions());
+            _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
+            _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStructConverter<int>());
         }
 
         public string Name => "The Open Movie Database";
