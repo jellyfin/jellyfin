@@ -78,6 +78,26 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (refreshOptions == null)
+            {
+                throw new ArgumentNullException(nameof(refreshOptions));
+            }
+
+            if (libraryOptions == null)
+            {
+                throw new ArgumentNullException(nameof(libraryOptions));
+            }
+
+            if (providers == null)
+            {
+                throw new ArgumentNullException(nameof(providers));
+            }
+
             if (refreshOptions.IsReplacingImage(ImageType.Backdrop))
             {
                 ClearImages(item, ImageType.Backdrop);
@@ -113,6 +133,150 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return result;
+        }
+
+        public bool MergeImages(BaseItem item, List<LocalImageInfo> images)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            var changed = false;
+
+            foreach (var type in _singularImages)
+            {
+                var image = images.FirstOrDefault(i => i.Type == type);
+
+                if (image != null)
+                {
+                    var currentImage = item.GetImageInfo(type, 0);
+
+                    if (currentImage == null)
+                    {
+                        item.SetImagePath(type, image.FileInfo);
+                        changed = true;
+                    }
+                    else if (!string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        item.SetImagePath(type, image.FileInfo);
+                        changed = true;
+                    }
+                    else
+                    {
+                        var newDateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
+
+                        // If date changed then we need to reset saved image dimensions
+                        if (currentImage.DateModified != newDateModified && (currentImage.Width > 0 || currentImage.Height > 0))
+                        {
+                            currentImage.Width = 0;
+                            currentImage.Height = 0;
+                            changed = true;
+                        }
+
+                        currentImage.DateModified = newDateModified;
+                    }
+                }
+                else
+                {
+                    var existing = item.GetImageInfo(type, 0);
+                    if (existing != null)
+                    {
+                        if (existing.IsLocalFile && !File.Exists(existing.Path))
+                        {
+                            item.RemoveImage(existing);
+                            changed = true;
+                        }
+                    }
+                }
+            }
+
+            if (UpdateMultiImages(item, images, ImageType.Backdrop))
+            {
+                changed = true;
+            }
+
+            if (item is IHasScreenshots hasScreenshots)
+            {
+                if (UpdateMultiImages(item, images, ImageType.Screenshot))
+                {
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        private static bool HasImage(BaseItem item, ImageType type)
+        {
+            return item.HasImage(type);
+        }
+
+        private static bool IsEnabled(TypeOptions options, ImageType type)
+        {
+            return options.IsEnabled(type);
+        }
+
+        private static bool UpdateMultiImages(BaseItem item, List<LocalImageInfo> images, ImageType type)
+        {
+            var changed = false;
+
+            var newImages = images.Where(i => i.Type == type).ToList();
+
+            var newImageFileInfos = newImages
+                    .Select(i => i.FileInfo)
+                    .ToList();
+
+            if (item.AddImages(type, newImageFileInfos))
+            {
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        private static bool EnableImageStub(BaseItem item)
+        {
+            if (item is LiveTvProgram)
+            {
+                return true;
+            }
+
+            if (!item.IsFileProtocol)
+            {
+                return true;
+            }
+
+            if (item is IItemByName && !(item is MusicArtist))
+            {
+                if (item is not IHasDualAccess hasDualAccess || hasDualAccess.IsAccessedByName)
+                {
+                    return true;
+                }
+            }
+
+            // We always want to use pre-fetched images
+            return false;
+        }
+
+        private static void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls, int newIndex)
+        {
+            var path = string.Join('|', urls.Take(1));
+
+            item.SetImage(
+                new ItemImageInfo
+                {
+                    Path = path,
+                    Type = imageType
+                },
+                newIndex);
+        }
+
+        private static void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls)
+        {
+            var newIndex = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
+
+            SaveImageStub(item, imageType, urls, newIndex);
         }
 
         /// <summary>
@@ -163,7 +327,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                                    using var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
                                     await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                                 }
@@ -185,16 +349,13 @@ namespace MediaBrowser.Providers.Manager
             {
                 throw;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error in {provider}", provider.Name);
             }
-        }
-
-        private bool HasImage(BaseItem item, ImageType type)
-        {
-            return item.HasImage(type);
         }
 
         /// <summary>
@@ -290,7 +451,7 @@ namespace MediaBrowser.Providers.Manager
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         minWidth = savedOptions.GetMinWidth(imageType);
-                        var downloaded = await DownloadImage(item, libraryOptions, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
+                        var downloaded = await DownloadImage(item, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
 
                         if (downloaded)
                         {
@@ -300,28 +461,25 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadBackdrops(item, libraryOptions, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
 
                 if (item is IHasScreenshots hasScreenshots)
                 {
                     minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadBackdrops(item, libraryOptions, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
             {
                 throw;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error in {provider}", provider.Name);
             }
-        }
-
-        private bool IsEnabled(TypeOptions options, ImageType type)
-        {
-            return options.IsEnabled(type);
         }
 
         private void ClearImages(BaseItem item, ImageType type)
@@ -355,95 +513,8 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public bool MergeImages(BaseItem item, List<LocalImageInfo> images)
-        {
-            var changed = false;
-
-            foreach (var type in _singularImages)
-            {
-                var image = images.FirstOrDefault(i => i.Type == type);
-
-                if (image != null)
-                {
-                    var currentImage = item.GetImageInfo(type, 0);
-
-                    if (currentImage == null)
-                    {
-                        item.SetImagePath(type, image.FileInfo);
-                        changed = true;
-                    }
-                    else if (!string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        item.SetImagePath(type, image.FileInfo);
-                        changed = true;
-                    }
-                    else
-                    {
-                        var newDateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
-
-                        // If date changed then we need to reset saved image dimensions
-                        if (currentImage.DateModified != newDateModified && (currentImage.Width > 0 || currentImage.Height > 0))
-                        {
-                            currentImage.Width = 0;
-                            currentImage.Height = 0;
-                            changed = true;
-                        }
-
-                        currentImage.DateModified = newDateModified;
-                    }
-                }
-                else
-                {
-                    var existing = item.GetImageInfo(type, 0);
-                    if (existing != null)
-                    {
-                        if (existing.IsLocalFile && !File.Exists(existing.Path))
-                        {
-                            item.RemoveImage(existing);
-                            changed = true;
-                        }
-                    }
-                }
-            }
-
-            if (UpdateMultiImages(item, images, ImageType.Backdrop))
-            {
-                changed = true;
-            }
-
-            var hasScreenshots = item as IHasScreenshots;
-            if (hasScreenshots != null)
-            {
-                if (UpdateMultiImages(item, images, ImageType.Screenshot))
-                {
-                    changed = true;
-                }
-            }
-
-            return changed;
-        }
-
-        private bool UpdateMultiImages(BaseItem item, List<LocalImageInfo> images, ImageType type)
-        {
-            var changed = false;
-
-            var newImages = images.Where(i => i.Type == type).ToList();
-
-            var newImageFileInfos = newImages
-                    .Select(i => i.FileInfo)
-                    .ToList();
-
-            if (item.AddImages(type, newImageFileInfos))
-            {
-                changed = true;
-            }
-
-            return changed;
-        }
-
         private async Task<bool> DownloadImage(
             BaseItem item,
-            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             RefreshResult result,
             IEnumerable<RemoteImageInfo> images,
@@ -455,7 +526,7 @@ namespace MediaBrowser.Providers.Manager
                 .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
                 .ToList();
 
-            if (EnableImageStub(item, libraryOptions) && eligibleImages.Count > 0)
+            if (EnableImageStub(item) && eligibleImages.Count > 0)
             {
                 SaveImageStub(item, type, eligibleImages.Select(i => i.Url));
                 result.UpdateType |= ItemUpdateType.ImageUpdate;
@@ -498,51 +569,7 @@ namespace MediaBrowser.Providers.Manager
             return false;
         }
 
-        private bool EnableImageStub(BaseItem item, LibraryOptions libraryOptions)
-        {
-            if (item is LiveTvProgram)
-            {
-                return true;
-            }
-
-            if (!item.IsFileProtocol)
-            {
-                return true;
-            }
-
-            if (item is IItemByName && !(item is MusicArtist))
-            {
-                var hasDualAccess = item as IHasDualAccess;
-                if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
-                {
-                    return true;
-                }
-            }
-            // We always want to use prefetched images
-            return false;
-        }
-
-        private void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls)
-        {
-            var newIndex = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
-
-            SaveImageStub(item, imageType, urls, newIndex);
-        }
-
-        private void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls, int newIndex)
-        {
-            var path = string.Join('|', urls.Take(1));
-
-            item.SetImage(
-                new ItemImageInfo
-                {
-                    Path = path,
-                    Type = imageType
-                },
-                newIndex);
-        }
-
-        private async Task DownloadBackdrops(BaseItem item, LibraryOptions libraryOptions, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
+        private async Task DownloadBackdrops(BaseItem item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
             {
@@ -558,7 +585,7 @@ namespace MediaBrowser.Providers.Manager
 
                 var url = image.Url;
 
-                if (EnableImageStub(item, libraryOptions))
+                if (EnableImageStub(item))
                 {
                     SaveImageStub(item, imageType, new[] { url });
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
@@ -594,7 +621,7 @@ namespace MediaBrowser.Providers.Manager
                         imageType,
                         null,
                         cancellationToken).ConfigureAwait(false);
-                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                    result.UpdateType |= ItemUpdateType.ImageUpdate;
                 }
                 catch (HttpRequestException ex)
                 {

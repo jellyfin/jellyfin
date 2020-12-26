@@ -29,8 +29,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _json;
 
-        public static AudioDbAlbumProvider Current;
-
         public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json)
         {
             _config = config;
@@ -40,6 +38,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             Current = this;
         }
+
+        public static AudioDbAlbumProvider Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "TheAudioDB";
@@ -55,6 +55,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var result = new MetadataResult<MusicAlbum>();
             var id = info.GetReleaseGroupId();
 
@@ -77,7 +82,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return result;
         }
 
-        private void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
         {
             if (Plugin.Instance.Configuration.ReplaceAlbumName && !string.IsNullOrWhiteSpace(result.strAlbum))
             {
@@ -167,7 +178,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(new Uri(url), cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
@@ -194,7 +206,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return Path.Combine(dataPath, "album.json");
         }
 
-        public class Album
+        internal class Album
         {
             public string idAlbum { get; set; }
 
@@ -273,15 +285,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             public string strLocked { get; set; }
         }
 
-        public class RootObject
+        internal class RootObject
         {
-            public List<Album> album { get; set; }
-        }
-
-        /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
+            internal List<Album> album { get; set; }
         }
     }
 }

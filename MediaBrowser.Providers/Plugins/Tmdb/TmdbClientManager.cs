@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -18,12 +18,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// <summary>
     /// Manager class for abstracting the TMDb API client library.
     /// </summary>
-    public class TmdbClientManager
+    public class TmdbClientManager : IDisposable
     {
         private const int CacheDurationInHours = 1;
 
         private readonly IMemoryCache _memoryCache;
         private readonly TMDbClient _tmDbClient;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TmdbClientManager"/> class.
@@ -459,6 +460,34 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.StillSizes[^1], filePath).ToString();
+        }
+
+        /// <summary>
+        /// Public implementation of Dispose pattern callable by consumers.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Protected implementation of Dispose pattern.
+        /// </summary>
+        /// <param name="disposing">True if disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _memoryCache.Dispose();
+            }
+
+            _disposed = true;
         }
 
         private Task EnsureClientConfigAsync()

@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
@@ -148,7 +148,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(new Uri(url), cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -181,7 +182,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return Path.Combine(dataPath, "artist.json");
         }
 
-        public class Artist
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal class Artist
         {
             public string idArtist { get; set; }
 
@@ -266,15 +273,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             public string strLocked { get; set; }
         }
 
-        public class RootObject
+        internal class RootObject
         {
             public List<Artist> artists { get; set; }
-        }
-
-        /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }

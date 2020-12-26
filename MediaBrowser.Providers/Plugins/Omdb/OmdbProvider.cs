@@ -216,7 +216,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
                     resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"");
+                    resultString = resultString.Replace("\"N/A\"", "\"\"", StringComparison.Ordinal);
                 }
             }
 
@@ -235,7 +235,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
                     resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"");
+                    resultString = resultString.Replace("\"N/A\"", "\"\"", StringComparison.Ordinal);
                 }
             }
 
@@ -346,7 +346,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
         {
-            return httpClient.GetAsync(url, cancellationToken);
+            return httpClient.GetAsync(new Uri(url), cancellationToken);
         }
 
         internal string GetDataFilePath(string imdbId)
@@ -547,7 +547,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
         }
 
-        public class OmdbRating
+        internal class OmdbRating
         {
             public string Source { get; set; }
 

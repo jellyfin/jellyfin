@@ -123,8 +123,7 @@ namespace MediaBrowser.Providers.Studios
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return httpClient.GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
 
         /// <summary>
@@ -144,7 +143,7 @@ namespace MediaBrowser.Providers.Studios
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
-                await using var response = await httpClient.GetStreamAsync(url).ConfigureAwait(false);
+                await using var response = await httpClient.GetStreamAsync(new Uri(url)).ConfigureAwait(false);
                 await using var fileStream = new FileStream(file, FileMode.Create);
                 await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }

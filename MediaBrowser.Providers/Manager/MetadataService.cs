@@ -30,6 +30,8 @@ namespace MediaBrowser.Providers.Manager
             LibraryManager = libraryManager;
         }
 
+        public virtual int Order => 0;
+
         protected IServerConfigurationManager ServerConfigurationManager { get; }
 
         protected ILogger<MetadataService<TItemType, TIdType>> Logger { get; }
@@ -48,15 +50,15 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual bool EnableUpdatingOfficialRatingFromChildren => false;
 
-        public virtual int Order => 0;
-
         private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
         {
             try
             {
                 return directoryService.GetFile(path);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.LogError(ex, "Error getting file {Path}", path);
                 return null;
@@ -65,7 +67,12 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            var itemOfType = (TItemType)item;
+            var itemOfType = (TItemType)item ?? throw new NullReferenceException(nameof(item));
+
+            if (refreshOptions == null)
+            {
+                throw new NullReferenceException(nameof(refreshOptions));
+            }
 
             var updateType = ItemUpdateType.None;
             var requiresRefresh = false;
@@ -102,7 +109,9 @@ namespace MediaBrowser.Providers.Manager
                     updateType |= ItemUpdateType.ImageUpdate;
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 localImagesFailed = true;
                 Logger.LogError(ex, "Error validating images for {0}", item.Path ?? item.Name ?? "Unknown name");
@@ -209,7 +218,17 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
+        public bool CanRefresh(BaseItem item)
+        {
+            return item is TItemType;
+        }
+
+        public bool CanRefreshPrimary(Type type)
+        {
+            return type == typeof(TItemType);
+        }
+
+        private static void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
         {
             lookupInfo.ProviderIds = result.ProviderIds;
             lookupInfo.Name = result.Name;
@@ -218,6 +237,11 @@ namespace MediaBrowser.Providers.Manager
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, LibraryOptions libraryOptions, ItemUpdateType reason, CancellationToken cancellationToken)
         {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             if (result.Item.SupportsPeople && result.People != null)
             {
                 var baseItem = result.Item;
@@ -278,6 +302,11 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             item.AfterMetadataRefresh();
             return Task.CompletedTask;
         }
@@ -300,6 +329,11 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual ItemUpdateType BeforeSaveInternal(TItemType item, bool isFullRefresh, ItemUpdateType updateType)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             if (EnableUpdateMetadataFromChildren(item, isFullRefresh, updateType))
             {
                 if (isFullRefresh || updateType > ItemUpdateType.None)
@@ -329,8 +363,7 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
 
-                var folder = item as Folder;
-                if (folder != null)
+                if (item is Folder folder)
                 {
                     return folder.SupportsDateLastMediaAdded || folder.SupportsCumulativeRunTimeTicks;
                 }
@@ -351,6 +384,16 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual ItemUpdateType UpdateMetadataFromChildren(TItemType item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (children == null)
+            {
+                throw new ArgumentNullException(nameof(children));
+            }
+
             var updateType = ItemUpdateType.None;
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
@@ -382,10 +425,9 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
+        private static ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
         {
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsCumulativeRunTimeTicks)
+            if (item is Folder folder && folder.SupportsCumulativeRunTimeTicks)
             {
                 long ticks = 0;
 
@@ -407,12 +449,11 @@ namespace MediaBrowser.Providers.Manager
             return ItemUpdateType.None;
         }
 
-        private ItemUpdateType UpdateDateLastMediaAdded(TItemType item, IList<BaseItem> children)
+        private static ItemUpdateType UpdateDateLastMediaAdded(TItemType item, IList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsDateLastMediaAdded)
+            if (item is Folder folder && folder.SupportsDateLastMediaAdded)
             {
                 var dateLastMediaAdded = DateTime.MinValue;
                 var any = false;
@@ -441,7 +482,7 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdatePremiereDate(TItemType item, IList<BaseItem> children)
+        private static ItemUpdateType UpdatePremiereDate(TItemType item, IList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -473,13 +514,13 @@ namespace MediaBrowser.Providers.Manager
             if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
                 (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
             {
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
         }
 
-        private ItemUpdateType UpdateGenres(TItemType item, IList<BaseItem> children)
+        private static ItemUpdateType UpdateGenres(TItemType item, IList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -493,14 +534,14 @@ namespace MediaBrowser.Providers.Manager
 
                 if (currentList.Length != item.Genres.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
             return updateType;
         }
 
-        private ItemUpdateType UpdateStudios(TItemType item, IList<BaseItem> children)
+        private static ItemUpdateType UpdateStudios(TItemType item, IList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -514,14 +555,14 @@ namespace MediaBrowser.Providers.Manager
 
                 if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
             return updateType;
         }
 
-        private ItemUpdateType UpdateOfficialRating(TItemType item, IList<BaseItem> children)
+        private static ItemUpdateType UpdateOfficialRating(TItemType item, IList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -529,7 +570,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (item.UpdateRatingToItems(children))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -539,9 +580,19 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the providers.
         /// </summary>
-        /// <returns>IEnumerable{`0}.</returns>
+        /// <param name="item">A <see cref="BaseItem"/> instance.</param>
+        /// <param name="libraryOptions">A <see cref="LibraryOptions"/> instance.</param>
+        /// <param name="options">A <see cref="MetadataRefreshOptions"/> instance.</param>
+        /// <param name="isFirstRefresh">True if this is the first refresh.</param>
+        /// <param name="requiresRefresh">True if a refresh is required.</param>
+        /// <returns>a <see cref="IEnumerable{IMetadataProvider}"/>.</returns>
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             // Get providers to refresh
             var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item, libraryOptions).ToList();
 
@@ -612,21 +663,31 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+
             // Get providers to refresh
             var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
 
             var dateLastImageRefresh = item.DateLastRefreshed;
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == MetadataRefreshMode.FullRefresh || dateLastImageRefresh == default(DateTime);
+            var runAllProviders = options.ImageRefreshMode == MetadataRefreshMode.FullRefresh || dateLastImageRefresh == default;
 
             if (!runAllProviders)
             {
                 providers = providers
                     .Where(i =>
                     {
-                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
-                        if (hasFileChangeMonitor != null)
+                        if (i is IHasItemChangeMonitor hasFileChangeMonitor)
                         {
                             return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
                         }
@@ -639,16 +700,6 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        public bool CanRefresh(BaseItem item)
-        {
-            return item is TItemType;
-        }
-
-        public bool CanRefreshPrimary(Type type)
-        {
-            return type == typeof(TItemType);
-        }
-
         protected virtual async Task<RefreshResult> RefreshWithProviders(
             MetadataResult<TItemType> metadata,
             TIdType id,
@@ -657,6 +708,21 @@ namespace MediaBrowser.Providers.Manager
             ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (imageService== null)
+            {
+                throw new ArgumentNullException(nameof(imageService));
+            }
+
             var refreshResult = new RefreshResult
             {
                 UpdateType = ItemUpdateType.None
@@ -686,7 +752,7 @@ namespace MediaBrowser.Providers.Manager
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
-                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 refreshResult.Failures += remoteResult.Failures;
             }
@@ -708,7 +774,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         if (imageService.MergeImages(item, localItem.Images))
                         {
-                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
+                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
 
                         if (localItem.UserDataList != null)
@@ -717,7 +783,7 @@ namespace MediaBrowser.Providers.Manager
                         }
 
                         MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+                        refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
                         if (item.IsLocked || localItem.Item.IsLocked || IsFullLocalMetadata(localItem.Item))
@@ -734,7 +800,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     throw;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     Logger.LogError(ex, "Error in {provider}", provider.Name);
 
@@ -749,7 +817,7 @@ namespace MediaBrowser.Providers.Manager
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
-                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 refreshResult.Failures += remoteResult.Failures;
             }
@@ -785,6 +853,11 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual bool IsFullLocalMetadata(TItemType item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             if (string.IsNullOrWhiteSpace(item.Name))
             {
                 return false;
@@ -805,7 +878,9 @@ namespace MediaBrowser.Providers.Manager
             {
                 throw;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 refreshResult.ErrorMessage = ex.Message;
                 Logger.LogError(ex, "Error in {provider}", provider.Name);
@@ -845,7 +920,7 @@ namespace MediaBrowser.Providers.Manager
                         MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
                         MergeNewData(temp.Item, id);
 
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
+                        refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
                     }
                     else
                     {
@@ -856,7 +931,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     throw;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
@@ -867,7 +944,7 @@ namespace MediaBrowser.Providers.Manager
             return refreshResult;
         }
 
-        private void MergeNewData(TItemType source, TIdType lookupInfo)
+        private static void MergeNewData(TItemType source, TIdType lookupInfo)
         {
             // Copy new provider id's that may have been obtained
             foreach (var providerId in source.ProviderIds)
@@ -902,7 +979,9 @@ namespace MediaBrowser.Providers.Manager
 
                 return hasChanged;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.LogError(ex, "Error in {0}.HasChanged", changeMonitor.GetType().Name);
                 return false;

@@ -125,13 +125,18 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers
-                .Where(i => !(i is IConfigurableProvider configurable) || configurable.IsEnabled)
+                .Where(i => i is not IConfigurableProvider configurable || configurable.IsEnabled)
                 .ToArray();
         }
 
         /// <inheritdoc/>
         public Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             var type = item.GetType();
 
             var service = _metadataServices.FirstOrDefault(current => current.CanRefreshPrimary(type));
@@ -160,8 +165,13 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
+            if (url == null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
+
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var response = await httpClient.GetAsync(new Uri(url), cancellationToken).ConfigureAwait(false);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -210,7 +220,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, true);
+            using var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, true);
 
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
@@ -225,6 +235,16 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, RemoteImageQuery query, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             var providers = GetRemoteImageProviders(item, query.IncludeDisabledProviders);
 
             if (!string.IsNullOrEmpty(query.ProviderName))
@@ -287,7 +307,9 @@ namespace MediaBrowser.Providers.Manager
             {
                 return new List<RemoteImageInfo>();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return new List<RemoteImageInfo>();
@@ -308,6 +330,11 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>The image providers for the item.</returns>
         public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             return GetImageProviders(item, _libraryManager.GetLibraryOptions(item), GetMetadataOptions(item), refreshOptions, false);
         }
 
@@ -452,7 +479,9 @@ namespace MediaBrowser.Providers.Manager
             {
                 return provider.Supports(item);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "{ProviderName} failed in Supports for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return false;
@@ -466,7 +495,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>System.Int32.</returns>
         private int GetOrder(IImageProvider provider)
         {
-            if (!(provider is IHasOrder hasOrder))
+            if (provider is not IHasOrder hasOrder)
             {
                 return 0;
             }
@@ -474,7 +503,7 @@ namespace MediaBrowser.Providers.Manager
             return hasOrder.Order;
         }
 
-        private int GetConfiguredOrder(BaseItem item, IMetadataProvider provider, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions)
+        private static int GetConfiguredOrder(BaseItem item, IMetadataProvider provider, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions)
         {
             // See if there's a user-defined order
             if (provider is ILocalMetadataProvider)
@@ -621,7 +650,7 @@ namespace MediaBrowser.Providers.Manager
             }));
         }
 
-        private void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
+        private static void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
         {
             // Locals
             list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
@@ -641,6 +670,11 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public MetadataOptions GetMetadataOptions(BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             var type = item.GetType().Name;
 
             return _configurationManager.Configuration.MetadataOptions
@@ -651,12 +685,22 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void SaveMetadata(BaseItem item, ItemUpdateType updateType)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             SaveMetadata(item, updateType, _savers);
         }
 
         /// <inheritdoc/>
         public void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
         }
 
@@ -682,7 +726,9 @@ namespace MediaBrowser.Providers.Manager
                     {
                         path = fileSaver.GetSavePath(item);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         _logger.LogError(ex, "Error in {0} GetSavePath", saver.Name);
                         continue;
@@ -693,7 +739,9 @@ namespace MediaBrowser.Providers.Manager
                         _libraryMonitor.ReportFileSystemChangeBeginning(path);
                         saver.Save(item, CancellationToken.None);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         _logger.LogError(ex, "Error in metadata saver");
                     }
@@ -708,7 +756,9 @@ namespace MediaBrowser.Providers.Manager
                     {
                         saver.Save(item, CancellationToken.None);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         _logger.LogError(ex, "Error in metadata saver");
                     }
@@ -745,7 +795,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 // Manual edit occurred
                                 // Even if save local is off, save locally anyway if the metadata file already exists
-                                if (!(saver is IMetadataFileSaver fileSaver) || !File.Exists(fileSaver.GetSavePath(item)))
+                                if (saver is not IMetadataFileSaver fileSaver || !File.Exists(fileSaver.GetSavePath(item)))
                                 {
                                     return false;
                                 }
@@ -769,7 +819,9 @@ namespace MediaBrowser.Providers.Manager
 
                 return true;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error in {0}.IsEnabledFor", saver.Name);
                 return false;
@@ -782,6 +834,11 @@ namespace MediaBrowser.Providers.Manager
             where TLookupType : ItemLookupInfo
         {
             BaseItem referenceItem = null;
+
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
 
             if (!searchInfo.ItemId.Equals(Guid.Empty))
             {
@@ -869,7 +926,9 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     // Logged at lower levels
                 }
@@ -880,7 +939,7 @@ namespace MediaBrowser.Providers.Manager
             return resultList;
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(
+        private static async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(
             IRemoteSearchProvider<TLookupType> provider,
             TLookupType searchInfo,
             CancellationToken cancellationToken)
@@ -919,7 +978,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     return i.Supports(item);
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     _logger.LogError(ex, "Error in {0}.Suports", i.GetType().Name);
                     return false;
@@ -930,6 +991,11 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             return GetExternalIds(item)
                 .Select(i =>
             {
@@ -988,6 +1054,11 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshStart(BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             _logger.LogDebug("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
             _activeRefreshes[item.Id] = 0;
             RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
@@ -996,6 +1067,11 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshComplete(BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             _logger.LogDebug("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
 
             _activeRefreshes.Remove(item.Id, out _);
@@ -1017,6 +1093,11 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshProgress(BaseItem item, double progress)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             var id = item.Id;
             _logger.LogDebug("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
 
@@ -1091,7 +1172,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     break;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     _logger.LogError(ex, "Error refreshing item");
                 }
@@ -1119,7 +1202,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private async Task RefreshCollectionFolderChildren(MetadataRefreshOptions options, CollectionFolder collectionFolder, CancellationToken cancellationToken)
+        private static async Task RefreshCollectionFolderChildren(MetadataRefreshOptions options, CollectionFolder collectionFolder, CancellationToken cancellationToken)
         {
             foreach (var child in collectionFolder.GetPhysicalFolders())
             {
@@ -1155,7 +1238,9 @@ namespace MediaBrowser.Providers.Manager
             {
                 await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error refreshing library");
             }
@@ -1164,6 +1249,11 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             return RefreshItem(item, options, cancellationToken);
         }
 
@@ -1175,6 +1265,11 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             // create a variable for this since it is possible MetadataRefreshThrottler could change due to a config update during a scan
             var metadataRefreshThrottler = _baseItemManager.MetadataRefreshThrottler;
 

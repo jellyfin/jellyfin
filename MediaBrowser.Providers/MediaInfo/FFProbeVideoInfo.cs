@@ -78,13 +78,23 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
             where T : Video
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             BlurayDiscInfo blurayDiscInfo = null;
 
             Model.MediaInfo.MediaInfo mediaInfoResult = null;
 
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
             {
-                string[] streamFileNames = null;
+                string[] streamFileNames;
 
                 if (item.VideoType == VideoType.Dvd)
                 {
@@ -111,58 +121,34 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                if (streamFileNames == null)
-                {
-                    streamFileNames = Array.Empty<string>();
-                }
-
                 mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options).ConfigureAwait(false);
+            await Fetch(item, mediaInfoResult, blurayDiscInfo, options, cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.MetadataImport;
         }
 
-        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
-            Video item,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var path = item.Path;
-            var protocol = item.PathProtocol ?? MediaProtocol.File;
-
-            if (item.IsShortcut)
-            {
-                path = item.ShortcutPath;
-                protocol = _mediaSourceManager.GetPathProtocol(path);
-            }
-
-            return _mediaEncoder.GetMediaInfo(
-                new MediaInfoRequest
-                {
-                    ExtractChapters = true,
-                    MediaType = DlnaProfileType.Video,
-                    MediaSource = new MediaSourceInfo
-                    {
-                        Path = path,
-                        Protocol = protocol,
-                        VideoType = item.VideoType
-                    }
-                },
-                cancellationToken);
-        }
-
         protected async Task Fetch(
             Video video,
-            CancellationToken cancellationToken,
             Model.MediaInfo.MediaInfo mediaInfo,
             BlurayDiscInfo blurayInfo,
-            MetadataRefreshOptions options)
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
         {
+            if (video == null)
+            {
+                throw new ArgumentNullException(nameof(video));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+
             List<MediaStream> mediaStreams;
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;
@@ -199,7 +185,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 video.Container = mediaInfo.Container;
 
-                chapters = mediaInfo.Chapters == null ? Array.Empty<ChapterInfo>() : mediaInfo.Chapters;
+                chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();
                 if (blurayInfo != null)
                 {
                     FetchBdInfo(video, ref chapters, mediaStreams, blurayInfo);
@@ -258,6 +244,36 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
+            Video item,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var path = item.Path;
+            var protocol = item.PathProtocol ?? MediaProtocol.File;
+
+            if (item.IsShortcut)
+            {
+                path = item.ShortcutPath;
+                protocol = _mediaSourceManager.GetPathProtocol(path);
+            }
+
+            return _mediaEncoder.GetMediaInfo(
+                new MediaInfoRequest
+                {
+                    ExtractChapters = true,
+                    MediaType = DlnaProfileType.Video,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = protocol,
+                        VideoType = item.VideoType
+                    }
+                },
+                cancellationToken);
+        }
+
         private void NormalizeChapterNames(ChapterInfo[] chapters)
         {
             for (int i = 0; i < chapters.Length; i++)
@@ -276,7 +292,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void FetchBdInfo(BaseItem item, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
+        private static void FetchBdInfo(BaseItem item, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
             var video = (Video)item;
 
@@ -333,7 +349,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private bool IsEmpty(int? num)
+        private static bool IsEmpty(int? num)
         {
             return !num.HasValue || num.Value == 0;
         }
@@ -354,14 +370,16 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return _blurayExaminer.GetDiscInfo(path);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error getting BDInfo");
                 return null;
             }
         }
 
-        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
+        private static void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
         {
             var isFullRefresh = refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 

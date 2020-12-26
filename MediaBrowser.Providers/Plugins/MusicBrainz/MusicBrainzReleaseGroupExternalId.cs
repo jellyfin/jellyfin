@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -78,42 +78,5 @@ namespace MediaBrowser.Providers.Music
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is MusicArtist;
-    }
-
-    public class MusicBrainzOtherArtistExternalId : IExternalId
-    {
-        /// <inheritdoc />
-        public string ProviderName => "MusicBrainz";
-
-        /// <inheritdoc />
-
-        public string Key => MetadataProvider.MusicBrainzArtist.ToString();
-
-        /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
-
-        /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
-
-        /// <inheritdoc />
-        public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;
-    }
-
-    public class MusicBrainzTrackId : IExternalId
-    {
-        /// <inheritdoc />
-        public string ProviderName => "MusicBrainz";
-
-        /// <inheritdoc />
-        public string Key => MetadataProvider.MusicBrainzTrack.ToString();
-
-        /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.Track;
-
-        /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/track/{0}";
-
-        /// <inheritdoc />
-        public bool Supports(IHasProviderIds item) => item is Audio;
     }
 }

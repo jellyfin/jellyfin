@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
+    public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder, IDisposable
     {
         /// <summary>
         /// For each single MB lookup/search, this is the maximum number of
@@ -35,8 +35,8 @@ namespace MediaBrowser.Providers.Music
         /// <summary>
         /// The Jellyfin user-agent is unrestricted but source IP must not exceed
         /// one request per second, therefore we rate limit to avoid throttling.
-        /// Be prudent, use a value slightly above the minimun required.
-        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
+        /// Be prudent, use a value slightly above the minimum required.
+        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting .
         /// </summary>
         private readonly long _musicBrainzQueryIntervalMs;
 
@@ -48,6 +48,7 @@ namespace MediaBrowser.Providers.Music
 
         private SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
         private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
+        private bool _disposed;
 
         public MusicBrainzAlbumProvider(
             IHttpClientFactory httpClientFactory,
@@ -67,17 +68,22 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        internal static MusicBrainzAlbumProvider Current { get; private set; }
-
         /// <inheritdoc />
         public string Name => "MusicBrainz";
 
         /// <inheritdoc />
         public int Order => 0;
 
+        internal static MusicBrainzAlbumProvider Current { get; private set; }
+
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
+
             var releaseId = searchInfo.GetReleaseId();
             var releaseGroupId = searchInfo.GetReleaseGroupId();
 
@@ -128,58 +134,59 @@ namespace MediaBrowser.Providers.Music
 
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings()
             {
-                var settings = new XmlReaderSettings()
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
+
+            using var reader = XmlReader.Create(oReader, settings);
+            var results = ReleaseResult.Parse(reader);
+
+            return results.Select(i =>
+            {
+                var result = new RemoteSearchResult
                 {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
+                    Name = i.Title,
+                    ProductionYear = i.Year
                 };
 
-                using (var reader = XmlReader.Create(oReader, settings))
+                if (i.Artists.Count > 0)
                 {
-                    var results = ReleaseResult.Parse(reader);
-
-                    return results.Select(i =>
+                    result.AlbumArtist = new RemoteSearchResult
                     {
-                        var result = new RemoteSearchResult
-                        {
-                            Name = i.Title,
-                            ProductionYear = i.Year
-                        };
+                        SearchProviderName = Name,
+                        Name = i.Artists[0].Item1
+                    };
 
-                        if (i.Artists.Count > 0)
-                        {
-                            result.AlbumArtist = new RemoteSearchResult
-                            {
-                                SearchProviderName = Name,
-                                Name = i.Artists[0].Item1
-                            };
-
-                            result.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, i.Artists[0].Item2);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(i.ReleaseId))
-                        {
-                            result.SetProviderId(MetadataProvider.MusicBrainzAlbum, i.ReleaseId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
-                        {
-                            result.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, i.ReleaseGroupId);
-                        }
-
-                        return result;
-                    });
+                    result.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, i.Artists[0].Item2);
                 }
-            }
+
+                if (!string.IsNullOrWhiteSpace(i.ReleaseId))
+                {
+                    result.SetProviderId(MetadataProvider.MusicBrainzAlbum, i.ReleaseId);
+                }
+
+                if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
+                {
+                    result.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, i.ReleaseGroupId);
+                }
+
+                return result;
+            });
         }
 
         /// <inheritdoc />
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo id, CancellationToken cancellationToken)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
             var releaseId = id.GetReleaseId();
             var releaseGroupId = id.GetReleaseGroupId();
 
@@ -309,187 +316,6 @@ namespace MediaBrowser.Providers.Music
             return ReleaseResult.Parse(reader).FirstOrDefault();
         }
 
-        private class ReleaseResult
-        {
-            public string ReleaseId;
-            public string ReleaseGroupId;
-            public string Title;
-            public string Overview;
-            public int? Year;
-
-            public List<ValueTuple<string, string>> Artists = new List<ValueTuple<string, string>>();
-
-            public static IEnumerable<ReleaseResult> Parse(XmlReader reader)
-            {
-                reader.MoveToContent();
-                reader.Read();
-
-                // Loop through each element
-                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                {
-                    if (reader.NodeType == XmlNodeType.Element)
-                    {
-                        switch (reader.Name)
-                        {
-                            case "release-list":
-                                {
-                                    if (reader.IsEmptyElement)
-                                    {
-                                        reader.Read();
-                                        continue;
-                                    }
-
-                                    using (var subReader = reader.ReadSubtree())
-                                    {
-                                        return ParseReleaseList(subReader).ToList();
-                                    }
-                                }
-
-                            default:
-                                {
-                                    reader.Skip();
-                                    break;
-                                }
-                        }
-                    }
-                    else
-                    {
-                        reader.Read();
-                    }
-                }
-
-                return Enumerable.Empty<ReleaseResult>();
-            }
-
-            private static IEnumerable<ReleaseResult> ParseReleaseList(XmlReader reader)
-            {
-                reader.MoveToContent();
-                reader.Read();
-
-                // Loop through each element
-                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                {
-                    if (reader.NodeType == XmlNodeType.Element)
-                    {
-                        switch (reader.Name)
-                        {
-                            case "release":
-                                {
-                                    if (reader.IsEmptyElement)
-                                    {
-                                        reader.Read();
-                                        continue;
-                                    }
-
-                                    var releaseId = reader.GetAttribute("id");
-
-                                    using (var subReader = reader.ReadSubtree())
-                                    {
-                                        var release = ParseRelease(subReader, releaseId);
-                                        if (release != null)
-                                        {
-                                            yield return release;
-                                        }
-                                    }
-
-                                    break;
-                                }
-
-                            default:
-                                {
-                                    reader.Skip();
-                                    break;
-                                }
-                        }
-                    }
-                    else
-                    {
-                        reader.Read();
-                    }
-                }
-            }
-
-            private static ReleaseResult ParseRelease(XmlReader reader, string releaseId)
-            {
-                var result = new ReleaseResult
-                {
-                    ReleaseId = releaseId
-                };
-
-                reader.MoveToContent();
-                reader.Read();
-
-                // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
-
-                // Loop through each element
-                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                {
-                    if (reader.NodeType == XmlNodeType.Element)
-                    {
-                        switch (reader.Name)
-                        {
-                            case "title":
-                                {
-                                    result.Title = reader.ReadElementContentAsString();
-                                    break;
-                                }
-
-                            case "date":
-                                {
-                                    var val = reader.ReadElementContentAsString();
-                                    if (DateTime.TryParse(val, out var date))
-                                    {
-                                        result.Year = date.Year;
-                                    }
-
-                                    break;
-                                }
-
-                            case "annotation":
-                                {
-                                    result.Overview = reader.ReadElementContentAsString();
-                                    break;
-                                }
-
-                            case "release-group":
-                                {
-                                    result.ReleaseGroupId = reader.GetAttribute("id");
-                                    reader.Skip();
-                                    break;
-                                }
-
-                            case "artist-credit":
-                                {
-                                    using (var subReader = reader.ReadSubtree())
-                                    {
-                                        var artist = ParseArtistCredit(subReader);
-
-                                        if (!string.IsNullOrEmpty(artist.Item1))
-                                        {
-                                            result.Artists.Add(artist);
-                                        }
-                                    }
-
-                                    break;
-                                }
-
-                            default:
-                                {
-                                    reader.Skip();
-                                    break;
-                                }
-                        }
-                    }
-                    else
-                    {
-                        reader.Read();
-                    }
-                }
-
-                return result;
-            }
-        }
-
         private static (string, string) ParseArtistCredit(XmlReader reader)
         {
             reader.MoveToContent();
@@ -506,10 +332,8 @@ namespace MediaBrowser.Providers.Music
                     {
                         case "name-credit":
                             {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    return ParseArtistNameCredit(subReader);
-                                }
+                                using var subReader = reader.ReadSubtree();
+                                return ParseArtistNameCredit(subReader);
                             }
 
                         default:
@@ -545,10 +369,8 @@ namespace MediaBrowser.Providers.Music
                         case "artist":
                             {
                                 var id = reader.GetAttribute("id");
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    return ParseArtistArtistCredit(subReader, id);
-                                }
+                                using var subReader = reader.ReadSubtree();
+                                return ParseArtistArtistCredit(subReader, id);
                             }
 
                         default:
@@ -647,19 +469,18 @@ namespace MediaBrowser.Providers.Music
                 IgnoreComments = true
             };
 
-            using (var reader = XmlReader.Create(oReader, settings))
-            {
-                reader.MoveToContent();
-                reader.Read();
+            using var reader = XmlReader.Create(oReader, settings);
+            reader.MoveToContent();
+            reader.Read();
 
-                // Loop through each element
-                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if (reader.NodeType == XmlNodeType.Element)
+                    switch (reader.Name)
                     {
-                        switch (reader.Name)
-                        {
-                            case "release-group-list":
+                        case "release-group-list":
                             {
                                 if (reader.IsEmptyElement)
                                 {
@@ -667,27 +488,24 @@ namespace MediaBrowser.Providers.Music
                                     continue;
                                 }
 
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    return GetFirstReleaseGroupId(subReader);
-                                }
+                                using var subReader = reader.ReadSubtree();
+                                return GetFirstReleaseGroupId(subReader);
                             }
 
-                            default:
+                        default:
                             {
                                 reader.Skip();
                                 break;
                             }
-                        }
-                    }
-                    else
-                    {
-                        reader.Read();
                     }
                 }
-
-                return null;
+                else
+                {
+                    reader.Read();
+                }
             }
+
+            return null;
         }
 
         private string GetFirstReleaseGroupId(XmlReader reader)
@@ -729,6 +547,9 @@ namespace MediaBrowser.Providers.Music
         /// A number of retries shall be made in order to try and satisfy the request before
         /// giving up and returning null.
         /// </summary>
+        /// <param name="url">The url used in the request.</param>
+        /// <param name="cancellationToken">A <seealso cref="CancellationToken"/>.</param>
+        /// <returns>A <see cref="Task{HttpResponseMessage}"/> representing the asynchronous operation.</returns>
         internal async Task<HttpResponseMessage> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
             await _apiRequestLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -780,6 +601,206 @@ namespace MediaBrowser.Providers.Music
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (!disposing)
+            {
+                _apiRequestLock.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        private class ReleaseResult
+        {
+            public string ReleaseId { get; set; }
+
+            public string ReleaseGroupId { get; set; }
+
+            public string Title { get; set; }
+
+            public string Overview { get; set; }
+
+            public int? Year { get; set; }
+
+            public List<ValueTuple<string, string>> Artists { get; set; } = new List<ValueTuple<string, string>>();
+
+            public static IEnumerable<ReleaseResult> Parse(XmlReader reader)
+            {
+                reader.MoveToContent();
+                reader.Read();
+
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "release-list":
+                                {
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        reader.Read();
+                                        continue;
+                                    }
+
+                                    using var subReader = reader.ReadSubtree();
+                                    return ParseReleaseList(subReader).ToList();
+                                }
+
+                            default:
+                                {
+                                    reader.Skip();
+                                    break;
+                                }
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
+                    }
+                }
+
+                return Enumerable.Empty<ReleaseResult>();
+            }
+
+            private static IEnumerable<ReleaseResult> ParseReleaseList(XmlReader reader)
+            {
+                reader.MoveToContent();
+                reader.Read();
+
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "release":
+                                {
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        reader.Read();
+                                        continue;
+                                    }
+
+                                    var releaseId = reader.GetAttribute("id");
+
+                                    using var subReader = reader.ReadSubtree();
+                                    var release = ParseRelease(subReader, releaseId);
+                                    if (release != null)
+                                    {
+                                        yield return release;
+                                    }
+
+                                    break;
+                                }
+
+                            default:
+                                {
+                                    reader.Skip();
+                                    break;
+                                }
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
+                    }
+                }
+            }
+
+            private static ReleaseResult ParseRelease(XmlReader reader, string releaseId)
+            {
+                var result = new ReleaseResult
+                {
+                    ReleaseId = releaseId
+                };
+
+                reader.MoveToContent();
+                reader.Read();
+
+                // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
+
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "title":
+                                {
+                                    result.Title = reader.ReadElementContentAsString();
+                                    break;
+                                }
+
+                            case "date":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+                                    if (DateTime.TryParse(val, out var date))
+                                    {
+                                        result.Year = date.Year;
+                                    }
+
+                                    break;
+                                }
+
+                            case "annotation":
+                                {
+                                    result.Overview = reader.ReadElementContentAsString();
+                                    break;
+                                }
+
+                            case "release-group":
+                                {
+                                    result.ReleaseGroupId = reader.GetAttribute("id");
+                                    reader.Skip();
+                                    break;
+                                }
+
+                            case "artist-credit":
+                                {
+                                    using var subReader = reader.ReadSubtree();
+                                    var artist = ParseArtistCredit(subReader);
+
+                                    if (!string.IsNullOrEmpty(artist.Item1))
+                                    {
+                                        result.Artists.Add(artist);
+                                    }
+
+                                    break;
+                                }
+
+                            default:
+                                {
+                                    reader.Skip();
+                                    break;
+                                }
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
+                    }
+                }
+
+                return result;
+            }
         }
     }
 }

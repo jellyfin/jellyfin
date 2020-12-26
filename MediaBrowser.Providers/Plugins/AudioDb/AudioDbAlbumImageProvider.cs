@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -97,8 +98,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return httpClient.GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
 
         /// <inheritdoc />
