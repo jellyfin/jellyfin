@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -8,19 +8,20 @@ using MediaBrowser.Providers.Plugins.MusicBrainz;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class MusicBrainzReleaseGroupExternalId : IExternalId
+
+    public class MusicBrainzAlbumExternalId : IExternalId
     {
         /// <inheritdoc />
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.MusicBrainzReleaseGroup.ToString();
+        public string Key => MetadataProvider.MusicBrainzAlbum.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.ReleaseGroup;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/release-group/{0}";
+        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/release/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;

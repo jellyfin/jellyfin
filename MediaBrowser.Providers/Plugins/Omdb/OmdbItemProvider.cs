@@ -71,6 +71,68 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return GetSearchResultsInternal(searchInfo, type, true, cancellationToken);
         }
 
+        public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            return GetMovieResult<Trailer>(info, cancellationToken);
+        }
+
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return GetSearchResults(searchInfo, "movie", cancellationToken);
+        }
+
+        public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            var result = new MetadataResult<Series>
+            {
+                Item = new Series(),
+                QueriedById = true
+            };
+
+            var imdbId = info.GetProviderId(MetadataProvider.Imdb);
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                imdbId = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
+                result.QueriedById = false;
+            }
+
+            if (!string.IsNullOrEmpty(imdbId))
+            {
+                result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
+                result.HasMetadata = true;
+
+                await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _configurationManager)
+                    .Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+
+        public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            return GetMovieResult<Movie>(info, cancellationToken);
+        }
+
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
+        }
+
         private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, string type, bool isSearch, CancellationToken cancellationToken)
         {
             var episodeSearchInfo = searchInfo as EpisodeInfo;
@@ -193,63 +255,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             });
         }
 
-        public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
-
-            return GetMovieResult<Trailer>(info, cancellationToken);
-        }
-
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
-        {
-            return GetSearchResults(searchInfo, "movie", cancellationToken);
-        }
-
-        public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
-
-            var result = new MetadataResult<Series>
-            {
-                Item = new Series(),
-                QueriedById = true
-            };
-
-            var imdbId = info.GetProviderId(MetadataProvider.Imdb);
-            if (string.IsNullOrWhiteSpace(imdbId))
-            {
-                imdbId = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
-                result.QueriedById = false;
-            }
-
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                result.HasMetadata = true;
-
-                await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _configurationManager)
-                    .Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
-            }
-
-            return result;
-        }
-
-        public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
-
-            return GetMovieResult<Movie>(info, cancellationToken);
-        }
-
         private async Task<MetadataResult<T>> GetMovieResult<T>(ItemLookupInfo info, CancellationToken cancellationToken)
             where T : BaseItem, new()
         {
@@ -289,11 +294,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var results = await GetSearchResultsInternal(info, "series", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
             return first?.GetProviderId(MetadataProvider.Imdb);
-        }
-
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
 
         private class SearchResult

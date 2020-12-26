@@ -243,54 +243,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
-            Video item,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var path = item.Path;
-            var protocol = item.PathProtocol ?? MediaProtocol.File;
-
-            if (item.IsShortcut)
-            {
-                path = item.ShortcutPath;
-                protocol = _mediaSourceManager.GetPathProtocol(path);
-            }
-
-            return _mediaEncoder.GetMediaInfo(
-                new MediaInfoRequest
-                {
-                    ExtractChapters = true,
-                    MediaType = DlnaProfileType.Video,
-                    MediaSource = new MediaSourceInfo
-                    {
-                        Path = path,
-                        Protocol = protocol,
-                        VideoType = item.VideoType
-                    }
-                },
-                cancellationToken);
-        }
-
-        private void NormalizeChapterNames(ChapterInfo[] chapters)
-        {
-            for (int i = 0; i < chapters.Length; i++)
-            {
-                string name = chapters[i].Name;
-                // Check if the name is empty and/or if the name is a time
-                // Some ripping programs do that.
-                if (string.IsNullOrWhiteSpace(name) ||
-                    TimeSpan.TryParse(name, out _))
-                {
-                    chapters[i].Name = string.Format(
-                        CultureInfo.InvariantCulture,
-                        _localization.GetLocalizedString("ChapterNameValue"),
-                        (i + 1).ToString(CultureInfo.InvariantCulture));
-                }
-            }
-        }
-
         private static void FetchBdInfo(BaseItem item, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
             var video = (Video)item;
@@ -351,31 +303,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private static bool IsEmpty(int? num)
         {
             return !num.HasValue || num.Value == 0;
-        }
-
-        /// <summary>
-        /// Gets information about the longest playlist on a bdrom.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>VideoStream.</returns>
-        private BlurayDiscInfo GetBDInfo(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            try
-            {
-                return _blurayExaminer.GetDiscInfo(path);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                _logger.LogError(ex, "Error getting BDInfo");
-                return null;
-            }
         }
 
         private static void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
@@ -467,6 +394,79 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.Overview = data.Overview;
                 }
+            }
+        }
+
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
+            Video item,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var path = item.Path;
+            var protocol = item.PathProtocol ?? MediaProtocol.File;
+
+            if (item.IsShortcut)
+            {
+                path = item.ShortcutPath;
+                protocol = _mediaSourceManager.GetPathProtocol(path);
+            }
+
+            return _mediaEncoder.GetMediaInfo(
+                new MediaInfoRequest
+                {
+                    ExtractChapters = true,
+                    MediaType = DlnaProfileType.Video,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = protocol,
+                        VideoType = item.VideoType
+                    }
+                },
+                cancellationToken);
+        }
+
+        private void NormalizeChapterNames(ChapterInfo[] chapters)
+        {
+            for (int i = 0; i < chapters.Length; i++)
+            {
+                string name = chapters[i].Name;
+                // Check if the name is empty and/or if the name is a time
+                // Some ripping programs do that.
+                if (string.IsNullOrWhiteSpace(name) ||
+                    TimeSpan.TryParse(name, out _))
+                {
+                    chapters[i].Name = string.Format(
+                        CultureInfo.InvariantCulture,
+                        _localization.GetLocalizedString("ChapterNameValue"),
+                        (i + 1).ToString(CultureInfo.InvariantCulture));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets information about the longest playlist on a bdrom.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>VideoStream.</returns>
+        private BlurayDiscInfo GetBDInfo(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            try
+            {
+                return _blurayExaminer.GetDiscInfo(path);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogError(ex, "Error getting BDInfo");
+                return null;
             }
         }
 

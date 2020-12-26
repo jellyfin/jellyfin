@@ -1,5 +1,6 @@
-﻿#pragma warning disable CS1591
+#pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -60,90 +61,89 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var obj = _json.DeserializeFromFile<AudioDbArtistProvider.RootObject>(path);
 
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                if (obj != null && obj.Artists != null && obj.Artists.Count > 0)
                 {
-                    return GetImages(obj.artists[0]);
+                    return GetImages(obj.Artists[0]);
                 }
             }
 
             return new List<RemoteImageInfo>();
         }
 
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public bool Supports(BaseItem item)
+            => item is MusicArtist;
+
         private IEnumerable<RemoteImageInfo> GetImages(AudioDbArtistProvider.Artist item)
         {
             var list = new List<RemoteImageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistThumb))
+            if (!string.IsNullOrWhiteSpace(item.ArtistThumb))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistThumb,
+                    Url = item.ArtistThumb,
                     Type = ImageType.Primary
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistLogo))
+            if (!string.IsNullOrWhiteSpace(item.ArtistLogo))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistLogo,
+                    Url = item.ArtistLogo,
                     Type = ImageType.Logo
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistBanner))
+            if (!string.IsNullOrWhiteSpace(item.ArtistBanner))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistBanner,
+                    Url = item.ArtistBanner,
                     Type = ImageType.Banner
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart))
+            if (!string.IsNullOrWhiteSpace(item.ArtistFanart))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart,
+                    Url = item.ArtistFanart,
                     Type = ImageType.Backdrop
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart2))
+            if (!string.IsNullOrWhiteSpace(item.ArtistFanart2))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart2,
+                    Url = item.ArtistFanart2,
                     Type = ImageType.Backdrop
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart3))
+            if (!string.IsNullOrWhiteSpace(item.ArtistFanart3))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart3,
+                    Url = item.ArtistFanart3,
                     Type = ImageType.Backdrop
                 });
             }
 
             return list;
         }
-
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return httpClient.GetAsync(url, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public bool Supports(BaseItem item)
-            => item is MusicArtist;
     }
 }

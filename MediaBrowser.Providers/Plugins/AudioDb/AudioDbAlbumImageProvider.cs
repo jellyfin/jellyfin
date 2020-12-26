@@ -68,33 +68,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return new List<RemoteImageInfo>();
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(AudioDbAlbumProvider.Album item)
-        {
-            var list = new List<RemoteImageInfo>();
-
-            if (!string.IsNullOrWhiteSpace(item.strAlbumThumb))
-            {
-                list.Add(new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Url = item.strAlbumThumb,
-                    Type = ImageType.Primary
-                });
-            }
-
-            if (!string.IsNullOrWhiteSpace(item.strAlbumCDart))
-            {
-                list.Add(new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Url = item.strAlbumCDart,
-                    Type = ImageType.Disc
-                });
-            }
-
-            return list;
-        }
-
         /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
@@ -104,5 +77,32 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public bool Supports(BaseItem item)
             => item is MusicAlbum;
+
+        private IEnumerable<RemoteImageInfo> GetImages(AudioDbAlbumProvider.Album item)
+        {
+            var list = new List<RemoteImageInfo>();
+
+            if (!string.IsNullOrWhiteSpace(item.AlbumThumb))
+            {
+                list.Add(new RemoteImageInfo
+                {
+                    ProviderName = Name,
+                    Url = item.AlbumThumb,
+                    Type = ImageType.Primary
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.AlbumCDart))
+            {
+                list.Add(new RemoteImageInfo
+                {
+                    ProviderName = Name,
+                    Url = item.AlbumCDart,
+                    Type = ImageType.Disc
+                });
+            }
+
+            return list;
+        }
     }
 }

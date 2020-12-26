@@ -269,6 +269,447 @@ namespace MediaBrowser.Providers.Manager
             return results.SelectMany(i => i.ToList());
         }
 
+        /// <inheritdoc/>
+        public void SaveMetadata(BaseItem item, ItemUpdateType updateType)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            SaveMetadata(item, updateType, _savers);
+        }
+
+        /// <inheritdoc/>
+        public void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(BaseItem item)
+        {
+            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo(i.Name, i.GetSupportedImages(item).ToArray()));
+        }
+
+        /// <summary>
+        /// Gets the image providers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="refreshOptions">The image refresh options.</param>
+        /// <returns>The image providers for the item.</returns>
+        public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            return GetImageProviders(item, _libraryManager.GetLibraryOptions(item), GetMetadataOptions(item), refreshOptions, false);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            return GetExternalIds(item)
+                .Select(i =>
+                {
+                    if (string.IsNullOrEmpty(i.UrlFormatString))
+                    {
+                        return null;
+                    }
+
+                    var value = item.GetProviderId(i.Key);
+
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        return null;
+                    }
+
+                    return new ExternalUrl
+                    {
+                        Name = i.ProviderName,
+                        Url = string.Format(
+                            CultureInfo.InvariantCulture,
+                            i.UrlFormatString,
+                            value)
+                    };
+                }).Where(i => i != null).Concat(item.GetRelatedUrls());
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
+        {
+            return GetExternalIds(item)
+                .Select(i => new ExternalIdInfo
+                {
+                    Name = i.ProviderName,
+                    Key = i.Key,
+                    Type = i.Type,
+                    UrlFormatString = i.UrlFormatString
+                });
+        }
+
+        /// <inheritdoc/>
+        public Dictionary<Guid, Guid> GetRefreshQueue()
+        {
+            lock (_refreshQueueLock)
+            {
+                var dict = new Dictionary<Guid, Guid>();
+
+                foreach (var item in _refreshQueue)
+                {
+                    dict[item.Item1] = item.Item1;
+                }
+
+                return dict;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void OnRefreshStart(BaseItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            _logger.LogDebug("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _activeRefreshes[item.Id] = 0;
+            RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
+        }
+
+        /// <inheritdoc/>
+        public void OnRefreshComplete(BaseItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            _logger.LogDebug("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+
+            _activeRefreshes.Remove(item.Id, out _);
+
+            RefreshCompleted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
+        }
+
+        /// <inheritdoc/>
+        public double? GetRefreshProgress(Guid id)
+        {
+            if (_activeRefreshes.TryGetValue(id, out double value))
+            {
+                return value;
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public void OnRefreshProgress(BaseItem item, double progress)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            var id = item.Id;
+            _logger.LogDebug("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
+
+            // TODO: Need to hunt down the conditions for this happening
+            _activeRefreshes.AddOrUpdate(
+                id,
+                (_) => throw new Exception(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
+                        item.GetType().Name,
+                        item.Id.ToString("N", CultureInfo.InvariantCulture))),
+                (_, _) => progress);
+
+            RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
+        }
+
+        /// <inheritdoc/>
+        public void QueueRefresh(Guid id, MetadataRefreshOptions options, RefreshPriority priority)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options), (int)priority);
+
+            lock (_refreshQueueLock)
+            {
+                if (!_isProcessingRefreshQueue)
+                {
+                    _isProcessingRefreshQueue = true;
+                    Task.Run(StartProcessingRefreshQueue);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            return RefreshItem(item, options, cancellationToken);
+        }
+
+        /// <summary>
+        /// Runs multiple metadata refreshes concurrently.
+        /// </summary>
+        /// <param name="action">The action to run.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
+        {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            // create a variable for this since it is possible MetadataRefreshThrottler could change due to a config update during a scan
+            var metadataRefreshThrottler = _baseItemManager.MetadataRefreshThrottler;
+
+            await metadataRefreshThrottler.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                metadataRefreshThrottler.Release();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Gets the metadata providers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <typeparam name="T">The type of metadata provider.</typeparam>
+        /// <returns>The metadata providers.</returns>
+        public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions)
+            where T : BaseItem
+        {
+            var globalMetadataOptions = GetMetadataOptions(item);
+
+            return GetMetadataProvidersInternal<T>(item, libraryOptions, globalMetadataOptions, false, false);
+        }
+
+        /// <inheritdoc/>
+        public MetadataPluginSummary[] GetAllMetadataPlugins()
+        {
+            return new[]
+            {
+                GetPluginSummary<Movie>(),
+                GetPluginSummary<BoxSet>(),
+                GetPluginSummary<Book>(),
+                GetPluginSummary<Series>(),
+                GetPluginSummary<Season>(),
+                GetPluginSummary<Episode>(),
+                GetPluginSummary<MusicAlbum>(),
+                GetPluginSummary<MusicArtist>(),
+                GetPluginSummary<Audio>(),
+                GetPluginSummary<AudioBook>(),
+                GetPluginSummary<Studio>(),
+                GetPluginSummary<MusicVideo>(),
+                GetPluginSummary<Video>()
+            };
+        }
+
+        /// <inheritdoc/>
+        public Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, CancellationToken cancellationToken)
+            where TItemType : BaseItem, new()
+            where TLookupType : ItemLookupInfo
+        {
+            BaseItem referenceItem = null;
+
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
+
+            if (!searchInfo.ItemId.Equals(Guid.Empty))
+            {
+                referenceItem = _libraryManager.GetItemById(searchInfo.ItemId);
+            }
+
+            return GetRemoteSearchResults<TItemType, TLookupType>(searchInfo, referenceItem, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public MetadataOptions GetMetadataOptions(BaseItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            var type = item.GetType().Name;
+
+            return _configurationManager.Configuration.MetadataOptions
+                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
+                new MetadataOptions();
+        }
+
+        /// <inheritdoc/>
+        public Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
+        {
+            var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
+
+            if (provider == null)
+            {
+                throw new ArgumentException("Search provider not found.");
+            }
+
+            return provider.GetImageResponse(url, cancellationToken);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (!_disposeCancellationTokenSource.IsCancellationRequested)
+            {
+                _disposeCancellationTokenSource.Cancel();
+            }
+
+            if (disposing)
+            {
+                _disposeCancellationTokenSource.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        private static int GetConfiguredOrder(BaseItem item, IMetadataProvider provider, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions)
+        {
+            // See if there's a user-defined order
+            if (provider is ILocalMetadataProvider)
+            {
+                var configuredOrder = libraryOptions.LocalMetadataReaderOrder ?? globalMetadataOptions.LocalMetadataReaderOrder;
+
+                var index = Array.IndexOf(configuredOrder, provider.Name);
+
+                if (index != -1)
+                {
+                    return index;
+                }
+            }
+
+            // See if there's a user-defined order
+            if (provider is IRemoteMetadataProvider)
+            {
+                var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+                var typeFetcherOrder = typeOptions?.MetadataFetcherOrder;
+
+                var fetcherOrder = typeFetcherOrder ?? globalMetadataOptions.MetadataFetcherOrder;
+
+                var index = Array.IndexOf(fetcherOrder, provider.Name);
+
+                if (index != -1)
+                {
+                    return index;
+                }
+            }
+
+            // Not configured. Just return some high number to put it at the end.
+            return 100;
+        }
+
+        private static void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
+        {
+            // Locals
+            list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.LocalImageProvider
+            }));
+
+            // Fetchers
+            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (i is IRemoteImageProvider)).Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.ImageFetcher
+            }));
+        }
+
+        private static async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(
+            IRemoteSearchProvider<TLookupType> provider,
+            TLookupType searchInfo,
+            CancellationToken cancellationToken)
+            where TLookupType : ItemLookupInfo
+        {
+            var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
+
+            var list = results.ToList();
+
+            foreach (var item in list)
+            {
+                item.SearchProviderName = provider.Name;
+            }
+
+            return list;
+        }
+
+        private static async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+
+            // Collection folders don't validate their children so we'll have to simulate that here
+            switch (item)
+            {
+                case CollectionFolder collectionFolder:
+                    await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
+                    break;
+                case Folder folder:
+                    await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+                    break;
+            }
+        }
+
+        private static async Task RefreshCollectionFolderChildren(MetadataRefreshOptions options, CollectionFolder collectionFolder, CancellationToken cancellationToken)
+        {
+            foreach (var child in collectionFolder.GetPhysicalFolders())
+            {
+                await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+
+                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+            }
+        }
+
         /// <summary>
         /// Gets the images.
         /// </summary>
@@ -314,72 +755,6 @@ namespace MediaBrowser.Providers.Manager
                 _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return new List<RemoteImageInfo>();
             }
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(BaseItem item)
-        {
-            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo(i.Name, i.GetSupportedImages(item).ToArray()));
-        }
-
-        /// <summary>
-        /// Gets the image providers for the provided item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="refreshOptions">The image refresh options.</param>
-        /// <returns>The image providers for the item.</returns>
-        public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            return GetImageProviders(item, _libraryManager.GetLibraryOptions(item), GetMetadataOptions(item), refreshOptions, false);
-        }
-
-        private IEnumerable<IImageProvider> GetImageProviders(BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
-        {
-            // Avoid implicitly captured closure
-            var currentOptions = options;
-
-            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
-            var typeFetcherOrder = typeOptions?.ImageFetcherOrder;
-
-            return ImageProviders.Where(i => CanRefresh(i, item, libraryOptions, refreshOptions, includeDisabled))
-                .OrderBy(i =>
-                {
-                    // See if there's a user-defined order
-                    if (!(i is ILocalImageProvider))
-                    {
-                        var fetcherOrder = typeFetcherOrder ?? currentOptions.ImageFetcherOrder;
-                        var index = Array.IndexOf(fetcherOrder, i.Name);
-
-                        if (index != -1)
-                        {
-                            return index;
-                        }
-                    }
-
-                    // Not configured. Just return some high number to put it at the end.
-                    return 100;
-                })
-            .ThenBy(GetOrder);
-        }
-
-        /// <summary>
-        /// Gets the metadata providers for the provided item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="libraryOptions">The library options.</param>
-        /// <typeparam name="T">The type of metadata provider.</typeparam>
-        /// <returns>The metadata providers.</returns>
-        public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions)
-            where T : BaseItem
-        {
-            var globalMetadataOptions = GetMetadataOptions(item);
-
-            return GetMetadataProvidersInternal<T>(item, libraryOptions, globalMetadataOptions, false, false);
         }
 
         private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(BaseItem item, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions, bool includeDisabled, bool forceEnableInternetMetadata)
@@ -503,41 +878,6 @@ namespace MediaBrowser.Providers.Manager
             return hasOrder.Order;
         }
 
-        private static int GetConfiguredOrder(BaseItem item, IMetadataProvider provider, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions)
-        {
-            // See if there's a user-defined order
-            if (provider is ILocalMetadataProvider)
-            {
-                var configuredOrder = libraryOptions.LocalMetadataReaderOrder ?? globalMetadataOptions.LocalMetadataReaderOrder;
-
-                var index = Array.IndexOf(configuredOrder, provider.Name);
-
-                if (index != -1)
-                {
-                    return index;
-                }
-            }
-
-            // See if there's a user-defined order
-            if (provider is IRemoteMetadataProvider)
-            {
-                var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
-                var typeFetcherOrder = typeOptions?.MetadataFetcherOrder;
-
-                var fetcherOrder = typeFetcherOrder ?? globalMetadataOptions.MetadataFetcherOrder;
-
-                var index = Array.IndexOf(fetcherOrder, provider.Name);
-
-                if (index != -1)
-                {
-                    return index;
-                }
-            }
-
-            // Not configured. Just return some high number to put it at the end.
-            return 100;
-        }
-
         private int GetDefaultOrder(IMetadataProvider provider)
         {
             if (provider is IHasOrder hasOrder)
@@ -546,27 +886,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return 0;
-        }
-
-        /// <inheritdoc/>
-        public MetadataPluginSummary[] GetAllMetadataPlugins()
-        {
-            return new[]
-            {
-                GetPluginSummary<Movie>(),
-                GetPluginSummary<BoxSet>(),
-                GetPluginSummary<Book>(),
-                GetPluginSummary<Series>(),
-                GetPluginSummary<Season>(),
-                GetPluginSummary<Episode>(),
-                GetPluginSummary<MusicAlbum>(),
-                GetPluginSummary<MusicArtist>(),
-                GetPluginSummary<Audio>(),
-                GetPluginSummary<AudioBook>(),
-                GetPluginSummary<Studio>(),
-                GetPluginSummary<MusicVideo>(),
-                GetPluginSummary<Video>()
-            };
         }
 
         private MetadataPluginSummary GetPluginSummary<T>()
@@ -648,60 +967,6 @@ namespace MediaBrowser.Providers.Manager
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataSaver
             }));
-        }
-
-        private static void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
-        {
-            // Locals
-            list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.LocalImageProvider
-            }));
-
-            // Fetchers
-            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (i is IRemoteImageProvider)).Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.ImageFetcher
-            }));
-        }
-
-        /// <inheritdoc/>
-        public MetadataOptions GetMetadataOptions(BaseItem item)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            var type = item.GetType().Name;
-
-            return _configurationManager.Configuration.MetadataOptions
-                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
-                new MetadataOptions();
-        }
-
-        /// <inheritdoc/>
-        public void SaveMetadata(BaseItem item, ItemUpdateType updateType)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            SaveMetadata(item, updateType, _savers);
-        }
-
-        /// <inheritdoc/>
-        public void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
         }
 
         /// <summary>
@@ -828,24 +1093,33 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        /// <inheritdoc/>
-        public Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, CancellationToken cancellationToken)
-            where TItemType : BaseItem, new()
-            where TLookupType : ItemLookupInfo
+        private IEnumerable<IImageProvider> GetImageProviders(BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
         {
-            BaseItem referenceItem = null;
+            // Avoid implicitly captured closure
+            var currentOptions = options;
 
-            if (searchInfo == null)
-            {
-                throw new ArgumentNullException(nameof(searchInfo));
-            }
+            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+            var typeFetcherOrder = typeOptions?.ImageFetcherOrder;
 
-            if (!searchInfo.ItemId.Equals(Guid.Empty))
-            {
-                referenceItem = _libraryManager.GetItemById(searchInfo.ItemId);
-            }
+            return ImageProviders.Where(i => CanRefresh(i, item, libraryOptions, refreshOptions, includeDisabled))
+                .OrderBy(i =>
+                {
+                    // See if there's a user-defined order
+                    if (!(i is ILocalImageProvider))
+                    {
+                        var fetcherOrder = typeFetcherOrder ?? currentOptions.ImageFetcherOrder;
+                        var index = Array.IndexOf(fetcherOrder, i.Name);
 
-            return GetRemoteSearchResults<TItemType, TLookupType>(searchInfo, referenceItem, cancellationToken);
+                        if (index != -1)
+                        {
+                            return index;
+                        }
+                    }
+
+                    // Not configured. Just return some high number to put it at the end.
+                    return 100;
+                })
+            .ThenBy(GetOrder);
         }
 
         private async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, BaseItem referenceItem, CancellationToken cancellationToken)
@@ -939,37 +1213,6 @@ namespace MediaBrowser.Providers.Manager
             return resultList;
         }
 
-        private static async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(
-            IRemoteSearchProvider<TLookupType> provider,
-            TLookupType searchInfo,
-            CancellationToken cancellationToken)
-            where TLookupType : ItemLookupInfo
-        {
-            var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
-
-            var list = results.ToList();
-
-            foreach (var item in list)
-            {
-                item.SearchProviderName = provider.Name;
-            }
-
-            return list;
-        }
-
-        /// <inheritdoc/>
-        public Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
-        {
-            var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
-
-            if (provider == null)
-            {
-                throw new ArgumentException("Search provider not found.");
-            }
-
-            return provider.GetImageResponse(url, cancellationToken);
-        }
-
         private IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
         {
             return _externalIds.Where(i =>
@@ -986,153 +1229,6 @@ namespace MediaBrowser.Providers.Manager
                     return false;
                 }
             });
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            return GetExternalIds(item)
-                .Select(i =>
-            {
-                if (string.IsNullOrEmpty(i.UrlFormatString))
-                {
-                    return null;
-                }
-
-                var value = item.GetProviderId(i.Key);
-
-                if (string.IsNullOrEmpty(value))
-                {
-                    return null;
-                }
-
-                return new ExternalUrl
-                {
-                    Name = i.ProviderName,
-                    Url = string.Format(
-                        CultureInfo.InvariantCulture,
-                        i.UrlFormatString,
-                        value)
-                };
-            }).Where(i => i != null).Concat(item.GetRelatedUrls());
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
-        {
-            return GetExternalIds(item)
-                .Select(i => new ExternalIdInfo
-                {
-                    Name = i.ProviderName,
-                    Key = i.Key,
-                    Type = i.Type,
-                    UrlFormatString = i.UrlFormatString
-                });
-        }
-
-        /// <inheritdoc/>
-        public Dictionary<Guid, Guid> GetRefreshQueue()
-        {
-            lock (_refreshQueueLock)
-            {
-                var dict = new Dictionary<Guid, Guid>();
-
-                foreach (var item in _refreshQueue)
-                {
-                    dict[item.Item1] = item.Item1;
-                }
-
-                return dict;
-            }
-        }
-
-        /// <inheritdoc/>
-        public void OnRefreshStart(BaseItem item)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            _logger.LogDebug("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
-            _activeRefreshes[item.Id] = 0;
-            RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
-        }
-
-        /// <inheritdoc/>
-        public void OnRefreshComplete(BaseItem item)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            _logger.LogDebug("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
-
-            _activeRefreshes.Remove(item.Id, out _);
-
-            RefreshCompleted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
-        }
-
-        /// <inheritdoc/>
-        public double? GetRefreshProgress(Guid id)
-        {
-            if (_activeRefreshes.TryGetValue(id, out double value))
-            {
-                return value;
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc/>
-        public void OnRefreshProgress(BaseItem item, double progress)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            var id = item.Id;
-            _logger.LogDebug("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
-
-            // TODO: Need to hunt down the conditions for this happening
-            _activeRefreshes.AddOrUpdate(
-                id,
-                (_) => throw new Exception(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
-                        item.GetType().Name,
-                        item.Id.ToString("N", CultureInfo.InvariantCulture))),
-                (_, _) => progress);
-
-            RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
-        }
-
-        /// <inheritdoc/>
-        public void QueueRefresh(Guid id, MetadataRefreshOptions options, RefreshPriority priority)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options), (int)priority);
-
-            lock (_refreshQueueLock)
-            {
-                if (!_isProcessingRefreshQueue)
-                {
-                    _isProcessingRefreshQueue = true;
-                    Task.Run(StartProcessingRefreshQueue);
-                }
-            }
         }
 
         private async Task StartProcessingRefreshQueue()
@@ -1186,32 +1282,6 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
-        {
-            await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
-
-            // Collection folders don't validate their children so we'll have to simulate that here
-            switch (item)
-            {
-                case CollectionFolder collectionFolder:
-                    await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
-                    break;
-                case Folder folder:
-                    await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
-                    break;
-            }
-        }
-
-        private static async Task RefreshCollectionFolderChildren(MetadataRefreshOptions options, CollectionFolder collectionFolder, CancellationToken cancellationToken)
-        {
-            foreach (var child in collectionFolder.GetPhysicalFolders())
-            {
-                await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
-
-                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
-            }
-        }
-
         private async Task RefreshArtist(MusicArtist item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var albums = _libraryManager
@@ -1244,76 +1314,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 _logger.LogError(ex, "Error refreshing library");
             }
-        }
-
-        /// <inheritdoc/>
-        public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            return RefreshItem(item, options, cancellationToken);
-        }
-
-        /// <summary>
-        /// Runs multiple metadata refreshes concurrently.
-        /// </summary>
-        /// <param name="action">The action to run.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
-        {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
-            // create a variable for this since it is possible MetadataRefreshThrottler could change due to a config update during a scan
-            var metadataRefreshThrottler = _baseItemManager.MetadataRefreshThrottler;
-
-            await metadataRefreshThrottler.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await action().ConfigureAwait(false);
-            }
-            finally
-            {
-                metadataRefreshThrottler.Release();
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and optionally managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (!_disposeCancellationTokenSource.IsCancellationRequested)
-            {
-                _disposeCancellationTokenSource.Cancel();
-            }
-
-            if (disposing)
-            {
-                _disposeCancellationTokenSource.Dispose();
-            }
-
-            _disposed = true;
         }
     }
 }

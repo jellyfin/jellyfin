@@ -36,6 +36,28 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _configurationManager = configurationManager;
         }
 
+        public static string GetOmdbUrl(string query)
+        {
+            const string Url = "https://www.omdbapi.com?apikey=2c9d9507";
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return Url;
+            }
+
+            return Url + "&" + query;
+        }
+
+        public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
+        {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException(nameof(httpClient));
+            }
+
+            return httpClient.GetAsync(new Uri(url), cancellationToken);
+        }
+
         public async Task Fetch<T>(MetadataResult<T> itemResult, string imdbId, string language, string country, CancellationToken cancellationToken)
             where T : BaseItem
         {
@@ -213,6 +235,20 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return true;
         }
 
+        internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
+        {
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
+            {
+                // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
@@ -247,117 +283,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return result;
         }
 
-        internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
-        {
-            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
-            {
-                // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
-                if (!string.IsNullOrWhiteSpace(id))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static string GetOmdbUrl(string query)
-        {
-            const string Url = "https://www.omdbapi.com?apikey=2c9d9507";
-
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                return Url;
-            }
-
-            return Url + "&" + query;
-        }
-
-        private async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(imdbId))
-            {
-                throw new ArgumentNullException(nameof(imdbId));
-            }
-
-            var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
-
-            var path = GetDataFilePath(imdbParam);
-
-            var fileInfo = _fileSystem.GetFileSystemInfo(path);
-
-            if (fileInfo.Exists)
-            {
-                // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 1)
-                {
-                    return path;
-                }
-            }
-
-            var url = GetOmdbUrl(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    "i={0}&plot=short&tomatoes=true&r=json",
-                    imdbParam));
-
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            _jsonSerializer.SerializeToFile(rootObject, path);
-
-            return path;
-        }
-
-        private async Task<string> EnsureSeasonInfo(string seriesImdbId, int seasonId, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(seriesImdbId))
-            {
-                throw new ArgumentException("The series IMDb ID was null or whitespace.", nameof(seriesImdbId));
-            }
-
-            var imdbParam = seriesImdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? seriesImdbId : "tt" + seriesImdbId;
-
-            var path = GetSeasonFilePath(imdbParam, seasonId);
-
-            var fileInfo = _fileSystem.GetFileSystemInfo(path);
-
-            if (fileInfo.Exists)
-            {
-                // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 1)
-                {
-                    return path;
-                }
-            }
-
-            var url = GetOmdbUrl(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    "i={0}&season={1}&detail=full",
-                    imdbParam,
-                    seasonId));
-
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            _jsonSerializer.SerializeToFile(rootObject, path);
-
-            return path;
-        }
-
-        public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
-        {
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException(nameof(httpClient));
-            }
-
-            return httpClient.GetAsync(new Uri(url), cancellationToken);
-        }
-
         internal string GetDataFilePath(string imdbId)
         {
             if (string.IsNullOrEmpty(imdbId))
@@ -384,6 +309,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var filename = string.Format(CultureInfo.InvariantCulture, "{0}_season_{1}.json", imdbId, seasonId);
 
             return Path.Combine(dataPath, filename);
+        }
+
+        private static bool IsConfiguredForEnglish(BaseItem item)
+        {
+            var lang = item.GetPreferredMetadataLanguage();
+
+            // The data isn't localized and so can only be used for English users
+            return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         }
 
         private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result)
@@ -460,12 +393,79 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
         }
 
-        private static bool IsConfiguredForEnglish(BaseItem item)
+        private async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)
         {
-            var lang = item.GetPreferredMetadataLanguage();
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                throw new ArgumentNullException(nameof(imdbId));
+            }
 
-            // The data isn't localized and so can only be used for English users
-            return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
+            var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
+
+            var path = GetDataFilePath(imdbParam);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+
+            if (fileInfo.Exists)
+            {
+                // If it's recent or automatic updates are enabled, don't re-download
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 1)
+                {
+                    return path;
+                }
+            }
+
+            var url = GetOmdbUrl(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "i={0}&plot=short&tomatoes=true&r=json",
+                    imdbParam));
+
+            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            _jsonSerializer.SerializeToFile(rootObject, path);
+
+            return path;
+        }
+
+        private async Task<string> EnsureSeasonInfo(string seriesImdbId, int seasonId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(seriesImdbId))
+            {
+                throw new ArgumentException("The series IMDb ID was null or whitespace.", nameof(seriesImdbId));
+            }
+
+            var imdbParam = seriesImdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? seriesImdbId : "tt" + seriesImdbId;
+
+            var path = GetSeasonFilePath(imdbParam, seasonId);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+
+            if (fileInfo.Exists)
+            {
+                // If it's recent or automatic updates are enabled, don't re-download
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 1)
+                {
+                    return path;
+                }
+            }
+
+            var url = GetOmdbUrl(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "i={0}&season={1}&detail=full",
+                    imdbParam,
+                    seasonId));
+
+            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            _jsonSerializer.SerializeToFile(rootObject, path);
+
+            return path;
         }
 
         internal class SeasonRootObject

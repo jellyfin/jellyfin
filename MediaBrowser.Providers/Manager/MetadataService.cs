@@ -50,21 +50,6 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual bool EnableUpdatingOfficialRatingFromChildren => false;
 
-        private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
-        {
-            try
-            {
-                return directoryService.GetFile(path);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                Logger.LogError(ex, "Error getting file {Path}", path);
-                return null;
-            }
-        }
-
         public async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item ?? throw new NullReferenceException(nameof(item));
@@ -228,13 +213,6 @@ namespace MediaBrowser.Providers.Manager
             return type == typeof(TItemType);
         }
 
-        private static void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
-        {
-            lookupInfo.ProviderIds = result.ProviderIds;
-            lookupInfo.Name = result.Name;
-            lookupInfo.Year = result.ProductionYear;
-        }
-
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, LibraryOptions libraryOptions, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             if (result == null)
@@ -247,84 +225,10 @@ namespace MediaBrowser.Providers.Manager
                 var baseItem = result.Item;
 
                 LibraryManager.UpdatePeople(baseItem, result.People);
-                await SavePeopleMetadataAsync(result.People, libraryOptions, cancellationToken).ConfigureAwait(false);
+                await SavePeopleMetadataAsync(result.People, cancellationToken).ConfigureAwait(false);
             }
 
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
-        {
-            var personsToSave = new List<BaseItem>();
-
-            foreach (var person in people)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
-                {
-                    var itemUpdateType = ItemUpdateType.MetadataDownload;
-                    var saveEntity = false;
-                    var personEntity = LibraryManager.GetPerson(person.Name);
-                    foreach (var id in person.ProviderIds)
-                    {
-                        if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
-                        {
-                            personEntity.SetProviderId(id.Key, id.Value);
-                            saveEntity = true;
-                        }
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
-                    {
-                        personEntity.SetImage(
-                            new ItemImageInfo
-                            {
-                                Path = person.ImageUrl,
-                                Type = ImageType.Primary
-                            },
-                            0);
-
-                        saveEntity = true;
-                        itemUpdateType = ItemUpdateType.ImageUpdate;
-                    }
-
-                    if (saveEntity)
-                    {
-                        personsToSave.Add(personEntity);
-                        await LibraryManager.RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
-                    }
-                }
-            }
-
-            LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
-        }
-
-        protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            item.AfterMetadataRefresh();
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Before the save.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
-        /// <param name="currentUpdateType">Type of the current update.</param>
-        /// <returns>ItemUpdateType.</returns>
-        private ItemUpdateType BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
-        {
-            var updateType = BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
-
-            updateType |= item.OnMetadataChanged();
-
-            return updateType;
         }
 
         protected virtual ItemUpdateType BeforeSaveInternal(TItemType item, bool isFullRefresh, ItemUpdateType updateType)
@@ -425,156 +329,15 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private static ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
+        protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            if (item is Folder folder && folder.SupportsCumulativeRunTimeTicks)
+            if (item == null)
             {
-                long ticks = 0;
-
-                foreach (var child in children)
-                {
-                    if (!child.IsFolder)
-                    {
-                        ticks += child.RunTimeTicks ?? 0;
-                    }
-                }
-
-                if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
-                {
-                    folder.RunTimeTicks = ticks;
-                    return ItemUpdateType.MetadataEdit;
-                }
+                throw new ArgumentNullException(nameof(item));
             }
 
-            return ItemUpdateType.None;
-        }
-
-        private static ItemUpdateType UpdateDateLastMediaAdded(TItemType item, IList<BaseItem> children)
-        {
-            var updateType = ItemUpdateType.None;
-
-            if (item is Folder folder && folder.SupportsDateLastMediaAdded)
-            {
-                var dateLastMediaAdded = DateTime.MinValue;
-                var any = false;
-
-                foreach (var child in children)
-                {
-                    if (!child.IsFolder)
-                    {
-                        var childDateCreated = child.DateCreated;
-                        if (childDateCreated > dateLastMediaAdded)
-                        {
-                            dateLastMediaAdded = childDateCreated;
-                        }
-
-                        any = true;
-                    }
-                }
-
-                if ((!folder.DateLastMediaAdded.HasValue && any) || folder.DateLastMediaAdded != dateLastMediaAdded)
-                {
-                    folder.DateLastMediaAdded = dateLastMediaAdded;
-                    updateType = ItemUpdateType.MetadataImport;
-                }
-            }
-
-            return updateType;
-        }
-
-        private static ItemUpdateType UpdatePremiereDate(TItemType item, IList<BaseItem> children)
-        {
-            var updateType = ItemUpdateType.None;
-
-            if (children.Count == 0)
-            {
-                return updateType;
-            }
-
-            var date = children.Select(i => i.PremiereDate ?? DateTime.MaxValue).Min();
-
-            var originalPremiereDate = item.PremiereDate;
-            var originalProductionYear = item.ProductionYear;
-
-            if (date > DateTime.MinValue && date < DateTime.MaxValue)
-            {
-                item.PremiereDate = date;
-                item.ProductionYear = date.Year;
-            }
-            else
-            {
-                var year = children.Select(i => i.ProductionYear ?? 0).Min();
-
-                if (year > 0)
-                {
-                    item.ProductionYear = year;
-                }
-            }
-
-            if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
-                (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
-            {
-                updateType |= ItemUpdateType.MetadataEdit;
-            }
-
-            return updateType;
-        }
-
-        private static ItemUpdateType UpdateGenres(TItemType item, IList<BaseItem> children)
-        {
-            var updateType = ItemUpdateType.None;
-
-            if (!item.LockedFields.Contains(MetadataField.Genres))
-            {
-                var currentList = item.Genres;
-
-                item.Genres = children.SelectMany(i => i.Genres)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (currentList.Length != item.Genres.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
-                {
-                    updateType |= ItemUpdateType.MetadataEdit;
-                }
-            }
-
-            return updateType;
-        }
-
-        private static ItemUpdateType UpdateStudios(TItemType item, IList<BaseItem> children)
-        {
-            var updateType = ItemUpdateType.None;
-
-            if (!item.LockedFields.Contains(MetadataField.Studios))
-            {
-                var currentList = item.Studios;
-
-                item.Studios = children.SelectMany(i => i.Studios)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
-                {
-                    updateType |= ItemUpdateType.MetadataEdit;
-                }
-            }
-
-            return updateType;
-        }
-
-        private static ItemUpdateType UpdateOfficialRating(TItemType item, IList<BaseItem> children)
-        {
-            var updateType = ItemUpdateType.None;
-
-            if (!item.LockedFields.Contains(MetadataField.OfficialRating))
-            {
-                if (item.UpdateRatingToItems(children))
-                {
-                    updateType |= ItemUpdateType.MetadataEdit;
-                }
-            }
-
-            return updateType;
+            item.AfterMetadataRefresh();
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -865,6 +628,255 @@ namespace MediaBrowser.Providers.Manager
             return true;
         }
 
+        protected virtual TItemType CreateNew()
+        {
+            return new TItemType();
+        }
+
+        protected abstract void MergeData(
+            MetadataResult<TItemType> source,
+            MetadataResult<TItemType> target,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings);
+
+        private static void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
+        {
+            lookupInfo.ProviderIds = result.ProviderIds;
+            lookupInfo.Name = result.Name;
+            lookupInfo.Year = result.ProductionYear;
+        }
+
+        private static ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
+        {
+            if (item is Folder folder && folder.SupportsCumulativeRunTimeTicks)
+            {
+                long ticks = 0;
+
+                foreach (var child in children)
+                {
+                    if (!child.IsFolder)
+                    {
+                        ticks += child.RunTimeTicks ?? 0;
+                    }
+                }
+
+                if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
+                {
+                    folder.RunTimeTicks = ticks;
+                    return ItemUpdateType.MetadataEdit;
+                }
+            }
+
+            return ItemUpdateType.None;
+        }
+
+        private static ItemUpdateType UpdateDateLastMediaAdded(TItemType item, IList<BaseItem> children)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (item is Folder folder && folder.SupportsDateLastMediaAdded)
+            {
+                var dateLastMediaAdded = DateTime.MinValue;
+                var any = false;
+
+                foreach (var child in children)
+                {
+                    if (!child.IsFolder)
+                    {
+                        var childDateCreated = child.DateCreated;
+                        if (childDateCreated > dateLastMediaAdded)
+                        {
+                            dateLastMediaAdded = childDateCreated;
+                        }
+
+                        any = true;
+                    }
+                }
+
+                if ((!folder.DateLastMediaAdded.HasValue && any) || folder.DateLastMediaAdded != dateLastMediaAdded)
+                {
+                    folder.DateLastMediaAdded = dateLastMediaAdded;
+                    updateType = ItemUpdateType.MetadataImport;
+                }
+            }
+
+            return updateType;
+        }
+
+        private static ItemUpdateType UpdatePremiereDate(TItemType item, IList<BaseItem> children)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (children.Count == 0)
+            {
+                return updateType;
+            }
+
+            var date = children.Select(i => i.PremiereDate ?? DateTime.MaxValue).Min();
+
+            var originalPremiereDate = item.PremiereDate;
+            var originalProductionYear = item.ProductionYear;
+
+            if (date > DateTime.MinValue && date < DateTime.MaxValue)
+            {
+                item.PremiereDate = date;
+                item.ProductionYear = date.Year;
+            }
+            else
+            {
+                var year = children.Select(i => i.ProductionYear ?? 0).Min();
+
+                if (year > 0)
+                {
+                    item.ProductionYear = year;
+                }
+            }
+
+            if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
+                (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
+            {
+                updateType |= ItemUpdateType.MetadataEdit;
+            }
+
+            return updateType;
+        }
+
+        private static ItemUpdateType UpdateGenres(TItemType item, IList<BaseItem> children)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (!item.LockedFields.Contains(MetadataField.Genres))
+            {
+                var currentList = item.Genres;
+
+                item.Genres = children.SelectMany(i => i.Genres)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (currentList.Length != item.Genres.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                {
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
+            }
+
+            return updateType;
+        }
+
+        private static ItemUpdateType UpdateStudios(TItemType item, IList<BaseItem> children)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (!item.LockedFields.Contains(MetadataField.Studios))
+            {
+                var currentList = item.Studios;
+
+                item.Studios = children.SelectMany(i => i.Studios)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                {
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
+            }
+
+            return updateType;
+        }
+
+        private static ItemUpdateType UpdateOfficialRating(TItemType item, IList<BaseItem> children)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (!item.LockedFields.Contains(MetadataField.OfficialRating))
+            {
+                if (item.UpdateRatingToItems(children))
+                {
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
+            }
+
+            return updateType;
+        }
+
+        private static void MergeNewData(TItemType source, TIdType lookupInfo)
+        {
+            // Copy new provider id's that may have been obtained
+            foreach (var providerId in source.ProviderIds)
+            {
+                var key = providerId.Key;
+
+                // Don't replace existing Id's.
+                if (!lookupInfo.ProviderIds.ContainsKey(key))
+                {
+                    lookupInfo.ProviderIds[key] = providerId.Value;
+                }
+            }
+        }
+
+        private async Task SavePeopleMetadataAsync(List<PersonInfo> people, CancellationToken cancellationToken)
+        {
+            var personsToSave = new List<BaseItem>();
+
+            foreach (var person in people)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
+                {
+                    var itemUpdateType = ItemUpdateType.MetadataDownload;
+                    var saveEntity = false;
+                    var personEntity = LibraryManager.GetPerson(person.Name);
+                    foreach (var id in person.ProviderIds)
+                    {
+                        if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
+                        {
+                            personEntity.SetProviderId(id.Key, id.Value);
+                            saveEntity = true;
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
+                    {
+                        personEntity.SetImage(
+                            new ItemImageInfo
+                            {
+                                Path = person.ImageUrl,
+                                Type = ImageType.Primary
+                            },
+                            0);
+
+                        saveEntity = true;
+                        itemUpdateType = ItemUpdateType.ImageUpdate;
+                    }
+
+                    if (saveEntity)
+                    {
+                        personsToSave.Add(personEntity);
+                        await LibraryManager.RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Before the save.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
+        /// <param name="currentUpdateType">Type of the current update.</param>
+        /// <returns>ItemUpdateType.</returns>
+        private ItemUpdateType BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
+
+            updateType |= item.OnMetadataChanged();
+
+            return updateType;
+        }
+
         private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, string logName, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
             Logger.LogDebug("Running {0} for {1}", provider.GetType().Name, logName);
@@ -884,11 +896,6 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.ErrorMessage = ex.Message;
                 Logger.LogError(ex, "Error in {provider}", provider.Name);
             }
-        }
-
-        protected virtual TItemType CreateNew()
-        {
-            return new TItemType();
         }
 
         private async Task<RefreshResult> ExecuteRemoteProviders(MetadataResult<TItemType> temp, string logName, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
@@ -943,28 +950,6 @@ namespace MediaBrowser.Providers.Manager
             return refreshResult;
         }
 
-        private static void MergeNewData(TItemType source, TIdType lookupInfo)
-        {
-            // Copy new provider id's that may have been obtained
-            foreach (var providerId in source.ProviderIds)
-            {
-                var key = providerId.Key;
-
-                // Don't replace existing Id's.
-                if (!lookupInfo.ProviderIds.ContainsKey(key))
-                {
-                    lookupInfo.ProviderIds[key] = providerId.Value;
-                }
-            }
-        }
-
-        protected abstract void MergeData(
-            MetadataResult<TItemType> source,
-            MetadataResult<TItemType> target,
-            MetadataField[] lockedFields,
-            bool replaceData,
-            bool mergeMetadataSettings);
-
         private bool HasChanged(BaseItem item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {
             try
@@ -984,6 +969,21 @@ namespace MediaBrowser.Providers.Manager
             {
                 Logger.LogError(ex, "Error in {0}.HasChanged", changeMonitor.GetType().Name);
                 return false;
+            }
+        }
+
+        private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
+        {
+            try
+            {
+                return directoryService.GetFile(path);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Logger.LogError(ex, "Error getting file {Path}", path);
+                return null;
             }
         }
     }

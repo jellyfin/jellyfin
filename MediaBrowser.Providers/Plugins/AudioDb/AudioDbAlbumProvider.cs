@@ -88,6 +88,63 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             throw new NotImplementedException();
         }
 
+        internal static string GetAlbumInfoPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
+        {
+            var dataPath = GetAlbumDataPath(appPaths, musicBrainzReleaseGroupId);
+
+            return Path.Combine(dataPath, "album.json");
+        }
+
+        internal async Task DownloadInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var url = AudioDbArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
+
+            var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(new Uri(url), cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#pragma warning disable CA2000 // Dispose objects before losing scope: Wrongly identified
+            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+        }
+
+        internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
+        {
+            var xmlPath = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
+
+            if (fileInfo.Exists)
+            {
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
+                {
+                    return Task.CompletedTask;
+                }
+            }
+
+            return DownloadInfo(musicBrainzReleaseGroupId, cancellationToken);
+        }
+
+        private static string GetAlbumDataPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
+        {
+            var dataPath = Path.Combine(GetAlbumDataPath(appPaths), musicBrainzReleaseGroupId);
+
+            return dataPath;
+        }
+
+        private static string GetAlbumDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.CachePath, "audiodb-album");
+
+            return dataPath;
+        }
+
         private static void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
         {
             if (Plugin.Instance.Configuration.ReplaceAlbumName && !string.IsNullOrWhiteSpace(result.AlbumName))
@@ -149,61 +206,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             }
 
             item.Overview = (overview ?? string.Empty).StripHtml();
-        }
-
-        internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
-        {
-            var xmlPath = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
-
-            var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
-
-            if (fileInfo.Exists)
-            {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
-                {
-                    return Task.CompletedTask;
-                }
-            }
-
-            return DownloadInfo(musicBrainzReleaseGroupId, cancellationToken);
-        }
-
-        internal async Task DownloadInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var url = AudioDbArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
-
-            var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(new Uri(url), cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
-            await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
-        }
-
-        private static string GetAlbumDataPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
-        {
-            var dataPath = Path.Combine(GetAlbumDataPath(appPaths), musicBrainzReleaseGroupId);
-
-            return dataPath;
-        }
-
-        private static string GetAlbumDataPath(IApplicationPaths appPaths)
-        {
-            var dataPath = Path.Combine(appPaths.CachePath, "audiodb-album");
-
-            return dataPath;
-        }
-
-        internal static string GetAlbumInfoPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
-        {
-            var dataPath = GetAlbumDataPath(appPaths, musicBrainzReleaseGroupId);
-
-            return Path.Combine(dataPath, "album.json");
         }
 
         internal class Album
