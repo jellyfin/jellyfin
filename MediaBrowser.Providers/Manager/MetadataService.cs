@@ -673,7 +673,6 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(options));
             }
 
-
             // Get providers to refresh
             var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
 
@@ -718,7 +717,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (imageService== null)
+            if (imageService == null)
             {
                 throw new ArgumentNullException(nameof(imageService));
             }

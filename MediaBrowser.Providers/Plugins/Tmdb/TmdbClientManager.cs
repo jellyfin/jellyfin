@@ -254,7 +254,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             string language,
             CancellationToken cancellationToken)
         {
-
             var key = $"find-{source}-{externalId}-{language}";
             if (_memoryCache.TryGetValue(key, out FindContainer result))
             {

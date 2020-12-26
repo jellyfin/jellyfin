@@ -148,7 +148,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 throw new ArgumentNullException(nameof(options));
             }
 
-
             List<MediaStream> mediaStreams;
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;

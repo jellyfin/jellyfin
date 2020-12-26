@@ -59,9 +59,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var obj = _json.DeserializeFromFile<AudioDbAlbumProvider.RootObject>(path);
 
-                if (obj != null && obj.album != null && obj.album.Count > 0)
+                if (obj != null && obj.Album != null && obj.Album.Count > 0)
                 {
-                    return GetImages(obj.album[0]);
+                    return GetImages(obj.Album[0]);
                 }
             }
 

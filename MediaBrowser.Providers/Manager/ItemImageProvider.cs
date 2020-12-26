@@ -391,7 +391,6 @@ namespace MediaBrowser.Providers.Manager
         /// Refreshes from provider.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="libraryOptions">The library options.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
