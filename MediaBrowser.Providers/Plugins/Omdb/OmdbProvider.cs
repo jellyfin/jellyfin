@@ -353,8 +353,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             using var response = await GetOmdbResponse(httpClient, url, cancellationToken).ConfigureAwait(false);
             var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-            // OMDb is sending "N/A" for no empty number fields
-            content = content.Replace("\"N/A\"", "\"\"", StringComparison.InvariantCulture);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 

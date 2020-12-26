@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
 
-        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
@@ -93,8 +93,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             _logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
-            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(mediaSource, _jsonOptions) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
-            _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
+            await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine), cancellationToken);
 
             _process = new Process
             {
@@ -113,8 +113,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _ = StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
             _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
-
-            return _taskCompletionSource.Task;
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile, TimeSpan duration)
