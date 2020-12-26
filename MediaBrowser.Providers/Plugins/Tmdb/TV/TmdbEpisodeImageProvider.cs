@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var episode = (Controller.Entities.TV.Episode)item;
+            var episode = (Controller.Entities.TV.Episode)item ?? throw new ArgumentNullException(nameof(item));
             var series = episode.Series;
 
             var seriesTmdbId = Convert.ToInt32(series?.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);

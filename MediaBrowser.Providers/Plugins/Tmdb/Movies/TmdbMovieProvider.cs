@@ -43,6 +43,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
+
             var tmdbId = Convert.ToInt32(searchInfo.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
 
             if (tmdbId == 0)
@@ -104,6 +109,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
             var imdbId = info.GetProviderId(MetadataProvider.Imdb);
 

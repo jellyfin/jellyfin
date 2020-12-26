@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, libraryOptions, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -403,7 +403,6 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         private async Task RefreshFromProvider(
             BaseItem item,
-            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,

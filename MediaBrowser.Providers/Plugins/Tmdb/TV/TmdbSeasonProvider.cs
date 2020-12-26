@@ -31,6 +31,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<MetadataResult<Season>> GetMetadata(SeasonInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var result = new MetadataResult<Season>();
 
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);

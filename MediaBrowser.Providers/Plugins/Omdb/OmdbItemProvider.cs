@@ -31,11 +31,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly IApplicationHost _appHost;
 
         public OmdbItemProvider(
             IJsonSerializer jsonSerializer,
-            IApplicationHost appHost,
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
@@ -46,7 +44,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
-            _appHost = appHost;
         }
 
         public string Name => "The Open Movie Database";
@@ -66,6 +63,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ItemLookupInfo searchInfo, string type, CancellationToken cancellationToken)
         {
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
+
             return GetSearchResultsInternal(searchInfo, type, true, cancellationToken);
         }
 
@@ -193,6 +195,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             return GetMovieResult<Trailer>(info, cancellationToken);
         }
 
@@ -203,6 +210,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var result = new MetadataResult<Series>
             {
                 Item = new Series(),
@@ -221,7 +233,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _configurationManager)
+                    .Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
@@ -229,6 +242,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             return GetMovieResult<Movie>(info, cancellationToken);
         }
 
@@ -253,7 +271,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;

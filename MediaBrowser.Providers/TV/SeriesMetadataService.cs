@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -36,6 +37,11 @@ namespace MediaBrowser.Providers.TV
         /// <inheritdoc />
         protected override async Task AfterMetadataRefresh(Series item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             RemoveObsoleteSeasons(item);
@@ -45,6 +51,11 @@ namespace MediaBrowser.Providers.TV
         /// <inheritdoc />
         protected override bool IsFullLocalMetadata(Series item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             if (string.IsNullOrWhiteSpace(item.Overview))
             {
                 return false;
@@ -61,6 +72,16 @@ namespace MediaBrowser.Providers.TV
         /// <inheritdoc />
         protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
             var sourceItem = source.Item;

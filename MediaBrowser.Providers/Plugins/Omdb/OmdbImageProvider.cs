@@ -26,15 +26,13 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly IApplicationHost _appHost;
 
-        public OmdbImageProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbImageProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
-            _appHost = appHost;
         }
 
         public string Name => "The Open Movie Database";
@@ -57,7 +55,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var list = new List<RemoteImageInfo>();
 
-            var provider = new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _appHost, _configurationManager);
+            var provider = new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _configurationManager);
 
             if (!string.IsNullOrWhiteSpace(imdbId))
             {

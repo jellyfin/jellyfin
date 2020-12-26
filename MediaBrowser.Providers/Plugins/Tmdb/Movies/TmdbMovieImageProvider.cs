@@ -50,6 +50,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             var language = item.GetPreferredMetadataLanguage();
 
             var movieTmdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);

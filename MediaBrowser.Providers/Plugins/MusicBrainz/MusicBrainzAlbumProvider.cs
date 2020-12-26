@@ -41,22 +41,19 @@ namespace MediaBrowser.Providers.Music
         private readonly long _musicBrainzQueryIntervalMs;
 
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IApplicationHost _appHost;
         private readonly ILogger<MusicBrainzAlbumProvider> _logger;
 
         private readonly string _musicBrainzBaseUrl;
 
-        private SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
-        private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
+        private readonly SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
+        private readonly Stopwatch _stopWatchMusicBrainz = new Stopwatch();
         private bool _disposed;
 
         public MusicBrainzAlbumProvider(
             IHttpClientFactory httpClientFactory,
-            IApplicationHost appHost,
             ILogger<MusicBrainzAlbumProvider> logger)
         {
             _httpClientFactory = httpClientFactory;
-            _appHost = appHost;
             _logger = logger;
 
             _musicBrainzBaseUrl = Plugin.Instance.Configuration.Server;
@@ -508,7 +505,7 @@ namespace MediaBrowser.Providers.Music
             return null;
         }
 
-        private string GetFirstReleaseGroupId(XmlReader reader)
+        private static string GetFirstReleaseGroupId(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -577,7 +574,7 @@ namespace MediaBrowser.Providers.Music
                     _stopWatchMusicBrainz.Restart();
 
                     using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-                    response = await _httpClientFactory.CreateClient(NamedClient.MusicBrainz).SendAsync(request).ConfigureAwait(false);
+                    response = await _httpClientFactory.CreateClient(NamedClient.MusicBrainz).SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                     // We retry a finite number of times, and only whilst MB is indicating 503 (throttling).
                 }

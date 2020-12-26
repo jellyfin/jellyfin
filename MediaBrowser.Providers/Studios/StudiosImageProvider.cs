@@ -33,7 +33,7 @@ namespace MediaBrowser.Providers.Studios
 
         public string Name => "Emby Designs";
 
-        public int Order => 0;
+        public static int Order => 0;
 
         public bool Supports(BaseItem item)
         {
@@ -102,7 +102,7 @@ namespace MediaBrowser.Providers.Studios
             return null;
         }
 
-        private string GetUrl(string image, string filename)
+        private static string GetUrl(string image, string filename)
         {
             return string.Format(CultureInfo.InvariantCulture, "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
         }
@@ -136,6 +136,11 @@ namespace MediaBrowser.Providers.Studios
         /// <returns>Task.</returns>
         public async Task<string> EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
+            if (fileSystem == null)
+            {
+                throw new ArgumentNullException(nameof(fileSystem));
+            }
+
             var fileInfo = fileSystem.GetFileInfo(file);
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
@@ -143,7 +148,7 @@ namespace MediaBrowser.Providers.Studios
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
-                await using var response = await httpClient.GetStreamAsync(new Uri(url)).ConfigureAwait(false);
+                await using var response = await httpClient.GetStreamAsync(new Uri(url), cancellationToken).ConfigureAwait(false);
                 await using var fileStream = new FileStream(file, FileMode.Create);
                 await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
@@ -151,14 +156,19 @@ namespace MediaBrowser.Providers.Studios
             return file;
         }
 
-        public string FindMatch(BaseItem item, IEnumerable<string> images)
+        public static string FindMatch(BaseItem item, IEnumerable<string> images)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             var name = GetComparableName(item.Name);
 
             return images.FirstOrDefault(i => string.Equals(name, GetComparableName(i), StringComparison.OrdinalIgnoreCase));
         }
 
-        private string GetComparableName(string name)
+        private static string GetComparableName(string name)
         {
             return name.Replace(" ", string.Empty, StringComparison.Ordinal)
                 .Replace(".", string.Empty, StringComparison.Ordinal)
@@ -168,27 +178,23 @@ namespace MediaBrowser.Providers.Studios
                 .Replace("/", string.Empty, StringComparison.Ordinal);
         }
 
-        public IEnumerable<string> GetAvailableImages(string file)
+        public static IEnumerable<string> GetAvailableImages(string file)
         {
-            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new StreamReader(fileStream);
+            var lines = new List<string>();
+
+            while (!reader.EndOfStream)
             {
-                using (var reader = new StreamReader(fileStream))
+                var text = reader.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(text))
                 {
-                    var lines = new List<string>();
-
-                    while (!reader.EndOfStream)
-                    {
-                        var text = reader.ReadLine();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            lines.Add(text);
-                        }
-                    }
-
-                    return lines;
+                    lines.Add(text);
                 }
             }
+
+            return lines;
         }
     }
 }

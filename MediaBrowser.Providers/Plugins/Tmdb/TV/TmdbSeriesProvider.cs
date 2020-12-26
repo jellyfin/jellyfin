@@ -42,6 +42,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
+
             var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
 
             if (!string.IsNullOrEmpty(tmdbId))
@@ -163,6 +168,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var result = new MetadataResult<Series>
             {
                 QueriedById = true
@@ -236,7 +246,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return result;
         }
 
-        private Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
+        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
         {
             var series = new Series
             {

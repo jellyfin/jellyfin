@@ -34,6 +34,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
+
             // The search query must either provide an episode number or date
             if (!searchInfo.IndexNumber.HasValue || !searchInfo.ParentIndexNumber.HasValue)
             {
@@ -67,6 +72,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var metadataResult = new MetadataResult<Episode>();
 
             // Allowing this will dramatically increase scan times

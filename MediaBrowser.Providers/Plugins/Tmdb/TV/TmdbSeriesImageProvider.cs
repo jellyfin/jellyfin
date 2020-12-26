@@ -50,6 +50,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
 
             if (string.IsNullOrEmpty(tmdbId))

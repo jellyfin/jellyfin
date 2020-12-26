@@ -1110,7 +1110,7 @@ namespace MediaBrowser.Providers.Manager
                         "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
                         item.GetType().Name,
                         item.Id.ToString("N", CultureInfo.InvariantCulture))),
-                (_, __) => progress);
+                (_, _) => progress);
 
             RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }
@@ -1186,7 +1186,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        private static async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 

@@ -33,9 +33,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public TmdbClientManager(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
-            _tmDbClient = new TMDbClient(TmdbUtils.ApiKey);
-            // Not really interested in NotFoundException
-            _tmDbClient.ThrowApiExceptions = false;
+            _tmDbClient = new TMDbClient(TmdbUtils.ApiKey)
+            {
+                // Not really interested in NotFoundException
+                ThrowApiExceptions = false
+            };
         }
 
         /// <summary>
@@ -252,7 +254,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             string language,
             CancellationToken cancellationToken)
         {
-            var key = $"find-{source.ToString()}-{externalId.ToString(CultureInfo.InvariantCulture)}-{language}";
+
+            var key = $"find-{source}-{externalId}-{language}";
             if (_memoryCache.TryGetValue(key, out FindContainer result))
             {
                 return result;

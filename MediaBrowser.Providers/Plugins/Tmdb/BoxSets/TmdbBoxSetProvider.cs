@@ -30,6 +30,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
         {
+            if (searchInfo == null)
+            {
+                throw new ArgumentNullException(nameof(searchInfo));
+            }
+
             var tmdbId = Convert.ToInt32(searchInfo.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
             var language = searchInfo.MetadataLanguage;
 
@@ -78,6 +83,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
             var tmdbId = Convert.ToInt32(id.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
             var language = id.MetadataLanguage;
             // We don't already have an Id, need to fetch it

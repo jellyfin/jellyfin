@@ -27,20 +27,23 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly IApplicationHost _appHost;
 
-        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
-            _appHost = appHost;
         }
 
         public async Task Fetch<T>(MetadataResult<T> itemResult, string imdbId, string language, string country, CancellationToken cancellationToken)
             where T : BaseItem
         {
+            if (itemResult == null)
+            {
+                throw new ArgumentNullException(nameof(itemResult));
+            }
+
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 throw new ArgumentNullException(nameof(imdbId));
@@ -105,6 +108,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
             where T : BaseItem
         {
+            if (itemResult == null)
+            {
+                throw new ArgumentNullException(nameof(itemResult));
+            }
+
             if (string.IsNullOrWhiteSpace(seriesImdbId))
             {
                 throw new ArgumentNullException(nameof(seriesImdbId));
@@ -213,11 +221,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
-                {
-                    resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"", StringComparison.Ordinal);
-                }
+                using var reader = new StreamReader(stream, new UTF8Encoding(false));
+                resultString = reader.ReadToEnd();
+                resultString = resultString.Replace("\"N/A\"", "\"\"", StringComparison.Ordinal);
             }
 
             var result = _jsonSerializer.DeserializeFromString<RootObject>(resultString);
@@ -232,11 +238,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
-                {
-                    resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"", StringComparison.Ordinal);
-                }
+                using var reader = new StreamReader(stream, new UTF8Encoding(false));
+                resultString = reader.ReadToEnd();
+                resultString = resultString.Replace("\"N/A\"", "\"\"", StringComparison.Ordinal);
             }
 
             var result = _jsonSerializer.DeserializeFromString<SeasonRootObject>(resultString);
@@ -346,6 +350,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
         {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException(nameof(httpClient));
+            }
+
             return httpClient.GetAsync(new Uri(url), cancellationToken);
         }
 
@@ -451,7 +460,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
         }
 
-        private bool IsConfiguredForEnglish(BaseItem item)
+        private static bool IsConfiguredForEnglish(BaseItem item)
         {
             var lang = item.GetPreferredMetadataLanguage();
 

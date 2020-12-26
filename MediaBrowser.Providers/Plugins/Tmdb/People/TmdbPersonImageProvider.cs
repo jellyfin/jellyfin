@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var person = (Person)item;
+            var person = (Person)item ?? throw new ArgumentNullException(nameof(item));
             var personTmdbId = Convert.ToInt32(person.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
 
             if (personTmdbId > 0)
