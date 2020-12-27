@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                                 }
                                 else
                                 {
-                                    _logger.LogDebug("Scheduled Task history file {path} is empty. Skipping deserialization.", path);
+                                    _logger.LogDebug("Scheduled Task history file {Path} is empty. Skipping deserialization.", path);
                                 }
                             }
                             catch (Exception ex)
@@ -577,8 +577,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            using FileStream stream = File.OpenWrite(path);
-            JsonSerializer.SerializeAsync(stream, triggers, _jsonOptions);
+            var json = JsonSerializer.Serialize(triggers, _jsonOptions);
+            File.WriteAllText(path, json);
         }
 
         /// <summary>

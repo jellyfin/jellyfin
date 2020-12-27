@@ -351,9 +351,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         public async Task<T> GetDeserializedOmdbResponse<T>(HttpClient httpClient, string url, CancellationToken cancellationToken)
         {
             using var response = await GetOmdbResponse(httpClient, url, cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            await using Stream content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-            return JsonSerializer.Deserialize<T>(content, _jsonOptions);
+            return await JsonSerializer.DeserializeAsync<T>(content, _jsonOptions, cancellationToken).ConfigureAwait(false);
         }
 
         public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
