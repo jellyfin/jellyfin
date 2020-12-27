@@ -1,6 +1,3 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,21 +5,37 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="ContentFeatureBuilder" />.
+    /// </summary>
     public class ContentFeatureBuilder
     {
         private readonly DeviceProfile _profile;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentFeatureBuilder"/> class.
+        /// </summary>
+        /// <param name="profile">The profile<see cref="DeviceProfile"/>.</param>
         public ContentFeatureBuilder(DeviceProfile profile)
         {
             _profile = profile;
         }
 
+        /// <summary>
+        /// Builds an image header with the values provided.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="width">An optional width.</param>
+        /// <param name="height">An optional height.</param>
+        /// <param name="isDirectStream">True if it is a direct stream.</param>
+        /// <param name="orgPn">An optional orgPn.</param>
+        /// <returns>The image header as a string.</returns>
         public string BuildImageHeader(
             string container,
             int? width,
             int? height,
             bool isDirectStream,
-            string orgPn = null)
+            string? orgPn = null)
         {
             string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetImageOrgOpValue();
 
@@ -38,7 +51,7 @@ namespace MediaBrowser.Model.Dlna
                 ";DLNA.ORG_FLAGS={0}",
                 DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetImageMediaProfile(
+            ResponseProfile? mediaProfile = _profile.GetImageMediaProfile(
                 container,
                 width,
                 height);
@@ -58,6 +71,19 @@ namespace MediaBrowser.Model.Dlna
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
         }
 
+        /// <summary>
+        /// Builds an audio header from the values provided.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="audioCodec">The audio codec.</param>
+        /// <param name="audioBitrate">An optional value indicating the audio bitrate.</param>
+        /// <param name="audioSampleRate">An optional value indicating the audio sample rate.</param>
+        /// <param name="audioChannels">An optional value indicating the number of audio channels.</param>
+        /// <param name="audioBitDepth">An optional value indicating the audio bit depth.</param>
+        /// <param name="isDirectStream">True if the container supports direct stream.</param>
+        /// <param name="runtimeTicks">An optional value indicating the runtime ticks.</param>
+        /// <param name="transcodeSeekInfo">The <see cref="TranscodeSeekInfo"/>.</param>
+        /// <returns>The a string representing the audio header.</returns>
         public string BuildAudioHeader(
             string container,
             string audioCodec,
@@ -81,20 +107,20 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.DlnaV15;
 
             // if (isDirectStream)
-            //{
+            // {
             //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            //}
+            // }
             // else if (runtimeTicks.HasValue)
-            //{
+            // {
             //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
-            //}
+            // }
 
             string dlnaflags = string.Format(
                 CultureInfo.InvariantCulture,
                 ";DLNA.ORG_FLAGS={0}",
                 DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(
+            ResponseProfile? mediaProfile = _profile.GetAudioMediaProfile(
                 container,
                 audioCodec,
                 audioChannels,
@@ -102,7 +128,7 @@ namespace MediaBrowser.Model.Dlna
                 audioSampleRate,
                 audioBitDepth);
 
-            string orgPn = mediaProfile?.OrgPn;
+            string? orgPn = mediaProfile?.OrgPn;
 
             if (string.IsNullOrEmpty(orgPn))
             {
@@ -114,6 +140,32 @@ namespace MediaBrowser.Model.Dlna
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
         }
 
+        /// <summary>
+        /// Builds the Video Header meeting the criteria.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="videoCodec">The videoCodec.</param>
+        /// <param name="audioCodec">The audioCodec.</param>
+        /// <param name="width">An optional value indicating the width.</param>
+        /// <param name="height">An optional value indicating the height.</param>
+        /// <param name="bitDepth">An optional value indicating the bit depth.</param>
+        /// <param name="videoBitrate">An optional value indicating the video bitrate.</param>
+        /// <param name="timestamp">The <see cref="TransportStreamTimestamp"/>.</param>
+        /// <param name="isDirectStream">An optional value indicating the if is direct stream.</param>
+        /// <param name="runtimeTicks">An optional value indicating the runtime ticks.</param>
+        /// <param name="videoProfile">The video profile.</param>
+        /// <param name="videoLevel">An optional value indicating the video level.</param>
+        /// <param name="videoFramerate">An optional value indicating the video framerate.</param>
+        /// <param name="packetLength">An optional value indicating the packet length.</param>
+        /// <param name="transcodeSeekInfo">The <see cref="TranscodeSeekInfo"/>.</param>
+        /// <param name="isAnamorphic">An optional value indicating the if it is Anamorphic.</param>
+        /// <param name="isInterlaced">An optional value indicating the if it is Interlaced.</param>
+        /// <param name="refFrames">An optional value indicating the ref frames.</param>
+        /// <param name="numVideoStreams">An optional value indicating the number of video streams.</param>
+        /// <param name="numAudioStreams">An optional value indicating the number of AudioStreams.</param>
+        /// <param name="videoCodecTag">The video codec tag.</param>
+        /// <param name="isAvc">An optional value indicating Avc.</param>
+        /// <returns>An array of strings containing the video headers.</returns>
         public List<string> BuildVideoHeader(
             string container,
             string videoCodec,
@@ -150,18 +202,17 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.DlnaV15;
 
             // if (isDirectStream)
-            //{
+            // {
             //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            //}
+            // }
             // else if (runtimeTicks.HasValue)
-            //{
+            // {
             //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
-            //}
+            // }
 
-            string dlnaflags = string.Format(CultureInfo.InvariantCulture, ";DLNA.ORG_FLAGS={0}",
-             DlnaMaps.FlagsToString(flagValue));
+            string dlnaflags = string.Format(CultureInfo.InvariantCulture, ";DLNA.ORG_FLAGS={0}", DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(
+            ResponseProfile? mediaProfile = _profile.GetVideoMediaProfile(
                 container,
                 audioCodec,
                 videoCodec,
@@ -220,10 +271,9 @@ namespace MediaBrowser.Model.Dlna
             return contentFeatureList;
         }
 
-        private static string GetImageOrgPnValue(string container, int? width, int? height)
+        private static string? GetImageOrgPnValue(string container, int? width, int? height)
         {
-            MediaFormatProfile? format = new MediaFormatProfileResolver()
-                .ResolveImageFormat(
+            MediaFormatProfile? format = MediaFormatProfileResolver.ResolveImageFormat(
                 container,
                 width,
                 height);
@@ -231,10 +281,9 @@ namespace MediaBrowser.Model.Dlna
             return format.HasValue ? format.Value.ToString() : null;
         }
 
-        private static string GetAudioOrgPnValue(string container, int? audioBitrate, int? audioSampleRate, int? audioChannels)
+        private static string? GetAudioOrgPnValue(string container, int? audioBitrate, int? audioSampleRate, int? audioChannels)
         {
-            MediaFormatProfile? format = new MediaFormatProfileResolver()
-                .ResolveAudioFormat(
+            MediaFormatProfile? format = MediaFormatProfileResolver.ResolveAudioFormat(
                 container,
                 audioBitrate,
                 audioSampleRate,
@@ -245,7 +294,7 @@ namespace MediaBrowser.Model.Dlna
 
         private static string[] GetVideoOrgPnValue(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestamp)
         {
-            return new MediaFormatProfileResolver().ResolveVideoFormat(container, videoCodec, audioCodec, width, height, timestamp);
+            return MediaFormatProfileResolver.ResolveVideoFormat(container, videoCodec, audioCodec, width, height, timestamp);
         }
     }
 }

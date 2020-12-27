@@ -1,13 +1,13 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 
 namespace MediaBrowser.Model.Dlna
 {
-    public class ResolutionNormalizer
+    /// <summary>
+    /// Defines the <see cref="ResolutionNormalizer" />.
+    /// </summary>
+    public static class ResolutionNormalizer
     {
-        private static readonly ResolutionConfiguration[] Configurations =
+        private static readonly ResolutionConfiguration[] _configurations =
             new[]
             {
                 new ResolutionConfiguration(426, 320000),
@@ -19,13 +19,17 @@ namespace MediaBrowser.Model.Dlna
                 new ResolutionConfiguration(3840, 35000000)
             };
 
+        /// <summary>
+        /// The Normalize.
+        /// </summary>
+        /// <param name="inputBitrate">An optional input bitrate.</param>
+        /// <param name="outputBitrate">An optional output bitrate.</param>
+        /// <param name="maxWidth">An optional maximum width.</param>
+        /// <param name="maxHeight">An optional maximum height.</param>
+        /// <returns>The <see cref="ResolutionOptions"/>.</returns>
         public static ResolutionOptions Normalize(
             int? inputBitrate,
-            int? unused1,
-            int? unused2,
             int outputBitrate,
-            string inputCodec,
-            string outputCodec,
             int? maxWidth,
             int? maxHeight)
         {
@@ -61,11 +65,33 @@ namespace MediaBrowser.Model.Dlna
             };
         }
 
-        private static ResolutionConfiguration GetResolutionConfiguration(int outputBitrate)
+        /// <summary>
+        /// The ScaleBitrate.
+        /// </summary>
+        /// <param name="bitrate">The bitrate<see cref="int"/>.</param>
+        /// <param name="inputVideoCodec">The inputVideoCodec<see cref="string"/>.</param>
+        /// <param name="outputVideoCodec">The outputVideoCodec<see cref="string"/>.</param>
+        /// <returns>The <see cref="int"/>.</returns>
+        public static int ScaleBitrate(int bitrate, string inputVideoCodec, string outputVideoCodec)
         {
-            ResolutionConfiguration previousOption = null;
+            var inputScaleFactor = GetVideoBitrateScaleFactor(inputVideoCodec);
+            var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);
+            var scaleFactor = outputScaleFactor / inputScaleFactor;
+            var newBitrate = scaleFactor * bitrate;
 
-            foreach (var config in Configurations)
+            return Convert.ToInt32(newBitrate);
+        }
+
+        /// <summary>
+        /// The GetResolutionConfiguration.
+        /// </summary>
+        /// <param name="outputBitrate">The outputBitrate<see cref="int"/>.</param>
+        /// <returns>The <see cref="ResolutionConfiguration"/>.</returns>
+        private static ResolutionConfiguration? GetResolutionConfiguration(int outputBitrate)
+        {
+            ResolutionConfiguration? previousOption = null;
+
+            foreach (var config in _configurations)
             {
                 if (outputBitrate <= config.MaxBitrate)
                 {
@@ -78,6 +104,11 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
+        /// <summary>
+        /// The GetVideoBitrateScaleFactor.
+        /// </summary>
+        /// <param name="codec">The codec<see cref="string"/>.</param>
+        /// <returns>The <see cref="double"/>.</returns>
         private static double GetVideoBitrateScaleFactor(string codec)
         {
             if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
@@ -88,16 +119,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return 1;
-        }
-
-        public static int ScaleBitrate(int bitrate, string inputVideoCodec, string outputVideoCodec)
-        {
-            var inputScaleFactor = GetVideoBitrateScaleFactor(inputVideoCodec);
-            var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);
-            var scaleFactor = outputScaleFactor / inputScaleFactor;
-            var newBitrate = scaleFactor * bitrate;
-
-            return Convert.ToInt32(newBitrate);
         }
     }
 }

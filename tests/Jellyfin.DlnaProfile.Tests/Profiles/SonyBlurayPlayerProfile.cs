@@ -1,54 +1,42 @@
-#pragma warning disable CS1591
+#pragma warning disable SA1118 // Parameter should not span multiple lines
 
-using System;
 using MediaBrowser.Model.Dlna;
 
-namespace Emby.Dlna.Profiles
+namespace Jellyfin.DlnaProfiles.Profiles
 {
+    /// <summary>
+    /// Defines the <see cref="SonyBlurayPlayerProfile" />.
+    /// </summary>
     [System.Xml.Serialization.XmlRoot("Profile")]
-    public class SonyBlurayPlayer2013 : DefaultProfile
+    public class SonyBlurayPlayerProfile : DefaultProfile
     {
-        public SonyBlurayPlayer2013()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SonyBlurayPlayerProfile"/> class.
+        /// </summary>
+        public SonyBlurayPlayerProfile()
         {
-            Name = "Sony Blu-ray Player 2013";
+            Name = "Sony Blu-ray Player";
 
-            Identification = new DeviceIdentification
-            {
-                ModelNumber = "BDP-2013",
-
-                Headers = new[]
+            Identification = new DeviceIdentification(
+                @"Blu-ray Disc Player",
+                new[]
                 {
                     new HttpHeaderInfo
                     {
-                        Name = "X-AV-Physical-Unit-Info",
-                        Value = "BDP-S1100",
-                        Match = HeaderMatchType.Substring
+                        Name = "X-AV-Client-Info",
+                        Value = @"(Blu-ray Disc Player|Home Theater System|Home Theatre System|Media Player)",
+                        Match = HeaderMatchType.Regex
                     },
+
                     new HttpHeaderInfo
                     {
                         Name = "X-AV-Physical-Unit-Info",
-                        Value = "BDP-S3100",
-                        Match = HeaderMatchType.Substring
-                    },
-                    new HttpHeaderInfo
-                    {
-                        Name = "X-AV-Physical-Unit-Info",
-                        Value = "BDP-S5100",
-                        Match = HeaderMatchType.Substring
-                    },
-                    new HttpHeaderInfo
-                    {
-                        Name = "X-AV-Physical-Unit-Info",
-                        Value = "BDP-S6100",
-                        Match = HeaderMatchType.Substring
-                    },
-                    new HttpHeaderInfo
-                    {
-                        Name = "X-AV-Physical-Unit-Info",
-                        Value = "BDP-S7100",
-                        Match = HeaderMatchType.Substring
+                        Value = @"(Blu-ray Disc Player|Home Theater System|Home Theatre System|Media Player)",
+                        Match = HeaderMatchType.Regex
                     }
-                }
+                })
+            {
+                Manufacturer = "Sony"
             };
 
             AddXmlRootAttribute("xmlns:av", "urn:schemas-sony-com:av");
@@ -61,170 +49,85 @@ namespace Emby.Dlna.Profiles
 
             TranscodingProfiles = new[]
             {
-                new TranscodingProfile
-                {
-                    Container = "mp3",
-                    AudioCodec = "mp3",
-                    Type = DlnaProfileType.Audio
-                },
-
-                new TranscodingProfile
-                {
-                    Container = "mkv",
-                    VideoCodec = "h264",
-                    AudioCodec = "ac3,aac,mp3",
-                    Type = DlnaProfileType.Video
-                },
-
-                new TranscodingProfile
-                {
-                    Container = "jpeg",
-                    Type = DlnaProfileType.Photo
-                }
+                new TranscodingProfile("mp3", "mp3"),
+                new TranscodingProfile("ts", "mpeg2video", "ac3"),
+                new TranscodingProfile("jpeg")
             };
 
             DirectPlayProfiles = new[]
             {
-                new DirectPlayProfile
-                {
-                    Container = "ts,mpegts",
-                    VideoCodec = "mpeg1video,mpeg2video,h264",
-                    AudioCodec = "ac3,aac,mp3,pcm",
-                    Type = DlnaProfileType.Video
-                },
-                new DirectPlayProfile
-                {
-                    Container = "mpeg,mpg",
-                    VideoCodec = "mpeg1video,mpeg2video",
-                    AudioCodec = "ac3,mp3,mp2,pcm",
-                    Type = DlnaProfileType.Video
-                },
-                new DirectPlayProfile
-                {
-                    Container = "mp4,m4v",
-                    VideoCodec = "mpeg4,h264",
-                    AudioCodec = "ac3,aac,pcm,mp3",
-                    Type = DlnaProfileType.Video
-                },
-                new DirectPlayProfile
-                {
-                    Container = "avi",
-                    VideoCodec = "mpeg4,h264",
-                    AudioCodec = "ac3,aac,mp3,pcm",
-                    Type = DlnaProfileType.Video
-                },
-                new DirectPlayProfile
-                {
-                    Container = "mkv",
-                    VideoCodec = "mpeg4,h264",
-                    AudioCodec = "ac3,dca,aac,mp3,pcm,dts",
-                    Type = DlnaProfileType.Video
-                },
-                new DirectPlayProfile
-                {
-                    Container = "m2ts,mts",
-                    VideoCodec = "h264,mpeg4,vc1",
-                    AudioCodec = "aac,mp3,ac3,dca,dts",
-                    Type = DlnaProfileType.Video
-                },
-                new DirectPlayProfile
-                {
-                    Container = "wmv,asf",
-                    Type = DlnaProfileType.Video
-                },
-                new DirectPlayProfile
-                {
-                    Container = "mp3,m4a,wma,wav",
-                    Type = DlnaProfileType.Audio
-                },
-                new DirectPlayProfile
-                {
-                    Container = "jpeg,png,gif",
-                    Type = DlnaProfileType.Photo
-                }
+                new DirectPlayProfile("ts,mpegts", "mpeg1video,mpeg2video,h264", "ac3,aac,mp3,pcm"),
+                new DirectPlayProfile("mpeg", "mpeg1video,mpeg2video", "ac3,mp3,pcm"),
+                new DirectPlayProfile("avi,mp4,m4v", "mpeg4,h264", "ac3,aac,mp3,pcm"),
+                new DirectPlayProfile("mp3", "mp3"),
+                new DirectPlayProfile("asf", "wmav2,wmapro,wmavoice"),
+                new DirectPlayProfile("jpeg")
             };
 
             CodecProfiles = new[]
             {
-                new CodecProfile
-                {
-                    Type = CodecType.Video,
-                    Codec = "h264",
-                    Conditions = new[]
+                new CodecProfile(
+                    "h264",
+                    CodecType.Video,
+                    new[]
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Width,
-                            Value = "1920"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Height,
-                            Value = "1080"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoFramerate,
-                            Value = "30",
-                            IsRequired = false
-                        }
-                    }
-                },
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Width, "1920"),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Height, "1080"),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.VideoFramerate, "30", false),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.VideoLevel, "41", false),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.VideoBitrate, "15360000", false)
+                    }),
 
-                new CodecProfile
-                {
-                    Type = CodecType.VideoAudio,
-                    Codec = "ac3",
-                    Conditions = new[]
+                new CodecProfile(
+                    "ac3",
+                    CodecType.VideoAudio,
+                    new[]
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioChannels,
-                            Value = "6",
-                            IsRequired = false
-                        }
-                    }
-                }
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.AudioChannels, "6", false)
+                    }),
+
+                new CodecProfile(
+                    "aac",
+                    CodecType.VideoAudio,
+                    new[]
+                    {
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.AudioChannels, "2", false)
+                    })
             };
 
             ContainerProfiles = new[]
             {
-                new ContainerProfile
-                {
-                    Type = DlnaProfileType.Photo,
-
-                    Conditions = new[]
+                new ContainerProfile(
+                    DlnaProfileType.Photo,
+                    new[]
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Width,
-                            Value = "1920"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Height,
-                            Value = "1080"
-                        }
-                    }
-                }
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Width, "1920"),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Height, "1080"),
+                    })
+            };
+
+            ResponseProfiles = new[]
+            {
+                new ResponseProfile("ts,mpegts", DlnaProfileType.Video, "video/vnd.dlna.mpeg-tts")
+                {
+                    VideoCodec = "h264,mpeg4,vc1",
+                    AudioCodec = "ac3,aac,mp3",
+                    OrgPn = "MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO"
+                },
+
+                new ResponseProfile("avi", DlnaProfileType.Video, "video/mpeg"),
+                new ResponseProfile("mkv", DlnaProfileType.Video, "video/vnd.dlna.mpeg-tts"),
+                new ResponseProfile("ts,mpegts", DlnaProfileType.Video, "video/vnd.dlna.mpeg-tts"),
+                new ResponseProfile("mp4", DlnaProfileType.Video, "video/mpeg"),
+                new ResponseProfile("m4v", DlnaProfileType.Video, "video/mpeg"),
+                new ResponseProfile("mpeg", DlnaProfileType.Video, "video/mpeg"),
+                new ResponseProfile("mp3", DlnaProfileType.Audio, "audio/mpeg")
             };
 
             SubtitleProfiles = new[]
             {
-                new SubtitleProfile
-                {
-                    Format = "srt",
-                    Method = SubtitleDeliveryMethod.Embed
-                }
+                new SubtitleProfile("srt", SubtitleDeliveryMethod.Embed)
             };
-
-            ResponseProfiles = Array.Empty<ResponseProfile>();
         }
     }
 }

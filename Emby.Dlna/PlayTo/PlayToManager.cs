@@ -210,7 +210,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
                 {
-                    PlayableMediaTypes = profile.GetSupportedMediaTypes(),
+                    PlayableMediaTypes = profile.GetAllSupportedMediaTypes(),
 
                     SupportedCommands = new[]
                     {

@@ -48,7 +48,7 @@ namespace Emby.Dlna.ConnectionManager
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
         private void HandleGetProtocolInfo(XmlWriter xmlWriter)
         {
-            xmlWriter.WriteElementString("Source", _profile.ProtocolInfo);
+            xmlWriter.WriteElementString("Source", _profile.ProtocolInfo ?? string.Empty);
             xmlWriter.WriteElementString("Sink", string.Empty);
         }
     }

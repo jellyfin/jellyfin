@@ -183,7 +183,7 @@ namespace Jellyfin.Api.Helpers
             if (string.IsNullOrEmpty(containerInternal))
             {
                 containerInternal = streamingRequest.Static ?
-                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio)
+                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, null, DlnaProfileType.Audio)
                     : GetOutputFileExtension(state);
             }
 
@@ -226,11 +226,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         var resolution = ResolutionNormalizer.Normalize(
                             state.VideoStream?.BitRate,
-                            state.VideoStream?.Width,
-                            state.VideoStream?.Height,
                             state.OutputVideoBitrate.Value,
-                            state.VideoStream?.Codec,
-                            state.OutputVideoCodec,
                             state.VideoRequest.MaxWidth,
                             state.VideoRequest.MaxHeight);
 

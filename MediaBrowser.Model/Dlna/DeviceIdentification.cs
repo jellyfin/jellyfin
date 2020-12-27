@@ -1,64 +1,86 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 
 namespace MediaBrowser.Model.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="DeviceIdentification" />.
+    /// </summary>
     public class DeviceIdentification
     {
         /// <summary>
-        /// Gets or sets the name of the friendly.
+        /// Initializes a new instance of the <see cref="DeviceIdentification"/> class.
         /// </summary>
-        /// <value>The name of the friendly.</value>
-        public string FriendlyName { get; set; } = string.Empty;
+        public DeviceIdentification()
+        {
+            Headers = Array.Empty<HttpHeaderInfo>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceIdentification"/> class.
+        /// </summary>
+        /// <param name="friendlyName">The friendlyName.</param>
+        /// <param name="headers">Array of <see cref="HttpHeaderInfo"/>.</param>
+        public DeviceIdentification(string? friendlyName, HttpHeaderInfo[] headers)
+        {
+            Headers = headers;
+            FriendlyName = friendlyName;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceIdentification"/> class.
+        /// </summary>
+        /// <param name="friendlyName">The friendlyName.</param>
+        public DeviceIdentification(string? friendlyName)
+        {
+            FriendlyName = friendlyName;
+            Headers = Array.Empty<HttpHeaderInfo>();
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the friendly..
+        /// </summary>
+        public string? FriendlyName { get; set; }
 
         /// <summary>
         /// Gets or sets the model number.
         /// </summary>
-        /// <value>The model number.</value>
-        public string ModelNumber { get; set; } = string.Empty;
+        public string? ModelNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the serial number.
         /// </summary>
-        /// <value>The serial number.</value>
-        public string SerialNumber { get; set; } = string.Empty;
+        public string? SerialNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the model.
         /// </summary>
-        /// <value>The name of the model.</value>
-        public string ModelName { get; set; } = string.Empty;
+        public string? ModelName { get; set; }
 
         /// <summary>
         /// Gets or sets the model description.
         /// </summary>
-        /// <value>The model description.</value>
-        public string ModelDescription { get; set; } = string.Empty;
+        public string? ModelDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the model URL.
         /// </summary>
-        /// <value>The model URL.</value>
-        public string ModelUrl { get; set; } = string.Empty;
+        public string? ModelUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the manufacturer.
+        /// Gets or sets the Manufacturer.
         /// </summary>
-        /// <value>The manufacturer.</value>
-        public string Manufacturer { get; set; } = string.Empty;
+        public string? Manufacturer { get; set; }
 
         /// <summary>
         /// Gets or sets the manufacturer URL.
         /// </summary>
-        /// <value>The manufacturer URL.</value>
-        public string ManufacturerUrl { get; set; } = string.Empty;
+        public string? ManufacturerUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the headers.
+        /// Gets or sets the Headers.
         /// </summary>
-        /// <value>The headers.</value>
-        public HttpHeaderInfo[] Headers { get; set; } = Array.Empty<HttpHeaderInfo>();
+#pragma warning disable CA1819 // Properties should not return arrays
+        public HttpHeaderInfo[] Headers { get; set; }
+#pragma warning restore CA1819 // Properties should not return arrays
     }
 }

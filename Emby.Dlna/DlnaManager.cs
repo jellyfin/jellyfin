@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -26,18 +26,29 @@ using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="DlnaManager" />.
+    /// </summary>
     public class DlnaManager : IDlnaManager
     {
+        private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
         private readonly IApplicationPaths _appPaths;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<DlnaManager> _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
-        private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
+        private readonly Dictionary<string, (InternalProfileInfo profileInfo, DeviceProfile deviceProfile)> _profiles;
 
-        private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DlnaManager"/> class.
+        /// </summary>
+        /// <param name="xmlSerializer">The <see cref="IXmlSerializer"/>.</param>
+        /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
+        /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
+        /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         public DlnaManager(
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
@@ -52,12 +63,23 @@ namespace Emby.Dlna
             _logger = loggerFactory.CreateLogger<DlnaManager>();
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
+            _profiles = new (StringComparer.Ordinal);
         }
 
+        /// <summary>
+        /// Gets the user profiles path.
+        /// </summary>
         private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
 
+        /// <summary>
+        /// Gets the system profiles path.
+        /// </summary>
         private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
 
+        /// <summary>
+        /// Initialises the profiles.
+        /// </summary>
+        /// <returns>The initialisation <see cref="Task"/>.</returns>
         public async Task InitProfilesAsync()
         {
             try
@@ -65,41 +87,112 @@ namespace Emby.Dlna
                 await ExtractSystemProfilesAsync().ConfigureAwait(false);
                 LoadProfiles();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error extracting DLNA profiles.");
             }
         }
 
-        private void LoadProfiles()
+        /// <inheritdoc/>
+        public void DeleteProfile(string id)
         {
-            var list = GetProfiles(UserProfilesPath, DeviceProfileType.User)
-                .OrderBy(i => i.Name)
-                .ToList();
+            var info = GetProfileInfosInternal().First(i => string.Equals(id, i.Info.Id, StringComparison.OrdinalIgnoreCase));
 
-            list.AddRange(GetProfiles(SystemProfilesPath, DeviceProfileType.System)
-                .OrderBy(i => i.Name));
+            if (info.Info.Type == DeviceProfileType.System)
+            {
+                throw new ArgumentException("System profiles cannot be deleted.");
+            }
+
+            _fileSystem.DeleteFile(info.Path);
+
+            lock (_profiles)
+            {
+                _profiles.Remove(info.Path);
+            }
         }
 
+        /// <inheritdoc/>
+        public void CreateProfile(DeviceProfile profile)
+        {
+            if (profile == null)
+            {
+                throw new ArgumentNullException(nameof(profile));
+            }
+
+            profile = ReserializeProfile(profile);
+
+            if (string.IsNullOrEmpty(profile.Name))
+            {
+                throw new ArgumentException("Profile is missing Name");
+            }
+
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
+            var path = Path.Combine(UserProfilesPath, newFilename);
+
+            SaveProfile(profile, path, DeviceProfileType.User);
+        }
+
+        /// <inheritdoc/>
+        public void UpdateProfile(DeviceProfile profile)
+        {
+            if (profile == null)
+            {
+                throw new ArgumentNullException(nameof(profile));
+            }
+
+            profile = ReserializeProfile(profile);
+
+            if (string.IsNullOrEmpty(profile.Id))
+            {
+                throw new ArgumentException("Profile is missing Id");
+            }
+
+            if (string.IsNullOrEmpty(profile.Name))
+            {
+                throw new ArgumentException("Profile is missing Name");
+            }
+
+            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
+
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
+            var path = Path.Combine(UserProfilesPath, newFilename);
+
+            if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
+                current.Info.Type != DeviceProfileType.System)
+            {
+                _fileSystem.DeleteFile(current.Path);
+            }
+
+            SaveProfile(profile, path, DeviceProfileType.User);
+        }
+
+        /// <summary>
+        /// Gets all the profiles.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{DeviceProfile}"/> containing all the profiles.</returns>
         public IEnumerable<DeviceProfile> GetProfiles()
         {
             lock (_profiles)
             {
                 var list = _profiles.Values.ToList();
                 return list
-                    .OrderBy(i => i.Item1.Info.Type == DeviceProfileType.User ? 0 : 1)
-                    .ThenBy(i => i.Item1.Info.Name)
-                    .Select(i => i.Item2)
+                    .OrderBy(i => i.profileInfo.Info.Type == DeviceProfileType.User ? 0 : 1)
+                    .ThenBy(i => i.profileInfo.Info.Name)
+                    .Select(i => i.deviceProfile)
                     .ToList();
             }
         }
 
+        /// <inheritdoc/>
         public DeviceProfile GetDefaultProfile()
         {
             return new DefaultProfile();
         }
 
-        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
+        /// <inheritdoc/>
+        public DeviceProfile? GetProfile(DeviceIdentification deviceInfo)
         {
             if (deviceInfo == null)
             {
@@ -119,6 +212,192 @@ namespace Emby.Dlna
             }
 
             return profile;
+        }
+
+        /// <inheritdoc/>
+        public DeviceProfile? GetProfile(IHeaderDictionary headers)
+        {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
+
+            if (profile != null)
+            {
+                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
+            }
+            else
+            {
+                var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
+                _logger.LogDebug("No matching device profile found. {0}", headerString);
+            }
+
+            return profile;
+        }
+
+        /// <summary>
+        /// Gets a Profile.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>The <see cref="DeviceProfile"/> if found, otherwise null.</returns>
+        public DeviceProfile? GetProfile(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+
+            return ParseProfileFile(info.Path, info.Info.Type);
+        }
+
+        /// <summary>
+        /// Gets the Profile Info records.
+        /// </summary>
+        /// <returns>The <see cref="IEnumerable{DeviceProfileInfo}"/>.</returns>
+        public IEnumerable<DeviceProfileInfo> GetProfileInfos()
+        {
+            return GetProfileInfosInternal().Select(i => i.Info);
+        }
+
+        /// <summary>
+        /// Gets the server description as Xml.
+        /// </summary>
+        /// <param name="headers">The <see cref="IHeaderDictionary"/>.</param>
+        /// <param name="serverUuId">The serverUuId.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <returns>The <see cref="string"/>.</returns>
+        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
+        {
+            var profile = GetDefaultProfile();
+
+            var serverId = _appHost.SystemId;
+
+            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
+        }
+
+        /// <summary>
+        /// Gets the Icon.
+        /// </summary>
+        /// <param name="filename">The filename of the icon.</param>
+        /// <returns>The <see cref="ImageStream"/>.</returns>
+        public ImageStream GetIcon(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+            {
+                throw new ArgumentNullException(nameof(filename));
+            }
+
+            var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                ? ImageFormat.Png
+                : ImageFormat.Jpg;
+
+            var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
+
+            return new ImageStream
+            {
+                Format = format,
+                Stream = _assembly.GetManifestResourceStream(resource)
+            };
+        }
+
+        /// <summary>
+        /// Serializes a profile to Xml.
+        /// </summary>
+        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
+        /// <param name="path">The path.</param>
+        internal void SerializeToXml(DeviceProfile profile, string path)
+        {
+            _xmlSerializer.SerializeToFile(profile, path);
+        }
+
+        private static bool IsMatch(IHeaderDictionary headers, DeviceIdentification profileInfo)
+        {
+            return profileInfo.Headers.Any(i => IsMatch(headers, i));
+        }
+
+        private static bool IsMatch(IHeaderDictionary headers, HttpHeaderInfo header)
+        {
+            // Handle invalid user setup
+            if (string.IsNullOrEmpty(header.Name))
+            {
+                return false;
+            }
+
+            if (headers.TryGetValue(header.Name, out StringValues value))
+            {
+                switch (header.Match)
+                {
+                    case HeaderMatchType.Equals:
+                        return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
+                    case HeaderMatchType.Substring:
+                        var isMatch = value.ToString().IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
+                        // _logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
+                        return isMatch;
+                    case HeaderMatchType.Regex:
+                        return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
+                    default:
+                        throw new ArgumentException("Unrecognized HeaderMatchType");
+                }
+            }
+
+            return false;
+        }
+
+        private IEnumerable<DeviceProfile> GetProfiles(string path, DeviceProfileType type)
+        {
+            try
+            {
+                var xmlFiles = _fileSystem.GetFilePaths(path)
+                    .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                return xmlFiles
+                    .Select(i => ParseProfileFile(i, type))
+                    .Where(i => i != null)
+                    .ToList()!;
+            }
+            catch (IOException)
+            {
+                return new List<DeviceProfile>();
+            }
+        }
+
+        private DeviceProfile? ParseProfileFile(string path, DeviceProfileType type)
+        {
+            lock (_profiles)
+            {
+                if (_profiles.TryGetValue(path, out var profileTuple))
+                {
+                    return profileTuple.deviceProfile;
+                }
+
+                try
+                {
+                    DeviceProfile profile;
+
+                    var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
+
+                    profile = ReserializeProfile(tempProfile);
+
+                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
+
+                    _profiles[path] = (GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
+
+                    return profile;
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    _logger.LogError(ex, "Error parsing profile file: {Path}", path);
+
+                    return null;
+                }
+            }
         }
 
         private void LogUnmatchedProfile(DeviceIdentification profile)
@@ -220,156 +499,42 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile GetProfile(IHeaderDictionary headers)
-        {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
-
-            if (profile != null)
-            {
-                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
-            }
-            else
-            {
-                var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
-                _logger.LogDebug("No matching device profile found. {0}", headerString);
-            }
-
-            return profile;
-        }
-
-        private bool IsMatch(IHeaderDictionary headers, DeviceIdentification profileInfo)
-        {
-            return profileInfo.Headers.Any(i => IsMatch(headers, i));
-        }
-
-        private bool IsMatch(IHeaderDictionary headers, HttpHeaderInfo header)
-        {
-            // Handle invalid user setup
-            if (string.IsNullOrEmpty(header.Name))
-            {
-                return false;
-            }
-
-            if (headers.TryGetValue(header.Name, out StringValues value))
-            {
-                switch (header.Match)
-                {
-                    case HeaderMatchType.Equals:
-                        return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
-                    case HeaderMatchType.Substring:
-                        var isMatch = value.ToString().IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
-                        // _logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
-                        return isMatch;
-                    case HeaderMatchType.Regex:
-                        return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
-                    default:
-                        throw new ArgumentException("Unrecognized HeaderMatchType");
-                }
-            }
-
-            return false;
-        }
-
-        private IEnumerable<DeviceProfile> GetProfiles(string path, DeviceProfileType type)
-        {
-            try
-            {
-                var xmlFies = _fileSystem.GetFilePaths(path)
-                    .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                return xmlFies
-                    .Select(i => ParseProfileFile(i, type))
-                    .Where(i => i != null)
-                    .ToList();
-            }
-            catch (IOException)
-            {
-                return new List<DeviceProfile>();
-            }
-        }
-
-        private DeviceProfile ParseProfileFile(string path, DeviceProfileType type)
-        {
-            lock (_profiles)
-            {
-                if (_profiles.TryGetValue(path, out Tuple<InternalProfileInfo, DeviceProfile> profileTuple))
-                {
-                    return profileTuple.Item2;
-                }
-
-                try
-                {
-                    DeviceProfile profile;
-
-                    var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
-
-                    profile = ReserializeProfile(tempProfile);
-
-                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
-
-                    _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
-
-                    return profile;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error parsing profile file: {Path}", path);
-
-                    return null;
-                }
-            }
-        }
-
-        public DeviceProfile GetProfile(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
-            var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
-
-            return ParseProfileFile(info.Path, info.Info.Type);
-        }
-
         private IEnumerable<InternalProfileInfo> GetProfileInfosInternal()
         {
             lock (_profiles)
             {
                 var list = _profiles.Values.ToList();
                 return list
-                    .Select(i => i.Item1)
+                    .Select(i => i.profileInfo)
                     .OrderBy(i => i.Info.Type == DeviceProfileType.User ? 0 : 1)
                     .ThenBy(i => i.Info.Name);
             }
         }
 
-        public IEnumerable<DeviceProfileInfo> GetProfileInfos()
+        private void LoadProfiles()
         {
-            return GetProfileInfosInternal().Select(i => i.Info);
+            var list = GetProfiles(UserProfilesPath, DeviceProfileType.User)
+                .OrderBy(i => i.Name)
+                .ToList();
+
+            list.AddRange(GetProfiles(SystemProfilesPath, DeviceProfileType.System)
+                .OrderBy(i => i.Name));
         }
 
         private InternalProfileInfo GetInternalProfileInfo(FileSystemMetadata file, DeviceProfileType type)
         {
-            return new InternalProfileInfo
-            {
-                Path = file.FullName,
-
-                Info = new DeviceProfileInfo
-                {
-                    Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture),
-                    Name = _fileSystem.GetFileNameWithoutExtension(file),
-                    Type = type
-                }
-            };
+            return new InternalProfileInfo(
+                file.FullName,
+                new DeviceProfileInfo(
+                    file.FullName.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture),
+                    _fileSystem.GetFileNameWithoutExtension(file),
+                    type));
         }
 
+        /// <summary>
+        /// The ExtractSystemProfilesAsync.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
         private async Task ExtractSystemProfilesAsync()
         {
             var namespaceName = GetType().Namespace + ".Profiles.Xml.";
@@ -385,21 +550,22 @@ namespace Emby.Dlna
 
                 var path = Path.Join(
                     systemProfilesPath,
-                    Path.GetFileName(name.AsSpan()).Slice(namespaceName.Length));
+                    Path.GetFileName(name.AsSpan())[namespaceName.Length..]);
 
-                using (var stream = _assembly.GetManifestResourceStream(name))
+                using var stream = _assembly.GetManifestResourceStream(name);
+                if (stream == null)
                 {
-                    var fileInfo = _fileSystem.GetFileInfo(path);
+                    throw new ResourceNotFoundException(name);
+                }
 
-                    if (!fileInfo.Exists || fileInfo.Length != stream.Length)
-                    {
-                        Directory.CreateDirectory(systemProfilesPath);
+                var fileInfo = _fileSystem.GetFileInfo(path);
 
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
-                        {
-                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        }
-                    }
+                if (!fileInfo.Exists || fileInfo.Length != stream.Length)
+                {
+                    Directory.CreateDirectory(systemProfilesPath);
+
+                    using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
             }
 
@@ -407,79 +573,20 @@ namespace Emby.Dlna
             Directory.CreateDirectory(UserProfilesPath);
         }
 
-        public void DeleteProfile(string id)
-        {
-            var info = GetProfileInfosInternal().First(i => string.Equals(id, i.Info.Id, StringComparison.OrdinalIgnoreCase));
-
-            if (info.Info.Type == DeviceProfileType.System)
-            {
-                throw new ArgumentException("System profiles cannot be deleted.");
-            }
-
-            _fileSystem.DeleteFile(info.Path);
-
-            lock (_profiles)
-            {
-                _profiles.Remove(info.Path);
-            }
-        }
-
-        public void CreateProfile(DeviceProfile profile)
-        {
-            profile = ReserializeProfile(profile);
-
-            if (string.IsNullOrEmpty(profile.Name))
-            {
-                throw new ArgumentException("Profile is missing Name");
-            }
-
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
-            var path = Path.Combine(UserProfilesPath, newFilename);
-
-            SaveProfile(profile, path, DeviceProfileType.User);
-        }
-
-        public void UpdateProfile(DeviceProfile profile)
-        {
-            profile = ReserializeProfile(profile);
-
-            if (string.IsNullOrEmpty(profile.Id))
-            {
-                throw new ArgumentException("Profile is missing Id");
-            }
-
-            if (string.IsNullOrEmpty(profile.Name))
-            {
-                throw new ArgumentException("Profile is missing Name");
-            }
-
-            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
-
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
-            var path = Path.Combine(UserProfilesPath, newFilename);
-
-            if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
-                current.Info.Type != DeviceProfileType.System)
-            {
-                _fileSystem.DeleteFile(current.Path);
-            }
-
-            SaveProfile(profile, path, DeviceProfileType.User);
-        }
-
+        /// <summary>
+        /// The SaveProfile.
+        /// </summary>
+        /// <param name="profile">The profile<see cref="DeviceProfile"/>.</param>
+        /// <param name="path">The path<see cref="string"/>.</param>
+        /// <param name="type">The type<see cref="DeviceProfileType"/>.</param>
         private void SaveProfile(DeviceProfile profile, string path, DeviceProfileType type)
         {
             lock (_profiles)
             {
-                _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
+                _profiles[path] = (GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
             }
 
             SerializeToXml(profile, path);
-        }
-
-        internal void SerializeToXml(DeviceProfile profile, string path)
-        {
-            _xmlSerializer.SerializeToFile(profile, path);
         }
 
         /// <summary>
@@ -500,103 +607,26 @@ namespace Emby.Dlna
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
-        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
-        {
-            var profile = GetDefaultProfile();
-
-            var serverId = _appHost.SystemId;
-
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
-        }
-
-        public ImageStream GetIcon(string filename)
-        {
-            var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-                ? ImageFormat.Png
-                : ImageFormat.Jpg;
-
-            var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
-
-            return new ImageStream
-            {
-                Format = format,
-                Stream = _assembly.GetManifestResourceStream(resource)
-            };
-        }
-
+        /// <summary>
+        /// Defines the <see cref="InternalProfileInfo" />.
+        /// </summary>
         private class InternalProfileInfo
         {
+            internal InternalProfileInfo(string path, DeviceProfileInfo info)
+            {
+                Path = path;
+                Info = info;
+            }
+
+            /// <summary>
+            /// Gets or sets the Info.
+            /// </summary>
             internal DeviceProfileInfo Info { get; set; }
 
+            /// <summary>
+            /// Gets or sets the Path.
+            /// </summary>
             internal string Path { get; set; }
         }
     }
-
-    /*
-    class DlnaProfileEntryPoint : IServerEntryPoint
-    {
-        private readonly IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
-        private readonly IXmlSerializer _xmlSerializer;
-
-        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IXmlSerializer xmlSerializer)
-        {
-            _appPaths = appPaths;
-            _fileSystem = fileSystem;
-            _xmlSerializer = xmlSerializer;
-        }
-
-        public void Run()
-        {
-            DumpProfiles();
-        }
-
-        private void DumpProfiles()
-        {
-            DeviceProfile[] list = new []
-            {
-                new SamsungSmartTvProfile(),
-                new XboxOneProfile(),
-                new SonyPs3Profile(),
-                new SonyPs4Profile(),
-                new SonyBravia2010Profile(),
-                new SonyBravia2011Profile(),
-                new SonyBravia2012Profile(),
-                new SonyBravia2013Profile(),
-                new SonyBravia2014Profile(),
-                new SonyBlurayPlayer2013(),
-                new SonyBlurayPlayer2014(),
-                new SonyBlurayPlayer2015(),
-                new SonyBlurayPlayer2016(),
-                new SonyBlurayPlayerProfile(),
-                new PanasonicVieraProfile(),
-                new WdtvLiveProfile(),
-                new DenonAvrProfile(),
-                new LinksysDMA2100Profile(),
-                new LgTvProfile(),
-                new Foobar2000Profile(),
-                new SharpSmartTvProfile(),
-                new MediaMonkeyProfile(),
-                // new Windows81Profile(),
-                // new WindowsMediaCenterProfile(),
-                // new WindowsPhoneProfile(),
-                new DirectTvProfile(),
-                new DishHopperJoeyProfile(),
-                new DefaultProfile(),
-                new PopcornHourProfile(),
-                new MarantzProfile()
-            };
-
-            foreach (var item in list)
-            {
-                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
-
-                _xmlSerializer.SerializeToFile(item, path);
-            }
-        }
-
-        public void Dispose()
-        {
-        }
-    }*/
 }
