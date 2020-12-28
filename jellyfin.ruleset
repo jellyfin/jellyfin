@@ -10,6 +10,8 @@
 
     <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
     <Rule Id="SA1009" Action="None" />
+    <!-- disable warning SA1011: Closing square bracket should be followed by a space. -->
+    <Rule Id="SA1011" Action="None" />
     <!-- disable warning SA1101: Prefix local calls with 'this.' -->
     <Rule Id="SA1101" Action="None" />
     <!-- disable warning SA1108: Block statements should not contain embedded comments -->
