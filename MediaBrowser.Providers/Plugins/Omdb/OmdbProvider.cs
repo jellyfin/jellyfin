@@ -471,7 +471,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         }
 
-        public class SeasonRootObject
+        internal class SeasonRootObject
         {
             public string Title { get; set; }
 
@@ -486,7 +486,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             public string Response { get; set; }
         }
 
-        public class RootObject
+        internal class RootObject
         {
             public string Title { get; set; }
 
