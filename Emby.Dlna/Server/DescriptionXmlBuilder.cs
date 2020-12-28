@@ -50,16 +50,8 @@ namespace Emby.Dlna.Server
 
             var attributes = _profile.XmlRootAttributes.ToList();
 
-            attributes.Insert(0, new XmlAttribute
-            {
-                Name = "xmlns:dlna",
-                Value = "urn:schemas-dlna-org:device-1-0"
-            });
-            attributes.Insert(0, new XmlAttribute
-            {
-                Name = "xmlns",
-                Value = "urn:schemas-upnp-org:device-1-0"
-            });
+            attributes.Insert(0, new XmlAttribute("xmlns:dlna", "urn:schemas-dlna-org:device-1-0"));
+            attributes.Insert(0, new XmlAttribute("xmlns", "urn:schemas-upnp-org:device-1-0"));
 
             foreach (var att in attributes)
             {

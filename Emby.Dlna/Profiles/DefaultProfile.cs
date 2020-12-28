@@ -92,11 +92,7 @@ namespace Emby.Dlna.Profiles
             var atts = XmlRootAttributes ?? System.Array.Empty<XmlAttribute>();
             var list = atts.ToList();
 
-            list.Add(new XmlAttribute
-            {
-                Name = name,
-                Value = value
-            });
+            list.Add(new XmlAttribute(name, value));
 
             XmlRootAttributes = list.ToArray();
         }
