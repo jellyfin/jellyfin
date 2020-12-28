@@ -49,8 +49,6 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "Series",
-                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
-                    DisabledImageFetchers = new[] { "TheMovieDb" }
                 },
                 new MetadataOptions
                 {
@@ -69,13 +67,10 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "Season",
-                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
                 },
                 new MetadataOptions
                 {
                     ItemType = "Episode",
-                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
         }
