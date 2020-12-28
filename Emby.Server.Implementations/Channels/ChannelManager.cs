@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -341,7 +342,7 @@ namespace Emby.Server.Implementations.Channels
 
             try
             {
-                var jsonString = File.ReadAllText(path);
+                var jsonString = File.ReadAllText(path, Encoding.UTF8);
                 return JsonSerializer.Deserialize<List<MediaSourceInfo>>(jsonString, _jsonOptions)
                     ?? new List<MediaSourceInfo>();
             }
@@ -1180,11 +1181,11 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (enableMediaProbe && !info.IsLiveStream && item.HasPathProtocol)
                 {
-                    await SaveMediaSources(item, new List<MediaSourceInfo>());
+                    await SaveMediaSources(item, new List<MediaSourceInfo>()).ConfigureAwait(false);
                 }
                 else
                 {
-                    await SaveMediaSources(item, info.MediaSources);
+                    await SaveMediaSources(item, info.MediaSources).ConfigureAwait(false);
                 }
             }
 

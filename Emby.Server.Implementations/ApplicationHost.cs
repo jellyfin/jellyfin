@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1047,7 +1048,7 @@ namespace Emby.Server.Implementations
                     var metafile = Path.Combine(dir, "meta.json");
                     if (File.Exists(metafile))
                     {
-                        var jsonString = File.ReadAllText(metafile);
+                        var jsonString = File.ReadAllText(metafile, Encoding.UTF8);
                         var manifest = JsonSerializer.Deserialize<PluginManifest>(jsonString, _jsonOptions);
 
                         if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))

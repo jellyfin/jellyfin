@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -144,7 +145,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         {
                             try
                             {
-                                var jsonString = File.ReadAllText(path);
+                                var jsonString = File.ReadAllText(path, Encoding.UTF8);
                                 if (!string.IsNullOrWhiteSpace(jsonString))
                                 {
                                     _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(jsonString, _jsonOptions);
@@ -540,7 +541,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             TaskTriggerInfo[] list = null;
             if (File.Exists(path))
             {
-                var jsonString = File.ReadAllText(path);
+                var jsonString = File.ReadAllText(path, Encoding.UTF8);
                 list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(jsonString, _jsonOptions);
             }
 
@@ -578,7 +579,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var json = JsonSerializer.Serialize(triggers, _jsonOptions);
-            File.WriteAllText(path, json);
+            File.WriteAllText(path, json, Encoding.UTF8);
         }
 
         /// <summary>

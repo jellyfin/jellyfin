@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Json;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +47,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    var jsonString = File.ReadAllText(_dataPath);
+                    var jsonString = File.ReadAllText(_dataPath, Encoding.UTF8);
                     _items = JsonSerializer.Deserialize<T[]>(jsonString, _jsonOptions);
                     return;
                 }
@@ -61,8 +63,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private void SaveList()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_dataPath));
-            using FileStream stream = File.OpenWrite(_dataPath);
-            JsonSerializer.SerializeAsync(stream, _items, _jsonOptions);
+            var jsonString = JsonSerializer.Serialize(_items, _jsonOptions);
+            File.WriteAllText(_dataPath, jsonString);
         }
 
         public IReadOnlyList<T> GetAll()
