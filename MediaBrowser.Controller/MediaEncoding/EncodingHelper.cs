@@ -1722,6 +1722,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                     : transcoderChannelLimit.Value;
             }
 
+            // Avoid transcoding to audio channels other than 1ch, 2ch, 6ch (5.1 layout) and 8ch (7.1 layout).
+            // https://developer.apple.com/documentation/http_live_streaming/hls_authoring_specification_for_apple_devices
+            if (isTranscodingAudio
+                && state.TranscodingType != TranscodingJobType.Progressive
+                && resultChannels.HasValue
+                && (resultChannels.Value > 2 && resultChannels.Value < 6 || resultChannels.Value == 7))
+            {
+                resultChannels = 2;
+            }
+
             return resultChannels;
         }
 
