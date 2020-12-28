@@ -389,8 +389,8 @@ namespace Emby.Dlna.Didl
             var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
-                ? MimeTypes.GetMimeType(filename)
-                : mediaProfile.MimeType;
+               ? MimeTypes.GetMimeType(filename)
+               : mediaProfile.MimeType;
 
             writer.WriteAttributeString(
                 "protocolInfo",
