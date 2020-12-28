@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Providers.Plugins.Omdb;
 using Xunit;
@@ -30,70 +29,40 @@ namespace Jellyfin.Common.Tests.Json
             Assert.Null(seasonRootObject?.Metascore);
         }
 
-        [Fact]
-        public void Deserialize_Not_Available_Int_Success()
+        [Theory]
+        [InlineData("\"N/A\"")]
+        [InlineData("null")]
+        public void Deserialization_To_Nullable_Int_Shoud_Be_Null(string input)
         {
-            const string Input = "\"N/A\"";
-
-            var result = JsonSerializer.Deserialize<int?>(Input, _options);
+            var result = JsonSerializer.Deserialize<int?>(input, _options);
             Assert.Null(result);
         }
 
-        [Fact]
-        public void Deserialize_Not_Available_String_Success()
+        [Theory]
+        [InlineData("\"N/A\"")]
+        [InlineData("null")]
+        public void Deserialization_To_Nullable_String_Shoud_Be_Null(string input)
         {
-            const string Input = "\"N/A\"";
-
-            var result = JsonSerializer.Deserialize<string>(Input, _options);
+            var result = JsonSerializer.Deserialize<string?>(input, _options);
             Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData("\"8\"", 8)]
+        [InlineData("8", 8)]
+        public void Deserialize_Int_Success(string input, int expected)
+        {
+            var result = JsonSerializer.Deserialize<int>(input, _options);
+            Assert.Equal(result, expected);
         }
 
         [Fact]
         public void Deserialize_Normal_String_Success()
         {
-            const string Expected = "Jellyfin";
             const string Input = "\"Jellyfin\"";
-
+            const string Expected = "Jellyfin";
             var result = JsonSerializer.Deserialize<string>(Input, _options);
             Assert.Equal(Expected, result);
-        }
-
-        [Fact]
-        public void Deserialize_Null_Success()
-        {
-            const string Input = "null";
-
-            var result = JsonSerializer.Deserialize<string>(Input, _options);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Deserialize_Number_Success()
-        {
-            const int Number = 8;
-            const string Input = "8";
-
-            var result = JsonSerializer.Deserialize<int>(Input, _options);
-            Assert.Equal(Number, result);
-        }
-
-        [Fact]
-        public void Deserialize_Quoted_Number_Success()
-        {
-            const int Number = 8;
-            const string Input = "\"8\"";
-
-            var result = JsonSerializer.Deserialize<int>(Input, _options);
-            Assert.Equal(Number, result);
-        }
-
-        [Fact]
-        public void Deserialize_NA_Number_Success()
-        {
-            const string Input = "\"N/A\"";
-
-            var result = JsonSerializer.Deserialize<int?>(Input, _options);
-            Assert.Null(result);
         }
     }
 }
