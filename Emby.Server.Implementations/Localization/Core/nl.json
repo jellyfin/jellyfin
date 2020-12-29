@@ -1,7 +1,7 @@
 {
     "Albums": "Albums",
     "AppDeviceValues": "App: {0}, Apparaat: {1}",
-    "Application": "Programma",
+    "Application": "Applicatie",
     "Artists": "Artiesten",
     "AuthenticationSucceededWithUserName": "{0} is succesvol geverifieerd",
     "Books": "Boeken",
@@ -16,7 +16,6 @@
     "Folders": "Mappen",
     "Genres": "Genres",
     "HeaderAlbumArtists": "Albumartiesten",
-    "HeaderCameraUploads": "Camera-uploads",
     "HeaderContinueWatching": "Kijken hervatten",
     "HeaderFavoriteAlbums": "Favoriete albums",
     "HeaderFavoriteArtists": "Favoriete artiesten",
@@ -88,7 +87,7 @@
     "UserOnlineFromDevice": "{0} heeft verbinding met {1}",
     "UserPasswordChangedWithName": "Wachtwoord voor {0} is gewijzigd",
     "UserPolicyUpdatedWithName": "Gebruikersbeleid gewijzigd voor {0}",
-    "UserStartedPlayingItemWithValues": "{0} heeft afspelen van {1} gestart op {2}",
+    "UserStartedPlayingItemWithValues": "{0} speelt {1} af op {2}",
     "UserStoppedPlayingItemWithValues": "{0} heeft afspelen van {1} gestopt op {2}",
     "ValueHasBeenAddedToLibrary": "{0} is toegevoegd aan je mediabibliotheek",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
@@ -114,5 +113,10 @@
     "TasksChannelsCategory": "Internet Kanalen",
     "TasksApplicationCategory": "Applicatie",
     "TasksLibraryCategory": "Bibliotheek",
-    "TasksMaintenanceCategory": "Onderhoud"
+    "TasksMaintenanceCategory": "Onderhoud",
+    "TaskCleanActivityLogDescription": "Verwijder activiteiten logs ouder dan de ingestelde tijd.",
+    "TaskCleanActivityLog": "Leeg activiteiten logboek",
+    "Undefined": "Niet gedefinieerd",
+    "Forced": "Geforceerd",
+    "Default": "Standaard"
 }

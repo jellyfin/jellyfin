@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
@@ -19,22 +21,22 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public class M3uParser
     {
         private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
 
-        public M3uParser(ILogger logger, IHttpClient httpClient, IServerApplicationHost appHost)
+        public M3uParser(ILogger logger, IHttpClientFactory httpClientFactory, IServerApplicationHost appHost)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _appHost = appHost;
         }
 
-        public async Task<List<ChannelInfo>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
+        public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
-            using (var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false)))
+            using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
             {
-                return GetChannels(reader, channelIdPrefix, tunerHostId);
+                return GetChannels(reader, channelIdPrefix, info.Id);
             }
         }
 
@@ -47,20 +49,24 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        public Task<Stream> GetListingsStream(string url, CancellationToken cancellationToken)
+        public async Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            if (info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return _httpClient.Get(new HttpRequestOptions
+                using var requestMessage = new HttpRequestMessage(HttpMethod.Get, info.Url);
+                if (!string.IsNullOrEmpty(info.UserAgent))
                 {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    // Some data providers will require a user agent
-                    UserAgent = _appHost.ApplicationUserAgent
-                });
+                    requestMessage.Headers.UserAgent.TryParseAdd(info.UserAgent);
+                }
+
+                var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(requestMessage, cancellationToken)
+                    .ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            return Task.FromResult((Stream)File.OpenRead(url));
+            return File.OpenRead(info.Url);
         }
 
         private const string ExtInfPrefix = "#EXTINF:";
@@ -89,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     extInf = line.Substring(ExtInfPrefix.Length).Trim();
                     _logger.LogInformation("Found m3u channel: {0}", extInf);
                 }
-                else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
+                else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith('#'))
                 {
                     var channel = GetChannelnfo(extInf, tunerHostId, line);
                     if (string.IsNullOrWhiteSpace(channel.Id))
@@ -157,7 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
@@ -191,7 +197,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 if (string.IsNullOrWhiteSpace(numberString))
                 {
                     // Using this as a fallback now as this leads to Problems with channels like "5 USA"
-                    // where 5 isnt ment to be the channel number
+                    // where 5 isn't ment to be the channel number
                     // Check for channel number with the format from SatIp
                     // #EXTINF:0,84. VOX Schweiz
                     // #EXTINF:0,84.0 - VOX Schweiz
@@ -267,8 +273,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].Trim() : null;
 
             // Check for channel number with the format from SatIp
             // #EXTINF:0,84. VOX Schweiz

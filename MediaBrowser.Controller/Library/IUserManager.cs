@@ -93,7 +93,8 @@ namespace MediaBrowser.Controller.Library
         /// Deletes the specified user.
         /// </summary>
         /// <param name="userId">The id of the user to be deleted.</param>
-        void DeleteUser(Guid userId);
+        /// <returns>A task representing the deletion of the user.</returns>
+        Task DeleteUserAsync(Guid userId);
 
         /// <summary>
         /// Resets the password.
@@ -158,7 +159,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <param name="config">The request containing the new user configuration.</param>
-        void UpdateConfiguration(Guid userId, UserConfiguration config);
+        /// <returns>A task representing the update.</returns>
+        Task UpdateConfigurationAsync(Guid userId, UserConfiguration config);
 
         /// <summary>
         /// This method updates the user's policy.
@@ -167,12 +169,14 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <param name="policy">The request containing the new user policy.</param>
-        void UpdatePolicy(Guid userId, UserPolicy policy);
+        /// <returns>A task representing the update.</returns>
+        Task UpdatePolicyAsync(Guid userId, UserPolicy policy);
 
         /// <summary>
         /// Clears the user's profile image.
         /// </summary>
         /// <param name="user">The user.</param>
-        void ClearProfileImage(User user);
+        /// <returns>A task representing the clearing of the profile image.</returns>
+        Task ClearProfileImageAsync(User user);
     }
 }

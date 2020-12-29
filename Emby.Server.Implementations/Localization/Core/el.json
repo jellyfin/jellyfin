@@ -16,7 +16,6 @@
     "Folders": "Φάκελοι",
     "Genres": "Είδη",
     "HeaderAlbumArtists": "Καλλιτέχνες του Άλμπουμ",
-    "HeaderCameraUploads": "Μεταφορτώσεις Κάμερας",
     "HeaderContinueWatching": "Συνεχίστε την παρακολούθηση",
     "HeaderFavoriteAlbums": "Αγαπημένα Άλμπουμ",
     "HeaderFavoriteArtists": "Αγαπημένοι Καλλιτέχνες",
@@ -114,5 +113,10 @@
     "TaskCleanTranscode": "Καθαρισμός Kαταλόγου Διακωδικοποιητή",
     "TaskUpdatePluginsDescription": "Κατεβάζει και εγκαθιστά ενημερώσεις για τις προσθήκες που έχουν ρυθμιστεί για αυτόματη ενημέρωση.",
     "TaskUpdatePlugins": "Ενημέρωση Προσθηκών",
-    "TaskRefreshPeopleDescription": "Ενημερώνει μεταδεδομένα για ηθοποιούς και σκηνοθέτες στην βιβλιοθήκη των πολυμέσων σας."
+    "TaskRefreshPeopleDescription": "Ενημερώνει μεταδεδομένα για ηθοποιούς και σκηνοθέτες στην βιβλιοθήκη των πολυμέσων σας.",
+    "TaskCleanActivityLogDescription": "Διαγράφει καταχωρήσεις απο το αρχείο καταγραφής παλαιότερες από την επιλεγμένη ηλικία.",
+    "TaskCleanActivityLog": "Καθαρό Αρχείο Καταγραφής Δραστηριοτήτων",
+    "Undefined": "Απροσδιόριστο",
+    "Forced": "Εξαναγκασμένο",
+    "Default": "Προεπιλογή"
 }

@@ -8,9 +8,11 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
@@ -54,9 +56,9 @@ namespace Emby.Server.Implementations.Session
             connection.Closed += OnConnectionClosed;
         }
 
-        private void OnConnectionClosed(object sender, EventArgs e)
+        private void OnConnectionClosed(object? sender, EventArgs e)
         {
-            var connection = (IWebSocketConnection)sender;
+            var connection = sender as IWebSocketConnection ?? throw new ArgumentException($"{nameof(sender)} is not of type {nameof(IWebSocketConnection)}", nameof(sender));
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
             _sockets.Remove(connection);
             connection.Closed -= OnConnectionClosed;
@@ -65,7 +67,7 @@ namespace Emby.Server.Implementations.Session
 
         /// <inheritdoc />
         public Task SendMessage<T>(
-            string name,
+            SessionMessageType name,
             Guid messageId,
             T data,
             CancellationToken cancellationToken)

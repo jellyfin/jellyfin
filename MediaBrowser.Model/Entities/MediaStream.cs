@@ -36,6 +36,18 @@ namespace MediaBrowser.Model.Entities
         public string Language { get; set; }
 
         /// <summary>
+        /// Gets or sets the color range.
+        /// </summary>
+        /// <value>The color range.</value>
+        public string ColorRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
+        public string ColorSpace { get; set; }
+
+        /// <summary>
         /// Gets or sets the color transfer.
         /// </summary>
         /// <value>The color transfer.</value>
@@ -46,12 +58,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The color primaries.</value>
         public string ColorPrimaries { get; set; }
-
-        /// <summary>
-        /// Gets or sets the color space.
-        /// </summary>
-        /// <value>The color space.</value>
-        public string ColorSpace { get; set; }
 
         /// <summary>
         /// Gets or sets the comment.
@@ -183,6 +189,11 @@ namespace MediaBrowser.Model.Entities
                         if (!string.IsNullOrEmpty(Codec))
                         {
                             attributes.Add(Codec.ToUpperInvariant());
+                        }
+
+                        if (!string.IsNullOrEmpty(VideoRange))
+                        {
+                            attributes.Add(VideoRange.ToUpperInvariant());
                         }
 
                         if (!string.IsNullOrEmpty(Title))
@@ -445,11 +456,13 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The method.</value>
         public SubtitleDeliveryMethod? DeliveryMethod { get; set; }
+
         /// <summary>
         /// Gets or sets the delivery URL.
         /// </summary>
         /// <value>The delivery URL.</value>
         public string DeliveryUrl { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is external URL.
         /// </summary>

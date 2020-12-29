@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Authentication;
@@ -15,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Users
         public string Name => "InvalidOrMissingAuthenticationProvider";
 
         /// <inheritdoc />
-        public bool IsEnabled => true;
+        public bool IsEnabled => false;
 
         /// <inheritdoc />
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password)

@@ -1,8 +1,11 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -97,6 +100,11 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
+            }
+
             bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
 
@@ -138,7 +146,7 @@ namespace Jellyfin.Api.Helpers
             {
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
-                var httpClient = _httpClientFactory.CreateClient();
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
                 return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
             }
 

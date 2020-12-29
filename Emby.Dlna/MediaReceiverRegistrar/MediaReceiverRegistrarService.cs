@@ -1,22 +1,29 @@
-#pragma warning disable CS1591
-
+using System.Net.Http;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
+    /// <summary>
+    /// Defines the <see cref="MediaReceiverRegistrarService" />.
+    /// </summary>
     public class MediaReceiverRegistrarService : BaseService, IMediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MediaReceiverRegistrarService"/> class.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger{MediaReceiverRegistrarService}"/> for use with the <see cref="MediaReceiverRegistrarService"/> instance.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> for use with the <see cref="MediaReceiverRegistrarService"/> instance.</param>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> for use with the <see cref="MediaReceiverRegistrarService"/> instance.</param>
         public MediaReceiverRegistrarService(
             ILogger<MediaReceiverRegistrarService> logger,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config)
-            : base(logger, httpClient)
+            : base(logger, httpClientFactory)
         {
             _config = config;
         }
@@ -24,7 +31,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new MediaReceiverRegistrarXmlBuilder().GetXml();
+            return MediaReceiverRegistrarXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />

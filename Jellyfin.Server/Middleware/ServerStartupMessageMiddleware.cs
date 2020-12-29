@@ -1,3 +1,4 @@
+using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
@@ -34,7 +35,8 @@ namespace Jellyfin.Server.Middleware
             IServerApplicationHost serverApplicationHost,
             ILocalizationManager localizationManager)
         {
-            if (serverApplicationHost.CoreStartupHasCompleted)
+            if (serverApplicationHost.CoreStartupHasCompleted
+                || httpContext.Request.Path.Equals("/system/ping", StringComparison.OrdinalIgnoreCase))
             {
                 await _next(httpContext).ConfigureAwait(false);
                 return;

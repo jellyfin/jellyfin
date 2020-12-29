@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -12,6 +9,13 @@ namespace Emby.Naming.Video
     /// </summary>
     public static class CleanStringParser
     {
+        /// <summary>
+        /// Attempts to extract clean name with regular expressions.
+        /// </summary>
+        /// <param name="name">Name of file.</param>
+        /// <param name="expressions">List of regex to parse name and year from.</param>
+        /// <param name="newName">Parsing result string.</param>
+        /// <returns>True if parsing was successful.</returns>
         public static bool TryClean(string name, IReadOnlyList<Regex> expressions, out ReadOnlySpan<char> newName)
         {
             var len = expressions.Count;

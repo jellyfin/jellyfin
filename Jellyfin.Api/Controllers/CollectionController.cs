@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
@@ -54,7 +55,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<CollectionCreationResult>> CreateCollection(
             [FromQuery] string? name,
-            [FromQuery] string? ids,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids,
             [FromQuery] Guid? parentId,
             [FromQuery] bool isLocked = false)
         {
@@ -65,7 +66,7 @@ namespace Jellyfin.Api.Controllers
                 IsLocked = isLocked,
                 Name = name,
                 ParentId = parentId,
-                ItemIdList = RequestHelpers.Split(ids, ',', true),
+                ItemIdList = ids,
                 UserIds = new[] { userId }
             }).ConfigureAwait(false);
 
@@ -83,14 +84,16 @@ namespace Jellyfin.Api.Controllers
         /// Adds items to a collection.
         /// </summary>
         /// <param name="collectionId">The collection id.</param>
-        /// <param name="itemIds">Item ids, comma delimited.</param>
+        /// <param name="ids">Item ids, comma delimited.</param>
         /// <response code="204">Items added to collection.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> AddToCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> AddToCollection(
+            [FromRoute, Required] Guid collectionId,
+            [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
-            await _collectionManager.AddToCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(true);
+            await _collectionManager.AddToCollectionAsync(collectionId, ids).ConfigureAwait(true);
             return NoContent();
         }
 
@@ -98,14 +101,16 @@ namespace Jellyfin.Api.Controllers
         /// Removes items from a collection.
         /// </summary>
         /// <param name="collectionId">The collection id.</param>
-        /// <param name="itemIds">Item ids, comma delimited.</param>
+        /// <param name="ids">Item ids, comma delimited.</param>
         /// <response code="204">Items removed from collection.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpDelete("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
+        public async Task<ActionResult> RemoveFromCollection(
+            [FromRoute, Required] Guid collectionId,
+            [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
-            await _collectionManager.RemoveFromCollectionAsync(collectionId, RequestHelpers.GetGuids(itemIds)).ConfigureAwait(false);
+            await _collectionManager.RemoveFromCollectionAsync(collectionId, ids).ConfigureAwait(false);
             return NoContent();
         }
     }

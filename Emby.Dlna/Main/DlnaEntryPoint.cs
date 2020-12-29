@@ -2,11 +2,14 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -36,7 +39,7 @@ namespace Emby.Dlna.Main
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly ISessionManager _sessionManager;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -61,7 +64,7 @@ namespace Emby.Dlna.Main
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDlnaManager dlnaManager,
@@ -79,7 +82,7 @@ namespace Emby.Dlna.Main
             _config = config;
             _appHost = appHost;
             _sessionManager = sessionManager;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
@@ -101,7 +104,7 @@ namespace Emby.Dlna.Main
                 config,
                 userManager,
                 loggerFactory.CreateLogger<ContentDirectory.ContentDirectoryService>(),
-                httpClient,
+                httpClientFactory,
                 localizationManager,
                 mediaSourceManager,
                 userViewManager,
@@ -112,16 +115,21 @@ namespace Emby.Dlna.Main
                 dlnaManager,
                 config,
                 loggerFactory.CreateLogger<ConnectionManager.ConnectionManagerService>(),
-                httpClient);
+                httpClientFactory);
 
             MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
                 loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
-                httpClient,
+                httpClientFactory,
                 config);
             Current = this;
         }
 
         public static DlnaEntryPoint Current { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the dlna server is enabled.
+        /// </summary>
+        public static bool Enabled { get; private set; }
 
         public IContentDirectory ContentDirectory { get; private set; }
 
@@ -133,28 +141,29 @@ namespace Emby.Dlna.Main
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
-            await ReloadComponents().ConfigureAwait(false);
+            ReloadComponents();
 
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                await ReloadComponents().ConfigureAwait(false);
+                ReloadComponents();
             }
         }
 
-        private async Task ReloadComponents()
+        private void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
+            Enabled = options.EnableServer;
 
             StartSsdpHandler();
 
             if (options.EnableServer)
             {
-                await StartDevicePublisher(options).ConfigureAwait(false);
+                StartDevicePublisher(options);
             }
             else
             {
@@ -224,7 +233,7 @@ namespace Emby.Dlna.Main
             }
         }
 
-        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
+        public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
             if (!options.BlastAliveMessages)
             {
@@ -244,7 +253,7 @@ namespace Emby.Dlna.Main
                     SupportPnpRootDevice = false
                 };
 
-                await RegisterServerEndpoints().ConfigureAwait(false);
+                RegisterServerEndpoints();
 
                 _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
@@ -254,13 +263,22 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private async Task RegisterServerEndpoints()
+        private void RegisterServerEndpoints()
         {
-            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
-
             var udn = CreateUuid(_appHost.SystemId);
+            var descriptorUri = "/dlna/" + udn + "/description.xml";
 
-            foreach (var address in addresses)
+            var bindAddresses = NetworkManager.CreateCollection(
+                _networkManager.GetInternalBindAddresses()
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
+
+            if (bindAddresses.Count == 0)
+            {
+                // No interfaces returned, so use loopback.
+                bindAddresses = _networkManager.GetLoopbacks();
+            }
+
+            foreach (IPNetAddress address in bindAddresses)
             {
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
@@ -269,7 +287,7 @@ namespace Emby.Dlna.Main
                 }
 
                 // Limit to LAN addresses only
-                if (!_networkManager.IsAddressInSubnets(address, true, true))
+                if (!_networkManager.IsInLocalNetwork(address))
                 {
                     continue;
                 }
@@ -278,15 +296,14 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new Uri(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address,
-                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
+                    Address = address.Address,
+                    PrefixLength = address.PrefixLength,
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",
@@ -364,7 +381,7 @@ namespace Emby.Dlna.Main
                         _appHost,
                         _imageProcessor,
                         _deviceDiscovery,
-                        _httpClient,
+                        _httpClientFactory,
                         _config,
                         _userDataManager,
                         _localization,

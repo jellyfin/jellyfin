@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Udp
         {
             string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
                 ? _config[AddressOverrideConfigKey]
-                : await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+                : _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
 
             if (!string.IsNullOrEmpty(localUrl))
             {
@@ -67,12 +67,6 @@ namespace Emby.Server.Implementations.Udp
                 catch (SocketException ex)
                 {
                     _logger.LogError(ex, "Error sending response message");
-                }
-
-                var parts = messageText.Split('|');
-                if (parts.Length > 1)
-                {
-                    _appHost.EnableLoopback(parts[1]);
                 }
             }
             else

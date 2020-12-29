@@ -34,6 +34,10 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
         }
 
+        public string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
+
+        public string Name => "Image Extractor";
+
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType> { ImageType.Primary };
@@ -97,11 +101,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.GetType() == typeof(Audio))
             {
-                var albumArtist = item.AlbumArtists.FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(item.Album) && !string.IsNullOrWhiteSpace(albumArtist))
+                if (item.AlbumArtists.Count > 0
+                    && !string.IsNullOrWhiteSpace(item.Album)
+                    && !string.IsNullOrWhiteSpace(item.AlbumArtists[0]))
                 {
-                    filename = (item.Album + "-" + albumArtist).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                    filename = (item.Album + "-" + item.AlbumArtists[0]).GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -120,10 +124,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return Path.Join(AudioImagesPath, prefix, filename);
         }
-
-        public string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
-
-        public string Name => "Image Extractor";
 
         public bool Supports(BaseItem item)
         {

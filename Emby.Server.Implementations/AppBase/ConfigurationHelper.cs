@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.AppBase
@@ -35,7 +36,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception)
             {
-                configuration = Activator.CreateInstance(type);
+                configuration = Activator.CreateInstance(type) ?? throw new ArgumentException($"Provided path ({type}) is not valid.", nameof(type));
             }
 
             using var stream = new MemoryStream(buffer?.Length ?? 0);
@@ -48,8 +49,9 @@ namespace Emby.Server.Implementations.AppBase
             // If the file didn't exist before, or if something has changed, re-save
             if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
 
+                Directory.CreateDirectory(directory);
                 // Save it after load in case we got new items
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {

@@ -250,21 +250,16 @@ namespace Emby.Server.Implementations.Channels
             var all = channels;
             var totalCount = all.Count;
 
-            if (query.StartIndex.HasValue)
+            if (query.StartIndex.HasValue || query.Limit.HasValue)
             {
-                all = all.Skip(query.StartIndex.Value).ToList();
+                int startIndex = query.StartIndex ?? 0;
+                int count = query.Limit == null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
+                all = all.GetRange(startIndex, count);
             }
-
-            if (query.Limit.HasValue)
-            {
-                all = all.Take(query.Limit.Value).ToList();
-            }
-
-            var returnItems = all.ToArray();
 
             if (query.RefreshLatestChannelItems)
             {
-                foreach (var item in returnItems)
+                foreach (var item in all)
                 {
                     RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).GetAwaiter().GetResult();
                 }
@@ -272,7 +267,7 @@ namespace Emby.Server.Implementations.Channels
 
             return new QueryResult<Channel>
             {
-                Items = returnItems,
+                Items = all,
                 TotalRecordCount = totalCount
             };
         }
@@ -543,20 +538,20 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(
                 new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(Channel).Name },
+                    IncludeItemTypes = new[] { nameof(Channel) },
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
-                }).Select(i => GetChannelFeatures(i.ToString("N", CultureInfo.InvariantCulture))).ToArray();
+                }).Select(i => GetChannelFeatures(i)).ToArray();
         }
 
         /// <inheritdoc />
-        public ChannelFeatures GetChannelFeatures(string id)
+        public ChannelFeatures GetChannelFeatures(Guid? id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (!id.HasValue)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var channel = GetChannel(id);
+            var channel = GetChannel(id.Value);
             var channelProvider = GetChannelProvider(channel);
 
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());
@@ -639,7 +634,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var channels = GetAllChannels().Where(i => i is ISupportsLatestMedia).ToArray();
 
-            if (query.ChannelIds.Length > 0)
+            if (query.ChannelIds.Count > 0)
             {
                 // Avoid implicitly captured closure
                 var ids = query.ChannelIds;

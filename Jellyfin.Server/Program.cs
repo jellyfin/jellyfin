@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Networking;
 using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -106,6 +106,10 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
+            // Enable cl-va P010 interop for tonemapping on Intel VAAPI
+            Environment.SetEnvironmentVariable("NEOReadDebugKeys", "1");
+            Environment.SetEnvironmentVariable("EnableExtendedVaFormats", "1");
+
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
 
             // Create an instance of the application configuration to use for application startup
@@ -161,7 +165,6 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
                 serviceCollection);
 
             try
@@ -169,7 +172,7 @@ namespace Jellyfin.Server
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string? webContentPath = DashboardController.GetWebClientUiPath(startupConfig, appHost.ServerConfigurationManager);
+                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(
@@ -272,75 +275,36 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    var addresses = appHost.ServerConfigurationManager
-                        .Configuration
-                        .LocalNetworkAddresses
-                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
-                        .Where(i => i != null)
-                        .ToHashSet();
-                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
-                    {
-                        if (!addresses.Contains(IPAddress.Loopback))
-                        {
-                            // we must listen on loopback for LiveTV to function regardless of the settings
-                            addresses.Add(IPAddress.Loopback);
-                        }
+                    var addresses = appHost.NetManager.GetAllBindInterfaces();
 
-                        foreach (var address in addresses)
-                        {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", address);
-                            options.Listen(address, appHost.HttpPort);
-                            if (appHost.ListenWithHttps)
-                            {
-                                options.Listen(address, appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps(appHost.Certificate);
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
-                            }
-                            else if (builderContext.HostingEnvironment.IsDevelopment())
-                            {
-                                try
-                                {
-                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
-                                    {
-                                        listenOptions.UseHttps();
-                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                    });
-                                }
-                                catch (InvalidOperationException ex)
-                                {
-                                    _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
-                                }
-                            }
-                        }
-                    }
-                    else
+                    bool flagged = false;
+                    foreach (IPObject netAdd in addresses)
                     {
-                        _logger.LogInformation("Kestrel listening on all interfaces");
-                        options.ListenAnyIP(appHost.HttpPort);
-
+                        _logger.LogInformation("Kestrel listening on {0}", netAdd);
+                        options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
-                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
-                            {
-                                listenOptions.UseHttps(appHost.Certificate);
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                            });
+                            options.Listen(
+                                netAdd.Address,
+                                appHost.HttpsPort,
+                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
                         }
                         else if (builderContext.HostingEnvironment.IsDevelopment())
                         {
                             try
                             {
-                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps();
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
+                                options.Listen(
+                                    netAdd.Address,
+                                    appHost.HttpsPort,
+                                    listenOptions => listenOptions.UseHttps());
                             }
-                            catch (InvalidOperationException ex)
+                            catch (InvalidOperationException)
                             {
-                                _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                if (!flagged)
+                                {
+                                    _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                    flagged = true;
+                                }
                             }
                         }
                     }
@@ -378,7 +342,7 @@ namespace Jellyfin.Server
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
-                    services.TryAdd(serviceCollection);
+                    services.Add(serviceCollection);
                 })
                 .UseStartup<Startup>();
         }
@@ -526,6 +490,13 @@ namespace Jellyfin.Server
                     logDir = Path.Combine(dataDir, "log");
                 }
             }
+
+            // Normalize paths. Only possible with GetFullPath for now - https://github.com/dotnet/runtime/issues/2162
+            dataDir = Path.GetFullPath(dataDir);
+            logDir = Path.GetFullPath(logDir);
+            configDir = Path.GetFullPath(configDir);
+            cacheDir = Path.GetFullPath(cacheDir);
+            webDir = Path.GetFullPath(webDir);
 
             // Ensure the main folders exist before we continue
             try

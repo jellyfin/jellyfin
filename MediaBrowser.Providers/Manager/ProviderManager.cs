@@ -9,11 +9,11 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -52,6 +52,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly IBaseItemManager _baseItemManager;
         private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new ConcurrentDictionary<Guid, double>();
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
@@ -75,6 +76,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="baseItemManager">The BaseItem manager.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -83,7 +85,8 @@ namespace MediaBrowser.Providers.Manager
             ILogger<ProviderManager> logger,
             IFileSystem fileSystem,
             IServerApplicationPaths appPaths,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IBaseItemManager baseItemManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -93,6 +96,7 @@ namespace MediaBrowser.Providers.Manager
             _appPaths = appPaths;
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
+            _baseItemManager = baseItemManager;
         }
 
         /// <inheritdoc/>
@@ -156,8 +160,13 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
+            }
 
             var contentType = response.Content.Headers.ContentType.MediaType;
 
@@ -174,13 +183,10 @@ namespace MediaBrowser.Providers.Manager
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
             if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
-                throw new HttpException("Invalid image received.")
-                {
-                    StatusCode = HttpStatusCode.NotFound
-                };
+                throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
             }
 
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await SaveImage(
                 item,
                 stream,
@@ -391,7 +397,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteMetadataProvider)
                 {
-                    if (!forceEnableInternetMetadata && !item.IsMetadataFetcherEnabled(libraryOptions, provider.Name))
+                    if (!forceEnableInternetMetadata && !_baseItemManager.IsMetadataFetcherEnabled(item, libraryOptions, provider.Name))
                     {
                         return false;
                     }
@@ -435,7 +441,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
                 {
-                    if (!item.IsImageFetcherEnabled(libraryOptions, provider.Name))
+                    if (!_baseItemManager.IsImageFetcherEnabled(item, libraryOptions, provider.Name))
                     {
                         return false;
                     }
@@ -905,8 +911,7 @@ namespace MediaBrowser.Providers.Manager
             return provider.GetImageResponse(url, cancellationToken);
         }
 
-        /// <inheritdoc/>
-        public IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
+        private IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
         {
             return _externalIds.Where(i =>
             {
@@ -1160,6 +1165,29 @@ namespace MediaBrowser.Providers.Manager
         public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return RefreshItem(item, options, cancellationToken);
+        }
+
+        /// <summary>
+        /// Runs multiple metadata refreshes concurrently.
+        /// </summary>
+        /// <param name="action">The action to run.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
+        {
+            // create a variable for this since it is possible MetadataRefreshThrottler could change due to a config update during a scan
+            var metadataRefreshThrottler = _baseItemManager.MetadataRefreshThrottler;
+
+            await metadataRefreshThrottler.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                metadataRefreshThrottler.Release();
+            }
         }
 
         /// <inheritdoc/>

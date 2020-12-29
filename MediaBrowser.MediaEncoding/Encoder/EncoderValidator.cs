@@ -25,6 +25,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "ac3",
             "aac",
             "mp3",
+            "flac",
             "h264_qsv",
             "hevc_qsv",
             "mpeg2_qsv",
@@ -71,6 +72,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libmp3lame",
             "libopus",
             "libvorbis",
+            "flac",
             "srt",
             "h264_amf",
             "hevc_amf",
@@ -212,7 +214,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (match.Success)
             {
-                return new Version(match.Groups[1].Value);
+                if (Version.TryParse(match.Groups[1].Value, out var result))
+                {
+                    return result;
+                }
             }
 
             var versionMap = GetFFmpegLibraryVersions(output);

@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Server.Implementations
 {
     /// <inheritdoc/>
-    public partial class JellyfinDb : DbContext
+    public class JellyfinDb : DbContext
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JellyfinDb"/> class.
@@ -33,6 +34,8 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<ImageInfo> ImageInfos { get; set; }
 
         public virtual DbSet<ItemDisplayPreferences> ItemDisplayPreferences { get; set; }
+
+        public virtual DbSet<CustomItemDisplayPreferences> CustomItemDisplayPreferences { get; set; }
 
         public virtual DbSet<Permission> Permissions { get; set; }
 
@@ -138,47 +141,29 @@ namespace Jellyfin.Server.Implementations
             return base.SaveChanges();
         }
 
-        /// <inheritdoc/>
-        public override void Dispose()
-        {
-            foreach (var entry in ChangeTracker.Entries())
-            {
-                entry.State = EntityState.Detached;
-            }
-
-            GC.SuppressFinalize(this);
-            base.Dispose();
-        }
-
-        /// <inheritdoc />
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            CustomInit(optionsBuilder);
-        }
-
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
             base.OnModelCreating(modelBuilder);
-            OnModelCreatingImpl(modelBuilder);
 
             modelBuilder.HasDefaultSchema("jellyfin");
 
-            /*modelBuilder.Entity<Artwork>().HasIndex(t => t.Kind);
+            modelBuilder.Entity<DisplayPreferences>()
+                .HasIndex(entity => entity.UserId)
+                .IsUnique(false);
 
-            modelBuilder.Entity<Genre>().HasIndex(t => t.Name)
-                        .IsUnique();
+            modelBuilder.Entity<DisplayPreferences>()
+                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
+                .IsUnique();
 
-            modelBuilder.Entity<LibraryItem>().HasIndex(t => t.UrlId)
-                        .IsUnique();*/
+            modelBuilder.Entity<CustomItemDisplayPreferences>()
+                .HasIndex(entity => entity.UserId)
+                .IsUnique(false);
 
-            OnModelCreatedImpl(modelBuilder);
+            modelBuilder.Entity<CustomItemDisplayPreferences>()
+                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
+                .IsUnique();
         }
-
-        partial void CustomInit(DbContextOptionsBuilder optionsBuilder);
-
-        partial void OnModelCreatingImpl(ModelBuilder modelBuilder);
-
-        partial void OnModelCreatedImpl(ModelBuilder modelBuilder);
     }
 }

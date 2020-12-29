@@ -25,20 +25,20 @@ namespace Emby.Server.Implementations.LiveTv.Listings
     public class XmlTvListingsProvider : IListingsProvider
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IZipClient _zipClient;
 
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILogger<XmlTvListingsProvider> logger,
             IFileSystem fileSystem,
             IZipClient zipClient)
         {
             _config = config;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
@@ -78,28 +78,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
 
-            using (var res = await _httpClient.SendAsync(
-                new HttpRequestOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Url = path,
-                    DecompressionMethod = CompressionMethods.Gzip,
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = res.Content)
-            using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(path, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
             {
-                if (res.ContentHeaders.ContentEncoding.Contains("gzip"))
-                {
-                    using (var gzStream = new GZipStream(stream, CompressionMode.Decompress))
-                    {
-                        await gzStream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-                else
-                {
-                    await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                }
+                await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
             return UnzipIfNeeded(path, cacheFile);

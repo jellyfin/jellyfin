@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Xunit;
@@ -47,6 +47,13 @@ namespace Jellyfin.Naming.Tests.Video
         // FIXME: [InlineData("Robin Hood [Multi-Subs] [2018].mkv", "Robin Hood", 2018)]
         [InlineData(@"3.Days.to.Kill.2014.720p.BluRay.x264.YIFY.mkv", "3.Days.to.Kill", 2014)] // In this test case, running CleanDateTime first produces no date, so it will attempt to run CleanString first and then CleanDateTime again
         [InlineData("3 days to kill (2005).mkv", "3 days to kill", 2005)]
+        [InlineData(@"Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem.mp4", "Rain Man", 1988)]
+        [InlineData("My Movie 2013.12.09", "My Movie 2013.12.09", null)]
+        [InlineData("My Movie 2013-12-09", "My Movie 2013-12-09", null)]
+        [InlineData("My Movie 20131209", "My Movie 20131209", null)]
+        [InlineData("My Movie 2013-12-09 2013", "My Movie 2013-12-09", 2013)]
+        [InlineData(null, null, null)]
+        [InlineData("", "", null)]
         public void CleanDateTimeTest(string input, string expectedName, int? expectedYear)
         {
             input = Path.GetFileName(input);

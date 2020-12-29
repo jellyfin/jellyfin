@@ -1,20 +1,24 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -51,6 +55,13 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Creates a new playlist.
         /// </summary>
+        /// <remarks>
+        /// For backwards compatibility parameters can be sent via Query or Body, with Query having higher precedence.
+        /// </remarks>
+        /// <param name="name">The playlist name.</param>
+        /// <param name="ids">The item ids.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="mediaType">The media type.</param>
         /// <param name="createPlaylistRequest">The create playlist payload.</param>
         /// <returns>
         /// A <see cref="Task" /> that represents the asynchronous operation to create a playlist.
@@ -59,15 +70,23 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
-            [FromBody, Required] CreatePlaylistDto createPlaylistRequest)
+            [FromQuery] string? name,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] IReadOnlyList<Guid> ids,
+            [FromQuery] Guid? userId,
+            [FromQuery] string? mediaType,
+            [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
         {
-            Guid[] idGuidArray = RequestHelpers.GetGuids(createPlaylistRequest.Ids);
+            if (ids.Count == 0)
+            {
+                ids = createPlaylistRequest?.Ids ?? Array.Empty<Guid>();
+            }
+
             var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
             {
-                Name = createPlaylistRequest.Name,
-                ItemIdList = idGuidArray,
-                UserId = createPlaylistRequest.UserId,
-                MediaType = createPlaylistRequest.MediaType
+                Name = name ?? createPlaylistRequest?.Name,
+                ItemIdList = ids,
+                UserId = userId ?? createPlaylistRequest?.UserId ?? default,
+                MediaType = mediaType ?? createPlaylistRequest?.MediaType
             }).ConfigureAwait(false);
 
             return result;
@@ -84,11 +103,11 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> AddToPlaylist(
-            [FromRoute] Guid playlistId,
-            [FromQuery] string? ids,
+            [FromRoute, Required] Guid playlistId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
             [FromQuery] Guid? userId)
         {
-            await _playlistManager.AddToPlaylistAsync(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty).ConfigureAwait(false);
+            await _playlistManager.AddToPlaylistAsync(playlistId, ids, userId ?? Guid.Empty).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -103,9 +122,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{playlistId}/Items/{itemId}/Move/{newIndex}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> MoveItem(
-            [FromRoute] string? playlistId,
-            [FromRoute] string? itemId,
-            [FromRoute] int newIndex)
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] string itemId,
+            [FromRoute, Required] int newIndex)
         {
             await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex).ConfigureAwait(false);
             return NoContent();
@@ -120,9 +139,11 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpDelete("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemoveFromPlaylist([FromRoute] string? playlistId, [FromQuery] string? entryIds)
+        public async Task<ActionResult> RemoveFromPlaylist(
+            [FromRoute, Required] string playlistId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] entryIds)
         {
-            await _playlistManager.RemoveFromPlaylistAsync(playlistId, RequestHelpers.Split(entryIds, ',', true)).ConfigureAwait(false);
+            await _playlistManager.RemoveFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -133,7 +154,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User id.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
@@ -143,15 +164,15 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The original playlist items.</returns>
         [HttpGet("{playlistId}/Items")]
         public ActionResult<QueryResult<BaseItemDto>> GetPlaylistItems(
-            [FromRoute] Guid playlistId,
-            [FromRoute] Guid userId,
-            [FromRoute] int? startIndex,
-            [FromRoute] int? limit,
-            [FromRoute] string? fields,
-            [FromRoute] bool? enableImages,
-            [FromRoute] bool? enableUserData,
-            [FromRoute] int? imageTypeLimit,
-            [FromRoute] string? enableImageTypes)
+            [FromRoute, Required] Guid playlistId,
+            [FromQuery, Required] Guid userId,
+            [FromQuery] int? startIndex,
+            [FromQuery] int? limit,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+            [FromQuery] bool? enableImages,
+            [FromQuery] bool? enableUserData,
+            [FromQuery] int? imageTypeLimit,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
             if (playlist == null)
@@ -175,8 +196,7 @@ namespace Jellyfin.Api.Controllers
                 items = items.Take(limit.Value).ToArray();
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 

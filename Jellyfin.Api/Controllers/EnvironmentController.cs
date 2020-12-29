@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.EnvironmentDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Environment Controller.
     /// </summary>
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
     public class EnvironmentController : BaseJellyfinApiController
     {
         private const char UncSeparator = '\\';
@@ -69,11 +70,11 @@ namespace Jellyfin.Api.Controllers
         /// Validates path.
         /// </summary>
         /// <param name="validatePathDto">Validate request object.</param>
-        /// <response code="200">Path validated.</response>
+        /// <response code="204">Path validated.</response>
         /// <response code="404">Path not found.</response>
         /// <returns>Validation status.</returns>
         [HttpPost("ValidatePath")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult ValidatePath([FromBody, Required] ValidatePathDto validatePathDto)
         {
@@ -103,6 +104,11 @@ namespace Jellyfin.Api.Controllers
 
                 if (validatePathDto.ValidateWritable)
                 {
+                    if (validatePathDto.Path == null)
+                    {
+                        throw new ResourceNotFoundException(nameof(validatePathDto.Path));
+                    }
+
                     var file = Path.Combine(validatePathDto.Path, Guid.NewGuid().ToString());
                     try
                     {
@@ -118,7 +124,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>

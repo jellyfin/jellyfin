@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class SharedHttpStream : LiveStream, IDirectStreamProvider
     {
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
 
         public SharedHttpStream(
@@ -29,14 +29,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             TunerHostInfo tunerHostInfo,
             string originalStreamId,
             IFileSystem fileSystem,
-            IHttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             OriginalStreamId = originalStreamId;
             EnableStreamSharing = true;
@@ -55,25 +55,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var typeName = GetType().Name;
             Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);
 
-            var httpRequestOptions = new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = CancellationToken.None,
-                BufferContent = false,
-                DecompressionMethod = CompressionMethods.None
-            };
-
-            foreach (var header in mediaSource.RequiredHttpHeaders)
-            {
-                httpRequestOptions.RequestHeaders[header.Key] = header.Value;
-            }
-
-            var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false);
+            // Response stream is disposed manually.
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
+                .ConfigureAwait(false);
 
             var extension = "ts";
             var requiresRemux = false;
 
-            var contentType = response.ContentType ?? string.Empty;
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
             if (contentType.IndexOf("matroska", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 requiresRemux = true;
@@ -132,24 +122,27 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        private Task StartStreaming(HttpResponseInfo response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        public string GetFilePath()
+        {
+            return TempFilePath;
+        }
+
+        private Task StartStreaming(HttpResponseMessage response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
             {
                 try
                 {
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
-                    using (response)
-                    using (var stream = response.Content)
-                    using (var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
-                    {
-                        await StreamHelper.CopyToAsync(
-                            stream,
-                            fileStream,
-                            IODefaults.CopyToBufferSize,
-                            () => Resolve(openTaskCompletionSource),
-                            cancellationToken).ConfigureAwait(false);
-                    }
+                    using var message = response;
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    await StreamHelper.CopyToAsync(
+                        stream,
+                        fileStream,
+                        IODefaults.CopyToBufferSize,
+                        () => Resolve(openTaskCompletionSource),
+                        cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException ex)
                 {

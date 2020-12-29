@@ -16,7 +16,6 @@
     "Folders": "文件夹",
     "Genres": "风格",
     "HeaderAlbumArtists": "专辑作家",
-    "HeaderCameraUploads": "相机上传",
     "HeaderContinueWatching": "继续观影",
     "HeaderFavoriteAlbums": "收藏的专辑",
     "HeaderFavoriteArtists": "最爱的艺术家",
@@ -114,5 +113,10 @@
     "TaskCleanCacheDescription": "删除系统不再需要的缓存文件。",
     "TaskCleanCache": "清理缓存目录",
     "TasksApplicationCategory": "应用程序",
-    "TasksMaintenanceCategory": "维护"
+    "TasksMaintenanceCategory": "维护",
+    "TaskCleanActivityLog": "清理程序日志",
+    "TaskCleanActivityLogDescription": "删除早于设置时间的活动日志条目。",
+    "Undefined": "未定义",
+    "Forced": "强制的",
+    "Default": "默认"
 }

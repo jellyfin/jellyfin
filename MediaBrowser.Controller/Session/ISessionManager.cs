@@ -47,6 +47,11 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<SessionEventArgs> SessionActivity;
 
         /// <summary>
+        /// Occurs when [session controller connected].
+        /// </summary>
+        event EventHandler<SessionEventArgs> SessionControllerConnected;
+
+        /// <summary>
         /// Occurs when [capabilities changed].
         /// </summary>
         event EventHandler<SessionEventArgs> CapabilitiesChanged;
@@ -77,6 +82,12 @@ namespace MediaBrowser.Controller.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
+
+        /// <summary>
+        /// Used to report that a session controller has connected.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        void OnSessionControllerConnected(SessionInfo session);
 
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 
@@ -143,22 +154,22 @@ namespace MediaBrowser.Controller.Session
         Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the SyncPlayCommand.
+        /// Sends a SyncPlayCommand to a session.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncPlayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken);
+        Task SendSyncPlayCommand(SessionInfo session, SendCommand command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the SyncPlayGroupUpdate.
+        /// Sends a SyncPlayGroupUpdate to a session.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="session">The session.</param>
         /// <param name="command">The group update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken);
+        Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdate<T> command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.
@@ -188,16 +199,16 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToAdminSessions<T>(SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user sessions.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken);
 
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, Func<T> dataFn, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.
@@ -208,7 +219,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserDeviceSessions<T>(string deviceId, SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the restart required message.

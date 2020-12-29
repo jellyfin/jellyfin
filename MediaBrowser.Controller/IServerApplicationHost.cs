@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 
@@ -56,40 +57,42 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the system info.
         /// </summary>
+        /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+        SystemInfo GetSystemInfo(IPAddress source);
 
-        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
+        PublicSystemInfo GetPublicSystemInfo(IPAddress address);
 
         /// <summary>
-        /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request
-        /// to the API that should exist at the address.
+        /// Gets a URL specific for the request.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
-        /// <returns>A list containing all the local IP addresses of the server.</returns>
-        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken);
+        /// <param name="request">The <see cref="HttpRequest"/> instance.</param>
+        /// <param name="port">Optional port number.</param>
+        /// <returns>An accessible URL.</returns>
+        string GetSmartApiUrl(HttpRequest request, int? port = null);
 
         /// <summary>
-        /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
-        /// IP address that can be found via <see cref="GetLocalIpAddresses"/>. HTTPS will be preferred when available.
+        /// Gets a URL specific for the request.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
-        /// <returns>The server URL.</returns>
-        Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
+        /// <param name="remoteAddr">The remote <see cref="IPAddress"/> of the connection.</param>
+        /// <param name="port">Optional port number.</param>
+        /// <returns>An accessible URL.</returns>
+        string GetSmartApiUrl(IPAddress remoteAddr, int? port = null);
 
         /// <summary>
-        /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)
+        /// Gets a URL specific for the request.
+        /// </summary>
+        /// <param name="hostname">The hostname used in the connection.</param>
+        /// <param name="port">Optional port number.</param>
+        /// <returns>An accessible URL.</returns>
+        string GetSmartApiUrl(string hostname, int? port = null);
+
+        /// <summary>
+        /// Gets a localhost URL that can be used to access the API using the loop-back IP address.
         /// over HTTP (not HTTPS).
         /// </summary>
         /// <returns>The API URL.</returns>
         string GetLoopbackHttpApiUrl();
-
-        /// <summary>
-        /// Gets a local (LAN) URL that can be used to access the API. HTTPS will be preferred when available.
-        /// </summary>
-        /// <param name="address">The IP address to use as the hostname in the URL.</param>
-        /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(IPAddress address);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
@@ -105,7 +108,7 @@ namespace MediaBrowser.Controller
         /// preferring the HTTPS port, if available.
         /// </param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(ReadOnlySpan<char> hostname, string scheme = null, int? port = null);
+        string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
 
         /// <summary>
         /// Open a URL in an external browser window.
@@ -114,12 +117,18 @@ namespace MediaBrowser.Controller
         /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
         void LaunchUrl(string url);
 
-        void EnableLoopback(string appName);
-
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
 
         string ReverseVirtualPath(string path);
+
+        /// <summary>
+        /// Gets the list of local plugins.
+        /// </summary>
+        /// <param name="path">Plugin base directory.</param>
+        /// <param name="cleanup">Cleanup old plugins.</param>
+        /// <returns>Enumerable of local plugins.</returns>
+        IEnumerable<LocalPlugin> GetLocalPlugins(string path, bool cleanup = true);
     }
 }

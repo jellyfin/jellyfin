@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             if (query.IncludeItemTypes.Length == 0)
             {
-                query.IncludeItemTypes = new[] { typeof(Audio).Name, typeof(MusicVideo).Name, typeof(MusicAlbum).Name };
+                query.IncludeItemTypes = new[] { nameof(Audio), nameof(MusicVideo), nameof(MusicAlbum) };
                 query.ArtistIds = new[] { Id };
             }
 
@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         protected override bool GetBlockUnratedValue(User user)
         {
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music);
         }
 
         public override UnratedItem GetBlockUnratedType()

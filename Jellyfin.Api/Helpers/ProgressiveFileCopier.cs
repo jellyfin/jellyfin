@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 
@@ -88,6 +89,11 @@ namespace Jellyfin.Api.Helpers
                 {
                     fileOptions |= FileOptions.Asynchronous;
                     allowAsyncFileRead = true;
+                }
+
+                if (_path == null)
+                {
+                    throw new ResourceNotFoundException(nameof(_path));
                 }
 
                 await using var inputStream = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, fileOptions);

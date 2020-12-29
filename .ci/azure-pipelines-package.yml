@@ -22,6 +22,12 @@ jobs:
         BuildConfiguration: ubuntu.armhf
       Linux.amd64:
         BuildConfiguration: linux.amd64
+      Linux.amd64-musl:
+        BuildConfiguration: linux.amd64-musl
+      Linux.arm64:
+        BuildConfiguration: linux.arm64
+      Linux.armhf:
+        BuildConfiguration: linux.armhf
       Windows.amd64:
         BuildConfiguration: windows.amd64
       MacOS:
@@ -64,6 +70,38 @@ jobs:
       sourceFolder: '$(Build.SourcesDirectory)/deployment/dist'
       contents: '**'
       targetFolder: '/srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
+
+- job: OpenAPISpec
+  dependsOn: Test
+  condition: or(startsWith(variables['Build.SourceBranch'], 'refs/heads/master'),startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  displayName: 'Push OpenAPI Spec to repository'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download OpenAPI Spec'
+    inputs:
+      source: 'current'
+      artifact: "OpenAPI Spec"
+      path: "$(System.ArtifactsDirectory)/openapispec"
+      runVersion: "latest"
+
+  - task: SSH@0
+    displayName: 'Create target directory on repository server'
+    inputs:
+      sshEndpoint: repository
+      runOptions: 'inline'
+      inline: 'mkdir -p /srv/repository/incoming/azure/$(Build.BuildNumber)'
+
+  - task: CopyFilesOverSSH@0
+    displayName: 'Upload artifacts to repository server'
+    inputs:
+      sshEndpoint: repository
+      sourceFolder: '$(System.ArtifactsDirectory)/openapispec'
+      contents: 'openapi.json'
+      targetFolder: '/srv/repository/incoming/azure/$(Build.BuildNumber)'
 
 - job: BuildDocker
   displayName: 'Build Docker'
@@ -135,7 +173,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
+      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
 
   - task: SSH@0
     displayName: 'Update Stable Repository'
@@ -144,7 +182,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: sudo nohup -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
+      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
@@ -156,6 +194,12 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET 5.0 sdk'
+    inputs:
+      packageType: 'sdk'
+      version: '5.0.x'
+
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
@@ -166,6 +210,7 @@ jobs:
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Unstable Nuget packages'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
       command: 'custom'
       projects: |
@@ -182,12 +227,6 @@ jobs:
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
       artifactName: Jellyfin Nuget Packages
-
-  - task: NuGetAuthenticate@0
-    displayName: 'Authenticate to stable Nuget feed'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-    inputs:
-      nuGetServiceConnections: 'NugetOrg'
 
   - task: NuGetCommand@2
     displayName: 'Push Nuget packages to stable feed'

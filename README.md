@@ -53,18 +53,19 @@ Jellyfin is a Free Software Media System that puts you in control of managing an
 For further details, please see [our documentation page](https://docs.jellyfin.org/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels](https://docs.jellyfin.org/general/getting-help.html). For more information about the project, please see our [about page](https://docs.jellyfin.org/general/about.html).
 
 <strong>Want to get started?</strong><br/>
-Choose from <a href="https://docs.jellyfin.org/general/administration/installing.html">Prebuilt Packages</a> or <a href="https://docs.jellyfin.org/general/administration/building.html">Build from Source</a>, then see our <a href="https://docs.jellyfin.org/general/quick-start.html">quick start guide</a>.<br/>
+Check out our <a href="https://jellyfin.org/downloads">downloads page</a> or our <a href="https://docs.jellyfin.org/general/administration/installing.html">installation guide</a>, then see our <a href="https://docs.jellyfin.org/general/quick-start.html">quick start guide</a>. You can also <a href="https://docs.jellyfin.org/general/administration/building.html">build from source</a>.<br/>
 
 <strong>Something not working right?</strong><br/>
 Open an <a href="https://docs.jellyfin.org/general/contributing/issues.html">Issue</a> on GitHub.<br/>
 
 <strong>Want to contribute?</strong><br/>
-Check out <a href="https://docs.jellyfin.org/general/contributing/index.html">our documentation for guidelines</a>.<br/>
+Check out our <a href="https://jellyfin.org/contribute">contributing choose-your-own-adventure</a> to see where you can help, then see our <a href="https://docs.jellyfin.org/general/contributing/index.html">contributing guide</a> and our <a href="https://jellyfin.org/docs/general/community-standards">community standards</a>.<br/>
 
 <strong>New idea or improvement?</strong><br/>
 Check out our <a href="https://features.jellyfin.org/?view=most-wanted">feature request hub</a>.<br/>
 
-Most of the translations can be found in the web client but we have several other clients that have missing strings. Translations can be improved very easily from our <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core">Weblate</a> instance. Look through the following graphic to see if your native language could use some work!
+<strong>Don't see Jellyfin in your language?</strong><br/>
+Check out our <a href="https://translate.jellyfin.org">Weblate instance</a> to help translate Jellyfin and its subprojects.<br/>
 
 <a href="https://translate.jellyfin.org/engage/jellyfin/?utm_source=widget">
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
@@ -80,7 +81,7 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-Before the project can be built, you must first install the [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download) on your system.
+Before the project can be built, you must first install the [.NET 5.0 SDK](https://dotnet.microsoft.com/download) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
@@ -104,12 +105,6 @@ There are three options to get the files for the web client.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
 
-Once you have a copy of the built web client files, you need to copy them into a specific directory.
-
-> `<repository root>/Mediabrowser.WebDashboard/jellyfin-web`
-
-As part of the build process, this folder will be copied to the build output directory, where it can be accessed by the server.
-
 ### Running The Server
 
 The following instructions will help you get the project up and running via the command line, or your preferred IDE.
@@ -124,7 +119,7 @@ To run the project with Visual Studio Code you will first need to open the repos
 
 Second, you need to [install the recommended extensions for the workspace](https://code.visualstudio.com/docs/editor/extension-gallery#_recommended-extensions). Note that extension recommendations are classified as either "Workspace Recommendations" or "Other Recommendations", but only the "Workspace Recommendations" are required.
 
-After the required extensions are installed, you can can run the server by pressing `F5`.
+After the required extensions are installed, you can run the server by pressing `F5`.
 
 #### Running From The Command Line
 
@@ -132,7 +127,7 @@ To run the server from the command line you can use the `dotnet run` command. Th
 
 ```bash
 cd jellyfin                          # Move into the repository directory
-dotnet run --project Jellyfin.Server # Run the server startup project
+dotnet run --project Jellyfin.Server --webdir /absolute/path/to/jellyfin-web/dist # Run the server startup project
 ```
 
 A second option is to build the project and then run the resulting executable file directly. When running the executable directly you can easily add command line options. Add the `--help` flag to list details on all the supported command line options.
@@ -141,7 +136,7 @@ A second option is to build the project and then run the resulting executable fi
 
     ```bash
     dotnet build                # Build the project
-    cd bin/Debug/netcoreapp3.1  # Change into the build output directory
+    cd bin/Debug/net5.0  # Change into the build output directory
     ```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.

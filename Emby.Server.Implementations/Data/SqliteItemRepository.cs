@@ -138,7 +138,6 @@ namespace Emby.Server.Implementations.Data
                 "pragma shrink_memory"
             };
 
-
             string[] postQueries =
             {
                 // obsolete
@@ -220,7 +219,8 @@ namespace Emby.Server.Implementations.Data
             {
                 connection.RunQueries(queries);
 
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var existingColumnNames = GetColumnNames(db, "AncestorIds");
                     AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
@@ -496,7 +496,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
@@ -547,7 +548,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     SaveItemsInTranscation(db, tuples);
                 }, TransactionMode);
@@ -560,7 +562,7 @@ namespace Emby.Server.Implementations.Data
             {
                 SaveItemCommandText,
                 "delete from AncestorIds where ItemId=@ItemId"
-            }).ToList();
+            });
 
             using (var saveItemStatement = statements[0])
             using (var deleteAncestorsStatement = statements[1])
@@ -1005,7 +1007,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var parts = value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split('|', StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var part in parts)
             {
@@ -1055,7 +1057,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var parts = value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split('|' , StringSplitOptions.RemoveEmptyEntries);
             var list = new List<ItemImageInfo>();
             foreach (var part in parts)
             {
@@ -1094,7 +1096,7 @@ namespace Emby.Server.Implementations.Data
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
-            var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
+            var parts = value.Split('*', StringSplitOptions.None);
 
             if (parts.Length < 3)
             {
@@ -1530,7 +1532,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Genres = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Genres = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1591,7 +1593,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     IEnumerable<MetadataField> GetLockedFields(string s)
                     {
-                        foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
                         {
                             if (Enum.TryParse(i, true, out MetadataField parsedValue))
                             {
@@ -1610,7 +1612,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Studios = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Studios = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1620,7 +1622,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.Tags = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    item.Tags = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -1634,7 +1636,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         IEnumerable<TrailerType> GetTrailerTypes(string s)
                         {
-                            foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                            foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
                             {
                                 if (Enum.TryParse(i, true, out TrailerType parsedValue))
                                 {
@@ -1809,7 +1811,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.ProductionLocations = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    item.ProductionLocations = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries).ToArray();
                 }
 
                 index++;
@@ -1846,14 +1848,14 @@ namespace Emby.Server.Implementations.Data
             {
                 if (item is IHasArtist hasArtists && !reader.IsDBNull(index))
                 {
-                    hasArtists.Artists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    hasArtists.Artists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
 
                 if (item is IHasAlbumArtist hasAlbumArtists && !reader.IsDBNull(index))
                 {
-                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
@@ -2033,7 +2035,8 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     // First delete chapters
                     db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
@@ -2264,7 +2267,6 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Contains("Trailer", StringComparer.OrdinalIgnoreCase);
         }
 
-
         private static readonly HashSet<string> _artistExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Series",
@@ -2401,11 +2403,11 @@ namespace Emby.Server.Implementations.Data
 
                 if (string.IsNullOrEmpty(item.OfficialRating))
                 {
-                    builder.Append("((OfficialRating is null) * 10)");
+                    builder.Append("(OfficialRating is null * 10)");
                 }
                 else
                 {
-                    builder.Append("((OfficialRating=@ItemOfficialRating) * 10)");
+                    builder.Append("(OfficialRating=@ItemOfficialRating * 10)");
                 }
 
                 if (item.ProductionYear.HasValue)
@@ -2414,8 +2416,26 @@ namespace Emby.Server.Implementations.Data
                     builder.Append("+(Select Case When Abs(COALESCE(ProductionYear, 0) - @ItemProductionYear) < 5 Then 5 Else 0 End )");
                 }
 
-                //// genres, tags
-                builder.Append("+ ((Select count(CleanValue) from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId)) * 10)");
+                // genres, tags, studios, person, year?
+                builder.Append("+ (Select count(1) * 10 from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId))");
+
+                if (item is MusicArtist)
+                {
+                    // Match albums where the artist is AlbumArtist against other albums.
+                    // It is assumed that similar albums => similar artists.
+                    builder.Append(
+                        @"+ (WITH artistValues AS (
+	                            SELECT DISTINCT albumValues.CleanValue
+	                            FROM ItemValues albumValues
+	                            INNER JOIN ItemValues artistAlbums ON albumValues.ItemId = artistAlbums.ItemId
+	                            INNER JOIN TypedBaseItems artistItem ON artistAlbums.CleanValue = artistItem.CleanName AND artistAlbums.TYPE = 1 AND artistItem.Guid = @SimilarItemId
+                            ), similarArtist AS (
+	                            SELECT albumValues.ItemId
+	                            FROM ItemValues albumValues
+	                            INNER JOIN ItemValues artistAlbums ON albumValues.ItemId = artistAlbums.ItemId
+	                            INNER JOIN TypedBaseItems artistItem ON artistAlbums.CleanValue = artistItem.CleanName AND artistAlbums.TYPE = 1 AND artistItem.Guid = A.Guid
+                            ) SELECT COUNT(DISTINCT(CleanValue)) * 10 FROM ItemValues WHERE ItemId IN (SELECT ItemId FROM similarArtist) AND CleanValue IN (SELECT CleanValue FROM artistValues))");
+                }
 
                 builder.Append(") as SimilarityScore");
 
@@ -2923,9 +2943,10 @@ namespace Emby.Server.Implementations.Data
             var result = new QueryResult<BaseItem>();
             using (var connection = GetConnection(true))
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
-                    var statements = PrepareAll(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts);
 
                     if (!isReturningZeroItems)
                     {
@@ -2963,7 +2984,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (query.EnableTotalRecordCount)
                     {
-                        using (var statement = statements[statements.Count - 1])
+                        using (var statement = statements[statements.Length - 1])
                         {
                             if (EnableJoinUserData(query))
                             {
@@ -3292,7 +3313,6 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-
             var isReturningZeroItems = query.Limit.HasValue && query.Limit <= 0;
 
             var statementTexts = new List<string>();
@@ -3327,9 +3347,10 @@ namespace Emby.Server.Implementations.Data
             var result = new QueryResult<Guid>();
             using (var connection = GetConnection(true))
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
-                    var statements = PrepareAll(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts);
 
                     if (!isReturningZeroItems)
                     {
@@ -3355,7 +3376,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (query.EnableTotalRecordCount)
                     {
-                        using (var statement = statements[statements.Count - 1])
+                        using (var statement = statements[statements.Length - 1])
                         {
                             if (EnableJoinUserData(query))
                             {
@@ -3590,12 +3611,12 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add($"type in ({inClause})");
             }
 
-            if (query.ChannelIds.Length == 1)
+            if (query.ChannelIds.Count == 1)
             {
                 whereClauses.Add("ChannelId=@ChannelId");
                 statement?.TryBind("@ChannelId", query.ChannelIds[0].ToString("N", CultureInfo.InvariantCulture));
             }
-            else if (query.ChannelIds.Length > 1)
+            else if (query.ChannelIds.Count > 1)
             {
                 var inClause = string.Join(",", query.ChannelIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
                 whereClauses.Add($"ChannelId in ({inClause})");
@@ -3718,26 +3739,31 @@ namespace Emby.Server.Implementations.Data
                 statement?.TryBind("@MaxPremiereDate", query.MaxPremiereDate.Value);
             }
 
+            StringBuilder clauseBuilder = new StringBuilder();
+            const string Or = " OR ";
+
             var trailerTypes = query.TrailerTypes;
             int trailerTypesLen = trailerTypes.Length;
             if (trailerTypesLen > 0)
             {
-                const string Or = " OR ";
-                StringBuilder clause = new StringBuilder("(", trailerTypesLen * 32);
+                clauseBuilder.Append('(');
+
                 for (int i = 0; i < trailerTypesLen; i++)
                 {
                     var paramName = "@TrailerTypes" + i;
-                    clause.Append("TrailerTypes like ")
+                    clauseBuilder.Append("TrailerTypes like ")
                         .Append(paramName)
                         .Append(Or);
                     statement?.TryBind(paramName, "%" + trailerTypes[i] + "%");
                 }
 
                 // Remove last " OR "
-                clause.Length -= Or.Length;
-                clause.Append(')');
+                clauseBuilder.Length -= Or.Length;
+                clauseBuilder.Append(')');
 
-                whereClauses.Add(clause.ToString());
+                whereClauses.Add(clauseBuilder.ToString());
+
+                clauseBuilder.Length = 0;
             }
 
             if (query.IsAiring.HasValue)
@@ -3757,23 +3783,35 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.PersonIds.Length > 0)
+            int personIdsLen = query.PersonIds.Length;
+            if (personIdsLen > 0)
             {
                 // TODO: Should this query with CleanName ?
 
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var personId in query.PersonIds)
-                {
-                    var paramName = "@PersonId" + index;
+                clauseBuilder.Append('(');
 
-                    clauses.Add("(guid in (select itemid from People where Name = (select Name from TypedBaseItems where guid=" + paramName + ")))");
-                    statement?.TryBind(paramName, personId.ToByteArray());
-                    index++;
+                Span<byte> idBytes = stackalloc byte[16];
+                for (int i = 0; i < personIdsLen; i++)
+                {
+                    string paramName = "@PersonId" + i;
+                    clauseBuilder.Append("(guid in (select itemid from People where Name = (select Name from TypedBaseItems where guid=")
+                        .Append(paramName)
+                        .Append("))) OR ");
+
+                    if (statement != null)
+                    {
+                        query.PersonIds[i].TryWriteBytes(idBytes);
+                        statement.TryBind(paramName, idBytes);
+                    }
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                // Remove last " OR "
+                clauseBuilder.Length -= Or.Length;
+                clauseBuilder.Append(')');
+
+                whereClauses.Add(clauseBuilder.ToString());
+
+                clauseBuilder.Length = 0;
             }
 
             if (!string.IsNullOrWhiteSpace(query.Person))
@@ -3894,7 +3932,7 @@ namespace Emby.Server.Implementations.Data
                 if (query.IsPlayed.HasValue)
                 {
                     // We should probably figure this out for all folders, but for right now, this is the only place where we need it
-                    if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(Series).Name, StringComparison.OrdinalIgnoreCase))
+                    if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(Series), StringComparison.OrdinalIgnoreCase))
                     {
                         if (query.IsPlayed.Value)
                         {
@@ -4038,7 +4076,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            if (query.GenreIds.Length > 0)
+            if (query.GenreIds.Count > 0)
             {
                 var clauses = new List<string>();
                 var index = 0;
@@ -4059,7 +4097,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            if (query.Genres.Length > 0)
+            if (query.Genres.Count > 0)
             {
                 var clauses = new List<string>();
                 var index = 0;
@@ -4481,17 +4519,17 @@ namespace Emby.Server.Implementations.Data
 
             if (query.HasImdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%imdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasImdbId.Value, "imdb"));
             }
 
             if (query.HasTmdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%tmdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasTmdbId.Value, "tmdb"));
             }
 
             if (query.HasTvdbId.HasValue)
             {
-                whereClauses.Add("ProviderIds like '%tvdb=%'");
+                whereClauses.Add(GetProviderIdClause(query.HasTvdbId.Value, "tvdb"));
             }
 
             var includedItemByNameTypes = GetItemByNameTypesInQuery(query).SelectMany(MapIncludeItemTypes).ToList();
@@ -4731,33 +4769,48 @@ namespace Emby.Server.Implementations.Data
             return whereClauses;
         }
 
+        /// <summary>
+        /// Formats a where clause for the specified provider.
+        /// </summary>
+        /// <param name="includeResults">Whether or not to include items with this provider's ids.</param>
+        /// <param name="provider">Provider name.</param>
+        /// <returns>Formatted SQL clause.</returns>
+        private string GetProviderIdClause(bool includeResults, string provider)
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "ProviderIds {0} like '%{1}=%'",
+                includeResults ? string.Empty : "not",
+                provider);
+        }
+
         private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)
         {
             var list = new List<string>();
 
-            if (IsTypeInQuery(typeof(Person).Name, query))
+            if (IsTypeInQuery(nameof(Person), query))
             {
-                list.Add(typeof(Person).Name);
+                list.Add(nameof(Person));
             }
 
-            if (IsTypeInQuery(typeof(Genre).Name, query))
+            if (IsTypeInQuery(nameof(Genre), query))
             {
-                list.Add(typeof(Genre).Name);
+                list.Add(nameof(Genre));
             }
 
-            if (IsTypeInQuery(typeof(MusicGenre).Name, query))
+            if (IsTypeInQuery(nameof(MusicGenre), query))
             {
-                list.Add(typeof(MusicGenre).Name);
+                list.Add(nameof(MusicGenre));
             }
 
-            if (IsTypeInQuery(typeof(MusicArtist).Name, query))
+            if (IsTypeInQuery(nameof(MusicArtist), query))
             {
-                list.Add(typeof(MusicArtist).Name);
+                list.Add(nameof(MusicArtist));
             }
 
-            if (IsTypeInQuery(typeof(Studio).Name, query))
+            if (IsTypeInQuery(nameof(Studio), query))
             {
-                list.Add(typeof(Studio).Name);
+                list.Add(nameof(Studio));
             }
 
             return list;
@@ -4812,12 +4865,12 @@ namespace Emby.Server.Implementations.Data
 
             var types = new[]
             {
-                typeof(Episode).Name,
-                typeof(Video).Name,
-                typeof(Movie).Name,
-                typeof(MusicVideo).Name,
-                typeof(Series).Name,
-                typeof(Season).Name
+                nameof(Episode),
+                nameof(Video),
+                nameof(Movie),
+                nameof(MusicVideo),
+                nameof(Series),
+                nameof(Season)
             };
 
             if (types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase)))
@@ -4885,7 +4938,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     connection.ExecuteAll(sql);
                 }, TransactionMode);
@@ -4936,7 +4990,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var idBlob = id.ToByteArray();
 
@@ -4980,26 +5035,26 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var commandText = "select Distinct Name from People";
+            var commandText = new StringBuilder("select Distinct p.Name from People p");
 
             var whereClauses = GetPeopleWhereClauses(query, null);
 
             if (whereClauses.Count != 0)
             {
-                commandText += "  where " + string.Join(" AND ", whereClauses);
+                commandText.Append(" where ").Append(string.Join(" AND ", whereClauses));
             }
 
-            commandText += " order by ListOrder";
+            commandText.Append(" order by ListOrder");
 
             if (query.Limit > 0)
             {
-                commandText += " LIMIT " + query.Limit;
+                commandText.Append(" LIMIT ").Append(query.Limit);
             }
 
             using (var connection = GetConnection(true))
             {
                 var list = new List<string>();
-                using (var statement = PrepareStatement(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText.ToString()))
                 {
                     // Run this again to bind the params
                     GetPeopleWhereClauses(query, statement);
@@ -5023,7 +5078,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var commandText = "select ItemId, Name, Role, PersonType, SortOrder from People";
+            var commandText = "select ItemId, Name, Role, PersonType, SortOrder from People p";
 
             var whereClauses = GetPeopleWhereClauses(query, null);
 
@@ -5062,22 +5117,26 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             var whereClauses = new List<string>();
 
+            if (query.User != null && query.IsFavorite.HasValue)
+            {
+                whereClauses.Add(@"p.Name IN (
+SELECT Name FROM TypedBaseItems WHERE UserDataKey IN (
+SELECT key FROM UserDatas WHERE isFavorite=@IsFavorite AND userId=@UserId)
+AND Type = @InternalPersonType)");
+                statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
+                statement?.TryBind("@InternalPersonType", typeof(Person).FullName);
+            }
+
             if (!query.ItemId.Equals(Guid.Empty))
             {
                 whereClauses.Add("ItemId=@ItemId");
-                if (statement != null)
-                {
-                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
-                }
+                statement?.TryBind("@ItemId", query.ItemId.ToByteArray());
             }
 
             if (!query.AppearsInItemId.Equals(Guid.Empty))
             {
-                whereClauses.Add("Name in (Select Name from People where ItemId=@AppearsInItemId)");
-                if (statement != null)
-                {
-                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToByteArray());
-                }
+                whereClauses.Add("p.Name in (Select Name from People where ItemId=@AppearsInItemId)");
+                statement?.TryBind("@AppearsInItemId", query.AppearsInItemId.ToByteArray());
             }
 
             var queryPersonTypes = query.PersonTypes.Where(IsValidPersonType).ToList();
@@ -5085,10 +5144,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (queryPersonTypes.Count == 1)
             {
                 whereClauses.Add("PersonType=@PersonType");
-                if (statement != null)
-                {
-                    statement.TryBind("@PersonType", queryPersonTypes[0]);
-                }
+                statement?.TryBind("@PersonType", queryPersonTypes[0]);
             }
             else if (queryPersonTypes.Count > 1)
             {
@@ -5102,10 +5158,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (queryExcludePersonTypes.Count == 1)
             {
                 whereClauses.Add("PersonType<>@PersonType");
-                if (statement != null)
-                {
-                    statement.TryBind("@PersonType", queryExcludePersonTypes[0]);
-                }
+                statement?.TryBind("@PersonType", queryExcludePersonTypes[0]);
             }
             else if (queryExcludePersonTypes.Count > 1)
             {
@@ -5117,19 +5170,18 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (query.MaxListOrder.HasValue)
             {
                 whereClauses.Add("ListOrder<=@MaxListOrder");
-                if (statement != null)
-                {
-                    statement.TryBind("@MaxListOrder", query.MaxListOrder.Value);
-                }
+                statement?.TryBind("@MaxListOrder", query.MaxListOrder.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
-                whereClauses.Add("Name like @NameContains");
-                if (statement != null)
-                {
-                    statement.TryBind("@NameContains", "%" + query.NameContains + "%");
-                }
+                whereClauses.Add("p.Name like @NameContains");
+                statement?.TryBind("@NameContains", "%" + query.NameContains + "%");
+            }
+
+            if (query.User != null)
+            {
+                statement?.TryBind("@UserId", query.User.InternalId);
             }
 
             return whereClauses;
@@ -5149,7 +5201,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var itemIdBlob = itemId.ToByteArray();
+            Span<byte> itemIdBlob = stackalloc byte[16];
+            itemId.TryWriteBytes(itemIdBlob);
 
             // First delete
             deleteAncestorsStatement.Reset();
@@ -5165,16 +5218,14 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             for (var i = 0; i < ancestorIds.Count; i++)
             {
-                if (i > 0)
-                {
-                    insertText.Append(',');
-                }
-
                 insertText.AppendFormat(
                     CultureInfo.InvariantCulture,
-                    "(@ItemId, @AncestorId{0}, @AncestorIdText{0})",
+                    "(@ItemId, @AncestorId{0}, @AncestorIdText{0}),",
                     i.ToString(CultureInfo.InvariantCulture));
             }
+
+            // Remove last ,
+            insertText.Length--;
 
             using (var statement = PrepareStatement(db, insertText.ToString()))
             {
@@ -5185,8 +5236,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     var index = i.ToString(CultureInfo.InvariantCulture);
 
                     var ancestorId = ancestorIds[i];
+                    ancestorId.TryWriteBytes(itemIdBlob);
 
-                    statement.TryBind("@AncestorId" + index, ancestorId.ToByteArray());
+                    statement.TryBind("@AncestorId" + index, itemIdBlob);
                     statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
                 }
 
@@ -5343,7 +5395,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                 itemCountColumns = new Dictionary<string, string>()
                 {
-                    { "itemTypes", "(" + itemCountColumnQuery + ") as itemTypes"}
+                    { "itemTypes", "(" + itemCountColumnQuery + ") as itemTypes" }
                 };
             }
 
@@ -5398,6 +5450,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 NameStartsWithOrGreater = query.NameStartsWithOrGreater,
                 Tags = query.Tags,
                 OfficialRatings = query.OfficialRatings,
+                StudioIds = query.StudioIds,
                 GenreIds = query.GenreIds,
                 Genres = query.Genres,
                 Years = query.Years,
@@ -5466,7 +5519,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 connection.RunInTransaction(
                     db =>
                     {
-                        var statements = PrepareAll(db, statementTexts).ToList();
+                        var statements = PrepareAll(db, statementTexts);
 
                         if (!isReturningZeroItems)
                         {
@@ -5517,7 +5570,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                                         + GetJoinUserDataText(query)
                                         + whereText;
 
-                            using (var statement = statements[statements.Count - 1])
+                            using (var statement = statements[statements.Length - 1])
                             {
                                 statement.TryBind("@SelectType", returnType);
                                 if (EnableJoinUserData(query))
@@ -5570,7 +5623,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 return counts;
             }
 
-            var allTypes = typeString.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+            var allTypes = typeString.Split('|', StringSplitOptions.RemoveEmptyEntries)
                 .ToLookup(x => x);
 
             foreach (var type in allTypes)
@@ -5730,7 +5783,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var itemIdBlob = itemId.ToByteArray();
 
@@ -5884,7 +5938,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var itemIdBlob = id.ToByteArray();
 
@@ -5989,7 +6044,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 insertText.Length = _mediaStreamSaveColumnsInsertQuery.Length;
             }
         }
-
 
         /// <summary>
         /// Gets the chapter.
@@ -6219,7 +6273,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
                     var itemIdBlob = id.ToByteArray();
 

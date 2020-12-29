@@ -23,7 +23,9 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.AddDefaultPluginRepository),
             typeof(Routines.MigrateUserDb),
             typeof(Routines.ReaddDefaultPluginRepository),
-            typeof(Routines.MigrateDisplayPreferencesDb)
+            typeof(Routines.MigrateDisplayPreferencesDb),
+            typeof(Routines.RemoveDownloadImagesInAdvance),
+            typeof(Routines.AddPeopleQueryIndex)
         };
 
         /// <summary>

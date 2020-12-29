@@ -16,7 +16,6 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
 
-
         [JsonIgnore]
         public PhotoAlbum AlbumEntity
         {

@@ -17,15 +17,11 @@ namespace MediaBrowser.Model.Configuration
 
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }
 
-        public bool DownloadImagesInAdvance { get; set; }
-
         public MediaPathInfo[] PathInfos { get; set; }
 
         public bool SaveLocalMetadata { get; set; }
 
         public bool EnableInternetProviders { get; set; }
-
-        public bool ImportMissingEpisodes { get; set; }
 
         public bool EnableAutomaticSeriesGrouping { get; set; }
 

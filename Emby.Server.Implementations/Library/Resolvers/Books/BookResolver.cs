@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 {
     public class BookResolver : MediaBrowser.Controller.Resolvers.ItemResolver<Book>
     {
-        private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".opf", ".pdf" };
+        private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
 
         protected override Book Resolve(ItemResolveArgs args)
         {
@@ -50,7 +50,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 var fileExtension = Path.GetExtension(f.FullName) ??
                                     string.Empty;
 
-                return _validExtensions.Contains(fileExtension,
+                return _validExtensions.Contains(
+                    fileExtension,
                                                 StringComparer
                                                     .OrdinalIgnoreCase);
             }).ToList();

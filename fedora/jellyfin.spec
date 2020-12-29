@@ -27,7 +27,7 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-3.1, dotnet-sdk-3.1
+BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web >= 10.6, %{name}-web < 10.7
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
@@ -40,7 +40,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 Summary:        The Free Software Media System Server backend
 Requires(pre):  shadow-utils
 Requires:       ffmpeg
-Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
+Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at
 
 %description server
 The Jellyfin media server backend.
@@ -54,7 +54,7 @@ The Jellyfin media server backend.
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
-    "-p:GenerateDocumentationFile=true;DebugSymbols=false;DebugType=none" Jellyfin.Server
+    "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/jellyfin/LICENSE
 %{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
@@ -79,14 +79,9 @@ EOF
 
 %files server
 %attr(755,root,root) %{_bindir}/jellyfin
-%{_libdir}/jellyfin/*.json
-%{_libdir}/jellyfin/*.dll
-%{_libdir}/jellyfin/*.so
-%{_libdir}/jellyfin/*.a
-%{_libdir}/jellyfin/createdump
+%{_libdir}/jellyfin/*
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
-%{_libdir}/jellyfin/SOS_README.md
 %{_unitdir}/jellyfin.service
 %{_libexecdir}/jellyfin/restart.sh
 %{_prefix}/lib/firewalld/services/jellyfin.xml

@@ -1,4 +1,3 @@
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -33,7 +32,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 return true;
             }
 
-            return item is Movie || item is MusicVideo || item is Trailer;
+            return item is Movie;
         }
     }
 }

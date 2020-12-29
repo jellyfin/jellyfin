@@ -92,6 +92,8 @@ namespace MediaBrowser.Model.Users
 
         public int LoginAttemptsBeforeLockout { get; set; }
 
+        public int MaxActiveSessions { get; set; }
+
         public bool EnablePublicSharing { get; set; }
 
         public Guid[] BlockedMediaFolders { get; set; }
@@ -109,7 +111,7 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets a value indicating what SyncPlay features the user can access.
         /// </summary>
         /// <value>Access level to SyncPlay features.</value>
-        public SyncPlayAccess SyncPlayAccess { get; set; }
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
 
         public UserPolicy()
         {
@@ -144,6 +146,8 @@ namespace MediaBrowser.Model.Users
 
             LoginAttemptsBeforeLockout = -1;
 
+            MaxActiveSessions = 0;
+
             EnableAllChannels = true;
             EnabledChannels = Array.Empty<Guid>();
 
@@ -156,7 +160,7 @@ namespace MediaBrowser.Model.Users
             EnableContentDownloading = true;
             EnablePublicSharing = true;
             EnableRemoteAccess = true;
-            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
+            SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
         }
     }
 }

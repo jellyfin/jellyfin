@@ -45,7 +45,8 @@ namespace MediaBrowser.Controller.Entities
         {
             if (file.StartsWith("http", System.StringComparison.OrdinalIgnoreCase))
             {
-                item.SetImage(new ItemImageInfo
+                item.SetImage(
+                new ItemImageInfo
                 {
                     Path = file,
                     Type = imageType

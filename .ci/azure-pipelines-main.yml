@@ -1,7 +1,7 @@
 parameters:
   LinuxImage: 'ubuntu-latest'
   RestoreBuildProjects: 'Jellyfin.Server/Jellyfin.Server.csproj'
-  DotNetSdkVersion: 3.1.100
+  DotNetSdkVersion: 5.0.100
 
 jobs:
   - job: Build
@@ -64,28 +64,28 @@ jobs:
           arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
           zipAfterPublish: false
 
-      - task: PublishPipelineArtifact@0
+      - task: PublishPipelineArtifact@1
         displayName: 'Publish Artifact Naming'
         condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
         inputs:
           targetPath: '$(build.ArtifactStagingDirectory)/Jellyfin.Server/Emby.Naming.dll'
           artifactName: 'Jellyfin.Naming'
 
-      - task: PublishPipelineArtifact@0
+      - task: PublishPipelineArtifact@1
         displayName: 'Publish Artifact Controller'
         condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
         inputs:
           targetPath: '$(build.ArtifactStagingDirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
           artifactName: 'Jellyfin.Controller'
 
-      - task: PublishPipelineArtifact@0
+      - task: PublishPipelineArtifact@1
         displayName: 'Publish Artifact Model'
         condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
         inputs:
           targetPath: '$(build.ArtifactStagingDirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
           artifactName: 'Jellyfin.Model'
 
-      - task: PublishPipelineArtifact@0
+      - task: PublishPipelineArtifact@1
         displayName: 'Publish Artifact Common'
         condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
         inputs:

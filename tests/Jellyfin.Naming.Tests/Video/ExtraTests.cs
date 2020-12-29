@@ -1,7 +1,9 @@
-﻿using Emby.Naming.Common;
+using System;
+using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.Entities;
 using Xunit;
+using MediaType = Emby.Naming.Common.MediaType;
 
 namespace Jellyfin.Naming.Tests.Video
 {
@@ -44,14 +46,14 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Theory]
-        [InlineData(ExtraType.BehindTheScenes, "behind the scenes" )]
-        [InlineData(ExtraType.DeletedScene, "deleted scenes" )]
-        [InlineData(ExtraType.Interview, "interviews" )]
-        [InlineData(ExtraType.Scene, "scenes" )]
-        [InlineData(ExtraType.Sample, "samples" )]
-        [InlineData(ExtraType.Clip, "shorts" )]
-        [InlineData(ExtraType.Clip, "featurettes" )]
-        [InlineData(ExtraType.Unknown, "extras" )]
+        [InlineData(ExtraType.BehindTheScenes, "behind the scenes")]
+        [InlineData(ExtraType.DeletedScene, "deleted scenes")]
+        [InlineData(ExtraType.Interview, "interviews")]
+        [InlineData(ExtraType.Scene, "scenes")]
+        [InlineData(ExtraType.Sample, "samples")]
+        [InlineData(ExtraType.Clip, "shorts")]
+        [InlineData(ExtraType.Clip, "featurettes")]
+        [InlineData(ExtraType.Unknown, "extras")]
         public void TestDirectories(ExtraType type, string dirName)
         {
             Test(dirName + "/300.mp4", type, _videoOptions);
@@ -91,6 +93,23 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 Assert.Equal(expectedType, extraType);
             }
+        }
+
+        [Fact]
+        public void TestExtraInfo_InvalidRuleType()
+        {
+            var rule = new ExtraRule(ExtraType.Unknown, ExtraRuleType.Regex, @"([eE]x(tra)?\.\w+)", MediaType.Video);
+            var options = new NamingOptions { VideoExtraRules = new[] { rule } };
+            var res = GetExtraTypeParser(options).GetExtraInfo("extra.mp4");
+
+            Assert.Equal(rule, res.Rule);
+        }
+
+        [Fact]
+        public void TestFlagsParser()
+        {
+            var flags = new FlagParser(_videoOptions).GetFlags(string.Empty);
+            Assert.Empty(flags);
         }
 
         private ExtraResolver GetExtraTypeParser(NamingOptions videoOptions)

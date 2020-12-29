@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using BlurHashSharp.SkiaSharp;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Drawing;
@@ -227,8 +228,8 @@ namespace Jellyfin.Drawing.Skia
             }
 
             var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
-
-            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
+            var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
+            Directory.CreateDirectory(directory);
             File.Copy(path, tempPath, true);
 
             return tempPath;
@@ -434,7 +435,7 @@ namespace Jellyfin.Drawing.Skia
                 0f,
                 kernelOffset,
                 SKShaderTileMode.Clamp,
-                false);
+                true);
 
             canvas.DrawBitmap(
                 source,
@@ -493,7 +494,8 @@ namespace Jellyfin.Drawing.Skia
             // If all we're doing is resizing then we can stop now
             if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                var outputDirectory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+                Directory.CreateDirectory(outputDirectory);
                 using var outputStream = new SKFileWStream(outputPath);
                 using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
                 resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
@@ -540,7 +542,8 @@ namespace Jellyfin.Drawing.Skia
                 DrawIndicator(canvas, width, height, options);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+            Directory.CreateDirectory(directory);
             using (var outputStream = new SKFileWStream(outputPath))
             {
                 using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
@@ -553,13 +556,13 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc/>
-        public void CreateImageCollage(ImageCollageOptions options)
+        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
         {
             double ratio = (double)options.Width / options.Height;
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(this).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(this).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, libraryName);
             }
             else if (ratio >= .9)
             {

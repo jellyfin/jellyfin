@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -24,12 +24,14 @@ namespace Jellyfin.Api.Helpers
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
         /// <param name="httpClient">The <see cref="HttpClient"/> making the remote request.</param>
         /// <param name="httpContext">The current http context.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the API response.</returns>
         public static async Task<ActionResult> GetStaticRemoteStreamResult(
             StreamState state,
             bool isHeadRequest,
             HttpClient httpClient,
-            HttpContext httpContext)
+            HttpContext httpContext,
+            CancellationToken cancellationToken = default)
         {
             if (state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent))
             {
@@ -37,8 +39,8 @@ namespace Jellyfin.Api.Helpers
             }
 
             // Can't dispose the response as it's required up the call chain.
-            var response = await httpClient.GetAsync(state.MediaPath).ConfigureAwait(false);
-            var contentType = response.Content.Headers.ContentType.ToString();
+            var response = await httpClient.GetAsync(new Uri(state.MediaPath)).ConfigureAwait(false);
+            var contentType = response.Content.Headers.ContentType?.ToString();
 
             httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
@@ -47,7 +49,7 @@ namespace Jellyfin.Api.Helpers
                 return new FileContentResult(Array.Empty<byte>(), contentType);
             }
 
-            return new FileStreamResult(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), contentType);
+            return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
         }
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace Jellyfin.Api.Helpers
                 return new NoContentResult();
             }
 
-            return new PhysicalFileResult(path, contentType);
+            return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
         }
 
         /// <summary>
@@ -123,10 +125,8 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                var memoryStream = new MemoryStream();
-                await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
-                memoryStream.Position = 0;
-                return new FileStreamResult(memoryStream, contentType);
+                var stream = new ProgressiveFileStream(outputPath, job, transcodingJobHelper);
+                return new FileStreamResult(stream, contentType);
             }
             finally
             {

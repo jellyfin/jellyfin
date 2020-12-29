@@ -68,5 +68,4 @@ namespace MediaBrowser.Model.Providers
         /// <value>The type of the rating.</value>
         public RatingType RatingType { get; set; }
     }
-
 }

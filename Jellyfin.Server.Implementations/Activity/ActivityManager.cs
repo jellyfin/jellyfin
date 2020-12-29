@@ -3,8 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Activity
 {
@@ -25,7 +27,7 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>>? EntryCreated;
 
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
@@ -39,39 +41,47 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public QueryResult<ActivityLogEntry> GetPagedResult(
-            Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>> func,
-            int? startIndex,
-            int? limit)
+        public async Task<QueryResult<ActivityLogEntry>> GetPagedResultAsync(ActivityLogQuery query)
         {
-            using var dbContext = _provider.CreateContext();
+            await using var dbContext = _provider.CreateContext();
 
-            var query = func(dbContext.ActivityLogs.OrderByDescending(entry => entry.DateCreated));
+            IQueryable<ActivityLog> entries = dbContext.ActivityLogs
+                .AsQueryable()
+                .OrderByDescending(entry => entry.DateCreated);
 
-            if (startIndex.HasValue)
+            if (query.MinDate.HasValue)
             {
-                query = query.Skip(startIndex.Value);
+                entries = entries.Where(entry => entry.DateCreated >= query.MinDate);
             }
 
-            if (limit.HasValue)
+            if (query.HasUserId.HasValue)
             {
-                query = query.Take(limit.Value);
+                entries = entries.Where(entry => entry.UserId != Guid.Empty == query.HasUserId.Value );
             }
-
-            // This converts the objects from the new database model to the old for compatibility with the existing API.
-            var list = query.Select(ConvertToOldModel).ToList();
 
             return new QueryResult<ActivityLogEntry>
             {
-                Items = list,
-                TotalRecordCount = func(dbContext.ActivityLogs).Count()
+                Items = await entries
+                    .Skip(query.StartIndex ?? 0)
+                    .Take(query.Limit ?? 100)
+                    .AsAsyncEnumerable()
+                    .Select(ConvertToOldModel)
+                    .ToListAsync()
+                    .ConfigureAwait(false),
+                TotalRecordCount = await entries.CountAsync().ConfigureAwait(false)
             };
         }
 
-        /// <inheritdoc/>
-        public QueryResult<ActivityLogEntry> GetPagedResult(int? startIndex, int? limit)
+        /// <inheritdoc />
+        public async Task CleanAsync(DateTime startDate)
         {
-            return GetPagedResult(logs => logs, startIndex, limit);
+            await using var dbContext = _provider.CreateContext();
+            var entries = dbContext.ActivityLogs
+                .AsQueryable()
+                .Where(entry => entry.DateCreated <= startDate);
+
+            dbContext.RemoveRange(entries);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         private static ActivityLogEntry ConvertToOldModel(ActivityLog entry)

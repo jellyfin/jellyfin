@@ -16,7 +16,6 @@
     "Folders": "پوشه‌ها",
     "Genres": "ژانرها",
     "HeaderAlbumArtists": "هنرمندان آلبوم",
-    "HeaderCameraUploads": "آپلودهای دوربین",
     "HeaderContinueWatching": "ادامه تماشا",
     "HeaderFavoriteAlbums": "آلبوم‌های مورد علاقه",
     "HeaderFavoriteArtists": "هنرمندان مورد علاقه",
@@ -114,5 +113,7 @@
     "TasksChannelsCategory": "کانال‌های داخلی",
     "TasksApplicationCategory": "برنامه",
     "TasksLibraryCategory": "کتابخانه",
-    "TasksMaintenanceCategory": "تعمیر"
+    "TasksMaintenanceCategory": "تعمیر",
+    "Forced": "اجباری",
+    "Default": "پیشفرض"
 }

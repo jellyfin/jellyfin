@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -18,6 +19,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -72,7 +74,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -248,6 +250,8 @@ namespace Jellyfin.Api.Controllers
         /// The task result contains an <see cref="FileStreamResult"/> containing the images file stream.
         /// </returns>
         [HttpGet("Items/RemoteSearch/Image")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetRemoteSearchImage(
             [FromQuery, Required] string imageUrl,
             [FromQuery, Required] string providerName)
@@ -260,8 +264,7 @@ namespace Jellyfin.Api.Controllers
                 var contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
                 if (System.IO.File.Exists(contentPath))
                 {
-                    await using var fileStreamExisting = System.IO.File.OpenRead(pointerCachePath);
-                    return new FileStreamResult(fileStreamExisting, MediaTypeNames.Application.Octet);
+                    return PhysicalFile(contentPath, MimeTypes.GetMimeType(contentPath));
                 }
             }
             catch (FileNotFoundException)
@@ -274,10 +277,8 @@ namespace Jellyfin.Api.Controllers
             }
 
             await DownloadImage(providerName, imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
-
-            // Read the pointer file again
-            await using var fileStream = System.IO.File.OpenRead(pointerCachePath);
-            return new FileStreamResult(fileStream, MediaTypeNames.Application.Octet);
+            var updatedContentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
+            return PhysicalFile(updatedContentPath, MimeTypes.GetMimeType(updatedContentPath));
         }
 
         /// <summary>
@@ -291,10 +292,11 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="NoContentResult"/>.
         /// </returns>
-        [HttpPost("Items/RemoteSearch/Apply/{id}")]
+        [HttpPost("Items/RemoteSearch/Apply/{itemId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ApplySearchCriteria(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromBody, Required] RemoteSearchResult searchResult,
             [FromQuery] bool replaceAllImages = true)
         {
@@ -332,10 +334,16 @@ namespace Jellyfin.Api.Controllers
         private async Task DownloadImage(string providerName, string url, Guid urlHash, string pointerCachePath)
         {
             using var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
+            if (result.Content.Headers.ContentType?.MediaType == null)
+            {
+                throw new ResourceNotFoundException(nameof(result.Content.Headers.ContentType));
+            }
+
             var ext = result.Content.Headers.ContentType.MediaType.Split('/')[^1];
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+            var directory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
+            Directory.CreateDirectory(directory);
             using (var stream = result.Content)
             {
                 await using var fileStream = new FileStream(
@@ -349,7 +357,9 @@ namespace Jellyfin.Api.Controllers
                 await stream.CopyToAsync(fileStream).ConfigureAwait(false);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));
+
+            Directory.CreateDirectory(pointerCacheDirectory);
             await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath).ConfigureAwait(false);
         }
 

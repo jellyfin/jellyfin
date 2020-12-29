@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using MediaBrowser.Common.Json.Converters;
 
 namespace Jellyfin.Api.Models.PlaylistDtos
 {
@@ -15,12 +18,13 @@ namespace Jellyfin.Api.Models.PlaylistDtos
         /// <summary>
         /// Gets or sets item ids to add to the playlist.
         /// </summary>
-        public string? Ids { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<Guid> Ids { get; set; } = Array.Empty<Guid>();
 
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the media type.

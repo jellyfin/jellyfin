@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -34,6 +35,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _configurationManager = configurationManager;
             _appHost = appHost;
         }
+
+        public string Name => "The Open Movie Database";
+
+        // After other internet providers, because they're better
+        // But before fallback providers like screengrab
+        public int Order => 90;
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
@@ -82,18 +89,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
-
-        public string Name => "The Open Movie Database";
 
         public bool Supports(BaseItem item)
         {
             return item is Movie || item is Trailer || item is Episode;
         }
-
-        // After other internet providers, because they're better
-        // But before fallback providers like screengrab
-        public int Order => 90;
     }
 }

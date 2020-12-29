@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Audio;
@@ -41,7 +42,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
@@ -513,10 +513,11 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (key.StartsWith(_configurationManager.ApplicationPaths.ProgramDataPath, StringComparison.Ordinal))
+            string programDataPath = _configurationManager.ApplicationPaths.ProgramDataPath;
+            if (key.StartsWith(programDataPath, StringComparison.Ordinal))
             {
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
-                key = key.Substring(_configurationManager.ApplicationPaths.ProgramDataPath.Length)
+                key = key.Substring(programDataPath.Length)
                     .TrimStart('/', '\\')
                     .Replace('/', '\\');
             }
@@ -856,7 +857,21 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         public Person GetPerson(string name)
         {
-            return CreateItemByName<Person>(Person.GetPath, name, new DtoOptions(true));
+            var path = Person.GetPath(name);
+            var id = GetItemByNameId<Person>(path);
+            if (!(GetItemById(id) is Person item))
+            {
+                item = new Person
+                {
+                    Name = name,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    DateModified = DateTime.UtcNow,
+                    Path = path
+                };
+            }
+
+            return item;
         }
 
         /// <summary>
@@ -871,17 +886,17 @@ namespace Emby.Server.Implementations.Library
 
         public Guid GetStudioId(string name)
         {
-            return GetItemByNameId<Studio>(Studio.GetPath, name);
+            return GetItemByNameId<Studio>(Studio.GetPath(name));
         }
 
         public Guid GetGenreId(string name)
         {
-            return GetItemByNameId<Genre>(Genre.GetPath, name);
+            return GetItemByNameId<Genre>(Genre.GetPath(name));
         }
 
         public Guid GetMusicGenreId(string name)
         {
-            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath, name);
+            return GetItemByNameId<MusicGenre>(MusicGenre.GetPath(name));
         }
 
         /// <summary>
@@ -943,7 +958,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(T).Name },
+                    IncludeItemTypes = new[] { nameof(MusicArtist) },
                     Name = name,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
@@ -957,13 +972,11 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var id = GetItemByNameId<T>(getPathFn, name);
-
+            var path = getPathFn(name);
+            var id = GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
-
             if (item == null)
             {
-                var path = getPathFn(name);
                 item = new T
                 {
                     Name = name,
@@ -979,10 +992,9 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        private Guid GetItemByNameId<T>(Func<string, string> getPathFn, string name)
+        private Guid GetItemByNameId<T>(string path)
               where T : BaseItem, new()
         {
-            var path = getPathFn(name);
             var forceCaseInsensitiveId = _configurationManager.Configuration.EnableNormalizedItemByNameIds;
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
@@ -1504,7 +1516,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (query.AncestorIds.Length == 0 &&
                 query.ParentId.Equals(Guid.Empty) &&
-                query.ChannelIds.Length == 0 &&
+                query.ChannelIds.Count == 0 &&
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
                 string.IsNullOrEmpty(query.SeriesPresentationUniqueKey) &&
@@ -1805,21 +1817,18 @@ namespace Emby.Server.Implementations.Library
         /// <param name="items">The items.</param>
         /// <param name="parent">The parent item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
+        public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
-            // Don't iterate multiple times
-            var itemsList = items.ToList();
+            _itemRepository.SaveItems(items, cancellationToken);
 
-            _itemRepository.SaveItems(itemsList, cancellationToken);
-
-            foreach (var item in itemsList)
+            foreach (var item in items)
             {
                 RegisterItem(item);
             }
 
             if (ItemAdded != null)
             {
-                foreach (var item in itemsList)
+                foreach (var item in items)
                 {
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
@@ -1949,14 +1958,7 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var item in items)
             {
-                if (item.IsFileProtocol)
-                {
-                    ProviderManager.SaveMetadata(item, updateReason);
-                }
-
-                item.DateLastSaved = DateTime.UtcNow;
-
-                await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+                await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
             }
 
             _itemRepository.SaveItems(items, cancellationToken);
@@ -1993,6 +1995,18 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
+
+        public Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
+        {
+            if (item.IsFileProtocol)
+            {
+                ProviderManager.SaveMetadata(item, updateReason);
+            }
+
+            item.DateLastSaved = DateTime.UtcNow;
+
+            return UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate);
+        }
 
         /// <summary>
         /// Reports the item removed.
@@ -2445,6 +2459,31 @@ namespace Emby.Server.Implementations.Library
             new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
+        public BaseItem GetParentItem(string parentId, Guid? userId)
+        {
+            if (string.IsNullOrEmpty(parentId))
+            {
+                return GetParentItem((Guid?)null, userId);
+            }
+
+            return GetParentItem(new Guid(parentId), userId);
+        }
+
+        public BaseItem GetParentItem(Guid? parentId, Guid? userId)
+        {
+            if (parentId.HasValue)
+            {
+                return GetItemById(parentId.Value);
+            }
+
+            if (userId.HasValue && userId != Guid.Empty)
+            {
+                return GetUserRootFolder();
+            }
+
+            return RootFolder;
+        }
+
         /// <inheritdoc />
         public bool IsVideoFile(string path)
         {
@@ -2475,9 +2514,10 @@ namespace Emby.Server.Implementations.Library
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
+            // TODO nullable - what are we trying to do there with empty episodeInfo?
             var episodeInfo = episode.IsFileProtocol
-                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo()
-                : new Naming.TV.EpisodeInfo();
+                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo(episode.Path)
+                : new Naming.TV.EpisodeInfo(episode.Path);
 
             try
             {
@@ -2566,12 +2606,12 @@ namespace Emby.Server.Implementations.Library
 
                 if (!episode.IndexNumberEnd.HasValue || forceRefresh)
                 {
-                    if (episode.IndexNumberEnd != episodeInfo.EndingEpsiodeNumber)
+                    if (episode.IndexNumberEnd != episodeInfo.EndingEpisodeNumber)
                     {
                         changed = true;
                     }
 
-                    episode.IndexNumberEnd = episodeInfo.EndingEpsiodeNumber;
+                    episode.IndexNumberEnd = episodeInfo.EndingEpisodeNumber;
                 }
 
                 if (!episode.ParentIndexNumber.HasValue || forceRefresh)
@@ -2695,7 +2735,7 @@ namespace Emby.Server.Implementations.Library
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
             if (currentVideo != null)
             {
@@ -2897,7 +2937,7 @@ namespace Emby.Server.Implementations.Library
 
                     return item.GetImageInfo(image.Type, imageIndex);
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     if (ex.StatusCode.HasValue
                         && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))

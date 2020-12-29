@@ -26,19 +26,19 @@ namespace MediaBrowser.Providers.Manager
 
             if (source == null)
             {
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentException("Item cannot be null.", nameof(sourceResult));
             }
 
             if (target == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentException("Item cannot be null.", nameof(targetResult));
             }
 
             if (!lockedFields.Contains(MetadataField.Name))
             {
                 if (replaceData || string.IsNullOrEmpty(target.Name))
                 {
-                    // Safeguard against incoming data having an emtpy name
+                    // Safeguard against incoming data having an empty name
                     if (!string.IsNullOrWhiteSpace(source.Name))
                     {
                         target.Name = source.Name;
@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (replaceData || string.IsNullOrEmpty(target.OriginalTitle))
             {
-                // Safeguard against incoming data having an emtpy name
+                // Safeguard against incoming data having an empty name
                 if (!string.IsNullOrWhiteSpace(source.OriginalTitle))
                 {
                     target.OriginalTitle = source.OriginalTitle;

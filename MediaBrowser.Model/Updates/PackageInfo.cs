@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the versions.
         /// </summary>
         /// <value>The versions.</value>
-        public IReadOnlyList<VersionInfo> versions { get; set; }
+        public IList<VersionInfo> versions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageInfo"/> class.

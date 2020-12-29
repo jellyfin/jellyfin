@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.Dlna
                 return Array.Empty<string>();
             }
 
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return value.Split(',', StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool ContainsContainer(string container)
@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Dlna
         public static bool ContainsContainer(string profileContainers, string inputContainer)
         {
             var isNegativeList = false;
-            if (profileContainers != null && profileContainers.StartsWith("-", StringComparison.Ordinal))
+            if (profileContainers != null && profileContainers.StartsWith('-'))
             {
                 isNegativeList = true;
                 profileContainers = profileContainers.Substring(1);

@@ -16,7 +16,6 @@
     "Folders": "Mapper",
     "Genres": "Sjangre",
     "HeaderAlbumArtists": "Albumartister",
-    "HeaderCameraUploads": "Kameraopplastinger",
     "HeaderContinueWatching": "Fortsett å se",
     "HeaderFavoriteAlbums": "Favorittalbum",
     "HeaderFavoriteArtists": "Favorittartister",
@@ -50,7 +49,7 @@
     "NotificationOptionAudioPlayback": "Lydavspilling startet",
     "NotificationOptionAudioPlaybackStopped": "Lydavspilling stoppet",
     "NotificationOptionCameraImageUploaded": "Kamerabilde lastet opp",
-    "NotificationOptionInstallationFailed": "Installasjonsfeil",
+    "NotificationOptionInstallationFailed": "Installasjonen feilet",
     "NotificationOptionNewLibraryContent": "Nytt innhold lagt til",
     "NotificationOptionPluginError": "Pluginfeil",
     "NotificationOptionPluginInstalled": "Plugin installert",
@@ -114,5 +113,9 @@
     "TaskRefreshPeople": "Oppfrisk personer",
     "TaskCleanLogsDescription": "Sletter loggfiler som er eldre enn {0} dager gamle.",
     "TaskCleanLogs": "Tøm loggmappe",
-    "TaskRefreshLibraryDescription": "Skanner mediebibliotekene dine for nye filer og oppdaterer metadata."
+    "TaskRefreshLibraryDescription": "Skanner mediebibliotekene dine for nye filer og oppdaterer metadata.",
+    "TaskCleanActivityLog": "Tøm aktivitetslogg",
+    "Undefined": "Udefinert",
+    "Forced": "Tvungen",
+    "Default": "Standard"
 }

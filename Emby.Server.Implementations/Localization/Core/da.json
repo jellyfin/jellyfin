@@ -16,7 +16,6 @@
     "Folders": "Mapper",
     "Genres": "Genrer",
     "HeaderAlbumArtists": "Albumkunstnere",
-    "HeaderCameraUploads": "Kamera Uploads",
     "HeaderContinueWatching": "Fortsæt Afspilning",
     "HeaderFavoriteAlbums": "Favoritalbummer",
     "HeaderFavoriteArtists": "Favoritkunstnere",
@@ -114,5 +113,10 @@
     "TaskCleanTranscodeDescription": "Fjern transcode filer som er mere end en dag gammel.",
     "TaskCleanTranscode": "Rengør Transcode Mappen",
     "TaskRefreshPeople": "Genopfrisk Personer",
-    "TaskRefreshPeopleDescription": "Opdatere metadata for skuespillere og instruktører i dit bibliotek."
+    "TaskRefreshPeopleDescription": "Opdatere metadata for skuespillere og instruktører i dit bibliotek.",
+    "TaskCleanActivityLogDescription": "Sletter linjer i aktivitetsloggen ældre end den konfigureret alder.",
+    "TaskCleanActivityLog": "Ryd Aktivitetslog",
+    "Undefined": "Udefineret",
+    "Forced": "Tvunget",
+    "Default": "Standard"
 }

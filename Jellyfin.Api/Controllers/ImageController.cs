@@ -1,11 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Configuration;
@@ -83,20 +86,19 @@ namespace Jellyfin.Api.Controllers
         /// <response code="403">User does not have permission to delete the image.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Users/{userId}/Images/{imageType}")]
-        [HttpPost("Users/{userId}/Images/{imageType}/{index?}", Name = "PostUserImage_2")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> PostUserImage(
-            [FromRoute] Guid userId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? index = null)
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] int? index = null)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to update the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -107,7 +109,53 @@ namespace Jellyfin.Api.Controllers
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage != null)
             {
-                _userManager.ClearProfileImage(user);
+                await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+            }
+
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
+
+            await _providerManager
+                .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
+                .ConfigureAwait(false);
+            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Sets the user image.
+        /// </summary>
+        /// <param name="userId">User Id.</param>
+        /// <param name="imageType">(Unused) Image type.</param>
+        /// <param name="index">(Unused) Image index.</param>
+        /// <response code="204">Image updated.</response>
+        /// <response code="403">User does not have permission to delete the image.</response>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
+        [HttpPost("Users/{userId}/Images/{imageType}/{index}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
+        public async Task<ActionResult> PostUserImageByIndex(
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute] int index)
+        {
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
+            }
+
+            var user = _userManager.GetUserById(userId);
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
+            // Handle image/png; charset=utf-8
+            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+            var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            if (user.ProfileImage != null)
+            {
+                await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
             user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
@@ -129,21 +177,20 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Image deleted.</response>
         /// <response code="403">User does not have permission to delete the image.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpDelete("Users/{userId}/Images/{itemType}")]
-        [HttpDelete("Users/{userId}/Images/{itemType}/{index?}", Name = "DeleteUserImage_2")]
+        [HttpDelete("Users/{userId}/Images/{imageType}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult DeleteUserImage(
-            [FromRoute] Guid userId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? index = null)
+        public async Task<ActionResult> DeleteUserImage(
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] int? index = null)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
-                return Forbid("User is not allowed to delete the image.");
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }
 
             var user = _userManager.GetUserById(userId);
@@ -156,7 +203,46 @@ namespace Jellyfin.Api.Controllers
                 _logger.LogError(e, "Error deleting user profile image:");
             }
 
-            _userManager.ClearProfileImage(user);
+            await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Delete the user's image.
+        /// </summary>
+        /// <param name="userId">User Id.</param>
+        /// <param name="imageType">(Unused) Image type.</param>
+        /// <param name="index">(Unused) Image index.</param>
+        /// <response code="204">Image deleted.</response>
+        /// <response code="403">User does not have permission to delete the image.</response>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
+        [HttpDelete("Users/{userId}/Images/{imageType}/{index}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult> DeleteUserImageByIndex(
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute] int index)
+        {
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
+            }
+
+            var user = _userManager.GetUserById(userId);
+            try
+            {
+                System.IO.File.Delete(user.ProfileImage.Path);
+            }
+            catch (IOException e)
+            {
+                _logger.LogError(e, "Error deleting user profile image:");
+            }
+
+            await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -170,14 +256,13 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpDelete("Items/{itemId}/Images/{imageType}")]
-        [HttpDelete("Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "DeleteItemImage_2")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteItemImage(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? imageIndex = null)
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -190,6 +275,67 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
+        /// Delete an item's image.
+        /// </summary>
+        /// <param name="itemId">Item id.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">The image index.</param>
+        /// <response code="204">Image deleted.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
+        [HttpDelete("Items/{itemId}/Images/{imageType}/{imageIndex}")]
+        [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> DeleteItemImageByIndex(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute] int imageIndex)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            await item.DeleteImageAsync(imageType, imageIndex).ConfigureAwait(false);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Set item image.
+        /// </summary>
+        /// <param name="itemId">Item id.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <response code="204">Image saved.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
+        [HttpPost("Items/{itemId}/Images/{imageType}")]
+        [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
+        public async Task<ActionResult> SetItemImage(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
+            // Handle image/png; charset=utf-8
+            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+
+            return NoContent();
+        }
+
+        /// <summary>
         /// Set item image.
         /// </summary>
         /// <param name="itemId">Item id.</param>
@@ -198,16 +344,15 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Image saved.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
-        [HttpPost("Items/{itemId}/Images/{imageType}")]
-        [HttpPost("Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "SetItemImage_2")]
+        [HttpPost("Items/{itemId}/Images/{imageType}/{imageIndex}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
-        public async Task<ActionResult> SetItemImage(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? imageIndex = null)
+        public async Task<ActionResult> SetItemImageByIndex(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -215,9 +360,11 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -238,9 +385,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateItemImageIndex(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int imageIndex,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
             [FromQuery] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -264,7 +411,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute] Guid itemId)
+        public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -331,7 +478,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
         /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
@@ -347,28 +494,106 @@ namespace Jellyfin.Api.Controllers
         /// </returns>
         [HttpGet("Items/{itemId}/Images/{imageType}")]
         [HttpHead("Items/{itemId}/Images/{imageType}", Name = "HeadItemImage")]
-        [HttpGet("Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "GetItemImage_2")]
-        [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "HeadItemImage_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetItemImage(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
             [FromQuery] string? tag,
             [FromQuery] bool? cropWhitespace,
-            [FromQuery] string? format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
             [FromQuery] int? unplayedCount,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromQuery] int? imageIndex)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return await GetImageInternal(
+                    itemId,
+                    imageType,
+                    imageIndex,
+                    tag,
+                    format,
+                    maxWidth,
+                    maxHeight,
+                    percentPlayed,
+                    unplayedCount,
+                    width,
+                    height,
+                    quality,
+                    cropWhitespace,
+                    addPlayedIndicator,
+                    blur,
+                    backgroundColor,
+                    foregroundLayer,
+                    item,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the item's image.
+        /// </summary>
+        /// <param name="itemId">Item id.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("Items/{itemId}/Images/{imageType}/{imageIndex}")]
+        [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex}", Name = "HeadItemImageByIndex")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
+        public async Task<ActionResult> GetItemImageByIndex(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute] int imageIndex,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] string? tag,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] bool? addPlayedIndicator,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
+            [FromQuery] int? blur,
+            [FromQuery] string? backgroundColor,
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -429,24 +654,25 @@ namespace Jellyfin.Api.Controllers
         [HttpHead("Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}", Name = "HeadItemImage2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetItemImage2(
-            [FromRoute] Guid itemId,
-            [FromRoute] ImageType imageType,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int maxWidth,
+            [FromRoute, Required] int maxHeight,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromRoute] string tag,
+            [FromRoute, Required] string tag,
             [FromQuery] bool? cropWhitespace,
-            [FromRoute] string format,
+            [FromRoute, Required] ImageFormat format,
             [FromQuery] bool? addPlayedIndicator,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] double percentPlayed,
+            [FromRoute, Required] int unplayedCount,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -503,19 +729,20 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("Artists/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("Artists/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadArtistImage")]
+        [HttpGet("Artists/{name}/Images/{imageType}/{imageIndex}")]
+        [HttpHead("Artists/{name}/Images/{imageType}/{imageIndex}", Name = "HeadArtistImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetArtistImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -524,7 +751,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetArtist(name);
             if (item == null)
@@ -581,19 +808,20 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("Genres/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("Genres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadGenreImage")]
+        [HttpGet("Genres/{name}/Images/{imageType}")]
+        [HttpHead("Genres/{name}/Images/{imageType}", Name = "HeadGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetGenreImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -602,7 +830,86 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromQuery] int? imageIndex)
+        {
+            var item = _libraryManager.GetGenre(name);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return await GetImageInternal(
+                    item.Id,
+                    imageType,
+                    imageIndex,
+                    tag,
+                    format,
+                    maxWidth,
+                    maxHeight,
+                    percentPlayed,
+                    unplayedCount,
+                    width,
+                    height,
+                    quality,
+                    cropWhitespace,
+                    addPlayedIndicator,
+                    blur,
+                    backgroundColor,
+                    foregroundLayer,
+                    item,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get genre image by name.
+        /// </summary>
+        /// <param name="name">Genre name.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("Genres/{name}/Images/{imageType}/{imageIndex}")]
+        [HttpHead("Genres/{name}/Images/{imageType}/{imageIndex}", Name = "HeadGenreImageByIndex")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
+        public async Task<ActionResult> GetGenreImageByIndex(
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] bool? addPlayedIndicator,
+            [FromQuery] int? blur,
+            [FromQuery] string? backgroundColor,
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetGenre(name);
             if (item == null)
@@ -659,19 +966,20 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("MusicGenres/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("MusicGenres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadMusicGenreImage")]
+        [HttpGet("MusicGenres/{name}/Images/{imageType}")]
+        [HttpHead("MusicGenres/{name}/Images/{imageType}", Name = "HeadMusicGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetMusicGenreImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -680,7 +988,86 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromQuery] int? imageIndex)
+        {
+            var item = _libraryManager.GetMusicGenre(name);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return await GetImageInternal(
+                    item.Id,
+                    imageType,
+                    imageIndex,
+                    tag,
+                    format,
+                    maxWidth,
+                    maxHeight,
+                    percentPlayed,
+                    unplayedCount,
+                    width,
+                    height,
+                    quality,
+                    cropWhitespace,
+                    addPlayedIndicator,
+                    blur,
+                    backgroundColor,
+                    foregroundLayer,
+                    item,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get music genre image by name.
+        /// </summary>
+        /// <param name="name">Music genre name.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("MusicGenres/{name}/Images/{imageType}/{imageIndex}")]
+        [HttpHead("MusicGenres/{name}/Images/{imageType}/{imageIndex}", Name = "HeadMusicGenreImageByIndex")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
+        public async Task<ActionResult> GetMusicGenreImageByIndex(
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] bool? addPlayedIndicator,
+            [FromQuery] int? blur,
+            [FromQuery] string? backgroundColor,
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetMusicGenre(name);
             if (item == null)
@@ -737,19 +1124,20 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("Persons/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("Persons/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadPersonImage")]
+        [HttpGet("Persons/{name}/Images/{imageType}")]
+        [HttpHead("Persons/{name}/Images/{imageType}", Name = "HeadPersonImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetPersonImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -758,7 +1146,86 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromQuery] int? imageIndex)
+        {
+            var item = _libraryManager.GetPerson(name);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return await GetImageInternal(
+                    item.Id,
+                    imageType,
+                    imageIndex,
+                    tag,
+                    format,
+                    maxWidth,
+                    maxHeight,
+                    percentPlayed,
+                    unplayedCount,
+                    width,
+                    height,
+                    quality,
+                    cropWhitespace,
+                    addPlayedIndicator,
+                    blur,
+                    backgroundColor,
+                    foregroundLayer,
+                    item,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get person image by name.
+        /// </summary>
+        /// <param name="name">Person name.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("Persons/{name}/Images/{imageType}/{imageIndex}")]
+        [HttpHead("Persons/{name}/Images/{imageType}/{imageIndex}", Name = "HeadPersonImageByIndex")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
+        public async Task<ActionResult> GetPersonImageByIndex(
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
+            [FromQuery] string tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] bool? addPlayedIndicator,
+            [FromQuery] int? blur,
+            [FromQuery] string? backgroundColor,
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetPerson(name);
             if (item == null)
@@ -815,19 +1282,20 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("Studios/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("Studios/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadStudioImage")]
+        [HttpGet("Studios/{name}/Images/{imageType}")]
+        [HttpHead("Studios/{name}/Images/{imageType}", Name = "HeadStudioImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetStudioImage(
-            [FromRoute] string name,
-            [FromRoute] ImageType imageType,
-            [FromRoute] string tag,
-            [FromRoute] string format,
-            [FromRoute] int? maxWidth,
-            [FromRoute] int? maxHeight,
-            [FromRoute] double? percentPlayed,
-            [FromRoute] int? unplayedCount,
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromQuery] string? tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
@@ -836,7 +1304,86 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromQuery] int? imageIndex)
+        {
+            var item = _libraryManager.GetStudio(name);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return await GetImageInternal(
+                    item.Id,
+                    imageType,
+                    imageIndex,
+                    tag,
+                    format,
+                    maxWidth,
+                    maxHeight,
+                    percentPlayed,
+                    unplayedCount,
+                    width,
+                    height,
+                    quality,
+                    cropWhitespace,
+                    addPlayedIndicator,
+                    blur,
+                    backgroundColor,
+                    foregroundLayer,
+                    item,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get studio image by name.
+        /// </summary>
+        /// <param name="name">Studio name.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("Studios/{name}/Images/{imageType}/{imageIndex}")]
+        [HttpHead("Studios/{name}/Images/{imageType}/{imageIndex}", Name = "HeadStudioImageByIndex")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
+        public async Task<ActionResult> GetStudioImageByIndex(
+            [FromRoute, Required] string name,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
+            [FromQuery] string? tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] bool? addPlayedIndicator,
+            [FromQuery] int? blur,
+            [FromQuery] string? backgroundColor,
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetStudio(name);
             if (item == null)
@@ -893,15 +1440,16 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="FileStreamResult"/> containing the file stream on success,
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
-        [HttpGet("Users/{userId}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("Users/{userId}/Images/{imageType}/{imageIndex?}", Name = "HeadUserImage")]
+        [HttpGet("Users/{userId}/Images/{imageType}")]
+        [HttpHead("Users/{userId}/Images/{imageType}", Name = "HeadUserImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
         public async Task<ActionResult> GetUserImage(
-            [FromRoute] Guid userId,
-            [FromRoute] ImageType imageType,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
             [FromQuery] string? tag,
-            [FromQuery] string? format,
+            [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
             [FromQuery] double? percentPlayed,
@@ -914,10 +1462,107 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute] int? imageIndex = null)
+            [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
             if (user == null)
+            {
+                return NotFound();
+            }
+
+            var info = new ItemImageInfo
+            {
+                Path = user.ProfileImage.Path,
+                Type = ImageType.Profile,
+                DateModified = user.ProfileImage.LastModified
+            };
+
+            if (width.HasValue)
+            {
+                info.Width = width.Value;
+            }
+
+            if (height.HasValue)
+            {
+                info.Height = height.Value;
+            }
+
+            return await GetImageInternal(
+                    user.Id,
+                    imageType,
+                    imageIndex,
+                    tag,
+                    format,
+                    maxWidth,
+                    maxHeight,
+                    percentPlayed,
+                    unplayedCount,
+                    width,
+                    height,
+                    quality,
+                    cropWhitespace,
+                    addPlayedIndicator,
+                    blur,
+                    backgroundColor,
+                    foregroundLayer,
+                    null,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase),
+                    info)
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get user profile image.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("Users/{userId}/Images/{imageType}/{imageIndex}")]
+        [HttpHead("Users/{userId}/Images/{imageType}/{imageIndex}", Name = "HeadUserImageByIndex")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesImageFile]
+        public async Task<ActionResult> GetUserImageByIndex(
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] ImageType imageType,
+            [FromRoute, Required] int imageIndex,
+            [FromQuery] string? tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] bool? addPlayedIndicator,
+            [FromQuery] int? blur,
+            [FromQuery] string? backgroundColor,
+            [FromQuery] string? foregroundLayer)
+        {
+            var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
             {
                 return NotFound();
             }
@@ -1028,7 +1673,7 @@ namespace Jellyfin.Api.Controllers
             ImageType imageType,
             int? imageIndex,
             string? tag,
-            string? format,
+            ImageFormat? format,
             int? maxWidth,
             int? maxHeight,
             double? percentPlayed,
@@ -1118,12 +1763,11 @@ namespace Jellyfin.Api.Controllers
                 isHeadRequest).ConfigureAwait(false);
         }
 
-        private ImageFormat[] GetOutputFormats(string? format)
+        private ImageFormat[] GetOutputFormats(ImageFormat? format)
         {
-            if (!string.IsNullOrWhiteSpace(format)
-                && Enum.TryParse(format, true, out ImageFormat parsedFormat))
+            if (format.HasValue)
             {
-                return new[] { parsedFormat };
+                return new[] { format.Value };
             }
 
             return GetClientSupportedFormats();
@@ -1147,7 +1791,7 @@ namespace Jellyfin.Api.Controllers
 
             var acceptParam = Request.Query[HeaderNames.Accept];
 
-            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, "webp", false);
+            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, ImageFormat.Webp, false);
 
             if (!supportsWebP)
             {
@@ -1169,7 +1813,7 @@ namespace Jellyfin.Api.Controllers
             formats.Add(ImageFormat.Jpg);
             formats.Add(ImageFormat.Png);
 
-            if (SupportsFormat(supportedFormats, acceptParam, "gif", true))
+            if (SupportsFormat(supportedFormats, acceptParam, ImageFormat.Gif, true))
             {
                 formats.Add(ImageFormat.Gif);
             }
@@ -1177,9 +1821,10 @@ namespace Jellyfin.Api.Controllers
             return formats.ToArray();
         }
 
-        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, string format, bool acceptAll)
+        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, ImageFormat format, bool acceptAll)
         {
-            var mimeType = "image/" + format;
+            var normalized = format.ToString().ToLowerInvariant();
+            var mimeType = "image/" + normalized;
 
             if (requestAcceptTypes.Contains(mimeType))
             {
@@ -1191,7 +1836,7 @@ namespace Jellyfin.Api.Controllers
                 return true;
             }
 
-            return string.Equals(acceptParam, format, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(acceptParam, normalized, StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<ActionResult> GetImageResult(
@@ -1258,7 +1903,7 @@ namespace Jellyfin.Api.Controllers
                 Response.Headers.Add(key, value);
             }
 
-            Response.ContentType = imageContentType;
+            Response.ContentType = imageContentType ?? MediaTypeNames.Text.Plain;
             Response.Headers.Add(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
             Response.Headers.Add(HeaderNames.Vary, HeaderNames.Accept);
 
@@ -1297,8 +1942,7 @@ namespace Jellyfin.Api.Controllers
                 return NoContent();
             }
 
-            var stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
-            return File(stream, imageContentType);
+            return PhysicalFile(imagePath, imageContentType);
         }
     }
 }

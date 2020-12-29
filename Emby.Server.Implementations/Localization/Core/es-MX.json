@@ -16,7 +16,6 @@
     "Folders": "Carpetas",
     "Genres": "Géneros",
     "HeaderAlbumArtists": "Artistas del álbum",
-    "HeaderCameraUploads": "Subidas desde la cámara",
     "HeaderContinueWatching": "Continuar viendo",
     "HeaderFavoriteAlbums": "Álbumes favoritos",
     "HeaderFavoriteArtists": "Artistas favoritos",
@@ -114,5 +113,9 @@
     "TasksChannelsCategory": "Canales de Internet",
     "TasksApplicationCategory": "Aplicación",
     "TasksLibraryCategory": "Biblioteca",
-    "TasksMaintenanceCategory": "Mantenimiento"
+    "TasksMaintenanceCategory": "Mantenimiento",
+    "TaskCleanActivityLogDescription": "Elimina entradas del registro de actividad que sean más antiguas al periodo establecido.",
+    "TaskCleanActivityLog": "Limpiar registro de actividades",
+    "Undefined": "Sin definir",
+    "Forced": "Forzado"
 }

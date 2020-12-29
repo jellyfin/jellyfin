@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -64,29 +65,28 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Recommendations")]
         public ActionResult<IEnumerable<RecommendationDto>> GetMovieRecommendations(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
-            [FromQuery] string? fields,
+            [FromQuery] Guid? parentId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] int categoryLimit = 5,
             [FromQuery] int itemLimit = 8)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request);
 
             var categories = new List<RecommendationDto>();
 
-            var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? Guid.Empty : new Guid(parentId);
+            var parentIdGuid = parentId ?? Guid.Empty;
 
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[]
                 {
                     nameof(Movie),
-                    // typeof(Trailer).Name,
-                    // typeof(LiveTvProgram).Name
+                    // nameof(Trailer),
+                    // nameof(LiveTvProgram)
                 },
                 // IsMovie = true
                 OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -9,13 +10,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -23,6 +26,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
@@ -114,7 +118,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">"Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="sortBy">Optional. Key to sort by.</param>
         /// <param name="sortOrder">Optional. Sort order.</param>
@@ -142,16 +146,15 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isDisliked,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] SortOrder? sortOrder,
             [FromQuery] bool enableFavoriteSorting = false,
             [FromQuery] bool addCurrentProgram = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -171,7 +174,7 @@ namespace Jellyfin.Api.Controllers
                     IsNews = isNews,
                     IsKids = isKids,
                     IsSports = isSports,
-                    SortBy = RequestHelpers.Split(sortBy, ',', true),
+                    SortBy = sortBy,
                     SortOrder = sortOrder ?? SortOrder.Ascending,
                     AddCurrentProgram = addCurrentProgram
                 },
@@ -208,7 +211,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Channels/{channelId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public ActionResult<BaseItemDto> GetChannel([FromRoute] Guid channelId, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -235,7 +238,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="isMovie">Optional. Filter for movies.</param>
         /// <param name="isSeries">Optional. Filter for series.</param>
@@ -259,8 +262,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? seriesTimerId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSeries,
@@ -270,8 +273,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isLibraryItem,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -292,7 +294,7 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 IsLibraryItem = isLibraryItem,
-                Fields = RequestHelpers.GetItemFields(fields),
+                Fields = fields,
                 ImageTypeLimit = imageTypeLimit,
                 EnableImages = enableImages
             }, dtoOptions);
@@ -312,7 +314,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="enableTotalRecordCount">Optional. Return total record count.</param>
         /// <response code="200">Live tv recordings returned.</response>
@@ -346,8 +348,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? seriesTimerId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -405,7 +407,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Recordings/{recordingId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public ActionResult<BaseItemDto> GetRecording([FromRoute] Guid recordingId, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
@@ -427,7 +429,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Tuners/{tunerId}/Reset")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public ActionResult ResetTuner([FromRoute] string tunerId)
+        public ActionResult ResetTuner([FromRoute, Required] string tunerId)
         {
             AssertUserCanManageLiveTv();
             _liveTvManager.ResetTuner(tunerId, CancellationToken.None);
@@ -445,7 +447,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Timers/{timerId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public async Task<ActionResult<TimerInfoDto>> GetTimer(string timerId)
+        public async Task<ActionResult<TimerInfoDto>> GetTimer([FromRoute, Required] string timerId)
         {
             return await _liveTvManager.GetTimer(timerId, CancellationToken.None).ConfigureAwait(false);
         }
@@ -526,7 +528,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="seriesTimerId">Optional. Filter by series timer id.</param>
         /// <param name="librarySeriesId">Optional. Filter by library series id.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
         /// <response code="200">Live tv epgs returned.</response>
         /// <returns>
@@ -536,7 +538,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLiveTvPrograms(
-            [FromQuery] string? channelIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] channelIds,
             [FromQuery] Guid? userId,
             [FromQuery] DateTime? minStartDate,
             [FromQuery] bool? hasAired,
@@ -553,15 +555,15 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] string? sortBy,
             [FromQuery] string? sortOrder,
-            [FromQuery] string? genres,
-            [FromQuery] string? genreIds,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] string? seriesTimerId,
             [FromQuery] Guid? librarySeriesId,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -570,8 +572,7 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ChannelIds = RequestHelpers.Split(channelIds, ',', true)
-                    .Select(i => new Guid(i)).ToArray(),
+                ChannelIds = channelIds,
                 HasAired = hasAired,
                 IsAiring = isAiring,
                 EnableTotalRecordCount = enableTotalRecordCount,
@@ -588,8 +589,8 @@ namespace Jellyfin.Api.Controllers
                 IsKids = isKids,
                 IsSports = isSports,
                 SeriesTimerId = seriesTimerId,
-                Genres = RequestHelpers.Split(genres, ',', true),
-                GenreIds = RequestHelpers.GetGuids(genreIds)
+                Genres = genres,
+                GenreIds = genreIds
             };
 
             if (librarySeriesId != null && !librarySeriesId.Equals(Guid.Empty))
@@ -602,8 +603,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
@@ -626,8 +626,7 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ChannelIds = RequestHelpers.Split(body.ChannelIds, ',', true)
-                    .Select(i => new Guid(i)).ToArray(),
+                ChannelIds = body.ChannelIds,
                 HasAired = body.HasAired,
                 IsAiring = body.IsAiring,
                 EnableTotalRecordCount = body.EnableTotalRecordCount,
@@ -644,8 +643,8 @@ namespace Jellyfin.Api.Controllers
                 IsKids = body.IsKids,
                 IsSports = body.IsSports,
                 SeriesTimerId = body.SeriesTimerId,
-                Genres = RequestHelpers.Split(body.Genres, ',', true),
-                GenreIds = RequestHelpers.GetGuids(body.GenreIds)
+                Genres = body.Genres,
+                GenreIds = body.GenreIds
             };
 
             if (!body.LibrarySeriesId.Equals(Guid.Empty))
@@ -658,8 +657,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(body.Fields)
+            var dtoOptions = new DtoOptions { Fields = body.Fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
@@ -681,7 +679,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="genreIds">The genres to return guide information for.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="enableUserData">Optional. include user data.</param>
         /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
         /// <response code="200">Recommended epgs returned.</response>
@@ -701,9 +699,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSports,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
-            [FromQuery] string? genreIds,
-            [FromQuery] string? fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -722,11 +720,10 @@ namespace Jellyfin.Api.Controllers
                 IsNews = isNews,
                 IsSports = isSports,
                 EnableTotalRecordCount = enableTotalRecordCount,
-                GenreIds = RequestHelpers.GetGuids(genreIds)
+                GenreIds = genreIds
             };
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             return _liveTvManager.GetRecommendedPrograms(query, dtoOptions, CancellationToken.None);
@@ -743,7 +740,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseItemDto>> GetProgram(
-            [FromRoute] string programId,
+            [FromRoute, Required] string programId,
             [FromQuery] Guid? userId)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -764,7 +761,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteRecording([FromRoute] Guid recordingId)
+        public ActionResult DeleteRecording([FromRoute, Required] Guid recordingId)
         {
             AssertUserCanManageLiveTv();
 
@@ -791,7 +788,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Timers/{timerId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> CancelTimer([FromRoute] string timerId)
+        public async Task<ActionResult> CancelTimer([FromRoute, Required] string timerId)
         {
             AssertUserCanManageLiveTv();
             await _liveTvManager.CancelTimer(timerId).ConfigureAwait(false);
@@ -809,7 +806,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
-        public async Task<ActionResult> UpdateTimer([FromRoute] string timerId, [FromBody] TimerInfoDto timerInfo)
+        public async Task<ActionResult> UpdateTimer([FromRoute, Required] string timerId, [FromBody] TimerInfoDto timerInfo)
         {
             AssertUserCanManageLiveTv();
             await _liveTvManager.UpdateTimer(timerInfo, CancellationToken.None).ConfigureAwait(false);
@@ -843,7 +840,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<SeriesTimerInfoDto>> GetSeriesTimer([FromRoute] string timerId)
+        public async Task<ActionResult<SeriesTimerInfoDto>> GetSeriesTimer([FromRoute, Required] string timerId)
         {
             var timer = await _liveTvManager.GetSeriesTimer(timerId, CancellationToken.None).ConfigureAwait(false);
             if (timer == null)
@@ -883,7 +880,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("SeriesTimers/{timerId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> CancelSeriesTimer([FromRoute] string timerId)
+        public async Task<ActionResult> CancelSeriesTimer([FromRoute, Required] string timerId)
         {
             AssertUserCanManageLiveTv();
             await _liveTvManager.CancelSeriesTimer(timerId).ConfigureAwait(false);
@@ -901,7 +898,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
-        public async Task<ActionResult> UpdateSeriesTimer([FromRoute] string timerId, [FromBody] SeriesTimerInfoDto seriesTimerInfo)
+        public async Task<ActionResult> UpdateSeriesTimer([FromRoute, Required] string timerId, [FromBody] SeriesTimerInfoDto seriesTimerInfo)
         {
             AssertUserCanManageLiveTv();
             await _liveTvManager.UpdateSeriesTimer(seriesTimerInfo, CancellationToken.None).ConfigureAwait(false);
@@ -933,7 +930,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Obsolete("This endpoint is obsolete.")]
-        public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute] Guid? groupId)
+        public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute, Required] Guid groupId)
         {
             return NotFound();
         }
@@ -1014,10 +1011,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool validateListings = false,
             [FromQuery] bool validateLogin = false)
         {
-            using var sha = SHA1.Create();
             if (!string.IsNullOrEmpty(pw))
             {
-                listingsProviderInfo.Password = Hex.Encode(sha.ComputeHash(Encoding.UTF8.GetBytes(pw)));
+                using var sha = SHA1.Create();
+                // TODO: remove ToLower when Convert.ToHexString supports lowercase
+                // Schedules Direct requires the hex to be lowercase
+                listingsProviderInfo.Password = Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(pw))).ToLowerInvariant();
             }
 
             return await _liveTvManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);
@@ -1067,12 +1066,13 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("ListingProviders/SchedulesDirect/Countries")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile(MediaTypeNames.Application.Json)]
         public async Task<ActionResult> GetSchedulesDirectCountries()
         {
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient(NamedClient.Default);
             // https://json.schedulesdirect.org/20141201/available/countries
             // Can't dispose the response as it's required up the call chain.
-            var response = await client.GetAsync("https://json.schedulesdirect.org/20141201/available/countries")
+            var response = await client.GetAsync(new Uri("https://json.schedulesdirect.org/20141201/available/countries"))
                 .ConfigureAwait(false);
 
             return File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), MediaTypeNames.Application.Json);
@@ -1119,20 +1119,15 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Set channel mappings.
         /// </summary>
-        /// <param name="providerId">Provider id.</param>
-        /// <param name="tunerChannelId">Tuner channel id.</param>
-        /// <param name="providerChannelId">Provider channel id.</param>
+        /// <param name="setChannelMappingDto">The set channel mapping dto.</param>
         /// <response code="200">Created channel mapping returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the created channel mapping.</returns>
         [HttpPost("ChannelMappings")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping(
-            [FromQuery] string? providerId,
-            [FromQuery] string? tunerChannelId,
-            [FromQuery] string? providerChannelId)
+        public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping([FromBody, Required] SetChannelMappingDto setChannelMappingDto)
         {
-            return await _liveTvManager.SetChannelMapping(providerId, tunerChannelId, providerChannelId).ConfigureAwait(false);
+            return await _liveTvManager.SetChannelMapping(setChannelMappingDto.ProviderId, setChannelMappingDto.TunerChannelId, setChannelMappingDto.ProviderChannelId).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1154,7 +1149,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="newDevicesOnly">Only discover new tuners.</param>
         /// <response code="200">Tuners returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
-        [HttpGet("Tuners/Discvover")]
+        [HttpGet("Tuners/Discvover", Name = "DiscvoverTuners")]
+        [HttpGet("Tuners/Discover")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<TunerHostInfo>>> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
@@ -1175,7 +1171,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("LiveRecordings/{recordingId}/stream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetLiveRecordingFile([FromRoute] string recordingId)
+        [ProducesVideoFile]
+        public async Task<ActionResult> GetLiveRecordingFile([FromRoute, Required] string recordingId)
         {
             var path = _liveTvManager.GetEmbyTvActiveRecordingPath(recordingId);
 
@@ -1205,7 +1202,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("LiveStreamFiles/{streamId}/stream.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetLiveStreamFile([FromRoute] string streamId, [FromRoute] string container)
+        [ProducesVideoFile]
+        public async Task<ActionResult> GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
         {
             var liveStreamInfo = await _mediaSourceManager.GetDirectStreamProviderByUniqueId(streamId, CancellationToken.None).ConfigureAwait(false);
             if (liveStreamInfo == null)
@@ -1213,11 +1211,8 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await using var memoryStream = new MemoryStream();
-            await new ProgressiveFileCopier(liveStreamInfo, null, _transcodingJobHelper, CancellationToken.None)
-                .WriteToAsync(memoryStream, CancellationToken.None)
-                .ConfigureAwait(false);
-            return File(memoryStream, MimeTypes.GetMimeType("file." + container));
+            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetFilePath(), null, _transcodingJobHelper);
+            return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file." + container));
         }
 
         private void AssertUserCanManageLiveTv()

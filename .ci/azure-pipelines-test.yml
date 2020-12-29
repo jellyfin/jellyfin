@@ -10,7 +10,7 @@ parameters:
   default: "tests/**/*Tests.csproj"
 - name: DotNetSdkVersion
   type: string
-  default: 3.1.100
+  default: 5.0.100
 
 jobs:
   - job: Test
@@ -30,11 +30,11 @@ jobs:
 
       # This is required for the SonarCloud analyzer
       - task: UseDotNet@2
-        displayName: "Install .NET Core SDK 2.1"
+        displayName: "Install .NET SDK 5.x"
         condition: eq(variables['ImageName'], 'ubuntu-latest')
         inputs:
           packageType: sdk
-          version: '2.1.805'
+          version: '5.x'
 
       - task: UseDotNet@2
         displayName: "Update DotNet"
@@ -56,7 +56,7 @@ jobs:
         inputs:
           command: "test"
           projects: ${{ parameters.TestProjects }}
-          arguments: '--configuration Release --collect:"XPlat Code Coverage" --settings tests/coverletArgs.runsettings --verbosity minimal "-p:GenerateDocumentationFile=False"'
+          arguments: '--configuration Release --collect:"XPlat Code Coverage" --settings tests/coverletArgs.runsettings --verbosity minimal'
           publishTestResults: true
           testRunTitle: $(Agent.JobName)
           workingDirectory: "$(Build.SourcesDirectory)"
@@ -74,7 +74,6 @@ jobs:
       - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
         displayName: 'Run ReportGenerator'
-        enabled: false
         inputs:
           reports: "$(Agent.TempDirectory)/**/coverage.cobertura.xml"
           targetdir: "$(Agent.TempDirectory)/merged/"
@@ -84,10 +83,16 @@ jobs:
       - task: PublishCodeCoverageResults@1
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
         displayName: 'Publish Code Coverage'
-        enabled: false
         inputs:
           codeCoverageTool: "cobertura"
           #summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml' # !!THIS IS FOR V2
           summaryFileLocation: "$(Agent.TempDirectory)/merged/**.xml"
           pathToSources: $(Build.SourcesDirectory)
           failIfCoverageEmpty: true
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish OpenAPI Artifact'
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+        inputs:
+          targetPath: "tests/Jellyfin.Api.Tests/bin/Release/net5.0/openapi.json"
+          artifactName: 'OpenAPI Spec'

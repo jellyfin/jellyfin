@@ -37,7 +37,9 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
         }
 
-        public async Task<ItemUpdateType> Probe<T>(T item, MetadataRefreshOptions options,
+        public async Task<ItemUpdateType> Probe<T>(
+            T item,
+            MetadataRefreshOptions options,
             CancellationToken cancellationToken)
             where T : Audio
         {
@@ -52,19 +54,21 @@ namespace MediaBrowser.Providers.MediaInfo
                     protocol = _mediaSourceManager.GetPathProtocol(path);
                 }
 
-                var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                {
-                    MediaType = DlnaProfileType.Audio,
-                    MediaSource = new MediaSourceInfo
+                var result = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
                     {
-                        Path = path,
-                        Protocol = protocol
-                    }
-                }, cancellationToken).ConfigureAwait(false);
+                        MediaType = DlnaProfileType.Audio,
+                        MediaSource = new MediaSourceInfo
+                        {
+                            Path = path,
+                            Protocol = protocol
+                        }
+                    },
+                    cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Fetch(item, cancellationToken, result);
+                Fetch(item, result, cancellationToken);
             }
 
             return ItemUpdateType.MetadataImport;
@@ -74,10 +78,9 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Fetches the specified audio.
         /// </summary>
         /// <param name="audio">The audio.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="mediaInfo">The media information.</param>
-        /// <returns>Task.</returns>
-        protected void Fetch(Audio audio, CancellationToken cancellationToken, Model.MediaInfo.MediaInfo mediaInfo)
+        /// <param name="cancellationToken">The cancellation token.</param>
+        protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
         {
             var mediaStreams = mediaInfo.MediaStreams;
 

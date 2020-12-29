@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -29,6 +30,11 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
         }
 
+        public string Name => "Screen Grabber";
+
+        // Make sure this comes after internet image providers
+        public int Order => 100;
+
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType> { ImageType.Primary };
@@ -45,7 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // No support for this
-            if (video.VideoType == VideoType.Iso || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.BluRay)
+            if (video.VideoType == VideoType.Dvd)
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
@@ -64,11 +70,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var protocol = item.PathProtocol ?? MediaProtocol.File;
 
-            var inputPath = MediaEncoderHelpers.GetInputArgument(
-                _fileSystem,
-                item.Path,
-                null,
-                item.GetPlayableStreamFileNames());
+            var inputPath = item.Path;
 
             var mediaStreams =
                 item.GetMediaStreams();
@@ -102,7 +104,14 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
+                MediaSourceInfo mediaSource = new MediaSourceInfo
+                {
+                    VideoType = item.VideoType,
+                    IsoType = item.IsoType,
+                    Protocol = item.PathProtocol.Value,
+                };
+
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -114,8 +123,14 @@ namespace MediaBrowser.Providers.MediaInfo
                                       : TimeSpan.FromSeconds(10);
 
                 var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+                var mediaSource = new MediaSourceInfo
+                {
+                    VideoType = item.VideoType,
+                    IsoType = item.IsoType,
+                    Protocol = item.PathProtocol.Value,
+                };
 
-                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, protocol, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
             }
 
             return new DynamicImageResponse
@@ -126,8 +141,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 Protocol = MediaProtocol.File
             };
         }
-
-        public string Name => "Screen Grabber";
 
         public bool Supports(BaseItem item)
         {
@@ -150,7 +163,5 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return false;
         }
-        // Make sure this comes after internet image providers
-        public int Order => 100;
     }
 }

@@ -11,29 +11,6 @@ namespace MediaBrowser.Common.Updates
 {
     public interface IInstallationManager : IDisposable
     {
-        event EventHandler<InstallationInfo> PackageInstalling;
-
-        event EventHandler<InstallationInfo> PackageInstallationCompleted;
-
-        event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
-
-        event EventHandler<InstallationInfo> PackageInstallationCancelled;
-
-        /// <summary>
-        /// Occurs when a plugin is uninstalled.
-        /// </summary>
-        event EventHandler<IPlugin> PluginUninstalled;
-
-        /// <summary>
-        /// Occurs when a plugin is updated.
-        /// </summary>
-        event EventHandler<InstallationInfo> PluginUpdated;
-
-        /// <summary>
-        /// Occurs when a plugin is installed.
-        /// </summary>
-        event EventHandler<InstallationInfo> PluginInstalled;
-
         /// <summary>
         /// Gets the completed installations.
         /// </summary>
@@ -42,10 +19,11 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// Parses a plugin manifest at the supplied URL.
         /// </summary>
+        /// <param name="manifestName">Name of the repository.</param>
         /// <param name="manifest">The URL to query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
-        Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default);
+        Task<IList<PackageInfo>> GetPackages(string manifestName, string manifest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all available packages.
@@ -60,11 +38,13 @@ namespace MediaBrowser.Common.Updates
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name of the plugin.</param>
         /// <param name="guid">The id of the plugin.</param>
+        /// <param name="specificVersion">The version of the plugin.</param>
         /// <returns>All plugins matching the requirements.</returns>
         IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
-            Guid guid = default);
+            Guid guid = default,
+            Version specificVersion = null);
 
         /// <summary>
         /// Returns all compatible versions ordered from newest to oldest.
@@ -73,12 +53,14 @@ namespace MediaBrowser.Common.Updates
         /// <param name="name">The name.</param>
         /// <param name="guid">The guid of the plugin.</param>
         /// <param name="minVersion">The minimum required version of the plugin.</param>
+        /// <param name="specificVersion">The specific version of the plugin to install.</param>
         /// <returns>All compatible versions ordered from newest to oldest.</returns>
         IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null);
+            Version minVersion = null,
+            Version specificVersion = null);
 
         /// <summary>
         /// Returns the available plugin updates.

@@ -1,17 +1,19 @@
-using System;
-using System.ComponentModel;
 using System.Net.Http.Headers;
-using Jellyfin.Api.TypeConverters;
+using System.Net.Mime;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
-using Jellyfin.Server.Models;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
 
@@ -50,9 +52,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(
-                _serverConfigurationManager.Configuration.BaseUrl.TrimStart('/'),
-                _serverApplicationHost.GetApiPluginAssemblies());
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration().KnownProxies);
 
             services.AddJellyfinApiSwagger();
 
@@ -64,10 +64,16 @@ namespace Jellyfin.Server
             var productHeader = new ProductInfoHeaderValue(
                 _serverApplicationHost.Name.Replace(' ', '-'),
                 _serverApplicationHost.ApplicationVersionString);
+            var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
+            var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
+            var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
             services
                 .AddHttpClient(NamedClient.Default, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
 
@@ -75,6 +81,8 @@ namespace Jellyfin.Server
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
 
@@ -87,61 +95,86 @@ namespace Jellyfin.Server
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <param name="env">The webhost environment.</param>
+        /// <param name="appConfig">The application config.</param>
         public void Configure(
             IApplicationBuilder app,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IConfiguration appConfig)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseMiddleware<ExceptionMiddleware>();
-
-            app.UseMiddleware<ResponseTimeMiddleware>();
-
-            app.UseWebSockets();
-
-            app.UseResponseCompression();
-
-            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
-
-            if (_serverConfigurationManager.Configuration.RequireHttps
-                && _serverApplicationHost.ListenWithHttps)
-            {
-                app.UseHttpsRedirection();
-            }
-
-            app.UseStaticFiles();
-            app.UseAuthentication();
-            app.UseJellyfinApiSwagger(_serverConfigurationManager);
-            app.UseRouting();
-            app.UseAuthorization();
-            if (_serverConfigurationManager.Configuration.EnableMetrics)
-            {
-                // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
-                app.UseHttpMetrics();
-            }
-
-            app.UseLanFiltering();
-            app.UseIpBasedAccessValidation();
             app.UseBaseUrlRedirection();
-            app.UseWebSocketHandler();
-            app.UseServerStartupMessage();
 
-            app.UseEndpoints(endpoints =>
+            // Wrap rest of configuration so everything only listens on BaseUrl.
+            var config = _serverConfigurationManager.GetNetworkConfiguration();
+            app.Map(config.BaseUrl, mainApp =>
             {
-                endpoints.MapControllers();
-                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                if (env.IsDevelopment())
                 {
-                    endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
+                    mainApp.UseDeveloperExceptionPage();
                 }
 
-                endpoints.MapHealthChecks(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/health");
-            });
+                mainApp.UseForwardedHeaders();
+                mainApp.UseMiddleware<ExceptionMiddleware>();
 
-            // Add type descriptor for legacy datetime parsing.
-            TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));
+                mainApp.UseMiddleware<ResponseTimeMiddleware>();
+
+                mainApp.UseWebSockets();
+
+                mainApp.UseResponseCompression();
+
+                mainApp.UseCors();
+
+                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
+                {
+                    mainApp.UseHttpsRedirection();
+                }
+
+                // This must be injected before any path related middleware.
+                mainApp.UsePathTrim();
+                mainApp.UseStaticFiles();
+                if (appConfig.HostWebClient())
+                {
+                    var extensionProvider = new FileExtensionContentTypeProvider();
+
+                    // subtitles octopus requires .data, .mem files.
+                    extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
+                    extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
+                    mainApp.UseStaticFiles(new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        RequestPath = "/web",
+                        ContentTypeProvider = extensionProvider
+                    });
+
+                    mainApp.UseRobotsRedirection();
+                }
+
+                mainApp.UseAuthentication();
+                mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseRouting();
+                mainApp.UseAuthorization();
+
+                mainApp.UseLanFiltering();
+                mainApp.UseIpBasedAccessValidation();
+                mainApp.UseWebSocketHandler();
+                mainApp.UseServerStartupMessage();
+
+                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                {
+                    // Must be registered after any middleware that could change HTTP response codes or the data will be bad
+                    mainApp.UseHttpMetrics();
+                }
+
+                mainApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    if (_serverConfigurationManager.Configuration.EnableMetrics)
+                    {
+                        endpoints.MapMetrics("/metrics");
+                    }
+
+                    endpoints.MapHealthChecks("/health");
+                });
+            });
         }
     }
 }

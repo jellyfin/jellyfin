@@ -7,6 +7,7 @@
  - [anthonylavado](https://github.com/anthonylavado)
  - [Artiume](https://github.com/Artiume)
  - [AThomsen](https://github.com/AThomsen)
+ - [barongreenback](https://github.com/BaronGreenback)
  - [barronpm](https://github.com/barronpm)
  - [bilde2910](https://github.com/bilde2910)
  - [bfayers](https://github.com/bfayers)
@@ -57,6 +58,7 @@
  - [Larvitar](https://github.com/Larvitar)
  - [LeoVerto](https://github.com/LeoVerto)
  - [Liggy](https://github.com/Liggy)
+ - [lmaonator](https://github.com/lmaonator)
  - [LogicalPhallacy](https://github.com/LogicalPhallacy)
  - [loli10K](https://github.com/loli10K)
  - [lostmypillow](https://github.com/lostmypillow)
@@ -77,6 +79,7 @@
  - [Nickbert7](https://github.com/Nickbert7)
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
+ - [OancaAndrei](https://github.com/OancaAndrei)
  - [oddstr13](https://github.com/oddstr13)
  - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
@@ -102,6 +105,8 @@
  - [sl1288](https://github.com/sl1288)
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [sparky8251](https://github.com/sparky8251)
+ - [spookbits](https://github.com/spookbits)
+ - [ssenart] (https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
  - [stevehayles](https://github.com/stevehayles)
  - [SuperSandro2000](https://github.com/SuperSandro2000)
@@ -134,6 +139,8 @@
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
+ - [nielsvanvelzen](https://github.com/nielsvanvelzen)
+ - [skyfrk](https://github.com/skyfrk)
 
 # Emby Contributors
 
@@ -197,3 +204,4 @@
  - [tikuf](https://github.com/tikuf/)
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
+ - [olsh](https://github.com/olsh)

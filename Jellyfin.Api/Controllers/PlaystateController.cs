@@ -1,8 +1,10 @@
-﻿using System;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -71,9 +73,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> MarkPlayedItem(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
-            [FromQuery] DateTime? datePlayed)
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
+            [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
         {
             var user = _userManager.GetUserById(userId);
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -96,7 +98,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpDelete("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -195,8 +197,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackStart(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? mediaSourceId,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
@@ -245,8 +247,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackProgress(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? mediaSourceId,
             [FromQuery] long? positionTicks,
             [FromQuery] int? audioStreamIndex,
@@ -297,8 +299,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackStopped(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? nextMediaType,
             [FromQuery] long? positionTicks,

@@ -56,13 +56,11 @@ namespace Emby.Server.Implementations.TV
                 return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
             }
 
-            var parentIdGuid = string.IsNullOrEmpty(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
-
             BaseItem[] parents;
 
-            if (parentIdGuid.HasValue)
+            if (request.ParentId.HasValue)
             {
-                var parent = _libraryManager.GetItemById(parentIdGuid.Value);
+                var parent = _libraryManager.GetItemById(request.ParentId.Value);
 
                 if (parent != null)
                 {
@@ -77,8 +75,7 @@ namespace Emby.Server.Implementations.TV
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                    .Where(i => i is Folder)
-                   .Where(i => !user.GetPreference(PreferenceKind.LatestItemExcludes)
-                       .Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
+                   .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes).Contains(i.Id))
                    .ToArray();
             }
 
@@ -121,7 +118,7 @@ namespace Emby.Server.Implementations.TV
                 .GetItemList(
                     new InternalItemsQuery(user)
                     {
-                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        IncludeItemTypes = new[] { nameof(Episode) },
                         OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
@@ -146,28 +143,10 @@ namespace Emby.Server.Implementations.TV
             var allNextUp = seriesKeys
                 .Select(i => GetNextUp(i, currentUser, dtoOptions));
 
-            // allNextUp = allNextUp.OrderByDescending(i => i.Item1);
-
-            // If viewing all next up for all series, remove first episodes
-            // But if that returns empty, keep those first episodes (avoid completely empty view)
-            var alwaysEnableFirstEpisode = !string.IsNullOrEmpty(request.SeriesId);
-            var anyFound = false;
-
             return allNextUp
                 .Where(i =>
                 {
-                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
-                    {
-                        anyFound = true;
-                        return true;
-                    }
-
-                    if (!anyFound && i.Item1 == DateTime.MinValue)
-                    {
-                        return true;
-                    }
-
-                    return false;
+                    return i.Item1 != DateTime.MinValue;
                 })
                 .Select(i => i.Item2())
                 .Where(i => i != null);
@@ -210,11 +189,11 @@ namespace Emby.Server.Implementations.TV
 
             Func<Episode> getEpisode = () =>
             {
-                return _libraryManager.GetItemList(new InternalItemsQuery(user)
+                var nextEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
-                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    IncludeItemTypes = new[] { nameof(Episode) },
                     OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
                     Limit = 1,
                     IsPlayed = false,
@@ -223,6 +202,18 @@ namespace Emby.Server.Implementations.TV
                     MinSortName = lastWatchedEpisode?.SortName,
                     DtoOptions = dtoOptions
                 }).Cast<Episode>().FirstOrDefault();
+
+                if (nextEpisode != null)
+                {
+                    var userData = _userDataManager.GetUserData(user, nextEpisode);
+
+                    if (userData.PlaybackPositionTicks > 0)
+                    {
+                        return null;
+                    }
+                }
+
+                return nextEpisode;
             };
 
             if (lastWatchedEpisode != null)

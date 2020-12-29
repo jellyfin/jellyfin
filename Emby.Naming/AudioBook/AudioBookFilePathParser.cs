@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-
-using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -8,23 +5,30 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.AudioBook
 {
+    /// <summary>
+    /// Parser class to extract part and/or chapter number from audiobook filename.
+    /// </summary>
     public class AudioBookFilePathParser
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioBookFilePathParser"/> class.
+        /// </summary>
+        /// <param name="options">Naming options containing AudioBookPartsExpressions.</param>
         public AudioBookFilePathParser(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Based on regex determines if filename includes part/chapter number.
+        /// </summary>
+        /// <param name="path">Path to audiobook file.</param>
+        /// <returns>Returns <see cref="AudioBookFilePathParser"/> object.</returns>
         public AudioBookFilePathParserResult Parse(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            var result = new AudioBookFilePathParserResult();
+            AudioBookFilePathParserResult result = default;
             var fileName = Path.GetFileNameWithoutExtension(path);
             foreach (var expression in _options.AudioBookPartsExpressions)
             {
@@ -50,27 +54,12 @@ namespace Emby.Naming.AudioBook
                         {
                             if (int.TryParse(value.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
                             {
-                                result.ChapterNumber = intValue;
+                                result.PartNumber = intValue;
                             }
                         }
                     }
                 }
             }
-
-            /*var matches = _iRegexProvider.GetRegex("\\d+", RegexOptions.IgnoreCase).Matches(fileName);
-            if (matches.Count > 0)
-            {
-                if (!result.ChapterNumber.HasValue)
-                {
-                    result.ChapterNumber = int.Parse(matches[0].Groups[0].Value);
-                }
-
-                if (matches.Count > 1)
-                {
-                    result.PartNumber = int.Parse(matches[matches.Count - 1].Groups[0].Value);
-                }
-            }*/
-            result.Success = result.PartNumber.HasValue || result.ChapterNumber.HasValue;
 
             return result;
         }

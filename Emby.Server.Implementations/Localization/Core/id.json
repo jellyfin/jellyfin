@@ -19,8 +19,7 @@
     "HeaderFavoriteEpisodes": "Episode Favorit",
     "HeaderFavoriteArtists": "Artis Favorit",
     "HeaderFavoriteAlbums": "Album Favorit",
-    "HeaderContinueWatching": "Lanjutkan Menonton",
-    "HeaderCameraUploads": "Unggahan Kamera",
+    "HeaderContinueWatching": "Lanjut Menonton",
     "HeaderAlbumArtists": "Album Artis",
     "Genres": "Aliran",
     "Folders": "Folder",
@@ -113,5 +112,10 @@
     "TaskRefreshPeople": "Muat ulang Orang",
     "TaskCleanLogsDescription": "Menghapus file log yang lebih dari {0} hari.",
     "TaskCleanLogs": "Bersihkan Log Direktori",
-    "TaskRefreshLibrary": "Pindai Pustaka Media"
+    "TaskRefreshLibrary": "Pindai Pustaka Media",
+    "TaskCleanActivityLogDescription": "Menghapus log aktivitas yang lebih tua dari umur yang dikonfigurasi.",
+    "TaskCleanActivityLog": "Bersihkan Log Aktivitas",
+    "Undefined": "Tidak terdefinisi",
+    "Forced": "Dipaksa",
+    "Default": "Bawaan"
 }

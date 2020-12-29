@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -22,15 +23,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
     {
+        private const string ApiKey = "195003";
+        public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
+
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IJsonSerializer _json;
-
-        public static AudioDbArtistProvider Current;
-
-        private const string ApiKey = "195003";
-        public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
 
         public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json)
         {
@@ -40,6 +39,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             _json = json;
             Current = this;
         }
+
+        public static AudioDbArtistProvider Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "TheAudioDB";
@@ -56,13 +57,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
-
-            // TODO maybe remove when artist metadata can be disabled
-            if (!Plugin.Instance.Configuration.Enable)
-            {
-                return result;
-            }
-
             var id = info.GetMusicBrainzArtistId();
 
             if (!string.IsNullOrWhiteSpace(id))
@@ -154,8 +148,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
-            using var response = await _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 

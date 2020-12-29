@@ -9,7 +9,11 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.SubtitleDtos;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -20,6 +24,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Subtitles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +38,7 @@ namespace Jellyfin.Api.Controllers
     [Route("")]
     public class SubtitleController : BaseJellyfinApiController
     {
+        private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ISubtitleEncoder _subtitleEncoder;
@@ -45,6 +51,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleController"/> class.
         /// </summary>
+        /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
         /// <param name="subtitleManager">Instance of <see cref="ISubtitleManager"/> interface.</param>
         /// <param name="subtitleEncoder">Instance of <see cref="ISubtitleEncoder"/> interface.</param>
@@ -54,6 +61,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of <see cref="ILogger{SubtitleController}"/> interface.</param>
         public SubtitleController(
+            IServerConfigurationManager serverConfigurationManager,
             ILibraryManager libraryManager,
             ISubtitleManager subtitleManager,
             ISubtitleEncoder subtitleEncoder,
@@ -63,6 +71,7 @@ namespace Jellyfin.Api.Controllers
             IAuthorizationContext authContext,
             ILogger<SubtitleController> logger)
         {
+            _serverConfigurationManager = serverConfigurationManager;
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _subtitleEncoder = subtitleEncoder;
@@ -86,8 +95,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<Task> DeleteSubtitle(
-            [FromRoute] Guid itemId,
-            [FromRoute] int index)
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] int index)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -112,8 +121,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
-            [FromRoute] Guid itemId,
-            [FromRoute, Required] string? language,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string language,
             [FromQuery] bool? isPerfectMatch)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
@@ -132,8 +141,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DownloadRemoteSubtitles(
-            [FromRoute] Guid itemId,
-            [FromRoute, Required] string? subtitleId)
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string subtitleId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -162,7 +171,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Application.Octet)]
-        public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string? id)
+        [ProducesFile("text/*")]
+        public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string id)
         {
             var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
 
@@ -183,17 +193,17 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
         [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
-        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks?}/Stream.{format}", Name = "GetSubtitle_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile("text/*")]
         public async Task<ActionResult> GetSubtitle(
             [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string? mediaSourceId,
+            [FromRoute, Required] string mediaSourceId,
             [FromRoute, Required] int index,
-            [FromRoute, Required] string? format,
+            [FromRoute, Required] string format,
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false,
-            [FromRoute] long startPositionTicks = 0)
+            [FromQuery] long startPositionTicks = 0)
         {
             if (string.Equals(format, "js", StringComparison.OrdinalIgnoreCase))
             {
@@ -211,8 +221,7 @@ namespace Jellyfin.Api.Controllers
                 var subtitleStream = mediaSource.MediaStreams
                     .First(i => i.Type == MediaStreamType.Subtitle && i.Index == index);
 
-                FileStream stream = new FileStream(subtitleStream.Path, FileMode.Open, FileAccess.Read);
-                return File(stream, MimeTypes.GetMimeType(subtitleStream.Path));
+                return PhysicalFile(subtitleStream.Path, MimeTypes.GetMimeType(subtitleStream.Path));
             }
 
             if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)
@@ -240,6 +249,43 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
+        /// Gets subtitles in a specified format.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="mediaSourceId">The media source id.</param>
+        /// <param name="index">The subtitle stream index.</param>
+        /// <param name="startPositionTicks">Optional. The start position of the subtitle in ticks.</param>
+        /// <param name="format">The format of the returned subtitle.</param>
+        /// <param name="endPositionTicks">Optional. The end position of the subtitle in ticks.</param>
+        /// <param name="copyTimestamps">Optional. Whether to copy the timestamps.</param>
+        /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
+        /// <response code="200">File returned.</response>
+        /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
+        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks}/Stream.{format}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile("text/*")]
+        public Task<ActionResult> GetSubtitleWithTicks(
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] string mediaSourceId,
+            [FromRoute, Required] int index,
+            [FromRoute, Required] long startPositionTicks,
+            [FromRoute, Required] string format,
+            [FromQuery] long? endPositionTicks,
+            [FromQuery] bool copyTimestamps = false,
+            [FromQuery] bool addVttTimeMap = false)
+        {
+            return GetSubtitle(
+                itemId,
+                mediaSourceId,
+                index,
+                format,
+                endPositionTicks,
+                copyTimestamps,
+                addVttTimeMap,
+                startPositionTicks);
+        }
+
+        /// <summary>
         /// Gets an HLS subtitle playlist.
         /// </summary>
         /// <param name="itemId">The item id.</param>
@@ -251,11 +297,12 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetSubtitlePlaylist(
-            [FromRoute] Guid itemId,
-            [FromRoute] int index,
-            [FromRoute] string? mediaSourceId,
+            [FromRoute, Required] Guid itemId,
+            [FromRoute, Required] int index,
+            [FromRoute, Required] string mediaSourceId,
             [FromQuery, Required] int segmentLength)
         {
             var item = (Video)_libraryManager.GetItemById(itemId);
@@ -278,7 +325,8 @@ namespace Jellyfin.Api.Controllers
             var builder = new StringBuilder();
             builder.AppendLine("#EXTM3U")
                 .Append("#EXT-X-TARGETDURATION:")
-                .AppendLine(segmentLength.ToString(CultureInfo.InvariantCulture))
+                .Append(segmentLength)
+                .AppendLine()
                 .AppendLine("#EXT-X-VERSION:3")
                 .AppendLine("#EXT-X-MEDIA-SEQUENCE:0")
                 .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
@@ -293,8 +341,9 @@ namespace Jellyfin.Api.Controllers
                 var lengthTicks = Math.Min(remaining, segmentLengthTicks);
 
                 builder.Append("#EXTINF:")
-                    .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture))
-                    .AppendLine(",");
+                    .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds)
+                    .Append(',')
+                    .AppendLine();
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
@@ -312,6 +361,34 @@ namespace Jellyfin.Api.Controllers
 
             builder.AppendLine("#EXT-X-ENDLIST");
             return File(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
+        }
+
+        /// <summary>
+        /// Upload an external subtitle file.
+        /// </summary>
+        /// <param name="itemId">The item the subtitle belongs to.</param>
+        /// <param name="body">The request body.</param>
+        /// <response code="204">Subtitle uploaded.</response>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
+        [HttpPost("Videos/{itemId}/Subtitles")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> UploadSubtitle(
+            [FromRoute, Required] Guid itemId,
+            [FromBody, Required] UploadSubtitleDto body)
+        {
+            var video = (Video)_libraryManager.GetItemById(itemId);
+            var data = Convert.FromBase64String(body.Data);
+            await using var memoryStream = new MemoryStream(data);
+            await _subtitleManager.UploadSubtitle(
+                video,
+                new SubtitleResponse
+                {
+                    Format = body.Format,
+                    Language = body.Language,
+                    IsForced = body.IsForced,
+                    Stream = memoryStream
+                }).ConfigureAwait(false);
+            return NoContent();
         }
 
         /// <summary>
@@ -345,6 +422,97 @@ namespace Jellyfin.Api.Controllers
                 endPositionTicks ?? 0,
                 copyTimestamps,
                 CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets a list of available fallback font files.
+        /// </summary>
+        /// <response code="200">Information retrieved.</response>
+        /// <returns>An array of <see cref="FontFile"/> with the available font files.</returns>
+        [HttpGet("FallbackFont/Fonts")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IEnumerable<FontFile> GetFallbackFontList()
+        {
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                var files = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
+                var fontFiles = files
+                    .Select(i => new FontFile
+                    {
+                        Name = i.Name,
+                        Size = i.Length,
+                        DateCreated = _fileSystem.GetCreationTimeUtc(i),
+                        DateModified = _fileSystem.GetLastWriteTimeUtc(i)
+                    })
+                    .OrderBy(i => i.Size)
+                    .ThenBy(i => i.Name)
+                    .ThenByDescending(i => i.DateModified)
+                    .ThenByDescending(i => i.DateCreated);
+                // max total size 20M
+                const int MaxSize = 20971520;
+                var sizeCounter = 0L;
+                foreach (var fontFile in fontFiles)
+                {
+                    sizeCounter += fontFile.Size;
+                    if (sizeCounter >= MaxSize)
+                    {
+                        _logger.LogWarning("Some fonts will not be sent due to size limitations");
+                        yield break;
+                    }
+
+                    yield return fontFile;
+                }
+            }
+            else
+            {
+                _logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a fallback font file.
+        /// </summary>
+        /// <param name="name">The name of the fallback font file to get.</param>
+        /// <response code="200">Fallback font file retrieved.</response>
+        /// <returns>The fallback font file.</returns>
+        [HttpGet("FallbackFont/Fonts/{name}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesFile("font/*")]
+        public ActionResult GetFallbackFont([FromRoute, Required] string name)
+        {
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                var fontFile = _fileSystem.GetFiles(fallbackFontPath)
+                    .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+                var fileSize = fontFile?.Length;
+
+                if (fontFile != null && fileSize != null && fileSize > 0)
+                {
+                    _logger.LogDebug("Fallback font size is {fileSize} Bytes", fileSize);
+                    return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
+                }
+                else
+                {
+                    _logger.LogWarning("The selected font is null or empty");
+                }
+            }
+            else
+            {
+                _logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
+
+            // returning HTTP 204 will break the SubtitlesOctopus
+            return Ok();
         }
     }
 }

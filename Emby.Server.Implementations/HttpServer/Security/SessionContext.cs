@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             var authorization = _authContext.GetAuthorizationInfo(requestContext);
 
             var user = authorization.User;
-            return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.Request.RemoteIp(), user);
+            return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.GetNormalizedRemoteIp(), user);
         }
 
         public SessionInfo GetSession(object requestContext)
@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public User GetUser(object requestContext)
         {
-            return GetUser((HttpContext)requestContext);
+            return GetUser(((HttpRequest)requestContext).HttpContext);
         }
     }
 }

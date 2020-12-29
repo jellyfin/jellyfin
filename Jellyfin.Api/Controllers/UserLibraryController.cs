@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -70,7 +72,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the d item.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<BaseItemDto>> GetItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public async Task<ActionResult<BaseItemDto>> GetItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -93,7 +95,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the user's root folder.</returns>
         [HttpGet("Users/{userId}/Items/Root")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetRootFolder([FromRoute] Guid userId)
+        public ActionResult<BaseItemDto> GetRootFolder([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
             var item = _libraryManager.GetUserRootFolder();
@@ -110,7 +112,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the intros to play.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/Intros")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -138,7 +140,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpPost("Users/{userId}/FavoriteItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             return MarkFavorite(userId, itemId, true);
         }
@@ -152,7 +154,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpDelete("Users/{userId}/FavoriteItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             return MarkFavorite(userId, itemId, false);
         }
@@ -166,7 +168,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpDelete("Users/{userId}/Items/{itemId}/Rating")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             return UpdateUserItemRatingInternal(userId, itemId, null);
         }
@@ -181,7 +183,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpPost("Users/{userId}/Items/{itemId}/Rating")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId, [FromQuery] bool? likes)
+        public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery] bool? likes)
         {
             return UpdateUserItemRatingInternal(userId, itemId, likes);
         }
@@ -195,7 +197,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The items local trailers.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/LocalTrailers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -230,7 +232,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the special features.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/SpecialFeatures")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -250,8 +252,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">User id.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, SortName, Studios, Taglines.</param>
-        /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
+        /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
         /// <param name="isPlayed">Filter by items that are played, or not.</param>
         /// <param name="enableImages">Optional. include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. the max number of images to return, per image type.</param>
@@ -264,14 +266,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Items/Latest")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<BaseItemDto>> GetLatestMedia(
-            [FromRoute] Guid userId,
+            [FromRoute, Required] Guid userId,
             [FromQuery] Guid? parentId,
-            [FromQuery] string? fields,
-            [FromQuery] string? includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] int limit = 20,
             [FromQuery] bool groupItems = true)
@@ -286,8 +288,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
@@ -295,7 +296,7 @@ namespace Jellyfin.Api.Controllers
                 new LatestItemsQuery
                 {
                     GroupItems = groupItems,
-                    IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
+                    IncludeItemTypes = includeItemTypes,
                     IsPlayed = isPlayed,
                     Limit = limit,
                     ParentId = parentId ?? Guid.Empty,

@@ -83,7 +83,6 @@
     "Playlists": "Listas de Reprodução",
     "Photos": "Fotografias",
     "Movies": "Filmes",
-    "HeaderCameraUploads": "Carregamentos a partir da câmara",
     "FailedLoginAttemptWithUserName": "Tentativa de ligação falhada a partir de {0}",
     "DeviceOnlineWithName": "{0} está connectado",
     "DeviceOfflineWithName": "{0} desconectou-se",
@@ -113,5 +112,10 @@
     "TaskUpdatePluginsDescription": "Download e instala as atualizações para plug-ins configurados para atualização automática.",
     "TaskRefreshPeopleDescription": "Atualiza os metadados para atores e diretores na tua biblioteca de media.",
     "TaskRefreshPeople": "Atualizar pessoas",
-    "TaskRefreshLibraryDescription": "Pesquisa a tua biblioteca de media por novos ficheiros e atualiza os metadados."
+    "TaskRefreshLibraryDescription": "Pesquisa a tua biblioteca de media por novos ficheiros e atualiza os metadados.",
+    "TaskCleanActivityLog": "Limpar registo de atividade",
+    "Undefined": "Indefinido",
+    "Forced": "Forçado",
+    "Default": "Predefinição",
+    "TaskCleanActivityLogDescription": "Apaga itens no registro com idade acima do que é configurado."
 }

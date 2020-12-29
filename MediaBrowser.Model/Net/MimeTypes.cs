@@ -125,7 +125,7 @@ namespace MediaBrowser.Model.Net
             { ".wmv", "video/x-ms-wmv" },
 
             // Type audio
-            { ".aac", "audio/mp4" },
+            { ".aac", "audio/aac" },
             { ".ac3", "audio/ac3" },
             { ".ape", "audio/x-ape" },
             { ".dsf", "audio/dsf" },
@@ -177,7 +177,7 @@ namespace MediaBrowser.Model.Net
 
             var ext = Path.GetExtension(path);
 
-            if (_mimeTypeLookup.TryGetValue(ext, out string result))
+            if (_mimeTypeLookup.TryGetValue(ext, out string? result))
             {
                 return result;
             }
@@ -210,9 +210,9 @@ namespace MediaBrowser.Model.Net
             return enableStreamDefault ? "application/octet-stream" : null;
         }
 
-        public static string? ToExtension(string mimeType)
+        public static string? ToExtension(string? mimeType)
         {
-            if (mimeType.Length == 0)
+            if (string.IsNullOrEmpty(mimeType))
             {
                 throw new ArgumentException("String can't be empty.", nameof(mimeType));
             }
@@ -220,7 +220,7 @@ namespace MediaBrowser.Model.Net
             // handle text/html; charset=UTF-8
             mimeType = mimeType.Split(';')[0];
 
-            if (_extensionLookup.TryGetValue(mimeType, out string result))
+            if (_extensionLookup.TryGetValue(mimeType, out string? result))
             {
                 return result;
             }

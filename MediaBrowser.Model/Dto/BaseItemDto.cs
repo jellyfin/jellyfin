@@ -152,7 +152,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
-        public Guid ChannelId { get; set; }
+        public Guid? ChannelId { get; set; }
 
         public string ChannelName { get; set; }
 
@@ -270,7 +270,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent id.
         /// </summary>
         /// <value>The parent id.</value>
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         /// <summary>
         /// Gets or sets the type.
@@ -344,13 +344,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the series id.
         /// </summary>
         /// <value>The series id.</value>
-        public Guid SeriesId { get; set; }
+        public Guid? SeriesId { get; set; }
 
         /// <summary>
         /// Gets or sets the season identifier.
         /// </summary>
         /// <value>The season identifier.</value>
-        public Guid SeasonId { get; set; }
+        public Guid? SeasonId { get; set; }
 
         /// <summary>
         /// Gets or sets the special feature count.
@@ -428,7 +428,8 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album id.
         /// </summary>
         /// <value>The album id.</value>
-        public Guid AlbumId { get; set; }
+        public Guid? AlbumId { get; set; }
+
         /// <summary>
         /// Gets or sets the album image tag.
         /// </summary>
@@ -599,11 +600,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The trailer count.</value>
         public int? TrailerCount { get; set; }
+
         /// <summary>
         /// Gets or sets the movie count.
         /// </summary>
         /// <value>The movie count.</value>
         public int? MovieCount { get; set; }
+
         /// <summary>
         /// Gets or sets the series count.
         /// </summary>
@@ -611,16 +614,19 @@ namespace MediaBrowser.Model.Dto
         public int? SeriesCount { get; set; }
 
         public int? ProgramCount { get; set; }
+
         /// <summary>
         /// Gets or sets the episode count.
         /// </summary>
         /// <value>The episode count.</value>
         public int? EpisodeCount { get; set; }
+
         /// <summary>
         /// Gets or sets the song count.
         /// </summary>
         /// <value>The song count.</value>
         public int? SongCount { get; set; }
+
         /// <summary>
         /// Gets or sets the album count.
         /// </summary>
@@ -628,6 +634,7 @@ namespace MediaBrowser.Model.Dto
         public int? AlbumCount { get; set; }
 
         public int? ArtistCount { get; set; }
+
         /// <summary>
         /// Gets or sets the music video count.
         /// </summary>
@@ -768,6 +775,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The timer identifier.</value>
         public string TimerId { get; set; }
+
         /// <summary>
         /// Gets or sets the current program.
         /// </summary>

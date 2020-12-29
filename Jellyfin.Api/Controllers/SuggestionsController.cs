@@ -1,13 +1,17 @@
-﻿using System;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +21,7 @@ namespace Jellyfin.Api.Controllers
     /// The suggestions controller.
     /// </summary>
     [Route("")]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class SuggestionsController : BaseJellyfinApiController
     {
         private readonly IDtoService _dtoService;
@@ -53,9 +58,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Suggestions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
-            [FromRoute] Guid userId,
-            [FromQuery] string? mediaType,
-            [FromQuery] string? type,
+            [FromRoute, Required] Guid userId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaType,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] type,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] bool enableTotalRecordCount = false)
@@ -66,8 +71,8 @@ namespace Jellyfin.Api.Controllers
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
-                MediaTypes = RequestHelpers.Split(mediaType!, ',', true),
-                IncludeItemTypes = RequestHelpers.Split(type!, ',', true),
+                MediaTypes = mediaType,
+                IncludeItemTypes = type,
                 IsVirtualItem = false,
                 StartIndex = startIndex,
                 Limit = limit,

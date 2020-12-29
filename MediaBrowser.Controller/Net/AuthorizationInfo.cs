@@ -1,10 +1,11 @@
-#pragma warning disable CS1591
-
 using System;
 using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller.Net
 {
+    /// <summary>
+    /// The request authorization info.
+    /// </summary>
     public class AuthorizationInfo
     {
         /// <summary>
@@ -43,6 +44,24 @@ namespace MediaBrowser.Controller.Net
         /// <value>The token.</value>
         public string Token { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the authorization is from an api key.
+        /// </summary>
+        public bool IsApiKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user making the request.
+        /// </summary>
         public User User { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the token is authenticated.
+        /// </summary>
+        public bool IsAuthenticated { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the request has a token.
+        /// </summary>
+        public bool HasToken { get; set; }
     }
 }

@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
@@ -10,7 +8,7 @@ namespace Jellyfin.Data.Entities
     /// <summary>
     /// An entity representing whether the associated user has a specific permission.
     /// </summary>
-    public partial class Permission : IHasConcurrencyToken
+    public class Permission : IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Permission"/> class.
@@ -22,8 +20,6 @@ namespace Jellyfin.Data.Entities
         {
             Kind = kind;
             Value = value;
-
-            Init();
         }
 
         /// <summary>
@@ -32,12 +28,7 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         protected Permission()
         {
-            Init();
         }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
 
         /// <summary>
         /// Gets or sets the id of this permission.
@@ -45,8 +36,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [Key]
-        [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; protected set; }
 
@@ -56,7 +45,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public PermissionKind Kind { get; protected set; }
 
         /// <summary>
@@ -65,36 +53,16 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool Value { get; set; }
 
-        /// <summary>
-        /// Gets or sets the row version.
-        /// </summary>
-        /// <remarks>
-        /// Required, ConcurrencyToken.
-        /// </remarks>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
         public uint RowVersion { get; set; }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="kind">The permission kind.</param>
-        /// <param name="value">The value of this permission.</param>
-        /// <returns>The newly created instance.</returns>
-        public static Permission Create(PermissionKind kind, bool value)
-        {
-            return new Permission(kind, value);
-        }
 
         /// <inheritdoc/>
         public void OnSavingChanges()
         {
             RowVersion++;
         }
-
-        partial void Init();
     }
 }

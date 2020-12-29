@@ -1,12 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -61,9 +65,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Info")]
         [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<SystemInfo>> GetSystemInfo()
+        public ActionResult<SystemInfo> GetSystemInfo()
         {
-            return await _appHost.GetSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <summary>
@@ -73,9 +77,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="PublicSystemInfo"/> with public info about the system.</returns>
         [HttpGet("Info/Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PublicSystemInfo>> GetPublicSystemInfo()
+        public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
         {
-            return await _appHost.GetPublicSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <summary>
@@ -176,8 +180,8 @@ namespace Jellyfin.Api.Controllers
         {
             return new EndPointInfo
             {
-                IsLocal = Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress),
-                IsInNetwork = _network.IsInLocalNetwork(Request.HttpContext.Connection.RemoteIpAddress.ToString())
+                IsLocal = HttpContext.IsLocal(),
+                IsInNetwork = _network.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp())
             };
         }
 
@@ -190,14 +194,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Logs/Log")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult GetLogFile([FromQuery, Required] string? name)
+        [ProducesFile(MediaTypeNames.Text.Plain)]
+        public ActionResult GetLogFile([FromQuery, Required] string name)
         {
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
 
             // For older files, assume fully static
             var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
-
             FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare);
             return File(stream, "text/plain");
         }

@@ -25,7 +25,7 @@ namespace Rssdp
         /// Specifies how long clients can cache this device's details for. Optional but defaults to <see cref="TimeSpan.Zero"/> which means no-caching. Recommended value is half an hour.
         /// </summary>
         /// <remarks>
-        /// <para>Specifiy <see cref="TimeSpan.Zero"/> to indicate no caching allowed.</para>
+        /// <para>Specify <see cref="TimeSpan.Zero"/> to indicate no caching allowed.</para>
         /// <para>Also used to specify how often to rebroadcast alive notifications.</para>
         /// <para>The UPnP/SSDP specifications indicate this should not be less than 1800 seconds (half an hour), but this is not enforced by this library.</para>
         /// </remarks>
@@ -45,12 +45,12 @@ namespace Rssdp
         public IPAddress Address { get; set; }
 
         /// <summary>
-        /// Gets or sets the SubnetMask used to check if the received message from same interface with this device/tree. Required.
+        /// Gets or sets the prefix length used to check if the received message from same interface with this device/tree. Required.
         /// </summary>
-        public IPAddress SubnetMask { get; set; }
+        public byte PrefixLength { get; set; }
 
         /// <summary>
-        /// The base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
+        /// The base URL to use for all relative url's provided in other properties (and those of child devices). Optional.
         /// </summary>
         /// <remarks>
         /// <para>Defines the base URL. Used to construct fully-qualified URLs. All relative URLs that appear elsewhere in the description are combined with this base URL. If URLBase is empty or not given, the base URL is the URL from which the device description was retrieved (which is the preferred implementation; use of URLBase is no longer recommended). Specified by UPnP vendor. Single URL.</para>

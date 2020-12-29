@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -83,16 +84,6 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
-        public virtual void RegisterServices(IServiceCollection serviceCollection)
-        {
-        }
-
-        /// <inheritdoc />
-        public virtual void UnregisterServices(IServiceCollection serviceCollection)
-        {
-        }
-
-        /// <inheritdoc />
         public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
         {
             AssemblyFilePath = assemblyFilePath;
@@ -140,6 +131,30 @@ namespace MediaBrowser.Common.Plugins
         {
             ApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
+            if (this is IPluginAssembly assemblyPlugin)
+            {
+                var assembly = GetType().Assembly;
+                var assemblyName = assembly.GetName();
+                var assemblyFilePath = assembly.Location;
+
+                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
+
+                assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
+
+                var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
+                if (idAttributes.Length > 0)
+                {
+                    var attribute = (GuidAttribute)idAttributes[0];
+                    var assemblyId = new Guid(attribute.Value);
+
+                    assemblyPlugin.SetId(assemblyId);
+                }
+            }
+
+            if (this is IHasPluginConfiguration hasPluginConfiguration)
+            {
+                hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
+            }
         }
 
         /// <summary>
@@ -159,6 +174,11 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         /// <value>The type of the configuration.</value>
         public Type ConfigurationType => typeof(TConfigurationType);
+
+        /// <summary>
+        /// Gets or sets the event handler that is triggered when this configuration changes.
+        /// </summary>
+        public EventHandler<BasePluginConfiguration> ConfigurationChanged { get; set; }
 
         /// <summary>
         /// Gets the name the assembly file.
@@ -227,7 +247,23 @@ namespace MediaBrowser.Common.Plugins
             }
             catch
             {
-                return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+                var config = (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+                SaveConfiguration(config);
+                return config;
+            }
+        }
+
+        /// <summary>
+        /// Saves the current configuration to the file system.
+        /// </summary>
+        /// <param name="config">Configuration to save.</param>
+        public virtual void SaveConfiguration(TConfigurationType config)
+        {
+            lock (_configurationSaveLock)
+            {
+                _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
+
+                XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
             }
         }
 
@@ -236,12 +272,7 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public virtual void SaveConfiguration()
         {
-            lock (_configurationSaveLock)
-            {
-                _directoryCreateFn(Path.GetDirectoryName(ConfigurationFilePath));
-
-                XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
-            }
+            SaveConfiguration(Configuration);
         }
 
         /// <inheritdoc />
@@ -254,7 +285,9 @@ namespace MediaBrowser.Common.Plugins
 
             Configuration = (TConfigurationType)configuration;
 
-            SaveConfiguration();
+            SaveConfiguration(Configuration);
+
+            ConfigurationChanged?.Invoke(this, configuration);
         }
 
         /// <inheritdoc />

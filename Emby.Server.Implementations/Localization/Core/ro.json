@@ -74,7 +74,6 @@
     "HeaderFavoriteArtists": "Artiști Favoriți",
     "HeaderFavoriteAlbums": "Albume Favorite",
     "HeaderContinueWatching": "Vizionează în continuare",
-    "HeaderCameraUploads": "Incărcări Cameră Foto",
     "HeaderAlbumArtists": "Album Artiști",
     "Genres": "Genuri",
     "Folders": "Dosare",
@@ -113,5 +112,10 @@
     "TasksChannelsCategory": "Canale de pe Internet",
     "TasksApplicationCategory": "Aplicație",
     "TasksLibraryCategory": "Librărie",
-    "TasksMaintenanceCategory": "Mentenanță"
+    "TasksMaintenanceCategory": "Mentenanță",
+    "TaskCleanActivityLogDescription": "Șterge intrările din jurnalul de activitate mai vechi de data configurată.",
+    "TaskCleanActivityLog": "Curăță Jurnalul de Activitate",
+    "Undefined": "Nedefinit",
+    "Forced": "Forțat",
+    "Default": "Implicit"
 }

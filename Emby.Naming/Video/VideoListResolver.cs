@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,22 +9,35 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolves alternative versions and extras from list of video files.
+    /// </summary>
     public class VideoListResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoListResolver"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing CleanStringRegexes and VideoFlagDelimiters and passes options to <see cref="StackResolver"/> and <see cref="VideoResolver"/>.</param>
         public VideoListResolver(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Resolves alternative versions and extras from list of video files.
+        /// </summary>
+        /// <param name="files">List of related video files.</param>
+        /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
+        /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
         public IEnumerable<VideoInfo> Resolve(List<FileSystemMetadata> files, bool supportMultiVersion = true)
         {
             var videoResolver = new VideoResolver(_options);
 
             var videoInfos = files
                 .Select(i => videoResolver.Resolve(i.FullName, i.IsDirectory))
-                .Where(i => i != null)
+                .OfType<VideoFileInfo>()
                 .ToList();
 
             // Filter out all extras, otherwise they could cause stacks to not be resolved
@@ -39,7 +50,7 @@ namespace Emby.Naming.Video
                 .Resolve(nonExtras).ToList();
 
             var remainingFiles = videoInfos
-                .Where(i => !stackResult.Any(s => s.ContainsFile(i.Path, i.IsDirectory)))
+                .Where(i => !stackResult.Any(s => i.Path != null && s.ContainsFile(i.Path, i.IsDirectory)))
                 .ToList();
 
             var list = new List<VideoInfo>();
@@ -48,7 +59,9 @@ namespace Emby.Naming.Video
             {
                 var info = new VideoInfo(stack.Name)
                 {
-                    Files = stack.Files.Select(i => videoResolver.Resolve(i, stack.IsDirectoryStack)).ToList()
+                    Files = stack.Files.Select(i => videoResolver.Resolve(i, stack.IsDirectoryStack))
+                        .OfType<VideoFileInfo>()
+                        .ToList()
                 };
 
                 info.Year = info.Files[0].Year;
@@ -133,7 +146,7 @@ namespace Emby.Naming.Video
             }
 
             // If there's only one video, accept all trailers
-            // Be lenient because people use all kinds of mish mash conventions with trailers
+            // Be lenient because people use all kinds of mishmash conventions with trailers.
             if (list.Count == 1)
             {
                 var trailers = remainingFiles
@@ -203,15 +216,25 @@ namespace Emby.Naming.Video
             return videos.Select(i => i.Year ?? -1).Distinct().Count() < 2;
         }
 
-        private bool IsEligibleForMultiVersion(string folderName, string testFilename)
+        private bool IsEligibleForMultiVersion(string folderName, string? testFilename)
         {
             testFilename = Path.GetFileNameWithoutExtension(testFilename) ?? string.Empty;
 
             if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
-                testFilename = testFilename.Substring(folderName.Length).Trim();
+                if (CleanStringParser.TryClean(testFilename, _options.CleanStringRegexes, out var cleanName))
+                {
+                    testFilename = cleanName.ToString();
+                }
+
+                if (folderName.Length <= testFilename.Length)
+                {
+                    testFilename = testFilename.Substring(folderName.Length).Trim();
+                }
+
                 return string.IsNullOrEmpty(testFilename)
-                   || testFilename[0] == '-'
+                   || testFilename[0].Equals('-')
+                   || testFilename[0].Equals('_')
                    || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 

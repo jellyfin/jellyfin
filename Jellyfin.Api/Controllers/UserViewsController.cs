@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserViewDtos;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -64,9 +66,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/Views")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetUserViews(
-            [FromRoute] Guid userId,
+            [FromRoute, Required] Guid userId,
             [FromQuery] bool? includeExternalContent,
-            [FromQuery] string? presetViews,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] presetViews,
             [FromQuery] bool includeHidden = false)
         {
             var query = new UserViewQuery
@@ -80,9 +82,9 @@ namespace Jellyfin.Api.Controllers
                 query.IncludeExternalContent = includeExternalContent.Value;
             }
 
-            if (!string.IsNullOrWhiteSpace(presetViews))
+            if (presetViews.Length != 0)
             {
-                query.PresetViews = RequestHelpers.Split(presetViews, ',', true);
+                query.PresetViews = presetViews;
             }
 
             var app = _authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
@@ -126,7 +128,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Users/{userId}/GroupingOptions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromRoute] Guid userId)
+        public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
             if (user == null)

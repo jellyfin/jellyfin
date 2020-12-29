@@ -1,13 +1,15 @@
-﻿using System;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -50,10 +52,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="searchTerm">Optional. Search term.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
         /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
         /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimited.</param>
@@ -84,26 +86,26 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? parentId,
-            [FromQuery] string? fields,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] Guid? parentId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
-            [FromQuery] string? mediaTypes,
-            [FromQuery] string? genres,
-            [FromQuery] string? genreIds,
-            [FromQuery] string? officialRatings,
-            [FromQuery] string? tags,
-            [FromQuery] string? years,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] tags,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] int[] years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? person,
-            [FromQuery] string? personIds,
-            [FromQuery] string? personTypes,
-            [FromQuery] string? studios,
-            [FromQuery] string? studioIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] studioIds,
             [FromQuery] Guid? userId,
             [FromQuery] string? nameStartsWithOrGreater,
             [FromQuery] string? nameStartsWith,
@@ -111,70 +113,60 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
-            BaseItem parentItem;
+            BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
             }
-            else
-            {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
-            }
-
-            var excludeItemTypesArr = RequestHelpers.Split(excludeItemTypes, ',', true);
-            var includeItemTypesArr = RequestHelpers.Split(includeItemTypes, ',', true);
-            var mediaTypesArr = RequestHelpers.Split(mediaTypes, ',', true);
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = excludeItemTypesArr,
-                IncludeItemTypes = includeItemTypesArr,
-                MediaTypes = mediaTypesArr,
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
+                MediaTypes = mediaTypes,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
                 NameLessThan = nameLessThan,
                 NameStartsWith = nameStartsWith,
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
-                Tags = RequestHelpers.Split(tags, ',', true),
-                OfficialRatings = RequestHelpers.Split(officialRatings, ',', true),
-                Genres = RequestHelpers.Split(genres, ',', true),
-                GenreIds = RequestHelpers.GetGuids(genreIds),
-                StudioIds = RequestHelpers.GetGuids(studioIds),
+                Tags = tags,
+                OfficialRatings = officialRatings,
+                Genres = genres,
+                GenreIds = genreIds,
+                StudioIds = studioIds,
                 Person = person,
-                PersonIds = RequestHelpers.GetGuids(personIds),
-                PersonTypes = RequestHelpers.Split(personTypes, ',', true),
-                Years = RequestHelpers.Split(years, ',', true).Select(int.Parse).ToArray(),
+                PersonIds = personIds,
+                PersonTypes = personTypes,
+                Years = years,
                 MinCommunityRating = minCommunityRating,
                 DtoOptions = dtoOptions,
                 SearchTerm = searchTerm,
                 EnableTotalRecordCount = enableTotalRecordCount
             };
 
-            if (!string.IsNullOrWhiteSpace(parentId))
+            if (parentId.HasValue)
             {
                 if (parentItem is Folder)
                 {
-                    query.AncestorIds = new[] { new Guid(parentId) };
+                    query.AncestorIds = new[] { parentId.Value };
                 }
                 else
                 {
-                    query.ItemIds = new[] { new Guid(parentId) };
+                    query.ItemIds = new[] { parentId.Value };
                 }
             }
 
             // Studios
-            if (!string.IsNullOrEmpty(studios))
+            if (studios.Length != 0)
             {
-                query.StudioIds = studios.Split('|').Select(i =>
+                query.StudioIds = studios.Select(i =>
                 {
                     try
                     {
@@ -187,7 +179,7 @@ namespace Jellyfin.Api.Controllers
                 }).Where(i => i != null).Select(i => i!.Id).ToArray();
             }
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {
@@ -228,7 +220,7 @@ namespace Jellyfin.Api.Controllers
                 var (baseItem, itemCounts) = i;
                 var dto = _dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
 
-                if (!string.IsNullOrWhiteSpace(includeItemTypes))
+                if (includeItemTypes.Length != 0)
                 {
                     dto.ChildCount = itemCounts.ItemCount;
                     dto.ProgramCount = itemCounts.ProgramCount;
@@ -259,10 +251,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="searchTerm">Optional. Search term.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
         /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
         /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimited.</param>
@@ -293,26 +285,26 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? parentId,
-            [FromQuery] string? fields,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
-            [FromQuery] string? filters,
+            [FromQuery] Guid? parentId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
-            [FromQuery] string? mediaTypes,
-            [FromQuery] string? genres,
-            [FromQuery] string? genreIds,
-            [FromQuery] string? officialRatings,
-            [FromQuery] string? tags,
-            [FromQuery] string? years,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] tags,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] int[] years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] string? person,
-            [FromQuery] string? personIds,
-            [FromQuery] string? personTypes,
-            [FromQuery] string? studios,
-            [FromQuery] string? studioIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
+            [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] studioIds,
             [FromQuery] Guid? userId,
             [FromQuery] string? nameStartsWithOrGreater,
             [FromQuery] string? nameStartsWith,
@@ -320,70 +312,60 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
-            BaseItem parentItem;
+            BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
             }
-            else
-            {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
-            }
-
-            var excludeItemTypesArr = RequestHelpers.Split(excludeItemTypes, ',', true);
-            var includeItemTypesArr = RequestHelpers.Split(includeItemTypes, ',', true);
-            var mediaTypesArr = RequestHelpers.Split(mediaTypes, ',', true);
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = excludeItemTypesArr,
-                IncludeItemTypes = includeItemTypesArr,
-                MediaTypes = mediaTypesArr,
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
+                MediaTypes = mediaTypes,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
                 NameLessThan = nameLessThan,
                 NameStartsWith = nameStartsWith,
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
-                Tags = RequestHelpers.Split(tags, ',', true),
-                OfficialRatings = RequestHelpers.Split(officialRatings, ',', true),
-                Genres = RequestHelpers.Split(genres, ',', true),
-                GenreIds = RequestHelpers.GetGuids(genreIds),
-                StudioIds = RequestHelpers.GetGuids(studioIds),
+                Tags = tags,
+                OfficialRatings = officialRatings,
+                Genres = genres,
+                GenreIds = genreIds,
+                StudioIds = studioIds,
                 Person = person,
-                PersonIds = RequestHelpers.GetGuids(personIds),
-                PersonTypes = RequestHelpers.Split(personTypes, ',', true),
-                Years = RequestHelpers.Split(years, ',', true).Select(int.Parse).ToArray(),
+                PersonIds = personIds,
+                PersonTypes = personTypes,
+                Years = years,
                 MinCommunityRating = minCommunityRating,
                 DtoOptions = dtoOptions,
                 SearchTerm = searchTerm,
                 EnableTotalRecordCount = enableTotalRecordCount
             };
 
-            if (!string.IsNullOrWhiteSpace(parentId))
+            if (parentId.HasValue)
             {
                 if (parentItem is Folder)
                 {
-                    query.AncestorIds = new[] { new Guid(parentId) };
+                    query.AncestorIds = new[] { parentId.Value };
                 }
                 else
                 {
-                    query.ItemIds = new[] { new Guid(parentId) };
+                    query.ItemIds = new[] { parentId.Value };
                 }
             }
 
             // Studios
-            if (!string.IsNullOrEmpty(studios))
+            if (studios.Length != 0)
             {
-                query.StudioIds = studios.Split('|').Select(i =>
+                query.StudioIds = studios.Select(i =>
                 {
                     try
                     {
@@ -396,7 +378,7 @@ namespace Jellyfin.Api.Controllers
                 }).Where(i => i != null).Select(i => i!.Id).ToArray();
             }
 
-            foreach (var filter in RequestHelpers.GetFilters(filters))
+            foreach (var filter in filters)
             {
                 switch (filter)
                 {
@@ -437,7 +419,7 @@ namespace Jellyfin.Api.Controllers
                 var (baseItem, itemCounts) = i;
                 var dto = _dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
 
-                if (!string.IsNullOrWhiteSpace(includeItemTypes))
+                if (includeItemTypes.Length != 0)
                 {
                     dto.ChildCount = itemCounts.ItemCount;
                     dto.ProgramCount = itemCounts.ProgramCount;
@@ -469,7 +451,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the artist.</returns>
         [HttpGet("{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetArtistByName([FromRoute] string name, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 
