@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
@@ -72,13 +73,26 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="key">Configuration key.</param>
         /// <response code="200">Configuration returned.</response>
+        /// <response code="404">Configuration not found.</response>
         /// <returns>Configuration.</returns>
         [HttpGet("Configuration/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesFile(MediaTypeNames.Application.Json)]
         public ActionResult<object> GetNamedConfiguration([FromRoute, Required] string key)
         {
-            return _configurationManager.GetConfiguration(key);
+            try
+            {
+                return _configurationManager.GetConfiguration(key);
+            }
+            catch (ResourceNotFoundException)
+            {
+                return NotFound();
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
