@@ -1,30 +1,29 @@
-#pragma warning disable CS1591
-
 using System.Globalization;
 
 namespace MediaBrowser.Model.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="DlnaMaps" />.
+    /// </summary>
     public static class DlnaMaps
     {
-        private static readonly string DefaultStreaming =
-            FlagsToString(DlnaFlags.StreamingTransferMode |
-                           DlnaFlags.BackgroundTransferMode |
-                           DlnaFlags.ConnectionStall |
-                           DlnaFlags.ByteBasedSeek |
-                           DlnaFlags.DlnaV15);
-
-        private static readonly string DefaultInteractive =
-            FlagsToString(DlnaFlags.InteractiveTransferMode |
-                        DlnaFlags.BackgroundTransferMode |
-                        DlnaFlags.ConnectionStall |
-                        DlnaFlags.ByteBasedSeek |
-                        DlnaFlags.DlnaV15);
-
+        /// <summary>
+        /// Converts Dlna flags to a string.
+        /// </summary>
+        /// <param name="flags">The <see cref="DlnaFlags"/>.</param>
+        /// <returns>The string equivalent.</returns>
         public static string FlagsToString(DlnaFlags flags)
         {
             return string.Format(CultureInfo.InvariantCulture, "{0:X8}{1:D24}", (ulong)flags, 0);
         }
 
+        /// <summary>
+        /// Gets the OrgOp value.
+        /// </summary>
+        /// <param name="hasKnownRuntime">True if it has a known runtime.</param>
+        /// <param name="isDirectStream">True is it is direct stream.</param>
+        /// <param name="profileTranscodeSeekInfo">The <see cref="TranscodeSeekInfo"/>.</param>
+        /// <returns>The OrgOp..</returns>
         public static string GetOrgOpValue(bool hasKnownRuntime, bool isDirectStream, TranscodeSeekInfo profileTranscodeSeekInfo)
         {
             if (hasKnownRuntime)
@@ -44,17 +43,22 @@ namespace MediaBrowser.Model.Dlna
             return "00";
         }
 
+        /// <summary>
+        /// Gets the image OrgOp value.
+        /// </summary>
+        /// <returns>The OrgOp value>.</returns>
         public static string GetImageOrgOpValue()
         {
-            string orgOp = string.Empty;
+            return "00";
+            // string orgOp = string.Empty;
 
             // Time-based seeking currently only possible when transcoding
-            orgOp += "0";
+            // orgOp += "0";
 
             // Byte-based seeking only possible when not transcoding
-            orgOp += "0";
+            // orgOp += "0";
 
-            return orgOp;
+            // return orgOp;
         }
     }
 }

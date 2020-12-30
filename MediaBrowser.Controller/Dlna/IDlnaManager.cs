@@ -1,5 +1,4 @@
 #nullable enable
-#pragma warning disable CS1591
 
 using System.Collections.Generic;
 using MediaBrowser.Controller.Drawing;
@@ -8,31 +7,28 @@ using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="IDlnaManager" />.
+    /// </summary>
     public interface IDlnaManager
     {
         /// <summary>
         /// Gets the profile infos.
         /// </summary>
-        /// <returns>IEnumerable{DeviceProfileInfo}.</returns>
+        /// <returns>A <see cref="IEnumerable{DeviceProfileInfo}"/>.</returns>
         IEnumerable<DeviceProfileInfo> GetProfileInfos();
-
-        /// <summary>
-        /// Gets all the profiles.
-        /// </summary>
-        /// <returns>IEnumerable{DeviceProfile}.</returns>
-        IEnumerable<DeviceProfile> GetProfiles();
 
         /// <summary>
         /// Gets the profile.
         /// </summary>
         /// <param name="headers">The headers.</param>
-        /// <returns>DeviceProfile.</returns>
+        /// <returns>A <see cref="DeviceProfile"/>.</returns>
         DeviceProfile? GetProfile(IHeaderDictionary headers);
 
         /// <summary>
         /// Gets the default profile.
         /// </summary>
-        /// <returns>DeviceProfile.</returns>
+        /// <returns>A <see cref="DeviceProfile"/>.</returns>
         DeviceProfile GetDefaultProfile();
 
         /// <summary>
@@ -57,14 +53,30 @@ namespace MediaBrowser.Controller.Dlna
         /// Gets the profile.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <returns>DeviceProfile.</returns>
+        /// <returns>A <see cref="DeviceProfile"/>.</returns>
         DeviceProfile? GetProfile(string id);
 
         /// <summary>
         /// Gets the profile.
         /// </summary>
         /// <param name="deviceInfo">The device information.</param>
-        /// <returns>DeviceProfile.</returns>
+        /// <returns>A <see cref="DeviceProfile"/> or null if not found.</returns>
         DeviceProfile? GetProfile(DeviceIdentification deviceInfo);
+
+        /// <summary>
+        /// Gets the server description XML.
+        /// </summary>
+        /// <param name="headers">The headers.</param>
+        /// <param name="serverUuId">The server uuid.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <returns>System.String.</returns>
+        string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress);
+
+        /// <summary>
+        /// Gets the icon.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>DlnaIconResponse.</returns>
+        ImageStream GetIcon(string filename);
     }
 }
