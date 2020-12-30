@@ -261,7 +261,7 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
         {
-            StreamInfo playlistItem = new StreamInfo
+            StreamInfo playlistItem = new StreamInfo()
             {
                 ItemId = options.ItemId,
                 MediaType = DlnaProfileType.Audio,
@@ -1033,9 +1033,9 @@ namespace MediaBrowser.Model.Dlna
             {
                 _logger.LogInformation(
                     "Profile: {0}, No video direct play profiles found for {1} with codec {2}",
-                    profile.Name ?? "Unknown Profile",
-                    mediaSource.Path ?? "Unknown path",
-                    videoStream.Codec ?? "Unknown codec");
+                    profile?.Name ?? "Unknown Profile",
+                    mediaSource?.Path ?? "Unknown path",
+                    videoStream?.Codec ?? "Unknown codec");
 
                 return (null, GetTranscodeReasonsFromDirectPlayProfile(mediaSource, videoStream, audioStream, profile.DirectPlayProfiles));
             }
