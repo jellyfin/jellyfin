@@ -4,13 +4,15 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -21,11 +23,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
-        /// <summary>
-        /// Gets or sets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
-        private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
         /// Gets or sets the application paths.
@@ -70,12 +67,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private string _id;
 
         /// <summary>
+        /// The options for the json Serializer.
+        /// </summary>
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
         /// </summary>
         /// <param name="scheduledTask">The scheduled task.</param>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">
         /// scheduledTask
@@ -88,7 +89,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// or
         /// logger.
         /// </exception>
-        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
+        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger)
         {
             if (scheduledTask == null)
             {
@@ -105,11 +106,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 throw new ArgumentNullException(nameof(taskManager));
             }
 
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException(nameof(jsonSerializer));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -118,7 +114,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTask = scheduledTask;
             _applicationPaths = applicationPaths;
             _taskManager = taskManager;
-            _jsonSerializer = jsonSerializer;
             _logger = logger;
 
             InitTriggerEvents();
@@ -150,7 +145,15 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         {
                             try
                             {
-                                _lastExecutionResult = _jsonSerializer.DeserializeFromFile<TaskResult>(path);
+                                var jsonString = File.ReadAllText(path, Encoding.UTF8);
+                                if (!string.IsNullOrWhiteSpace(jsonString))
+                                {
+                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(jsonString, _jsonOptions);
+                                }
+                                else
+                                {
+                                    _logger.LogDebug("Scheduled Task history file {Path} is empty. Skipping deserialization.", path);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -174,7 +177,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 lock (_lastExecutionResultSyncLock)
                 {
-                    _jsonSerializer.SerializeToFile(value, path);
+                    using FileStream createStream = File.OpenWrite(path);
+                    JsonSerializer.SerializeAsync(createStream, value, _jsonOptions);
                 }
             }
         }
@@ -537,7 +541,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
             TaskTriggerInfo[] list = null;
             if (File.Exists(path))
             {
-                list = _jsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
+                var jsonString = File.ReadAllText(path, Encoding.UTF8);
+                list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(jsonString, _jsonOptions);
             }
 
             // Return defaults if file doesn't exist.
@@ -573,7 +578,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            _jsonSerializer.SerializeToFile(triggers, path);
+            var json = JsonSerializer.Serialize(triggers, _jsonOptions);
+            File.WriteAllText(path, json, Encoding.UTF8);
         }
 
         /// <summary>

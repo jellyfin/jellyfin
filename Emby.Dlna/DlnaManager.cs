@@ -7,12 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Emby.Dlna.Profiles;
 using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -31,14 +33,14 @@ namespace Emby.Dlna
     /// </summary>
     public class DlnaManager : IDlnaManager
     {
-        private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
+        private static readonly _assembly = typeof(DlnaManager).Assembly;
         private readonly IApplicationPaths _appPaths;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<DlnaManager> _logger;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
         private readonly Dictionary<string, (InternalProfileInfo profileInfo, DeviceProfile deviceProfile)> _profiles;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DlnaManager"/> class.
@@ -54,14 +56,12 @@ namespace Emby.Dlna
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
             ILoggerFactory loggerFactory,
-            IJsonSerializer jsonSerializer,
             IServerApplicationHost appHost)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _logger = loggerFactory.CreateLogger<DlnaManager>();
-            _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             _profiles = new (StringComparer.Ordinal);
         }
@@ -602,9 +602,9 @@ namespace Emby.Dlna
                 return profile;
             }
 
-            var json = _jsonSerializer.SerializeToString(profile);
+            var json = JsonSerializer.Serialize(profile, _jsonOptions);
 
-            return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
+            return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions);
         }
 
         /// <summary>

@@ -8,7 +8,6 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -81,7 +80,8 @@ namespace Jellyfin.Server.Migrations.Routines
                 { "unstable", ChromecastVersion.Unstable }
             };
 
-            var customDisplayPrefs = new HashSet<string>();
+            var displayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var customDisplayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
@@ -98,6 +98,15 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     var itemId = new Guid(result[1].ToBlob());
                     var dtoUserId = new Guid(result[1].ToBlob());
+                    var client = result[2].ToString();
+                    var displayPreferencesKey = $"{dtoUserId}|{itemId}|{client}";
+                    if (displayPrefs.Contains(displayPreferencesKey))
+                    {
+                        // Duplicate display preference.
+                        continue;
+                    }
+
+                    displayPrefs.Add(displayPreferencesKey);
                     var existingUser = _userManager.GetUserById(dtoUserId);
                     if (existingUser == null)
                     {
@@ -110,7 +119,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         : ChromecastVersion.Stable;
                     dto.CustomPrefs.Remove("chromecastVersion");
 
-                    var displayPreferences = new DisplayPreferences(dtoUserId, itemId, result[2].ToString())
+                    var displayPreferences = new DisplayPreferences(dtoUserId, itemId, client)
                     {
                         IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null,
                         ShowBackdrop = dto.ShowBackdrop,
