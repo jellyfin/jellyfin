@@ -50,7 +50,6 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the FriendlyName.
         /// </summary>
-        // TODO: not written anywhere.
         public string? FriendlyName { get; set; }
 
         /// <summary>
@@ -108,7 +107,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the supported Media types.
         /// </summary>
-        public string SupportedMediaTypes { get; set; } = string.Empty;
+        public string? SupportedMediaTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the UserId.
@@ -119,7 +118,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the AlbumArtPn.
         /// </summary>
-        public string AlbumArtPn { get; set; } = string.Empty;
+        public string? AlbumArtPn { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum width of the album art.
@@ -331,7 +330,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
+                if (container != null && !ContainerProfile.ContainsContainer(i.GetContainers(), container))
                 {
                     continue;
                 }
@@ -429,14 +428,14 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="isAvc">True if avc.</param>
         /// <returns>The <see cref="ResponseProfile"/> or null.</returns>
         public ResponseProfile? GetVideoMediaProfile(
-            string container,
-            string audioCodec,
-            string videoCodec,
+            string? container,
+            string? audioCodec,
+            string? videoCodec,
             int? width,
             int? height,
             int? bitDepth,
             int? videoBitrate,
-            string videoProfile,
+            string? videoProfile,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -446,7 +445,7 @@ namespace MediaBrowser.Model.Dlna
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
-            string videoCodecTag,
+            string? videoCodecTag,
             bool? isAvc)
         {
             foreach (var i in ResponseProfiles)
@@ -456,7 +455,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
+                if (container != null && !ContainerProfile.ContainsContainer(i.GetContainers(), container))
                 {
                     continue;
                 }
@@ -497,7 +496,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets the model profile condition.
         /// </summary>
-        /// <param name="c">The c<see cref="ProfileCondition"/>.</param>
+        /// <param name="c">Creates a copy of <see cref="ProfileCondition"/> containing the Condition, IsRequired, Property and Value properties.</param>
         /// <returns>The <see cref="ProfileCondition"/>.</returns>
         private static ProfileCondition GetModelProfileCondition(ProfileCondition c)
         {

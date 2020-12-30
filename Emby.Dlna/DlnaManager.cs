@@ -33,7 +33,7 @@ namespace Emby.Dlna
     /// </summary>
     public class DlnaManager : IDlnaManager
     {
-        private static readonly _assembly = typeof(DlnaManager).Assembly;
+        private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
         private readonly IApplicationPaths _appPaths;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IFileSystem _fileSystem;
@@ -49,7 +49,6 @@ namespace Emby.Dlna
         /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
         /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         public DlnaManager(
             IXmlSerializer xmlSerializer,
@@ -135,7 +134,7 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc/>
-        public void UpdateProfile(DeviceProfile profile)
+        public void UpdateProfile(DeviceProfile? profile)
         {
             if (profile == null)
             {
@@ -144,7 +143,7 @@ namespace Emby.Dlna
 
             profile = ReserializeProfile(profile);
 
-            if (string.IsNullOrEmpty(profile.Id))
+            if (string.IsNullOrEmpty(profile?.Id))
             {
                 throw new ArgumentException("Profile is missing Id");
             }
@@ -604,7 +603,8 @@ namespace Emby.Dlna
 
             var json = JsonSerializer.Serialize(profile, _jsonOptions);
 
-            return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions);
+            return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions)
+                ?? throw new JsonException("Unable to deserialize profile id :" + profile.Id);
         }
 
         /// <summary>
