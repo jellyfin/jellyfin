@@ -249,8 +249,7 @@ namespace Emby.Server.Implementations.Library
             else if (positionTicks > 0 && hasRuntime && (item is AudioBook))
             {
                 var minIn = TimeSpan.FromTicks(positionTicks).TotalMinutes;
-                // 10,000 ticks per millisecond * 60,000 milliseconds per minute = 600,000,000 ticks per minute
-                var minOut = (runtimeTicks - positionTicks) / 600000000;
+                var minOut = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
 
                 if (minIn > _config.Configuration.MinAudiobookResume)
                 {
