@@ -551,18 +551,14 @@ namespace Emby.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
-                    {
-                        ItemId = item.Id,
-                        MediaSources = mediaSources,
-                        Profile = profile,
-                        DeviceId = deviceId,
-                        MaxBitrate = profile.MaxStreamingBitrate,
-                        MediaSourceId = mediaSourceId,
-                        AudioStreamIndex = audioStreamIndex,
-                        SubtitleStreamIndex = subtitleStreamIndex
-                    }),
-
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger)
+                        .BuildVideoItem(
+                            new VideoOptions(item.Id, mediaSources, profile, deviceId, profile.MaxStreamingBitrate)
+                            {
+                                MediaSourceId = mediaSourceId,
+                                AudioStreamIndex = audioStreamIndex,
+                                SubtitleStreamIndex = subtitleStreamIndex
+                            }),
                     Profile = profile
                 };
             }
@@ -571,16 +567,11 @@ namespace Emby.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
-                    {
-                        ItemId = item.Id,
-                        MediaSources = mediaSources,
-                        Profile = profile,
-                        DeviceId = deviceId,
-                        MaxBitrate = profile.MaxStreamingBitrate,
-                        MediaSourceId = mediaSourceId
-                    }),
-
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(
+                        new AudioOptions(item.Id, mediaSources, profile, deviceId, profile.MaxStreamingBitrate)
+                        {
+                            MediaSourceId = mediaSourceId
+                        }),
                     Profile = profile
                 };
             }

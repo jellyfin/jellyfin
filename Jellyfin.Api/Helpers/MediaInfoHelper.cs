@@ -183,13 +183,14 @@ namespace Jellyfin.Api.Helpers
         {
             var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
 
-            var options = new VideoOptions
+            var options = new VideoOptions(
+                item.Id,
+                new[] { mediaSource },
+                profile,
+                auth.DeviceId,
+                null)
             {
-                MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
-                DeviceId = auth.DeviceId,
-                ItemId = item.Id,
-                Profile = profile,
                 MaxAudioChannels = maxAudioChannels
             };
 
