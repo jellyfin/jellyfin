@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library
 
             if (query.Limit.HasValue)
             {
-                results = results.GetRange(0, query.Limit.Value);
+                results = results.GetRange(0, Math.Min(query.Limit.Value, results.Count));
             }
 
             return new QueryResult<SearchHintInfo>
