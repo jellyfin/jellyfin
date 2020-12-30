@@ -259,7 +259,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Equals(IPObject? other)
         {
-            if (!(other is IPHost otherObj))
+            if (other is not IPHost otherObj)
             {
                 return false;
             }
