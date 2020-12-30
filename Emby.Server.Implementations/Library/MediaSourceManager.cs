@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -23,7 +25,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
@@ -36,7 +37,6 @@ namespace Emby.Server.Implementations.Library
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<MediaSourceManager> _logger;
         private readonly IUserDataManager _userDataManager;
@@ -46,6 +46,7 @@ namespace Emby.Server.Implementations.Library
 
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         private IMediaSourceProvider[] _providers;
 
@@ -56,7 +57,6 @@ namespace Emby.Server.Implementations.Library
             IUserManager userManager,
             ILibraryManager libraryManager,
             ILogger<MediaSourceManager> logger,
-            IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IMediaEncoder mediaEncoder)
@@ -65,7 +65,6 @@ namespace Emby.Server.Implementations.Library
             _userManager = userManager;
             _libraryManager = libraryManager;
             _logger = logger;
-            _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
             _mediaEncoder = mediaEncoder;
@@ -504,7 +503,7 @@ namespace Emby.Server.Implementations.Library
                     // hack - these two values were taken from LiveTVMediaSourceProvider
                     string cacheKey = request.OpenToken;
 
-                    await new LiveStreamHelper(_mediaEncoder, _logger, _jsonSerializer, _appPaths)
+                    await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
                         .AddMediaInfoWithProbe(mediaSource, isAudio, cacheKey, true, cancellationToken)
                         .ConfigureAwait(false);
                 }
@@ -516,9 +515,9 @@ namespace Emby.Server.Implementations.Library
             }
 
             // TODO: @bond Fix
-            var json = _jsonSerializer.SerializeToString(mediaSource);
+            var json = JsonSerializer.Serialize(mediaSource, _jsonOptions);
             _logger.LogInformation("Live stream opened: " + json);
-            var clone = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
+            var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
             if (!request.UserId.Equals(Guid.Empty))
             {
@@ -643,7 +642,8 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    mediaInfo = _jsonSerializer.DeserializeFromFile<MediaInfo>(cacheFilePath);
+                    await using FileStream jsonStream = File.OpenRead(cacheFilePath);
+                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
                 }
@@ -679,7 +679,8 @@ namespace Emby.Server.Implementations.Library
                 if (cacheFilePath != null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    _jsonSerializer.SerializeToFile(mediaInfo, cacheFilePath);
+                    await using FileStream createStream = File.Create(cacheFilePath);
+                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
