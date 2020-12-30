@@ -246,7 +246,7 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
-            else if (positionTicks > 0 && hasRuntime && (item is AudioBook))
+            else if (positionTicks > 0 && hasRuntime && item is AudioBook)
             {
                 var minIn = TimeSpan.FromTicks(positionTicks).TotalMinutes;
                 var minOut = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
