@@ -111,6 +111,10 @@ namespace Emby.Server.Implementations.Plugins
                     try
                     {
                         assembly = Assembly.LoadFrom(file);
+
+                        // This force loads all reference dll's that the plugin uses in the try..catch block.
+                        // Removing this will cause JF to bomb out if referenced dll's cause issues.
+                        assembly.GetExportedTypes();
                     }
                     catch (FileLoadException ex)
                     {

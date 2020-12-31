@@ -413,6 +413,8 @@ namespace Emby.Server.Implementations
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error creating {Type}", type);
+                // If this is a plugin fail it.
+                _pluginManager.FailPlugin(type.Assembly);
                 return null;
             }
             finally
