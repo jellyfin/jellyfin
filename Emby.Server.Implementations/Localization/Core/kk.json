@@ -108,5 +108,15 @@
     "TasksLibraryCategory": "Tasyǵyshhana",
     "TasksMaintenanceCategory": "Qyzmet kórsetý",
     "Undefined": "Anyqtalmady",
-    "Forced": "Májbúrli"
+    "Forced": "Májbúrli",
+    "TaskDownloadMissingSubtitlesDescription": "Metaderekter teńshelimi negіzіnde joq sýbtıtrlerdі Internetten іzdeıdі.",
+    "TaskRefreshChannelsDescription": "Internet-arnalar málimetterin jańartady.",
+    "TaskCleanTranscodeDescription": "Bіr kúnnen asqan qaıta kodtaý faıldaryn joıady.",
+    "TaskUpdatePluginsDescription": "Avtomatty túrde jańartýǵa teńshelgen plagınder úshin jańartýlardy júktep alady jáne ornatady.",
+    "TaskRefreshPeopleDescription": "Tasyǵyshhanadaǵy aktórler men rejısórler metaderekterіn jańartady.",
+    "TaskCleanLogsDescription": "{0} kúnnen asqan jurnal faıldaryn joıady.",
+    "TaskRefreshLibraryDescription": "Tasyǵyshhanadaǵy jańa faıldardy skanerleıdі jáne metaderekterdі jańartady.",
+    "TaskRefreshChapterImagesDescription": "Sahnalarǵa bólіngen beıneler úshіn nobaılar jasaıdy.",
+    "TaskCleanCacheDescription": "Júıede qajet emes keshtelgen faıldardy joıady.",
+    "TaskCleanActivityLogDescription": "Áreketter jurnalyndaǵy teńshelgen jasynan asqan jazbalaly joıady."
 }

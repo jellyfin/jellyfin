@@ -210,6 +210,7 @@ jobs:
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Unstable Nuget packages'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
       command: 'custom'
       projects: |

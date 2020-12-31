@@ -784,7 +784,7 @@ namespace Jellyfin.Networking.Manager
             }
             else
             {
-                _logger.LogDebug("Invalid or unknown network {Token}.", token);
+                _logger.LogDebug("Invalid or unknown object {Token}.", token);
             }
         }
 
@@ -912,15 +912,6 @@ namespace Jellyfin.Networking.Manager
             lock (_intLock)
             {
                 string[] lanAddresses = config.LocalNetworkAddresses;
-
-                // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
-
-                if (lanAddresses.Length == 1 && lanAddresses[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    lanAddresses = lanAddresses[0].Split(',');
-                }
-
-                // TODO: end fix: https://github.com/jellyfin/jellyfin-web/issues/1334
 
                 // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
                 if (config.IgnoreVirtualInterfaces)

@@ -7,11 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
@@ -50,6 +50,7 @@ using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -125,6 +126,7 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private string[] _urlPrefixes;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -565,8 +567,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IPluginManager>(_pluginManager);
             ServiceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            ServiceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
-
             ServiceCollection.AddSingleton(_fileSystemManager);
             ServiceCollection.AddSingleton<TmdbClientManager>();
 
@@ -791,7 +791,6 @@ namespace Emby.Server.Implementations
             UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
             CollectionFolder.XmlSerializer = _xmlSerializer;
-            CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
         }
 
@@ -963,7 +962,7 @@ namespace Emby.Server.Implementations
                 {
                     return true;
                 }
-                
+
                 throw new FileNotFoundException(
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -1026,6 +1025,102 @@ namespace Emby.Server.Implementations
         }
 
         protected abstract void RestartInternal();
+
+        /// <inheritdoc/>
+        public IEnumerable<LocalPlugin> GetLocalPlugins(string path, bool cleanup = true)
+        {
+            var minimumVersion = new Version(0, 0, 0, 1);
+            var versions = new List<LocalPlugin>();
+            if (!Directory.Exists(path))
+            {
+                // Plugin path doesn't exist, don't try to enumerate subfolders.
+                return Enumerable.Empty<LocalPlugin>();
+            }
+
+            var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
+
+            foreach (var dir in directories)
+            {
+                try
+                {
+                    var metafile = Path.Combine(dir, "meta.json");
+                    if (File.Exists(metafile))
+                    {
+                        var jsonString = File.ReadAllText(metafile, Encoding.UTF8);
+                        var manifest = JsonSerializer.Deserialize<PluginManifest>(jsonString, _jsonOptions);
+
+                        if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                        {
+                            targetAbi = minimumVersion;
+                        }
+
+                        if (!Version.TryParse(manifest.Version, out var version))
+                        {
+                            version = minimumVersion;
+                        }
+
+                        if (ApplicationVersion >= targetAbi)
+                        {
+                            // Only load Plugins if the plugin is built for this version or below.
+                            versions.Add(new LocalPlugin(manifest.Guid, manifest.Name, version, dir));
+                        }
+                    }
+                    else
+                    {
+                        // No metafile, so lets see if the folder is versioned.
+                        metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
+
+                        int versionIndex = dir.LastIndexOf('_');
+                        if (versionIndex != -1 && Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version parsedVersion))
+                        {
+                            // Versioned folder.
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir));
+                        }
+                        else
+                        {
+                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
+                            versions.Add(new LocalPlugin(Guid.Empty, metafile, minimumVersion, dir));
+                        }
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            string lastName = string.Empty;
+            versions.Sort(LocalPlugin.Compare);
+            // Traverse backwards through the list.
+            // The first item will be the latest version.
+            for (int x = versions.Count - 1; x >= 0; x--)
+            {
+                if (!string.Equals(lastName, versions[x].Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    versions[x].DllFiles.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
+                    lastName = versions[x].Name;
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(lastName) && cleanup)
+                {
+                    // Attempt a cleanup of old folders.
+                    try
+                    {
+                        Logger.LogDebug("Deleting {Path}", versions[x].Path);
+                        Directory.Delete(versions[x].Path, true);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
+                    }
+
+                    versions.RemoveAt(x);
+                }
+            }
+
+            return versions;
+        }
 
         /// <summary>
         /// Gets the composable part assemblies.
