@@ -35,6 +35,7 @@ namespace MediaBrowser.Common.Json
             Converters =
             {
                 new JsonGuidConverter(),
+                new JsonNullableGuidConverter(),
                 new JsonVersionConverter(),
                 new JsonStringEnumConverter(),
                 new JsonNullableStructConverterFactory(),
