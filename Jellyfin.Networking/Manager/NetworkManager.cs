@@ -784,7 +784,7 @@ namespace Jellyfin.Networking.Manager
             }
             else
             {
-                _logger.LogDebug("Invalid or unknown network {Token}.", token);
+                _logger.LogDebug("Invalid or unknown object {Token}.", token);
             }
         }
 
