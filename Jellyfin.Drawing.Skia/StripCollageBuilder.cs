@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
@@ -118,6 +119,16 @@ namespace Jellyfin.Drawing.Skia
             };
             canvas.DrawRect(0, 0, width, height, paintColor);
 
+            var typeFace = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
+
+            // use the system fallback to find a typeface for the given CJK character
+            var nonCjkPattern = @"[^\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsKatakana}\p{IsHiragana}\p{IsHangulSyllables}\p{IsHangulJamo}]";
+            var filteredName = Regex.Replace(libraryName ?? string.Empty, nonCjkPattern, string.Empty);
+            if (!string.IsNullOrEmpty(filteredName))
+            {
+                typeFace = SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, filteredName[0]);
+            }
+
             // draw library name
             var textPaint = new SKPaint
             {
@@ -125,7 +136,7 @@ namespace Jellyfin.Drawing.Skia
                 Style = SKPaintStyle.Fill,
                 TextSize = 112,
                 TextAlign = SKTextAlign.Center,
-                Typeface = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright),
+                Typeface = typeFace,
                 IsAntialias = true
             };
 

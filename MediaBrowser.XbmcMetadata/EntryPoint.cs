@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata
             return Task.CompletedTask;
         }
 
-        private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
+        private void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
         {
             if (e.SaveReason == UserDataSaveReason.PlaybackFinished || e.SaveReason == UserDataSaveReason.TogglePlayed || e.SaveReason == UserDataSaveReason.UpdateUserRating)
             {

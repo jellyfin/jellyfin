@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
+    <ProjectReference Include="../../MediaBrowser.Providers/MediaBrowser.Providers.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

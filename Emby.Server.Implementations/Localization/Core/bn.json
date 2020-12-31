@@ -14,8 +14,8 @@
     "HeaderFavoriteArtists": "প্রিয় শিল্পীরা",
     "HeaderFavoriteAlbums": "প্রিয় এলবামগুলো",
     "HeaderContinueWatching": "দেখতে থাকুন",
-    "HeaderAlbumArtists": "এলবাম শিল্পী",
-    "Genres": "জেনার",
+    "HeaderAlbumArtists": "এলবাম শিল্পীবৃন্দ",
+    "Genres": "শৈলী",
     "Folders": "ফোল্ডারগুলো",
     "Favorites": "পছন্দসমূহ",
     "FailedLoginAttemptWithUserName": "{0} লগিন করতে ব্যর্থ হয়েছে",
@@ -112,5 +112,10 @@
     "TaskRefreshPeople": "পিপল রিফ্রেশ করুন",
     "TaskCleanLogsDescription": "{0} দিনের বেশী পুরানো লগ ফাইলগুলি মুছে ফেলুন।",
     "TaskCleanLogs": "লগ ডিরেক্টরি ক্লিন করুন",
-    "TaskRefreshLibraryDescription": "নতুন ফাইলের জন্য মিডিয়া লাইব্রেরি স্ক্যান এবং মেটাডাটা রিফ্রেশ করুন।"
+    "TaskRefreshLibraryDescription": "নতুন ফাইলের জন্য মিডিয়া লাইব্রেরি স্ক্যান এবং মেটাডাটা রিফ্রেশ করুন।",
+    "Undefined": "অসঙ্গায়িত",
+    "Forced": "জোরকরে",
+    "TaskCleanActivityLogDescription": "নির্ধারিত সময়ের আগের কাজের  হিসাব মুছে দিন খালি করুন",
+    "TaskCleanActivityLog": "কাজের ফাইল খালি করুন",
+    "Default": "প্রাথমিক"
 }

@@ -49,7 +49,7 @@ namespace Emby.Dlna.Service
         {
             ControlRequestInfo requestInfo = null;
 
-            using (var streamReader = new StreamReader(request.InputXml))
+            using (var streamReader = new StreamReader(request.InputXml, Encoding.UTF8))
             {
                 var readerSettings = new XmlReaderSettings()
                 {

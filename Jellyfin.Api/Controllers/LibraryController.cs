@@ -667,7 +667,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path));
+            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename);
         }
 
         /// <summary>
@@ -742,8 +742,6 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 IncludeItemTypes = includeItemTypes.ToArray(),
-                IsMovie = isMovie,
-                IsSeries = isSeries,
                 SimilarTo = item,
                 DtoOptions = dtoOptions,
                 EnableTotalRecordCount = !isMovie ?? true,
