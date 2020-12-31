@@ -864,7 +864,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="baseUrl">The baseUrl.</param>
         /// <param name="accessToken">The accessToken.</param>
         /// <returns>The .</returns>
-        public string ToUrl(string baseUrl, string accessToken)
+        public string ToUrl(string baseUrl, string? accessToken)
         {
             if (PlayMethod == PlayMethod.DirectPlay)
             {
@@ -962,7 +962,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="baseUrl">The baseUrl.</param>
         /// <param name="accessToken">The accessToken.</param>
         /// <returns>The <see cref="List{SubtitleStreamInfo}"/>.</returns>
-        public List<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string accessToken)
+        public List<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string? accessToken)
         {
             return GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, false, baseUrl, accessToken);
         }
@@ -976,7 +976,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="baseUrl">The baseUrl.</param>
         /// <param name="accessToken">The accessToken.</param>
         /// <returns>The <see cref="List{SubtitleStreamInfo}"/>.</returns>
-        public List<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
+        public List<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string? accessToken)
         {
             var list = new List<SubtitleStreamInfo>();
 
@@ -1153,7 +1153,7 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        private static List<NameValuePair> BuildParams(StreamInfo item, string accessToken)
+        private static List<NameValuePair> BuildParams(StreamInfo item, string? accessToken)
         {
             var list = new List<NameValuePair>();
 
@@ -1312,7 +1312,7 @@ namespace MediaBrowser.Model.Dlna
             return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
         }
 
-        private void AddSubtitleProfiles(List<SubtitleStreamInfo> list, MediaStream stream, ITranscoderSupport transcoderSupport, bool enableAllProfiles, string baseUrl, string accessToken, long startPositionTicks)
+        private void AddSubtitleProfiles(List<SubtitleStreamInfo> list, MediaStream stream, ITranscoderSupport transcoderSupport, bool enableAllProfiles, string baseUrl, string? accessToken, long startPositionTicks)
         {
             if (enableAllProfiles)
             {
@@ -1331,7 +1331,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles, ITranscoderSupport transcoderSupport)
+        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string? accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles, ITranscoderSupport transcoderSupport)
         {
             var subtitleProfile = StreamBuilder.GetSubtitleProfile(MediaSource, stream, subtitleProfiles, PlayMethod, transcoderSupport, Container, SubProtocol);
             var info = new SubtitleStreamInfo

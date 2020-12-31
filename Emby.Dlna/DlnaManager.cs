@@ -7,12 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Emby.Dlna.Profiles;
-using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -36,9 +37,9 @@ namespace Emby.Dlna
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<DlnaManager> _logger;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
         private readonly Dictionary<string, (InternalProfileInfo profileInfo, DeviceProfile deviceProfile)> _profiles;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DlnaManager"/> class.
@@ -47,21 +48,18 @@ namespace Emby.Dlna
         /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
         /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         public DlnaManager(
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
             ILoggerFactory loggerFactory,
-            IJsonSerializer jsonSerializer,
             IServerApplicationHost appHost)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _logger = loggerFactory.CreateLogger<DlnaManager>();
-            _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             _profiles = new (StringComparer.Ordinal);
         }
@@ -135,7 +133,7 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc/>
-        public void UpdateProfile(DeviceProfile profile)
+        public void UpdateProfile(DeviceProfile? profile)
         {
             if (profile == null)
             {
@@ -144,7 +142,7 @@ namespace Emby.Dlna
 
             profile = ReserializeProfile(profile);
 
-            if (string.IsNullOrEmpty(profile.Id))
+            if (string.IsNullOrEmpty(profile?.Id))
             {
                 throw new ArgumentException("Profile is missing Id");
             }
@@ -261,22 +259,6 @@ namespace Emby.Dlna
         public IEnumerable<DeviceProfileInfo> GetProfileInfos()
         {
             return GetProfileInfosInternal().Select(i => i.Info);
-        }
-
-        /// <summary>
-        /// Gets the server description as Xml.
-        /// </summary>
-        /// <param name="headers">The <see cref="IHeaderDictionary"/>.</param>
-        /// <param name="serverUuId">The serverUuId.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <returns>The <see cref="string"/>.</returns>
-        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
-        {
-            var profile = GetDefaultProfile();
-
-            var serverId = _appHost.SystemId;
-
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
         }
 
         /// <summary>
@@ -602,9 +584,10 @@ namespace Emby.Dlna
                 return profile;
             }
 
-            var json = _jsonSerializer.SerializeToString(profile);
+            var json = JsonSerializer.Serialize(profile, _jsonOptions);
 
-            return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
+            return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions)
+                ?? throw new JsonException("Unable to deserialize profile id :" + profile.Id);
         }
 
         /// <summary>

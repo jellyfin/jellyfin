@@ -10,6 +10,15 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Initializes a new instance of the <see cref="XmlAttribute"/> class.
         /// </summary>
+        public XmlAttribute()
+        {
+            Name = string.Empty;
+            Value = string.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XmlAttribute"/> class.
+        /// </summary>
         /// <param name="name">The name<see cref="string"/>.</param>
         /// <param name="value">The value<see cref="string"/>.</param>
         public XmlAttribute(string name, string value)

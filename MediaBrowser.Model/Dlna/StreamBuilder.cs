@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/>.</param>
         /// <returns>The single container, or null.</returns>
-        public static string? NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile? profile, DlnaProfileType type)
+        public static string? NormalizeMediaSourceFormatIntoSingleContainer(string? inputContainer, DeviceProfile? profile, DlnaProfileType type)
         {
             if (string.IsNullOrEmpty(inputContainer))
             {
@@ -176,9 +176,9 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// The BuildAudioItem.
+        /// Builds an audio item.
         /// </summary>
-        /// <param name="options">The options<see cref="AudioOptions"/>.</param>
+        /// <param name="options">The <see cref="AudioOptions"/>.</param>
         /// <returns>The <see cref="StreamInfo"/> or null.</returns>
         public StreamInfo? BuildAudioItem(AudioOptions options)
         {
@@ -219,9 +219,9 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// The BuildVideoItem.
+        /// Builds a video item.
         /// </summary>
-        /// <param name="options">The options<see cref="VideoOptions"/>.</param>
+        /// <param name="options">The <see cref="VideoOptions"/>.</param>
         /// <returns>The <see cref="StreamInfo"/>.</returns>
         public StreamInfo? BuildVideoItem(VideoOptions options)
         {
@@ -235,8 +235,8 @@ namespace MediaBrowser.Model.Dlna
             var mediaSources = new List<MediaSourceInfo>();
             foreach (MediaSourceInfo i in options.MediaSources)
             {
-                if (string.IsNullOrEmpty(options.MediaSourceId) ||
-                    string.Equals(i.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(options.MediaSourceId)
+                    || string.Equals(i.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
                 {
                     mediaSources.Add(i);
                 }
@@ -351,20 +351,23 @@ namespace MediaBrowser.Model.Dlna
             var audioSupported = false;
             var videoSupported = false;
 
-            foreach (var profile in directPlayProfiles)
+            if (item.Container != null)
             {
-                // Check container type
-                if (profile.SupportsContainer(item.Container))
+                foreach (var profile in directPlayProfiles)
                 {
-                    containerSupported = true;
-
-                    videoSupported = videoStream != null && profile.SupportsVideoCodec(videoStream.Codec);
-
-                    audioSupported = audioStream != null && profile.SupportsAudioCodec(audioStream.Codec);
-
-                    if (videoSupported && audioSupported)
+                    // Check container type
+                    if (profile.SupportsContainer(item.Container))
                     {
-                        break;
+                        containerSupported = true;
+
+                        videoSupported = videoStream != null && profile.SupportsVideoCodec(videoStream.Codec);
+
+                        audioSupported = audioStream != null && profile.SupportsAudioCodec(audioStream.Codec);
+
+                        if (videoSupported && audioSupported)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -728,7 +731,7 @@ namespace MediaBrowser.Model.Dlna
         private static bool IsAudioDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream? audioStream)
         {
             // Check container type
-            if (!profile.SupportsContainer(item.Container))
+            if (item.Container == null || !profile.SupportsContainer(item.Container))
             {
                 return false;
             }
@@ -1173,7 +1176,7 @@ namespace MediaBrowser.Model.Dlna
         private static bool IsVideoDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream videoStream, MediaStream? audioStream)
         {
             // Check container type
-            if (!profile.SupportsContainer(item.Container))
+            if (item.Container == null || !profile.SupportsContainer(item.Container))
             {
                 return false;
             }
@@ -1211,6 +1214,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 SubtitleStreamIndex = options.SubtitleStreamIndex ?? GetDefaultSubtitleStreamIndex(item, options.Profile.SubtitleProfiles)
             };
+
             var subtitleStream = playlistItem.SubtitleStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Subtitle, playlistItem.SubtitleStreamIndex.Value) : null;
 
             var audioStream = item.GetDefaultAudioStream(options.AudioStreamIndex ?? item.DefaultAudioStreamIndex);
@@ -1455,22 +1459,25 @@ namespace MediaBrowser.Model.Dlna
                     "Profile: {0}, No video direct play profiles found for {1} with codec {2}",
                     profile.Name ?? "Unknown Profile",
                     mediaSource.Path ?? "Unknown path",
-                    videoStream.Codec ?? "Unknown codec");
+                    videoStream?.Codec ?? "Unknown codec");
 
                 return (null, GetTranscodeReasonsFromDirectPlayProfile(mediaSource, videoStream, audioStream, profile.DirectPlayProfiles));
             }
 
-            string container = mediaSource.Container;
+            string? container = mediaSource.Container;
 
             var conditions = new List<ProfileCondition>();
-            foreach (var i in profile.ContainerProfiles)
+            if (container != null)
             {
-                if (i.Type == DlnaProfileType.Video
-                    && i.ContainsContainer(container))
+                foreach (var i in profile.ContainerProfiles)
                 {
-                    foreach (var c in i.Conditions)
+                    if (i.Type == DlnaProfileType.Video
+                        && i.ContainsContainer(container))
                     {
-                        conditions.Add(c);
+                        foreach (var c in i.Conditions)
+                        {
+                            conditions.Add(c);
+                        }
                     }
                 }
             }
@@ -1794,7 +1801,7 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private (IEnumerable<PlayMethod>, IEnumerable<TranscodeReason>) GetAudioDirectPlayMethods(MediaSourceInfo item, MediaStream audioStream, AudioOptions options)
+        private (IEnumerable<PlayMethod>, IEnumerable<TranscodeReason>) GetAudioDirectPlayMethods(MediaSourceInfo item, MediaStream? audioStream, AudioOptions options)
         {
             DirectPlayProfile? directPlayProfile = options.Profile.DirectPlayProfiles
                 .FirstOrDefault(x => x.Type == DlnaProfileType.Audio && IsAudioDirectPlaySupported(x, item, audioStream));
@@ -1805,7 +1812,7 @@ namespace MediaBrowser.Model.Dlna
                     "Profile: {0}, No audio direct play profiles found for {1} with codec {2}",
                     options.Profile.Name ?? "Unknown Profile",
                     item.Path ?? "Unknown path",
-                    audioStream.Codec ?? "Unknown codec");
+                    audioStream?.Codec ?? "Unknown codec");
 
                 return (Enumerable.Empty<PlayMethod>(), GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
             }

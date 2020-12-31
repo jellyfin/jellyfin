@@ -418,11 +418,16 @@ namespace Jellyfin.Networking.Manager
             if (_bindExclusions.Count > 0)
             {
                 // Return all the internal interfaces except the ones excluded.
-                return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.ContainsAddress(p)));
+                return CreateCollection(_internalInterfaces.Where(
+                    p => !_bindExclusions.ContainsAddress(p)
+                    && (p.AddressFamily == AddressFamily.InterNetwork
+                      || (p.AddressFamily == AddressFamily.InterNetworkV6 && p.Address.ScopeId != 0))));
             }
 
             // No bind address, so return all internal interfaces.
-            return _internalInterfaces; //  CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
+            return CreateCollection(_internalInterfaces.Where(
+                p => p.AddressFamily == AddressFamily.InterNetwork
+                      || (p.AddressFamily == AddressFamily.InterNetworkV6 && p.Address.ScopeId != 0)));
         }
 
         /// <inheritdoc/>

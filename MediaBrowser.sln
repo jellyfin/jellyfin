@@ -69,12 +69,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "Jell
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\NetworkTesting\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.DlnaPlayTo", "..\Jellyfin-DLNAPlayTo\Jellyfin-DlnaPlayTo\Jellyfin.DlnaPlayTo.csproj", "{4A4ECDAD-0A0D-4E51-B0D1-FCB68A22B949}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.DlnaServer", "..\Jellyfin-DLNAServer\Jellyfin-DlnaServer\Jellyfin.DlnaServer.csproj", "{A983E5B3-A049-4A81-81BA-F0810A851075}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.SSDP", "..\Jellyfin-SSDP\Jellyfin.SSDP\Jellyfin.SSDP.csproj", "{F05A9248-64AA-40FB-89F1-D7EC0AF493B1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -189,18 +183,6 @@ Global
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4A4ECDAD-0A0D-4E51-B0D1-FCB68A22B949}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4A4ECDAD-0A0D-4E51-B0D1-FCB68A22B949}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4A4ECDAD-0A0D-4E51-B0D1-FCB68A22B949}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4A4ECDAD-0A0D-4E51-B0D1-FCB68A22B949}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A983E5B3-A049-4A81-81BA-F0810A851075}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A983E5B3-A049-4A81-81BA-F0810A851075}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A983E5B3-A049-4A81-81BA-F0810A851075}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A983E5B3-A049-4A81-81BA-F0810A851075}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F05A9248-64AA-40FB-89F1-D7EC0AF493B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F05A9248-64AA-40FB-89F1-D7EC0AF493B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F05A9248-64AA-40FB-89F1-D7EC0AF493B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F05A9248-64AA-40FB-89F1-D7EC0AF493B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

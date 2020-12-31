@@ -177,7 +177,7 @@ namespace MediaBrowser.Model.Dlna
             TransportStreamTimestamp timestamp,
             bool isDirectStream,
             long? runtimeTicks,
-            string videoProfile,
+            string? videoProfile,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -187,7 +187,7 @@ namespace MediaBrowser.Model.Dlna
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
-            string videoCodecTag,
+            string? videoCodecTag,
             bool? isAvc)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
