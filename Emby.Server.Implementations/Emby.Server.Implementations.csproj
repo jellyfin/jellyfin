@@ -74,5 +74,4 @@
     <EmbeddedResource Include="Localization\Core\*.json" />
     <EmbeddedResource Include="Localization\Ratings\*.csv" />
   </ItemGroup>
-
 </Project>

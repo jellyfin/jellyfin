@@ -29,18 +29,22 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly ILogger<DashboardController> _logger;
         private readonly IServerApplicationHost _appHost;
+        private readonly IPluginManager _pluginManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardController"/> class.
         /// </summary>
         /// <param name="logger">Instance of <see cref="ILogger{DashboardController}"/> interface.</param>
         /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="pluginManager">Instance of <see cref="IPluginManager"/> interface.</param>
         public DashboardController(
             ILogger<DashboardController> logger,
-            IServerApplicationHost appHost)
+            IServerApplicationHost appHost,
+            IPluginManager pluginManager)
         {
             _logger = logger;
             _appHost = appHost;
+            _pluginManager = pluginManager;
         }
 
         /// <summary>
@@ -83,7 +87,7 @@ namespace Jellyfin.Api.Controllers
                 .Where(i => i != null)
                 .ToList();
 
-            configPages.AddRange(_appHost.Plugins.SelectMany(GetConfigPages));
+            configPages.AddRange(_pluginManager.Plugins.SelectMany(GetConfigPages));
 
             if (pageType.HasValue)
             {
@@ -155,24 +159,24 @@ namespace Jellyfin.Api.Controllers
             return NotFound();
         }
 
-        private IEnumerable<ConfigurationPageInfo> GetConfigPages(IPlugin plugin)
+        private IEnumerable<ConfigurationPageInfo> GetConfigPages(LocalPlugin plugin)
         {
-            return GetPluginPages(plugin).Select(i => new ConfigurationPageInfo(plugin, i.Item1));
+            return GetPluginPages(plugin).Select(i => new ConfigurationPageInfo(plugin.Instance, i.Item1));
         }
 
-        private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages(IPlugin plugin)
+        private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages(LocalPlugin? plugin)
         {
-            if (!(plugin is IHasWebPages hasWebPages))
+            if (plugin?.Instance is not IHasWebPages hasWebPages)
             {
                 return new List<Tuple<PluginPageInfo, IPlugin>>();
             }
 
-            return hasWebPages.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin));
+            return hasWebPages.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin.Instance));
         }
 
         private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages()
         {
-            return _appHost.Plugins.SelectMany(GetPluginPages);
+            return _pluginManager.Plugins.SelectMany(GetPluginPages);
         }
     }
 }
