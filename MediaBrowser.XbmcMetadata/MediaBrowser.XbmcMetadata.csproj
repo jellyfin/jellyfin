@@ -19,7 +19,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <AssemblyName>Jellyfin..XbmcMetadata</AssemblyName>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

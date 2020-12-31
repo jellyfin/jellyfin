@@ -37,6 +37,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             Logger = logger;
             _config = config;
             ProviderManager = providerManager;
+            _validProviderIds = new Dictionary<string, string>();
         }
 
         protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
@@ -72,7 +73,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 throw new ArgumentException("The metadata file was empty or null.", nameof(metadataFile));
             }
 
-            _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var idInfos = ProviderManager.GetExternalIdInfos(item.Item);
 
@@ -376,7 +377,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 }
 
                                 return null;
-                            }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
+                            }).OfType<MetadataField>().ToArray();
                         }
 
                         break;
@@ -711,10 +712,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 default:
                     string readerName = reader.Name;
-                    if (_validProviderIds.TryGetValue(readerName, out string providerIdValue))
+                    if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
                     {
                         var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
+                        if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
                         {
                             item.SetProviderId(providerIdValue, id);
                         }

@@ -5,16 +5,17 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
@@ -23,14 +24,13 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger _logger;
-        private readonly IJsonSerializer _json;
         private readonly IApplicationPaths _appPaths;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public LiveStreamHelper(IMediaEncoder mediaEncoder, ILogger logger, IJsonSerializer json, IApplicationPaths appPaths)
+        public LiveStreamHelper(IMediaEncoder mediaEncoder, ILogger logger, IApplicationPaths appPaths)
         {
             _mediaEncoder = mediaEncoder;
             _logger = logger;
-            _json = json;
             _appPaths = appPaths;
         }
 
@@ -47,7 +47,8 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    mediaInfo = _json.DeserializeFromFile<MediaInfo>(cacheFilePath);
+                    await using FileStream jsonStream = File.OpenRead(cacheFilePath);
+                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
                 }
@@ -83,7 +84,8 @@ namespace Emby.Server.Implementations.Library
                 if (cacheFilePath != null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    _json.SerializeToFile(mediaInfo, cacheFilePath);
+                    await using FileStream createStream = File.OpenWrite(cacheFilePath);
+                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
