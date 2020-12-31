@@ -1127,7 +1127,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 targetVideoCodec = "hevc";
             }
 
-            var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault();
+            var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault() ?? string.Empty;
             profile =  Regex.Replace(profile, @"\s+", String.Empty);
 
             // Only libx264 support encoding H264 High 10 Profile, otherwise force High Profile.
