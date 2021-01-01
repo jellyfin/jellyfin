@@ -23,7 +23,6 @@ namespace Emby.Server.Implementations.Plugins
     /// </summary>
     public class PluginManager : IPluginManager
     {
-        private readonly object _lock;
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
         private readonly JsonSerializerOptions _jsonOptions;
@@ -51,7 +50,6 @@ namespace Emby.Server.Implementations.Plugins
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _lock = new object();
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions())
             {
                 WriteIndented = true
