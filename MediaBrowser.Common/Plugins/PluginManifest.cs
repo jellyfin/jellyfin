@@ -106,5 +106,12 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         [JsonPropertyName("imagePath")]
         public string? ImagePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this manifest was created from to the depreciated method of multiple plugins per folder.
+        /// In this instance manifests cannot be stored on disk.
+        /// </summary>
+        [JsonIgnore]
+        public bool Depreciated { get; set; }
     }
 }

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
@@ -24,6 +23,7 @@ namespace Emby.Server.Implementations.Plugins
     /// </summary>
     public class PluginManager : IPluginManager
     {
+        private readonly object _lock;
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
         private readonly JsonSerializerOptions _jsonOptions;
@@ -51,6 +51,7 @@ namespace Emby.Server.Implementations.Plugins
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
+            _lock = new object();
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions())
             {
                 WriteIndented = true
@@ -94,9 +95,13 @@ namespace Emby.Server.Implementations.Plugins
                 }
             }
 
+            var pluginType = typeof(IPlugin);
+            int dynamicallyAdded = 0;
+
             // Now load the assemblies..
-            foreach (var plugin in _plugins)
+            for (int i = 0; i <= _plugins.Count - dynamicallyAdded - 1; i++)
             {
+                var plugin = _plugins[i];
                 UpdatePluginSuperceedStatus(plugin);
 
                 if (plugin.IsEnabledAndSupported == false)
@@ -105,8 +110,11 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
-                foreach (var file in plugin.DllFiles)
+                var pluginCount = 0;
+                int j = 0;
+                while (j < plugin.DllFiles.Count)
                 {
+                    var file = plugin.DllFiles[j];
                     Assembly assembly;
                     try
                     {
@@ -114,9 +122,40 @@ namespace Emby.Server.Implementations.Plugins
 
                         // This force loads all reference dll's that the plugin uses in the try..catch block.
                         // Removing this will cause JF to bomb out if referenced dll's cause issues.
-                        assembly.GetExportedTypes();
+                        var ass = assembly.GetExportedTypes();
+
+                        // Backwards compatibility fix where we multiple assemblies containing types.
+                        var containsPlugin = ass.Any(i => pluginType.IsAssignableFrom(i));
+
+                        if (containsPlugin && ++pluginCount > 1)
+                        {
+                            _logger.LogWarning("Depreciated: Multiple plugins found in one folder : {Plugin}", file);
+                            plugin.DllFiles.RemoveAt(j);
+                            plugin.Manifest.Depreciated = true;
+                            // Clone LocalPlugin so that it can be managed.
+                            var p = new LocalPlugin(
+                                plugin.Path,
+                                true,
+                                new PluginManifest()
+                                {
+                                    Status = PluginStatus.Active,
+                                    Name = Path.GetFileNameWithoutExtension(file) ?? file,
+                                    AutoUpdate = false,
+                                    Id = file.GetMD5(),
+                                    TargetAbi = _appVersion.ToString(),
+                                    Version = "0.0.0.1",
+                                    Depreciated = true
+                                });
+                            p.DllFiles.Add(file);
+                            _plugins.Add(p);
+                            dynamicallyAdded++;
+                        }
+                        else
+                        {
+                            j++;
+                        }
                     }
-                    catch (FileLoadException ex)
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
@@ -126,6 +165,13 @@ namespace Emby.Server.Implementations.Plugins
                     _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
                     yield return assembly;
                 }
+            }
+
+            if (dynamicallyAdded > 0)
+            {
+                _logger.LogWarning("Multiple plugins sharing the same folder is depreciated.");
+                _logger.LogWarning("Running plugins in this configuration is no longer recommended, and may have unforeseen consequences.");
+                _logger.LogWarning("Please move each plugin listed above, along with any of their supporting assemblies, into their own folder, and restart Jellyfin.");
             }
         }
 
@@ -328,7 +374,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <returns>True if successful.</returns>
         public bool SaveManifest(PluginManifest manifest, string path)
         {
-            if (manifest == null)
+            if (manifest == null || manifest.Depreciated) 
             {
                 return false;
             }
@@ -374,7 +420,7 @@ namespace Emby.Server.Implementations.Plugins
         private LocalPlugin? GetPluginByAssembly(Assembly assembly)
         {
             // Find which plugin it is by the path.
-            return _plugins.FirstOrDefault(p => string.Equals(p.Path, Path.GetDirectoryName(assembly.Location), StringComparison.Ordinal));
+            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location));
         }
 
         /// <summary>
@@ -423,7 +469,7 @@ namespace Emby.Server.Implementations.Plugins
                     var manifest = plugin.Manifest;
                     var pluginStr = plugin.Instance.Version.ToString();
                     bool changed = false;
-                    if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal))
+                    if (!string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal) || manifest.Depreciated)
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
                         // this updates the manifest to the actual plugin values.
@@ -559,7 +605,7 @@ namespace Emby.Server.Implementations.Plugins
             // Auto-create a plugin manifest, so we can disable it, if it fails to load.
             manifest = new PluginManifest
             {
-                Status = PluginStatus.Restart,
+                Status = PluginStatus.Active,
                 Name = metafile,
                 AutoUpdate = false,
                 Id = metafile.GetMD5(),
