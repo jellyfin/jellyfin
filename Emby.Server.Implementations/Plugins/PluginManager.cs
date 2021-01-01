@@ -156,6 +156,7 @@ namespace Emby.Server.Implementations.Plugins
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        j++;
                         continue;
                     }
 
