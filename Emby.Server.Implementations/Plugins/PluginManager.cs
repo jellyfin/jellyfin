@@ -418,7 +418,7 @@ namespace Emby.Server.Implementations.Plugins
         private LocalPlugin? GetPluginByAssembly(Assembly assembly)
         {
             // Find which plugin it is by the path.
-            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location));
+            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location, StringComparer.Ordinal)));
         }
 
         /// <summary>
