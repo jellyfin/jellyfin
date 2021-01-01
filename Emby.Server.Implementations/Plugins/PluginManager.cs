@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Plugins
                         // Removing this will cause JF to bomb out if referenced dll's cause issues.
                         var ass = assembly.GetExportedTypes();
 
-                        // Backwards compatibility fix where we multiple assemblies containing types.
+                        // Backwards compatibility fix where we have multiple assemblies containing types.
                         var containsPlugin = ass.Any(a => pluginType.IsAssignableFrom(a));
 
                         if (containsPlugin && ++pluginCount > 1)
