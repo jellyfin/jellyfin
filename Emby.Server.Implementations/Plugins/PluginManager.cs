@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.Plugins
                         // Removing this will cause JF to bomb out if referenced dll's cause issues.
                         assembly.GetExportedTypes();
                     }
-                    catch (FileLoadException ex)
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
@@ -423,7 +423,7 @@ namespace Emby.Server.Implementations.Plugins
                     var manifest = plugin.Manifest;
                     var pluginStr = plugin.Instance.Version.ToString();
                     bool changed = false;
-                    if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal))
+                    if (!string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal))
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
                         // this updates the manifest to the actual plugin values.
