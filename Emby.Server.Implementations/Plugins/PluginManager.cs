@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations.Plugins
                         var ass = assembly.GetExportedTypes();
 
                         // Backwards compatibility fix where we multiple assemblies containing types.
-                        var containsPlugin = ass.Any(i => pluginType.IsAssignableFrom(i));
+                        var containsPlugin = ass.Any(a => pluginType.IsAssignableFrom(a));
 
                         if (containsPlugin && ++pluginCount > 1)
                         {
@@ -418,7 +418,7 @@ namespace Emby.Server.Implementations.Plugins
         private LocalPlugin? GetPluginByAssembly(Assembly assembly)
         {
             // Find which plugin it is by the path.
-            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location, StringComparer.Ordinal)));
+            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location, StringComparer.Ordinal));
         }
 
         /// <summary>
