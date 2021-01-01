@@ -94,10 +94,10 @@ namespace Emby.Server.Implementations.Plugins
             }
 
             var pluginType = typeof(IPlugin);
-            int dynamicallyAdded = 0;
+            int originalPluginCount = _plugins.Count;
 
             // Now load the assemblies..
-            for (int i = 0; i <= _plugins.Count - dynamicallyAdded - 1; i++)
+            for (int i = 0; i < originalPluginCount; i++)
             {
                 var plugin = _plugins[i];
                 UpdatePluginSuperceedStatus(plugin);
@@ -146,7 +146,6 @@ namespace Emby.Server.Implementations.Plugins
                                 });
                             p.DllFiles.Add(file);
                             _plugins.Add(p);
-                            dynamicallyAdded++;
                         }
                         else
                         {
@@ -165,7 +164,7 @@ namespace Emby.Server.Implementations.Plugins
                 }
             }
 
-            if (dynamicallyAdded > 0)
+            if (originalPluginCount != _plugins.Count)
             {
                 _logger.LogWarning("Multiple plugins sharing the same folder is depreciated.");
                 _logger.LogWarning("Running plugins in this configuration is no longer recommended, and may have unforeseen consequences.");
