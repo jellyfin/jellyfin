@@ -23,24 +23,15 @@
 
   <ItemGroup>
     <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
     <PackageReference Include="Mono.Nat" Version="3.0.1" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.4.1" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.10.2" />
     <PackageReference Include="sharpcompress" Version="0.26.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.1.0" />
-    <PackageReference Include="DotNet.Glob" Version="3.1.0" />
+    <PackageReference Include="DotNet.Glob" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,5 +65,4 @@
     <EmbeddedResource Include="Localization\Core\*.json" />
     <EmbeddedResource Include="Localization\Ratings\*.csv" />
   </ItemGroup>
-
 </Project>

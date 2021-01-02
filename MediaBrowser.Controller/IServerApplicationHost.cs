@@ -19,8 +19,6 @@ namespace MediaBrowser.Controller
     {
         event EventHandler HasUpdateAvailableChanged;
 
-        IServiceProvider ServiceProvider { get; }
-
         bool CoreStartupHasCompleted { get; }
 
         bool CanLaunchWebBrowser { get; }
@@ -122,13 +120,5 @@ namespace MediaBrowser.Controller
         string ExpandVirtualPath(string path);
 
         string ReverseVirtualPath(string path);
-
-        /// <summary>
-        /// Gets the list of local plugins.
-        /// </summary>
-        /// <param name="path">Plugin base directory.</param>
-        /// <param name="cleanup">Cleanup old plugins.</param>
-        /// <returns>Enumerable of local plugins.</returns>
-        IEnumerable<LocalPlugin> GetLocalPlugins(string path, bool cleanup = true);
     }
 }

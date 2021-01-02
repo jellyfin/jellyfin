@@ -1,4 +1,7 @@
-#nullable disable
+#nullable enable
+
+using System;
+
 namespace MediaBrowser.Model.Plugins
 {
     /// <summary>
@@ -7,34 +10,46 @@ namespace MediaBrowser.Model.Plugins
     public class PluginInfo
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="PluginInfo"/> class.
+        /// </summary>
+        /// <param name="name">The plugin name.</param>
+        /// <param name="version">The plugin <see cref="Version"/>.</param>
+        /// <param name="description">The plugin description.</param>
+        /// <param name="id">The <see cref="Guid"/>.</param>
+        /// <param name="canUninstall">True if this plugin can be uninstalled.</param>
+        public PluginInfo(string name, Version version, string description, Guid id, bool canUninstall)
+        {
+            Name = name;
+            Version = version;
+            Description = description;
+            Id = id;
+            CanUninstall = canUninstall;
+        }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
-        /// <value>The name.</value>
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the version.
         /// </summary>
-        /// <value>The version.</value>
-        public string Version { get; set; }
+        public Version Version { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the configuration file.
         /// </summary>
-        /// <value>The name of the configuration file.</value>
-        public string ConfigurationFileName { get; set; }
+        public string? ConfigurationFileName { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
-        /// <value>The description.</value>
         public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the unique id.
         /// </summary>
-        /// <value>The unique id.</value>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the plugin can be uninstalled.
@@ -42,9 +57,13 @@ namespace MediaBrowser.Model.Plugins
         public bool CanUninstall { get; set; }
 
         /// <summary>
-        /// Gets or sets the image URL.
+        /// Gets or sets a value indicating whether this plugin has a valid image.
         /// </summary>
-        /// <value>The image URL.</value>
-        public string ImageUrl { get; set; }
+        public bool HasImage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the status of the plugin.
+        /// </summary>
+        public PluginStatus Status { get; set; }
     }
 }
