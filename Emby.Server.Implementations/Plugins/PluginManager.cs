@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Plugins
 
                         if (containsPlugin && ++pluginCount > 1)
                         {
-                            _logger.LogWarning("Depreciated: Multiple plugins found in one folder: {Plugin}", file);
+                            _logger.LogWarning("Deprecated: Multiple plugins found in one folder: {Plugin}", file);
                             plugin.DllFiles.RemoveAt(j);
                             plugin.Manifest.Depreciated = true;
                             // Clone LocalPlugin so that it can be managed.
