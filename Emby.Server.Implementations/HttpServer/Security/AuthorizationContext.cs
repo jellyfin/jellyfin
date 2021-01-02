@@ -185,11 +185,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         updateToken = true;
                     }
 
-                    authInfo.IsApiKey = true;
+                    authInfo.IsApiKey = false;
                 }
                 else
                 {
-                    authInfo.IsApiKey = false;
+                    authInfo.IsApiKey = true;
                 }
 
                 if (updateToken)

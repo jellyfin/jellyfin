@@ -1,9 +1,10 @@
 using System;
+using System.Globalization;
 using System.Text.Json;
 using MediaBrowser.Common.Json.Converters;
 using Xunit;
 
-namespace Jellyfin.Common.Tests.Extensions
+namespace Jellyfin.Common.Tests.Json
 {
     public class JsonGuidConverterTests
     {
@@ -44,9 +45,25 @@ namespace Jellyfin.Common.Tests.Extensions
         }
 
         [Fact]
-        public void Serialize_EmptyGuid_Null()
+        public void Serialize_EmptyGuid_EmptyGuid()
         {
-            Assert.Equal("null", JsonSerializer.Serialize(Guid.Empty, _options));
+            Assert.Equal($"\"{Guid.Empty:N}\"", JsonSerializer.Serialize(Guid.Empty, _options));
+        }
+
+        [Fact]
+        public void Serialize_Valid_NoDash_Success()
+        {
+            var guid = new Guid("531797E9-9457-40E0-88BC-B1D6D38752FA");
+            var str = JsonSerializer.Serialize(guid, _options);
+            Assert.Equal($"\"{guid:N}\"", str);
+        }
+
+        [Fact]
+        public void Serialize_Nullable_Success()
+        {
+            Guid? guid = new Guid("531797E9-9457-40E0-88BC-B1D6D38752FA");
+            var str = JsonSerializer.Serialize(guid, _options);
+            Assert.Equal($"\"{guid:N}\"", str);
         }
     }
 }

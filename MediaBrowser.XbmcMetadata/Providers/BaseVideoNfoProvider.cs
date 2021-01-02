@@ -50,7 +50,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         }
 
         /// <inheritdoc />
-        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return MovieNfoSaver.GetMovieSavePaths(info)
                 .Select(directoryService.GetFile)

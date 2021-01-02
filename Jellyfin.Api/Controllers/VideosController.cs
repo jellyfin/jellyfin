@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Merges videos into a single record.
         /// </summary>
-        /// <param name="itemIds">Item id list. This allows multiple, comma delimited.</param>
+        /// <param name="ids">Item id list. This allows multiple, comma delimited.</param>
         /// <response code="204">Videos merged.</response>
         /// <response code="400">Supply at least 2 video ids.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success, or a <see cref="BadRequestResult"/> if less than two ids were supplied.</returns>
@@ -204,9 +204,9 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> MergeVersions([FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] itemIds)
+        public async Task<ActionResult> MergeVersions([FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
-            var items = itemIds
+            var items = ids
                 .Select(i => _libraryManager.GetItemById(i))
                 .OfType<Video>()
                 .OrderBy(i => i.Id)

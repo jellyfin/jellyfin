@@ -1,9 +1,9 @@
 namespace Jellyfin.Data.Enums
 {
     /// <summary>
-    /// Enum SyncPlayAccess.
+    /// Enum SyncPlayUserAccessType.
     /// </summary>
-    public enum SyncPlayAccess
+    public enum SyncPlayUserAccessType
     {
         /// <summary>
         /// User can create groups and join them.

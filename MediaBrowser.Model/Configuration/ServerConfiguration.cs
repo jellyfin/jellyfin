@@ -49,8 +49,6 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "Series",
-                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
-                    DisabledImageFetchers = new[] { "TheMovieDb" }
                 },
                 new MetadataOptions
                 {
@@ -69,13 +67,10 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "Season",
-                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
                 },
                 new MetadataOptions
                 {
                     ItemType = "Episode",
-                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
         }
@@ -304,6 +299,18 @@ namespace MediaBrowser.Model.Configuration
         public int MinResumeDurationSeconds { get; set; } = 300;
 
         /// <summary>
+        /// Gets or sets the minimum minutes of a book that must be played in order for playstate to be updated.
+        /// </summary>
+        /// <value>The min resume in minutes.</value>
+        public int MinAudiobookResume { get; set; } = 5;
+
+        /// <summary>
+        /// Gets or sets the remaining minutes of a book that can be played while still saving playstate. If this percentage is crossed playstate will be reset to the beginning and the item will be marked watched.
+        /// </summary>
+        /// <value>The remaining time in minutes.</value>
+        public int MaxAudiobookResume { get; set; } = 5;
+
+        /// <summary>
         /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
         /// Some delay is necessary with some items because their creation is not atomic.  It involves the creation of several
         /// different directories and files.
@@ -449,5 +456,15 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the how many metadata refreshes can run concurrently.
         /// </summary>
         public int LibraryMetadataRefreshConcurrency { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
+        /// </summary>
+        public bool RemoveOldPlugins { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether plugin image should be disabled.
+        /// </summary>
+        public bool DisablePluginImages { get; set; }
     }
 }

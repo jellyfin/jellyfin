@@ -22,6 +22,12 @@ jobs:
         BuildConfiguration: ubuntu.armhf
       Linux.amd64:
         BuildConfiguration: linux.amd64
+      Linux.amd64-musl:
+        BuildConfiguration: linux.amd64-musl
+      Linux.arm64:
+        BuildConfiguration: linux.arm64
+      Linux.armhf:
+        BuildConfiguration: linux.armhf
       Windows.amd64:
         BuildConfiguration: windows.amd64
       MacOS:
@@ -204,6 +210,7 @@ jobs:
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Unstable Nuget packages'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
       command: 'custom'
       projects: |
@@ -220,12 +227,6 @@ jobs:
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
       artifactName: Jellyfin Nuget Packages
-
-  - task: NuGetAuthenticate@0
-    displayName: 'Authenticate to stable Nuget feed'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-    inputs:
-      nuGetServiceConnections: 'NugetOrg'
 
   - task: NuGetCommand@2
     displayName: 'Push Nuget packages to stable feed'

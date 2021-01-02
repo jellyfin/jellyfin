@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +18,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
     public class TaskManager : ITaskManager
     {
         public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+
         public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 
         /// <summary>
@@ -33,7 +33,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
             new ConcurrentQueue<Tuple<Type, TaskOptions>>();
 
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationPaths _applicationPaths;
         private readonly ILogger<TaskManager> _logger;
 
@@ -41,15 +40,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
-            IJsonSerializer jsonSerializer,
             ILogger<TaskManager> logger)
         {
             _applicationPaths = applicationPaths;
-            _jsonSerializer = jsonSerializer;
             _logger = logger;
 
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
@@ -196,7 +192,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="tasks">The tasks.</param>
         public void AddTasks(IEnumerable<IScheduledTask> tasks)
         {
-            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _jsonSerializer, _logger));
+            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _logger));
 
             ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
         }

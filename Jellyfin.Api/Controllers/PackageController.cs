@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
@@ -99,7 +100,7 @@ namespace Jellyfin.Api.Controllers
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             if (!string.IsNullOrEmpty(repositoryUrl))
             {
-                packages = packages.Where(p => p.versions.Where(q => q.repositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)).Any())
+                packages = packages.Where(p => p.Versions.Any(q => q.RepositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
             }
 

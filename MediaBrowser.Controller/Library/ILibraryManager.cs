@@ -571,7 +571,7 @@ namespace MediaBrowser.Controller.Library
             string videoPath,
             string[] files);
 
-        void RunMetadataSavers(IReadOnlyList<BaseItem> items, ItemUpdateType updateReason);
+        Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
         BaseItem GetParentItem(string parentId, Guid? userId);
 
