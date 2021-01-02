@@ -168,9 +168,9 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
 
                     user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-                    user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+                    user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
                     user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-                    user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+                    user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
                     user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
                     user.SetPreference(PreferenceKind.OrderedViews, config.OrderedViews);
                     user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);

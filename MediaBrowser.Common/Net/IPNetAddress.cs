@@ -33,7 +33,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// IP4Loopback address host.
         /// </summary>
-        public static readonly IPNetAddress IP4Loopback = IPNetAddress.Parse("127.0.0.1/32");
+        public static readonly IPNetAddress IP4Loopback = IPNetAddress.Parse("127.0.0.1/8");
 
         /// <summary>
         /// IP6Loopback address host.

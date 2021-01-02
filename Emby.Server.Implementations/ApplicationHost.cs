@@ -3,14 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
@@ -49,6 +50,7 @@ using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -116,12 +118,14 @@ namespace Emby.Server.Implementations
 
         private readonly IFileSystem _fileSystemManager;
         private readonly IXmlSerializer _xmlSerializer;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IStartupOptions _startupOptions;
+        private readonly IPluginManager _pluginManager;
 
+        private List<Type> _creatingInstances;
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private string[] _urlPrefixes;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -179,16 +183,6 @@ namespace Emby.Server.Implementations
         protected ILogger<ApplicationHost> Logger { get; }
 
         protected IServiceCollection ServiceCollection { get; }
-
-        private IPlugin[] _plugins;
-
-        private IReadOnlyList<LocalPlugin> _pluginsManifests;
-
-        /// <summary>
-        /// Gets the plugins.
-        /// </summary>
-        /// <value>The plugins.</value>
-        public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
         /// Gets the logger factory.
@@ -255,7 +249,6 @@ namespace Emby.Server.Implementations
             IServiceCollection serviceCollection)
         {
             _xmlSerializer = new MyXmlSerializer();
-            _jsonSerializer = new JsonSerializer();
 
             ServiceCollection = serviceCollection;
 
@@ -283,16 +276,16 @@ namespace Emby.Server.Implementations
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            CertificateInfo = new CertificateInfo
-            {
-                Path = ServerConfigurationManager.Configuration.CertificatePath,
-                Password = ServerConfigurationManager.Configuration.CertificatePassword
-            };
-            Certificate = GetCertificate(CertificateInfo);
-
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
+
+            _pluginManager = new PluginManager(
+                LoggerFactory.CreateLogger<PluginManager>(),
+                this,
+                ServerConfigurationManager.Configuration,
+                ApplicationPaths.PluginsPath,
+                ApplicationVersion);
         }
 
         /// <summary>
@@ -392,15 +385,40 @@ namespace Emby.Server.Implementations
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Type type)
         {
+            if (_creatingInstances == null)
+            {
+                _creatingInstances = new List<Type>();
+            }
+
+            if (_creatingInstances.IndexOf(type) != -1)
+            {
+                Logger.LogError("DI Loop detected in the attempted creation of {Type}", type.FullName);
+                foreach (var entry in _creatingInstances)
+                {
+                    Logger.LogError("Called from: {TypeName}", entry.FullName);
+                }
+
+                _pluginManager.FailPlugin(type.Assembly);
+
+                throw new ExternalException("DI Loop detected.");
+            }
+
             try
             {
+                _creatingInstances.Add(type);
                 Logger.LogDebug("Creating instance of {Type}", type);
                 return ActivatorUtilities.CreateInstance(ServiceProvider, type);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error creating {Type}", type);
+                // If this is a plugin fail it.
+                _pluginManager.FailPlugin(type.Assembly);
                 return null;
+            }
+            finally
+            {
+                _creatingInstances.Remove(type);
             }
         }
 
@@ -411,11 +429,7 @@ namespace Emby.Server.Implementations
         /// <returns>``0.</returns>
         public T Resolve<T>() => ServiceProvider.GetService<T>();
 
-        /// <summary>
-        /// Gets the export types.
-        /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <returns>IEnumerable{Type}.</returns>
+        /// <inheritdoc/>
         public IEnumerable<Type> GetExportTypes<T>()
         {
             var currentType = typeof(T);
@@ -444,6 +458,27 @@ namespace Emby.Server.Implementations
             return parts;
         }
 
+        /// <inheritdoc />
+        public IReadOnlyCollection<T> GetExports<T>(CreationDelegate defaultFunc, bool manageLifetime = true)
+        {
+            // Convert to list so this isn't executed for each iteration
+            var parts = GetExportTypes<T>()
+                .Select(i => defaultFunc(i))
+                .Where(i => i != null)
+                .Cast<T>()
+                .ToList();
+
+            if (manageLifetime)
+            {
+                lock (_disposableParts)
+                {
+                    _disposableParts.AddRange(parts.OfType<IDisposable>());
+                }
+            }
+
+            return parts;
+        }
+
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
@@ -455,6 +490,7 @@ namespace Emby.Server.Implementations
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+            ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
             _mediaEncoder.SetFFmpegPath();
 
@@ -504,11 +540,18 @@ namespace Emby.Server.Implementations
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
             }
 
+            CertificateInfo = new CertificateInfo
+            {
+                Path = networkConfiguration.CertificatePath,
+                Password = networkConfiguration.CertificatePassword
+            };
+            Certificate = GetCertificate(CertificateInfo);
+
             DiscoverTypes();
 
             RegisterServices();
 
-            RegisterPluginServices();
+            _pluginManager.RegisterServices(ServiceCollection);
         }
 
         /// <summary>
@@ -522,10 +565,8 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton(ConfigurationManager);
             ServiceCollection.AddSingleton<IApplicationHost>(this);
-
+            ServiceCollection.AddSingleton<IPluginManager>(_pluginManager);
             ServiceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
-
-            ServiceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
 
             ServiceCollection.AddSingleton(_fileSystemManager);
 
@@ -712,7 +753,7 @@ namespace Emby.Server.Implementations
                 // Don't use an empty string password
                 var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
 
-                var localCert = new X509Certificate2(certificateLocation, password);
+                var localCert = new X509Certificate2(certificateLocation, password, X509KeyStorageFlags.UserKeySet);
                 // localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
@@ -750,7 +791,6 @@ namespace Emby.Server.Implementations
             UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
             CollectionFolder.XmlSerializer = _xmlSerializer;
-            CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
         }
 
@@ -766,34 +806,7 @@ namespace Emby.Server.Implementations
             }
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
-            _plugins = GetExports<IPlugin>()
-                        .Where(i => i != null)
-                        .ToArray();
-
-            if (Plugins != null)
-            {
-                foreach (var plugin in Plugins)
-                {
-                    if (_pluginsManifests != null && plugin is IPluginAssembly assemblyPlugin)
-                    {
-                        // Ensure the version number matches the Plugin Manifest information.
-                        foreach (var item in _pluginsManifests)
-                        {
-                            if (Path.GetDirectoryName(plugin.AssemblyFilePath).Equals(item.Path, StringComparison.OrdinalIgnoreCase))
-                            {
-                                // Update version number to that of the manifest.
-                                assemblyPlugin.SetAttributes(
-                                    plugin.AssemblyFilePath,
-                                    Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(plugin.AssemblyFilePath)),
-                                    item.Version);
-                                break;
-                            }
-                        }
-                    }
-
-                    Logger.LogInformation("Loaded plugin: {PluginName} {PluginVersion}", plugin.Name, plugin.Version);
-                }
-            }
+            _pluginManager.CreatePlugins();
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
 
@@ -832,22 +845,6 @@ namespace Emby.Server.Implementations
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
         }
 
-        private void RegisterPluginServices()
-        {
-            foreach (var pluginServiceRegistrator in GetExportTypes<IPluginServiceRegistrator>())
-            {
-                try
-                {
-                    var instance = (IPluginServiceRegistrator)Activator.CreateInstance(pluginServiceRegistrator);
-                    instance.RegisterServices(ServiceCollection);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error registering plugin services from {Assembly}.", pluginServiceRegistrator.Assembly);
-                }
-            }
-        }
-
         private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
         {
             foreach (var ass in assemblies)
@@ -860,11 +857,13 @@ namespace Emby.Server.Implementations
                 catch (FileNotFoundException ex)
                 {
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
+                    _pluginManager.FailPlugin(ass);
                     continue;
                 }
                 catch (TypeLoadException ex)
                 {
                     Logger.LogError(ex, "Error loading types from {Assembly}.", ass.FullName);
+                    _pluginManager.FailPlugin(ass);
                     continue;
                 }
 
@@ -910,11 +909,11 @@ namespace Emby.Server.Implementations
         protected void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
+            var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
 
             // Don't do anything if these haven't been set yet
             if (HttpPort != 0 && HttpsPort != 0)
             {
-                var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
                 // Need to restart if ports have changed
                 if (networkConfiguration.HttpServerPortNumber != HttpPort ||
                     networkConfiguration.HttpsPortNumber != HttpsPort)
@@ -934,10 +933,7 @@ namespace Emby.Server.Implementations
                 requiresRestart = true;
             }
 
-            var currentCertPath = CertificateInfo?.Path;
-            var newCertPath = ServerConfigurationManager.Configuration.CertificatePath;
-
-            if (!string.Equals(currentCertPath, newCertPath, StringComparison.OrdinalIgnoreCase))
+            if (ValidateSslCertificate(networkConfiguration))
             {
                 requiresRestart = true;
             }
@@ -948,6 +944,33 @@ namespace Emby.Server.Implementations
 
                 NotifyPendingRestart();
             }
+        }
+
+        /// <summary>
+        /// Validates the SSL certificate.
+        /// </summary>
+        /// <param name="networkConfig">The new configuration.</param>
+        /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
+        private bool ValidateSslCertificate(NetworkConfiguration networkConfig)
+        {
+            var newPath = networkConfig.CertificatePath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(CertificateInfo?.Path, newPath, StringComparison.Ordinal))
+            {
+                if (File.Exists(newPath))
+                {
+                    return true;
+                }
+
+                throw new FileNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Certificate file '{0}' does not exist.",
+                        newPath));
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -1003,129 +1026,15 @@ namespace Emby.Server.Implementations
 
         protected abstract void RestartInternal();
 
-        /// <inheritdoc/>
-        public IEnumerable<LocalPlugin> GetLocalPlugins(string path, bool cleanup = true)
-        {
-            var minimumVersion = new Version(0, 0, 0, 1);
-            var versions = new List<LocalPlugin>();
-            if (!Directory.Exists(path))
-            {
-                // Plugin path doesn't exist, don't try to enumerate subfolders.
-                return Enumerable.Empty<LocalPlugin>();
-            }
-
-            var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
-
-            foreach (var dir in directories)
-            {
-                try
-                {
-                    var metafile = Path.Combine(dir, "meta.json");
-                    if (File.Exists(metafile))
-                    {
-                        var manifest = _jsonSerializer.DeserializeFromFile<PluginManifest>(metafile);
-
-                        if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
-                        {
-                            targetAbi = minimumVersion;
-                        }
-
-                        if (!Version.TryParse(manifest.Version, out var version))
-                        {
-                            version = minimumVersion;
-                        }
-
-                        if (ApplicationVersion >= targetAbi)
-                        {
-                            // Only load Plugins if the plugin is built for this version or below.
-                            versions.Add(new LocalPlugin(manifest.Guid, manifest.Name, version, dir));
-                        }
-                    }
-                    else
-                    {
-                        // No metafile, so lets see if the folder is versioned.
-                        metafile = dir.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
-
-                        int versionIndex = dir.LastIndexOf('_');
-                        if (versionIndex != -1 && Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version parsedVersion))
-                        {
-                            // Versioned folder.
-                            versions.Add(new LocalPlugin(Guid.Empty, metafile, parsedVersion, dir));
-                        }
-                        else
-                        {
-                            // Un-versioned folder - Add it under the path name and version 0.0.0.1.
-                            versions.Add(new LocalPlugin(Guid.Empty, metafile, minimumVersion, dir));
-                        }
-                    }
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-
-            string lastName = string.Empty;
-            versions.Sort(LocalPlugin.Compare);
-            // Traverse backwards through the list.
-            // The first item will be the latest version.
-            for (int x = versions.Count - 1; x >= 0; x--)
-            {
-                if (!string.Equals(lastName, versions[x].Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    versions[x].DllFiles.AddRange(Directory.EnumerateFiles(versions[x].Path, "*.dll", SearchOption.AllDirectories));
-                    lastName = versions[x].Name;
-                    continue;
-                }
-
-                if (!string.IsNullOrEmpty(lastName) && cleanup)
-                {
-                    // Attempt a cleanup of old folders.
-                    try
-                    {
-                        Logger.LogDebug("Deleting {Path}", versions[x].Path);
-                        Directory.Delete(versions[x].Path, true);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogWarning(e, "Unable to delete {Path}", versions[x].Path);
-                    }
-
-                    versions.RemoveAt(x);
-                }
-            }
-
-            return versions;
-        }
-
         /// <summary>
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
         protected IEnumerable<Assembly> GetComposablePartAssemblies()
         {
-            if (Directory.Exists(ApplicationPaths.PluginsPath))
+            foreach (var p in _pluginManager.LoadAssemblies())
             {
-                _pluginsManifests = GetLocalPlugins(ApplicationPaths.PluginsPath).ToList();
-                foreach (var plugin in _pluginsManifests)
-                {
-                    foreach (var file in plugin.DllFiles)
-                    {
-                        Assembly plugAss;
-                        try
-                        {
-                            plugAss = Assembly.LoadFrom(file);
-                        }
-                        catch (FileLoadException ex)
-                        {
-                            Logger.LogError(ex, "Failed to load assembly {Path}", file);
-                            continue;
-                        }
-
-                        Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
-                        yield return plugAss;
-                    }
-                }
+                yield return p;
             }
 
             // Include composable parts in the Model assembly
@@ -1365,17 +1274,6 @@ namespace Emby.Server.Implementations
                     HasUpdateAvailableChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-        }
-
-        /// <summary>
-        /// Removes the plugin.
-        /// </summary>
-        /// <param name="plugin">The plugin.</param>
-        public void RemovePlugin(IPlugin plugin)
-        {
-            var list = _plugins.ToList();
-            list.Remove(plugin);
-            _plugins = list.ToArray();
         }
 
         public IEnumerable<Assembly> GetApiPluginAssemblies()

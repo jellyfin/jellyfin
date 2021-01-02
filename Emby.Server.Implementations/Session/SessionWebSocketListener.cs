@@ -133,6 +133,8 @@ namespace Emby.Server.Implementations.Session
 
             var controller = (WebSocketController)controllerInfo.Item1;
             controller.AddWebSocket(connection);
+
+            _sessionManager.OnSessionControllerConnected(session);
         }
 
         /// <summary>

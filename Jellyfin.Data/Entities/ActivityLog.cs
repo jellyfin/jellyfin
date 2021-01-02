@@ -18,7 +18,8 @@ namespace Jellyfin.Data.Entities
         /// <param name="name">The name.</param>
         /// <param name="type">The type.</param>
         /// <param name="userId">The user id.</param>
-        public ActivityLog(string name, string type, Guid userId)
+        /// <param name="logLevel">The log level.</param>
+        public ActivityLog(string name, string type, Guid userId, LogLevel logLevel = LogLevel.Information)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -34,7 +35,7 @@ namespace Jellyfin.Data.Entities
             Type = type;
             UserId = userId;
             DateCreated = DateTime.UtcNow;
-            LogSeverity = LogLevel.Trace;
+            LogSeverity = logLevel;
         }
 
         /// <summary>

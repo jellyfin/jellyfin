@@ -24,6 +24,7 @@ using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -127,18 +128,32 @@ namespace Jellyfin.Server.Extensions
                         policy.AddRequirements(new RequiresElevationRequirement());
                     });
                 options.AddPolicy(
-                    Policies.SyncPlayAccess,
+                    Policies.SyncPlayHasAccess,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccess.JoinGroups));
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
                     });
                 options.AddPolicy(
-                    Policies.SyncPlayCreateGroupAccess,
+                    Policies.SyncPlayCreateGroup,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccess.CreateAndJoinGroups));
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayJoinGroup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
+                    });
+                options.AddPolicy(
+                    Policies.SyncPlayIsInGroup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                     });
             });
         }
@@ -169,11 +184,19 @@ namespace Jellyfin.Server.Extensions
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                    for (var i = 0; i < knownProxies.Count; i++)
+                    if (knownProxies.Count == 0)
                     {
-                        if (IPAddress.TryParse(knownProxies[i], out var address))
+                        options.KnownNetworks.Clear();
+                        options.KnownProxies.Clear();
+                    }
+                    else
+                    {
+                        for (var i = 0; i < knownProxies.Count; i++)
                         {
-                            options.KnownProxies.Add(address);
+                            if (IPHost.TryParse(knownProxies[i], out var host))
+                            {
+                                options.KnownProxies.Add(host.Address);
+                            }
                         }
                     }
                 })
@@ -204,6 +227,7 @@ namespace Jellyfin.Server.Extensions
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
                     options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
                     options.JsonSerializerOptions.NumberHandling = jsonOptions.NumberHandling;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = jsonOptions.PropertyNameCaseInsensitive;
 
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)
