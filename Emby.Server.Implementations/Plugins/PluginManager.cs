@@ -465,18 +465,18 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     plugin.Instance = instance;
                     var manifest = plugin.Manifest;
-                    var pluginStr = plugin.Instance.Version.ToString();
+                    var pluginStr = instance.Version.ToString();
                     bool changed = false;
                     if (!string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal)
-                        || manifest.Id != plugin.Instance.Id
+                        || manifest.Id != instance.Id
                         || manifest.Depreciated)
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
                         // this updates the manifest to the actual plugin values.
                         manifest.Version = pluginStr;
-                        manifest.Name = plugin.Instance.Name;
-                        manifest.Description = plugin.Instance.Description;
-                        manifest.Id = plugin.Instance.Id;
+                        manifest.Name = instance.Name;
+                        manifest.Description = instance.Description;
+                        manifest.Id = instance.Id;
                         changed = true;
                     }
 
