@@ -402,8 +402,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool RequireHttps { get; set; } = false;
 
-        public bool EnableNewOmdbSupport { get; set; } = true;
-
         /// <summary>
         /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
         /// </summary>
