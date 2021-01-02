@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         {
             var id = item.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
 
-            if (!string.IsNullOrWhiteSpace(id))
+            if (!string.IsNullOrWhiteSpace(id) && AudioDbAlbumProvider.Current != null)
             {
                 await AudioDbAlbumProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 

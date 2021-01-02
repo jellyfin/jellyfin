@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         // After TheTVDB
         public int Order => 1;
 
-        internal static TmdbSeriesProvider Current { get; private set; }
+        internal static TmdbSeriesProvider? Current { get; private set; }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -219,18 +219,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                     .ConfigureAwait(false);
 
-                result = new MetadataResult<Series>
+                if (tvShow != null)
                 {
-                    Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
-                    ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
-                };
+                    result = new MetadataResult<Series>
+                    {
+                        Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
+                        ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
+                    };
 
-                foreach (var person in GetPersons(tvShow))
-                {
-                    result.AddPerson(person);
+                    foreach (var person in GetPersons(tvShow))
+                    {
+                        result.AddPerson(person);
+                    }
+
+                    result.HasMetadata = result.Item != null;
                 }
-
-                result.HasMetadata = result.Item != null;
             }
 
             return result;

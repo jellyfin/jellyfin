@@ -216,7 +216,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? imageUrl)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item == null || imageUrl == null)
             {
                 return NotFound();
             }

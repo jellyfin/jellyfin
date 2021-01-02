@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
-        public static Plugin Instance { get; private set; }
+        public static Plugin? Instance { get; private set; }
 
         public override Guid Id => new Guid("a628c0da-fac5-4c7e-9d1a-7134223f14c8");
 

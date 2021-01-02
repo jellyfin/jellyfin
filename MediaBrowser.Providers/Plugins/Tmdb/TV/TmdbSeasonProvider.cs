@@ -33,7 +33,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var result = new MetadataResult<Season>();
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
 
@@ -59,13 +59,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = seasonResult?.Overview
             };
 
-            if (!string.IsNullOrEmpty(seasonResult.ExternalIds?.TvdbId))
+            if (!string.IsNullOrEmpty(seasonResult?.ExternalIds?.TvdbId))
             {
                 result.Item.SetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
             }
 
             // TODO why was this disabled?
-            var credits = seasonResult.Credits;
+            var credits = seasonResult?.Credits;
             if (credits?.Cast != null)
             {
                 var cast = credits.Cast.OrderBy(c => c.Order).Take(TmdbUtils.MaxCastMembers).ToList();
@@ -103,8 +103,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            result.Item.PremiereDate = seasonResult.AirDate;
-            result.Item.ProductionYear = seasonResult.AirDate?.Year;
+            result.Item.PremiereDate = seasonResult?.AirDate;
+            result.Item.ProductionYear = seasonResult?.AirDate?.Year;
 
             return result;
         }

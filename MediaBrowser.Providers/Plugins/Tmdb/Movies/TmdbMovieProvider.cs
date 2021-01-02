@@ -77,6 +77,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 .GetMovieAsync(tmdbId, searchInfo.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
+            if (movie == null)
+            {
+                return new RemoteSearchResult[0];
+            }
+
             var remoteResult = new RemoteSearchResult
             {
                 Name = movie.Title ?? movie.OriginalTitle,

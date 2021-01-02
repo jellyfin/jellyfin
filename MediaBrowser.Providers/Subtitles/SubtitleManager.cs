@@ -47,10 +47,13 @@ namespace MediaBrowser.Providers.Subtitles
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
             _localization = localizationManager;
+
+            // Initialized in AddParts later
+            _subtitleProviders = new ISubtitleProvider[] {};
         }
 
         /// <inheritdoc />
-        public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
+        public event EventHandler<SubtitleDownloadFailureEventArgs>? SubtitleDownloadFailure;
 
         /// <inheritdoc />
         public void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders)
@@ -216,7 +219,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
         {
-            Exception exceptionToThrow = null;
+            Exception? exceptionToThrow = null;
 
             foreach (var savePath in savePaths)
             {
@@ -226,7 +229,8 @@ namespace MediaBrowser.Providers.Subtitles
 
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(savePath));
+                    var directory = Path.GetDirectoryName(savePath) ?? throw new ArgumentException($"Provided path ({savePath}) is not valid.", nameof(savePath));
+                    Directory.CreateDirectory(directory);
 
                     using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, FileStreamBufferSize, true))
                     {

@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>?> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
 

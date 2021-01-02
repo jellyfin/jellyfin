@@ -79,12 +79,12 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">mimeType.</exception>
-        public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        public Task SaveImage(BaseItem item, Stream source, string? mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             return SaveImage(item, source, mimeType, type, imageIndex, null, cancellationToken);
         }
 
-        public async Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
+        public async Task SaveImage(BaseItem item, Stream source, string? mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(mimeType))
             {
@@ -159,14 +159,17 @@ namespace MediaBrowser.Providers.Manager
                         source.Position = 0;
                     }
 
-                    string retryPath = null;
+                    string? retryPath = null;
                     if (paths.Length == retryPaths.Length)
                     {
                         retryPath = retryPaths[i];
                     }
 
                     var savedPath = await SaveImageToLocation(source, paths[i], retryPath, cancellationToken).ConfigureAwait(false);
-                    savedPaths.Add(savedPath);
+                    if (savedPath != null)
+                    {
+                        savedPaths.Add(savedPath);
+                    }
                 }
             }
 
@@ -201,7 +204,7 @@ namespace MediaBrowser.Providers.Manager
             await SaveImageToLocation(source, path, path, CancellationToken.None).ConfigureAwait(false);
         }
 
-        private async Task<string> SaveImageToLocation(Stream source, string path, string retryPath, CancellationToken cancellationToken)
+        private async Task<string?> SaveImageToLocation(Stream source, string path, string? retryPath, CancellationToken cancellationToken)
         {
             try
             {
@@ -237,8 +240,14 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
-            return retryPath;
+            if (!string.IsNullOrWhiteSpace(retryPath) &&
+                    !string.Equals(path, retryPath, StringComparison.OrdinalIgnoreCase))
+            {
+                await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
+                return retryPath;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -259,7 +268,8 @@ namespace MediaBrowser.Providers.Manager
                 _libraryMonitor.ReportFileSystemChangeBeginning(path);
                 _libraryMonitor.ReportFileSystemChangeBeginning(parentFolder);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
+                Directory.CreateDirectory(directory);
 
                 _fileSystem.SetAttributes(path, false, false);
 
@@ -305,7 +315,8 @@ namespace MediaBrowser.Providers.Manager
         {
             if (!saveLocally || (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy))
             {
-                return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, saveLocally) };
+                var path = GetStandardSavePath(item, type, imageIndex, mimeType, saveLocally);
+                return path != null ? new[] { path } : new string[0];
             }
 
             return GetCompatibleSavePaths(item, type, imageIndex, mimeType);
@@ -358,7 +369,7 @@ namespace MediaBrowser.Providers.Manager
         /// or
         /// imageIndex.
         /// </exception>
-        private string GetStandardSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
+        private string? GetStandardSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
             var season = item as Season;
             var extension = MimeTypes.ToExtension(mimeType);
@@ -451,13 +462,14 @@ namespace MediaBrowser.Providers.Manager
 
             extension = extension.ToLowerInvariant();
 
-            string path = null;
+            string? path = null;
 
             if (saveLocally)
             {
                 if (type == ImageType.Primary && item is Episode)
                 {
-                    path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
+                    var dir = Path.GetDirectoryName(item.Path);
+                    path = dir == null ? Path.Combine("metadata", filename + extension) : Path.Combine(dir, "metadata", filename + extension);
                 }
                 else if (item.IsInMixedFolder)
                 {
@@ -529,7 +541,8 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (item.IsInMixedFolder)
                     {
-                        return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart", extension) };
+                        var p = GetSavePathForItemInMixedFolder(item, type, "fanart", extension);
+                        return p != null ? new[] { p } : new string[0];
                     }
 
                     if (season != null && season.IndexNumber.HasValue)
@@ -555,7 +568,8 @@ namespace MediaBrowser.Providers.Manager
 
                 if (item.IsInMixedFolder)
                 {
-                    return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension) };
+                    var p = GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension);
+                    return p != null ? new[] { p } : new string[0];
                 }
 
                 var extraFanartFilename = GetBackdropSaveFilename(item.GetImages(ImageType.Backdrop), "fanart", "fanart", outputIndex);
@@ -594,12 +608,13 @@ namespace MediaBrowser.Providers.Manager
 
                     var imageFilename = Path.GetFileNameWithoutExtension(item.Path) + "-thumb" + extension;
 
-                    return new[] { Path.Combine(seasonFolder, imageFilename) };
+                    return new[] { seasonFolder != null ? Path.Combine(seasonFolder, imageFilename) : imageFilename };
                 }
 
                 if (item.IsInMixedFolder || item is MusicVideo)
                 {
-                    return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
+                    var p = GetSavePathForItemInMixedFolder(item, type, string.Empty, extension);
+                    return p != null ? new[] { p } : new string[0];
                 }
 
                 if (item is MusicAlbum || item is MusicArtist)
@@ -611,7 +626,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // All other paths are the same
-            return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, true) };
+            var path = GetStandardSavePath(item, type, imageIndex, mimeType, true);
+            return path != null ? new[] { path } : new string[0];
         }
 
         /// <summary>
@@ -622,7 +638,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageFilename">The image filename.</param>
         /// <param name="extension">The extension.</param>
         /// <returns>System.String.</returns>
-        private string GetSavePathForItemInMixedFolder(BaseItem item, ImageType type, string imageFilename, string extension)
+        private string? GetSavePathForItemInMixedFolder(BaseItem item, ImageType type, string imageFilename, string? extension)
         {
             if (type == ImageType.Primary)
             {
@@ -630,6 +646,11 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var folder = Path.GetDirectoryName(item.Path);
+
+            if (folder == null || extension == null)
+            {
+                return null;
+            }
 
             return Path.Combine(folder, Path.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);
         }

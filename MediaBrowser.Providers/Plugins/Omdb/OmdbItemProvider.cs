@@ -174,7 +174,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
                 item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
 
-                if (result.Year.Length > 0
+                if (result.Year?.Length > 0
                     && int.TryParse(result.Year.AsSpan().Slice(0, Math.Min(result.Year.Length, 4)), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))
                 {
                     item.ProductionYear = parsedYear;
@@ -263,14 +263,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return result;
         }
 
-        private async Task<string> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
+        private async Task<string?> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
         {
             var results = await GetSearchResultsInternal(info, "movie", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
             return first?.GetProviderId(MetadataProvider.Imdb);
         }
 
-        private async Task<string> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
+        private async Task<string?> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
         {
             var results = await GetSearchResultsInternal(info, "series", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
@@ -284,51 +284,51 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         private class SearchResult
         {
-            public string Title { get; set; }
+            public string? Title { get; set; }
 
-            public string Year { get; set; }
+            public string? Year { get; set; }
 
-            public string Rated { get; set; }
+            public string? Rated { get; set; }
 
-            public string Released { get; set; }
+            public string? Released { get; set; }
 
-            public string Season { get; set; }
+            public string? Season { get; set; }
 
-            public string Episode { get; set; }
+            public string? Episode { get; set; }
 
-            public string Runtime { get; set; }
+            public string? Runtime { get; set; }
 
-            public string Genre { get; set; }
+            public string? Genre { get; set; }
 
-            public string Director { get; set; }
+            public string? Director { get; set; }
 
-            public string Writer { get; set; }
+            public string? Writer { get; set; }
 
-            public string Actors { get; set; }
+            public string? Actors { get; set; }
 
-            public string Plot { get; set; }
+            public string? Plot { get; set; }
 
-            public string Language { get; set; }
+            public string? Language { get; set; }
 
-            public string Country { get; set; }
+            public string? Country { get; set; }
 
-            public string Awards { get; set; }
+            public string? Awards { get; set; }
 
-            public string Poster { get; set; }
+            public string? Poster { get; set; }
 
-            public string Metascore { get; set; }
+            public string? Metascore { get; set; }
 
-            public string imdbRating { get; set; }
+            public string? imdbRating { get; set; }
 
-            public string imdbVotes { get; set; }
+            public string? imdbVotes { get; set; }
 
-            public string imdbID { get; set; }
+            public string? imdbID { get; set; }
 
-            public string seriesID { get; set; }
+            public string? seriesID { get; set; }
 
-            public string Type { get; set; }
+            public string? Type { get; set; }
 
-            public string Response { get; set; }
+            public string? Response { get; set; }
         }
 
         private class SearchResultList
@@ -337,7 +337,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             /// Gets or sets the results.
             /// </summary>
             /// <value>The results.</value>
-            public List<SearchResult> Search { get; set; }
+            public List<SearchResult>? Search { get; set; }
         }
     }
 }

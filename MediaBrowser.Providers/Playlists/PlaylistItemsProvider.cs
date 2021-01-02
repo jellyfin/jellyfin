@@ -57,8 +57,13 @@ namespace MediaBrowser.Providers.Playlists
             return Task.FromResult(ItemUpdateType.None);
         }
 
-        private IEnumerable<LinkedChild> GetItems(Stream stream, string extension)
+        private IEnumerable<LinkedChild> GetItems(Stream stream, string? extension)
         {
+            if (extension == null)
+            {
+                return new List<LinkedChild>();
+            }
+
             if (string.Equals(".wpl", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetWplItems(stream);

@@ -78,13 +78,13 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
             where T : Video
         {
-            BlurayDiscInfo blurayDiscInfo = null;
+            BlurayDiscInfo? blurayDiscInfo = null;
 
-            Model.MediaInfo.MediaInfo mediaInfoResult = null;
+            Model.MediaInfo.MediaInfo? mediaInfoResult = null;
 
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
             {
-                string[] streamFileNames = null;
+                string[]? streamFileNames = null;
 
                 if (item.VideoType == VideoType.Dvd)
                 {
@@ -102,9 +102,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     blurayDiscInfo = GetBDInfo(inputPath);
 
-                    streamFileNames = blurayDiscInfo.Files;
+                    streamFileNames = blurayDiscInfo?.Files;
 
-                    if (streamFileNames.Length == 0)
+                    if (streamFileNames == null || streamFileNames.Length == 0)
                     {
                         _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -159,8 +159,8 @@ namespace MediaBrowser.Providers.MediaInfo
         protected async Task Fetch(
             Video video,
             CancellationToken cancellationToken,
-            Model.MediaInfo.MediaInfo mediaInfo,
-            BlurayDiscInfo blurayInfo,
+            Model.MediaInfo.MediaInfo? mediaInfo,
+            BlurayDiscInfo? blurayInfo,
             MetadataRefreshOptions options)
         {
             List<MediaStream> mediaStreams;
@@ -343,7 +343,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoStream.</returns>
-        private BlurayDiscInfo GetBDInfo(string path)
+        private BlurayDiscInfo? GetBDInfo(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -621,6 +621,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, titleNumber)
                 .Select(Path.GetFileName)
+                .OfType<string>()
                 .ToArray();
         }
 

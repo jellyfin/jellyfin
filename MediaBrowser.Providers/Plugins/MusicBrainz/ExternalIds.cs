@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.Music
         public ExternalIdMediaType? Type => ExternalIdMediaType.ReleaseGroup;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/release-group/{0}";
+        public string? UrlFormatString => Plugin.Instance == null ? null : Plugin.Instance.Configuration.Server  + "/release-group/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;
@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Music
         public ExternalIdMediaType? Type => ExternalIdMediaType.AlbumArtist;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
+        public string? UrlFormatString => Plugin.Instance == null ? null : Plugin.Instance.Configuration.Server + "/artist/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio;
@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Music
         public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/release/{0}";
+        public string? UrlFormatString => Plugin.Instance == null ? null : Plugin.Instance.Configuration.Server + "/release/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;
@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Music
         public ExternalIdMediaType? Type => ExternalIdMediaType.Artist;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
+        public string? UrlFormatString => Plugin.Instance == null ? null : Plugin.Instance.Configuration.Server + "/artist/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is MusicArtist;
@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.Music
         public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
+        public string? UrlFormatString => Plugin.Instance == null ? null : Plugin.Instance.Configuration.Server + "/artist/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Music
         public ExternalIdMediaType? Type => ExternalIdMediaType.Track;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/track/{0}";
+        public string? UrlFormatString => Plugin.Instance == null ? null : Plugin.Instance.Configuration.Server + "/track/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio;

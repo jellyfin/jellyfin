@@ -97,16 +97,21 @@ namespace MediaBrowser.Providers.Manager
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _baseItemManager = baseItemManager;
+
+            // These arrays are initialized in AddParts
+            ImageProviders = new IImageProvider[]{};
+            _externalIds = new IExternalId[]{};
+            _savers = new IMetadataSaver[]{};
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
+        public event EventHandler<GenericEventArgs<BaseItem>>? RefreshStarted;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
+        public event EventHandler<GenericEventArgs<BaseItem>>? RefreshCompleted;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
+        public event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>>? RefreshProgress;
 
         private IImageProvider[] ImageProviders { get; set; }
 
@@ -168,7 +173,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
-            var contentType = response.Content.Headers.ContentType.MediaType;
+            var contentType = response.Content.Headers.ContentType?.MediaType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
@@ -181,7 +186,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
-            if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(contentType,MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
                 throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
             }
@@ -197,7 +202,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        public Task SaveImage(BaseItem item, Stream source, string? mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
@@ -216,7 +221,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task SaveImage(Stream source, string mimeType, string path)
+        public Task SaveImage(Stream source, string? mimeType, string path)
         {
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
                 .SaveImage(source, path);
@@ -781,7 +786,7 @@ namespace MediaBrowser.Providers.Manager
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
         {
-            BaseItem referenceItem = null;
+            BaseItem? referenceItem = null;
 
             if (!searchInfo.ItemId.Equals(Guid.Empty))
             {
@@ -791,7 +796,7 @@ namespace MediaBrowser.Providers.Manager
             return GetRemoteSearchResults<TItemType, TLookupType>(searchInfo, referenceItem, cancellationToken);
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, BaseItem referenceItem, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, BaseItem? referenceItem, CancellationToken cancellationToken)
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
         {
@@ -953,7 +958,7 @@ namespace MediaBrowser.Providers.Manager
                         i.UrlFormatString,
                         value)
                 };
-            }).Where(i => i != null).Concat(item.GetRelatedUrls());
+            }).OfType<ExternalUrl>().Concat(item.GetRelatedUrls());
         }
 
         /// <inheritdoc/>
