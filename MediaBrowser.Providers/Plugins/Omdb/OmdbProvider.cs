@@ -59,48 +59,48 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             // Only take the name and rating if the user's language is set to English, since Omdb has no localization
             if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
-                item.Name = result.Title;
+                item.Name = result?.Title;
 
                 if (string.Equals(country, "us", StringComparison.OrdinalIgnoreCase))
                 {
-                    item.OfficialRating = result.Rated;
+                    item.OfficialRating = result?.Rated;
                 }
             }
 
-            if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
+            if (!string.IsNullOrEmpty(result?.Year) && result.Year.Length >= 4
                 && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
             }
 
-            var tomatoScore = result.GetRottenTomatoScore();
+            var tomatoScore = result?.GetRottenTomatoScore();
 
             if (tomatoScore.HasValue)
             {
                 item.CriticRating = tomatoScore;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbVotes)
+            if (!string.IsNullOrEmpty(result?.imdbVotes)
                 && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
+            if (!string.IsNullOrEmpty(result?.imdbRating)
                 && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
             }
 
-            if (!string.IsNullOrEmpty(result.Website))
+            if (!string.IsNullOrEmpty(result?.Website))
             {
                 item.HomePageUrl = result.Website;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.imdbID))
+            if (!string.IsNullOrWhiteSpace(result?.imdbID))
             {
                 item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
             }
@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return true;
         }
 
-        internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
+        internal async Task<RootObject?> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
 
@@ -230,7 +230,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return result;
         }
 
-        internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
+        internal async Task<SeasonRootObject?> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
 
@@ -350,7 +350,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return path;
         }
 
-        public async Task<T> GetDeserializedOmdbResponse<T>(HttpClient httpClient, string url, CancellationToken cancellationToken)
+        public async Task<T?> GetDeserializedOmdbResponse<T>(HttpClient httpClient, string url, CancellationToken cancellationToken)
         {
             using var response = await GetOmdbResponse(httpClient, url, cancellationToken).ConfigureAwait(false);
             await using Stream content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -391,7 +391,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return Path.Combine(dataPath, filename);
         }
 
-        private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result)
+        private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject? result)
             where T : BaseItem
         {
             var item = itemResult.Item;
@@ -400,7 +400,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             // Grab series genres because IMDb data is better than TVDB. Leave movies alone
             // But only do it if English is the preferred language because this data will not be localized
-            if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result.Genre))
+            if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result?.Genre))
             {
                 item.Genres = Array.Empty<string>();
 
@@ -416,7 +416,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             if (isConfiguredForEnglish)
             {
                 // Omdb is currently English only, so for other languages skip this and let secondary providers fill it in
-                item.Overview = result.Plot;
+                item.Overview = result?.Plot;
             }
 
             if (!Plugin.Instance?.Configuration?.CastAndCrew ?? false)
@@ -424,7 +424,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Director))
+            if (!string.IsNullOrWhiteSpace(result?.Director))
             {
                 var person = new PersonInfo
                 {
@@ -435,7 +435,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 itemResult.AddPerson(person);
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Writer))
+            if (!string.IsNullOrWhiteSpace(result?.Writer))
             {
                 var person = new PersonInfo
                 {
@@ -446,7 +446,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 itemResult.AddPerson(person);
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Actors))
+            if (!string.IsNullOrWhiteSpace(result?.Actors))
             {
                 var actorList = result.Actors.Split(',');
                 foreach (var actor in actorList)

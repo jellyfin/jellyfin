@@ -59,7 +59,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 var rootObject = await provider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
-                if (!string.IsNullOrEmpty(rootObject.Poster))
+                if (!string.IsNullOrEmpty(rootObject?.Poster))
                 {
                     if (item is Episode)
                     {

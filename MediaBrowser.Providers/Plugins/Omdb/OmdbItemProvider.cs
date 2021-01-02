@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             else
             {
                 var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                if (string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
+                if (result != null && string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     resultList.Add(result);
                 }
