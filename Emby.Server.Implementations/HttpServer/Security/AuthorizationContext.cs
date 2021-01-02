@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 var param = item.Trim().Split('=', 2);
 
-                var value =param[1].Trim('"');
+                var value = param[1].Trim('"');
                 result[param[0]] = NormalizeValue(value);
             }
 
@@ -293,42 +293,37 @@ namespace Emby.Server.Implementations.HttpServer.Security
         public static string[] GetParts(string authtorizationHeader)
         {
             var result = new List<string>();
-            var escapeChars = new[] {'"', ','};
+            var escapeChars = new[] { '"', ',' };
             var escaped = false;
-            var authtorizationHeaderChars = authtorizationHeader.ToCharArray();
-            var value = new List<char>();
-
-            for(var i = 0; i < authtorizationHeaderChars.Length; i++)
+            int start = 0;
+            int i = 0;
+            while (i < authtorizationHeader.Length)
             {
-                if(!escapeChars.Contains(authtorizationHeaderChars[i]))
+                var token = authtorizationHeader[i];
+                if (escapeChars.Contains(token))
                 {
-                    value = value.Append(authtorizationHeaderChars[i]).ToList();
-                }
-                else
-                {
-                    // Applying a XOR logic to evaluate wether it is opening or closing a value
-                    escaped = (!escaped) == (authtorizationHeaderChars[i] == '"');
-                    if(authtorizationHeaderChars[i] == ',')
+                    // Applying a XOR logic to evaluate whether it is opening or closing a value
+                    escaped = (!escaped) == (token == '"');
+                    if (token == ',' && !escaped)
                     {
-                        if(escaped)
+                        // Meeting a comma after a closing escape char means the value is complete
+                        if (start < i)
                         {
-                            value = value.Append(authtorizationHeaderChars[i]).ToList();
+                            result.Add(authtorizationHeader[start..(i)]);
                         }
-                        else
-                        {
-                            // Meeting a comma after a closing escape char means the value is complete
-                            result.Add(new string(value.ToArray()));
-                            value = new List<char>();
-                        }
-                    }
-                    else
-                    {
-                        value = value.Append(authtorizationHeaderChars[i]).ToList();
+
+                        start = i + 1;
                     }
                 }
+
+                i++;
             }
+
             // Add last value
-            result.Add(new string(value.ToArray()));
+            if (start < i)
+            {
+                result.Add(authtorizationHeader[start..(i)]);
+            }
 
             return result.ToArray();
         }
