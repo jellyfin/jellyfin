@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <returns>True if successful.</returns>
         public bool SaveManifest(PluginManifest manifest, string path)
         {
-            if (manifest == null || manifest.Depreciated) 
+            if (manifest == null || manifest.Depreciated)
             {
                 return false;
             }
