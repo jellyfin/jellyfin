@@ -267,7 +267,7 @@ namespace Jellyfin.Api.Controllers
             if (startItemId.HasValue)
             {
                 episodes = episodes
-                    .SkipWhile(i => startItemId.Value.Equals(i.Id))
+                    .SkipWhile(i => !startItemId.Value.Equals(i.Id))
                     .ToList();
             }
 
