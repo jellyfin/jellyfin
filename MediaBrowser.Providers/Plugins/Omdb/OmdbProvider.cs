@@ -214,39 +214,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
-
-            string resultString;
-
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
-                {
-                    resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"");
-                }
-            }
-
-            var result = JsonSerializer.Deserialize<RootObject>(resultString, _jsonOptions);
-            return result;
+            await using var stream = File.OpenRead(path);
+            return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken);
         }
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
-
-            string resultString;
-
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
-                {
-                    resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"");
-                }
-            }
-
-            var result = JsonSerializer.Deserialize<SeasonRootObject>(resultString, _jsonOptions);
-            return result;
+            await using var stream = File.OpenRead(path);
+            return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken);
         }
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -21,6 +22,9 @@ namespace MediaBrowser.Common.Json.Converters
                 {
                     return null;
                 }
+
+                var converter = TypeDescriptor.GetConverter(typeToConvert);
+                return (T?)converter.ConvertFromString(str);
             }
 
             return JsonSerializer.Deserialize<T>(ref reader, options);
