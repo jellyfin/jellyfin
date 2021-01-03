@@ -309,7 +309,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         // Meeting a comma after a closing escape char means the value is complete
                         if (start < i)
                         {
-                            result.Add(authtorizationHeader[start..(i)]);
+                            result.Add(WebUtility.UrlDecode(authtorizationHeader[start..(i)]));
                         }
 
                         start = i + 1;
@@ -322,7 +322,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             // Add last value
             if (start < i)
             {
-                result.Add(authtorizationHeader[start..(i)]);
+                result.Add(WebUtility.UrlDecode(authtorizationHeader[start..(i)]));
             }
 
             return result.ToArray();
