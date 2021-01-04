@@ -14,7 +14,7 @@ namespace Jellyfin.Common.Tests.Json
         {
             _options = new JsonSerializerOptions();
             _options.Converters.Add(new JsonOmdbNotAvailableStringConverter());
-            _options.Converters.Add(new JsonOmdbNotAvailableStructConverter<int>());
+            _options.Converters.Add(new JsonOmdbNotAvailableInt32Converter());
             _options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
         }
 

@@ -8,12 +8,10 @@ namespace MediaBrowser.Common.Json.Converters
     /// <summary>
     /// Converts a string <c>N/A</c> to <c>string.Empty</c>.
     /// </summary>
-    /// <typeparam name="T">The resulting type.</typeparam>
-    public class JsonOmdbNotAvailableStructConverter<T> : JsonConverter<T?>
-        where T : struct
+    public class JsonOmdbNotAvailableInt32Converter : JsonConverter<int?>
     {
         /// <inheritdoc />
-        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override int? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.String)
             {
@@ -24,16 +22,23 @@ namespace MediaBrowser.Common.Json.Converters
                 }
 
                 var converter = TypeDescriptor.GetConverter(typeToConvert);
-                return (T?)converter.ConvertFromString(str);
+                return (int?)converter.ConvertFromString(str);
             }
 
-            return JsonSerializer.Deserialize<T>(ref reader, options);
+            return JsonSerializer.Deserialize<int?>(ref reader, options);
         }
 
         /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, int? value, JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize(value, options);
+            if (value.HasValue)
+            {
+                writer.WriteNumberValue(value.Value);
+            }
+            else
+            {
+                writer.WriteNullValue();
+            }
         }
     }
 }
