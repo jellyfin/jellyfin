@@ -195,7 +195,7 @@ jobs:
 
   variables:
   - name: JellyfinVersion
-    value: 0.0.0
+    value: $[replace(variables['Build.SourceBranch'],'refs/tags/v','')]
 
   steps:
   - task: UseDotNet@2
@@ -203,10 +203,6 @@ jobs:
     inputs:
       packageType: 'sdk'
       version: '5.0.x'
-
-  - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
-    displayName: Set release version (stable)
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
